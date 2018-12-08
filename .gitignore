@@ -1,2 +1,4 @@
 *.log
 r10k_modules/*
+
+.vagrant/*
