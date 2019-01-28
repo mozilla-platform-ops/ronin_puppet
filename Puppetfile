@@ -7,6 +7,7 @@ mod 'puppetlabs-motd', '2.1.1'
 mod 'puppetlabs-ntp', '7.3.0'
 mod 'saz-rsyslog', '5.0.0'
 mod 'puppetlabs-firewall', '1.14.0'
+mod 'thekevjames-homebrew', '1.8.3'
 
 # comment
 
