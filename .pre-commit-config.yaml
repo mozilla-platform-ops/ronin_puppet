@@ -1,16 +1,25 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
-    hooks:
-    -   id: trailing-whitespace
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.1.0
+  hooks:
+  - id: check-executables-have-shebangs
+  - id: check-json
+  - id: check-yaml
+  - id: detect-private-key
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
 
--   repo: https://github.com/chriskuehl/puppet-pre-commit-hooks.git
-    sha: v2.0.1
-    hooks:
-    -   id: puppet-validate
-    -   id: erb-validate
-    -   id: epp-validate
-    -   id: puppet-lint
-        args:
-        -   --fail-on-warnings
+- repo: https://github.com/chriskuehl/puppet-pre-commit-hooks.git
+  rev: v2.0.2
+  hooks:
+  - id: puppet-validate
+  - id: erb-validate
+  - id: epp-validate
+  - id: puppet-lint
+    args:
+    -  --fail-on-warnings
 
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 1.11.0
+  hooks:
+    - id: shellcheck
