@@ -3,3 +3,14 @@ repos:
     rev: v1.2.3
     hooks:
     -   id: trailing-whitespace
+
+-   repo: https://github.com/chriskuehl/puppet-pre-commit-hooks.git
+    sha: v2.0.1
+    hooks:
+    -   id: puppet-validate
+    -   id: erb-validate
+    -   id: epp-validate
+    -   id: puppet-lint
+        args:
+        -   --fail-on-warnings
+
