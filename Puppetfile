@@ -19,4 +19,3 @@ mod 'thekevjames-homebrew', '1.8.3'
 # mod 'puppetlabs-cron_core', '1.0.0'
 # mod 'puppetlabs-sshkeys_core', '1.0.1'
 # mod 'puppetlabs-host_core', '1.0.1'
-
