@@ -7,6 +7,7 @@ class roles_profiles::profiles::network {
     case $::operatingsystem {
         'Darwin': {
             include ::macos_utils::wifi_disabled
+            include ::macos_utils::bonjour_advertisements_disabled
         }
         default: {
             fail("${::operatingsystem} not supported")
