@@ -8,4 +8,5 @@ class roles_profiles::roles::mojave_taskcluster_worker {
     include ::roles_profiles::profiles::homebrew
     include ::roles_profiles::profiles::ntp
     include ::roles_profiles::profiles::network
+    include ::roles_profiles::profiles::disable_services
 }
