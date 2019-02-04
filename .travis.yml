@@ -1,0 +1,14 @@
+language: ruby
+rvm:
+  - 2.3.0
+
+before_install:
+  - gem update --system
+  - gem install bundler
+
+gemfile: .gemfile
+
+script:
+  - "puppet-lint \
+     --fail-on-warnings \
+     `find manifests modules -name '*.pp'`"
