@@ -12,4 +12,4 @@ gemfile: .gemfile
 script:
   - "puppet-lint \
      --fail-on-warnings \
-     `find manifests modules -name '*.pp'`"
+     `find modules -name '*.pp'`"
