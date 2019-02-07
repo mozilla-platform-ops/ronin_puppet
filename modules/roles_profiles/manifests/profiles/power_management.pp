@@ -2,23 +2,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::disable_services {
+class roles_profiles::profiles::power_management {
 
     case $::operatingsystem {
-        'Darwin': {
-            class { 'macos_apsd':
-                running => false,
-            }
-        }
         'Windows': {
-        $disbaled_services = ['wsearch', 'VSS', 'puppet']
-            defined_classes::srv::disable_service { $disbaled_services :
+            class { 'windows::power_scheme':
+                ensure => 'High performance',
             }
+            # Bug List
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1524436
         }
         default: {
             fail("${::operatingsystem} not supported")
         }
     }
-
-
 }

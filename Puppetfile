@@ -8,6 +8,11 @@ mod 'puppetlabs-ntp', '7.3.0'
 mod 'saz-rsyslog', '5.0.0'
 mod 'puppetlabs-firewall', '1.14.0'
 mod 'thekevjames-homebrew', '1.8.3'
+mod 'counsyl-windows', '1.0.6'
+mod 'ncorrare-windowstime', '0.4.3'
+mod 'reidmv-unzip', '0.1.2'
+mod 'puppet-windows_firewall', '2.0.2'
+mod 'puppetlabs-registry', '2.1.0'
 
 # comment
 
