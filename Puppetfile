@@ -13,6 +13,7 @@ mod 'ncorrare-windowstime', '0.4.3'
 mod 'reidmv-unzip', '0.1.2'
 mod 'puppet-windows_firewall', '2.0.2'
 mod 'puppetlabs-registry', '2.1.0'
+mod 'puppetlabs-powershell', '2.2.0'
 
 # comment
 
