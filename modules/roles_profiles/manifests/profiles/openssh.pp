@@ -36,7 +36,7 @@ class roles_profiles::profiles::openssh {
                 ensure => directory,
             }
             file { "${programdata}\\ssh":
-                        ensure => directory,
+                ensure => directory,
             }
             file { "${systemdrive}\\Users\\administrator\\.ssh\\authorized_keys":
                 content => file('roles_profiles/windows/authorized_keys'),
