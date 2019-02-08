@@ -13,7 +13,7 @@ class roles_profiles::profiles::openssh {
    			defined_classes::pkg::win_zip_pkg { 'OpenSSH-Win64':
         		pkg         => 'OpenSSH-Win64.zip',
         		creates     => "${programfiles}\\OpenSSH-Win64\\ssh.exe",
-        		destination => "${programfiles}\\OpenSSH-Win64",
+        		destination => ${programfiles},
 			}
 			defined_classes::exec::execonce { 'install_openssh':
 				command  => "${programfiles}\\OpenSSH-Win64\\install-sshd.ps1",
@@ -24,12 +24,21 @@ class roles_profiles::profiles::openssh {
 				type   => string,
 				data   => 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe',
 			}
+            registry_key { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH':
+                ensure => present,
+            }
             registry_value { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH\DefaultShellCommandOption':
                 ensure => present,
                 type   => string,
                 data   => '/c',
             }
-            file { "${$systemdrive}\\Users\\administrator\\.ssh\\authorized_keys":
+            file { "${systemdrive}\\Users\\administrator\\.ssh":
+                ensure => directory,
+            }
+            file { "${programdata}\\ssh":
+                    ensure => directory,
+            }
+            file { "${systemdrive}\\Users\\administrator\\.ssh\\authorized_keys":
                 content => file('roles_profiles/windows/authorized_keys'),
 			}
             file { "${programdata}\\ssh\\sshd_config":
