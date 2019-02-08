@@ -10,7 +10,7 @@ $srcloc = lookup('ext_pkg_src')
     file { "${pkgdir}\\${pkg}" :
         source => "${srcloc}/${pkg}",
     }
-    package { $pkg :
+    package { $title :
         ensure  => installed,
         source  => "${pkgdir}\\${pkg}",
         require => File["${pkgdir}\\${pkg}"],

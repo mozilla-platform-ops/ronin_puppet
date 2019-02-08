@@ -50,7 +50,7 @@ class roles_profiles::profiles::openssh {
                 ensure    => running,
                 subscribe => File["${programdata}\\ssh\\sshd_config"],
                 restart   => true,
-                require   => defined_classes::exec::execonce['install_openssh'],
+#                require   => defined_classes::exec::execonce['install_openssh'],
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
