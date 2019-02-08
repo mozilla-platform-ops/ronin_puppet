@@ -9,6 +9,7 @@ class roles_profiles::profiles::openssh {
         $programfiles = $facts['programfiles']
         $systemdrive  = $facts['systemdrive']
         $programdata  = $facts['programdata']
+        $sshscrpt     = '"C:\Program Files\OpenSSH-Win64\install-sshd.ps1"'
 
             defined_classes::pkg::win_zip_pkg { 'OpenSSH-Win64':
                 pkg         => 'OpenSSH-Win64.zip',
@@ -16,7 +17,7 @@ class roles_profiles::profiles::openssh {
                 destination => $programfiles,
             }
             defined_classes::exec::execonce { 'install_openssh':
-                command  => "${programfiles}\\OpenSSH-Win64\\install-sshd.ps1",
+                command  => $sshscrpt,
                 provider => powershell,
             }
             registry_value { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH\DefaultShell':

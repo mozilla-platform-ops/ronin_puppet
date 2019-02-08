@@ -8,6 +8,7 @@ class roles_profiles::roles::geckotwin1064hw {
     include roles_profiles::profiles::disable_services
     include roles_profiles::profiles::disable_system_restore
     include roles_profiles::profiles::disable_windows_update
+    include roles_profiles::profiles::files_system_managment
     include roles_profiles::profiles::firewall
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
