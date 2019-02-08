@@ -51,6 +51,16 @@ class roles_profiles::profiles::openssh {
                 restart   => true,
                 require   => Exec['install_openssh'],
             }
+            windows_firewall::exception { 'ssh':
+                ensure       => present,
+                direction    => 'in',
+                action       => 'allow',
+                enabled      => true,
+                protocol     => 'TCP',
+                local_port   => 22,
+                display_name => 'ssh in',
+                description  => 'Openssh In',
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
         }
