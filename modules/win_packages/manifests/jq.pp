@@ -5,6 +5,6 @@
 class win_packages::jq {
     file { "${facts['system32']}\\jq.exe":
         ensure => present,
-        source => "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/jq-win64.exe",
+        source => 'https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/jq-win64.exe',
     }
 }
