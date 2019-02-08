@@ -22,13 +22,10 @@ define defined_classes::exec::execonce(
   $user        = undef,
 ) {
 
-    $programdata  =  $facts['programdata']
-    $semaphoredir = "${programdata}\\semaphore"
-    $semaphore    = "${semaphoredir}\\${title}.semaphore"
+    require shared::dirs::win_ronin_dirs
 
-    file { $semaphoredir:
-        ensure => directory,
-    }
+    $semaphoredir = $facts['roninprogramdata']
+    $semaphorefile    = "${semaphoredir}\\${title}.semaphore"
 
     exec { $title:
         command     => $command,
@@ -48,11 +45,11 @@ define defined_classes::exec::execonce(
         umask       => $umask,
         unless      => $unless,
         user        => $user,
-        creates     => $semaphore,
+        creates     => $semaphorefile,
         require     => File[$semaphoredir],
     }
 
-    file { $semaphore:
+    file { $semaphorefile:
         ensure  => present,
         require => Exec[$title],
     }
