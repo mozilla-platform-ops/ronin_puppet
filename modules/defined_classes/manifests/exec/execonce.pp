@@ -22,7 +22,7 @@ define defined_classes::exec::execonce(
   $user        = undef,
 ) {
 
-    require shared::dirs::win_ronin_dirs
+    require shared::win_ronin_dirs
 
     $semaphoredir = $facts['roninprogramdata']
     $semaphorefile    = "${semaphoredir}\\${title}.semaphore"
