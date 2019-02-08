@@ -16,6 +16,7 @@ class roles_profiles::roles::geckotwin1064hw {
     include roles_profiles::profiles::nxlog
     include roles_profiles::profiles::debug_tools
     include roles_profiles::profiles::admin_tools
+    include roles_profiles::profiles::openssh
 
     # Worker
 }
