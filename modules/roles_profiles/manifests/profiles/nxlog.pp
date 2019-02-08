@@ -20,7 +20,7 @@ class roles_profiles::profiles::nxlog {
                 ensure    => running,
                 subscribe => File["${programfilesx86}\\nxlog\\conf\\nxlog.conf"],
                 restart   => true,
-                require   => Package['NxLog-CE'],
+                require   => Package['NXLog-CE'],
             }
             windows_firewall::exception { 'nxlog':
                 ensure       => present,

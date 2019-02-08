@@ -6,11 +6,11 @@ class win_packages::nxlog {
 
 $programfilesx86 = $facts['programfilesx86']
 
-    defined_classes::pkg::win_msi_pkg  { 'NxLog-CE':
+    defined_classes::pkg::win_msi_pkg  { 'NXLog-CE':
         pkg             => 'nxlog-ce-2.10.2150.msi',
-       install_options => ['/quiet'],
+        install_options => ['/quiet'],
     }
 }
 
-# Bug list 
+# Bug list
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
