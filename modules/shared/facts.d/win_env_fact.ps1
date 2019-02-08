@@ -20,6 +20,7 @@ write-host "programfilesx86=$programfilesx86"
 
 # Facts built off of environment variables
 write-host "roninprogramdata=$programdata\\PuppetLabs\\ronin"
+write-host "roninsemaphoredir=$programdata\\PuppetLabs\\ronin\\semaphore"
 write-host "tempdir=$env:systemdrive\\Windows\\Temp"
 
 # Bug list
