@@ -20,6 +20,7 @@ class roles_profiles::profiles::nxlog {
                 ensure    => running,
                 subscribe => File["${programfilesx86}\\nxlog\\conf\\nxlog.conf"],
                 restart   => true,
+                require   =>  defined_classes::pkg::win_msi_pkg['NxLog-CE'],
             }
             windows_firewall::exception { 'nxlog':
                 ensure       => present,

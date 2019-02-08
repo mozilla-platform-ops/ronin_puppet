@@ -16,3 +16,6 @@
 
   # Other directories
   loc_tmp: "C:\\windows\\temp"
+
+  # Useful commands
+  pwrshl_run_scrpt: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -NoLogo -NonInteractive -file"
