@@ -24,7 +24,7 @@ define defined_classes::exec::execonce(
 
     require shared::win_ronin_dirs
 
-    $semaphoredir = $facts['roninprogramdata']
+    $semaphoredir = $facts['roninsemaphoredir']
     $semaphorefile    = "${semaphoredir}\\${title}.semaphore"
 
     exec { $title:
