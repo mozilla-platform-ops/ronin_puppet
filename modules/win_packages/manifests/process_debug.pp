@@ -9,7 +9,7 @@ class win_packages::process_debug {
         creates     => "${facts['custom_win_systemdrive']}\\ProcessExplorer\\procexp.exe",
         destination => "${facts['custom_win_systemdrive']}\\ProcessExplorer",
     }
-    win_packages::pkg::win_zip_pkg { 'proc_monitor':
+    win_packages::win_zip_pkg { 'proc_monitor':
         pkg         => 'ProcessMonitor.zip',
         creates     => "${facts['custom_win_systemdrive']}\\ProcessMonitor\\Procmon.exe",
         destination => "${facts['custom_win_systemdrive']}\\ProcessMonitor",
