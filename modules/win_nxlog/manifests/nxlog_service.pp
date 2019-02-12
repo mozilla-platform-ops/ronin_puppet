@@ -4,7 +4,8 @@
 
 class win_nxlog::nxlog_service {
 
-    require win_packages::nxlog
+    require win_nxlog::nxlog_intsall
+    include win_nxlog::nxlog_conf
 
     service { 'nxlog':
         ensure    => running,
