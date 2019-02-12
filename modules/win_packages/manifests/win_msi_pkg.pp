@@ -4,8 +4,8 @@
 
 define win_packages::win_msi_pkg ( $pkg, $package=$title, $install_options=[]) {
 
-$pkgdir = lookup('loc_pkg_dir')
-$srcloc = lookup('ext_pkg_src')
+$pkgdir = lookup('win_loc_pkg_dir')
+$srcloc = lookup('win_ext_pkg_src')
 
     file { "${pkgdir}\\${pkg}" :
         source => "${srcloc}/${pkg}",

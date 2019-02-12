@@ -5,7 +5,7 @@
 class win_openssh::openssh_install {
 
     $programfiles     = $facts['custom_win_programfiles']
-    $pwrshl_run_scrpt = lookup('pwrshl_run_scrpt')
+    $pwrshl_run_scrpt = lookup('win_pwrshl_run_scrpt')
     # Becuase of the need for the script path to be double quoted, needed to hard code the path.
     $sshscrpt         = '"C:\Program Files\OpenSSH-Win64\install-sshd.ps1"'
 

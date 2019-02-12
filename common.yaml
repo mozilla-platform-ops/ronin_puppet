@@ -6,8 +6,8 @@
   datacenterntp: "infoblox1.private.%{facts.mozspace}.mozilla.com"
 
   # package managment
-  loc_pkg_dir: "%{facts.custom_win_systemdrive}:\\windows\\temp"
-  ext_pkg_src: "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages"
+  win_loc_pkg_dir: "%{facts.custom_win_systemdrive}\\windows\\temp"
+  win_ext_pkg_src: "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages"
 
   # Site source url
   # will change
@@ -15,4 +15,4 @@
   conf_file_src: "https://raw.githubusercontent.com/markcor/ronin-win-base/master/site/configuration"
 
   # Useful commands
-  pwrshl_run_scrpt: "%{facts.custom_win_system32}WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -NoProfile -NoLogo -NonInteractive -file"
+  win_pwrshl_run_scrpt: "%{facts.custom_win_system32}WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -NoProfile -NoLogo -NonInteractive -file"

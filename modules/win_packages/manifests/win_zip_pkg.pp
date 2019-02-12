@@ -4,8 +4,8 @@
 
 define win_packages::win_zip_pkg ( $pkg, $destination, $package=$title, $creates=[] ) {
 
-$pkgdir = lookup('loc_pkg_dir')
-$srcloc = lookup('ext_pkg_src')
+$pkgdir = lookup('win_loc_pkg_dir')
+$srcloc = lookup('win_ext_pkg_src')
 
     file { "${pkgdir}\\${pkg}":
         source => "${srcloc}/${pkg}",
