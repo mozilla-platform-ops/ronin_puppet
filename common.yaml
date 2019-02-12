@@ -15,4 +15,4 @@
   conf_file_src: "https://raw.githubusercontent.com/markcor/ronin-win-base/master/site/configuration"
 
   # Useful commands
-  win_pwrshl_run_scrpt: "%{facts.custom_win_system32}WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -NoProfile -NoLogo -NonInteractive -file"
+  win_pwrshl_run_scrpt: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -NoProfile -NoLogo -NonInteractive -file"
