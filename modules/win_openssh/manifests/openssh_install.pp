@@ -13,6 +13,8 @@ class win_openssh::openssh_install {
         pkg         => 'OpenSSH-Win64.zip',
         creates     => "${programfiles}\\OpenSSH-Win64\\ssh.exe",
         destination => $programfiles,
+        tries       => 2,
+        try_sleep   => 5,
     }
     shared::execonce { 'install_openssh':
         command  => "${pwrshl_run_scrpt} ${sshscrpt}",
