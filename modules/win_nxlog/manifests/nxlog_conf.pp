@@ -2,13 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_packages::nxlog {
+class win_nxlog::nxlog_conf {
 
-$programfilesx86 = $facts['programfilesx86']
+    require win_nxlog::nxlog_install
 
-    defined_classes::pkg::win_msi_pkg  { 'NXLog-CE':
-        pkg             => 'nxlog-ce-2.10.2150.msi',
-        install_options => ['/quiet'],
+    file { "${facts[custom_win_programfilesx86]}\\nxlog\\conf\\nxlog.conf":
+        content => epp('win_nxlog/nxlog.conf.epp'),
     }
 }
 

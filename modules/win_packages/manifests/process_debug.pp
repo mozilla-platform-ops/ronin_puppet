@@ -4,15 +4,15 @@
 
 class win_packages::process_debug {
 
-    defined_classes::pkg::win_zip_pkg { 'proc_expolorer':
+    win_packages::win_zip_pkg { 'proc_expolorer':
         pkg         => 'ProcessExplorer.zip',
-        creates     => "${facts['systemdrive']}\\ProcessExplorer\\procexp.exe",
-        destination => "${facts['systemdrive']}\\ProcessExplorer",
+        creates     => "${facts['custom_win_systemdrive']}\\ProcessExplorer\\procexp.exe",
+        destination => "${facts['custom_win_systemdrive']}\\ProcessExplorer",
     }
-    defined_classes::pkg::win_zip_pkg { 'proc_monitor':
+    win_packages::pkg::win_zip_pkg { 'proc_monitor':
         pkg         => 'ProcessMonitor.zip',
-        creates     => "${facts['systemdrive']}\\ProcessMonitor\\Procmon.exe",
-        destination => "${facts['systemdrive']}\\ProcessMonitor",
+        creates     => "${facts['custom_win_systemdrive']}\\ProcessMonitor\\Procmon.exe",
+        destination => "${facts['custom_win_systemdrive']}\\ProcessMonitor",
     }
 }
 

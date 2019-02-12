@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-define defined_classes::pkg::win_msi_pkg ( $pkg, $package=$title, $install_options=[]) {
+define win_packages::win_msi_pkg ( $pkg, $package=$title, $install_options=[]) {
 
 $pkgdir = lookup('loc_pkg_dir')
 $srcloc = lookup('ext_pkg_src')

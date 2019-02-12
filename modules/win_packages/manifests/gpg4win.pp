@@ -3,10 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::gpg4win {
-    defined_classes::pkg::win_exe_pkg  { 'gpg4win-2.3.0':
+
+    win_packages::win_exe_pkg  { 'gpg4win-2.3.0':
         pkg                    => 'gpg4win-2.3.0.exe',
         install_options_string => '/S',
-        creates                => "${facts['programfilesx86']}\\GNU\\GnuPG\\bin\\kleopatra.exe",
+        creates                => "${facts['custom_win_programfilesx86']}\\GNU\\GnuPG\\bin\\kleopatra.exe",
     }
 }
 

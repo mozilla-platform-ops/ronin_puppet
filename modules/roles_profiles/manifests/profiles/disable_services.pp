@@ -11,9 +11,12 @@ class roles_profiles::profiles::disable_services {
             }
         }
         'Windows': {
-        $disbaled_services = ['wsearch', 'VSS', 'puppet']
-            defined_classes::srv::disable_service { $disbaled_services :
-            }
+            include win_disbale_services::disable_wsearch
+            include win_disbale_services::disable_vss
+            include win_disbale_services::disable_puppet
+            include win_disbale_services::disable_windows_defender
+            include win_disbale_services::disable_windows_update
+            include win_disbale_services::disable_system_restore
         }
         default: {
             fail("${::operatingsystem} not supported")

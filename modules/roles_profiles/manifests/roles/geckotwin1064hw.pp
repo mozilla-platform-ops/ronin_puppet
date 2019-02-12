@@ -6,18 +6,15 @@ class roles_profiles::roles::geckotwin1064hw {
 
     # System
     include roles_profiles::profiles::disable_services
-    include roles_profiles::profiles::disable_system_restore
-    include roles_profiles::profiles::disable_windows_update
     include roles_profiles::profiles::files_system_managment
     include roles_profiles::profiles::firewall
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
 
     # Adminstration
-    include roles_profiles::profiles::nxlog
-    include roles_profiles::profiles::debug_tools
-    include roles_profiles::profiles::admin_tools
-    include roles_profiles::profiles::openssh
+    include roles_profiles::profiles::logging
+    include roles_profiles::profiles::common_tools
+    include roles_profiles::profiles::ssh
 
     # Worker
 }
