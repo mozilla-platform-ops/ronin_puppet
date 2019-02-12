@@ -4,6 +4,8 @@
 
 class win_disbale_services::disable_windows_defender {
 
+    # disabling the service doesn't work per se. This will need additional logic to ensure it is not running
+    # see below bug
     win_disbale_services::disable_service { 'WinDefend':
     }
     registry::value { 'DisableConfig' :
