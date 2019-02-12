@@ -26,6 +26,6 @@ class win_openssh::openssh_conf {
         ensure => directory,
     }
     file { "${programdata}\\ssh\\sshd_config":
-        content => file('roles_profiles/windows/sshd_config'),
+        content => file('win_openssh/sshd_config'),
     }
 }
