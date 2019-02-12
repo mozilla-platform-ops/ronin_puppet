@@ -24,7 +24,7 @@ define shared::execonce(
 
     require shared::win_ronin_dirs
 
-    $semaphoredir = $facts['roninsemaphoredir']
+    $semaphoredir = $facts['custom_win_roninsemaphoredir']
     $semaphorefile    = "${semaphoredir}\\${title}.semaphore"
 
     exec { $title:
