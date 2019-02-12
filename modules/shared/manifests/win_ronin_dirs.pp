@@ -4,14 +4,14 @@
 
 class shared::win_ronin_dirs {
 
-$roninprogramdata  = $facts['roninprogramdata']
-$semaphoredir = $facts['roninsemaphoredir']
+$roninprogramdata  = $facts['custom_win_roninprogramdata']
+$semaphoredir = $facts['custom_win_roninsemaphoredir']
 
-    # "$facts['roninprogramdata']"
+    # "$facts['custom_win_roninprogramdata']"
     file { $roninprogramdata:
         ensure => directory,
     }
-    # $facts['roninsemaphoredir']
+    # $facts['custom_win_roninsemaphoredir']
     file { $semaphoredir:
         ensure => directory,
     }
