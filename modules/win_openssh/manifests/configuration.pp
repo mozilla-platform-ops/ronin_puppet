@@ -4,7 +4,7 @@
 
 class win_openssh::configuration {
 
-    require win_openssh::openssh_install
+    require win_openssh::install
 
     registry_key { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH':
         ensure  => present,
