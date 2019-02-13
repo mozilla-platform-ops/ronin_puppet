@@ -6,10 +6,16 @@ class roles_profiles::profiles::ssh {
 
     case $::operatingsystem {
         'Windows': {
-            include win_openssh::openssh_install
-            include win_openssh::openssh_conf
-            include win_openssh::openssh_service
-            include win_openssh::openssh_fw_exception
+
+            $ssh_program_data = "${facts['custom_win_programdata']}\\ssh"
+            $programfiles     = $facts['custom_win_programfiles']
+            $pwrshl_run_scrpt = lookup('win_pwrshl_run_scrpt')
+
+            class { 'win_openssh':
+                programfiles     => $programfiles,
+                pwrshl_run_scrpt => $pwrshl_run_scrpt,
+                ssh_program_data => $ssh_program_data,
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
         }

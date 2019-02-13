@@ -2,15 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_openssh::openssh_service {
+class win_openssh::service {
 
-    require win_openssh::openssh_install
-
-    $programdata = $facts['custom_win_programdata']
+    require win_openssh::install
 
     service { 'sshd':
         ensure    => running,
-        subscribe => File["${programdata}\\ssh\\sshd_config"],
+        subscribe => File["${win_openssh::ssh_program_data}\\sshd_config"],
         restart   => true,
         require   => Exec['install_openssh'],
     }

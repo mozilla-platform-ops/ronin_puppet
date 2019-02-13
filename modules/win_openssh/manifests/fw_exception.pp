@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_openssh::openssh_fw_exception {
+class win_openssh::fw_exception {
 
-    require win_openssh::openssh_install
+    require win_openssh::install
 
     windows_firewall::exception { 'ssh':
         ensure       => present,

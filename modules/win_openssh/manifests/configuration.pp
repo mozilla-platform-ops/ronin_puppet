@@ -2,11 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_openssh::openssh_conf {
+class win_openssh::configuration {
 
     require win_openssh::openssh_install
-
-    $programdata = $facts['custom_win_programdata']
 
     registry_key { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH':
         ensure  => present,
@@ -21,11 +19,10 @@ class win_openssh::openssh_conf {
         type   => string,
         data   => '/c',
     }
-
-    file { "${programdata}\\ssh":
+    file { $win_openssh::ssh_program_data:
         ensure => directory,
     }
-    file { "${programdata}\\ssh\\sshd_config":
+    file { "${win_openssh::ssh_program_data}\\sshd_config":
         content => file('win_openssh/sshd_config'),
     }
 }
