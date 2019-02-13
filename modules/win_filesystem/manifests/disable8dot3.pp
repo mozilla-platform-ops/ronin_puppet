@@ -4,7 +4,7 @@
 
 class win_filesystem::disable8dot3 {
 
-    if $::operatingsystem == 'Darwin' {
+    if $::operatingsystem == 'Windows' {
         shared::execonce { 'disable8dot3':
             command => "${facts[custom_win_system32]}\\fsutil.exe behavior set disable8dot3 1",
         }
