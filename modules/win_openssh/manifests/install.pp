@@ -18,3 +18,6 @@ class win_openssh::install {
         try_sleep => 5,
     }
 }
+# Bug List
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1527484
+# The powershell command fails on 1st run but is OK on the second run

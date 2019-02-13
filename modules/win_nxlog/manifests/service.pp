@@ -14,3 +14,6 @@ class win_nxlog::service {
         require   => Package['NXLog-CE'],
     }
 }
+# Bug List
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1527484
+# This fails on 1st run but is OK on the second run
