@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_nxlog (
-    String $nxlog_dir = undef,
-    String $location = undef
+    $nxlog_dir = undef,
+    $location = undef
 ){
 
     if $::operatingsystem == 'Windows' {
