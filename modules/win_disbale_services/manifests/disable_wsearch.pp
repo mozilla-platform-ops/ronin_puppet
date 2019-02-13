@@ -4,7 +4,7 @@
 
 class win_disbale_services::disable_wsearch {
 
-    if $::operatingsystem == 'Darwin' {
+    if $::operatingsystem == 'Windows' {
         win_disbale_services::disable_service { 'wsearch':
         }
     } else {
