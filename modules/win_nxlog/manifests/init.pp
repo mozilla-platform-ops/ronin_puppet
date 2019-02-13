@@ -11,7 +11,7 @@ class win_nxlog (
         include win_nxlog::install
         include win_nxlog::configuration
         include win_nxlog::fw_exception
-        include win_nxlog::nxlog_service
+        include win_nxlog::service
         if ($location == 'aws') {
             include win_nxlog::pem_file
         }
