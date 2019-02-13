@@ -4,15 +4,19 @@
 
 class shared::win_ronin_dirs {
 
-$roninprogramdata  = $facts['custom_win_roninprogramdata']
-$semaphoredir = $facts['custom_win_roninsemaphoredir']
+if $::operatingsystem == 'Windows' {
+    $roninprogramdata  = $facts['custom_win_roninprogramdata']
+    $semaphoredir = $facts['custom_win_roninsemaphoredir']
 
-    # "$facts['custom_win_roninprogramdata']"
-    file { $roninprogramdata:
-        ensure => directory,
-    }
-    # $facts['custom_win_roninsemaphoredir']
-    file { $semaphoredir:
-        ensure => directory,
+        # "$facts['custom_win_roninprogramdata']"
+        file { $roninprogramdata:
+            ensure => directory,
+        }
+        # $facts['custom_win_roninsemaphoredir']
+        file { $semaphoredir:
+            ensure => directory,
+        }
+    } else {
+        fail("class shared::win_ronin_dirs does not support ${::operatingsystem}")
     }
 }

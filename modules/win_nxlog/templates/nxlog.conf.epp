@@ -94,7 +94,7 @@ LogFile   %ROOT%\data\nxlog.log
   Exec $SourceName = 'nxlog';
 </Input>
 
-<Output <%= $facts[mozspace] %>_aggregator>
+<Output <%= $facts[custom_win_mozspace] %>_aggregator>
   Module om_tcp
   Host <%= lookup(dc_log_aggregator) %>
   Port 514
@@ -102,34 +102,34 @@ LogFile   %ROOT%\data\nxlog.log
   Exec to_syslog_ietf();
 </Output>
 
-<Route eventlog_apps_<%= $facts[mozspace] %>_aggregator>
-  Path eventlog_apps => <%= $facts[mozspace] %>_aggregator
+<Route eventlog_apps_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path eventlog_apps => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route eventlog_basic_<%= $facts[mozspace] %>_aggregator>
-  Path eventlog_basic => <%= $facts[mozspace] %>_aggregator
+<Route eventlog_basic_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path eventlog_basic => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route eventlog_audit_<%= $facts[mozspace] %>_aggregator>
-  Path eventlog_audit => <%= $facts[mozspace] %>_aggregator
+<Route eventlog_audit_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path eventlog_audit => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route generic_worker_log_<%= $facts[mozspace] %>_aggregator>
-  Path generic_worker_log => <%= $facts[mozspace] %>_aggregator
+<Route generic_worker_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path generic_worker_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route generic_worker_wrapper_log_<%= $facts[mozspace] %>_aggregator>
-  Path generic_worker_wrapper_log => <%= $facts[mozspace] %>_aggregator
+<Route generic_worker_wrapper_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path generic_worker_wrapper_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route generic_worker_service_log_<%= $facts[mozspace] %>_aggregator>
-  Path generic_worker_service_log => <%= $facts[mozspace] %>_aggregator
+<Route generic_worker_service_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path generic_worker_service_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route puppet_run_log_<%= $facts[mozspace] %>_aggregator>
-  Path puppet_run_log => <%= $facts[mozspace] %>_aggregator
+<Route puppet_run_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path puppet_run_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route nxlog_<%= $facts[mozspace] %>_aggregator>
-  Path nxlog => <%= $facts[mozspace] %>_aggregator
+<Route nxlog_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path nxlog => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>

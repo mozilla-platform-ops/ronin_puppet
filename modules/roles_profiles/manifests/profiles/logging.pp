@@ -7,14 +7,13 @@ class roles_profiles::profiles::logging {
     case $::operatingsystem {
         'Windows': {
 
-            include win_nxlog::nxlog_intsall
-            include win_nxlog::nxlog_conf
-            include win_nxlog::nxlog_service
-            include win_nxlog::nxlog_fw_exception
-            if $facts['location'] == 'aws' {
-                include win_nxlog::nxlog_cert
-            }
+            $location        = $facts['locations']
+            $programfilesx86 = $facts['custom_win_programfilesx86']
 
+            class { 'win_nxlog':
+                nxlog_dir => "${programfilesx86}\\nxlog",
+                location  => $location,
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
         }

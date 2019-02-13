@@ -4,8 +4,12 @@
 
 class win_packages::jq {
 
-    file { "${facts['custom_win_system32']}\\jq.exe":
-        ensure => present,
-        source => 'https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/jq-win64.exe',
+    if $::operatingsystem == 'Windows' {
+        file { "${facts['custom_win_system32']}\\jq.exe":
+            ensure => present,
+            source => 'https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/jq-win64.exe',
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }

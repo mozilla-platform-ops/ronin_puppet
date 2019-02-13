@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_nxlog::nxlog_fw_exception {
+class win_nxlog::fw_exception {
 
-    require win_nxlog::nxlog_intsall
+    require win_nxlog::intsall
 
     windows_firewall::exception { 'nxlog':
         ensure       => present,
@@ -17,6 +17,3 @@ class win_nxlog::nxlog_fw_exception {
         description  => 'Nxlogout. [TCP 514]',
     }
 }
-
-# Bug list
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1520947

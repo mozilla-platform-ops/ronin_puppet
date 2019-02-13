@@ -4,6 +4,10 @@
 
 class win_disbale_services::disable_puppet {
 
-    win_disbale_services::disable_service { 'puppet':
+    if $::operatingsystem == 'Windows' {
+        win_disbale_services::disable_service { 'puppet':
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }

@@ -2,18 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_nxlog::nxlog_service {
+class win_nxlog::service {
 
-    require win_nxlog::nxlog_intsall
-    require win_nxlog::nxlog_conf
+    require win_nxlog::intsall
+    require win_nxlog::configuration
 
     service { 'nxlog':
         ensure    => running,
-        subscribe => File["${facts[custom_win_programfilesx86]}\\nxlog\\conf\\nxlog.conf"],
+        subscribe => File["${win_nxlog::nxlog_dir}\\nxlog\\conf\\nxlog.conf"],
         restart   => true,
         require   => Package['NXLog-CE'],
     }
 }
-
-# Bug list
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1520947

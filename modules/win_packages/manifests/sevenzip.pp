@@ -4,11 +4,12 @@
 
 class win_packages::sevenzip {
 
-    win_packages::win_msi_pkg  { '7-Zip 18.06 (x64 edition)':
-        pkg             => '7z1806-x64.msi',
-        install_options => ['/quiet'],
+    if $::operatingsystem == 'Windows' {
+        win_packages::win_msi_pkg  { '7-Zip 18.06 (x64 edition)':
+            pkg             => '7z1806-x64.msi',
+            install_options => ['/quiet'],
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }
-
-# Bug List
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1519249i

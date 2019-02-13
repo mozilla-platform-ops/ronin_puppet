@@ -4,7 +4,11 @@
 
 class win_filesystem::disablelastaccess {
 
-    shared::execonce { 'disablelastaccess':
-        command => "${facts[custom_win_system32]}\\fsutil.exe behavior set disablelastaccess 1",
+    if $::operatingsystem == 'Windows' {
+        shared::execonce { 'disablelastaccess':
+            command => "${facts[custom_win_system32]}\\fsutil.exe behavior set disablelastaccess 1",
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }

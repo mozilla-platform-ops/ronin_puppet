@@ -4,23 +4,27 @@
 
 class win_disbale_services::disable_windows_update {
 
-    win_disbale_services::disable_service { 'wuauserv':
+    if $::operatingsystem == 'Windows' {
+        win_disbale_services::disable_service { 'wuauserv':
+        }
+        registry::value { 'SearchOrderConfig':
+            key  => 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching',
+            type => dword,
+            data => '0',
+        }
+        registry::value { 'NoAutoUpdate':
+            key  => 'HKLM\SOFTWARE\Microsoft\Windows\Windows\AU',
+            type => dword,
+            data => '1',
+        }
+        registry::value { 'AUOptions':
+            key  => 'HKLM\SOFTWARE\Microsoft\Windows\Windows\AU',
+            type => dword,
+            data => '2'
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
-    registry::value { 'SearchOrderConfig':
-        key  => 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching',
-        type => dword,
-        data => '0',
-    }
-    registry::value { 'NoAutoUpdate':
-        key  => 'HKLM\SOFTWARE\Microsoft\Windows\Windows\AU',
-        type => dword,
-        data => '1',
-    }
-    registry::value { 'AUOptions':
-        key  => 'HKLM\SOFTWARE\Microsoft\Windows\Windows\AU',
-        type => dword,
-        data => '2'
-    }
+    # Bug List
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1510756
 }
-# Bug List
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1510756

@@ -4,19 +4,23 @@
 
 class win_disbale_services::disable_windows_defender {
 
-    # disabling the service doesn't work per se. This will need additional logic to ensure it is not running
-    # see below bug
-    win_disbale_services::disable_service { 'WinDefend':
-    }
-    registry::value { 'DisableConfig' :
-        key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender',
-        type => dword,
-        data => '1',
-    }
-    registry::value { 'DisableAntiSpyware' :
-        key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender',
-        type => dword,
-        data => '1',
+    if $::operatingsystem == 'Windows' {
+        # disabling the service doesn't work per se. This will need additional logic to ensure it is not running
+        # see below bug
+        win_disbale_services::disable_service { 'WinDefend':
+        }
+        registry::value { 'DisableConfig' :
+            key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender',
+            type => dword,
+            data => '1',
+        }
+        registry::value { 'DisableAntiSpyware' :
+            key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender',
+            type => dword,
+            data => '1',
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }
 # Bug List

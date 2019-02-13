@@ -4,12 +4,16 @@
 
 class win_disbale_services::disable_system_restore {
 
-    registry_key { 'HKLM\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore':
-        ensure => present,
-    }
-    registry_value { 'HKLM\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore\DisableConfig':
-        ensure => present,
-        type   => dword,
-        data   => '1',
+    if $::operatingsystem == 'Windows' {
+        registry_key { 'HKLM\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore':
+            ensure => present,
+        }
+        registry_value { 'HKLM\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore\DisableConfig':
+            ensure => present,
+            type   => dword,
+            data   => '1',
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }

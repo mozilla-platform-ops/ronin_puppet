@@ -4,6 +4,10 @@
 
 class win_disbale_services::disable_vss {
 
-    win_disbale_services::disable_service { 'vss':
+    if $::operatingsystem == 'Windows' {
+        win_disbale_services::disable_service { 'vss':
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }

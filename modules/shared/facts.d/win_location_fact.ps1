@@ -18,5 +18,5 @@ if ($location -eq "datacenter") {
 	}
 }
 
-Write-host "location=$location"
-Write-host "mozspace=$mozspace"
+Write-host "custom_win_location=$location"
+Write-host "custom_win_mozspace=$mozspace"
