@@ -4,7 +4,7 @@
 
 class win_nxlog::fw_exception {
 
-    require win_nxlog::intsall
+    require win_nxlog::install
 
     windows_firewall::exception { 'nxlog':
         ensure       => present,

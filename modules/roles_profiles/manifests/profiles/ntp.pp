@@ -14,7 +14,7 @@ class roles_profiles::profiles::ntp {
         'Windows': {
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1510754
         # For windowstime resoucre timezone and server needs to be set in the same class
-            if $facts['location'] == 'datacenter' {
+            if $facts['win_custom_location'] == 'datacenter' {
                 $ntpserver = lookup('datacenterntp')
             } else {
                 $ntpserver = '0.pool.ntp.org'

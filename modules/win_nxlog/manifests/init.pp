@@ -8,15 +8,15 @@ class win_nxlog (
 ){
 
     if $::operatingsystem == 'Windows' {
-        include win_nxlog::intsall
+        include win_nxlog::install
         include win_nxlog::configuration
         include win_nxlog::fw_exception
         include win_nxlog::nxlog_service
         if ($location == 'aws') {
             include win_nxlog::pem_file
-        } else {
-            fail("${module_name} does not support ${::operatingsystem}")
         }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }
 

@@ -4,9 +4,9 @@
 
 class win_nxlog::configuration {
 
-    require win_nxlog::nxlog_intsall
+    require win_nxlog::nxlog_install
 
-    file { "${win_nxlog::nxlog_dir}\\nxlog\\conf\\nxlog.conf":
+    file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.conf":
         content => epp('win_nxlog/nxlog.conf.epp'),
     }
 }

@@ -4,7 +4,7 @@
 
 class win_nxlog::service {
 
-    require win_nxlog::intsall
+    require win_nxlog::install
     require win_nxlog::configuration
 
     service { 'nxlog':

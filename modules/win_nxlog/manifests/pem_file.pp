@@ -4,9 +4,9 @@
 
 class win_nxlog::pem_file {
 
-    require win_packages::nxlog
+    require win_nxlog::install
 
-    file { "${win_nxlog::nxlog_dir}\\nxlog\\conf\\nxlog.conf":
+    file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.conf":
         content => file('win_nxlog/papertrail-bundle.pem'),
     }
 }
