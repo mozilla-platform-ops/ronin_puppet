@@ -5,8 +5,8 @@
 class win_mozilla_build::install {
 
     win_packages::win_exe_pkg  { 'mozilla_build':
-        pkg             => "'MozillaBuildSetup-${mozilla_build::version}.exe",
-        install_options =>  "/S /D=${mozilla_build::install_path}",
-        creates         => "${mozilla_build::install_path}\\msys\\bin\\sh.exe"
+        pkg                    => "'MozillaBuildSetup-${mozilla_build::version}.exe",
+        install_options_string =>  "/S /D=${mozilla_build::install_path}",
+        creates                => "${mozilla_build::install_path}\\msys\\bin\\sh.exe"
     }
 }
