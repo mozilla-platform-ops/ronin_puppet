@@ -3,8 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build (
-    $version      = undef,
-    $install_path = undef
+    $current_version = undef,
+    $version         = undef,
+    $install_path    = undef
 ){
 
     if $::operatingsystem == 'Windows' {
