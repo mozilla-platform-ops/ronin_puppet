@@ -17,4 +17,5 @@ class roles_profiles::roles::geckotwin1064hw {
     include roles_profiles::profiles::ssh
 
     # Worker
+    include roles_profiles::profiles::mozilla_build
 }
