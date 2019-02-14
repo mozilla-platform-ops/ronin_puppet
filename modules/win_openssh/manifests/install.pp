@@ -12,7 +12,7 @@ class win_openssh::install {
         creates     => "${win_openssh::programfiles}\\OpenSSH-Win64\\ssh.exe",
         destination => $win_openssh::programfiles,
     }
-    shared::execonce { 'install_openssh':
+    win_shared::execonce { 'install_openssh':
         command   => "${win_openssh::pwrshl_run_scrpt} ${sshscrpt}",
         tries     => 2,
         try_sleep => 5,

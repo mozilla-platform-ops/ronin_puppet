@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class shared::win_ronin_dirs {
+class win_shared::win_ronin_dirs {
 
 if $::operatingsystem == 'Windows' {
     $roninprogramdata  = $facts['custom_win_roninprogramdata']

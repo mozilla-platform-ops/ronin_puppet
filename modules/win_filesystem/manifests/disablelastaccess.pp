@@ -5,7 +5,7 @@
 class win_filesystem::disablelastaccess {
 
     if $::operatingsystem == 'Windows' {
-        shared::execonce { 'disablelastaccess':
+        win_shared::execonce { 'disablelastaccess':
             command => "${facts[custom_win_system32]}\\fsutil.exe behavior set disablelastaccess 1",
         }
     } else {
