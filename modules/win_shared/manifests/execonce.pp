@@ -22,7 +22,7 @@ define win_shared::execonce(
   $user        = undef,
 ) {
 
-    require shared::win_ronin_dirs
+    require win_shared::win_ronin_dirs
 
     $semaphoredir = $facts['custom_win_roninsemaphoredir']
     $semaphorefile    = "${semaphoredir}\\${title}.semaphore"
