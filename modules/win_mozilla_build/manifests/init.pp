@@ -5,11 +5,23 @@
 class win_mozilla_build (
     $current_version = undef,
     $version         = undef,
-    $install_path    = undef
+    $install_path    = undef,
+    $system_drive    = undef,
+    $program_files   = undef,
+    $programdata     = undef,
+    $tempdir         = undef,
+    $system32        = undef
 ){
 
     if $::operatingsystem == 'Windows' {
         include win_mozilla_build::install
+        include win_mozilla_build::hg_install
+        include win_mozilla_build::hg_files
+        include win_mozilla_build::tooltool.py
+        include win_mozilla_build::modifications
+        include win_mozilla_build::set_registry_priority
+        include win_mozilla_build::virtualenv_support
+        include win_mozilla_build::pip
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }

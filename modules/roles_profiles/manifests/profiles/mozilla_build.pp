@@ -10,11 +10,21 @@ class roles_profiles::profiles::mozilla_build {
         $current_version = $facts['mozbld_ver']
         $version         = '3.2'
         $install_path    = "${facts['custom_win_systemdrive']}\\mozilla-build"
+        $system_drive    = $facts['custom_win_systemdrive']
+        $program_files   = $facts['custom_win_programfiles']
+        $programdata     = $facts['custom_win_programdata']
+        $tempdir         = $facts['custom_win_tempdir']
+        $system32        = $facts['custom_win_system32']
 
             class { 'win_mozilla_build':
                 current_version => $current_version,
                 version         => $version,
                 install_path    => $install_path,
+                system_drive    => $system_drive,
+                program_files   => $program_files,
+                programdata     => $programdata,
+                tempdir         => $tempdir,
+                system32        => $system32,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
