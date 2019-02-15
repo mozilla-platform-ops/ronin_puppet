@@ -10,7 +10,7 @@ class win_mozilla_build::pip {
         ensure => directory,
     }
     file { "${win_mozilla_build::programdata}\\pip\\pip.ini":
-        content => file('win_mozilla_build/pip.ini'),
+        content => file('win_mozilla_build/pip.conf'),
     }
     windows::environment { 'pip_cache':
         value => "${win_mozilla_build::systemdrive}\\pip-cache",
