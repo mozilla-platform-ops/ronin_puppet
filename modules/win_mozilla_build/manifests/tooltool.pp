@@ -14,9 +14,9 @@ class win_mozilla_build::tooltool {
         ensure => directory,
     }
     windows::environment { 'TOOLTOOL_CACHE':
-        value => "${win_mozilla_build::systemdrive}\\tooltool-cache",
+        value => "${win_mozilla_build::system_drive}\\tooltool-cache",
     }
-    acl { "${win_mozilla_build::systemdrive}\\tooltool-cache":
+    acl { "${win_mozilla_build::system_drive}\\tooltool-cache":
         target                     => "${win_mozilla_build::systemdrive}\\tooltool-cache",
         permissions                =>   {
                                             identity    => 'everyone',

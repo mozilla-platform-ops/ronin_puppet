@@ -13,9 +13,9 @@ class win_mozilla_build::pip {
         content => file('win_mozilla_build/pip.conf'),
     }
     windows::environment { 'pip_cache':
-        value => "${win_mozilla_build::systemdrive}\\pip-cache",
+        value => "${win_mozilla_build::programdata}\\pip-cache",
     }
-    acl { "${win_mozilla_build::systemdrive}\\pip-cache":
+    acl { "${win_mozilla_build::system_drive}\\pip-cache":
         target      => "${win_mozilla_build::systemdrive}\\tooltool-cache",
         permissions => {
             identity                   => 'everyone',
