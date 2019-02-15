@@ -17,7 +17,7 @@ class win_mozilla_build (
         include win_mozilla_build::install
         include win_mozilla_build::hg_install
         include win_mozilla_build::hg_files
-        include win_mozilla_build::tooltool.py
+        include win_mozilla_build::tooltool
         include win_mozilla_build::modifications
         include win_mozilla_build::set_registry_priority
         include win_mozilla_build::virtualenv_support
