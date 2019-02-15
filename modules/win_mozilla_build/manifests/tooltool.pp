@@ -10,7 +10,7 @@ class win_mozilla_build::tooltool {
     file { "${win_mozilla_build::install_path}\\tooltool.py":
         content => file('win_mozilla_build/tooltool.py'),
     }
-    file {"${win_mozilla_build::systemdrive}\\tooltool-cache":
+    file {"${win_mozilla_build::system_drive}\\tooltool-cache":
         ensure => directory,
     }
     windows::environment { 'TOOLTOOL_CACHE':
