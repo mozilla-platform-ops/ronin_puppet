@@ -3,7 +3,7 @@
   # log aggregators
   dc_log_aggregator: "log-aggregator.srv.releng.%{facts.mozspace}.mozilla.com"
   # ntp servers
-  datacenterntp: "infoblox1.private.%{facts.mozspace}.mozilla.com"
+  win_datacenterntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
 
   # package managment
   win_loc_pkg_dir: "%{facts.custom_win_systemdrive}\\windows\\temp"

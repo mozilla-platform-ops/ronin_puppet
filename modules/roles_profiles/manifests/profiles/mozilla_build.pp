@@ -13,7 +13,7 @@ class roles_profiles::profiles::mozilla_build {
         $needed_hg_ver      = '4.7.1'
         $install_path       = "${facts['custom_win_systemdrive']}\\mozilla-build"
         $system_drive       = $facts['custom_win_systemdrive']
-        $cache_drive        = $facts['costum_win_location'] ? {
+        $cache_drive        = $facts['custom_win_location'] ? {
             'datacenter' => $system_drive,
             'aws'        => 'y:',
         }
