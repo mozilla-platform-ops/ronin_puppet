@@ -22,7 +22,7 @@ class roles_profiles::profiles::mozilla_build {
         $tempdir            = $facts['custom_win_tempdir']
         $system32           = $facts['custom_win_system32']
 
-            class { 'win_moziilla_build':
+            class { 'win_mozilla_build':
                 current_mozbld_ver => $current_mozbld_ver,
                 needed_mozbld_ver  => $needed_mozbld_ver,
                 current_hg_ver     => $current_hg_ver,
