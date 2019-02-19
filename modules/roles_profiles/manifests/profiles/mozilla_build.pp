@@ -29,6 +29,7 @@ class roles_profiles::profiles::mozilla_build {
                 needed_hg_ver      => $needed_hg_ver,
                 install_path       => $install_path,
                 system_drive       => $system_drive,
+                cache_drive        => $cache_drive,
                 program_files      => $program_files,
                 programdata        => $programdata,
                 tempdir            => $tempdir,

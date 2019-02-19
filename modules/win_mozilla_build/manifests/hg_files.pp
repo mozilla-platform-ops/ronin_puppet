@@ -21,8 +21,8 @@ class win_mozilla_build::hg_files {
     windows::environment { 'HG_CACHE':
         value => "${win_mozilla_build::cache_drive}\\tooltool-cache",
     }
-    acl { "${win_mozilla_build::system_drive}\\hg-shared":
-        target      => "${win_mozilla_build::system_drive}\\hg-shared",
+    acl { "${win_mozilla_build::cache_drive}\\hg-shared":
+        target      => "${win_mozilla_build::cache_drive}\\hg-shared",
         permissions => {
             identity                   => 'everyone',
             rights                     => ['full'],
