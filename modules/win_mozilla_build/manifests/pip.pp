@@ -12,7 +12,7 @@ class win_mozilla_build::pip {
     file { "${win_mozilla_build::programdata}\\pip\\pip.ini":
         content => file('win_mozilla_build/pip.conf'),
     }
-    file {"${win_mozilla_build::cache_drive}\\pip":
+    file {"${win_mozilla_build::cache_drive}\\pip-cache":
         ensure => directory,
     }
     acl { "${win_mozilla_build::cache_drive}\\pip-cache":
