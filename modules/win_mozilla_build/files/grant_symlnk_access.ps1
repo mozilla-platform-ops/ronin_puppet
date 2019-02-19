@@ -3,4 +3,4 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Import-Module carbon
-Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege
+Grant-Privilege -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege
