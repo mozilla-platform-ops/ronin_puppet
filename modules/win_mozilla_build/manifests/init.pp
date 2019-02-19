@@ -3,14 +3,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build (
-    $current_version = undef,
-    $version         = undef,
-    $install_path    = undef,
-    $system_drive    = undef,
-    $program_files   = undef,
-    $programdata     = undef,
-    $tempdir         = undef,
-    $system32        = undef
+    $current_mozbld_ver = undef,
+    $needed_mozbld_ver  = undef,
+    $current_hg_ver     = undef,
+    $needed_hg_ver      = undef,
+    $install_path       = undef,
+    $system_drive       = undef,
+    $cache_drive        = undef,
+    $program_files      = undef,
+    $programdata        = undef,
+    $tempdir            = undef,
+    $system32           = undef
 ){
 
     if $::operatingsystem == 'Windows' {

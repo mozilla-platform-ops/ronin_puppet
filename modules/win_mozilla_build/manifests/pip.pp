@@ -27,6 +27,6 @@ class win_mozilla_build::pip {
         }
     }
     windows::environment{ 'PIP_DOWNLOAD_CACHE':
-        value => "${win_mozilla_build::systemdrive}\\tooltool-cache",
+        value => "${win_mozilla_build::cache_drive}\\tooltool-cache",
     }
 }

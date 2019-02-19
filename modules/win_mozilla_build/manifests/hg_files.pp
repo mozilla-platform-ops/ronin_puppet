@@ -15,8 +15,11 @@ class win_mozilla_build::hg_files {
     file { "${win_mozilla_build::program_files}\\mercurial\\mercurial.ini":
         content => file('win_mozilla_build/mercurial.ini'),
     }
-    file { "${win_mozilla_build::system_drive}\\hg-shared":
+    file { "${win_mozilla_build::cache_drive}\\hg-shared":
         ensure => directory,
+    }
+    windows::environment { 'HG_CACHE':
+        value => "${win_mozilla_build::cache_drive}\\tooltool-cache",
     }
     acl { "${win_mozilla_build::system_drive}\\hg-shared":
         target      => "${win_mozilla_build::system_drive}\\hg-shared",
