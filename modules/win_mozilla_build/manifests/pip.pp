@@ -12,11 +12,11 @@ class win_mozilla_build::pip {
     file { "${win_mozilla_build::programdata}\\pip\\pip.ini":
         content => file('win_mozilla_build/pip.conf'),
     }
-    windows::environment { 'pip_cache':
-        value => "${win_mozilla_build::programdata}\\pip-cache",
+    file {"${win_mozilla_build::cache_drive}\\pip":
+        ensure => directory,
     }
-    acl { "${win_mozilla_build::system_drive}\\pip-cache":
-        target      => "${win_mozilla_build::systemdrive}\\tooltool-cache",
+    acl { "${win_mozilla_build::cache_drive}\\pip-cache":
+        target      => "${win_mozilla_build::systemdrive}\\pip-cache",
         permissions => {
             identity                   => 'everyone',
             rights                     => ['full'],
@@ -27,6 +27,6 @@ class win_mozilla_build::pip {
         }
     }
     windows::environment{ 'PIP_DOWNLOAD_CACHE':
-        value => "${win_mozilla_build::cache_drive}\\tooltool-cache",
+        value => "${win_mozilla_build::cache_drive}\\pip-cache",
     }
 }
