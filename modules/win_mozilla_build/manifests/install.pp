@@ -6,7 +6,7 @@ class win_mozilla_build::install {
 
     if $win_mozilla_build::current_mozbld_ver != $win_mozilla_build::needed_mozbld_ver {
         win_packages::win_exe_pkg  { 'mozilla_build':
-            pkg                    => "MozillaBuildSetup-${win_mozilla_build::version}.exe",
+            pkg                    => "MozillaBuildSetup-${win_mozilla_build::needed_mozbld_ver}.exe",
             install_options_string =>  "/S /D=${win_mozilla_build::install_path}",
             creates                => "${win_mozilla_build::install_path}\\msys\\bin\\sh.exe"
         }
