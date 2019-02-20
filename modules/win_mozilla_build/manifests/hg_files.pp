@@ -4,6 +4,9 @@
 
 class win_mozilla_build::hg_files {
 
+    require win_mozilla_build::install
+    require win_mozilla_build::hg_install
+
     $mozbld = $win_mozilla_build::install_path
 
     file { "${mozbld}\\robustcheckout.py":
