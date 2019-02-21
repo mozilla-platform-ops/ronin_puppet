@@ -5,7 +5,7 @@
 class win_disable_services::disable_windows_update {
 
     if $::operatingsystem == 'Windows' {
-        win_disbale_services::disable_service { 'wuauserv':
+        win_disable_services::disable_service { 'wuauserv':
         }
         registry::value { 'SearchOrderConfig':
             key  => 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching',
