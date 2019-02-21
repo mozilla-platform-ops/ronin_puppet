@@ -4,7 +4,7 @@
 
 define win_packages::win_exe_pkg ($pkg, $creates=$undef, $package=$title, $install_options_string=[]) {
 
-$pkgdir       = lookup('win_loc_pkg_dir')
+$pkgdir       = $facts['custom_win_temp_dir']
 $srcloc       = lookup('win_ext_pkg_src')
 
     file { "${pkgdir}\\${pkg}" :
