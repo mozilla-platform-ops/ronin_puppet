@@ -7,7 +7,7 @@ class win_disable_services::disable_windows_defender {
     if $::operatingsystem == 'Windows' {
         # disabling the service doesn't work per se. This will need additional logic to ensure it is not running
         # see below bug
-        win_disbale_services::disable_service { 'WinDefend':
+        win_disable_services::disable_service { 'WinDefend':
         }
         registry::value { 'DisableConfig' :
             key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender',

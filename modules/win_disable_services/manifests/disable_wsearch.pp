@@ -5,7 +5,7 @@
 class win_disable_services::disable_wsearch {
 
     if $::operatingsystem == 'Windows' {
-        win_disbale_services::disable_service { 'wsearch':
+        win_disable_services::disable_service { 'wsearch':
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
