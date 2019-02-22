@@ -4,7 +4,7 @@
 
 define win_packages::win_msi_pkg ( $pkg, $package=$title, $install_options=[]) {
 
-$pkgdir = lookup('win_loc_pkg_dir')
+$pkgdir = $facts['custom_win_temp_dir']
 $srcloc = lookup('win_ext_pkg_src')
 
     file { "${pkgdir}\\${pkg}" :

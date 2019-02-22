@@ -5,7 +5,7 @@
 class win_openssh::install {
 
     # Becuase of the need for the script path to be double quoted, needed to hard code the path.
-    $sshscrpt         = '"C:\Program Files\OpenSSH-Win64\install-sshd.ps1"'
+    $ssh_script         = '"C:\Program Files\OpenSSH-Win64\install-sshd.ps1"'
 
     win_packages::win_zip_pkg { 'OpenSSH-Win64':
         pkg         => 'OpenSSH-Win64.zip',
@@ -13,7 +13,7 @@ class win_openssh::install {
         destination => $win_openssh::programfiles,
     }
     win_shared::execonce { 'install_openssh':
-        command   => "${win_openssh::pwrshl_run_scrpt} ${sshscrpt}",
+        command   => "${win_openssh::pwrshl_run_script} ${ssh_script}",
         tries     => 2,
         try_sleep => 5,
     }

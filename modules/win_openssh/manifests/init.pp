@@ -5,7 +5,7 @@
 class win_openssh (
     $ssh_program_data = undef,
     $programfiles     = undef,
-    $pwrshl_run_scrpt = undef
+    $pwrshl_run_script = undef
 ){
 
     if $::operatingsystem == 'Windows' {

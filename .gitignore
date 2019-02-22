@@ -5,3 +5,7 @@
 # Ignore r10k modules dir but include the README.md
 /r10k_modules/*
 !/r10k_modules/.README.md
+
+# Ignore swap files
+*.swp
+*.swo

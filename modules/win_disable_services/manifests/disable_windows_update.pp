@@ -2,10 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_disbale_services::disable_windows_update {
+class win_disable_services::disable_windows_update {
 
     if $::operatingsystem == 'Windows' {
-        win_disbale_services::disable_service { 'wuauserv':
+        win_disable_services::disable_service { 'wuauserv':
         }
         registry::value { 'SearchOrderConfig':
             key  => 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching',
