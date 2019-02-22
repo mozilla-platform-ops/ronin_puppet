@@ -1,0 +1,17 @@
+---
+  # servers
+  # log aggregators
+  win_dc_log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
+  # ntp servers
+  win_datacenterntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
+
+  # package managment
+  win_ext_pkg_src: "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages"
+
+  # Site source url
+  # will change
+  site_source: "https://raw.githubusercontent.com/markcor/ronin-win-base/master/site"
+  conf_file_src: "https://raw.githubusercontent.com/markcor/ronin-win-base/master/site/configuration"
+
+  # Useful commands
+  win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -file"

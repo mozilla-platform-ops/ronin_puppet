@@ -11,6 +11,19 @@ class roles_profiles::profiles::ntp {
                 ntp_server => '0.pool.ntp.org' #TODO: hiera lookup
             }
         }
+        'Windows': {
+        # https://bugzilla.mozilla.org/show_bug.cgi?id=1510754
+        # For windowstime resoucre timezone and server needs to be set in the same class
+            if $facts['custom_win_location'] == 'datacenter' {
+                $ntpserver = lookup('win_datacenterntp')
+            } else {
+                $ntpserver = '0.pool.ntp.org'
+            }
+            class { 'windowstime':
+                servers  => { "${ntpserver}" => '0x08'},
+                timezone => 'Greenwich Standard Time',
+            }
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }
