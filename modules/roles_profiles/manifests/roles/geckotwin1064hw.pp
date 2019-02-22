@@ -18,5 +18,5 @@ class roles_profiles::roles::geckotwin1064hw {
 
     # Worker
     include roles_profiles::profiles::mozilla_build
-    include roles_profiles::profiles::mozilla_maintenance_srv
+    include roles_profiles::profiles::mozilla_maintenance_service
 }
