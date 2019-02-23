@@ -19,7 +19,7 @@ class roles_profiles::profiles::mozilla_build {
         }
         $program_files      = $facts['custom_win_programfiles']
         $programdata        = $facts['custom_win_programdata']
-        $tempdir            = $facts['custom_win_tempdir']
+        $tempdir            = $facts['custom_win_temp_dir']
         $system32           = $facts['custom_win_system32']
 
             class { 'win_mozilla_build':
