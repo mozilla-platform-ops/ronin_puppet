@@ -13,7 +13,7 @@ class roles_profiles::profiles::mozilla_maintenance_service {
                 registry_name   => 'Mozilla Corporation',
                 registry_issuer => 'Thawte Code Signing CA - G2',
             }
-            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_2017_10_13':
+            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_2017-10-13':
                 cert_key        => '1',
                 registry_name   => 'Mozilla Fake SPC',
                 registry_issuer => 'Mozilla Fake CA',
