@@ -25,6 +25,7 @@ $maintenance_key = $win_mozilla_maintenance_service::maintenance_key
     }
 
     registry_key { "${maintenance_key}\\${cert_key}":
+        ensure => present,
     }
     registry_value { "${maintenance_key}\\${cert_key}\\name":
         ensure => present,
