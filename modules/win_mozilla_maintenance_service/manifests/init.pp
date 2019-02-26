@@ -9,7 +9,7 @@ $short_maintence_key = 'hklm:SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee73
 
     if $::operatingsystem == 'Windows' {
         include win_mozilla_maintenance_service::install
-        include win_mozilla_maintenance_service::grant_registry_access
+#        include win_mozilla_maintenance_service::grant_registry_access
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
