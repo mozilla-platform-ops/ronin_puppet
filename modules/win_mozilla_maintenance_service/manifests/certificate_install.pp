@@ -15,7 +15,7 @@ $local_dir       = $facts['custom_win_roninprogramdata']
 $certutil_exe    = "${facts['custom_win_system32']}\\certutil.exe"
 $maintenance_key = $win_mozilla_maintenance_service::maintenance_key
 
-    file { "${local_dir}\\${cert}":
+    file { "${local_dir}\\${cert}.cer":
         content => file("win_mozilla_maintenance_service/${cert}.cer"),
     }
     exec { "install_${cert}":
