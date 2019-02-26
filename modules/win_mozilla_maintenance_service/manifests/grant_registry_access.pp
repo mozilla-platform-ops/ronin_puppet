@@ -7,6 +7,7 @@ class win_mozilla_maintenance_service::grant_registry_access {
 require win_mozilla_maintenance_service::install
 
     reg_acl { $win_mozilla_maintenance_service::short_maintence_key:
+        owner       => 'Administrator',
         permissions =>
             [
                 {'RegistryRights' => 'FullControl', 'IdentityReference' => 'Everyone'},
