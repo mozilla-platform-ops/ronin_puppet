@@ -15,6 +15,7 @@ mod 'puppet-windows_firewall', '2.0.2'
 mod 'puppetlabs-registry', '2.1.0'
 mod 'puppetlabs-powershell', '2.2.0'
 mod 'puppetlabs-acl', '2.1.0'
+mod 'ipcrm-registry_acl', '0.0.6'
 
 # comment
 

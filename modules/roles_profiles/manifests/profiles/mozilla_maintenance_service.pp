@@ -7,6 +7,22 @@ class roles_profiles::profiles::mozilla_maintenance_service {
     case $::operatingsystem {
         'Windows': {
             include win_mozilla_maintenance_service
+
+            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_cer':
+                cert_key        => '0',
+                registry_name   => 'Mozilla Corporation',
+                registry_issuer => 'Thawte Code Signing CA - G2',
+            }
+            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_2017_10_13_cer':
+                cert_key        => '1',
+                registry_name   => 'Mozilla Fake SPC',
+                registry_issuer => 'Mozilla Fake CA',
+            }
+            win_mozilla_maintenance_service::certificate_install { 'MozRoot_cer':
+                cert_key        => '2',
+                registry_name   => 'Mozilla Corporation',
+                registry_issuer => 'DigiCert SHA2 Assured ID Code Signing CA'
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1529631
         }

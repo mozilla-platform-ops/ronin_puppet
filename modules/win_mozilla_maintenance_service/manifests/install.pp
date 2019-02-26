@@ -7,6 +7,6 @@ class win_mozilla_maintenance_service::install {
     win_packages::win_exe_pkg  { 'mozilla_maintenance_service':
         pkg                    => 'maintenanceservice_installer.exe',
         install_options_string =>  '/S',
-        #creates                => "${win_mozilla_build::install_path}\\msys\\bin\\sh.exe"
+        unless                 => "${facts['custom_win_system32']}\\reg.exe ${win_mozilla_maintenance_service::maintenance_key}"
     }
 }
