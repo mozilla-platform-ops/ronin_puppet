@@ -8,12 +8,12 @@ class roles_profiles::profiles::mozilla_maintenance_service {
         'Windows': {
             include win_mozilla_maintenance_service
 
-            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_cer':
+            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA':
                 cert_key        => '0',
                 registry_name   => 'Mozilla Corporation',
                 registry_issuer => 'Thawte Code Signing CA - G2',
             }
-            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_2017_10_13_cer':
+            win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_2017_10_13':
                 cert_key        => '1',
                 registry_name   => 'Mozilla Fake SPC',
                 registry_issuer => 'Mozilla Fake CA',
