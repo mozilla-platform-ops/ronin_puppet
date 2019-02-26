@@ -18,7 +18,7 @@ class roles_profiles::profiles::mozilla_maintenance_service {
                 registry_name   => 'Mozilla Fake SPC',
                 registry_issuer => 'Mozilla Fake CA',
             }
-            win_mozilla_maintenance_service::certificate_install { 'MozRoot_cer':
+            win_mozilla_maintenance_service::certificate_install { 'MozRoot':
                 cert_key        => '2',
                 registry_name   => 'Mozilla Corporation',
                 registry_issuer => 'DigiCert SHA2 Assured ID Code Signing CA'
