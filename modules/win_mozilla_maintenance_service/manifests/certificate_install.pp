@@ -11,7 +11,7 @@ $cert=$title
 
 require win_mozilla_maintenance_service::install
 
-$local_dir       = $facts['custom_win_temp_dir']
+$local_dir       = $facts['custom_win_roninprogramdata']
 $certutil_exe    = "${facts['custom_win_system32']}\\certutil.exe"
 $maintenance_key = $win_mozilla_maintenance_service::maintenance_key
 
