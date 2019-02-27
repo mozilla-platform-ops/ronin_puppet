@@ -5,10 +5,10 @@
 # Creates useful facts based off of system environment variables
 
 $systemdrive     = $env:systemdrive
-$system32        = "$systemdrive\\windows\\system32"
-$programdata     = $env:programdata.replace("\","\\")
-$programfiles    = $env:ProgramW6432.replace("\","\\")
-$programfilesx86 = "$systemdrive\\Program Files (x86)"
+$system32        = "$systemdrive\windows\system32"
+$programdata     = $env:programdata
+$programfiles    = $env:ProgramW6432
+$programfilesx86 = "$systemdrive\Program Files (x86)"
 
 # Environment variables
 write-host "custom_win_systemdrive=$env:systemdrive"
@@ -19,9 +19,9 @@ write-host "custom_win_programfilesx86=$programfilesx86"
 
 
 # Facts built off of environment variables
-write-host "custom_win_roninprogramdata=$programdata\\PuppetLabs\\ronin"
-write-host "custom_win_roninsemaphoredir=$programdata\\PuppetLabs\\ronin\\semaphore"
-write-host "custom_win_temp_dir=$systemdrive\\Windows\\Temp"
+write-host "custom_win_roninprogramdata=$programdata\PuppetLabs\ronin"
+write-host "custom_win_roninsemaphoredir=$programdata\PuppetLabs\ronin\semaphore"
+write-host "custom_win_temp_dir=$systemdrive\Windows\Temp"
 
 # Bug list
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1520855
