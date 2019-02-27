@@ -7,9 +7,19 @@ before_install:
   - gem update --system
   - gem install bundler
 
-gemfile: .gemfile
+gemfile: ".gemfile"
 
 script:
-  - "puppet-lint \
-     --fail-on-warnings \
-     `find modules -name '*.pp'`"
+  - "puppet parser validate `find modules -name '*.pp'`"
+  - "puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
+
+notifications:
+  irc:
+    channels:
+      - secure: "U+xzqhcSZJv2zmXBmwTm7nFVypuPawVBv4t34MInMzikMAqcPL6n3JOdBkidK7AFKmsRBlBS2j91D8qQhuvndQBrZbsq8uLcZ8EJfYQCh88aFC/Vb66ZNe4oKMUsAtuh3jcjwUEUgexVsQ//o0lcEtWyl79xDy00ojTfmIX/NOfZElgwoBKQnno88XqiJj9muB2DUnqSB6kr3FYKXS5hdyOMQOnqjEG9qXbJgBGhPzSsKh3jD34F8eTQl4UveXETKu/JIoMBBwIYeILp3AEs9kNRnOIhQr0od0u1AAAOiAwRi8iwUYUcrM4GYZARAgrIj9+iNUYIuGmOdjvWaSBEK2MHcu/zS3qAqixvFqtsqfy8K3420x9od/241VlyHxaFH6S4nlGH00GK9s1/BUja7zNgHbH7uUTxHb9TqVeRs9jVJOKxo6PTplayVPa65T1O7wQa4GiMSUz+FuoNsCXYOHdF9d9uLkOTO4CNjbt3Rp1FHBBZ0bLcTagLE75OultURRa+57uIDexMUwSK12BzLEPoNGeRElMOx+593oS/AJZv0o8z69p7xcP4CsYToT7h5qwNuBn3xYjLJ4lGcqIGs5xcdG8oqwwvvrM1UrqEdGg4PXNYjc00St4FmMLDJGSk1YjvCTttgb1ZV3/MsPifSAxGMLPNpUf0q64cFTN8bb8="
+    on_success: always
+    on_failure: always
+    template:
+    - "\x02%{repository_slug}\x0314 #%{build_number}\x03\x02 (%{branch} - %{commit}: %{author}): \x02\x0312%{message}"
+    - "\x02\x03Change view   : \x0314%{compare_url}"
+    - "\x02\x03Build details : \x0314%{build_url}"
