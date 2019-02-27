@@ -6,11 +6,13 @@ class win_mozilla_maintenance_service::grant_registry_access {
 
 require win_mozilla_maintenance_service::install
 
-    reg_acl { $win_mozilla_maintenance_service::short_maintence_key:
-        owner       => 'Administrator',
-        permissions =>
-            [
-                {'RegistryRights' => 'FullControl', 'IdentityReference' => 'Everyone'},
-            ],
+    file { "${facts[custom_win_roninprogramdata]}\\mozilla_serivce_reg_permisions.txt":
+        content => "${win_mozilla_maintenance_service::maintenance_key} [10]",
+    }
+    exec { 'open_permisions_registry_key':
+        command     =>
+            "${facts[custom_win_system32]}\\regini.exe ${facts[custom_win_roninprogramdata]}\\mozilla_serivce_reg_permisions.txt",
+        subscribe   => File["${facts[custom_win_roninprogramdata]}\\mozilla_serivce_reg_permisions.txt"],
+        refreshonly => true,
     }
 }
