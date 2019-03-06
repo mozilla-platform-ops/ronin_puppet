@@ -9,3 +9,6 @@
 # Ignore swap files
 *.swp
 *.swo
+
+# Do not include secrets
+/data/secrets/*

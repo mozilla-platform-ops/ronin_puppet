@@ -1,0 +1,15 @@
+---
+version: 5
+defaults:
+  data_hash: yaml_data
+  datadir: data
+
+hierarchy:
+  - name: "Per-OS defaults"
+    path: "os/%{facts.os.family}.yaml"
+
+  - name: "Secrets generated from Vault"
+    path: "secret/vault.yaml"
+
+  - name: "Common data to all"
+    path: "common.yaml"
