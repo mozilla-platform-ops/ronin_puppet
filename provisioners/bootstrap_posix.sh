@@ -37,10 +37,17 @@ function fail() {
 
 # Determine OSTYPE so we can set OS specific paths and alter logic if need be
 case "${OSTYPE}" in
-  darwin*)  OS="darwin" ;;
-  linux*)   OS="linux" ;;
+  darwin*)  OS='darwin'
+            ROOT='/var/root' ;;
+  linux*)   OS='linux'
+            ROOT='/root';;
   *)        fail "OS either not detected or not supported!" ;;
 esac
+
+# Log to file in root home dir if non-interactive
+if [ -z "$PS1" ]; then
+    exec >"${ROOT}/puppetize.log" 2>&1
+fi
 
 # Linux and Darwin share some common paths
 if [ $OS == "linux" ] || [ $OS == "darwin" ]; then
