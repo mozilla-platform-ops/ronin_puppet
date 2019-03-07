@@ -6,6 +6,7 @@ class win_openssh::fw_exception {
 
     require win_openssh::install
 
+    # Resource from puppet-windows_firewall
     windows_firewall::exception { 'ssh':
         ensure       => present,
         direction    => 'in',
