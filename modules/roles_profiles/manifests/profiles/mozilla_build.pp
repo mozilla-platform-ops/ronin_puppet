@@ -9,7 +9,7 @@ class roles_profiles::profiles::mozilla_build {
 
         $current_mozbld_ver = $facts['mozbld_ver']
         $needed_mozbld_ver  = '3.2'
-        $current_hg_ver     = $facts['$hg_ver']
+        $current_hg_ver     = $facts['hg_ver']
         $needed_hg_ver      = '4.7.1'
         $install_path       = "${facts['custom_win_systemdrive']}\\mozilla-build"
         $system_drive       = $facts['custom_win_systemdrive']
@@ -21,6 +21,7 @@ class roles_profiles::profiles::mozilla_build {
         $programdata        = $facts['custom_win_programdata']
         $tempdir            = $facts['custom_win_temp_dir']
         $system32           = $facts['custom_win_system32']
+        $external_source    = lookup('win_ext_pkg_src')
 
             class { 'win_mozilla_build':
                 current_mozbld_ver => $current_mozbld_ver,
@@ -34,9 +35,17 @@ class roles_profiles::profiles::mozilla_build {
                 programdata        => $programdata,
                 tempdir            => $tempdir,
                 system32           => $system32,
+                external_source    => $external_source,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
+            # Mozilla Build Version
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1461340
+            # Hg version
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1490703
+            # Symlinks Support
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1316329
+
         }
         default: {
             fail("${::operatingsystem} not supported")

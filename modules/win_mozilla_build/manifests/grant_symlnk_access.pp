@@ -5,22 +5,23 @@
 class win_mozilla_build::grant_symlnk_access {
 
     require win_mozilla_build::hg_install
-    $hg_exe     = "\"${win_mozilla_build::program_files}\\mercurial\\hg.exe\""
-    $carbon_dir = "${win_mozilla_build::tempdir}\\carbon"
-    $system32   = $win_mozilla_build::system32
 
-    exec { 'carbonclone':
-        command => "${hg_exe} clone --insecure https://bitbucket.org/splatteredbits/carbon ${carbon_dir}",
-        creates => "${carbon_dir}\\readme.md",
+    $system32   = $win_mozilla_build::system32
+    $module_dir = "${system32}\\WindowsPowerShell\\v1.0\\Modules"
+
+    # Original source https://github.com/webmd-health-services/Carbon
+    # Repackaged into a zip file that can be extracted directly into Powershell module directory
+    win_packages::win_zip_pkg { 'carbon':
+            pkg         => 'carbon.zip',
+            creates     => "${module_dir}\\Carbon",
+            destination => $module_dir,
     }
-    file { "${system32}\\WindowsPowerShell\\v1.0\\Modules\\Carbon":
-        source  => "${carbon_dir}\\carbon",
-        recurse => true,
-    }
+
+    # Using puppetlabs-powershell
     exec { 'grant_symlnk_access':
         command     => file('win_mozilla_build/grant_symlnk_access.ps1'),
         provider    => powershell,
-        subscribe   => File["${system32}\\WindowsPowerShell\\v1.0\\Modules\\Carbon"],
+        subscribe   => Unzip['carbon.zip'],
         refreshonly => true,
     }
 }

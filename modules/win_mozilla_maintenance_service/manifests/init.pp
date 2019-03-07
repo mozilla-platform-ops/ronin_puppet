@@ -4,7 +4,7 @@
 
 class win_mozilla_maintenance_service {
 
-$maintenance_key     = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4'
+    $maintenance_key     = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4'
 
     if $::operatingsystem == 'Windows' {
         include win_mozilla_maintenance_service::install

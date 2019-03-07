@@ -10,6 +10,7 @@ class win_mozilla_build::set_registry_priority {
     $py_key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions'
     $hg_key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions'
 
+    # Resources from puppetlabs-registry
     registry_key { $py_key:
         ensure => present,
     }

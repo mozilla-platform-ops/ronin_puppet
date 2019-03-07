@@ -6,8 +6,11 @@ class roles_profiles::profiles::mozilla_maintenance_service {
 
     case $::operatingsystem {
         'Windows': {
+        # Refrence https://support.mozilla.org/en-US/kb/what-mozilla-maintenance-service
             include win_mozilla_maintenance_service
 
+            # Certs will need to be droped into win_mozilla_maintenance_service/files
+            # The define type will install cert and create needed registry entries
             win_mozilla_maintenance_service::certificate_install { 'MozFakeCA':
                 cert_key        => '0',
                 registry_name   => 'Mozilla Corporation',
@@ -25,6 +28,8 @@ class roles_profiles::profiles::mozilla_maintenance_service {
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1529631
+            # Registry key access
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1353889
         }
         default: {
             fail("${::operatingsystem} not supported")

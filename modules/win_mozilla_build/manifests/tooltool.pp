@@ -8,14 +8,16 @@ class win_mozilla_build::tooltool {
 
 
     file { "${win_mozilla_build::install_path}\\tooltool.py":
-        content => file('win_mozilla_build/tooltool.py'),
+        source => 'https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py',
     }
     file {"${win_mozilla_build::system_drive}\\tooltool-cache":
         ensure => directory,
     }
+    # Resource from counsyl-windows
     windows::environment { 'TOOLTOOL_CACHE':
         value => "${win_mozilla_build::cache_drive}\\tooltool-cache",
     }
+    # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::system_drive}\\tooltool-cache":
         target                     => "${win_mozilla_build::systemdrive}\\tooltool-cache",
         permissions                =>   {

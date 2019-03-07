@@ -2,10 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-define win_packages::win_zip_pkg ( $pkg, $destination, $package=$title, $creates=[] ) {
+define win_packages::win_zip_pkg (
+    String $pkg,
+    String $destination,
+    String $creates,
+    String $package=$title
+){
 
-$pkgdir = $facts['custom_win_temp_dir']
-$srcloc = lookup('win_ext_pkg_src')
+    $pkgdir = $facts['custom_win_temp_dir']
+    $srcloc = lookup('win_ext_pkg_src')
 
     file { "${pkgdir}\\${pkg}":
         source => "${srcloc}/${pkg}",
@@ -13,6 +18,7 @@ $srcloc = lookup('win_ext_pkg_src')
     file { $destination:
         ensure => directory,
     }
+    # Resource from reidmv-unzip
     unzip { $pkg :
         destination => $destination,
         creates     => $creates,

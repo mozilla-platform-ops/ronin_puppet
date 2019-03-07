@@ -9,6 +9,8 @@ class win_mozilla_build::hg_files {
 
     $mozbld = $win_mozilla_build::install_path
 
+    # Original Source https://github.com/mozilla/version-control-tools/blob/master/hgext/robustcheckout/__init__.py
+    # Reference  https://bugzilla.mozilla.org/show_bug.cgi?id=1305485#c5
     file { "${mozbld}\\robustcheckout.py":
         content => file('win_mozilla_build/robustcheckout.py'),
     }
@@ -21,9 +23,11 @@ class win_mozilla_build::hg_files {
     file { "${win_mozilla_build::cache_drive}\\hg-shared":
         ensure => directory,
     }
+    # Resource from counsyl-windows
     windows::environment { 'HG_CACHE':
         value => "${win_mozilla_build::cache_drive}\\tooltool-cache",
     }
+    # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::cache_drive}\\hg-shared":
         target      => "${win_mozilla_build::cache_drive}\\hg-shared",
         permissions => {

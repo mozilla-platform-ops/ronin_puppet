@@ -3,17 +3,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_mozilla_maintenance_service::certificate_install (
-$cert_key=$cert_key,
-$registry_name=$registry_name,
-$registry_issuer=$registry_issuer,
-$cert=$title
+    String $cert_key=$cert_key,
+    String $registry_name=$registry_name,
+    String $registry_issuer=$registry_issuer,
+    String $cert=$title
 ){
 
-require win_mozilla_maintenance_service::install
+    require win_mozilla_maintenance_service::install
 
-$local_dir       = $facts['custom_win_roninprogramdata']
-$certutil_exe    = "${facts['custom_win_system32']}\\certutil.exe"
-$maintenance_key = $win_mozilla_maintenance_service::maintenance_key
+    $local_dir       = $facts['custom_win_roninprogramdata']
+    $certutil_exe    = "${facts['custom_win_system32']}\\certutil.exe"
+    $maintenance_key = $win_mozilla_maintenance_service::maintenance_key
 
     file { "${local_dir}\\${cert}.cer":
         content => file("win_mozilla_maintenance_service/${cert}.cer"),
@@ -24,6 +24,7 @@ $maintenance_key = $win_mozilla_maintenance_service::maintenance_key
         refreshonly => true,
     }
 
+    # Resources from puppetlabs-registry
     registry_key { "${maintenance_key}\\${cert_key}":
         ensure => present,
     }

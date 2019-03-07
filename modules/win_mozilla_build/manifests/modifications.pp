@@ -27,11 +27,11 @@ class win_mozilla_build::modifications {
         ensure => link,
         target => "${win_mozilla_build::system_drive}\\users",
     }
-
+    # Resource from counsyl-windows
     windows::environment { 'MOZILLABUILD':
         value => $win_mozilla_build::install_path,
     }
-
+    # Resource from counsyl-windows
     windows::path {
         [
             "${win_mozilla_build::program_files}\\Mercurial",

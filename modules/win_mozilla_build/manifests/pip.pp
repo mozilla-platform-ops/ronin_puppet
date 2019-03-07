@@ -15,6 +15,7 @@ class win_mozilla_build::pip {
     file {"${win_mozilla_build::cache_drive}\\pip-cache":
         ensure => directory,
     }
+    # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::cache_drive}\\pip-cache":
         target      => "${win_mozilla_build::systemdrive}\\pip-cache",
         permissions => {
@@ -26,6 +27,7 @@ class win_mozilla_build::pip {
             inherit_parent_permissions => true,
         }
     }
+    # Resource from counsyl-windows
     windows::environment{ 'PIP_DOWNLOAD_CACHE':
         value => "${win_mozilla_build::cache_drive}\\pip-cache",
     }
