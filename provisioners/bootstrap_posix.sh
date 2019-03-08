@@ -129,7 +129,7 @@ function get_puppet_repo {
     cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
 
     # Install R10k Modules
-    $R10K_BIN puppetfile install || fail "Failed to install R10k modules"
+    $R10K_BIN puppetfile install -v || fail "Failed to install R10k modules"
 
     # Get fqdn from facter
     FQDN=$(${FACTER_BIN} networking.fqdn)
