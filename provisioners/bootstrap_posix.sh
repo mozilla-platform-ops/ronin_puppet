@@ -111,7 +111,15 @@ function get_puppet_repo {
     # We don't use git because some oses don't have git installed by default
     # In the future, we may publish master branch to s3 or some other highly available service since
     # Github has rate limits on downloads.
-    curl -sL $PUPPET_REPO -o "${TMP_DL_DIR}/puppet.tar.gz" || fail "Failed to download puppet repo tar.gz"
+    while true; do
+        echo "Downloading puppet repo: ${PUPPET_REPO}"
+        if HTTP_RES_CODE=$(curl -sL $PUPPET_REPO -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ $HTTP_RES_CODE = "200" ]]; then
+            break
+        else
+            echo "Failed to download puppet repo.  Sleep for 30 seconds before trying again"
+            sleep 30
+        fi
+    done
     # Extract the puppet repo tarball
     tar -zxf "${TMP_DL_DIR}/puppet.tar.gz" --strip 1 -C "${TMP_PUPPET_DIR}" || fail "Failed to extract puppet tar.gz"
     # Clean up the download dir
