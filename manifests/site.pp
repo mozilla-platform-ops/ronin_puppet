@@ -6,7 +6,6 @@
 case $::operatingsystem {
     'Windows': {
         File {
-            owner              => root,
             backup             => false,
             source_permissions => ignore,
         }
