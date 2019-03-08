@@ -9,3 +9,10 @@
 # Ignore swap files
 *.swp
 *.swo
+
+# Do not include secrets
+/data/secrets/*
+
+# Node definitions are generated at time of provisioning and should not be tracked
+/manifests/nodes/*
+!/manifests/nodes/README.md
