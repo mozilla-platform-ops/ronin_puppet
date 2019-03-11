@@ -17,6 +17,10 @@ mod 'puppetlabs-powershell', '2.2.0'
 mod 'puppetlabs-acl', '2.1.0'
 mod 'ipcrm-registry_acl', '0.0.6'
 
+mod 'mac_profiles_handler',
+  :git => "https://github.com/keeleysam/puppet-mac_profiles_handler.git",
+  :ref => '55b5e8c905b2cdaabccf3fa5e2880bc3522f7a88'
+
 # comment
 
 # might be needed
