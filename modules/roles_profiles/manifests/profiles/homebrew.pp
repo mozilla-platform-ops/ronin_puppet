@@ -4,6 +4,7 @@
 
 class roles_profiles::profiles::homebrew {
 
+    require packages::xcode_cmd_line_tools
     class { 'homebrew':
         user      => 'vagrant',
         group     => 'staff',
