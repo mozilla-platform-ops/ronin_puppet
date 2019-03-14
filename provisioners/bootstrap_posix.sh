@@ -98,6 +98,15 @@ if [ ! -x "${R10K_BIN}" ]; then
     fail "${R10K_BIN} is missing or not executable"
 fi
 
+# If this is running on MacOs 10.14 Mojave, we need to monkey patch the directroyservice resource provider
+# otherwise user creation fails.
+# https://tickets.puppetlabs.com/browse/PUP-9502
+# https://tickets.puppetlabs.com/browse/PUP-9449
+if [ $OS == "darwin" ] && [ "$(facter os.macosx.version.major)" == "10.14" ]; then
+    echo "Monkey patching directoryservice.rb: https://tickets.puppetlabs.com/browse/PUP-9502, https://tickets.puppetlabs.com/browse/PUP-9449"
+    sed -i '.bak' 's/-merge/-create/g' '/opt/puppetlabs/puppet/lib/ruby/vendor_ruby/puppet/provider/user/directoryservice.rb'
+fi
+
 # Create a temp dir for executing puppet
 TMP_PUPPET_DIR=$(mktemp -d -t puppet_working)
 [ -d "${TMP_PUPPET_DIR}" ] || fail "Failed to mktemp puppet working dir"
