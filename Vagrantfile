@@ -27,6 +27,11 @@ Vagrant.configure("2") do |config|
         sudo installer -pkg /Volumes/puppet-agent-6.2.0-1.osx10.13/puppet-agent-6.2.0-1-installer.pkg -target /
         echo Ejecting dmg ...
         sudo hdiutil eject /Volumes/puppet-agent-6.2.0-1.osx10.13
+        echo Installing r10k
+        sudo /opt/puppetlabs/puppet/bin/gem install r10k -v 3.0.3
+        sudo ln -s /opt/puppetlabs/puppet/bin/r10k /opt/puppetlabs/bin/r10k
+        # Monkey patch: https://tickets.puppetlabs.com/browse/PUP-9502
+        sudo sed -i '.bak' 's/-merge/-create/g' '/opt/puppetlabs/puppet/lib/ruby/vendor_ruby/puppet/provider/user/directoryservice.rb'
     SHELL
   end
 
