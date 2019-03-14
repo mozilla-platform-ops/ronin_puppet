@@ -1,1 +1,6 @@
 ---
+
+# Class parameter defaults: most data lookups should take place in profiles
+# so use only when necessary
+packages::setup::default_bucket: "ronin-puppet-package-repo"
+packages::setup::default_s3_domain: "s3-us-west-2.amazonaws.com"
