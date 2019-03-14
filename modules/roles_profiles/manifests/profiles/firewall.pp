@@ -6,10 +6,10 @@ class roles_profiles::profiles::firewall {
 
     case $::operatingsystem {
         'Windows': {
-            windows::firewall_rule { 'ICMP Ping':
-                protocol => 'icmpv4:8,any',
-            }
+            include win_firewall::allow_ping
+
             # Bug List
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1510834
         }
         default: {
             fail("${::operatingsystem} not supported")

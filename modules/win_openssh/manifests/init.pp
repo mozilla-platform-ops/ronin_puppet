@@ -3,9 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_openssh (
-    $ssh_program_data = undef,
-    $programfiles     = undef,
-    $pwrshl_run_script = undef
+    String $ssh_program_data,
+    String $programfiles,
+    String $pwrshl_run_script,
+    Integer $port,
+    String $jumphosts
 ){
 
     if $::operatingsystem == 'Windows' {
