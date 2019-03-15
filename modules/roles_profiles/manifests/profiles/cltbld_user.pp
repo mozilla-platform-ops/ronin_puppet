@@ -13,6 +13,8 @@ class roles_profiles::profiles::cltbld_user {
 
             # Create the cltbld user
             users::single_user { 'cltbld':
+                # Bug 1122875 - cltld needs to be in this group for debug tests
+                groups     => [ '_developer' ],
                 password   => $password,
                 salt       => $salt,
                 iterations => $iterations,
