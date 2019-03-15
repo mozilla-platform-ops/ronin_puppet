@@ -1,5 +1,7 @@
 ---
 
+ntp_server: "0.pool.ntp.org"
+
 user_groups:
   relops:
     - jwatkins
@@ -48,4 +50,3 @@ all_users:
 # so use only when necessary
 packages::setup::default_bucket: "ronin-puppet-package-repo"
 packages::setup::default_s3_domain: "s3-us-west-2.amazonaws.com"
-
