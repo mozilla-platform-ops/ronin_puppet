@@ -19,10 +19,13 @@ class roles_profiles::profiles::ssh {
             if $facts['custom_win_location'] == 'datacenter' {
                 if $facts['custom_win_mozspace'] == 'mdc1' {
                     $jumphosts = "${mdc1_jh1}, ${mdc1_jh2}"
-                } if $facts['custom_win_mozspace'] == 'mdc2' {
+                }
+                if $facts['custom_win_mozspace'] == 'mdc2' {
                     $jumphosts = "${mdc2_jh1}, ${mdc2_jh2}"
-                } else {
-                    fail('Unable to determine jumphost for this location')
+                }
+                else {
+                    warning('Unable to determine jumphost for this location')
+                    $jumphosts = '0.0.0.0'
                 }
             }
             notice('checking location and jumphost')
