@@ -7,9 +7,20 @@ class win_openssh::fw_exception {
     require win_openssh::install
 
     # Resource from puppet-windows_firewall
-    windows_firewall::exception { 'OpenSSH':
+    windows_firewall::exception { 'OpenSSH_in':
         ensure       => present,
         direction    => 'in',
+        action       => 'allow',
+        enabled      => true,
+        protocol     => 'TCP',
+        local_port   => $win_openssh::port,
+        remote_ip    => $win_openssh::jumphosts,
+        display_name => 'OpenSSH in',
+        description  => "OpenSSH. [${win_openssh::port}]",
+    }
+    windows_firewall::exception { 'OpenSSH_out':
+        ensure       => present,
+        direction    => 'out',
         action       => 'allow',
         enabled      => true,
         protocol     => 'TCP',

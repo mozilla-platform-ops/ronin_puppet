@@ -16,8 +16,8 @@ class roles_profiles::profiles::ssh {
             $mdc2_jh1          = lookup('win_mdc2_jh1_ip')
             $mdc2_jh2          = lookup('win_mdc2_jh2_ip')
             $jumphosts         = $facts['custom_win_mozspace'] ? {
-                mdc1    => "${mdc1_jh1}, ${mdc1_jh2}",
-                mdc2    => "${mdc2_jh1}, ${mdc2_jh2}",
+                mdc1    => "${mdc1_jh1},${mdc1_jh2}",
+                mdc2    => "${mdc2_jh1},${mdc2_jh2}",
                 default => '0.0.0.0',
             }
 
