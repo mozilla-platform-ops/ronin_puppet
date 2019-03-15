@@ -1,5 +1,5 @@
-Import-Module -DisableNameChecking $PSScriptRoot\..\lib\force-mkdir.psm1
-Import-Module -DisableNameChecking $PSScriptRoot\..\lib\take-own.psm1
+Import-Module -DisableNameChecking force-mkdir.psm1
+Import-Module -DisableNameChecking take-own.psm1
 
 echo "73 OneDrive process and explorer"
 taskkill.exe /F /IM "OneDrive.exe"
