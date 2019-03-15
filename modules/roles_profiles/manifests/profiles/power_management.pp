@@ -16,6 +16,18 @@ class roles_profiles::profiles::power_management {
                 'allowpowerbuttontosleepcomputer':
                     setting => 'off';
             }
+
+            # Mac Mini hardware model Macmini7,1 supports additional powersettings
+            if $facts['system_profiler']['model_identifier'] == 'Macmini7,1' {
+                macos_utils::systemsetup {
+                    'restartpowerfailure':
+                        setting => 'on';
+                    'wakeonnetworkaccess':
+                        setting => 'on';
+                    'restartfreeze':
+                        setting => 'on';
+                }
+            }
         }
         'Windows': {
             class { 'windows::power_scheme':
