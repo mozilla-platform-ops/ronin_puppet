@@ -15,28 +15,16 @@ class roles_profiles::profiles::ssh {
             $mdc1_jh2          = lookup('win_mdc1_jh2_ip')
             $mdc2_jh1          = lookup('win_mdc2_jh1_ip')
             $mdc2_jh2          = lookup('win_mdc2_jh2_ip')
-
-            if $facts['custom_win_location'] == 'datacenter' {
-                if $facts['custom_win_mozspace'] == 'mdc1' {
-                    $jumphosts = "${mdc1_jh1}, ${mdc1_jh2}"
-                }
-                if $facts['custom_win_mozspace'] == 'mdc2' {
-                    $jumphosts = "${mdc2_jh1}, ${mdc2_jh2}"
-                }
-                else {
-                    warning('Unable to determine jumphost for this location')
-                    $jumphosts = '0.0.0.0'
-                }
+            $jumphosts         = $facts['custom_win_mozspace'] ? {
+                mdc1    => "${mdc1_jh1}, ${mdc1_jh2}",
+                mdc2    => "${mdc2_jh1}, ${mdc2_jh2}",
+                default => '0.0.0.0',
             }
-            notice('checking location and jumphost')
-            notice($facts['custom_win_location'])
-            notice($jumphosts)
-#            case $facts['custom_win_location'] {
-#                'mdc1':  {$jumphosts = "${mdc1_jh1}, ${mdc1_jh2}"}
-#                'mdc2':  {$jumphosts = "${mdc2_jh1}, ${mdc2_jh2}"}
-#                default: {$jumphosts = '0.0.0.0'}
-#            }
-#
+
+            if $jumphosts == '0.0.0.0' {
+                warning('Unable to determine jumphosts for this location!')
+            }
+
             class { 'win_openssh':
                 programfiles      => $programfiles,
                 pwrshl_run_script => $pwrshl_run_script,
