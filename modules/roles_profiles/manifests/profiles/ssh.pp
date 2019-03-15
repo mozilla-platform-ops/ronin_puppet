@@ -16,12 +16,24 @@ class roles_profiles::profiles::ssh {
             $mdc2_jh1          = lookup('win_mdc2_jh1_ip')
             $mdc2_jh2          = lookup('win_mdc2_jh2_ip')
 
-            case $facts['custom_win_location'] {
-                'mdc1':  {$jumphosts = "${mdc1_jh1}, ${mdc1_jh2}"}
-                'mdc2':  {$jumphosts = "${mdc2_jh1}, ${mdc2_jh2}"}
-                default: {$jumphosts = '0.0.0.0'}
+            if $facts['custom_win_location'] == 'datacenter' {
+                if $facts['custom_win_mozspace'] == 'mdc1' {
+                    $jumphosts = "${mdc1_jh1}, ${mdc1_jh2}"
+                } if $facts['custom_win_mozspace'] == 'mdc2' {
+                    $jumphosts = "${mdc2_jh1}, ${mdc2_jh2}"
+                } else {
+                    fail('Unable to determine jumphost for this location')
+                }
             }
-
+            notice('checking location and jumphost')
+            notice($facts['custom_win_location'])
+            notice($jumphosts)
+#            case $facts['custom_win_location'] {
+#                'mdc1':  {$jumphosts = "${mdc1_jh1}, ${mdc1_jh2}"}
+#                'mdc2':  {$jumphosts = "${mdc2_jh1}, ${mdc2_jh2}"}
+#                default: {$jumphosts = '0.0.0.0'}
+#            }
+#
             class { 'win_openssh':
                 programfiles      => $programfiles,
                 pwrshl_run_script => $pwrshl_run_script,
