@@ -16,7 +16,7 @@ class win_openssh::fw_exception {
         local_port   => $win_openssh::port,
         remote_ip    => $win_openssh::jumphosts,
         display_name => 'OpenSSH in',
-        description  => "OpenSSH. [${win_openssh::port}]",
+        description  => "OpenSSH in. [${win_openssh::port}]",
     }
     windows_firewall::exception { 'OpenSSH_out':
         ensure       => present,
@@ -26,7 +26,7 @@ class win_openssh::fw_exception {
         protocol     => 'TCP',
         local_port   => $win_openssh::port,
         remote_ip    => $win_openssh::jumphosts,
-        display_name => 'OpenSSH in',
-        description  => "OpenSSH. [${win_openssh::port}]",
+        display_name => 'OpenSSH out',
+        description  => "OpenSSH out. [${win_openssh::port}]",
     }
 }
