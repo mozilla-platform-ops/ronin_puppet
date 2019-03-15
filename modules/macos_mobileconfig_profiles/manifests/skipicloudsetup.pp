@@ -4,9 +4,8 @@
 
 class macos_mobileconfig_profiles::skipicloudsetup {
 
-    mac_profiles_handler::manage { 'skipicloudsetup':
+    mac_profiles_handler::manage { 'org.mozilla.SkipiCloudSetup':
         ensure      => 'present',
-        file_source => file('macos_mobileconfig_profiles/skipicloudsetup.mobileconfig'),
-        type        => 'template',
+        file_source => 'puppet:///modules/macos_mobileconfig_profiles/SkipiCloudSetup.mobileconfig',
     }
 }
