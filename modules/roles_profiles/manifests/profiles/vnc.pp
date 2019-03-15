@@ -10,7 +10,7 @@ class roles_profiles::profiles::vnc {
             $package  = 'UltraVnc'
             $msi      = 'UltraVnc_1223_X64.msi'
             $ini_file = "${facts['custom_win_programfiles']}\\UltraVNC\\ultravnc.ini"
-            $port     = '5900'
+            $port     = 5900
             $pw_hash  = lookup('win_vncpw_hash')
 
             $mdc1_jh1          = lookup('win_mdc1_jh1_ip')

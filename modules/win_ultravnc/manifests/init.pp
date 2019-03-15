@@ -3,12 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_ultravnc (
-    String $package,
-    String $msi,
-    String $ini_file,
-    String $pw_hash,
-    String $port,
-    String $jumphosts
+    String  $package,
+    String  $msi,
+    String  $ini_file,
+    String  $pw_hash,
+    Integer $port,
+    String  $jumphosts
 ){
 
     if $::operatingsystem == 'Windows' {
