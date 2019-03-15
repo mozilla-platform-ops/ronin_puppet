@@ -5,7 +5,7 @@
 class win_kms {
 
     if $::operatingsystem == 'Windows' {
-        include win_mozilla_build::grant_symlnk_access
+        include win_kms::fw_exception
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
