@@ -16,14 +16,14 @@ class win_disable_services::disable_onedrive {
     }
     file { "${module_dir}\\take-own.psm1":
         content => file('win_disable_services/take-own.psm1'),
-        require => file["${module_dir}\\force-mkdir.psm1"],
+        require => File["${module_dir}\\force-mkdir.psm1"],
     }
 
 
     exec { 'disable_onedrive':
         command  => file('win_disable_services/disable_onedrive.ps1'),
         provider => powershell,
-        require  => file["${module_dir}\\take-own.psm1"],
+        require  => File["${module_dir}\\take-own.psm1"],
         onlyif   => 'Test-Path "$env:systemroot\SysWOW64\OneDriveSetup.exe"',
     }
 }
