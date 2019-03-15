@@ -5,6 +5,18 @@
 class roles_profiles::profiles::power_management {
 
     case $::operatingsystem {
+        'Darwin': {
+            macos_utils::systemsetup {
+                'computersleep':
+                    setting => 'Never';
+                'displaysleep':
+                    setting => 'Never';
+                'harddisksleep':
+                    setting => 'Never';
+                'allowpowerbuttontosleepcomputer':
+                    setting => 'off';
+            }
+        }
         'Windows': {
             class { 'windows::power_scheme':
                 ensure => 'High performance',
