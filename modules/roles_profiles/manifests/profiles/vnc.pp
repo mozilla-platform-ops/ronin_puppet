@@ -12,21 +12,20 @@ class roles_profiles::profiles::vnc {
             $ini_file = "${facts['custom_win_programfiles']}\\UltraVNC\\ultravnc.ini"
             $port     = '5900'
             $pw_hash  = lookup('win_vncpw_hash')
-            $mdc1_jh1 = lookup('win_mdc1_jh1_ip')
-            $mdc1_jh2 = lookup('win_mdc1_jh2_ip')
-            $mdc2_jh1 = lookup('win_mdc2_jh1_ip')
-            $mdc2_jh2 = lookup('win_mdc2_jh2_ip')
 
-            if $facts['custom_win_location'] == 'datacenter' {
-                if $facts['custom_win_mozspace'] == 'mdc1' {
-                    $jumphosts = "${mdc1_jh1}, ${mdc1_jh2}"
-                } if $facts['custom_win_mozspace'] == 'mdc2' {
-                    $jumphosts = "${mdc2_jh1}, ${mdc2_jh2}"
-                } else {
-                    fail('Unable to determine jumphost for this location')
-                }
+            $mdc1_jh1          = lookup('win_mdc1_jh1_ip')
+            $mdc1_jh2          = lookup('win_mdc1_jh2_ip')
+            $mdc2_jh1          = lookup('win_mdc2_jh1_ip')
+            $mdc2_jh2          = lookup('win_mdc2_jh2_ip')
+            $jumphosts         = $facts['custom_win_mozspace'] ? {
+                mdc1    => "${mdc1_jh1},${mdc1_jh2}",
+                mdc2    => "${mdc2_jh1},${mdc2_jh2}",
+                default => '0.0.0.0',
             }
 
+            if $jumphosts == '0.0.0.0' {
+                warning('Unable to determine jumphosts for this location!')
+            }
             class { 'win_ultravnc':
                 package   => $package,
                 msi       => $msi,

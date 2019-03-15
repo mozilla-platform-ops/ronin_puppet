@@ -17,6 +17,7 @@ class roles_profiles::roles::geckotwin1064hw {
     include roles_profiles::profiles::common_tools
     include roles_profiles::profiles::ssh
     include roles_profiles::profiles::microsoft_network_services
+    include roles_profiles::profiles::vnc
 
     # Worker
     include roles_profiles::profiles::mozilla_build

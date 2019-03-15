@@ -14,6 +14,7 @@ class win_openssh (
         include win_openssh::install
         include win_openssh::configuration
         include win_openssh::fw_exception
+        include win_openssh::service
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
