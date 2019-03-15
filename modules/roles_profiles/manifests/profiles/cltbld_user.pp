@@ -25,6 +25,9 @@ class roles_profiles::profiles::cltbld_user {
                 user       => 'cltbld',
                 kcpassword => $kcpassword,
             }
+
+            # Enable DevToolsSecurity
+            include macos_utils::enable_dev_tools_security
         }
         default: {
             fail("${::operatingsystem} not supported")
