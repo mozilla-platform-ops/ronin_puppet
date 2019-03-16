@@ -23,7 +23,7 @@ class win_disable_services::disable_onedrive {
     }
     file { "${module_dir}\\take-own\\take-own.psm1":
         content => file('win_disable_services/take-own.psm1'),
-        require => File["${module_dir}\\force-mkdir.psm1\\force-mkdir.psm1"],
+        require => File["${module_dir}\\force-mkdir\\force-mkdir.psm1"],
     }
 
 

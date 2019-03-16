@@ -45,25 +45,14 @@ class win_disable_services::disable_windows_defender {
         }
 
         # Windows defender supporting services
-        # In order to change key ownership must be change to administrator SID:S-1-5-32-544
-        # This shoukd catch any combination that may be needed on various platforms
-        registry_key { $diabled_start_value:
-            ensure => present,
-        }
-#        reg_acl { $acl_reg_values:
-#            owner       => $facts['custom_win_admin_sid'],
-#            permissions =>
-#                [
-#                    {'RegistryRights' => 'FullControl', 'IdentityReference' => 'BUILTIN\Administrators' },
-#                    {'RegistryRights' => 'FullControl', 'IdentityReference' => $facts['custom_win_admin_sid']},
-#                ],
-#            require     => Registry_key[$diabled_start_value],
-#       }
+        # This will fail on first run and will need a reboot
+        # SecurityHealthService and sense actively watch the registry values of the other services,
+        # and there start registry value needs to be changed and then the node needs rebooted
+        # Also note this will fail on Windows 7
         registry_value { $diabled_start_value:
             ensure => present,
             type   => dword,
             data   => '4',
-#          require => Reg_acl[$acl_reg_values]
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")

@@ -4,6 +4,8 @@
 
 class win_os_settings::powershell_profile {
 
+    # This is not critical to testing or building
+    # This is in place to improve navigation and other human interaction on the node
     $powershell_dir = "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0"
 
     file { "${powershell_dir}\\Microsoft.PowerShell_profile.ps1":
