@@ -11,7 +11,7 @@ class win_disable_services::disable_onedrive {
 
     $module_dir = "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\modules"
 
-    file { "${module_dir}\\force-take-own":
+    file { "${module_dir}\\take-own":
         ensure => directory,
     }
     file { "${module_dir}\\force-mkdir":
@@ -24,7 +24,7 @@ class win_disable_services::disable_onedrive {
     }
     file { "${module_dir}\\take-own\\take-own.psm1":
         content => file('win_disable_services/take-own.psm1'),
-        require => [File["${module_dir}\\force-mkdir\\force-mkdir.psm1"], File[ "${module_dir}\\force-take-own"]],
+        require => [File["${module_dir}\\force-mkdir\\force-mkdir.psm1"], File[ "${module_dir}\\take-own"]],
     }
 
 
