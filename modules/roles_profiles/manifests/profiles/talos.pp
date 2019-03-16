@@ -4,12 +4,9 @@
 
 class roles_profiles::profiles::talos {
 
-    case $::operatingsystem {
-        'Darwin': {
-            include packages::xcode_cmd_line_tools
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+    require roles_profiles::profiles::cltbld_user
+    class{ 'talos':
+        user => 'cltbld',
     }
+
 }
