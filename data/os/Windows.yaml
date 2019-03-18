@@ -4,7 +4,7 @@
 win_dc_log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
 
 # jumphosts
-# Windows firewall exceptions uses IP addresses
+# Windows firewall exceptions uses IP addresses, and the addresses must be passed as individaul strings.
 win_mdc1_jh1_ip:  "10.49.48.100" #"rejh1.srv.releng.mdc1.mozilla.com"
 win_mdc1_jh2_ip:  "10.49.48.101" #rejh2.srv.releng.mdc1.mozilla.com"
 win_mdc2_jh1_ip:  "10.51.48.100" #"rejh1.srv.releng.mdc2.mozilla.com"

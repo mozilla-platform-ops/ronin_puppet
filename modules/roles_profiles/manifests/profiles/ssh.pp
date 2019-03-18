@@ -11,7 +11,11 @@ class roles_profiles::profiles::ssh {
             $programfiles      = $facts['custom_win_programfiles']
             $pwrshl_run_script = lookup('win_pwrshl_run_script')
             $port              = 22
-            $allowed_ips       = lookup('networks.jumphosts')
+            $mdc1_jh1 = lookup('win_mdc1_jh1_ip')
+            $mdc1_jh2 = lookup('win_mdc1_jh2_ip')
+            $mdc2_jh1 = lookup('win_mdc2_jh1_ip')
+            $mdc2_jh2 = lookup('win_mdc2_jh2_ip')
+            $allowed_ips       = "${mdc1_jh1},${mdc1_jh2},${mdc2_jh1},${mdc2_jh2}"
 
             class { 'win_openssh':
                 programfiles      => $programfiles,
