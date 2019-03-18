@@ -4,7 +4,7 @@
 
 class win_firewall::mozilla_datacenter_ssh (
 Integer $port,
-Array $allowed_ips
+String $allowed_ips
 ){
 
     require win_openssh::install
