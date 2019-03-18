@@ -1,7 +1,6 @@
 [ultravnc]
 passwd=<%= $win_ultravnc::pw_hash %>
-<%# passwd2 is a default value. %>
-passwd2=DE864AF65F98840E2D
+passwd2=<%= $win_ultravnc::read_only_pw_hash %>
 [admin]
 UseRegistry=0
 MSLogonRequired=0

@@ -8,7 +8,8 @@ class roles_profiles::profiles::microsoft_tools {
         'Windows': {
 
             # These may chnage for diffrent versions of Windows
-            $moz_profile_source = 'http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof'
+            # TODO: Research why we are using a pinned version and add comment why.
+            $moz_profile_source = 'https://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof'
             $moz_profile_file   = "${facts['custom_win_programfilesx86']}\
 \\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof"
 

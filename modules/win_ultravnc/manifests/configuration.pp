@@ -7,6 +7,7 @@ class win_ultravnc::configuration {
     require win_ultravnc::install
 
     file { $win_ultravnc::ini_file:
-        content => epp('win_ultravnc/ultravnc.ini.epp'),
+        content   => epp('win_ultravnc/ultravnc.ini.epp'),
+        show_diff => false,
     }
 }

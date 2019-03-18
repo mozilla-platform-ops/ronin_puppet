@@ -7,15 +7,12 @@ class roles_profiles::profiles::ssh {
     case $::operatingsystem {
         'Windows': {
 
-            $ssh_program_data  = "${facts['custom_win_programdata']}\\ssh"
-            $programfiles      = $facts['custom_win_programfiles']
-            $pwrshl_run_script = lookup('win_pwrshl_run_script')
-            $port              = 22
-            $mdc1_jh1 = lookup('win_mdc1_jh1_ip')
-            $mdc1_jh2 = lookup('win_mdc1_jh2_ip')
-            $mdc2_jh1 = lookup('win_mdc2_jh1_ip')
-            $mdc2_jh2 = lookup('win_mdc2_jh2_ip')
-            $allowed_ips       = "${mdc1_jh1},${mdc1_jh2},${mdc2_jh1},${mdc2_jh2}"
+            $pwrshl_run_script    = lookup('win_pwrshl_run_script')
+            $firewall_allowed_ips = lookup('win_dc_jumphosts')
+            $ssh_program_data     = "${facts['custom_win_programdata']}\\ssh"
+            $programfiles         = $facts['custom_win_programfiles']
+            $firewall_port        = 22
+            $firewall_rule_name   = 'ssh'
 
             class { 'win_openssh':
                 programfiles      => $programfiles,
@@ -24,21 +21,22 @@ class roles_profiles::profiles::ssh {
             }
             case $facts['custom_win_mozspace'] {
                 'mdc1', 'mdc2': {
-                    class { 'win_firewall::mozilla_datacenter_ssh':
-                        port        => $port,
-                        allowed_ips => $allowed_ips,
+                    win_firewall::open_local_port { "allow_${firewall_rule_name}":
+                        port         => $firewall_port,
+                        allowed_ips  => $firewall_allowed_ips,
+                        reciprocal   => true,
+                        display_name => $firewall_rule_name,
                     }
                 }
                 default : {
-                    win_firewall::block_local_port { 'block_ssh_in':
-                        display_name => 'ssh',
-                        port         => $port,
+                    win_firewall::block_local_port { "block_${firewall_rule_name}":
+                        display_name => $firewall_rule_name,
+                        port         => $firewall_port,
                     }
                 }
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
-            # TODO Add authorized keys to hiera
         }
         default: {
             fail("${::operatingsystem} not supported")
