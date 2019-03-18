@@ -11,26 +11,26 @@ class roles_profiles::profiles::ssh {
             $programfiles      = $facts['custom_win_programfiles']
             $pwrshl_run_script = lookup('win_pwrshl_run_script')
             $port              = 22
-            $mdc1_jh1          = lookup('win_mdc1_jh1_ip')
-            $mdc1_jh2          = lookup('win_mdc1_jh2_ip')
-            $mdc2_jh1          = lookup('win_mdc2_jh1_ip')
-            $mdc2_jh2          = lookup('win_mdc2_jh2_ip')
-            $jumphosts         = $facts['custom_win_mozspace'] ? {
-                mdc1    => "${mdc1_jh1},${mdc1_jh2}",
-                mdc2    => "${mdc2_jh1},${mdc2_jh2}",
-                default => '0.0.0.0',
-            }
-
-            if $jumphosts == '0.0.0.0' {
-                warning('Unable to determine jumphosts for this location!')
-            }
+            $allowed_ips       = lookup('networks.jumphosts')
 
             class { 'win_openssh':
                 programfiles      => $programfiles,
                 pwrshl_run_script => $pwrshl_run_script,
                 ssh_program_data  => $ssh_program_data,
-                port              => $port,
-                jumphosts         => $jumphosts,
+            }
+            case $facts['custom_win_mozspace'] {
+                'mdc1', 'mdc2': {
+                    class { 'win_firewall::mozilla_datacenter_ssh':
+                        port        => $port,
+                        allowed_ips => $allowed_ips,
+                    }
+                }
+                default : {
+                    win_firewall::block_local_port { 'block_ssh_in':
+                        display_name => 'ssh',
+                        port         => $port,
+                    }
+                }
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440

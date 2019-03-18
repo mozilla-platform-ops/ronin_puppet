@@ -2,31 +2,34 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_openssh::fw_exception {
+class win_firewall::mozilla_datacenter_ssh (
+Integer $port,
+Array $allowed_ips
+){
 
     require win_openssh::install
 
     # Resource from puppet-windows_firewall
-    windows_firewall::exception { 'OpenSSH_in':
+    windows_firewall::exception { 'SSH_in':
         ensure       => present,
         direction    => 'in',
         action       => 'allow',
         enabled      => true,
         protocol     => 'TCP',
-        local_port   => $win_openssh::port,
-        remote_ip    => $win_openssh::jumphosts,
-        display_name => 'OpenSSH in',
-        description  => "OpenSSH in. [${win_openssh::port}]",
+        local_port   => $port,
+        remote_ip    => $allowed_ips,
+        display_name => 'SSH in',
+        description  => "SSH in. [${win_openssh::port}]",
     }
-    windows_firewall::exception { 'OpenSSH_out':
+    windows_firewall::exception { 'SSH_out':
         ensure       => present,
         direction    => 'out',
         action       => 'allow',
         enabled      => true,
         protocol     => 'TCP',
-        local_port   => $win_openssh::port,
-        remote_ip    => $win_openssh::jumphosts,
-        display_name => 'OpenSSH out',
-        description  => "OpenSSH out. [${win_openssh::port}]",
+        local_port   => $port,
+        remote_ip    => $allowed_ips,
+        display_name => 'SSH out',
+        description  => "SSH out. [${win_openssh::port}]",
     }
 }

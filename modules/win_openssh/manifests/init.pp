@@ -5,15 +5,12 @@
 class win_openssh (
     String $ssh_program_data,
     String $programfiles,
-    String $pwrshl_run_script,
-    Integer $port,
-    String $jumphosts
+    String $pwrshl_run_script
 ){
 
     if $::operatingsystem == 'Windows' {
         include win_openssh::install
         include win_openssh::configuration
-        include win_openssh::fw_exception
         include win_openssh::service
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
