@@ -2,16 +2,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::timezone {
+class httpd {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
-            class { 'macos_timezone':
-                timezone => 'GMT',
+            service { 'httpd':
+                ensure => running,
+                name   => 'org.apache.httpd',
+                enable => true,
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${module_name} not supported under ${::operatingsystem}")
         }
     }
 }

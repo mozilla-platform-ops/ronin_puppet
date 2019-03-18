@@ -2,11 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::talos {
+class macos_utils::enable_screensharing {
 
-    require roles_profiles::profiles::cltbld_user
-    class{ 'talos':
-        user => 'cltbld',
+    service { 'com.apple.screensharing':
+        ensure => 'running',
     }
 
 }

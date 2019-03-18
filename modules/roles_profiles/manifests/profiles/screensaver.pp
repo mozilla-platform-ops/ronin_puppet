@@ -2,13 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::timezone {
+class roles_profiles::profiles::screensaver {
 
     case $::operatingsystem {
         'Darwin': {
-            class { 'macos_timezone':
-                timezone => 'GMT',
-            }
+            # This disables the screensaver
+            include macos_mobileconfig_profiles::setdefaultscreensaver
         }
         default: {
             fail("${::operatingsystem} not supported")

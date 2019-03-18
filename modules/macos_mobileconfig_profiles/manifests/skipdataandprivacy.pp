@@ -4,9 +4,8 @@
 
 class macos_mobileconfig_profiles::skipdataandprivacy {
 
-    mac_profiles_handler::manage { 'skipdataandprivacy':
+    mac_profiles_handler::manage { 'org.mozilla.SkipDataAndPrivacy':
         ensure      => 'present',
-        file_source => file('macos_mobileconfig_profiles/skipdataandprivacy.mobileconfig'),
-        type        => 'template',
+        file_source => 'puppet:///modules/macos_mobileconfig_profiles/SkipDataAndPrivacy.mobileconfig',
     }
 }

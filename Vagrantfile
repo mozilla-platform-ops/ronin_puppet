@@ -20,13 +20,13 @@ Vagrant.configure("2") do |config|
     mojave.vm.synced_folder ".", "/Users/vagrant/vagrant", type: "rsync", owner: "vagrant", group: "staff", create: true
     mojave.vm.provision "shell", inline: <<-SHELL
         echo Downloading Puppet Agent ...
-        curl -s -O https://downloads.puppetlabs.com/mac/puppet6/10.13/x86_64/puppet-agent-6.2.0-1.osx10.13.dmg
+        curl -s -O https://downloads.puppetlabs.com/mac/puppet6/10.14/x86_64/puppet-agent-6.3.0-1.osx10.14.dmg
         echo Mounting dmg ...
-        sudo hdiutil mount puppet-agent-6.2.0-1.osx10.13.dmg
+        sudo hdiutil mount puppet-agent-6.3.0-1.osx10.14.dmg
         echo Installing Puppet Agent
-        sudo installer -pkg /Volumes/puppet-agent-6.2.0-1.osx10.13/puppet-agent-6.2.0-1-installer.pkg -target /
+        sudo installer -pkg /Volumes/puppet-agent-6.3.0-1.osx10.14/puppet-agent-6.3.0-1-installer.pkg -target /
         echo Ejecting dmg ...
-        sudo hdiutil eject /Volumes/puppet-agent-6.2.0-1.osx10.13
+        sudo hdiutil eject /Volumes/puppet-agent-6.3.0-1.osx10.14
         echo Installing r10k
         sudo /opt/puppetlabs/puppet/bin/gem install r10k -v 3.0.3
         sudo ln -s /opt/puppetlabs/puppet/bin/r10k /opt/puppetlabs/bin/r10k

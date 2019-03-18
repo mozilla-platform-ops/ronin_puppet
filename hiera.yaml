@@ -9,7 +9,7 @@ hierarchy:
     path: "os/%{facts.os.family}.yaml"
 
   - name: "Secrets generated from Vault"
-    path: "secret/vault.yaml"
+    path: "secrets/vault.yaml"
 
   - name: "Common data to all"
     path: "common.yaml"

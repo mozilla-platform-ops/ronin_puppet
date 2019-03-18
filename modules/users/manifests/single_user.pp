@@ -6,6 +6,7 @@ define users::single_user (
     String $username             = $title,
     String $shell                = '/bin/bash',
     Array $ssh_keys              = [],
+    Array $groups                = [],
     Optional[String] $password   = undef,
     Optional[String] $salt       = undef,
     Optional[String] $iterations = undef,
@@ -29,6 +30,7 @@ define users::single_user (
                     gid        => $group,
                     shell      => $shell,
                     home       => $home,
+                    groups     => $groups,
                     comment    => $username,
                     password   => $password,
                     salt       => $salt,
@@ -39,6 +41,7 @@ define users::single_user (
                     gid     => $group,
                     shell   => $shell,
                     home    => $home,
+                    groups  => $groups,
                     comment => $username,
                 }
             }
