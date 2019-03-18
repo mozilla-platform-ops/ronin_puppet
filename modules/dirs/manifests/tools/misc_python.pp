@@ -1,12 +1,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+class dirs::tools::misc_python {
 
-class roles_profiles::profiles::talos {
+    require dirs::tools
 
-    require roles_profiles::profiles::cltbld_user
-
-    class{ 'talos':
-        user => 'cltbld',
+    file { '/tools/misc-python':
+        ensure => directory,
     }
 }

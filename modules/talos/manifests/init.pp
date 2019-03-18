@@ -11,13 +11,20 @@ class talos (
             include httpd
             include packages::java_developer_package_for_osx
             include packages::xcode_cmd_line_tools
+            require dirs::builds
 
-            file { ['/builds', '/builds/slave', '/builds/slave/talos-data', '/builds/slave/talos-data/talos']:
-                ensure  => directory,
-                owner   => $user,
-                group   => 'staff',
-                mode    => '0755',
-                require => User[$user],
+            file {
+                [ '/builds/slave',
+                  '/builds/slave/talos-data',
+                  '/builds/slave/talos-data/talos',
+                  '/builds/git-shared',
+                  '/builds/hg-shared',
+                  '/builds/tooltool_cache' ]:
+                    ensure  => directory,
+                    owner   => $user,
+                    group   => 'staff',
+                    mode    => '0755',
+                    require => User[$user],
             }
 
             $document_root = '/builds/slave/talos-data/talos'
