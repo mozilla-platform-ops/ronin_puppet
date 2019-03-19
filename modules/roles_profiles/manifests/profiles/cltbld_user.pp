@@ -28,6 +28,11 @@ class roles_profiles::profiles::cltbld_user {
 
             # Enable DevToolsSecurity
             include macos_utils::enable_dev_tools_security
+
+            macos_utils::clean_appstate { 'cltbld':
+                user  => 'cltbld',
+                group => 'staff',
+            }
         }
         default: {
             fail("${::operatingsystem} not supported")
