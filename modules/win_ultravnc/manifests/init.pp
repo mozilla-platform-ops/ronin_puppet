@@ -7,15 +7,12 @@ class win_ultravnc (
     String  $msi,
     String  $ini_file,
     String  $pw_hash,
-    String  $read_only_pw_hash,
-    Integer $port,
-    String  $jumphosts
+    String  $read_only_pw_hash
 ){
 
     if $::operatingsystem == 'Windows' {
         include win_ultravnc::install
         include win_ultravnc::configuration
-        include win_ultravnc::fw_exception
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
