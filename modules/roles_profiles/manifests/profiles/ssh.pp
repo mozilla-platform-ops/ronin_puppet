@@ -12,7 +12,7 @@ class roles_profiles::profiles::ssh {
             $ssh_program_data     = "${facts['custom_win_programdata']}\\ssh"
             $programfiles         = $facts['custom_win_programfiles']
             $firewall_port        = 22
-            $firewall_rule_name   = 'ssh'
+            $firewall_rule_name   = 'SSH'
 
             class { 'win_openssh':
                 programfiles      => $programfiles,

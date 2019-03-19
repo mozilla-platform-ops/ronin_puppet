@@ -5,8 +5,8 @@
 define win_firewall::block_local_port (
 String  $display_name,
 Integer $port,
+Boolean $reciprocal,
 String $remote_ip = 'any',
-Boolean $reciprocal = undef
 ){
 
     # Resource from puppet-windows_firewall
@@ -22,7 +22,7 @@ Boolean $reciprocal = undef
         display_name => $display_name,
         description  => "BLOCKED ${display_name} in. [${port}]",
     }
-    if ($reciprocal = true) {
+    if $reciprocal {
         windows_firewall::exception { "block_${display_name}_out":
             ensure       => present,
             direction    => 'out',

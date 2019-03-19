@@ -6,7 +6,7 @@ define win_firewall::open_local_port (
 String  $display_name,
 Integer $port,
 String $remote_ip,
-Boolean $reciprocal = undef
+Boolean $reciprocal,
 ){
 
     # Resource from puppet-windows_firewall
@@ -22,7 +22,7 @@ Boolean $reciprocal = undef
         display_name => $display_name,
         description  => "ALLOWED ${display_name} in. [${port}]",
     }
-    if ($reciprocal = true) {
+    if $reciprocal {
         windows_firewall::exception { "allow_${display_name}_out":
             ensure       => present,
             direction    => 'out',
