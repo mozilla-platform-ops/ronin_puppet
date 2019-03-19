@@ -38,11 +38,11 @@ define macos_utils::clean_appstate (
     }
 
     # set the user preference to not save app states
-    # Not sure if this actually works on Mojave
     macos_utils::defaults { "${user}-NSQuitAlwaysKeepsWindows":
             domain  => "/Users/${user}/Library/Preferences/.GlobalPreferences.plist",
             key     => 'NSQuitAlwaysKeepsWindows',
             value   => '0',
+            type    => 'int',
             require => File["/Users/${user}/Library/Preferences"];
     }
 }
