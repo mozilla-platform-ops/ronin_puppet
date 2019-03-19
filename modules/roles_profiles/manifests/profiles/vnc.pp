@@ -28,7 +28,7 @@ class roles_profiles::profiles::vnc {
                     win_firewall::open_local_port { "allow_${name}":
                         port            => $firewall_port,
                         remote_ip       => $firewall_allowed_ips,
-                        reciprocal      => true,
+                        reciprocal      => false,
                         fw_display_name => $firewall_name,
                     }
                 }
