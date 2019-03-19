@@ -19,7 +19,7 @@ Boolean $reciprocal,
         protocol     => 'TCP',
         local_port   => $port,
         remote_ip    => 'any',
-        display_name => "${fw_display_name}_IN}",
+        display_name => "${fw_display_name}_IN",
         description  => "ALLOWED ${fw_display_name} in. [${port}]",
     }
     if $reciprocal {
