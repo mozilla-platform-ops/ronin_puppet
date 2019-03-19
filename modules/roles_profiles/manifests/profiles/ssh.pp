@@ -23,7 +23,7 @@ class roles_profiles::profiles::ssh {
                 'mdc1', 'mdc2': {
                     win_firewall::open_local_port { "allow_${firewall_rule_name}":
                         port         => $firewall_port,
-                        allowed_ips  => $firewall_allowed_ips,
+                        remote_ip    => $firewall_allowed_ips,
                         reciprocal   => true,
                         display_name => $firewall_rule_name,
                     }
