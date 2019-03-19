@@ -6,7 +6,7 @@ define win_firewall::block_local_port (
 String  $display_name,
 Integer $port,
 String $remote_ip = 'any',
-Boolean $reciprocal = false
+Boolean $reciprocal = undef
 ){
 
     # Resource from puppet-windows_firewall
