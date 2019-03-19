@@ -26,16 +26,16 @@ class roles_profiles::profiles::vnc {
             case $facts['custom_win_mozspace'] {
                 'mdc1', 'mdc2': {
                     win_firewall::open_local_port { "allow_${name}":
-                        port         => $firewall_port,
-                        remote_ip    => $firewall_allowed_ips,
-                        reciprocal   => true,
-                        display_name => $firewall_name,
+                        port            => $firewall_port,
+                        remote_ip       => $firewall_allowed_ips,
+                        reciprocal      => true,
+                        fw_display_name => $firewall_name,
                     }
                 }
                 default : {
                     win_firewall::block_local_port { "block_${name}":
-                        display_name => $firewall_name,
-                        port         => $firewall_port,
+                        fw_display_name => $firewall_name,
+                        port            => $firewall_port,
                     }
                 }
             }

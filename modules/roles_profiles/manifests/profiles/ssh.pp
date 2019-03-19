@@ -22,16 +22,16 @@ class roles_profiles::profiles::ssh {
             case $facts['custom_win_mozspace'] {
                 'mdc1', 'mdc2': {
                     win_firewall::open_local_port { "allow_${firewall_rule_name}":
-                        port         => $firewall_port,
-                        remote_ip    => $firewall_allowed_ips,
-                        reciprocal   => true,
-                        display_name => $firewall_rule_name,
+                        port            => $firewall_port,
+                        remote_ip       => $firewall_allowed_ips,
+                        reciprocal      => true,
+                        fw_display_name => $firewall_rule_name,
                     }
                 }
                 default : {
                     win_firewall::block_local_port { "block_${firewall_rule_name}":
-                        display_name => $firewall_rule_name,
-                        port         => $firewall_port,
+                        fw_display_name => $firewall_rule_name,
+                        port            => $firewall_port,
                     }
                 }
             }
