@@ -18,4 +18,5 @@ class roles_profiles::roles::mojave_taskcluster_worker {
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::relops_users
+    include ::roles_profiles::profiles::generic_worker
 }

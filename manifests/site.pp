@@ -9,6 +9,18 @@ case $::operatingsystem {
             source_permissions => ignore,
         }
     }
+    'Darwin': {
+        # Set toplevel variables for Darwin
+        $root_user  = 'root'
+        $root_group = 'wheel'
+
+        File {
+            owner  => 0,
+            group  => 0,
+            mode   => '0644',
+            backup => false,
+        }
+    }
     default: {
         # Default to 0:0, 0644 on POSIX
         File {
