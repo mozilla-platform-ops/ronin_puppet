@@ -9,6 +9,10 @@ class roles_profiles::profiles::network {
             include ::macos_utils::wifi_disabled
             include ::macos_utils::bonjour_advertisements_disabled
         }
+        'Windows': {
+            include win_network::set_search_domain
+            include win_network::disable_ipv6
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }

@@ -3,15 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_openssh (
-    $ssh_program_data = undef,
-    $programfiles     = undef,
-    $pwrshl_run_script = undef
+    String $ssh_program_data,
+    String $programfiles,
+    String $pwrshl_run_script
 ){
 
     if $::operatingsystem == 'Windows' {
         include win_openssh::install
         include win_openssh::configuration
-        include win_openssh::fw_exception
+        include win_openssh::service
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }

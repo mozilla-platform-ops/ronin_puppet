@@ -3,6 +3,10 @@
 # log aggregators
 win_dc_log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
 
+# jumphosts
+# Windows firewall exceptions uses IP addresses, and must be passed to Windows firewall module as a string.
+win_dc_jumphosts: '10.49.48.100,10.49.48.101,10.51.48.100,10.51.48.101'
+
 # ntp servers
 win_datacenterntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
 

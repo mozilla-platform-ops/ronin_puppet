@@ -10,13 +10,17 @@ class roles_profiles::roles::geckotwin1064hw {
     include roles_profiles::profiles::firewall
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
+    include roles_profiles::profiles::scheduled_tasks
 
     # Adminstration
     include roles_profiles::profiles::logging
     include roles_profiles::profiles::common_tools
     include roles_profiles::profiles::ssh
+    include roles_profiles::profiles::microsoft_network_services
+    include roles_profiles::profiles::vnc
 
     # Worker
     include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
+    include roles_profiles::profiles::microsoft_tools
 }
