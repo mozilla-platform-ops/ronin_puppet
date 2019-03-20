@@ -1,5 +1,14 @@
 ---
 
+ntp_server: "0.pool.ntp.org"
+
+
+# Apple firmware acceptance hash
+apple_firmware_acceptance:
+    Macmini7,1: [ 'MM71.0232.B00' ]
+    MacBookPro13,3: [ 'VirtualBox' ]
+
+
 user_groups:
   relops:
     - jwatkins

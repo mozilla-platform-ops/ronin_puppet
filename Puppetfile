@@ -1,4 +1,4 @@
-moduledir './r10k_modules'
+moduledir 'r10k_modules'
 
 mod 'puppetlabs-stdlib', '5.1.0'
 mod 'puppetlabs-concat', '5.1.0'

@@ -2,12 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::timezone {
+class roles_profiles::profiles::hardware {
 
     case $::operatingsystem {
         'Darwin': {
-            class { 'macos_timezone':
-                timezone => 'GMT',
+
+            # Lookup the apple firmware acceptance hash and assert the hosts firmware
+            $apple_firmware_acceptance = lookup('apple_firmware_acceptance', Hash)
+            class { 'macos_utils::assert_firmware':
+                acceptance_hash => $apple_firmware_acceptance,
             }
         }
         default: {

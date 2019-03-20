@@ -14,6 +14,9 @@
 #  * R10k 3.x.x
 
 
+# Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
+export LANG=en_US.UTF-8
+
 # TODO:
 # pull and generate vault secrets to yaml (or json).  Block if secrets don't exist, soft fail if cached
 

@@ -40,6 +40,8 @@ class roles_profiles::profiles::vnc {
             # Bug List
             #
             # TODO Add 32 bit support
+        'Darwin': {
+            include macos_utils::enable_screensharing
         }
         default: {
             fail("${::operatingsystem} not supported")
