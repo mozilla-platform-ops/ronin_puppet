@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define shellprofile::file (
-    Enum['present', 'absent'] $ensure,
+    String $content,
     String $filename = $title,
-    String $content = '',
+    Enum['present', 'absent'] $ensure = 'present',
 ) {
 
     require shellprofile
