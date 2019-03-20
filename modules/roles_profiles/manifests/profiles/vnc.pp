@@ -24,6 +24,7 @@ class roles_profiles::profiles::vnc {
                 read_only_pw_hash => $read_only_pw_hash
             }
             case $facts['custom_win_mozspace'] {
+                # Restrict VNC access in datacenters to jump hosts.
                 'mdc1', 'mdc2': {
                     win_firewall::open_local_port { "allow_${name}":
                         port            => $firewall_port,
@@ -33,10 +34,7 @@ class roles_profiles::profiles::vnc {
                     }
                 }
                 default : {
-                    win_firewall::block_local_port { "block_${name}":
-                        fw_display_name => $firewall_name,
-                        port            => $firewall_port,
-                    }
+                    # No restrictions by default. The UltraVNC install typical opens the needed port.
                 }
             }
             # Bug List

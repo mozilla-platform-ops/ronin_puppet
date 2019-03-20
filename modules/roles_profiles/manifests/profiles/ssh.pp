@@ -20,6 +20,7 @@ class roles_profiles::profiles::ssh {
                 ssh_program_data  => $ssh_program_data,
             }
             case $facts['custom_win_mozspace'] {
+                # Restrict SSH access in datacenters to jump hosts.
                 'mdc1', 'mdc2': {
                     win_firewall::open_local_port { "allow_${firewall_rule_name}":
                         port            => $firewall_port,
@@ -29,10 +30,7 @@ class roles_profiles::profiles::ssh {
                     }
                 }
                 default : {
-                    win_firewall::block_local_port { "block_${firewall_rule_name}":
-                        fw_display_name => $firewall_rule_name,
-                        port            => $firewall_port,
-                    }
+                    # TODO: Add an exception to open up the port if needed to nodes outside of the datacenter.
                 }
             }
             # Bug List

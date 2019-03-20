@@ -3,11 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_firewall::open_local_port (
-String  $fw_display_name,
-Integer $port,
-String $remote_ip,
-Boolean $reciprocal,
-){
+    String  $fw_display_name,
+    Integer $port,
+    String $remote_ip,
+    Boolean $reciprocal,
+) {
 
     # Resource from puppet-windows_firewall
 
