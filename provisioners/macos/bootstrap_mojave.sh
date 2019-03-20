@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Purpose: bootstrap a posix host from post install (or image) to a complete puppet run
+# Purpose: bootstrap a macos mojave host from post install (or image) to a complete puppet run
 # This script it intend to be run either run by hand or from an init system after a host has been
 # provisioned or re-imaged
 
@@ -22,7 +22,7 @@ export LANG=en_US.UTF-8
 
 # URL of puppet repo to download
 # TODO: change this url to track master on the moz platform ops org relop
-PUPPET_REPO='https://github.com/dividehex/ronin_puppet/archive/bootstrap.tar.gz'
+PUPPET_REPO='https://github.com//mozilla-platform-ops/ronin_puppet/archive/master.tar.gz'
 
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {
@@ -43,9 +43,9 @@ OPTIND=1
 while getopts ":h?l:" opt; do
     case "$opt" in
         h|\?)
-            echo "Usage: ./bootstrap_posix.sh -h               - Show help"
-            echo "       ./bootstrap_posix.sh -l /path/logfile - Log output to file"
-            echo "       ./bootstrap_posix.sh                  - Interactive mode"
+            echo "Usage: ./bootstrap_mojave.sh -h               - Show help"
+            echo "       ./bootstrap_mojave.sh -l /path/logfile - Log output to file"
+            echo "       ./bootstrap_mojave.sh                  - Interactive mode"
             exit 0
             ;;
         l)
@@ -196,7 +196,7 @@ done
 # provisioning, puppet will have already set that up
 case "$OS" in
     Darwin)
-        rm /Library/LaunchDaemons/org.mozilla.boostrap_posix.plist*
+        rm /Library/LaunchDaemons/org.mozilla.boostrap_mojave.plist*
         ;;
 esac
 
