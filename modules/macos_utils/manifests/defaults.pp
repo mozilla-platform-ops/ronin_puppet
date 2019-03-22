@@ -19,6 +19,6 @@ define macos_utils::defaults (
         }
     }
     else {
-        warning('Cannot ensure present without domain, key, and value attributes')
+        fail('Cannot ensure present without domain, key, and value attributes')
     }
 }

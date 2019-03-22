@@ -10,9 +10,13 @@ class roles_profiles::profiles::suppress_dialog_boxes {
             # Installs a payloadless package which suppresses the Setup Assistant the first time the OS starts
             # Credit to: https://github.com/MagerValp/SkipAppleSetupAssistant
             include packages::skip_apple_setup_assistant
+
             # These profiles suppress the dialog boxes when a new user logs in for the first time
             include macos_mobileconfig_profiles::skipdataandprivacy
             include macos_mobileconfig_profiles::skipicloudsetup
+
+            # Suppress the bluetooth keyboard/mouse setup dialog boxes that appear when there is no keyboard and/or mouse connected
+            include macos_utils::disable_bluetooth_setup
         }
         default: {
             fail("${::operatingsystem} not supported")
