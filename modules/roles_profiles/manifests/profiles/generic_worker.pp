@@ -22,7 +22,7 @@ class roles_profiles::profiles::generic_worker {
                 worker_group              => regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'),
                 quarantine_client_id      => $quarantine_client_id,
                 quarantine_access_token   => $quarantine_access_token,
-                generic_worker_version    => 'v13.0.4',
+                generic_worker_version    => 'v13.0.3',
                 taskcluster_proxy_version => 'v5.1.0',
                 quarantine_worker_version => 'v1.0.0',
                 user                      => 'cltbld',
