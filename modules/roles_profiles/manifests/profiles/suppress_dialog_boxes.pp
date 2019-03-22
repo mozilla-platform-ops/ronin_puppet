@@ -7,7 +7,9 @@ class roles_profiles::profiles::suppress_dialog_boxes {
     case $::operatingsystem {
         'Darwin': {
             # Disables the setup assistant application that runs after a fresh OS installation
-            include macos_utils::disable_setup_assistant
+            # Installs a payloadless package which suppresses the Setup Assistant the first time the OS starts
+            # Credit to: https://github.com/MagerValp/SkipAppleSetupAssistant
+            include packages::skip_apple_setup_assistant
             # These profiles suppress the dialog boxes when a new user logs in for the first time
             include macos_mobileconfig_profiles::skipdataandprivacy
             include macos_mobileconfig_profiles::skipicloudsetup
