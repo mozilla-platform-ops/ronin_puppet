@@ -20,7 +20,7 @@ define packages::macos_package_from_github (
                 ensure => 'file',
                 source => $release_url,
                 mode   => '0755',
-                user   => $::root_user,
+                owner  => $::root_user,
                 group  => $::root_group,
             }
         }
