@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::talos {
+class dirs::tools::buildbot::bin {
 
-    require roles_profiles::profiles::cltbld_user
+    require dirs::tools::buildbot
 
-    class{ 'talos':
-        user => 'cltbld',
+    file { '/tools/buildbot/bin':
+        ensure => directory,
     }
 }

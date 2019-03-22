@@ -12,6 +12,9 @@ define users::single_user (
     Optional[String] $iterations = undef,
 ) {
 
+    # include resources common to ALL users
+    include users::global
+
     $group = $::operatingsystem ? {
         'Darwin' => 'staff',
         default  => $username
