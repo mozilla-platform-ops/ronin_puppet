@@ -2,18 +2,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::generic_worker {
+class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
     require roles_profiles::profiles::cltbld_user
 
     case $::operatingsystem {
         'Darwin': {
 
-            $taskcluster_client_id    = lookup('taskcluster_client_id')
-            $taskcluster_access_token = lookup('taskcluster_access_token')
-            $livelog_secret           = lookup('livelog_secret')
-            $quarantine_client_id     = lookup('quarantine_client_id')
-            $quarantine_access_token  = lookup('quarantine_access_token')
+            $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
+            $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
+            $livelog_secret           = lookup('generic_worker.gecko_t_osx_1014.livelog_secret')
+            $quarantine_client_id     = lookup('generic_worker.gecko_t_osx_1014.quarantine_client_id')
+            $quarantine_access_token  = lookup('generic_worker.gecko_t_osx_1014.quarantine_access_token')
 
             class { 'generic_worker':
                 taskcluster_client_id     => $taskcluster_client_id,

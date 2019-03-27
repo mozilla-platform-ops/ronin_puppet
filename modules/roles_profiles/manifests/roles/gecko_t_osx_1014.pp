@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::mojave_taskcluster_worker {
+class roles_profiles::roles::gecko_t_osx_1014 {
 
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::ntp
@@ -18,5 +18,5 @@ class roles_profiles::roles::mojave_taskcluster_worker {
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::relops_users
-    include ::roles_profiles::profiles::generic_worker
+    include ::roles_profiles::profiles::gecko_t_osx_1014_generic_worker
 }
