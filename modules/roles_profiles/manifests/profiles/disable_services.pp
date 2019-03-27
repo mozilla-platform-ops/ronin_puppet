@@ -6,8 +6,16 @@ class roles_profiles::profiles::disable_services {
 
     case $::operatingsystem {
         'Darwin': {
-            class { 'macos_apsd':
-                running => false,
+            service {
+                [ 'com.apple.apsd',
+                  'com.apple.systemstats.daily',
+                  'com.apple.systemstats.analysis',
+                  'com.apple.metadata.mds',
+                  'com.apple.metadata.mds.index',
+                  'com.apple.metadata.mds.scan',
+                  'com.apple.metadata.mds.spindump', ]:
+                    ensure => 'stopped',
+                    enable => false,
             }
             include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
