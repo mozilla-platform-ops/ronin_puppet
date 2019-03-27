@@ -17,6 +17,21 @@ class roles_profiles::profiles::disable_services {
                     ensure => 'stopped',
                     enable => false,
             }
+
+            exec {
+                'disable-indexing':
+                    command     => '/usr/bin/mdutil -a -i off',
+                    refreshonly => true;
+                'remove-index':
+                    command     => '/usr/bin/mdutil -a -E',
+                    refreshonly => true;
+            }
+
+            file { '/var/db/.spotlight-indexing-disabled':
+                content => 'indexing-disabled',
+                notify  => Exec['disable-indexing', 'remove-index'],
+            }
+
             include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
         'Windows': {
