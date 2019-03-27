@@ -6,6 +6,7 @@ class packages::skip_apple_setup_assistant {
 
     packages::macos_package_from_s3 { 'SkipAppleSetupAssistant-1.0.pkg':
         private             => true,
-        os_version_specific => true
+        os_version_specific => true,
+        type                => 'pkg',
     }
 }

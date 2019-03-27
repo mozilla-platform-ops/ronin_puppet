@@ -23,8 +23,11 @@ class roles_profiles::profiles::generic_worker {
                 quarantine_client_id      => $quarantine_client_id,
                 quarantine_access_token   => $quarantine_access_token,
                 generic_worker_version    => 'v13.0.3',
+                generic_worker_sha256     => '6e5c1543fb3c333ca783d0a5c4e557b2b5438aada4bc23dc02402682ae4e245e',
                 taskcluster_proxy_version => 'v5.1.0',
+                taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
+                quarantine_worker_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 user                      => 'cltbld',
                 user_homedir              => '/Users/cltbld',
             }
