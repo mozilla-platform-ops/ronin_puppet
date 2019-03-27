@@ -21,6 +21,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 taskcluster_access_token  => $taskcluster_access_token,
                 livelog_secret            => $livelog_secret,
                 worker_group              => regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'),
+                worker_type               => 'gecko_t_osx_1014',
                 quarantine_client_id      => $quarantine_client_id,
                 quarantine_access_token   => $quarantine_access_token,
                 bugzilla_api_key          => $bugzilla_api_key,

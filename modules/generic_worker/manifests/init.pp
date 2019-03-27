@@ -7,6 +7,7 @@ class generic_worker (
     String $taskcluster_access_token,
     String $livelog_secret,
     String $worker_group,
+    String $worker_type,
     String $quarantine_client_id,
     String $quarantine_access_token,
     String $bugzilla_api_key,
