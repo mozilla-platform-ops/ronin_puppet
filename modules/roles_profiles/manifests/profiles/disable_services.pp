@@ -9,6 +9,7 @@ class roles_profiles::profiles::disable_services {
             class { 'macos_apsd':
                 running => false,
             }
+            include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
         'Windows': {
             include win_disable_services::disable_wsearch
