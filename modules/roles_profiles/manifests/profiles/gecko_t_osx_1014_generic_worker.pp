@@ -29,7 +29,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 taskcluster_proxy_version => 'v5.1.0',
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
-                quarantine_worker_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
+                quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
                 user                      => 'cltbld',
                 user_homedir              => '/Users/cltbld',
             }
