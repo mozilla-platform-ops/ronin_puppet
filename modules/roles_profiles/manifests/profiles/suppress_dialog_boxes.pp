@@ -17,6 +17,9 @@ class roles_profiles::profiles::suppress_dialog_boxes {
 
             # Suppress the bluetooth keyboard/mouse setup dialog boxes that appear when there is no keyboard and/or mouse connected
             include macos_utils::disable_bluetooth_setup
+
+            # Suppress Diagnostic Submissions
+            include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
         default: {
             fail("${::operatingsystem} not supported")
