@@ -10,6 +10,7 @@ class users::all_users (
     $all_users.each | String $user, Array $ssh_keys | {
         @users::single_user { $user:
             ssh_keys => $ssh_keys,
+            groups   => ['admin', 'com.apple.access_screensharing', 'com.apple.access_ssh'],
         }
     }
 }
