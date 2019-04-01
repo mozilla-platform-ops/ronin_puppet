@@ -2,21 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::power_management {
+class roles_profiles::profiles::software_updates {
 
     case $::operatingsystem {
         'Darwin': {
-            include macos_mobileconfig_profiles::power_management
-        }
-        'Windows': {
-            class { 'windows::power_scheme':
-                ensure => 'High performance',
-            }
-            # Bug List
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1524436
+            include macos_mobileconfig_profiles::disable_software_updates
+
         }
         default: {
             fail("${::operatingsystem} not supported")
         }
     }
+
+
 }

@@ -16,13 +16,14 @@
 
 # Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
 export LANG=en_US.UTF-8
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
 # TODO:
 # pull and generate vault secrets to yaml (or json).  Block if secrets don't exist, soft fail if cached
 
 # URL of puppet repo to download
 # TODO: change this url to track master on the moz platform ops org relop
-PUPPET_REPO='https://github.com//mozilla-platform-ops/ronin_puppet/archive/master.tar.gz'
+PUPPET_REPO='https://github.com/mozilla-platform-ops/ronin_puppet/archive/master.tar.gz'
 
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {
@@ -101,6 +102,10 @@ if [ ! -x "${R10K_BIN}" ]; then
     fail "${R10K_BIN} is missing or not executable"
 fi
 
+# Remove the system git config, since it can't expand ~ when r10k runs git
+# https://stackoverflow.com/questions/36908041/git-could-not-expand-include-path-gitcinclude-fatal-bad-config-file-line
+rm -rf /usr/local/git/etc/gitconfig
+
 # If this is running on MacOs 10.14 Mojave, we need to monkey patch the directroyservice resource provider
 # otherwise user creation fails.
 # https://tickets.puppetlabs.com/browse/PUP-9502
@@ -143,6 +148,10 @@ function get_puppet_repo {
     # Install R10k Modules
     $R10K_BIN puppetfile install -v || fail "Failed to install R10k modules"
 
+    # Inject hiera secrets
+    mkdir -p ./data/secrets
+    cp /var/root/vault.yaml ./data/secrets/vault.yaml
+
     # Get fqdn from facter
     FQDN=$(${FACTER_BIN} networking.fqdn)
 
@@ -163,7 +172,7 @@ function run_puppet {
     # this includes:
     # FACTER_PUPPETIZING so that the manifests know this is a first run of puppet
     # TODO: send logs to syslog? send a puppet report to puppetdb?
-    PUPPET_OPTIONS=('--modulepath=./modules:./r10k_modules' '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/' '--noop')
+    PUPPET_OPTIONS=('--modulepath=./modules:./r10k_modules' '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     export FACTER_PUPPETIZING=true
 
     # check for 'Error:' in the output; this catches errors even
@@ -195,8 +204,8 @@ done
 # If it is intended for the host to run puppet after it first puppet
 # provisioning, puppet will have already set that up
 case "$OS" in
-    Darwin)
-        rm /Library/LaunchDaemons/org.mozilla.boostrap_mojave.plist*
+    darwin)
+        rm -rf /Library/LaunchDaemons/org.mozilla.bootstrap_mojave.plist*
         ;;
 esac
 
@@ -205,5 +214,8 @@ rm -rf "$TMP_PUPPET_DIR"
 
 # record the installation date (note that this won't appear anywhere on Darwin)
 echo "System Installed: $(date)" >> /etc/issue
+
+# Success! Let's reboot
+#/sbin/reboot
 
 exit 0

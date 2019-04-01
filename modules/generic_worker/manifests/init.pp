@@ -7,14 +7,18 @@ class generic_worker (
     String $taskcluster_access_token,
     String $livelog_secret,
     String $worker_group,
+    String $worker_type,
     String $quarantine_client_id,
     String $quarantine_access_token,
     String $bugzilla_api_key,
     String $user,
     String $user_homedir,
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
+    String $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
+    String $taskcluster_proxy_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
+    String $quarantine_worker_sha256,
     String $taskcluster_host = 'taskcluster',
 ) {
 
@@ -22,8 +26,11 @@ class generic_worker (
 
     class { 'packages::generic_worker':
         generic_worker_version    => $generic_worker_version,
+        generic_worker_sha256     => $generic_worker_sha256,
         taskcluster_proxy_version => $taskcluster_proxy_version,
+        taskcluster_proxy_sha256  => $taskcluster_proxy_sha256,
         quarantine_worker_version => $quarantine_worker_version,
+        quarantine_worker_sha256  => $quarantine_worker_sha256
     }
 
     class { 'generic_worker::control_bug':
