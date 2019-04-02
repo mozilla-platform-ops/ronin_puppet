@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "mojave", autostart: false do |mojave|
     mojave.vm.box = "macinbox"
-    mojave.vm.synced_folder ".", "/Users/vagrant/vagrant", type: "rsync", owner: "vagrant", group: "staff", create: true
+    mojave.vm.synced_folder ".", "/private/tmp/vagrant", type: "rsync", owner: "vagrant", group: "staff", create: true
     mojave.vm.provision "shell", inline: <<-SHELL
         echo Downloading Puppet Agent ...
         curl -s -O https://downloads.puppetlabs.com/mac/puppet6/10.14/x86_64/puppet-agent-6.3.0-1.osx10.14.dmg
