@@ -5,10 +5,11 @@
 class roles_profiles::profiles::homebrew {
 
     require packages::xcode_cmd_line_tools
+    require roles_profiles::profiles::cltbld_user
+
     class { 'homebrew':
-        user      => 'vagrant',
+        user      => 'cltbld',
         group     => 'staff',
         multiuser => true,
     }
-
 }
