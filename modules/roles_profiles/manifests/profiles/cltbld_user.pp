@@ -14,10 +14,17 @@ class roles_profiles::profiles::cltbld_user {
             # Create the cltbld user
             users::single_user { 'cltbld':
                 # Bug 1122875 - cltld needs to be in this group for debug tests
-                groups     => [ '_developer' ],
                 password   => $password,
                 salt       => $salt,
                 iterations => $iterations,
+            }
+
+            # Monkey patching directoryservice.rb in order to create users also breaks group merging
+            # So we directly add the user to the group(s)
+            exec { 'cltbld_developer_group':
+                command => '/usr/bin/dscl . -append /Groups/_developer GroupMembership cltbld',
+                unless  => '/usr/bin/groups cltbld | /usr/bin/grep -q -w _developer',
+                require => User['cltbld'],
             }
 
             # Set user to autologin
