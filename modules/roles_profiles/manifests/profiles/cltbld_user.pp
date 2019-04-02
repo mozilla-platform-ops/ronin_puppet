@@ -40,6 +40,12 @@ class roles_profiles::profiles::cltbld_user {
                 user  => 'cltbld',
                 group => 'staff',
             }
+
+            mercurial::hgrc { '/Users/cltbld/.hgrc':
+                user    => 'cltbld',
+                group   => 'staff',
+                require => User['cltbld'],
+            }
         }
         default: {
             fail("${::operatingsystem} not supported")
