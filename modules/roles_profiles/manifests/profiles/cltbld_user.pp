@@ -46,6 +46,12 @@ class roles_profiles::profiles::cltbld_user {
                 group   => 'staff',
                 require => User['cltbld'],
             }
+
+            contain packages::python2
+            contain packages::python3
+            contain packages::mercurial
+            contain packages::nodejs
+            contain packages::wget
         }
         default: {
             fail("${::operatingsystem} not supported")
