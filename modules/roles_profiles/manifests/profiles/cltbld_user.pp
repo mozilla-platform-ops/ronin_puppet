@@ -47,6 +47,10 @@ class roles_profiles::profiles::cltbld_user {
                 require => User['cltbld'],
             }
 
+            sudo::custom { 'allow_cltbld_reboot':
+                user    => 'cltbld',
+                command => '/sbin/reboot',
+            }
         }
         default: {
             fail("${::operatingsystem} not supported")
