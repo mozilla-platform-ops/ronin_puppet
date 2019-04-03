@@ -37,6 +37,15 @@ define macos_utils::clean_appstate (
             require => File["/Users/${user}/Library"];
     }
 
+    # In order to prevent apps from reopening on reboot, we change the owner to root and remove write access
+    file { "/Users/${user}/Library/Preferences/ByHost/com.apple.loginwindow.${::facts[system_profiler][hardware_uuid]}.plist":
+        ensure  => 'file',
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0000',
+        content => '',
+    }
+
     # set the user preference to not save app states
     macos_utils::defaults { "${user}-NSQuitAlwaysKeepsWindows":
             domain   => "/Users/${user}/Library/Preferences/.GlobalPreferences.plist",
