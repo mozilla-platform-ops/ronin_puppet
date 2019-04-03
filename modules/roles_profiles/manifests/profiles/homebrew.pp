@@ -11,5 +11,6 @@ class roles_profiles::profiles::homebrew {
         user      => 'cltbld',
         group     => 'staff',
         multiuser => true,
+        require   => Class['packages::xcode_cmd_line_tools'],
     }
 }
