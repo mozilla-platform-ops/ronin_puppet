@@ -9,6 +9,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
     case $::operatingsystem {
         'Darwin': {
 
+            class{ 'talos':
+                user => 'cltbld',
+            }
+
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
             $livelog_secret           = lookup('generic_worker.gecko_t_osx_1014.livelog_secret')
@@ -35,11 +39,40 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 user_homedir              => '/Users/cltbld',
             }
 
-            contain packages::python2
-            contain packages::python3
-            contain packages::mercurial
+            include dirs::tools
+
             contain packages::nodejs
             contain packages::wget
+            contain packages::tooltool
+            file { '/tools/tooltool.py':
+                ensure  => 'link',
+                target  => '/usr/local/bin/tooltool.py',
+                require => Class['packages::tooltool'],
+            }
+
+            contain packages::mercurial
+            contain mercurial::system_hgrc
+
+            contain packages::python2
+            contain python2::system_pip_conf
+            file {
+                '/tools/python':
+                    ensure  => 'link',
+                    target  => '/usr/local/bin/python2',
+                    require => Class['packages::python2'];
+
+                '/tools/python2':
+                    ensure  => link,
+                    target  => '/usr/local/bin/python2',
+                    require => Class['packages::python2'];
+            }
+
+            contain packages::python3
+            file { '/tools/python3':
+                    ensure  => 'link',
+                    target  => '/usr/local/bin/python3',
+                    require => Class['packages::python3'],
+            }
 
         }
         default: {

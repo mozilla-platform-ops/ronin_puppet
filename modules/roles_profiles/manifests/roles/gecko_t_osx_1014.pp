@@ -8,12 +8,12 @@ class roles_profiles::roles::gecko_t_osx_1014 {
     include ::roles_profiles::profiles::ntp
     include ::roles_profiles::profiles::network
     include ::roles_profiles::profiles::disable_services
-    include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::vnc
     include ::roles_profiles::profiles::suppress_dialog_boxes
     include ::roles_profiles::profiles::power_management
     include ::roles_profiles::profiles::screensaver
     include ::roles_profiles::profiles::gui
+    include ::roles_profiles::profiles::sudo
     include ::roles_profiles::profiles::software_updates
     include ::roles_profiles::profiles::hardware
     include ::roles_profiles::profiles::motd
