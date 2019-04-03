@@ -14,7 +14,7 @@ class mercurial::system_hgrc {
     }
 
     mercurial::hgrc { $::mercurial::settings::hgrc:
-        owner => $::root_user,
+        user  => $::root_user,
         group => $::root_group,
     }
 }
