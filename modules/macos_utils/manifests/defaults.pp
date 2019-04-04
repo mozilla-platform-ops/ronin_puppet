@@ -7,13 +7,13 @@ define macos_utils::defaults (
     Optional[String] $key = undef,
     Optional[String] $value = undef,
     String $user = 'root',
-    Enum['string', 'int', 'float', 'bool', 'date', 'array'] $type = 'string',
+    Enum['string', 'int', 'float', 'bool', 'date', 'array'] $val_type = 'string',
 ) {
 
     $defaults_cmd = '/usr/bin/defaults'
     if ($domain != undef) and ($key != undef) and ($value != undef) {
         exec { "osx_defaults write ${domain} ${key}=>${value}" :
-            command => "${defaults_cmd} write ${domain} ${key} -${type} ${value}",
+            command => "${defaults_cmd} write ${domain} ${key} -${val_type} ${value}",
             unless  => "/bin/test x`${defaults_cmd} read ${domain} ${key}` = x'${value}'",
             user    => $user,
         }

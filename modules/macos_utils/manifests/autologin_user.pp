@@ -6,12 +6,20 @@ class macos_utils::autologin_user (
     String $user,
     String $kcpassword,
 ) {
+
     include stdlib
+
     if $::operatingsystem == 'Darwin' {
         macos_utils::defaults { 'autologin_user':
             domain => '/Library/Preferences/com.apple.loginwindow',
             key    => 'autoLoginUser',
             value  => $user,
+        }
+        macos_utils::defaults { 'autologin_user_screen_locked':
+            domain   => '/Library/Preferences/com.apple.loginwindow',
+            key      => 'autoLoginUserScreenLocked',
+            value    => '0',
+            val_type => 'int',
         }
         file { '/etc/kcpassword':
             content   => base64('decode', $kcpassword),

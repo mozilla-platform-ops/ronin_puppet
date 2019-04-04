@@ -12,6 +12,16 @@ class roles_profiles::profiles::relops_users {
             # Lookup the relops group array and realize their user resource
             $relops = lookup('user_groups.relops', Array, undef, undef)
             realize(Users::Single_user[$relops])
+
+            # Monkey patching directoryservice.rb in order to create users also breaks group merging
+            # So we directly add the user to the group(s)
+            $relops.each |String $user| {
+                exec { "${user}_admin_group":
+                    command => "/usr/bin/dscl . -append /Groups/admin GroupMembership ${user}",
+                    unless  => "/usr/bin/groups ${user} | /usr/bin/grep -q -w admin",
+                    require => User[$user],
+                }
+            }
         }
         default: {
             fail("${::operatingsystem} not supported")

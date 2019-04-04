@@ -33,6 +33,7 @@ class roles_profiles::profiles::disable_services {
             }
 
             include macos_mobileconfig_profiles::disable_diagnostic_submissions
+            include macos_mobileconfig_profiles::disable_gatekeeper
         }
         'Windows': {
             include win_disable_services::disable_wsearch
