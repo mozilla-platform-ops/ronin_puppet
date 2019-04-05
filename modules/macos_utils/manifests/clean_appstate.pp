@@ -42,6 +42,12 @@ define macos_utils::clean_appstate (
             group   => $group,
             mode    => '0500', # remove write permission
             require => File["/Users/${user}/Library"];
+        "/Users/${user}/Library/Preferences/.GlobalPreferences.plist":
+            ensure  => file,
+            owner   => $user,
+            group   => $group,
+            mode    => '0600',
+            require => File["/Users/${user}/Library/Preferences"];
     }
 
     # In order to prevent apps from reopening on reboot, we change the owner to root and remove write access
@@ -60,6 +66,6 @@ define macos_utils::clean_appstate (
             key      => 'NSQuitAlwaysKeepsWindows',
             value    => '0',
             val_type => 'int',
-            require  => File["/Users/${user}/Library/Preferences"];
+            require  => File["/Users/${user}/Library/Preferences/.GlobalPreferences.plist"];
     }
 }
