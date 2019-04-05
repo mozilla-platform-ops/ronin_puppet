@@ -13,7 +13,8 @@ define macos_utils::clean_appstate (
         "/Users/${user}/Library/Saved Application State":
             matches => '*.savedState',
             rmdirs  => true,
-            recurse => true;
+            recurse => true,
+            require => File["/Users/${user}/Library/Saved Application State"];
     }
 
     file {
@@ -29,6 +30,12 @@ define macos_utils::clean_appstate (
             group   => $group,
             mode    => '0700',
             require => File["/Users/${user}/Library"];
+        "/Users/${user}/Library/Preferences/ByHost":
+            ensure  => directory,
+            owner   => $user,
+            group   => $group,
+            mode    => '0700',
+            require => File["/Users/${user}/Library/Preferences"];
         "/Users/${user}/Library/Saved Application State":
             ensure  => directory,
             owner   => $user,
@@ -44,6 +51,7 @@ define macos_utils::clean_appstate (
         group   => 'wheel',
         mode    => '0000',
         content => '',
+        require => File["/Users/${user}/Library/Preferences/ByHost"];
     }
 
     # set the user preference to not save app states
