@@ -30,7 +30,9 @@ repos:
     name: macos-profile-xml
     description: Extract plist contents from signed MacOS profiles
     language: system
-    files: \.(.*)$
     verbose: True
-    pass_filenames: True
-    entry: bash -c 'for f in "$@"; do openssl smime -inform DER -verify -in "$f" -noverify -out "$f.xml" || echo "Failed extraction of $f"; done'
+    files: '\.mobileconfig$'
+    types: [binary]
+    entry: /bin/bash
+    args: ['-c', 'for f in "$@"; do openssl smime -inform DER -verify -noverify -in "$f" -noverify -out "$f.xml" 2>/dev/null && (git diff --quiet "$f.xml" || echo "Extracted text from $f") || echo "Failed extraction of $f"; done', '--']
+    #entry: bash -c 'for f in "$@"; do strings "$f" | grep -Pazo "(?s)<\?xml.*<plist.*\/plist>\n?" > "$f.2xml" && echo "Extracted text from $f" || echo "Failed extraction of $f"; done'
