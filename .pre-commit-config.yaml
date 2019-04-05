@@ -23,3 +23,14 @@ repos:
   rev: 1.11.0
   hooks:
     - id: shellcheck
+
+- repo: local
+  hooks:
+  - id: macos-profile-xml
+    name: macos-profile-xml
+    description: Extract plist contents from signed MacOS profiles
+    language: system
+    files: \.(.*)$
+    verbose: True
+    pass_filenames: True
+    entry: bash -c 'for f in "$@"; do openssl smime -inform DER -verify -in "$f" -noverify -out "$f.xml" || echo "Failed extraction of $f"; done'
