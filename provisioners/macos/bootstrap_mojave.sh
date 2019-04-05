@@ -116,7 +116,7 @@ if [ $OS == "darwin" ] && [ "$(facter os.macosx.version.major)" == "10.14" ]; th
 fi
 
 # Create a temp dir for executing puppet
-TMP_PUPPET_DIR=$(mktemp -d -t puppet_working)
+TMP_PUPPET_DIR=$(mktemp -d /tmp/puppet_working.XXXXXX)
 [ -d "${TMP_PUPPET_DIR}" ] || fail "Failed to mktemp puppet working dir"
 
 # Download puppet repository and extract
@@ -144,6 +144,7 @@ function get_puppet_repo {
 
     # Change to puppet dir
     cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
+    chmod 777 .
 
     # Install R10k Modules
     $R10K_BIN puppetfile install -v || fail "Failed to install R10k modules"
