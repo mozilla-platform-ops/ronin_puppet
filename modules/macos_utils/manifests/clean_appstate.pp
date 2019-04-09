@@ -7,35 +7,7 @@ define macos_utils::clean_appstate (
     String $group,
 ) {
 
-    # clean out saved application state on OS X, and prevent new state from being written
-    # two different ways
-    tidy {
-        "/Users/${user}/Library/Saved Application State":
-            matches => '*.savedState',
-            rmdirs  => true,
-            recurse => true,
-            require => File["/Users/${user}/Library/Saved Application State"];
-    }
-
     file {
-        "/Users/${user}/Library":
-            ensure  => directory,
-            owner   => $user,
-            group   => $group,
-            mode    => '0755',
-            require => File["/Users/${user}"];
-        "/Users/${user}/Library/Preferences":
-            ensure  => directory,
-            owner   => $user,
-            group   => $group,
-            mode    => '0700',
-            require => File["/Users/${user}/Library"];
-        "/Users/${user}/Library/Preferences/ByHost":
-            ensure  => directory,
-            owner   => $user,
-            group   => $group,
-            mode    => '0700',
-            require => File["/Users/${user}/Library/Preferences"];
         "/Users/${user}/Library/Saved Application State":
             ensure  => directory,
             owner   => $user,
@@ -48,6 +20,16 @@ define macos_utils::clean_appstate (
             group   => $group,
             mode    => '0600',
             require => File["/Users/${user}/Library/Preferences"];
+    }
+
+    # clean out saved application state on OS X, and prevent new state from being written
+    # two different ways
+    tidy {
+        "/Users/${user}/Library/Saved Application State":
+            matches => '*.savedState',
+            rmdirs  => true,
+            recurse => true,
+            require => File["/Users/${user}/Library/Saved Application State"];
     }
 
     # In order to prevent apps from reopening on reboot, we change the owner to root and remove write access

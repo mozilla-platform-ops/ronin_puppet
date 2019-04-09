@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define users::single_user (
-    String $username             = $title,
+    String $user                 = $title,
     String $shell                = '/bin/bash',
     Array $ssh_keys              = [],
     Array $groups                = [],
@@ -17,35 +17,35 @@ define users::single_user (
 
     $group = $::operatingsystem ? {
         'Darwin' => 'staff',
-        default  => $username
+        default  => $user
     }
 
     $home = $::operatingsystem ? {
-        'Darwin' => "/Users/${username}",
-        default  => "/home/${username}"
+        'Darwin' => "/Users/${user}",
+        default  => "/home/${user}"
     }
 
     case $facts['os']['family'] {
         'Darwin': {
             # If values for password, salt and iteration are passed, then set the user with a password
             if $password and $salt and $iterations {
-                user { $username:
+                user { $user:
                     gid        => $group,
                     shell      => $shell,
                     home       => $home,
                     groups     => $groups,
-                    comment    => $username,
+                    comment    => $user,
                     password   => $password,
                     salt       => $salt,
                     iterations => $iterations,
                 }
             } else {
-                user { $username:
+                user { $user:
                     gid     => $group,
                     shell   => $shell,
                     home    => $home,
                     groups  => $groups,
-                    comment => $username,
+                    comment => $user,
                 }
             }
         }
@@ -54,20 +54,10 @@ define users::single_user (
         }
     }
 
-    # Create users home directory and populate it with skeleton files and users custom files
-    file { $home:
-        source  => [ "puppet:///modules/users/home_dirs/${username}", 'puppet:///modules/users/home_dirs/skel' ],
-        recurse => remote,
-        mode    => 'g-w,o-rwx',
-        owner   => $username,
-        group   => $group,
-        require => User[$username],
-    }
-
-    users::user_ssh_config { $username:
+    # Create home dir
+    users::home_dir { $home:
+        user     => $user,
         group    => $group,
-        home     => $home,
         ssh_keys => $ssh_keys,
-        require  => File[$home],
     }
 }
