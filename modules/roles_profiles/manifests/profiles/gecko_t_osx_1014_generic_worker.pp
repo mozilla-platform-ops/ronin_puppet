@@ -9,6 +9,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
     case $::operatingsystem {
         'Darwin': {
 
+            include puppet::atboot
+
             class { 'talos':
                 user => 'cltbld',
             }
