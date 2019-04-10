@@ -7,6 +7,8 @@ class puppet::atboot (
     String $puppet_branch = 'master',
 ) {
 
+    include puppet::setup
+
     case $::operatingsystem {
         'Darwin': {
             file {
