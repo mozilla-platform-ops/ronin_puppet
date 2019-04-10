@@ -4,8 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 PUPPET_ENV='production'
-PUPPET_REPO="${PUPPET_REPO:-https://github.com/mozilla-platform-ops/ronin_puppet.git}"
-PUPPET_BRANCH="${PUPPET_BRANCH:-master}"
+PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
+PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 WORKING_DIR="/etc/puppet/environments/${PUPPET_ENV}/code"
 R10K_DIR="/etc/puppet/environments/${PUPPET_ENV}/r10k_modules"
 ROLE_FILE='/etc/puppet_role'
@@ -13,6 +13,8 @@ PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
 R10K_BIN='/opt/puppetlabs/bin/r10k'
 FQDN=$(${FACTER_BIN} networking.fqdn)
+
+export LANG=en_US.UTF-8
 
 function fail {
     # TODO: report failure to ext service

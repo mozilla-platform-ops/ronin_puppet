@@ -7,6 +7,13 @@
        - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 
 <dict>
+        <key>EnvironmentVariables</key>
+        <dict>
+                <key>LANG</key>
+                <string>en_US.UTF-8</string>
+                <key>PATH</key>
+                <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin</string>
+        </dict>
         <key>Label</key>
         <string>org.mozilla.atboot_puppet</string>
         <key>LaunchOnlyOnce</key>
