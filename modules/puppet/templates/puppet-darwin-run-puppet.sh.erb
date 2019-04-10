@@ -34,17 +34,19 @@ else
     fail "Failed to find puppet role file ${ROLE_FILE}"
 fi
 
+[ -f '/var/root/vault.yaml' ] || fail "Secrets file not found"
+
 function update_puppet {
 
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
-        git init || fail
-        git remote add origin "${PUPPET_REPO}" || fail
+        git init || return 1
+        git remote add origin "${PUPPET_REPO}" || return 1
     fi
 
     # Fetch and checkout production branch
-    git fetch --all --prune || fail
-    git checkout --force origin/${PUPPET_BRANCH} || fail
+    git fetch --all --prune || return 1
+    git checkout --force origin/${PUPPET_BRANCH} || return 1
 
     # Purge modules no longer managed by Puppetfile
     R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
@@ -64,17 +66,22 @@ node '${FQDN}' {
     include ::roles_profiles::roles::${ROLE}
 }
 EOF
+
+    return 0
 }
 
 function run_puppet {
 
     # Always bring the puppet git and r10k modules up-to-sync before executing puppet
-    update_puppet
+    if ! update_puppet; then
+        echo "Failed to update puppet"
+        return 1
+    fi
 
     TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
 
-    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${R10K_DIR}" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/' '--noop')
+    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${R10K_DIR}" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     retval=$?
     # just in case, if there were any errors logged, flag it as an error run
