@@ -1,0 +1,80 @@
+#!/bin/bash
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+PUPPET_ENV='production'
+PUPPET_REPO='https://github.com/mozilla-platform-ops/ronin_puppet.git'
+WORKING_DIR="/etc/puppet/environments/${PUPPET_ENV}/code"
+R10K_DIR="/etc/puppet/environments/${PUPPET_ENV}/r10k_modules"
+ROLE_FILE='/etc/puppet_role'
+PUPPET_BIN='/opt/puppetlabs/bin/puppet'
+FACTER_BIN='/opt/puppetlabs/bin/facter'
+R10K_BIN='/opt/puppetlabs/bin/r10k'
+
+function fail {
+    # TODO: report failure to ext service
+    echo "${@}"
+    exit 1
+}
+
+mkdir -p "${WORKING_DIR}" || fail
+mkdir -p "${R10K_DIR}" || fail
+cd "${WORKING_DIR}" || fail
+
+# Make dir world writable for puppet homebrew bug workaround
+chmod 777 .
+
+if [ -f "${ROLE_FILE}" ]; then
+    ROLE=$(<${ROLE_FILE})
+else
+    fail "Failed to find puppet role file ${ROLE_FILE}"
+fi
+
+function init_working_dir {
+    git init || fail
+    git remote add origin "${PUPPET_REPO}" || fail
+    update_puppet
+}
+
+function update_puppet {
+    echo "Fetch and checkout production branch"
+    git fetch --all --prune || fail
+    git checkout --force origin/master || fail
+}
+
+function run_puppet {
+    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${R10K_DIR}" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/' '--noop')
+    $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}"
+}
+
+function run_until_success {
+    run_puppet
+}
+
+if find "${WORKING_DIR}"  -mindepth 1 -print -quit 2>/dev/null | grep -q .; then
+    update_puppet
+else
+    init_working_dir
+fi
+
+# Install r10k modules
+R10K_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
+$R10K_BIN puppetfile install "${R10K_OPTIONS[@]}"
+
+# Copy secrets
+mkdir -p "${WORKING_DIR}/data/secrets"
+cp /var/root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
+chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
+
+FQDN=$(${FACTER_BIN} networking.fqdn)
+
+cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
+node '${FQDN}' {
+    include ::roles_profiles::roles::${ROLE}
+}
+EOF
+
+run_until_success
+
+exit 0
