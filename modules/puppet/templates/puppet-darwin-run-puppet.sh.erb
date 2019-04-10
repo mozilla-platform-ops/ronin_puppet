@@ -12,6 +12,7 @@ ROLE_FILE='/etc/puppet_role'
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
 R10K_BIN='/opt/puppetlabs/bin/r10k'
+FQDN=$(${FACTER_BIN} networking.fqdn)
 
 function fail {
     # TODO: report failure to ext service
@@ -26,60 +27,73 @@ cd "${WORKING_DIR}" || fail
 # Make dir world writable for puppet homebrew bug workaround
 chmod 777 .
 
+# Set role or fail if file not found
 if [ -f "${ROLE_FILE}" ]; then
     ROLE=$(<${ROLE_FILE})
 else
     fail "Failed to find puppet role file ${ROLE_FILE}"
 fi
 
-function init_working_dir {
-    git init || fail
-    git remote add origin "${PUPPET_REPO}" || fail
-    update_puppet
-}
-
 function update_puppet {
-    echo "Fetch and checkout production branch"
+
+    # Initialize working dir if dir is empty
+    if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
+        git init || fail
+        git remote add origin "${PUPPET_REPO}" || fail
+    fi
+
+    # Fetch and checkout production branch
     git fetch --all --prune || fail
     git checkout --force origin/${PUPPET_BRANCH} || fail
-}
 
-function run_puppet {
-    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${R10K_DIR}" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/' '--noop')
-    $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}"
-}
+    # Purge modules no longer managed by Puppetfile
+    R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
+    $R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
 
-function run_until_success {
-    run_puppet
-}
+    # Install r10k modules
+    R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
+    $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
-if find "${WORKING_DIR}"  -mindepth 1 -print -quit 2>/dev/null | grep -q .; then
-    update_puppet
-else
-    init_working_dir
-fi
+    # Copy secrets
+    mkdir -p "${WORKING_DIR}/data/secrets"
+    cp /var/root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
+    chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
 
-# Purge modules no longer managed by Puppetfile
-R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
-$R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
-
-# Install r10k modules
-R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
-$R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
-
-# Copy secrets
-mkdir -p "${WORKING_DIR}/data/secrets"
-cp /var/root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
-chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
-
-FQDN=$(${FACTER_BIN} networking.fqdn)
-
-cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
+    cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
 node '${FQDN}' {
     include ::roles_profiles::roles::${ROLE}
 }
 EOF
+}
 
-run_until_success
+function run_puppet {
+
+    # Always bring the puppet git and r10k modules up-to-sync before executing puppet
+    update_puppet
+
+    TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
+    [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
+
+    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${R10K_DIR}" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/' '--noop')
+    $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
+    retval=$?
+    # just in case, if there were any errors logged, flag it as an error run
+    if grep -q "^Error:" "${TMP_LOG}"
+    then
+        retval=1
+    fi
+
+    rm "${TMP_LOG}"
+    case $retval in
+        0|2) return 0;;
+        *) return 1;;
+    esac
+}
+
+# Call the run_puppet function in a endless loop
+while ! run_puppet; do
+    echo "Puppet run failed; re-trying after 10m"
+    sleep 600
+done
 
 exit 0
