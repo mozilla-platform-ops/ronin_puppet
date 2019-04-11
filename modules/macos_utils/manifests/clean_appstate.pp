@@ -7,6 +7,21 @@ define macos_utils::clean_appstate (
     String $group,
 ) {
 
+    file {
+        "/Users/${user}/Library/Saved Application State":
+            ensure  => directory,
+            owner   => $user,
+            group   => $group,
+            mode    => '0500', # remove write permission
+            require => File["/Users/${user}/Library"];
+        "/Users/${user}/Library/Preferences/.GlobalPreferences.plist":
+            ensure  => file,
+            owner   => $user,
+            group   => $group,
+            mode    => '0600',
+            require => File["/Users/${user}/Library/Preferences"];
+    }
+
     # clean out saved application state on OS X, and prevent new state from being written
     # two different ways
     tidy {
@@ -15,33 +30,6 @@ define macos_utils::clean_appstate (
             rmdirs  => true,
             recurse => true,
             require => File["/Users/${user}/Library/Saved Application State"];
-    }
-
-    file {
-        "/Users/${user}/Library":
-            ensure  => directory,
-            owner   => $user,
-            group   => $group,
-            mode    => '0755',
-            require => File["/Users/${user}"];
-        "/Users/${user}/Library/Preferences":
-            ensure  => directory,
-            owner   => $user,
-            group   => $group,
-            mode    => '0700',
-            require => File["/Users/${user}/Library"];
-        "/Users/${user}/Library/Preferences/ByHost":
-            ensure  => directory,
-            owner   => $user,
-            group   => $group,
-            mode    => '0700',
-            require => File["/Users/${user}/Library/Preferences"];
-        "/Users/${user}/Library/Saved Application State":
-            ensure  => directory,
-            owner   => $user,
-            group   => $group,
-            mode    => '0500', # remove write permission
-            require => File["/Users/${user}/Library"];
     }
 
     # In order to prevent apps from reopening on reboot, we change the owner to root and remove write access
@@ -60,6 +48,6 @@ define macos_utils::clean_appstate (
             key      => 'NSQuitAlwaysKeepsWindows',
             value    => '0',
             val_type => 'int',
-            require  => File["/Users/${user}/Library/Preferences"];
+            require  => File["/Users/${user}/Library/Preferences/.GlobalPreferences.plist"];
     }
 }

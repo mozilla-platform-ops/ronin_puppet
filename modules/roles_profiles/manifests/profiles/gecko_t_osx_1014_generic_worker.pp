@@ -9,6 +9,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
     case $::operatingsystem {
         'Darwin': {
 
+            include puppet::atboot
+
             class { 'talos':
                 user => 'cltbld',
             }
@@ -54,7 +56,11 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             contain mercurial::system_hgrc
 
             contain packages::python2
-            contain python2::system_pip_conf
+            python2::user_pip_conf { 'cltbld_user_pip_conf':
+                user  => 'cltbld',
+                group => 'staff',
+            }
+
             file {
                 '/tools/python':
                     ensure  => 'link',
@@ -73,6 +79,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                     target  => '/usr/local/bin/python3',
                     require => Class['packages::python3'],
             }
+
+            contain packages::virtualenv
 
         }
         default: {
