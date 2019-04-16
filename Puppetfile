@@ -1,3 +1,5 @@
+moduledir 'r10k_modules
+
 
 mod 'puppetlabs-stdlib', '5.1.0'
 mod 'puppetlabs-concat', '5.1.0'
@@ -9,7 +11,6 @@ mod 'puppetlabs-firewall', '1.14.0'
 mod 'thekevjames-homebrew', '1.8.3'
 mod 'counsyl-windows', '1.0.6'
 mod 'ncorrare-windowstime', '0.4.3'
-mod 'reidmv-unzip', '0.1.2'
 mod 'puppet-windows_firewall', '2.0.2'
 mod 'puppetlabs-registry', '2.1.0'
 mod 'puppetlabs-powershell', '2.2.0'
