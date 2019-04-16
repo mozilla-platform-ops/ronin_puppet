@@ -14,7 +14,6 @@ class win_packages::performance_tool_kit (
         }
         file { $moz_profile_file:
             source  => $moz_profile_source,
-            content => $moz_profile_source,
         }
         exec { 'install_moz_profile':
             command     => "${facts[custom_win_system32]}\\wbem\\mofcomp.exe ${moz_profile_file}",
