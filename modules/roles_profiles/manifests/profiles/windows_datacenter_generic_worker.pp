@@ -7,7 +7,6 @@ class roles_profiles::profiles::windows_datacenter_generic_worker {
     case $::operatingsystem {
         'Windows': {
 
-            $taskcluster_github       = lookup('taskcluster_github')
             $taskcluster_access_token = lookup('taskcluster_access_token')
             $livelog_secret           = lookup('livelog_secret')
             $ext_pkg_src_loc          = lookup('win_ext_pkg_src')
