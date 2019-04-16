@@ -147,9 +147,9 @@ Function Ronin-PreRun {
     Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
     Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
 
-    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/geckotwin1064hw-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\geckotwin1064hw-bootstrap-src.ps1"
-    Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\geckotwin1064hw-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\geckotwin1064hw-bootstrap.ps1
-    Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\geckotwin1064hw-bootstrap.ps1" /sc onstart /RL HIGHEST /f
+    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1"
+    Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
+    Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
 
   }
   end {
