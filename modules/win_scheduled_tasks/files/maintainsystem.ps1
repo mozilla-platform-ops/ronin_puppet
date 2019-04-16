@@ -204,7 +204,7 @@ function Puppet-Run {
     $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
     Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
-    R10k puppetfile install
+    R10k puppetfile install --moduledir=r10k_modules
     # Needs to be removed from path or a wrong puppet file will be used
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
