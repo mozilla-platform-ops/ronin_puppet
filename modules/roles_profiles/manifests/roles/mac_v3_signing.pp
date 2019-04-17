@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::mac-v3-signing {
+class roles_profiles::roles::mac_v3_signing {
 
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::ntp
