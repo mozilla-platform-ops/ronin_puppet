@@ -4,7 +4,14 @@
 
 class roles_profiles::profiles::remove_bootstrap_user {
 
-    user { 'relops':
+    $user = 'relops
+
+    exec { "${user}_admin_group":
+        command => "/usr/bin/dscl . -delete /Users/${user} || rm /private/var/db/dslocal/nodes/Default/users/${user}.plist",
+        unless  => "! /usr/bin/id ${user}",
+    }
+
+    user { $user:
         ensure => absent
     }
 }
