@@ -147,7 +147,7 @@ function get_puppet_repo {
     chmod 777 .
 
     # Install R10k Modules
-    R10K_OPTIONS=('--moduledir "./r10k_modules"' '--force' '-v')
+    R10K_OPTIONS=('--moduledir=./r10k_modules' '--force' '-v')
     $R10K_BIN puppetfile install "${R10K_OPTIONS[@]}" || fail "Failed to install R10k modules"
 
     # Inject hiera secrets
