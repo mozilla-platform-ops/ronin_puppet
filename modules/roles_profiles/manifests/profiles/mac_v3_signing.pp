@@ -18,8 +18,6 @@ class roles_profiles::profiles::mac_v3_signing {
                     require => Class['packages::python3'],
             }
 
-            contain packages::virtualenv
-
         }
         default: {
             fail("${::operatingsystem} not supported")
