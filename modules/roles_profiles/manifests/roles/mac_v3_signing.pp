@@ -21,4 +21,5 @@ class roles_profiles::roles::mac_v3_signing {
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::homebrew
     include ::roles_profiles::profiles::relops_users
+    include ::roles_profiles::profiles::releng_users
 }
