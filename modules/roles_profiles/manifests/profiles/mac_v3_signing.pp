@@ -11,13 +11,6 @@ class roles_profiles::profiles::mac_v3_signing {
 
             # we can add generic-worker setup here like in gecko_t_osx_1014_generic_worker.pp
 
-            contain packages::python3
-            file { '/tools/python3':
-                    ensure  => 'link',
-                    target  => '/usr/local/bin/python3',
-                    require => Class['packages::python3'],
-            }
-
         }
         default: {
             fail("${::operatingsystem} not supported")
