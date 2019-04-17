@@ -5,6 +5,6 @@
 class roles_profiles::profiles::remove_bootstrap_user {
 
     user { 'relops':
-        ensure: absent
+        ensure => absent
     }
 }
