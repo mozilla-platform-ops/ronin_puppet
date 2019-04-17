@@ -23,4 +23,6 @@ class roles_profiles::roles::mac_v3_signing {
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::releng_users
     include ::roles_profiles::profiles::remove_bootstrap_user
+
+    include ::roles_profiles::profiles::mac_v3_signing
 }
