@@ -209,7 +209,7 @@ function Puppet-Run {
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    puppet apply manifests\nodes\nodes.pp --test --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-puppetrun.log
+    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-puppetrun.log
     [int]$puppet_exit = $LastExitCode
 
     if ($run_to_success -eq 'true') {

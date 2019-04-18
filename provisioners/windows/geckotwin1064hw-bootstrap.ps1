@@ -115,7 +115,7 @@ Function Clone-Ronin {
 Function Ronin-PreRun {
   param (
     [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
-    [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\nodes.pp",
+    [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes.pp",
     [string] $bootstrap_dir = "$env:systemdrive\BootStrap\",
     [string] $secret_src = "$env:systemdrive\BootStrap\secrets\",
     [string] $secrets = "$env:systemdrive\ronin\data\secrets\",
@@ -221,7 +221,7 @@ function Bootstrap-Puppet {
    	# Needs to be removed from path or a wrong puppet file will be used
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
-    puppet apply manifests\nodes\nodes.pp --test --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
+    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
     [int]$puppet_exit = $LastExitCode
 
     if ($run_to_success -eq 'true') {
