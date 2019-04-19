@@ -6,7 +6,8 @@ class win_shared::win_ronin_dirs {
 
 if $::operatingsystem == 'Windows' {
     $roninprogramdata  = $facts['custom_win_roninprogramdata']
-    $semaphoredir = $facts['custom_win_roninsemaphoredir']
+    $semaphoredir      = $facts['custom_win_roninsemaphoredir']
+    $logdir            = $facts['custom_win_roninslogdir']
 
         # "$facts['custom_win_roninprogramdata']"
         file { $roninprogramdata:
@@ -14,6 +15,10 @@ if $::operatingsystem == 'Windows' {
         }
         # $facts['custom_win_roninsemaphoredir']
         file { $semaphoredir:
+            ensure => directory,
+        }
+        # $facts['custom_win_roninlogdir']
+        file { $logdir:
             ensure => directory,
         }
     } else {

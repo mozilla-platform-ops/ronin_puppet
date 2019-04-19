@@ -1,0 +1,85 @@
+@echo off
+
+if exist <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log copy /y <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log <%= $facts[custom_win_roninlogdir] %>\generic-worker-%time:~-5%.bak
+type NUL > <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log
+if exist <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log copy /y <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log <%= $facts[custom_win_roninlogdir] %>\generic-worker-wrapper-%time:~-5%.bak
+type NUL > <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+ping -n 5 127.0.0.1 1>/nul
+
+echo Running generic-worker startup script (run-generic-worker.bat) ... >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+if exist <%= $win_generic_worker::disable_desktop_interrupt %>.reg reg import <%= $win_generic_worker::generic_worker_dir %>\disable-desktop-interrupt.reg
+if exist <%= $win_generic_worker::generic_worker_dir %>\SetDefaultPrinter.ps1 powershell -NoLogo -file <%= $win_generic_worker::generic_worker_dir %>\SetDefaultPrinter.ps1 -WindowStyle hidden -NoProfile -ExecutionPolicy bypass
+
+:CheckForStateFlag
+echo Checking for <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+if exist <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid goto RunWorker
+ping -n 2 127.0.0.1 1>/nul
+goto CheckForStateFlag
+
+:RunWorker
+echo File <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid found >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+echo Deleting <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid file >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+del /Q /F <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log 2>&1
+pushd %~dp0
+set errorlevel=
+<%= $win_generic_worker::run_generic_worker_command %> >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log 2>&1
+set gw_exit_code=%errorlevel%
+
+if %GW_EXIT_CODE% EQU 0 GoTo exit_0
+if %GW_EXIT_CODE% EQU 67 GoTo exit_67
+if %GW_EXIT_CODE% EQU 68 GoTo exit_68
+if %GW_EXIT_CODE% EQU 71 GoTo exit_71
+if %GW_EXIT_CODE% EQU 73 GoTo exit_73
+
+:End
+
+:exit_0
+echo "Generic worker ran successfully (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+shutdown /r /t 0 /f /c "Rebooting as generic worker ran successfully" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+exit
+
+:exit_67
+echo "Generic worker has created a new user successfully (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+shutdown /r /t 0 /f /c "New user created; rebooting" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+exit
+
+:exit_68
+echo "Generic worker has reached idle timeout set in config file, <%= win_generic_worker::hw_config::idle_timeout %> seconds (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+shutdown /r /t 0 /f /c "Generic worker has reached idle timeout; rebooting" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+
+:exit_69
+echo "Generic-worker panic! Issue with enviroment or worker bug. (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+Goto ErrorReboot
+:exit_71
+echo "Generic-worker was terminated via an interrupt signal. (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+Goto ErrorReboot
+
+:exit_73
+echo "Generic-worker's config is invalid . (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+Goto ErrorReboot
+
+:Other
+echo "Generic-worker exited with code %GW_EXIT_CODE%" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+
+
+
+:ErrorReboot
+echo "For more information on the exit codes run <%= $win_generic_worker::generic_worker_exe %> --help or go to https://github.com/taskcluster/generic-worker" >>  <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+if exist <%= $win_generic_worker::generic_worker_dir %>\rebootcount.txt GoTo AdditonalReboots
+echo 1 >> <%= $win_generic_worker::generic_worker_dir %>\rebootcount.txt
+echo Generic worker exit with code %gw_exit_code%; Rebooting to recover  >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+shutdown /r /t 0 /f /c "Generic worker exit with code %gw_exit_code%; Attempting reboot to recover"
+exit
+:AdditonalReboots
+ping -n 10 127.0.0.1 1>/nul
+for /f "delims=" %%a in ('type "<%= $win_generic_worker::generic_worker_dir %>\rebootcount" ' ) do set num=%%a
+set /a num=num + 1 > <%= $win_generic_worker::generic_worker_dir %>\rebootcount.txt
+if %num% GTR 5 GoTo WaitReboot
+echo Generic worker exit with code %gw_exit_code% more than once; Rebooting to recover  >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+shutdown /r /t 0 /f /c "Generic worker has not recovered;  Rebooting"
+exit
+:WaitReboot
+echo Generic worker exit with code %gw_exit_code% %num% times; 1800 second delay and then rebooting  >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+ping -n 1800 127.0.0.1 1>/nul
+shutdown /r /t 0 /f /c "Generic worker has not recovered;  Rebooting"
+exit

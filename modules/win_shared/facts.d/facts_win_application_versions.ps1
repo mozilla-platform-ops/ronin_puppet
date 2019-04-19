@@ -24,5 +24,7 @@ if (Test-Path $hg_file) {
 } else {
     $hg_ver = 0.0
 }
-write-host "mozbld_ver=$mozbld_ver"
-write-host "hg_ver=$hg_ver"
+
+
+write-host "custom_win_mozbld_vesion=$mozbld_ver"
+write-host "custom_win_hg_version=$hg_ver"

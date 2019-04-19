@@ -9,9 +9,12 @@ class roles_profiles::profiles::microsoft_tools {
 
             # These may chnage for diffrent versions of Windows
             # TODO: Research why we are using a pinned version and add comment why.
-            $moz_profile_source = 'https://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof'
-            $moz_profile_file   = "${facts['custom_win_programfilesx86']}\
-\\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof"
+            # Original source 'https://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof'
+            # When pulling from a HG repo Puppet see it the file as a new file one ach run
+            # In this case triggers the exec and adds to the local WMI repo each time
+            # For now pulling from S3
+            $moz_profile_source = 'https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/mozprofilerprobe.mof'
+            $moz_profile_file   = "${facts['custom_win_roninprogramdata']}\\mozprofilerprobe.mof"
 
             include win_packages::vc_redist_x86
             include win_packages::vc_redist_x64

@@ -18,15 +18,18 @@ class win_mozilla_build::modifications {
         purge  => true,
         force  => true,
     }
-
-    file { "${win_mozilla_build::system_drive}\\home":
-        ensure => link,
-        target => "${win_mozilla_build::system_drive}\\users",
-    }
-    file { "${mozbld}\\msys\\home":
-        ensure => link,
-        target => "${win_mozilla_build::system_drive}\\users",
-    }
+    # File resource fails when create symlink
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1544140
+    # Commenting out to be restored at a later time
+    # May not be needed for testers
+    #file { "${win_mozilla_build::system_drive}\\home":
+    #    ensure => link,
+    #    target => "${win_mozilla_build::system_drive}\\users",
+    #}
+    #file { "${mozbld}\\msys\\home":
+    #    ensure => link,
+    #    target => "${win_mozilla_build::system_drive}\\users",
+    #}
     # Resource from counsyl-windows
     windows::environment { 'MOZILLABUILD':
         value => $win_mozilla_build::install_path,

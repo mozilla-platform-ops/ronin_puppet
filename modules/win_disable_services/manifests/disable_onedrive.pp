@@ -32,7 +32,7 @@ class win_disable_services::disable_onedrive {
         command  => file('win_disable_services/disable_onedrive.ps1'),
         provider => powershell,
         require  => File["${module_dir}\\take-own\\take-own.psm1"],
-        onlyif   => 'Test-Path "$env:systemroot\SysWOW64\OneDriveSetup.exe"',
+        unless   => 'Test-Path "$env:systemroot\SysWOW64\OneDriveSetup.exe"',
     }
 }
 # Bug list

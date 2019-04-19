@@ -19,7 +19,7 @@ LogFile   %ROOT%\data\nxlog.log
   Module im_msvistalog
   Query <QueryList>\
           <Query Id="0">\
-            <Select Path="Application">*[System[Provider[@Name='OpenCloudConfig'] or Provider[@Name='MaintainSystem']]]</Select>\
+            <Select Path="Application">*[System[Provider[@Name='Bootstrap'] or Provider[@Name='MaintainSystem']]]</Select>\
           </Query>\
         </QueryList>
 </Input>
@@ -75,9 +75,18 @@ LogFile   %ROOT%\data\nxlog.log
   Exec $SourceName = 'generic-worker';
 </Input>
 
+<Input bootstrap_puppet_log>
+  Module im_file
+  File 'C:\logs\\*-bootstrap-puppet.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'boostrap-puppet';
+</Input>
+
 <Input puppet_run_log>
   Module im_file
-  File 'C:\\ProgramData\\PuppetLabs\\puppet\\var\\log\\*puppetrun.log'
+  File 'C:\logs\\*-puppetrun.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType LineBased
@@ -124,6 +133,10 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route generic_worker_service_log_<%= $facts[custom_win_mozspace] %>_aggregator>
   Path generic_worker_service_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route bootstrap_puppet_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path bootstrap_puppet_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
 <Route puppet_run_log_<%= $facts[custom_win_mozspace] %>_aggregator>

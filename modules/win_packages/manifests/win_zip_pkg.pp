@@ -9,8 +9,12 @@ define win_packages::win_zip_pkg (
     String $package=$title
 ){
 
-    $pkgdir = $facts['custom_win_temp_dir']
-    $srcloc = lookup('win_ext_pkg_src')
+    require win_packages::sevenzip
+
+    $pkgdir      = $facts['custom_win_temp_dir']
+    $srcloc      = lookup('win_ext_pkg_src')
+    $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
+    $source      = "\"${pkgdir}\\${pkg}\""
 
     file { "${pkgdir}\\${pkg}":
         source => "${srcloc}/${pkg}",
@@ -18,13 +22,14 @@ define win_packages::win_zip_pkg (
     file { $destination:
         ensure => directory,
     }
-    # Resource from reidmv-unzip
-    unzip { $pkg :
-        destination => $destination,
-        creates     => $creates,
-        source      => "${pkgdir}\\${pkg}",
-        require     => File["${pkgdir}\\${pkg}"],
+    # Unzip resources from Forge will fail when Puppet is ran
+    # as system  in a schedule task. This is because of the context
+    # powershell is ran in.
+    exec { $pkg:
+        command => "${seven_zip} x ${source} -o${destination} -y",
+        creates => $creates,
     }
+
 }
 
 # Bug list

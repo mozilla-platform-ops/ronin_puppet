@@ -7,9 +7,9 @@ class roles_profiles::profiles::mozilla_build {
     case $::operatingsystem {
         'Windows': {
 
-        $current_mozbld_ver = $facts['mozbld_ver']
+        $current_mozbld_ver = $facts['custom_win_mozbld_vesion'] # Determined in /modules/win_shared/facts.d/win_application_versions.ps1
         $needed_mozbld_ver  = '3.2'
-        $current_hg_ver     = $facts['hg_ver']
+        $current_hg_ver     = $facts['custom_win_hg_version'] # Determined in /modules/win_shared/facts.d/win_application_versions.ps1
         $needed_hg_ver      = '4.7.1'
         $install_path       = "${facts['custom_win_systemdrive']}\\mozilla-build"
         $system_drive       = $facts['custom_win_systemdrive']
