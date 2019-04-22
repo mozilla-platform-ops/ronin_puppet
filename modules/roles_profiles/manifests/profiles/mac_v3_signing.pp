@@ -79,8 +79,7 @@ class roles_profiles::profiles::mac_v3_signing {
                     target  => '/usr/local/bin/python3',
                     require => Class['packages::python3'],
             }
-
-            contain packages::virtualenv
+            #contain packages::virtualenv
 
         }
         default: {
