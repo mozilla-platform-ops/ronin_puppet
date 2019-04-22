@@ -40,16 +40,19 @@ fi
 
 function update_puppet {
 
+    ping -t 90 -o -Q -i 10 github.com || return 1
+
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
         git init || return 1
         git remote add origin "${PUPPET_REPO}" || return 1
-    fi
 
-    # Fetch and checkout production branch
-    #git fetch --all --prune || return 1
-    #git checkout --force origin/${PUPPET_BRANCH} || return 1
-    git pull || return 1
+        # Fetch and checkout production branch
+        git fetch --all --prune || return 1
+        git checkout --force origin/${PUPPET_BRANCH} || return 1
+    else
+        git pull || return 1
+    fi
 
     # Purge modules no longer managed by Puppetfile
     R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
