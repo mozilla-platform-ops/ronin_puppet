@@ -2,6 +2,11 @@ class bitbar_devicepool {
     
   include ::bitbar_devicepool::systemd_reload
 
+  # install fcgiwrap
+  package { 'fcgiwrap':
+    ensure => installed,
+  }
+
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
     provider => git,
