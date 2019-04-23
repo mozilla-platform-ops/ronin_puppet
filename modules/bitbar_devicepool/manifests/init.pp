@@ -1,5 +1,9 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 class bitbar_devicepool {
-    
+
   include ::bitbar_devicepool::systemd_reload
 
   # create bitbar user & group
@@ -21,7 +25,7 @@ class bitbar_devicepool {
 
   file { '/home/bitbar':
     ensure => directory,
-    owner => 'bitbar'
+    owner  => 'bitbar'
   }
 
   # TODO: add keys
@@ -36,8 +40,8 @@ class bitbar_devicepool {
   }
 
   file { '/etc/systemd/system/bitbar.service':
-    source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
     ensure => file,
+    source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
     notify => [
       Class['bitbar_devicepool::systemd_reload'],
       Service['bitbar'],
@@ -45,9 +49,9 @@ class bitbar_devicepool {
   }
 
   service { 'bitbar':
+    ensure   => running,
     provider => systemd,
-    ensure => running,
-    enable => true,
-    require => Class['bitbar_devicepool::systemd_reload'],
+    enable   => true,
+    require  => Class['bitbar_devicepool::systemd_reload'],
   }
 }
