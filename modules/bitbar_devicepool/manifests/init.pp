@@ -32,6 +32,8 @@ class bitbar_devicepool {
 
   # TODO: configure sudoers
 
+  # TODO: place bitbar env file (encrypt somehow)
+
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
     provider => git,
@@ -48,10 +50,13 @@ class bitbar_devicepool {
     ],
   }
 
+  # we set to stopped as we don't expect to run this past initial convergence
+  # multiple devicepools running is more problematic than none
+  # TODO: figure out how to make one node have it enabled/running
   service { 'bitbar':
-    ensure   => running,
+    ensure   => stopped,
     provider => systemd,
-    enable   => true,
+    enable   => false,
     require  => Class['bitbar_devicepool::systemd_reload'],
   }
 }
