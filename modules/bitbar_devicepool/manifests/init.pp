@@ -17,9 +17,9 @@ class bitbar_devicepool {
 
   file { '/etc/systemd/system/bitbar.service':
     source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
-    ensure => file
+    ensure => file,
     notify => [
-      Class['mozilla_bitbar::systemd_reload'],
+      Class['bitbar_devicepool::systemd_reload'],
       Service['fcgiwrap'],
     ],
   }
@@ -28,6 +28,6 @@ class bitbar_devicepool {
     provider => systemd,
     ensure => running,
     enable => true,
-    require => Class['mozilla_bitbar::systemd_reload'],
+    require => Class['bitbar_devicepool::systemd_reload'],
   }
 }

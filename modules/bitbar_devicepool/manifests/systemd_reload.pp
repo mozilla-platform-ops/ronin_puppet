@@ -1,8 +1,6 @@
-:
+class bitbar_devicepool::systemd_reload {
 
-class mozilla_bitbar::systemd_reload {
-
-  exec { '/usr/bin/systemctl daemon-reload':
+  exec { '/bin/systemctl daemon-reload':
     refreshonly => true,
   }
 
