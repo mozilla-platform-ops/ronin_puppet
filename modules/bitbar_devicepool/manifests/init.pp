@@ -2,38 +2,49 @@ class bitbar_devicepool {
     
   include ::bitbar_devicepool::systemd_reload
 
-  # TODO: create bitbar user
-
-  
-
-  # install fcgiwrap
-  package { 'fcgiwrap':
-    ensure => installed,
+  # create bitbar user & group
+  group { 'bitbar':
+    ensure => 'present',
+    gid    => '1005',
   }
+
+  user { 'bitbar':
+    ensure           => 'present',
+    uid              => '1005',
+    gid              => '1005',
+    home             => '/home/bitbar',
+    password         => '!!',
+    password_max_age => '99999',
+    password_min_age => '0',
+    shell            => '/bin/bash',
+  }
+
+  file { '/home/bitbar':
+    ensure => directory,
+    owner => 'bitbar'
+  }
+
+  # TODO: add keys
+
+  # TODO: configure sudoers
 
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
     provider => git,
     source   => 'https://github.com/bclary/mozilla-bitbar-devicepool.git',
-    # user     => 'blake',
+    user     => 'bitbar',
   }
-
-  # service { "getty@ttyUSB0.service":
-  #   provider => systemd,
-  #   ensure => running,
-  #   enable => true,
-  # }
 
   file { '/etc/systemd/system/bitbar.service':
     source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
     ensure => file,
     notify => [
       Class['bitbar_devicepool::systemd_reload'],
-      Service['fcgiwrap'],
+      Service['bitbar'],
     ],
   }
 
-  service { 'fcgiwrap':
+  service { 'bitbar':
     provider => systemd,
     ensure => running,
     enable => true,
