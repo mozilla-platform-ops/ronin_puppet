@@ -2,6 +2,10 @@ class bitbar_devicepool {
     
   include ::bitbar_devicepool::systemd_reload
 
+  # TODO: create bitbar user
+
+  
+
   # install fcgiwrap
   package { 'fcgiwrap':
     ensure => installed,
