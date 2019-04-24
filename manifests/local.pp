@@ -11,4 +11,5 @@ class kitchen_template2(
 # INCLUDE THE CLASS
 include ::bitbar_devicepool
 include roles_profiles::profiles::relops_users
+include roles_profiles::profiles::cia_users
 # TODO: call ::bitbar_devicepool:users

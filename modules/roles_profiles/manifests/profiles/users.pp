@@ -5,17 +5,7 @@
 class roles_profiles::profiles::users {
 
     case $::operatingsystem {
-        'Darwin': {
-            # Fetch a hash of all users and their keys
-            # Then instant the all_users class which generates
-            # virtual resources for all users to be realized in
-            # other profiles based on group association
-            $all_users = lookup('all_users', Hash, undef, undef)
-            class { 'users::all_users':
-                all_users => $all_users
-            }
-        }
-        'Ubuntu': {
+        'Darwin', 'Ubuntu': {
             # Fetch a hash of all users and their keys
             # Then instant the all_users class which generates
             # virtual resources for all users to be realized in
