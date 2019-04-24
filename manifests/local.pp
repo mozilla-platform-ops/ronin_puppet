@@ -9,7 +9,7 @@
 # }
 
 # dirty hack: include site.pp
-# import is deprecated and pupet apply can't point at a directory of manifests
+# can't point at directory of manifests, as last check in site.pp fails for test-kitchen
 case $::operatingsystem {
     'Windows': {
     }
