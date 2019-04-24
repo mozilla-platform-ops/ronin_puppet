@@ -28,8 +28,6 @@ class sudo {
         }
     }
 
-
-
     file { '/etc/sudoers.d':
         ensure => absent,
         force  => true,

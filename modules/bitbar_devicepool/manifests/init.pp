@@ -28,10 +28,12 @@ class bitbar_devicepool {
     owner  => 'bitbar'
   }
 
-  # TODO: configure sudoers
+  # TODO: create wheel group
+  group { 'wheel':
+    ensure => 'present',
+  }
 
-  # TODO: eventually place bitbar env file (encrypt somehow)
-  # - do manually for now
+  # TODO: add users to wheel group
 
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
@@ -58,4 +60,13 @@ class bitbar_devicepool {
     enable   => false,
     require  => Class['bitbar_devicepool::systemd_reload'],
   }
+
+  # TODO: create /etc/bitbar dir
+
+  # TODO: eventually place bitbar env file (encrypt somehow)
+  # - do manually for now
+  # TODO: print message telling user to now manually place the bitbar env file at /etc/bitbar/bitbar.env
+
+  # -rw-r-----.   1 root bitbar 1411 Apr  4 13:02 bitbar.env
+
 }
