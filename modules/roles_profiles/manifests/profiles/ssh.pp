@@ -36,6 +36,9 @@ class roles_profiles::profiles::ssh {
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
         }
+        'Darwin': {
+            include ssh
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }

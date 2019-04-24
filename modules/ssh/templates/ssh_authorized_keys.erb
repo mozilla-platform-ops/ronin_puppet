@@ -1,0 +1,13 @@
+<%# This Source Code Form is subject to the terms of the Mozilla Public
+  # License, v. 2.0. If a copy of the MPL was not distributed with this
+  # file, You can obtain one at http://mozilla.org/MPL/2.0/. -%>
+<%
+    by_name = scope.lookupvar('ssh::keys::by_name')
+
+    # this array gets flattened in case it's built using [ $some_array,
+    # $some_other ] in puppet DSL
+    Array(@authorized_keys).flatten.each do |name|
+        keys = by_name[name]
+        raise "no key for #{name}" unless keys
+        keys.each { |key| %><%= key + "\n" %><% }
+    end -%>
