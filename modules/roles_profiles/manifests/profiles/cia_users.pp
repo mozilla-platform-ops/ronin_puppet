@@ -15,7 +15,7 @@ class roles_profiles::profiles::cia_users {
 
             # TODO: add groups support?
             $relops.each |String $user| {
-                group { "${user}":
+                group { $user:
                         ensure => 'present',
                 }
             }

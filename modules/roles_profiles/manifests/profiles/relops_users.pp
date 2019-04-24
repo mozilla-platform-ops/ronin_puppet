@@ -31,9 +31,9 @@ class roles_profiles::profiles::relops_users {
             $relops = lookup('user_groups.relops', Array, undef, undef)
             realize(Users::Single_user[$relops])
 
-            # TODO: add groups support?
+            # add groups
             $relops.each |String $user| {
-                group { "${user}":
+                group { $user:
                         ensure => 'present',
                 }
             }
