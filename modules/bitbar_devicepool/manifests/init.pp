@@ -32,15 +32,8 @@ class bitbar_devicepool {
   }
 
   # TODO: add users to wheel group
-  # User['bclary'] {
-  #   groups     => 'wheel'
-  # }
-  # User['aerickson'] {
-  #   groups     => 'wheel'
-  # # }
-
-  # User<| title == app1user |> { groups +> [ "app2users" ] }
-  # User<| title == app1user |> { groups => [ "app2users" ] }
+  User<| title == bclary |> { groups +> ['wheel', 'bitbar'] }
+  User<| title == aerickson |> { groups +> ['wheel', 'bitbar'] }
 
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
