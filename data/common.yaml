@@ -20,7 +20,7 @@ user_groups:
     - rthijssen
     - dcrisan
   cia:
-    - bc
+    - bclary
 
 
 all_users:

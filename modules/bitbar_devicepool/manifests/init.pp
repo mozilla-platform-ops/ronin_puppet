@@ -9,18 +9,16 @@ class bitbar_devicepool {
   # create bitbar user & group
   group { 'bitbar':
     ensure => 'present',
-    gid    => '1005',
   }
 
   user { 'bitbar':
     ensure           => 'present',
-    uid              => '1005',
-    gid              => '1005',
     home             => '/home/bitbar',
     password         => '!!',
     password_max_age => '99999',
     password_min_age => '0',
     shell            => '/bin/bash',
+    groups           => ['bitbar'],
   }
 
   file { '/home/bitbar':
@@ -28,12 +26,21 @@ class bitbar_devicepool {
     owner  => 'bitbar'
   }
 
-  # TODO: create wheel group
+  # create wheel group
   group { 'wheel':
     ensure => 'present',
   }
 
   # TODO: add users to wheel group
+  # User['bclary'] {
+  #   groups     => 'wheel'
+  # }
+  # User['aerickson'] {
+  #   groups     => 'wheel'
+  # # }
+
+  # User<| title == app1user |> { groups +> [ "app2users" ] }
+  # User<| title == app1user |> { groups => [ "app2users" ] }
 
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
