@@ -26,30 +26,7 @@ define users::single_user (
     }
 
     case $facts['os']['family'] {
-        'Darwin': {
-            # If values for password, salt and iteration are passed, then set the user with a password
-            if $password and $salt and $iterations {
-                user { $user:
-                    gid        => $group,
-                    shell      => $shell,
-                    home       => $home,
-                    groups     => $groups,
-                    comment    => $user,
-                    password   => $password,
-                    salt       => $salt,
-                    iterations => $iterations,
-                }
-            } else {
-                user { $user:
-                    gid     => $group,
-                    shell   => $shell,
-                    home    => $home,
-                    groups  => $groups,
-                    comment => $user,
-                }
-            }
-        }
-        'Debian': {
+        'Darwin', 'Debian': {
             # If values for password, salt and iteration are passed, then set the user with a password
             if $password and $salt and $iterations {
                 user { $user:
