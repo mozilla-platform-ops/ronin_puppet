@@ -11,6 +11,10 @@ case $::operatingsystem {
         $root_group = 'wheel'
 
     }
+    'Ubuntu': {
+        $root_user = 'root'
+        $root_group = 'root'
+    }
     default: {
     }
 }
