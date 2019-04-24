@@ -10,8 +10,7 @@ class roles_profiles::profiles::mac_v3_signing {
             # "pinning"
             # for the first setup of a node type, the provisioner script in the image must have a valid node
             # then, this pinning will apply on the next run atboot
-            include puppet::atboot
-            puppet::atboot { 'puppet_atboot':
+            class { 'puppet::atboot':
                 puppet_repo   => 'https://github.com/davehouse/ronin_puppet.git',
                 puppet_branch => 'notarization',
             }
