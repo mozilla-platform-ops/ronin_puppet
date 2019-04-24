@@ -65,7 +65,8 @@ define users::home_dir (
                 owner   => $user,
                 group   => $group,
                 require => User[$user],
-            }        }
+            }
+        }
         default: {
             fail("${module_name} does not support ${facts['os']['family']}")
         }
