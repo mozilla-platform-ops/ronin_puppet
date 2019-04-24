@@ -13,7 +13,7 @@ class roles_profiles::profiles::cia_users {
             $relops = lookup('user_groups.cia', Array, undef, undef)
             realize(Users::Single_user[$relops])
 
-            # TODO: add groups support?
+            # add groups
             $relops.each |String $user| {
                 group { $user:
                         ensure => 'present',
