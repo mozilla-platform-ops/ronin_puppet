@@ -2,11 +2,11 @@
 
 ##################################################
 #### MOCK CLASSES WHICH SHOULD NOT TESTED HERE
-class kitchen_template2(
-  Hash $config = {},
-) {
-  notice( 'mocked class ==> kitchen_template::foobar' )
-}
+# class kitchen_template2(
+#   Hash $config = {},
+# ) {
+#   notice( 'mocked class ==> kitchen_template::foobar' )
+# }
 
 # INCLUDE CLASSES HERE
 
@@ -14,6 +14,7 @@ class kitchen_template2(
 include ::bitbar_devicepool
 include roles_profiles::profiles::relops_users
 include roles_profiles::profiles::cia_users
+include ::sudo
 
 # mac g-w testing
 

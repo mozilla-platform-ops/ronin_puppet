@@ -10,10 +10,25 @@ class sudo {
         mode  => '0440',
     }
 
-    concat::fragment { '00-base':
-        target  => '/etc/sudoers',
-        content => template("${module_name}/sudoers-base.erb");
+    case $::operatingsystem {
+        'Darwin': {
+            concat::fragment { '00-base':
+                target  => '/etc/sudoers',
+                content => template("${module_name}/darwin-sudoers-base.erb");
+            }
+        }
+        'Ubuntu': {
+            concat::fragment { '00-base':
+                target  => '/etc/sudoers',
+                content => template("${module_name}/ubuntu-sudoers-base.erb");
+            }
+        }
+        default: {
+            fail("${module_name} not supported under ${::operatingsystem}")
+        }
     }
+
+
 
     file { '/etc/sudoers.d':
         ensure => absent,
