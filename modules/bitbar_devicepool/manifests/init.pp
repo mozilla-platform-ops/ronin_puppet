@@ -28,8 +28,6 @@ class bitbar_devicepool {
     owner  => 'bitbar'
   }
 
-  # TODO: add keys
-
   # TODO: configure sudoers
 
   # TODO: eventually place bitbar env file (encrypt somehow)
