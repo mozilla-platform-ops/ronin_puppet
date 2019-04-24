@@ -57,8 +57,15 @@ define users::home_dir (
             }
         }
         'Debian': {
-            #
-        }
+            # Create user home directory and populate it with skeleton files and users custom files
+            file { $home:
+                source  => [ "puppet:///modules/users/home_dirs/${user}", 'puppet:///modules/users/home_dirs/skel' ],
+                recurse => remote,
+                mode    => 'g-w,o-rwx',
+                owner   => $user,
+                group   => $group,
+                require => User[$user],
+            }        }
         default: {
             fail("${module_name} does not support ${facts['os']['family']}")
         }
