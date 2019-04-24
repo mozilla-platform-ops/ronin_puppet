@@ -23,6 +23,21 @@ class roles_profiles::profiles::relops_users {
                 }
             }
         }
+        'Ubuntu': {
+            # Make sure the users profile is required
+            # That is where the user virtual resources are generated
+            require roles_profiles::profiles::users
+            # Lookup the relops group array and realize their user resource
+            $relops = lookup('user_groups.relops', Array, undef, undef)
+            realize(Users::Single_user[$relops])
+
+            # TODO: add groups support?
+            $relops.each |String $user| {
+                group { "${user}":
+                        ensure => 'present',
+                }
+            }
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }

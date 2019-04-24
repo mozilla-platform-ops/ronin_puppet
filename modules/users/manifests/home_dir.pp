@@ -56,6 +56,9 @@ define users::home_dir (
                 require  => File[$home],
             }
         }
+        'Debian': {
+            #
+        }
         default: {
             fail("${module_name} does not support ${facts['os']['family']}")
         }

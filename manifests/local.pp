@@ -9,5 +9,5 @@ class kitchen_template2(
 }
 
 # INCLUDE THE CLASS
-include ::bitbar_devicepool
-
+# include ::bitbar_devicepool
+include roles_profiles::profiles::relops_users

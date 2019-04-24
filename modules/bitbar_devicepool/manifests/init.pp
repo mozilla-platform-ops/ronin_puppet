@@ -32,7 +32,8 @@ class bitbar_devicepool {
 
   # TODO: configure sudoers
 
-  # TODO: place bitbar env file (encrypt somehow)
+  # TODO: eventually place bitbar env file (encrypt somehow)
+  # - do manually for now
 
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
