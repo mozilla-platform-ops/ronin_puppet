@@ -8,8 +8,13 @@ class kitchen_template2(
   notice( 'mocked class ==> kitchen_template::foobar' )
 }
 
-# INCLUDE THE CLASS
+# INCLUDE CLASSES HERE
+
+# bitbar testing
 include ::bitbar_devicepool
 include roles_profiles::profiles::relops_users
 include roles_profiles::profiles::cia_users
-# TODO: call ::bitbar_devicepool:users
+
+# mac g-w testing
+
+# linux g-w testing
