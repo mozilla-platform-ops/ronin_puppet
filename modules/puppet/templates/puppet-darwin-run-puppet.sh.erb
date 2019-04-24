@@ -48,7 +48,7 @@ function update_puppet {
 
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
-    git checkout --force origin/${PUPPET_BRANCH} || return 1
+    git checkout --force "origin/${PUPPET_BRANCH}" || return 1
 
     # Purge modules no longer managed by Puppetfile
     R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
