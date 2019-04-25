@@ -23,4 +23,6 @@ kitchen converge
 kitchen verify
 ```
 
-New suites can be added in .kitchen.yaml. [serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
+New test suites can be added in .kitchen.yaml.
+
+[serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
