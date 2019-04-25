@@ -40,7 +40,7 @@ platforms:
 suites:
   - name: bitbar
     provisioner:
-      manifest: testing.pp
+      manifest: bitbar.pp
     verifier:
       inspec_tests:
         - test/integration/bitbar
