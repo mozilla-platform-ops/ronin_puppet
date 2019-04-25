@@ -12,6 +12,7 @@ gemfile: ".gemfile"
 script:
   - "puppet parser validate `find modules -name '*.pp'`"
   - "puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
+  - "kitchen test"
 
 notifications:
   irc:
