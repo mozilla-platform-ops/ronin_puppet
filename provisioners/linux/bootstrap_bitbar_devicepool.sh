@@ -123,9 +123,6 @@ apt-get update -y && apt-get install -y puppet-agent
 ln -s /opt/puppetlabs/bin/puppet /usr/bin/puppet
 # install r10k
 /opt/puppetlabs/puppet/bin/gem install r10k
-# install other things
-# TODO: move to pp file
-apt-get install -y ruby vim git curl lvm2
 
 # run puppet
 run_puppet
