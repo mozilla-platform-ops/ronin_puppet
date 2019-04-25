@@ -5,8 +5,8 @@ driver:
 
 provisioner:
   name: puppet_apply
-  manifests_path: manifests
-  manifest: local.pp
+  manifests_path: manifests-kitchen
+  manifest: testing.pp
   modules_path: modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
