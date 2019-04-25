@@ -26,6 +26,14 @@ describe 'users' do
     it { should exist }
   end
 
+  describe user('jwatkins') do
+    it { should exist }
+  end
+
+  describe user('dhouse') do
+    it { should exist }
+  end
+
   describe user('bitbar') do
     it { should exist }
   end
