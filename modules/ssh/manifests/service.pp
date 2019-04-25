@@ -22,5 +22,8 @@ class ssh::service {
                     ensure => absent;
             }
         }
+        default: {
+            fail("${::operatingsystem} not suported")
+        }
     }
 }

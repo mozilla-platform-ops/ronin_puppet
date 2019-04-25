@@ -8,13 +8,6 @@ class ssh::config {
     include ::config
 
     case $::operatingsystem {
-        CentOS: {
-            # enable sftp sybsystem on CentOS
-            $sftp_line = 'Subsystem sftp /usr/libexec/openssh/sftp-server'
-        }
-    }
-
-    case $::operatingsystem {
         Windows: {
             include packages::kts
 

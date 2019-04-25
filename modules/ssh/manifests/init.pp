@@ -10,10 +10,12 @@ class ssh {
     Anchor['ssh::begin'] ->
     class {
         'ssh::service': ;
-    } -> Anchor['ssh::end']
+    } ->
+    Anchor['ssh::end']
 
     Anchor['ssh::begin'] ->
     class {
         'ssh::config': ;
-    } -> Anchor['ssh::end']
+    } ->
+    Anchor['ssh::end']
 }
