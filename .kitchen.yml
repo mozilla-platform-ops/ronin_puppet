@@ -1,4 +1,5 @@
 ---
+# from https://github.com/scoopex/puppet-kitchen_template
 driver:
   provision: true
 
@@ -36,64 +37,5 @@ platforms:
       vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
       box: ubuntu/bionic64
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
-      # synced_folders:
-      #   - ['./modules', '/tmp/modules']
-      #network:
-      #- ['private_network', {ip: '192.168.33.33'}]
-      #- ["forwarded_port", {guest: 8080, host: 8080}]
-      #
-   # vagrant automatically generates a hostname, if that exceeds 64 characters vbox fails, see bug #6
-#   - name: ubuntu16-kitchen_template
-#     driver_plugin: vagrant
-#     driver_config:
-#       customize:
-#         audio: "none"
-#     driver:
-#       vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
-#       box: ubuntu/xenial64
-#       box_url: https://app.vagrantup.com/ubuntu/boxes/xenial64
-#       customize:
-#         memory: 1024
-#       synced_folders:
-#         - ['./files', '/tmp/files']
-#       #network:
-#       #- ['private_network', {ip: '192.168.33.33'}]
-#       #- ["forwarded_port", {guest: 8080, host: 8080}]
-
-#       #
-#   - name: centos7-kitchen_template
-#     driver_plugin: vagrant
-#     driver_config:
-#       customize:
-#         audio: "none"
-#     driver:
-#       vagrantfile_erb: vagrantfiles/Vagrantfile-centos.erb
-#       box: centos/7
-#       box_url: https://app.vagrantup.com/centos/boxes/7
-#   - name: ubuntu-docker-kitchen_template
-#     driver_plugin: docker
-#     driver_config:
-# #     dockerfile: dockerfiles/Dockerfile
-#       image: ubuntu:16.04
-# #      forward:
-# #       - 8080:80
-# #       - 8443:443
-# #       - 9080:8080
-#       privileged: true
-#       remove_images: <%= ENV['KITCHEN_REMOVE_IMAGES'] || false %>
-#       require_chef_omnibus: false
-#       use_cache: <%= ENV['KITCHEN_USE_CACHE'] || true %>
-#       use_sudo: false
-#       volume: /sys/fs/cgroup
-#       provision_command:
-#         - apt-get update
-#         - apt-get install gem ruby openssl -y
-#         - openssl req -x509  -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/localtest.key -out /etc/ssl/localtest.crt -subj "/C=DE/ST=Town/L=Stuttgart/O=BAR/OU=FOO/CN=IT"
-#         - cat /etc/ssl/localtest.key /etc/ssl/localtest.crt > /etc/ssl/localtest.pem
-#         - mkdir -p /etc/foo-ssl/star_foobar_net/
-#         - ln -s /etc/ssl/localtest.key  /etc/foo-ssl/star_foobar_net/star_foobar_net.key
-#         - ln -s /etc/ssl/localtest.crt  /etc/foo-ssl/star_foobar_net/star_foobar_net.crt
-#         - ln -s /etc/ssl/localtest.crt  /etc/foo-ssl/star_foobar_net/star_foobar_net.ca-bundle
-#         - ln -s /etc/ssl/localtest.pem  /etc/foo-ssl/star_foobar_net/star_foobar_net.pem
 suites:
   - name: default
