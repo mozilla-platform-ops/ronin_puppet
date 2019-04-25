@@ -1,5 +1,3 @@
-# This file is only used for testing purposes
-
 ##################################################
 #### MOCK CLASSES WHICH SHOULD NOT TESTED HERE
 # class kitchen_template2(
@@ -27,12 +25,5 @@ case $::operatingsystem {
     }
 }
 
-
 # INCLUDE CLASSES HERE
-
-# bitbar testing
 include roles_profiles::roles::bitbar_devicepool
-
-# mac g-w testing
-
-# linux g-w testing
