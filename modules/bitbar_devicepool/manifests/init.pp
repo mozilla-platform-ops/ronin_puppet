@@ -23,7 +23,15 @@ class bitbar_devicepool {
 
   file { '/home/bitbar':
     ensure => directory,
-    owner  => 'bitbar'
+    owner  => 'bitbar',
+    group  => 'bitbar',
+    mode   => '0770'
+  }
+  file { '/etc/bitbar':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'bitbar',
+    mode   => '0750'
   }
 
   # create wheel group
@@ -31,7 +39,7 @@ class bitbar_devicepool {
     ensure => 'present',
   }
 
-  # TODO: add users to wheel group
+  # add users to wheel group
   User<| title == bclary |> { groups +> ['wheel', 'bitbar'] }
   User<| title == aerickson |> { groups +> ['wheel', 'bitbar'] }
 
@@ -61,12 +69,14 @@ class bitbar_devicepool {
     require  => Class['bitbar_devicepool::systemd_reload'],
   }
 
-  # TODO: create /etc/bitbar dir
-
   # TODO: eventually place bitbar env file (encrypt somehow)
   # - do manually for now
   # TODO: print message telling user to now manually place the bitbar env file at /etc/bitbar/bitbar.env
 
   # -rw-r-----.   1 root bitbar 1411 Apr  4 13:02 bitbar.env
+  # ${var1}
+  notify {"hello world  \n \
+  haha \n \
+  so fun":}
 
 }
