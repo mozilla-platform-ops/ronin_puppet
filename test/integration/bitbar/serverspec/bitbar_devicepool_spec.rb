@@ -29,13 +29,9 @@ describe user('bitbar') do
   it { should exist }
 end
 
-## is_installed is windows only
-# describe service('devicepool') do
-#   it { should be_installed }
-# end
-
-# code 3 is loaded, but not running?
+# service:is_installed is windows only
 describe command('systemctl status bitbar') do
+  # code 3 is loaded, but not running
   its(:exit_status) { should eq 3 }
 end
 
