@@ -43,4 +43,14 @@ describe 'service' do
     # code 3 is loaded, but not running
     its(:exit_status) { should eq 3 }
   end
+
+  describe command('systemctl status zfasdf') do
+    # code 4 is unknown
+    its(:exit_status) { should eq 4 }
+  end
+
+  describe command('systemctl status ssh') do
+    # code 0 is running
+    its(:exit_status) { should eq 0 }
+  end
 end
