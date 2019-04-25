@@ -7,8 +7,9 @@ Roles live at modules/roles_profiles/manifests/roles.
 
 ## testing
 
+Uses [kitchen-puppet](https://github.com/neillturner/kitchen-puppet).
+
 ```
-brew install ruby
 gem install bundler
 bundle install --gemfile .gemfile
 kitchen converge
