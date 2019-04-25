@@ -21,6 +21,7 @@ class bitbar_devicepool {
     groups           => ['bitbar'],
   }
 
+  # create directories
   file { '/home/bitbar':
     ensure => directory,
     owner  => 'bitbar',
@@ -43,6 +44,7 @@ class bitbar_devicepool {
   User<| title == bclary |> { groups +> ['wheel', 'bitbar'] }
   User<| title == aerickson |> { groups +> ['wheel', 'bitbar'] }
 
+  # clone repo
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
     provider => git,
@@ -50,6 +52,7 @@ class bitbar_devicepool {
     user     => 'bitbar',
   }
 
+  # place systemd unit file for devicepool
   file { '/etc/systemd/system/bitbar.service':
     ensure => file,
     source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
@@ -70,14 +73,6 @@ class bitbar_devicepool {
   }
 
   # TODO: eventually place bitbar env file (encrypt somehow)
-  # - do manually for now
-  # TODO: print message telling user to now manually place the bitbar env file at /etc/bitbar/bitbar.env
-
-  # -rw-r-----.   1 root bitbar 1411 Apr  4 13:02 bitbar.env
-  # ${var1}
-  # notify {"hello world  \n \
-  # haha \n \
-  # so fun":}
   notify {" \n\n \
 .88b  d88.  .d8b.  d8b   db db    db  .d8b.  db \n \
 88'YbdP`88 d8' `8b 888o  88 88    88 d8' `8b 88 \n \
