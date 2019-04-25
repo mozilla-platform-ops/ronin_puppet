@@ -27,7 +27,7 @@ busser:
   ruby_bindir: /usr/bin
 
 platforms:
-   # vagrant automatically generates a hostname, if that exceeds 64 characters vbox fails, see bug #6
+  # vagrant automatically generates a hostname, if that exceeds 64 characters vbox fails, see bug #6
   - name: ubuntu18-kitchen_template
     driver_plugin: vagrant
     driver_config:
@@ -37,6 +37,7 @@ platforms:
       vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
       box: ubuntu/bionic64
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
+  # the docker provisioner works, but has issues with systemd
 suites:
   - name: bitbar
     provisioner:
