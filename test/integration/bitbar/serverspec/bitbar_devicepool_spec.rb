@@ -43,7 +43,9 @@ describe 'service' do
     # code 3 is loaded, but not running
     its(:exit_status) { should eq 3 }
   end
+end
 
+describe 'reference-tests' do
   describe command('systemctl status zfasdf') do
     # code 4 is unknown
     its(:exit_status) { should eq 4 }
