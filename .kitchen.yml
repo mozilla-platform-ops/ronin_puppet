@@ -10,7 +10,7 @@ provisioner:
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: true
-  puppet_verbose: true
+  puppet_verbose: false
   puppet_debug: false
   require_chef_for_busser: false
   require_puppet_repo: false
@@ -90,12 +90,10 @@ platforms:
 #         - apt-get install gem ruby openssl -y
 #         - openssl req -x509  -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/localtest.key -out /etc/ssl/localtest.crt -subj "/C=DE/ST=Town/L=Stuttgart/O=BAR/OU=FOO/CN=IT"
 #         - cat /etc/ssl/localtest.key /etc/ssl/localtest.crt > /etc/ssl/localtest.pem
-#         - mkdir -p /etc/foo-ssl/star_foobar_net/ 
-#         - ln -s /etc/ssl/localtest.key  /etc/foo-ssl/star_foobar_net/star_foobar_net.key 
+#         - mkdir -p /etc/foo-ssl/star_foobar_net/
+#         - ln -s /etc/ssl/localtest.key  /etc/foo-ssl/star_foobar_net/star_foobar_net.key
 #         - ln -s /etc/ssl/localtest.crt  /etc/foo-ssl/star_foobar_net/star_foobar_net.crt
 #         - ln -s /etc/ssl/localtest.crt  /etc/foo-ssl/star_foobar_net/star_foobar_net.ca-bundle
 #         - ln -s /etc/ssl/localtest.pem  /etc/foo-ssl/star_foobar_net/star_foobar_net.pem
 suites:
   - name: default
-
-
