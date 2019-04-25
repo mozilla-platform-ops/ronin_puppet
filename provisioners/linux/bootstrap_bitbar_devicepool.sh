@@ -118,10 +118,15 @@ if [ ! -x "${R10K_BIN}" ]; then
 fi
 
 # install puppet
-wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet5-release-$(lsb_release -c -s).deb"
+wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet6-release-$(lsb_release -c -s).deb"
 dpkg -i /var/tmp/*.deb
 apt-get update -y && apt-get install -y puppet-agent
-apt-get install -y ruby vim git curl lvm2
 ln -s /opt/puppetlabs/bin/puppet /usr/bin/puppet
+# install r10k
+/opt/puppetlabs/puppet/bin/gem install r10k
+# install other things
+# TODO: move to pp file
+apt-get install -y ruby vim git curl lvm2
 
+# run puppet
 run_puppet
