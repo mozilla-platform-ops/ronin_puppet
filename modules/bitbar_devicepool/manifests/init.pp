@@ -6,6 +6,11 @@ class bitbar_devicepool {
 
   include ::bitbar_devicepool::systemd_reload
 
+  # vim is a requirement
+  package { 'vim':
+    ensure  => installed,
+  }
+
   # create bitbar user & group
   group { 'bitbar':
     ensure => 'present',
