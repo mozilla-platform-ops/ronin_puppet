@@ -31,10 +31,7 @@ case $::operatingsystem {
 # INCLUDE CLASSES HERE
 
 # bitbar testing
-include roles_profiles::profiles::relops_users
-include roles_profiles::profiles::cia_users
-include ::sudo
-include ::bitbar_devicepool
+include roles_profiles::profiles::bitbar_devicepool
 
 # mac g-w testing
 
