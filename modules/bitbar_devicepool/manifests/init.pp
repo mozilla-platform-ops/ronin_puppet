@@ -47,7 +47,10 @@ class bitbar_devicepool {
 
   # add users to wheel group
   User<| title == bclary |> { groups +> ['wheel', 'bitbar'] }
-  User<| title == aerickson |> { groups +> ['wheel', 'bitbar'] }
+  $relops = lookup('user_groups.relops', Array, undef, undef)
+  $relops.each |String $user| {
+      User<| title == $user |> { groups +> ['wheel', 'bitbar']}
+  }
 
   # clone repo
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
