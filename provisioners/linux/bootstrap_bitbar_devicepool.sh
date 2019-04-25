@@ -36,7 +36,6 @@ function get_puppet_repo {
 EOF
 }
 
-
 # Run puppet and return non-zero if errors are present
 function run_puppet {
     # Before running puppet, get puppet repo
