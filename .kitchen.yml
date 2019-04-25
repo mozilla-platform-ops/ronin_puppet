@@ -6,7 +6,7 @@ driver:
 provisioner:
   name: puppet_apply
   manifests_path: manifests-kitchen
-  manifest: testing.pp
+  manifest: nil.pp
   modules_path: modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
@@ -38,4 +38,17 @@ platforms:
       box: ubuntu/bionic64
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
 suites:
-  - name: default
+  - name: bitbar
+    provisioner:
+      manifest: testing.pp
+    verifier:
+      inspec_tests:
+        - test/integration/bitbar
+    attributes:
+  # - name: server
+  #   run_list:
+  #     - recipe[git_cookbook::server]
+  #   verifier:
+  #     inspec_tests:
+  #       - test/integration/server
+  #   attributes:
