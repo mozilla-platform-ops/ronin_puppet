@@ -14,24 +14,8 @@ else
   rescue LoadError
   end
 end
-#----------------------------------------------------------------------
 
 #  http://serverspec.org/resource_types.html
-
-#----------------------------------------------------------------------
-# testing basic service
-#----------------------------------------------------------------------
-# describe package('lighttpd') do
-#   it { should be_installed }
-# end
-
-# describe service('lighttpd') do
-#   it { should be_enabled }
-# end
-
-# describe service('lighttpd') do
-#   it { should be_running }
-# end
 
 describe user('bclary') do
   it { should exist }
@@ -45,17 +29,16 @@ describe user('bitbar') do
   it { should exist }
 end
 
-## windows only
+## is_installed is windows only
 # describe service('devicepool') do
 #   it { should be_installed }
 # end
 
-#----------------------------------------------------------------------
-# testing basic function
-#----------------------------------------------------------------------
+# code 3 is loaded, but not running?
+describe command('systemctl status bitbar') do
+  its(:exit_status) { should eq 3 }
+end
 
-# describe command('curl http://127.0.0.1/test.html') do
-#   its(:stdout) { should match(/Welcome/) }
-# end
-
-#----------------------------------------------------------------------
+describe command('cd /home/bitbar/mozilla-bitbar-devicepool && git status') do
+  its(:exit_status) { should eq 0 }
+end
