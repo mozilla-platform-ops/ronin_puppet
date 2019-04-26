@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'puppet', '6.2.0', :require => false
-gem 'puppet-lint', '2.3.6'
+gem 'puppet-lint'
 
 gem 'kitchen-verifier-serverspec'
 gem 'kitchen-docker'
