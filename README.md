@@ -51,7 +51,7 @@ New test suites can be added in .kitchen.yaml.
 
 #### creating a new suite
 
-1. Edit .kitchen.yml. Set the appropriate details.
+1. Edit `.kitchen.yml`. Set the appropriate details.
 1. Create a new manifest dir for the suite.
 
 	```
