@@ -41,6 +41,7 @@ Uses [kitchen-puppet](https://github.com/neillturner/kitchen-puppet).
 gem install bundler
 bundle install --gemfile .gemfile
 kitchen converge
+# run spec tests
 kitchen verify
 ```
 
