@@ -2,33 +2,26 @@
 
 set -e
 
+ROLE="bitbar_devicepool"
+PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
+PUPPET_BRANCH="master"
+
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 PUPPET_ENV_DIR='/etc/puppetlabs/environments'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
 R10K_BIN='/opt/puppetlabs/bin/r10k'
 R10K_DIR="/etc/puppetlabs/environments/production/r10k_modules"
+ROLE_FILE='/etc/puppet_role'
+PUPPET_REPO_PATH="$PUPPET_ENV_DIR/production"
 
 FQDN=$(${FACTER_BIN} networking.fqdn)
 
-ROLE="bitbar_devicepool"
-
-# PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
-# PUPPET_BRANCH="master"
-
-PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git"
-PUPPET_BRANCH="bitbar_devicepool"
-
-ROLE_FILE='/etc/puppet_role'
-PUPPET_REPO_PATH="$PUPPET_ENV_DIR/production"
-# TODO: refactor this away
-WORKING_DIR="$PUPPET_REPO_PATH"
 
 ## FUNCTIONS
 
 function update_puppet {
-
-    mkdir -p "$WORKING_DIR"
-    cd "$WORKING_DIR"
+    mkdir -p "$PUPPET_REPO_PATH"
+    cd "$PUPPET_REPO_PATH"
 
     # Initialize working dir if dir is not a git repo
     if [ ! -d .git ]; then
@@ -48,12 +41,7 @@ function update_puppet {
     R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
     $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
-    # Copy secrets
-    # mkdir -p "${WORKING_DIR}/data/secrets"
-    # cp /var/root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
-    # chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
-
-    cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
+    cat <<EOF > "${PUPPET_REPO_PATH}/manifests/nodes/nodes.pp"
     node '${FQDN}' {
         include ::roles_profiles::roles::${ROLE}
     }
@@ -61,37 +49,6 @@ EOF
 
     return 0
 }
-
-# # Download puppet repository
-# function get_puppet_repo {
-#     # clone or update repo
-#     if [ -d "${PUPPET_REPO_PATH}" ]; then
-#         # update
-#         ( cd "$PUPPET_REPO_PATH" && \
-#           git reset --hard       && \
-#           git pull --rebase )
-#     else
-#         # clone
-#         git clone "$PROVISION_REPO" "$PUPPET_REPO_PATH"
-#     fi
-
-#     # Change to puppet dir
-#     cd "${PUPPET_REPO_PATH}" || fail "Failed to change dir"
-#     chmod 777 .
-
-#     # Install R10k Modules
-#     $R10K_BIN puppetfile install -v || fail "Failed to install R10k modules"
-
-#     # Get fqdn from facter
-#     FQDN=$(${FACTER_BIN} networking.fqdn)
-
-#     # Create a node definition for this host and write it to the manifests where puppet will pick it up
-#     cat <<EOF > manifests/nodes/nodes.pp
-#     node '${FQDN}' {
-#       include roles_profiles::roles::${ROLE}
-#     }
-# EOF
-# }
 
 # Run puppet and return non-zero if errors are present
 function run_puppet {
