@@ -64,7 +64,7 @@ New test suites can be added in .kitchen.yaml.
 
 	We need our pp file to be run after the site.pp, that's why it starts with a z.
 
-1. Include your desired role:
+1. Include your desired role
 
 	In the recently created `z-<suite_name>.pp`:
 
