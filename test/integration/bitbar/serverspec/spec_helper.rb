@@ -5,7 +5,5 @@ require 'serverspec'
 set :backend, :exec
 
 RSpec.configure do |c|
-
-    c.formatter = 'JUnit'
-
+    # do something here in the future
 end

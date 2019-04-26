@@ -1,21 +1,4 @@
-#----------------------------------------------------------------------
-# instantiating testing requirements
-#----------------------------------------------------------------------
-
-if (!ENV['w_ssh'].nil? && ENV['w_ssh'] = 'true')
-  begin
-    require 'spec_helper.rb'
-  rescue LoadError
-  end
-else
-  begin
-    require 'spec_helper.rb'
-    set :backend, :exec
-  rescue LoadError
-  end
-end
-
-#  http://serverspec.org/resource_types.html
+require 'spec_helper.rb'
 
 describe 'users' do
   describe user('bclary') do
