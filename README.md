@@ -33,7 +33,7 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 
 ### kitchen-puppet (automated and serverspec testing)
 
-kitchen-puppet provides a way automate running convergence and serverspec tests for each role.
+kitchen-puppet provides infrastructure to automate running convergence and serverspec tests for each role.
 
 Uses [kitchen-puppet](https://github.com/neillturner/kitchen-puppet).
 
