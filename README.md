@@ -8,9 +8,9 @@ modules/roles_profiles/manifests/roles
 modules/roles_profiles/manifests/profiles
 ```
 
-Roles specify everything a machine type needs to fufill a role.
-
-Profiles provide an OS-independent interface to functionality provided by modules.
+Roles and profiles are both types of Puppet modules.
+- Roles specify everything a machine type needs to fufill a role.
+- Profiles provide an OS-independent interface to functionality provided by roles.
 
 ## testing
 
