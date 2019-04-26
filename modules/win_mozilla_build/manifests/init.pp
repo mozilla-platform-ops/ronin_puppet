@@ -15,7 +15,7 @@ class win_mozilla_build (
     String $tempdir,
     String $system32,
     String $external_source
-){
+) {
 
     if $::operatingsystem == 'Windows' {
         include win_mozilla_build::install

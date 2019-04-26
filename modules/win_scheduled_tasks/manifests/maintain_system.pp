@@ -4,7 +4,7 @@
 
 class win_scheduled_tasks::maintain_system {
 
-    $maintainsystem_ps1 = "${facts['custom_win_system32']}\\maintainsystem.ps1"
+    $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
 
     if $::operatingsystem == 'Windows' {
         file { $maintainsystem_ps1:

@@ -8,7 +8,7 @@ class win_mozilla_build::tooltool {
 
 
     file { "${win_mozilla_build::install_path}\\tooltool.py":
-        source => 'https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py',
+        source => 'https://raw.githubusercontent.com/mozilla/release-services/master/src/tooltool/client/tooltool.py',
     }
     file {"${win_mozilla_build::system_drive}\\tooltool-cache":
         ensure => directory,
