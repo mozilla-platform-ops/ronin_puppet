@@ -1,1 +1,3 @@
 --- {}
+# A hash/dictionary is expected. This prevents a puppet load failure warning.
+
