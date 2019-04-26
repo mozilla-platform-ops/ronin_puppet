@@ -50,7 +50,7 @@ function Set-RoninRegOptions {
     [string] $workerType = 'gecko-t-win10-64-ht',
     [string] $src_Organisation = 'mozilla-platform-ops',
     [string] $src_Repository = 'markcor',
-    [string] $src_Revision = 'master'
+    [string] $src_Revision = 'greening'
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
