@@ -2,6 +2,7 @@
 
 set -e
 
+ROLE="bitbar_devicepool"
 PROVISION_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
 
 
@@ -89,8 +90,22 @@ if [ $OS == "linux" ] || [ $OS == "darwin" ]; then
     R10K_BIN='/opt/puppetlabs/bin/r10k'
 fi
 
-# all bitbar hosts have the same role
-echo "bitbar_devicepool" > $ROLE_FILE
+# guard against running on hosts with other roles
+if [ -e "$ROLE_FILE" ]; then
+    # this is not a first run or the role is preconfigured
+    if grep -Fxq "$ROLE" "$ROLE_FILE"; then
+        # ok to continue
+        echo "Detected required role '$ROLE' in role file at '$ROLE_FILE'."
+    else
+        echo "ERROR: This host doesn't have the required role '$ROLE' in the role file at '$ROLE_FILE'!"
+        exit 1
+    fi
+else
+    # first run
+    # all bitbar_devicepool hosts have the same role
+    echo "First run detected, setting role file '$ROLE_FILE' to role '$ROLE'."
+    echo "$ROLE" > $ROLE_FILE
+fi
 
 # This file should be set by the provisioner and is an error to not have a role
 # It indicates the role this node is to play
