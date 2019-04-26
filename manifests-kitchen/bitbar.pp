@@ -6,8 +6,10 @@
 #   notice( 'mocked class ==> kitchen_template::foobar' )
 # }
 
-# dirty hack: include site.pp
-# can't point at directory of manifests, as last check in site.pp fails for test-kitchen
+# import is deprecated :(
+# we can't create a module that does this as it can't set global scope variables
+# TLDR: individual profile modules should set these, vs using globals
+# copy paste from ../manifests/site.pp
 case $::operatingsystem {
     'Windows': {
     }
