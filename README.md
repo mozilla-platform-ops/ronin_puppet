@@ -12,7 +12,29 @@ Roles specify everything a machine type needs to fufill a role.
 
 Profiles provide an OS-independent interface to functionality provided by modules.
 
-## convergence and serverspec testing
+## testing
+
+### vagrant
+
+[Vagrant](https://www.vagrantup.com/) is useful for testing the full masterless bootstrapping process.
+
+Vagrant mounts this directory at /vagrant.
+
+#### bitbar_devicepool role
+
+```
+gem install bundler
+bundle install --gemfile .gemfile
+vagrant up bionic
+vagrant ssh bionic
+echo 'bitbar_devicepool' > /etc/puppet_role
+cd /vagrant/provisioners/linux
+./bootstrap_bitbar_devicepool.sh
+```
+
+### kitchen-puppet (automated and serverspec testing)
+
+kitchen-puppet provides a way automate running convergence and serverspec tests for each role.
 
 Uses [kitchen-puppet](https://github.com/neillturner/kitchen-puppet).
 
