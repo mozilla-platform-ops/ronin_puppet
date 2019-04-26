@@ -10,20 +10,20 @@
 
     a. Ask run-puppet to checkout your branch
 
-        ```shell
-        PUPPET_REPO=https://github.com/yourfork/ronin_puppet.git
-        PUPPET_BRANCH=dev-branch-name
-        sudo run-puppet.sh
-        ```
+    ```shell
+    PUPPET_REPO=https://github.com/yourfork/ronin_puppet.git
+    PUPPET_BRANCH=dev-branch-name
+    sudo run-puppet.sh
+    ```
         
     b. or checkout a branch in the puppet working directory
 
-        ```shell
-        cd /etc/puppet/environments/production/code/
-        git remote add yourfork https://github.com/yourfork/ronin_puppet.git
-        git fetch yourfork
-        git checkout -tb dev-branch-name yourfork/dev-branch-name
-        ```
+    ```shell
+    cd /etc/puppet/environments/production/code/
+    git remote add yourfork https://github.com/yourfork/ronin_puppet.git
+    git fetch yourfork
+    git checkout -tb dev-branch-name yourfork/dev-branch-name
+    ```
 
 2. Test Changes
 
@@ -43,13 +43,13 @@
 
     *You can run puppet directly also, but you must specify the module directories like run-puppet.sh does.*
 
-        ```
-        puppet apply \
-          --modulepath=/etc/puppet/environments/production/code/modules:\
-                       /etc/puppet/environments/production/r10k_modules \
-          --hiera_config=/etc/puppet/environments/production/code/hiera.yaml \
-          /etc/puppet/environments/production/code/manifests/
-        ```
+    ```
+    puppet apply \
+      --modulepath=/etc/puppet/environments/production/code/modules:\
+                   /etc/puppet/environments/production/r10k_modules \
+      --hiera_config=/etc/puppet/environments/production/code/hiera.yaml \
+      /etc/puppet/environments/production/code/manifests/
+    ```
 
 ### Set or create a role (node type)
 
