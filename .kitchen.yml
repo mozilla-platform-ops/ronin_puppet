@@ -35,7 +35,7 @@ platforms:
       vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
       box: ubuntu/bionic64
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
-  # the docker driver works, but has issues with systemd
+  # TODO: setup docker driver, get docker image with working systemd, and test on travis.
 suites:
   - name: bitbar
     provisioner:
