@@ -45,6 +45,8 @@ suites:
     verifier:
       inspec_tests:
         - test/integration/bitbar
+    includes:
+      - ubuntu18-kitchen_template
     attributes:
   # - name: server
   #   run_list:
