@@ -28,8 +28,7 @@ bundle install --gemfile .gemfile
 vagrant up bionic
 vagrant ssh bionic
 echo 'bitbar_devicepool' > /etc/puppet_role
-cd /vagrant/provisioners/linux
-./bootstrap_bitbar_devicepool.sh
+sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 ```
 
 ### kitchen-puppet (automated and serverspec testing)
