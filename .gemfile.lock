@@ -183,7 +183,7 @@ DEPENDENCIES
   kitchen-verifier-serverspec
   librarian-puppet
   puppet (= 6.2.0)
-  puppet-lint (= 2.3.6)
+  puppet-lint
   puppetlabs_spec_helper
   r10k
   rake
