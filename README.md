@@ -47,3 +47,30 @@ kitchen verify
 New test suites can be added in .kitchen.yaml.
 
 [serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
+
+#### creating a new suite
+
+1. Edit .kitchen.yml. Set the appropriate details.
+1. Create a new manifest dir for the suite.
+
+	```
+	cd manifests-kitchen
+	mkdir <suite_name>
+	cd <suite_name>
+	ln -s ../../manifests/site.pp .
+	touch z-<suite_name>.pp
+	vim z-<suite_name>.pp
+	```
+
+	We need our pp file to be run after the site.pp, that's why it starts with a z.
+
+1. Include your desired role:
+
+	In the recently created `z-<suite_name>.pp`:
+
+	```
+	include roles_profiles::roles::your_favorite_role
+	```
+1. (optional) Write spec tests.
+
+	See `tests/integration`.

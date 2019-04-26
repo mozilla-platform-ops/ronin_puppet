@@ -5,8 +5,6 @@ driver:
 
 provisioner:
   name: puppet_apply
-  manifests_path: manifests-kitchen
-  manifest: nil.pp
   modules_path: modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
@@ -41,17 +39,10 @@ platforms:
 suites:
   - name: bitbar
     provisioner:
-      manifest: bitbar.pp
+      manifests_path: manifests-kitchen/bitbar
     verifier:
       inspec_tests:
         - test/integration/bitbar
     includes:
       - ubuntu18-kitchen_template
     attributes:
-  # - name: server
-  #   run_list:
-  #     - recipe[git_cookbook::server]
-  #   verifier:
-  #     inspec_tests:
-  #       - test/integration/server
-  #   attributes:
