@@ -8,6 +8,10 @@ class win_mozilla_build::modifications {
     require win_mozilla_build::hg_install
 
     $mozbld = $win_mozilla_build::install_path
+
+    file { "${facts['custom_win_systemdrive']}\\builds":
+        ensure => directory,
+    }
     file { "${mozbld}\\python3\\python.exe":
         ensure => absent,
         purge  => true,

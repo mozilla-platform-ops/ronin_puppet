@@ -49,7 +49,7 @@ function Set-RoninRegOptions {
     [string] $source_key = "$ronnin_key\source",
     [string] $workerType = 'gecko-t-win10-64-ht',
     [string] $src_Organisation = 'mozilla-platform-ops',
-    [string] $src_Repository = 'ronin_puppet',
+    [string] $src_Repository = 'markcor',
     [string] $src_Revision = 'master'
   )
   begin {
