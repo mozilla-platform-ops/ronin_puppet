@@ -8,7 +8,7 @@ mod 'macos_ntp', :local => true
 mod 'macos_timezone', :local => true
 mod 'macos_utils', :local => true
 mod 'mercurial', :local => true
-mod 'motd', :local => true
+# mod 'motd', :local => true  # conflicts with puppetlabs-motd
 mod 'packages', :local => true
 mod 'puppet', :local => true
 mod 'python2', :local => true
@@ -35,7 +35,7 @@ mod 'win_ultravnc', :local => true
 mod 'puppetlabs-stdlib', '5.1.0'
 mod 'puppetlabs-concat', '5.1.0'
 mod 'puppetlabs-apt', '6.1.1'
-#mod 'puppetlabs-motd', '2.1.1'
+mod 'puppetlabs-motd', '2.1.1'
 mod 'puppetlabs-ntp', '7.3.0'
 mod 'saz-rsyslog', '5.0.0'
 mod 'puppetlabs-firewall', '1.14.0'
