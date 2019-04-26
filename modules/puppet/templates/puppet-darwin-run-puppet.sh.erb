@@ -64,7 +64,7 @@ function update_puppet {
     $R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
 
     # Install r10k modules
-    R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force') # '-v')
+    R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force')
     $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
     # Copy secrets
