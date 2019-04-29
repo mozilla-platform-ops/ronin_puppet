@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# NOTE(aerickson): please don't add more global variables.
+#   variables like this should be set in profile modules.
+#   these make testing difficult (this block must be
+#   copy/pasted into every puppet-kitchen manifests).
 case $::operatingsystem {
     'Windows': {
     }
@@ -11,11 +15,19 @@ case $::operatingsystem {
         $root_group = 'wheel'
 
     }
+    'Ubuntu': {
+        $root_user = 'root'
+        $root_group = 'root'
+    }
     default: {
     }
 }
 
+node /vagrantup.com/ {
+    # ok, no need to fail
+}
+
 # Default node should always fail
 node default {
-  fail("Missing node classification for node ${networking['fqdn']}")
+  fail("Missing node classification for current host (node '${networking['fqdn']}')!")
 }

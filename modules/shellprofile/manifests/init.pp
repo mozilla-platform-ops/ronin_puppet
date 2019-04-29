@@ -7,7 +7,7 @@ class shellprofile {
     include shellprofile::settings
 
     case $::operatingsystem {
-        'Darwin': {
+        'Darwin', 'Ubuntu': {
             file {
                 $shellprofile::settings::profile_d:
                     ensure => directory;
