@@ -9,7 +9,7 @@ class win_mozilla_build::modifications {
 
     $mozbld = $win_mozilla_build::install_path
 
-    file { "${facts['custom_win_systemdrive']}\\builds":
+    file { $win_mozilla_build::builds_dir:
         ensure => directory,
     }
     file { "${mozbld}\\python3\\python.exe":
