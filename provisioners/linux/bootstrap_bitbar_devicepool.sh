@@ -9,15 +9,19 @@ PUPPET_BRANCH="master"
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 PUPPET_ENV_DIR='/etc/puppetlabs/environments'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
-R10K_BIN='/opt/puppetlabs/bin/r10k'
+R10K_BIN='/opt/puppetlabs/puppet/bin/r10k'
 R10K_DIR="/etc/puppetlabs/environments/production/r10k_modules"
 ROLE_FILE='/etc/puppet_role'
 PUPPET_REPO_PATH="$PUPPET_ENV_DIR/production"
 
-FQDN=$(${FACTER_BIN} networking.fqdn)
 
 
 ## FUNCTIONS
+
+function fail {
+    echo "${@}"
+    exit 1
+}
 
 function update_puppet {
     mkdir -p "$PUPPET_REPO_PATH"
@@ -41,6 +45,8 @@ function update_puppet {
     R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
     $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
+    FQDN=$(${FACTER_BIN} networking.fqdn)
+
     cat <<EOF > "${PUPPET_REPO_PATH}/manifests/nodes/nodes.pp"
     node '${FQDN}' {
         include ::roles_profiles::roles::${ROLE}
@@ -52,10 +58,6 @@ EOF
 
 # Run puppet and return non-zero if errors are present
 function run_puppet {
-    # Before running puppet, get puppet repo
-    # get_puppet_repo
-    update_puppet
-
     echo "Running puppet apply"
 
     cd $PUPPET_REPO_PATH
@@ -125,6 +127,17 @@ else
     fail "Failed to find puppet role file ${ROLE_FILE}"
 fi
 
+# install puppet
+wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet6-release-$(lsb_release -c -s).deb"
+dpkg -i /var/tmp/*.deb
+apt-get update -y && apt-get install -y puppet-agent
+ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
+# install r10k
+/opt/puppetlabs/puppet/bin/gem install r10k
+
+# get the repo
+update_puppet
+
 # Check that we have the minimum requirements to run puppet
 # Since this is a bootstrap script we may actaully install minimum requirements here in the future
 if [ ! -x "${PUPPET_BIN}" ]; then
@@ -138,14 +151,6 @@ fi
 if [ ! -x "${R10K_BIN}" ]; then
     fail "${R10K_BIN} is missing or not executable"
 fi
-
-# install puppet
-wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet6-release-$(lsb_release -c -s).deb"
-dpkg -i /var/tmp/*.deb
-apt-get update -y && apt-get install -y puppet-agent
-ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
-# install r10k
-/opt/puppetlabs/puppet/bin/gem install r10k
 
 # run puppet
 run_puppet
