@@ -66,6 +66,13 @@ define users::home_dir (
                 group   => $group,
                 require => User[$user],
             }
+
+            users::user_ssh_config { $user:
+                group    => $group,
+                home     => $home,
+                ssh_keys => $ssh_keys,
+                require  => File[$home],
+            }
         }
         default: {
             fail("${module_name} does not support ${facts['os']['family']}")
