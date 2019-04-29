@@ -19,7 +19,7 @@ class roles_profiles::profiles::mac_v3_signing {
 
             include dirs::tools
 
-            contain packages::python3
+            include packages::python3
             file { '/tools/python3':
                     ensure  => 'link',
                     target  => '/usr/local/bin/python3',
