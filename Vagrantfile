@@ -1,5 +1,9 @@
 Vagrant.configure("2") do |config|
 
+  config.vm.define "bionic-bare", autostart: false do |bionic|
+    bionic.vm.box = "ubuntu/bionic64"
+  end
+
   config.vm.define "bionic", autostart: false do |bionic|
     bionic.vm.box = "ubuntu/bionic64"
     bionic.vm.provision "shell", inline: <<-SHELL
