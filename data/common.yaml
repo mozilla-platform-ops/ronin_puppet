@@ -19,9 +19,10 @@ user_groups:
     - aerickson
     - rthijssen
     - dcrisan
-  releng:
+  signing:
     - asasaki
     - nthomas
+    - sfraser
 
 
 all_users:
@@ -61,6 +62,9 @@ all_users:
 
   nthomas:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDfaJfcOywEagPaRwxVMn4p/nk8eMLgbieiM+7ic9kKcqkkKy2qlSGeYlrmBw7r9T7aGKCUbIMEdIL/AJlw7/r9yyGbmGL0ZqA8QNVTyccI/58c+CMYlFXa4aYIbR6XD2UZgtjIUVYIzMvhvrYq9QxR3Csg3vZOPD7LJ+xpGUaLsHHIrXHb0fP9/Tt33QuKgrIWR45VhoDJYXvUazDvDMkyruo2Jfwv27FdZeKLvAlJvs754fxeb8UWDSMxhgulVnJCcX3YCBJYBEWK+fM9eJpj0nwqsdF/2tOV/XMIepl99YC9M/X3YMq/cclu3rICgzL9L4YJKta4uVqmkU+PV3WQEbTaej87mv5ZG8+GYPYb4dMnFu1i1vI+w2DwJdzTJ4WCwU2yxp3Hi7SPqt3mZ0y9GLrK4DURGTLhprdiih6AlKWvOqBbbhkTAywmavTSu+p+ISr5fbMTXkAhTcdW58gDIXIb4BMcXERX8u8F2dxg8F0UAh7uM3bs6D8FubLdB8/i9kN8yiyFc9MTQefw9gaoRkSQ8hdf0JG6CxNGhFLnUFpqpi71A+QZSv9YmTKKEH+sxLGfj6j9Ba8hZBWRPeVUMaG2pBH4Zpq1X5hHznN/LZ87mG4BC2jr0xFqUxKp7uUbnpds63+B7RTIHfgB+avyr6o06gwu4FrIYaiw6hD2Uw== Mozilla_key_for_nthomas
+
+  sfraser:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDImn/45Z8zp1LPlISeoz48D4cpgCnY2svnfZi5LmRaIYPFiIx2+IgF+su8/MSlRt7Id3IuFq/MZEEkgYSSaIFEiKmCWqRt1fx5sC7P8MVpZwKRVlTSYzhzF3EG5hDa8tbyLVOTUPfGhZ6j/3su+MiVcTfVfqwX405ddegjxaSzjK6+ZMxPXcL9bzAjwTqHzsHnUoxGmTQsGLe/swZp5Jm4zsHf2VTaOlZi6q5ijaS7QrUEK4h0KbXRlHPhCJRg3dMhW6fkuSzipCHUUE1UwM1YZ3JiiDzan7kG45ovJYrDXptPpE3dRQitXUsaPAsjt/tNJXySfUdOyDWiiT/Pjq5lujVrDA6dcd3HviGg9KAUbymy6oEsnC2rMwSjXlqqlkUKBki3esBL8p4QnR84cxmRSCox9crakEQttou34EfQjBBGnNNoO9vVl0gpEuZsmwLgJq6lSFtrqgF1osEEcNxNTSpk9miJvS/HVJJV4oo091pKwBGsCN+vT/KGQrvJna0J+z3eRZ5LtgJS14/51i5vMp+u+RuxOkGi6jV/EQ111z/XWEO5dGF7mchWBgmjkmR0bqegbwf22zteW4xonvCHJB9xg4PfAZCt1GGsNvbkOif7HCbKd0V5tFXKPVyz05IlCOfLVPEOsXBfjWrVBK8WaSOjPgbBFdeXdTZmSWAmuQ== sfraser@mozilla.com
 
 
 # Class parameter defaults: most data lookups should take place in profiles

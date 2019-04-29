@@ -7,10 +7,10 @@ class roles_profiles::profiles::mac_v3_signing {
     case $::operatingsystem {
         'Darwin': {
 
-            # "pinning"
-            # for the first setup of a node type, the provisioner script in the image must have a valid node
-            # then, this pinning will apply on the next run atboot
             class { 'puppet::atboot':
+                # "pinning"
+                # for the first setup of a node type, the provisioner script in the image must have a valid node
+                # then, pinning will apply on the next run atboot:
                 puppet_repo   => 'https://github.com/davehouse/ronin_puppet.git',
                 puppet_branch => 'notarization',
             }
@@ -19,7 +19,7 @@ class roles_profiles::profiles::mac_v3_signing {
 
             include dirs::tools
 
-            include packages::python3
+            contain packages::python3
             file { '/tools/python3':
                     ensure  => 'link',
                     target  => '/usr/local/bin/python3',
