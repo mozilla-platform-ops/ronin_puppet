@@ -11,8 +11,8 @@ class roles_profiles::profiles::mac_v3_signing {
                 # "pinning"
                 # for the first setup of a node type, the provisioner script in the image must have a valid node
                 # then, pinning will apply on the next run atboot:
-                puppet_repo   => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch => 'notarization',
+                #puppet_repo   => 'https://github.com/davehouse/ronin_puppet.git',
+                #puppet_branch => 'notarization',
             }
 
             # we can add worker setup here like in gecko_t_osx_1014_generic_worker.pp
