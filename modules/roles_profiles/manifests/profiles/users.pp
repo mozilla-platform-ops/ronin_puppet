@@ -5,7 +5,7 @@
 class roles_profiles::profiles::users {
 
     case $::operatingsystem {
-        'Darwin': {
+        'Darwin', 'Ubuntu': {
             # Fetch a hash of all users and their keys
             # Then instant the all_users class which generates
             # virtual resources for all users to be realized in

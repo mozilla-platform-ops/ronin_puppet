@@ -23,6 +23,8 @@ user_groups:
     - asasaki
     - nthomas
     - sfraser
+  cia:
+    - bclary
 
 
 all_users:
@@ -65,6 +67,9 @@ all_users:
 
   sfraser:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDImn/45Z8zp1LPlISeoz48D4cpgCnY2svnfZi5LmRaIYPFiIx2+IgF+su8/MSlRt7Id3IuFq/MZEEkgYSSaIFEiKmCWqRt1fx5sC7P8MVpZwKRVlTSYzhzF3EG5hDa8tbyLVOTUPfGhZ6j/3su+MiVcTfVfqwX405ddegjxaSzjK6+ZMxPXcL9bzAjwTqHzsHnUoxGmTQsGLe/swZp5Jm4zsHf2VTaOlZi6q5ijaS7QrUEK4h0KbXRlHPhCJRg3dMhW6fkuSzipCHUUE1UwM1YZ3JiiDzan7kG45ovJYrDXptPpE3dRQitXUsaPAsjt/tNJXySfUdOyDWiiT/Pjq5lujVrDA6dcd3HviGg9KAUbymy6oEsnC2rMwSjXlqqlkUKBki3esBL8p4QnR84cxmRSCox9crakEQttou34EfQjBBGnNNoO9vVl0gpEuZsmwLgJq6lSFtrqgF1osEEcNxNTSpk9miJvS/HVJJV4oo091pKwBGsCN+vT/KGQrvJna0J+z3eRZ5LtgJS14/51i5vMp+u+RuxOkGi6jV/EQ111z/XWEO5dGF7mchWBgmjkmR0bqegbwf22zteW4xonvCHJB9xg4PfAZCt1GGsNvbkOif7HCbKd0V5tFXKPVyz05IlCOfLVPEOsXBfjWrVBK8WaSOjPgbBFdeXdTZmSWAmuQ== sfraser@mozilla.com
+
+  bclary:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCjEqpf1njrTlmvBMhfKJiQFP92uuS2EFIoL/f2u/39Q83Opk7T3mFOEvmnBNy83J7/k7j21VMzovdylsLk169x6NqPMZZ7sdtNW/WAiImUyWAVkuszkl7rbh8XdgF/UzTi8uHUAVZI/8gsh8g3wQ9h61BOWX7GEag99pho+ECpEGDjb3HXOD4B4vr/qZO5eMIssHzCKDXWchOpwlNPYk5Yij61+Hm/eTobSFLk7Rk1RGjuwcKpJUG8D3MmfTPY7I4YFA+i6TaQJJj/OdWguH599R/SIU6cVoqsQee9GDD2sSxsuDeop7ckM27kfklL2APeG2UBZ8Ugsnw7niJx9LJxk9PUY4ohs2LrNlwrEiB8Uq5yw9PF6Ik3aD4y8mHXSV/xajMA6s67XwdCZd51DwEZ9Q7h8ULsq1kpDvXx7+9OZ/xwucTuiH9sbvf438gx0/E+GAg24qhvQPQdA7+W2T2CJJPEhoe3OlJRibOgFHm1CmV3h6F34e5g8qz2kPGcNEu/toB9+14YyQfP7nZrz4UnHw3bJcNEHvl1JaSDcm2GiE3Nu0MYeAtnmWOA3AFs6IhkEvwFeY3lE1n6oyKB7XGeNxdrRTCMckM/ojoo9Hi3NbZ0giorM5vKcSeOE/iLtSDdaE1cUFdgrBqv6mBGxuGHukWmZNh+Z2o16RhQWZK1NQ== bclary@mozilla.com
 
 
 # Class parameter defaults: most data lookups should take place in profiles

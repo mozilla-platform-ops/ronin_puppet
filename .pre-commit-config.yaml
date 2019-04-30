@@ -17,7 +17,8 @@ repos:
   - id: epp-validate
   - id: puppet-lint
     args:
-    -  --fail-on-warnings
+    - --fix
+    - --fail-on-warnings
 
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 1.11.0
