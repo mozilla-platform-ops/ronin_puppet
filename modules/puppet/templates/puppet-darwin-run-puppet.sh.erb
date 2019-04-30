@@ -64,10 +64,10 @@ function block_on_network()
 	while true; do
 		IP=`ifconfig en0 | grep "inet "| awk '{print $2}'`
 		if valid_ip $IP; then
-			echo "Network connectivity check passed"
+			echo "Network connectivity check passed $IP"
 			break
 		else
-			echo "Network connectivity failed; retry in $delay s"
+            echo "Network connectivity failed; retry in ${delay}s"
 			sleep $delay
             (( delay *= 2 ))
 		fi
