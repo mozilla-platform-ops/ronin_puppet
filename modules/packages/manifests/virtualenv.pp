@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::virtualenv {
+    require packages::python3
 
     package { 'virtualenv':
         ensure   => '16.4.3',
