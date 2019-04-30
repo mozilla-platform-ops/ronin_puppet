@@ -26,9 +26,8 @@ Vagrant mounts this directory at /vagrant.
 ```
 gem install bundler
 bundle install --gemfile .gemfile
-vagrant up bionic
-vagrant ssh bionic
-echo 'bitbar_devicepool' > /etc/puppet_role
+vagrant up bionic-bare
+vagrant ssh bionic-bare
 sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 ```
 
