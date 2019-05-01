@@ -40,7 +40,7 @@ fi
 
 
 # Return true is valid IP and not APIPA address
-function valid_ip() {
+function valid_ip {
     local IP=$1
     local STAT=1
     if [[ $IP =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
@@ -56,7 +56,7 @@ function valid_ip() {
     return $STAT
 }
 
-function block_on_network() {
+function block_on_network {
     local delay=1
 	while true; do
 		IP=`ifconfig en0 | grep "inet "| awk '{print $2}'`
