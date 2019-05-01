@@ -36,4 +36,8 @@ class win_mozilla_build::tooltool {
         content   => $win_mozilla_build::tooltool_tok,
         show_diff => false,
     }
+    exec { 'install_tooltool_cert':
+        command  => file('win_mozilla_build/tooltool_cert_install.ps1'),
+        provider => powershell,
+    }
 }
