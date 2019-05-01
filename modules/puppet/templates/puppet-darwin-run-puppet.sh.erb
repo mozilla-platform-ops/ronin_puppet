@@ -38,8 +38,40 @@ fi
 
 [ -f '/var/root/vault.yaml' ] || fail "Secrets file not found"
 
-function update_puppet {
 
+# Return true is valid IP and not APIPA address
+function valid_ip {
+    local IP=$1
+    local STAT=1
+    if [[ $IP =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        IP=($IP)
+        IFS=$OIFS
+        ( ! [[ ${IP[0]} -eq 169 && ${IP[1]} -eq 254 ]]) && \
+        (   [[ ${IP[0]} -le 255 && ${IP[1]} -le 255 && \
+               ${IP[2]} -le 255 && ${IP[3]} -le 255 ]])
+        STAT=$?
+    fi
+    return $STAT
+}
+
+function block_on_network {
+    local delay=1
+	while true; do
+		IP=`ifconfig en0 | grep "inet "| awk '{print $2}'`
+		if valid_ip $IP; then
+			echo "Network connectivity check passed $IP"
+			break
+		else
+            echo "Network connectivity failed; retry in ${delay}s"
+			sleep $delay
+            (( delay *= delay<60?2:1 ))
+		fi
+	done
+}
+
+function update_puppet {
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
         git init || return 1
@@ -98,6 +130,9 @@ function run_puppet {
         *) return 1;;
     esac
 }
+
+
+block_on_network
 
 # Call the run_puppet function in a endless loop
 while ! run_puppet; do
