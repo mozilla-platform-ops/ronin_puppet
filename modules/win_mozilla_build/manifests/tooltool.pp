@@ -36,6 +36,10 @@ class win_mozilla_build::tooltool {
         content   => $win_mozilla_build::tooltool_tok,
         show_diff => false,
     }
+    # This script will download and add the certifictae form https://tooltool.mozilla-releng.net
+    # Without tooltool will fail during tasks
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1546827
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1548641
     exec { 'install_tooltool_cert':
         command  => file('win_mozilla_build/tooltool_cert_install.ps1'),
         provider => powershell,
