@@ -36,8 +36,9 @@ class win_mozilla_build::tooltool {
         content   => $win_mozilla_build::tooltool_tok,
         show_diff => false,
     }
-    # This script will download and add the certifictae form https://tooltool.mozilla-releng.net
-    # Without tooltool will fail during tasks
+    # This script will get the SSL Server Certificate for https://tooltool.mozilla-releng.net
+    # and will add it to the local user store
+    # Without the cert in the local user store tooltool will hit SSL errors when fetching a package
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1546827
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1548641
     exec { 'install_tooltool_cert':
