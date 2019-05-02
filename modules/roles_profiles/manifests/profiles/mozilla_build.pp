@@ -22,6 +22,7 @@ class roles_profiles::profiles::mozilla_build {
         $tempdir            = $facts['custom_win_temp_dir']
         $system32           = $facts['custom_win_system32']
         $external_source    = lookup('win_ext_pkg_src')
+        $tooltool_tok       = lookup('tooltool_tok')
 
             class { 'win_mozilla_build':
                 current_mozbld_ver => $current_mozbld_ver,
@@ -36,6 +37,8 @@ class roles_profiles::profiles::mozilla_build {
                 tempdir            => $tempdir,
                 system32           => $system32,
                 external_source    => $external_source,
+                builds_dir         => "${facts['custom_win_systemdrive']}\\builds",
+                tooltool_tok       => $tooltool_tok,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
