@@ -8,5 +8,5 @@ class roles_profiles::roles::bitbar_devicepool {
     include ::roles_profiles::profiles::cia_users
     include ::roles_profiles::profiles::sudo
     include ::roles_profiles::profiles::bitbar_devicepool
-
+    include ::roles_profiles::profiles::remove_bootstrap_user
 }
