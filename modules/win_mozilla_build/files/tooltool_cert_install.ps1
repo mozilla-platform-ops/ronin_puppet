@@ -1,7 +1,6 @@
-$url = 'https://tooltool.mozilla-releng.net/'
-$localPath = ('{0}\builds\' -f $env:SystemDrive)
-$tokenPath = ('{0}\builds\relengapi.tok' -f $env:SystemDrive)
-$bearerToken = (Get-Content -Path $tokenPath -Raw)
-$webClient = New-Object -TypeName 'System.Net.WebClient'
-$webClient.Headers.Add('Authorization', ('Bearer {0}' -f $bearerToken))
-$webClient.DownloadFile($url, $localPath)
+$tooltool_cer = "$env:SYSTEMROOT\temp\tooltool.cer"
+$webRequest = [Net.WebRequest]::Create("https://tooltool.mozilla-releng.net")
+try { $webRequest.GetResponse() } catch {}
+$cert = $webRequest.ServicePoint.Certificate
+$bytes = $cert.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+certutil -addstore root $tooltool_cer
