@@ -22,6 +22,20 @@ describe 'users' do
   end
 end
 
+describe 'groups' do
+  describe user('aerickson') do
+    it { should belong_to_group 'wheel' }
+  end
+
+  describe user('bclary') do
+    it { should belong_to_group 'wheel' }
+  end
+
+  describe user('jwatkins') do
+    it { should belong_to_group 'wheel' }
+  end
+end
+
 describe 'git repo' do
   describe command('cd /home/bitbar/mozilla-bitbar-devicepool && git status') do
     its(:exit_status) { should eq 0 }
