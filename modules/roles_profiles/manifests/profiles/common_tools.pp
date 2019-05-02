@@ -10,6 +10,7 @@ class roles_profiles::profiles::common_tools {
             include win_packages::jq
             include win_packages::gpg4win
             include win_packages::sevenzip
+            include win_packages::sublimetxt
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
         }

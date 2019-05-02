@@ -21,7 +21,7 @@ write-host "custom_win_programfilesx86=$programfilesx86"
 # Facts built off of environment variables
 write-host "custom_win_roninprogramdata=$programdata\PuppetLabs\ronin"
 write-host "custom_win_roninsemaphoredir=$programdata\PuppetLabs\ronin\semaphore"
-write-host "custom_win_roninslogdir=$systemdrive\logs"
+write-host "custom_win_roninlogdir=$systemdrive\logs"
 write-host "custom_win_temp_dir=$systemdrive\Windows\Temp"
 write-host "custom_win_third_party=$systemdrive\third_party"
 
