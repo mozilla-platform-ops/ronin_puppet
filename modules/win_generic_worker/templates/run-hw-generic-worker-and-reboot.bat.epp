@@ -1,8 +1,8 @@
 @echo off
 
-if exist <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log copy /y <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log <%= $facts[custom_win_roninlogdir] %>\generic-worker-%time:~-5%.bak
+if exist <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log copy /y <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log <%= $facts[custom_win_roninslogdir] %>\generic-worker-%time:~-5%.bak
 type NUL > <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log
-if exist <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log copy /y <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log <%= $facts[custom_win_roninlogdir] %>\generic-worker-wrapper-%time:~-5%.bak
+if exist <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log copy /y <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log <%= $facts[custom_win_roninslogdir] %>\generic-worker-wrapper-%time:~-5%.bak
 type NUL > <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 ping -n 5 127.0.0.1 1>/nul
 
