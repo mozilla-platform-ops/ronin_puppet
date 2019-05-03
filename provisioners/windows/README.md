@@ -9,7 +9,8 @@ There a re three stages to the bootstrap script.
 ##Bootstrap Stages
 
 **Setup**:
-    Set registry settings  to dictate behavior.
+
+Set registry settings  to dictate behavior.
 
    * HKLM:\SOFTWARE\Mozilla\ ronin_puppet
 
@@ -20,7 +21,8 @@ There a re three stages to the bootstrap script.
      - workerType  (set desire workerType)
      - role  (use to determine which Puppet role will be applied)
 
-    Set to determine which github repository and revision
+Set to determine which github repository and revision
+
    * HKLM:\SOFTWARE\Mozilla\ ronin_puppet\source
 
     - Organisation
