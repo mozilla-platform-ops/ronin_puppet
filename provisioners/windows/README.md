@@ -10,7 +10,7 @@ There a re three stages to the bootstrap script.
 
 **Setup**:
 
-Set registry settings  to dictate behavior.
+Set registry settings  to dictate Workertype and Puppet schedule task behavior.
 
    * HKLM:\SOFTWARE\Mozilla\ ronin_puppet
 
@@ -21,7 +21,7 @@ Set registry settings  to dictate behavior.
      - workerType  (set desire workerType)
      - role  (use to determine which Puppet role will be applied)
 
-Set to determine which github repository and revision
+Set to determine which github repository and revision.
 
    * HKLM:\SOFTWARE\Mozilla\ ronin_puppet\source
 
@@ -29,23 +29,25 @@ Set to determine which github repository and revision
      - Repository
      - Revision
 
-Download the latest version of itself, and  create a schedule task to continue to run after next reboot.
-    Perform initial Git clone.
-    Generate a node.pp manifest for node Puppet definition.
+  * Download the latest version of itself, and  create a schedule task to continue to run after next reboot.
+  * Perform initial Git clone.
+  * Generate a node.pp manifest for node Puppet definition.
 
 **Inprogress**:
 
-    Initiate Puppet apply.
-    Determine if the Puppet apply was successful or not.
-    Reboot and run Puppet apply until success.
+   * Initiate Puppet apply.
+   * Determine if the Puppet apply was successful or not.
+   * Reboot and run Puppet apply until success.
 
 **Complete**:
 
-    Once the inprogress stage determines a successful run, deletion of bootstrap files and schedule task.
+  * Once the inprogress stage determines a successful run,:
+   * Deletion of bootstrap files
+   * Deletion of bootstrap schedule task
 
 After completion of botostrap script future initiations of Puppet apply, if configured,  will be managed by the maintainsystem schedule task.
 
-##Prerequisites:
+## Prerequisites:
 Prerequisites for bootstrapping (Currently hardware nodes are prepared for bootstrap through an MDT task sequence)
 
 * Installation of hardware drivers such as network and graphics.
