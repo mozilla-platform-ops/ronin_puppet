@@ -1,4 +1,4 @@
-#Ronin Windows Bootstrapping
+# Ronin Windows Bootstrapping
 
 There should be a bootstrap script for each workerType.
 
@@ -6,7 +6,7 @@ The script will set the unique worker type Generic-worker configuration. As well
 
 There a re three stages to the bootstrap script.
 
-##Bootstrap Stages
+## Bootstrap Stages
 
 **Setup**:
 
@@ -25,9 +25,9 @@ Set to determine which github repository and revision
 
    * HKLM:\SOFTWARE\Mozilla\ ronin_puppet\source
 
-    - Organisation
-    - Repository
-    - Revision
+     - Organisation
+     - Repository
+     - Revision
 
 Download the latest version of itself, and  create a schedule task to continue to run after next reboot.
     Perform initial Git clone.
@@ -55,8 +55,8 @@ TODO: add a shared private GPG key per workerType
 
 
 
-##WorkerType explanation:
-###HARDWARE (incomplete list)
+## WorkerType explanation:
+### HARDWARE (incomplete list)
 **gecko-t-win10-64-hw**  - Production worker type for HP Moonshot blades
 
 **gecko-t-win10-64-ht**    - Testing/Development worker type for HP Moonshot blades
