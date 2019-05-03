@@ -20,8 +20,9 @@ There a re three stages to the bootstrap script.
      - workerType  (set desire workerType)
      - role  (use to determine which Puppet role will be applied)
 
+    Set to determine which github repository and revision
    * HKLM:\SOFTWARE\Mozilla\ ronin_puppet\source
-    Settings to determine which github repository and revision
+
     - Organisation
     - Repository
     - Revision
