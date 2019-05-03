@@ -34,11 +34,13 @@ Download the latest version of itself, and  create a schedule task to continue t
     Generate a node.pp manifest for node Puppet definition.
 
 **Inprogress**:
+
     Initiate Puppet apply.
     Determine if the Puppet apply was successful or not.
     Reboot and run Puppet apply until success.
 
 **Complete**:
+
     Once the inprogress stage determines a successful run, deletion of bootstrap files and schedule task.
 
 After completion of botostrap script future initiations of Puppet apply, if configured,  will be managed by the maintainsystem schedule task.
