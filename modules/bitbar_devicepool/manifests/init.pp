@@ -7,7 +7,7 @@ class bitbar_devicepool {
   include ::bitbar_devicepool::systemd_reload
 
   # vim is a requirement
-  $desired_packages = ['vim', 'screen', 'python', 'virtualenv']
+  $desired_packages = ['vim', 'screen', 'python', 'virtualenv', 'git']
 
   package { $desired_packages:
     ensure => installed,
