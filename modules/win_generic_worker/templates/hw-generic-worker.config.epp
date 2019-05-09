@@ -18,7 +18,6 @@
   "livelogExecutable": "<%= $win_generic_worker::hw_config::livelog_exe %>",
   "livelogPUTPort": <%= $win_generic_worker::livelogputport %>,
   "numberOfTasksToRun": 0,
-  "openpgpSigningKeyLocation": "<%= $win_generic_worker::hw_config::openpgpsigningkey %>",
   "privateIP": "",
   "provisionerBaseURL": "",
   "provisionerId": "<%= $win_generic_worker::hw_config::provisioner_id %>",
