@@ -23,4 +23,10 @@ class win_generic_worker::install {
         require => File[$win_generic_worker::generic_worker_exe],
         creates => $win_generic_worker::ed25519signingkey,
     }
+    exec { 'generate_gpg_keypair':
+        command =>
+            "${win_generic_worker::generic_worker_exe} new-openpgp-keypair --file ${win_generic_worker::openpgpsigningkey}",
+        require => File[$win_generic_worker::generic_worker_exe],
+        creates => $win_generic_worker::openpgpsigningkey,
+    }
 }

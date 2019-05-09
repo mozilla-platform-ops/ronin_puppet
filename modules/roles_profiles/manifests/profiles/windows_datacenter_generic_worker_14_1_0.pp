@@ -30,6 +30,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_0 {
                 generic_worker_dir             => $generic_worker_dir,
                 cache_dir                      => "${facts['custom_win_systemdrive']}\\cache",
                 downloads_dir                  => "${facts['custom_win_systemdrive']}\\downloads",
+                liveloggetport                 => 60023,
                 livelogputport                 => 60022,
                 current_gw_version             => $current_gw_version,
                 needed_gw_version              => $needed_gw_version,

@@ -6,6 +6,7 @@ class win_generic_worker (
     String $generic_worker_dir,
     String $cache_dir,
     String $downloads_dir,
+    Integer $liveloggetport,
     Integer $livelogputport,
     String $livelog_exe_source,
     String $taskcluster_proxy_exe_source,
@@ -17,6 +18,7 @@ class win_generic_worker (
     String $generic_worker_install_command,
     String $run_generic_worker_command
 ) {
+    $openpgpsigningkey         = "${generic_worker_dir}\\openpgp-private.key"
     $ed25519signingkey         = "${generic_worker_dir}\\ed25519-private.key"
     $livelog_crt               = "${generic_worker_dir}\\livelog.crt"
     $livelog_exe               = "${generic_worker_dir}\\livelog.exe"
