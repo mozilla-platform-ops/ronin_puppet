@@ -8,6 +8,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_0 {
         'Windows': {
 
             $taskcluster_access_token = lookup('taskcluster_access_token')
+            $livelog_secret           = lookup('livelog_secret')
             $ext_pkg_src_loc          = lookup('win_ext_pkg_src')
             $tc_pkg_source            = "${ext_pkg_src_loc}/taskcluster"
             # Determined in /modules/win_shared/facts.d/facts_win_application_versions.ps1
@@ -57,6 +58,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_0 {
             # Paths in the  config file need to have \\ hence the \\\\ below
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
+                livelog_secret           => $livelog_secret,
                 worker_type              => $facts['custom_win_gw_workertype'],
                 client_id                => 'project/releng/generic-worker/gecko-t-win10-64-hw/production',
                 generic_worker_dir       => "${facts['custom_win_systemdrive']}\\\\generic-worker",

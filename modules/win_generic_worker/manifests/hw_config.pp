@@ -4,6 +4,7 @@
 
 class win_generic_worker::hw_config(
     String $taskcluster_access_token,
+    String $livelog_secret,
     String $worker_type,
     String $client_id,
     String $generic_worker_dir,

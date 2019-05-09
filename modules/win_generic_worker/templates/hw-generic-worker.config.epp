@@ -16,6 +16,7 @@
   "instanceId": "",
   "instanceType": "",
   "livelogExecutable": "<%= $win_generic_worker::hw_config::livelog_exe %>",
+  "livelogKey": "<%= $win_generic_worker::hw_config::livelog_key %>",
   "livelogPUTPort": <%= $win_generic_worker::livelogputport %>,
   "numberOfTasksToRun": 0,
   "privateIP": "",
