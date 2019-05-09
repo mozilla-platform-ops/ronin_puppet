@@ -6,7 +6,6 @@ class win_generic_worker (
     String $generic_worker_dir,
     String $cache_dir,
     String $downloads_dir,
-    Integer $liveloggetport,
     Integer $livelogputport,
     String $livelog_exe_source,
     String $taskcluster_proxy_exe_source,
