@@ -1,11 +1,11 @@
 [global_tags]
   dataCenter = "<%= @data_center %>"
-  fqdn = "<%= @fqdn %>"
+  fqdn = "$(${FACTER_BIN} networking.fqdn)"
   workerGroup = "<%= @worker_group %>"
   workerType = "<%= @worker_type %>"
 
 [agent]
-  hostname = "<%= @hostname %>"
+  hostname = "$(${FACTER_BIN} networking.hostname)"
   omit_hostname = false
   interval = "<%= @interval %>"
   round_interval = true

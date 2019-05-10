@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::telegraf (
+    String $worker_group,
     String $worker_type,
 ) {
 
@@ -11,9 +12,7 @@ class roles_profiles::profiles::telegraf (
     influx_username        = 'relops_wo'
     influx_password        = lookup('influx_password')
     interval               = '60s'
-    hostname               = $facts[hostname]
-    fqdn                   = $facts['networking']['fqdn']
-    worker_group           = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'),
+    worker_group           = $worker_group
     data_center            = $worker_group
     worker_type            = $worker_type
 
