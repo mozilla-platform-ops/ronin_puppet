@@ -13,7 +13,7 @@ class win_packages::telegraf (
 
         win_packages::win_zip_pkg { "telegraf-${version}":
             # https://dl.influxdata.com/telegraf/releases/telegraf-1.10.3_windows_amd64.zip
-            pkg         => "telegraf-${version}.zip",
+            pkg         => "telegraf-${version}_windows_amd64.zip",
             creates     => "${facts['custom_win_systemdrive']}\\telegraf\\telegraf.exe",
             destination => "${facts['custom_win_systemdrive']}\\",
         }
