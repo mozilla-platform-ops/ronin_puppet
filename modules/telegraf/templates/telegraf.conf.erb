@@ -1,0 +1,30 @@
+[global_tags]
+  dataCenter = "<%= @dataCenter %>"
+  fqdn = "<%= @fqdn %>"
+  workerGroup = "<%= @workerGroup %>"
+  workerType = "<%= @workerType %>"
+
+[agent]
+  hostname = "<%= @hostname %>"
+  omit_hostname = false
+  interval = "<%= @interval %>"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  collection_jitter = "0s"
+  flush_interval = "600s"
+  flush_jitter = "0s"
+  logfile = ""
+  debug = false
+  quiet = false
+
+[[outputs.influxdb]]
+  urls = ["<%= @influx_url %>]
+  database = "<%= @influx_database %>"
+  username = "<%= @influx_username %>"
+  password = "<%= @influx_password %>"
+  skip_database_creation = true
+
+[[inputs.procstat]]
+  exe = "generic-worker"
+
