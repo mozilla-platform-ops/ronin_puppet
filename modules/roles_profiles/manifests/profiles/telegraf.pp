@@ -13,9 +13,9 @@ class roles_profiles::profiles::telegraf (
     interval               = '60s'
     hostname               = $facts[hostname]
     fqdn                   = $facts['networking']['fqdn']
-    workerGroup            = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'),
-    dataCenter             = $workerGroup
-    workerType             = $worker_type
+    worker_group           = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'),
+    data_center            = $worker_group
+    worker_type            = $worker_type
 
     telegraf_config_source = template('telegraf/telegraf.conf.erb')
 
