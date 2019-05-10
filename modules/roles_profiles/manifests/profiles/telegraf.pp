@@ -18,15 +18,7 @@ class roles_profiles::profiles::telegraf (
 
     $telegraf_config_source = template('telegraf/telegraf.conf.erb')
 
-    case $::operatingsystem {
-        'Windows': {
-
-            class { 'win_packages::telegraf':
-                telegraf_config_source => $telegraf_config_source
-            }
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+    class { 'telegraf':
+        telegraf_config_source => $telegraf_config_source
     }
 }
