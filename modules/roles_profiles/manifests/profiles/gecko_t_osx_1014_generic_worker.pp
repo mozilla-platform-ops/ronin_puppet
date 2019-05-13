@@ -82,6 +82,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
             contain packages::virtualenv
 
+            include mercurial::ext::robustcheckout
         }
         default: {
             fail("${::operatingsystem} not supported")
