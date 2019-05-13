@@ -5,7 +5,7 @@
 class mercurial::ext::common {
 
     include mercurial::settings
-    include packages::py27_mercurial
+    include packages::python2
 
     file { $mercurial::settings::hgext_dir:
         ensure => directory,
