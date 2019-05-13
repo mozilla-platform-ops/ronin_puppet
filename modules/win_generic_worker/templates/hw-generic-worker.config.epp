@@ -15,10 +15,7 @@
   "idleTimeoutSecs": <%= $win_generic_worker::hw_config::idle_timeout %>,
   "instanceId": "",
   "instanceType": "",
-  "livelogCertificate": "<%= $win_generic_worker::hw_config::livelog_crt %>",
   "livelogExecutable": "<%= $win_generic_worker::hw_config::livelog_exe %>",
-  "livelogGETPort": <%= $win_generic_worker::liveloggetport %>,
-  "livelogKey": "<%= $win_generic_worker::hw_config::livelog_key %>",
   "livelogPUTPort": <%= $win_generic_worker::livelogputport %>,
   "numberOfTasksToRun": 0,
   "openpgpSigningKeyLocation": "<%= $win_generic_worker::hw_config::openpgpsigningkey %>",
@@ -37,10 +34,11 @@
   "sentryProject": "generic-worker",
   "shutdownMachineOnIdle": false,
   "shutdownMachineOnInternalError": false,
-  "subdomain": "taskcluster-worker.net",
   "taskclusterProxyExecutable": "<%= $win_generic_worker::hw_config::taskcluster_proxy_exe %>",
   "taskclusterProxyPort": 80,
   "tasksDir": "<%= $win_generic_worker::hw_config::task_dir %>",
+  "wstAudience": "taskcluster-net",
+  "wstServerURL": "https://websocktunnel.tasks.build"
   "workerGroup": "<%= $facts[custom_win_mozspace] %>",
   "workerId": "<%= $facts[hostname] %>",
   "workerType": "<%= $win_generic_worker::hw_config::worker_type %>",
@@ -52,11 +50,8 @@
     "generic-worker": {
       "go-arch": "amd64",
       "go-os": "windows",
-      "go-version": "go1.10.3",
-      "release": "https://github.com/taskcluster/generic-worker/releases/tag/v13.0.2",
-      "revision": "4417ccda2f2fd27361c0ad53753ddf49551a35a6",
-      "source": "https://github.com/taskcluster/generic-worker/commits/4417ccda2f2fd27361c0ad53753ddf49551a35a6",
-      "version": "13.0.2"
+      "release": "https://github.com/taskcluster/generic-worker/releases/download/v14.1.0/generic-worker-nativeEngine-windows-amd64.exe",
+      "version": "14.1.0"
     }
   }
 }
