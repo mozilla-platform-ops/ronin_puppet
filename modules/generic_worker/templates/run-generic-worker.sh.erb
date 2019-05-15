@@ -19,6 +19,9 @@ source /usr/local/share/generic-worker/bugzilla-utils.sh
 
 exitstatus="${PIPESTATUS[0]}"
 
+# Remove semaphore file to ensure generic worker does not start before puppet
+rm -rf "/var/tmp/semaphore/run-buildbot"
+
 export TASKCLUSTER_CLIENT_ID="<%= @quarantine_client_id %>"
 export TASKCLUSTER_ACCESS_TOKEN="<%= @quarantine_access_token %>"
 
