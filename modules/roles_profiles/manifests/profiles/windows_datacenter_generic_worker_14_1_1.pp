@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_0 {
+class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_1 {
 
     case $::operatingsystem {
         'Windows': {
@@ -19,7 +19,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_0 {
             # Defining below  as variables because there may be
             # a need to add logic to determine which source or version is needed
             # dependent on OS or architecture.
-            $needed_gw_version         = '14.1.0'
+            $needed_gw_version         = '14.1.1'
             $needed_tc_proxy_version   = '5.1.0'
             $needed_livelog_version    = '1.1.0'
             # Requires win_packages::nssm
@@ -37,7 +37,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_0 {
                 generic_worker_install_command =>
                     "${generic_worker_exe} install service --nssm ${nssm_command} --config ${generic_worker_config}",
                 run_generic_worker_command     => "${generic_worker_exe} run --config ${generic_worker_config}",
-                generic_worker_exe_source      => "${tc_pkg_source}/generic-worker-windows-amd64-${needed_gw_version}.exe",
+                generic_worker_exe_source      => "${tc_pkg_source}/generic-worker-nativeEngine-windows-amd64-${needed_gw_version}.exe",
                 taskcluster_proxy_exe_source   => "${tc_pkg_source}/taskcluster-proxy-windows-amd64-${needed_tc_proxy_version}.exe",
                 livelog_exe_source             => "${tc_pkg_source}/livelog-windows-amd64-${needed_livelog_version}.exe",
 
