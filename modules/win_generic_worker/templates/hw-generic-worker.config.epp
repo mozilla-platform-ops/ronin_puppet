@@ -36,6 +36,8 @@
   "taskclusterProxyExecutable": "<%= $win_generic_worker::hw_config::taskcluster_proxy_exe %>",
   "taskclusterProxyPort": 80,
   "tasksDir": "<%= $win_generic_worker::hw_config::task_dir %>",
+  "wstAudience": "taskcluster-net",
+  "wstServerURL": "https://websocktunnel.tasks.build",
   "workerGroup": "<%= $facts[custom_win_mozspace] %>",
   "workerId": "<%= $facts[hostname] %>",
   "workerType": "<%= $win_generic_worker::hw_config::worker_type %>",
