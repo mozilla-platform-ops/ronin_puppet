@@ -24,7 +24,7 @@ class fluentd (
 
                 '/etc/td-agent/td-agent.conf':
                     ensure  => present,
-                    content => template('fluentd/td-agent.conf.erb'),
+                    content => template('fluentd/fluentd.conf.erb'),
                     mode    => '0644',
                     owner   => $::root_user,
                     group   => $::root_group;
