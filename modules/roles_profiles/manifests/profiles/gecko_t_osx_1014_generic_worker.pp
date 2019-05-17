@@ -15,7 +15,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
             class { 'fluentd':
                 worker_type         => $worker_type,
-                stackdriver_project => 'dhouse-test',
+                stackdriver_project => 'fx-worker-logging-prod',
             }
 
             class { 'talos':
