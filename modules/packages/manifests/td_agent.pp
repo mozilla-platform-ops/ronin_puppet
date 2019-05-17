@@ -5,7 +5,7 @@
 class packages::td_agent {
 
     # https://packages.treasuredata.com.s3.amazonaws.com/3/macosx/td-agent-3.1.1-0.dmg
- 
+
     packages::macos_package_from_s3 { 'td-agent-3.1.1-0.dmg':
         private             => false,
         os_version_specific => false,
