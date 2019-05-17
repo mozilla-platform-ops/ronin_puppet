@@ -8,22 +8,32 @@ class fluentd (
 
     case $facts['os']['name'] {
         'Darwin': {
-            require packages::td-agent  # use treasure data's build
+            require packages::td_agent  # use treasure data's build
+
+            # use google's plugin for output ot stackdriver
+            include packages::fluent_plugin_google_cloud
+            # td-agent.conf assumes this plugin is present
 
             file {
-                '/Library/LaunchAgents/td-agent.plist':
+                '/Library/LaunchDaemons/td-agent.plist':
                     ensure  => present,
-                    content => template('td-agent/td-agent.plist.erb'),
+                    content => template('fluentd/td-agent.plist.erb'),
                     mode    => '0644',
                     owner   => $::root_user,
                     group   => $::root_group;
 
                 '/etc/td-agent/td-agent.conf':
                     ensure  => present,
-                    content => template('td-agent/td-agent.conf.erb'),
+                    content => template('fluentd/td-agent.conf.erb'),
                     mode    => '0644',
                     owner   => $::root_user,
                     group   => $::root_group;
+
+                '/var/log/td-agent':
+                    ensure => directory,
+                    mode   => '0755',
+                    owner  => $::root_user,
+                    group  => $::root_group;
             }
 
             service { 'td-agent':
