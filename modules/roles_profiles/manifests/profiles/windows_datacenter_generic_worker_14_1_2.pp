@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_1 {
+class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_2 {
 
     case $::operatingsystem {
         'Windows': {
@@ -19,7 +19,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_1 {
             # Defining below  as variables because there may be
             # a need to add logic to determine which source or version is needed
             # dependent on OS or architecture.
-            $needed_gw_version         = '14.1.1'
+            $needed_gw_version         = '14.1.2'
             $needed_tc_proxy_version   = '5.1.0'
             $needed_livelog_version    = '1.1.0'
             # Requires win_packages::nssm
