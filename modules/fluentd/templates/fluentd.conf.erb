@@ -55,6 +55,7 @@
   #</store>
   <store>
     @type google_cloud
+    use_metadata_service false
     vm_id "#{Socket.gethostname}"
     zone "#{Socket.gethostname.split('.')[3]}"
     # Set the chunk limit conservatively to avoid exceeding the recommended
