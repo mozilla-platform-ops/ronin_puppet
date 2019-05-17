@@ -4,7 +4,12 @@
 
 class fluentd (
     String $worker_type,
+    String $stackdriver_project,
 ) {
+
+    $stackdriver_keyid    = lookup("stackdriver.${stackdriver_project}.keyid")
+    $stackdriver_key      = lookup("stackdriver.${stackdriver_project}.key")
+    $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid")
 
     case $facts['os']['name'] {
         'Darwin': {
@@ -15,6 +20,13 @@ class fluentd (
             # td-agent.conf assumes this plugin is present
 
             file {
+                '/etc/google/auth/application_default_credentials.json':
+                    ensure  => present,
+                    content => template('fluentd/application_default_credentials.json.erb'),
+                    mode    => '0600',
+                    owner   => $::root_user,
+                    group   => $::root_group;
+
                 '/Library/LaunchDaemons/td-agent.plist':
                     ensure  => present,
                     content => template('fluentd/td-agent.plist.erb'),
