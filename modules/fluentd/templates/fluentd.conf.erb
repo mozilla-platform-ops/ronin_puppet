@@ -1,21 +1,21 @@
 <source>
   @type exec
-  command "log stream --color none --level debug --type log --style syslog \
+  command "\
+    log stream --color none --level info --type log \
       --timeout 1d \
     | tail -n +3 \
-    | awk '{printf (/^[0-9]{4}/&&NR>1?RS:x)\"%s\",$0} END {print \"\"}'"
-    # tail to omit first 2 lines that cause syslog parsing to fail:
+    "
+    # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
-    #   Timestamp                       (process)[PID]    
-    # awk remove newlines apple's log output as syslog prints in log messages
+    #   Timestamp                       Thread     Type        Activity             PID    TTL
+    #   2019-05-17 22:49:59.070398+0000 0x195      Info        0x0                  0      0    kernel: (IOHIDFamily) HID Activity Tickle (type:0 sender:100007033)
   <parse>
-    @type syslog
-    message_format auto
-    time_type string
+    @type regexp
+    expression /^(?<timestamp>.{31}) (?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+(?<message>.*)$/
+    types pid:integer
+    time_key timestamp
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
-    #time_format "%iso8601"
     utc true
-    with_priority false
   </parse>
   tag system
   run_interval 60s  # run command if not still running
