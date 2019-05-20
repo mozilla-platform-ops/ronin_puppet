@@ -7,11 +7,9 @@ PUPPET_ENV='production'
 PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 WORKING_DIR="/etc/puppet/environments/${PUPPET_ENV}/code"
-R10K_DIR="/etc/puppet/environments/${PUPPET_ENV}/r10k_modules"
 ROLE_FILE='/etc/puppet_role'
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
-R10K_BIN='/opt/puppetlabs/bin/r10k'
 FQDN=$(${FACTER_BIN} networking.fqdn)
 
 export LANG=en_US.UTF-8
@@ -23,7 +21,6 @@ function fail {
 }
 
 mkdir -p "${WORKING_DIR}" || fail
-mkdir -p "${R10K_DIR}" || fail
 cd "${WORKING_DIR}" || fail
 
 # Make dir world writable for puppet homebrew bug workaround
@@ -71,6 +68,39 @@ function block_on_network {
 	done
 }
 
+function email_report {
+    ERR_SUBJECT=$1
+    ERR_MSG=$2
+
+    SENDER="root@${FQDN}"
+    RECEIVER="<%= @puppet_notify_email %>"
+    python <<EOF
+import smtplib
+
+msg = """From: ${SENDER}
+To: ${RECEIVER}
+Subject: ${ERR_SUBJECT}
+
+${ERR_MSG}
+"""
+
+try:
+   smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
+   smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
+   print "Successfully sent email"
+except SMTPException:
+   print "Error: unable to send email"
+EOF
+}
+
+function notify_telegraf {
+    TELEGRAF_TABLE=$1
+    TELEGRAF_VALUE=$2
+    META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
+    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
+    curl "${CURL_OPTIONS[@]}" 2>&1
+}
+
 function update_puppet {
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
@@ -81,14 +111,6 @@ function update_puppet {
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
     git checkout --force "origin/${PUPPET_BRANCH}" || return 1
-
-    # Purge modules no longer managed by Puppetfile
-    R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
-    $R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
-
-    # Install r10k modules
-    R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
-    $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
@@ -106,7 +128,7 @@ EOF
 
 function run_puppet {
 
-    # Always bring the puppet git and r10k modules up-to-sync before executing puppet
+    # Always bring the puppet git up-to-sync before executing puppet
     if ! update_puppet; then
         echo "Failed to update puppet"
         return 1
@@ -115,8 +137,10 @@ function run_puppet {
     TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
 
-    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${R10K_DIR}" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    SECONDS=0
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
+    PUPPET_RUN_DURATION=$SECONDS
     retval=$?
     # just in case, if there were any errors logged, flag it as an error run
     if grep -q "^Error:" "${TMP_LOG}"
@@ -124,10 +148,20 @@ function run_puppet {
         retval=1
     fi
 
+    LOG_OUT=$(cat "${TMP_LOG}")
     rm "${TMP_LOG}"
     case $retval in
-        0|2) return 0;;
-        *) return 1;;
+        0|2)
+            notify_telegraf "puppet_ronin_apply_success" "1"
+            # If puppet run is successful, report puppet run duration metric
+            notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
+            return 0
+            ;;
+        *)
+            notify_telegraf "puppet_ronin_apply_failure" "1"
+            email_report "Puppet apply failed on ${FQDN}" "${LOG_OUT}"
+            return 1
+            ;;
     esac
 }
 
@@ -139,5 +173,10 @@ while ! run_puppet; do
     echo "Puppet run failed; re-trying after 10m"
     sleep 600
 done
+
+# Touch the semaphore to allow launchd to start generic worker (if applicable)
+mkdir -p "/var/tmp/semaphore"
+chmod 0777 "/var/tmp/semaphore"
+touch "/var/tmp/semaphore/run-buildbot"
 
 exit 0

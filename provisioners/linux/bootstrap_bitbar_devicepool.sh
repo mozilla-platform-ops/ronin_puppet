@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 ROLE="bitbar_devicepool"
 PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
 PUPPET_BRANCH="master"
+# PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git"
+# PUPPET_BRANCH="devicepool_fixes_99"
 
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 PUPPET_ENV_DIR='/etc/puppetlabs/environments'
@@ -33,17 +36,23 @@ function update_puppet {
         git remote add origin "${PUPPET_REPO}" || return 1
     fi
 
+    # detect if origin doesn't match what's configured. if it is, delete origin and add new
+    if [ "$(git remote -v | head -n 1 | awk '{print $2}')" != "$PUPPET_REPO" ]; then
+        git remote remove origin
+        git remote add origin "$PUPPET_REPO"
+    fi
+
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
     git checkout --force origin/${PUPPET_BRANCH} || return 1
 
     # Purge modules no longer managed by Puppetfile
-    R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
-    $R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
+    #R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
+    #$R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
 
     # Install r10k modules
-    R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
-    $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
+    #R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
+    #$R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
     FQDN=$(${FACTER_BIN} networking.fqdn)
 
@@ -73,11 +82,6 @@ function run_puppet {
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     retval=$?
-    # just in case, if there were any errors logged, flag it as an error run
-    if grep -q "^Error:" "${TMP_LOG}"
-    then
-        retval=1
-    fi
 
     rm "${TMP_LOG}"
     case $retval in
@@ -133,7 +137,13 @@ dpkg -i /var/tmp/*.deb
 apt-get update -y && apt-get install -y puppet-agent
 ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
 # install r10k
+# to handle https://github.com/puppetlabs/r10k/issues/930
+/opt/puppetlabs/puppet/bin/gem install cri -v 2.15.6
 /opt/puppetlabs/puppet/bin/gem install r10k
+
+# disable puppet agent systemd service
+# - we run masterless and only converge manually
+systemctl disable puppet
 
 # get the repo
 update_puppet

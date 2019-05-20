@@ -6,7 +6,6 @@ class win_generic_worker (
     String $generic_worker_dir,
     String $cache_dir,
     String $downloads_dir,
-    Integer $liveloggetport,
     Integer $livelogputport,
     String $livelog_exe_source,
     String $taskcluster_proxy_exe_source,
@@ -18,11 +17,8 @@ class win_generic_worker (
     String $generic_worker_install_command,
     String $run_generic_worker_command
 ) {
-    $openpgpsigningkey         = "${generic_worker_dir}\\openpgp-private.key"
     $ed25519signingkey         = "${generic_worker_dir}\\ed25519-private.key"
-    $livelog_crt               = "${generic_worker_dir}\\livelog.crt"
     $livelog_exe               = "${generic_worker_dir}\\livelog.exe"
-    $livelog_key               = "${generic_worker_dir}\\livelog.key"
     $task_user_init_cmd        = "${generic_worker_dir}\\task-user-init.cmd"
     $disable_desktop_interrupt = "${generic_worker_dir}\\disable-desktop-interrupt.reg"
     $set_default_printer       = "${generic_worker_dir}\\set_default_printer.ps1"

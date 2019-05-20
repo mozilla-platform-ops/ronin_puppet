@@ -15,6 +15,7 @@ class roles_profiles::profiles::mozilla_build {
         $system_drive       = $facts['custom_win_systemdrive']
         $cache_drive        = $facts['custom_win_location'] ? {
             'datacenter' => $system_drive,
+            'bitbar'     => $system_drive,
             'aws'        => 'y:',
         }
         $program_files      = $facts['custom_win_programfiles']

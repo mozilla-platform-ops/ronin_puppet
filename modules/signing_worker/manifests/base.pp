@@ -1,0 +1,135 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+class signing_worker::base {
+    # Dependencies
+
+    contain packages::python3_s3
+    file { '/tools/python3':
+        ensure  => 'link',
+        target  => '/usr/local/bin/python3',
+        require => Class['packages::python3_s3'],
+    }
+    $required_directories = [
+      '/builds',
+      $signing_worker::scriptworker_base,
+      "${signing_worker::scriptworker_base}/certs",
+      "${signing_worker::scriptworker_base}/logs",
+      "${signing_worker::scriptworker_base}/artifact",
+    ]
+    file { $required_directories:
+      ensure => 'directory',
+      owner  =>  $signing_worker::user,
+      group  =>  $signing_worker::group,
+      mode   => '0750',
+    }
+
+    $virtualenv_dir = "${signing_worker::scriptworker_base}/virtualenv"
+    $certs_dir = "${signing_worker::scriptworker_base}/certs"
+    $tmp_requirements = "${signing_worker::scriptworker_base}/requirements.txt"
+    $scriptworker_config_file = "${signing_worker::scriptworker_base}/scriptworker.yaml"
+    $script_config_file = "${signing_worker::scriptworker_base}/script_config.yaml"
+    $scriptworker_wrapper = "${signing_worker::scriptworker_base}/scriptworker_wrapper.sh"
+
+    $role = $::hostname? {
+        /^mac-v3-signing\d+/ => 'ff-prod',
+        /^tb-mac-v3-signing\d+/ => 'tb-prod',
+        /^dep-mac-v3-signing\d+/ => 'dep',
+        default => fail('No matching hostname'),
+    }
+
+    # Load hash of all the template variables
+    $role_config = lookup("signingworker.${role}", Hash, undef, undef)
+
+    file { $tmp_requirements:
+        source => 'puppet:///modules/signing_worker/requirements.txt',
+    }
+
+    # DeveloperIDCA.cer is only required on dep, but is harmless on prod
+    file {
+        '/tmp/DeveloperIDCA.cer':
+            source => 'puppet:///modules/signing_worker/DeveloperIDCA.cer',
+    }
+    exec {
+        'install-developer-id-root':
+            command => '/usr/bin/security add-trusted-cert -r trustAsRoot -k /Library/Keychains/System.keychain /tmp/DeveloperIDCA.cer',
+            require => File['/tmp/DeveloperIDCA.cer'],
+            unless  => "/usr/bin/security dump-keychain /Library/Keychains/System.keychain | /usr/bin/grep 'Developer ID Certification'",
+            # This command returns an error despite actually importing
+            # the certificate correctly.
+            # For posterity, the error returned is "SecTrustSettingsSetTrustSettings: The authorization was
+            # denied since no user interaction was possible.".
+            returns => [1];
+    }
+
+    # Install certifi's set of CAs to override the system set
+    exec {
+        'install_python_certs':
+            command => "'/Applications/Python 3.7/Install Certificates.command'",
+            path    => ['/usr/bin', '/usr/sbin', '/bin'],
+            unless  =>  'test -h /Library/Frameworks/Python.framework/Versions/3.7/etc/openssl/cert.pm'
+    }
+
+    # Accept the xcode licence
+    exec {
+        'xcode_license_agree':
+            command => '/usr/bin/xcodebuild -license accept',
+    }
+
+    contain packages::virtualenv_python3_s3
+    python::virtualenv { 'signingworker' :
+        ensure          => present,
+        version         => '3',
+        requirements    => $tmp_requirements,
+        venv_dir        => $virtualenv_dir,
+        ensure_venv_dir => true,
+        owner           => $signing_worker::user,
+        group           => $signing_worker::group,
+        timeout         => 0,
+        path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
+    }
+
+    file { "${certs_dir}/widevine_prod.crt":
+        owner   => $signing_worker::user,
+        group   => $signing_worker::group,
+        content => lookup('signing_keys.widevine_prod_crt'),
+    }
+    file { "${certs_dir}/nightly_signing.keychain":
+        owner   => $signing_worker::user,
+        group   => $signing_worker::group,
+        content => lookup('signing_keys.nightly_signing_keychain'),
+    }
+    file { "${certs_dir}/release_signing.keychain":
+        owner   => $signing_worker::user,
+        group   => $signing_worker::group,
+        content => lookup('signing_keys.release_signing_keychain'),
+    }
+    file { "${certs_dir}/ed25519_privkey":
+        owner   => $signing_worker::user,
+        group   => $signing_worker::group,
+        content => lookup('signing_keys.ed25519_privkey'),
+        mode    => '0400',
+    }
+
+
+    # scriptworker config
+    file { $script_config_file:
+        content => template('signing_worker/script_config.yaml.erb'),
+    }
+    file { $scriptworker_config_file:
+        content => template('signing_worker/scriptworker.yaml.erb'),
+    }
+
+    file { $scriptworker_wrapper:
+        content => template('signing_worker/scriptworker_wrapper.sh.erb'),
+        mode    => '0700',
+        owner   => $signing_worker::user,
+        group   => $signing_worker::group,
+    }
+
+    file { '/Library/LaunchDaemons/org.mozilla.scriptworker.plist':
+        content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
+        mode    => '0644',
+    }
+
+}

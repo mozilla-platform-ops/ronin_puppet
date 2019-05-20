@@ -28,6 +28,7 @@ set gw_exit_code=%errorlevel%
 if %GW_EXIT_CODE% EQU 0 GoTo exit_0
 if %GW_EXIT_CODE% EQU 67 GoTo exit_67
 if %GW_EXIT_CODE% EQU 68 GoTo exit_68
+if %GW_EXIT_CODE% EQU 69 GoTo exit_69
 if %GW_EXIT_CODE% EQU 71 GoTo exit_71
 if %GW_EXIT_CODE% EQU 73 GoTo exit_73
 

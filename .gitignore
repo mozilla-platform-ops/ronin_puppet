@@ -3,10 +3,8 @@
 .vagrant/*
 .kitchen
 
-# Ignore r10k modules dir but include the README.md
-/r10k_modules/*
-!/r10k_modules/.README.md
-.r10k
+# ignore local r10k files
+.r10k/
 
 # Ignore swap files
 *.swp

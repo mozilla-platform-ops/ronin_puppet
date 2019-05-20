@@ -5,6 +5,7 @@
 class roles_profiles::profiles::homebrew {
 
     require packages::xcode_cmd_line_tools
+    require packages::coreutils
     require roles_profiles::profiles::cltbld_user
 
     class { 'homebrew':
