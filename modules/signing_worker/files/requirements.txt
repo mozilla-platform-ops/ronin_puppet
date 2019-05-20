@@ -1,0 +1,2 @@
+-e git+https://github.com/escapewindow/scriptworker-scripts#egg=scriptworker_client&subdirectory=scriptworker_client
+-e git+https://github.com/escapewindow/scriptworker-scripts#egg=iscript&subdirectory=iscript
