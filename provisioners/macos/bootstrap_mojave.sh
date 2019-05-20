@@ -11,7 +11,6 @@
 #  * curl
 #  * tar w/gzip
 #  * Puppet agent 6.x.x
-#  * R10k 3.x.x
 
 
 # Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
@@ -75,7 +74,6 @@ if [ $OS == "linux" ] || [ $OS == "darwin" ]; then
     ROLE_FILE='/etc/puppet_role'
     PUPPET_BIN='/opt/puppetlabs/bin/puppet'
     FACTER_BIN='/opt/puppetlabs/bin/facter'
-    R10K_BIN='/opt/puppetlabs/bin/r10k'
 fi
 
 # This file should be set by the provisioner and is an error to not have a role
@@ -96,10 +94,6 @@ fi
 
 if [ ! -x "${FACTER_BIN}" ]; then
     fail "${FACTER_BIN} is missing or not executable"
-fi
-
-if [ ! -x "${R10K_BIN}" ]; then
-    fail "${R10K_BIN} is missing or not executable"
 fi
 
 # Remove the system git config, since it can't expand ~ when r10k runs git
@@ -145,10 +139,6 @@ function get_puppet_repo {
     # Change to puppet dir
     cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
     chmod 777 .
-
-    # Install R10k Modules
-    R10K_OPTIONS=('--moduledir=./r10k_modules' '--force' '-v')
-    $R10K_BIN puppetfile install "${R10K_OPTIONS[@]}" || fail "Failed to install R10k modules"
 
     # Inject hiera secrets
     mkdir -p ./data/secrets
