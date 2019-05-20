@@ -124,7 +124,8 @@ Function Ronin-PreRun {
     [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
     [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
     [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision
+    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
+    [string] $winlogon = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
   )
   begin {
@@ -132,11 +133,17 @@ Function Ronin-PreRun {
   }
   process {
 
-	REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /d "" /f
-	REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /d "" /f
-	REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultDomainName /d "" /f
-	REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /d "" /f
-	REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /d "" /f
+    Set-ItemProperty -Path $winlogon -name AutoAdminLogon -Value "" -Type Dword
+    Set-ItemProperty -Path $winlogon -name DefaultUserName -Value "" -Type Dword
+    Set-ItemProperty -Path $winlogon -name DefaultDomainName -Value "" -Type Dword
+    Set-ItemProperty -Path $winlogon -name DefaultPassword -Value "" -Type Dword
+    Set-ItemProperty -Path $winlogon -name AutoLogonCount -Value "" -Type Dword
+
+	#REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /d "" /f
+	#REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /d "" /f
+	#REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultDomainName /d "" /f
+	#REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /d "" /f
+	#REG ADD "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonCount /d "" /f
 
     Clone-Ronin
 
