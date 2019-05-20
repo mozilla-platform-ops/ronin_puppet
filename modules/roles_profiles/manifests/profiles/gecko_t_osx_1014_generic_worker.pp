@@ -13,9 +13,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
             include puppet::atboot
 
-            class { 'fluentd':
-                worker_type         => $worker_type,
-                stackdriver_project => 'fx-worker-logging-prod',
+            class { 'logging':
+                worker_type = $worker_type,
             }
 
             class { 'talos':

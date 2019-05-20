@@ -5,11 +5,10 @@
 class fluentd (
     String $worker_type,
     String $stackdriver_project,
+    String $stackdriver_keyid,
+    String $stackdriver_key,
+    String $stackdriver_clientid,
 ) {
-
-    $stackdriver_keyid    = lookup("stackdriver.${stackdriver_project}.keyid")
-    $stackdriver_key      = lookup("stackdriver.${stackdriver_project}.key")
-    $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid")
 
     case $facts['os']['name'] {
         'Darwin': {
