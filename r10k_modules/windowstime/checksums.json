@@ -1,0 +1,13 @@
+{
+  "Gemfile": "f28fc40e2b58c692633f3845ca8b9edf",
+  "README.md": "c944ffff1fd61ff696feeb1a25ff0962",
+  "Rakefile": "61b3f95ac0c5c19fbdfc574004599794",
+  "data/common.yaml": "d296a31ffc858571984b54e16ce7e46a",
+  "hiera.yaml": "1ebd87fab151edcccdccf8c0588dcc7d",
+  "lib/puppet/parser/functions/maptoreg.rb": "10e135c67dcafd1650c1e4bc0527aa52",
+  "manifests/init.pp": "53f952e3bbbf489937892b9a9b551817",
+  "metadata.json": "4e24a84191abed927664beb85036ade3",
+  "spec/classes/init_spec.rb": "d089abbf2af7169de5a51f2fe0c2d3c5",
+  "spec/spec_helper.rb": "0db89c9a486df193c0e40095422e19dc",
+  "tests/init.pp": "ab88208230f3f8cd2e7a51f01e9ce284"
+}

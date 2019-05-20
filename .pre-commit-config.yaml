@@ -1,3 +1,4 @@
+exclude: '^r10k_modules/'
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.1.0
