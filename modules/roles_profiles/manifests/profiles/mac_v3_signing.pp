@@ -41,6 +41,7 @@ class roles_profiles::profiles::mac_v3_signing {
             }
             contain packages::virtualenv_python3_s3
 
+            class { 'signing_worker': }
         }
         default: {
             fail("${::operatingsystem} not supported")
