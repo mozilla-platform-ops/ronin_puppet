@@ -13,8 +13,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
             include puppet::atboot
 
-            class { 'logging':
-                worker_type = $worker_type,
+            class { 'roles_profiles::profiles::logging':
+                worker_type => $worker_type,
             }
 
             class { 'talos':
