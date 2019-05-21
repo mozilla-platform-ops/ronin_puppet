@@ -9,10 +9,8 @@ class roles_profiles::profiles::windows_datacenter_administrator {
 
             $admin_password = lookup('win_adminpw')
 
-            include win_users::administrator::account
-
-            class { 'win_users::user_ssh_config ':
-                home => "${facts['custom_win_systemdrive']}\\administrator",
+            class { 'win_users::administrator::account':
+                admin_password => $admin_password,
             }
 
         }
