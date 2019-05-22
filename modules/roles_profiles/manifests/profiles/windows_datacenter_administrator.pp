@@ -14,7 +14,8 @@ class roles_profiles::profiles::windows_datacenter_administrator {
             }
 
         }
-
+        # Bug List
+        # https://bugzilla.mozilla.org/show_bug.cgi?id=1545481
         default: {
             fail("${::operatingsystem} not supported")
         }
