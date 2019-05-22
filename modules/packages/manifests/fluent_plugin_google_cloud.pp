@@ -8,10 +8,7 @@ class packages::fluent_plugin_google_cloud {
     $version = '0.7.11'
 
     # fluent-plugin-google-cloud requires json which expects coreutils (requires gnu mkdir)
-    package { 'coreutils':
-        ensure   => present,
-        provider => brew,
-    }
+    require packages::coreutils
 
     exec {
         'install plugin with agent ruby':

@@ -19,6 +19,12 @@ class fluentd (
             # td-agent.conf assumes this plugin is present
 
             file {
+                '/etc/google':
+                    ensure => 'directory';
+
+                '/etc/google/auth':
+                    ensure => 'directory';
+
                 '/etc/google/auth/application_default_credentials.json':
                     ensure  => present,
                     content => template('fluentd/application_default_credentials.json.erb'),
