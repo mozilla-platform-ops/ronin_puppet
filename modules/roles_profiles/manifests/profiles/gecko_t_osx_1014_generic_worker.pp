@@ -23,7 +23,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                     worker_type    => $worker_type,
                     worker_group   => $worker_group,
                     provisioner_id => 'releng-hardware',
-                    worker_id      => $facts['netowrking']['hostname'],
+                    worker_id      => $facts['networking']['hostname'],
                 },
             }
 
