@@ -15,11 +15,12 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
+                # Note the camelCase key names
                 meta_data         => {
-                    worker_type    => $worker_type,
-                    worker_group   => $worker_group,
-                    provisioner_id => 'releng-hardware',
-                    worker_id      => $facts['networking']['hostname'],
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    provisionerId => 'releng-hardware',
+                    workerId      => $facts['networking']['hostname'],
                 },
             }
 
