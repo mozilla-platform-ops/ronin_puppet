@@ -86,7 +86,7 @@ ${ERR_MSG}
 
 try:
    smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
-   smtpObj.sendmail($SENDER, $RECEIVER, msg)
+   smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
    print "Successfully sent email"
 except SMTPException:
    print "Error: unable to send email"
