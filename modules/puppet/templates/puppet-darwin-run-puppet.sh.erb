@@ -145,6 +145,7 @@ function run_puppet {
         retval=1
     fi
 
+    LOG_OUT=$(cat "{$TMP_LOG}")
     rm "${TMP_LOG}"
     case $retval in
         0|2)
@@ -152,7 +153,6 @@ function run_puppet {
             return 0
             ;;
         *)
-            LOG_OUT=$(cat "{$TMP_LOG}")
             notify_telegraf "puppet_ronin_apply_failure"
             email_report "Puppet apply failed on ${FQDN}" "${LOG_OUT}"
             return 1
