@@ -6,12 +6,23 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
     require roles_profiles::profiles::cltbld_user
 
-    $worker_type = 'gecko-t-osx-1014'
+    $worker_type  = 'gecko-t-osx-1014'
+    $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     case $::operatingsystem {
         'Darwin': {
 
-            include puppet::atboot
+            class { 'puppet::atboot':
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.password'),
+                # Note the camelCase key names
+                meta_data         => {
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    provisionerId => 'releng-hardware',
+                    workerId      => $facts['networking']['hostname'],
+                },
+            }
 
             class { 'roles_profiles::profiles::logging':
                 worker_type => $worker_type,
@@ -32,7 +43,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
                 livelog_secret            => $livelog_secret,
-                worker_group              => regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'),
+                worker_group              => $worker_group,
                 worker_type               => $worker_type,
                 quarantine_client_id      => $quarantine_client_id,
                 quarantine_access_token   => $quarantine_access_token,

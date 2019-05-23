@@ -68,6 +68,38 @@ function block_on_network {
 	done
 }
 
+function email_report {
+    ERR_SUBJECT=$1
+    ERR_MSG=$2
+
+    SENDER="root@${FQDN}"
+    RECEIVER="<%= @puppet_notify_email %>"
+    python <<EOF
+import smtplib
+
+msg = """From: ${SENDER}
+To: ${RECEIVER}
+Subject: ${ERR_SUBJECT}
+
+${ERR_MSG}
+"""
+
+try:
+   smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
+   smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
+   print "Successfully sent email"
+except SMTPException:
+   print "Error: unable to send email"
+EOF
+}
+
+function notify_telegraf {
+    TELEGRAF_TABLE=$1
+    META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
+    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=1")
+    curl "${CURL_OPTIONS[@]}" 2>&1
+}
+
 function update_puppet {
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
@@ -113,10 +145,18 @@ function run_puppet {
         retval=1
     fi
 
+    LOG_OUT=$(cat "{$TMP_LOG}")
     rm "${TMP_LOG}"
     case $retval in
-        0|2) return 0;;
-        *) return 1;;
+        0|2)
+            notify_telegraf "puppet_ronin_apply_success"
+            return 0
+            ;;
+        *)
+            notify_telegraf "puppet_ronin_apply_failure"
+            email_report "Puppet apply failed on ${FQDN}" "${LOG_OUT}"
+            return 1
+            ;;
     esac
 }
 
