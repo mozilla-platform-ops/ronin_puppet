@@ -9,6 +9,9 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
     $worker_type  = 'gecko-t-osx-1014'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
+    # temp failure for testing
+    fail('This is a failed pupppet run')
+
     case $::operatingsystem {
         'Darwin': {
 
