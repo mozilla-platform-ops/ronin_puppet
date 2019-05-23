@@ -13,6 +13,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
         'Darwin': {
 
             class { 'puppet::atboot':
+                # Temp pinning
+                puppet_repo       => 'https://github.com/dividehex/ronin_puppet.git',
+                puppet_branch     => 'puppet_apply_email_reports',
+
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
                 meta_data         => {
