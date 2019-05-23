@@ -2,6 +2,7 @@
 
 ntp_server: "0.pool.ntp.org"
 
+smtp_relay_host: "smtp1.private.mdc1.mozilla.com"
 
 # Apple firmware acceptance hash
 apple_firmware_acceptance:
@@ -76,3 +77,5 @@ all_users:
 # so use only when necessary
 packages::setup::default_bucket: "ronin-puppet-package-repo"
 packages::setup::default_s3_domain: "s3-us-west-2.amazonaws.com"
+
+puppet::atboot::smtp_relay_host: "%{hiera('smtp_relay_host')}"

@@ -3,8 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class puppet::atboot (
-    String $puppet_repo   = 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-    String $puppet_branch = 'master',
+    String $telegraf_user,
+    String $telegraf_password,
+    String $puppet_repo         = 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
+    String $puppet_branch       = 'master',
+    String $puppet_notify_email = 'puppet-ronin-reports@mozilla.com',
+    String $smtp_relay_host     = 'localhost',
+    Hash $meta_data             = {},
 ) {
 
     include puppet::setup
