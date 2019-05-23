@@ -96,7 +96,7 @@ EOF
 function notify_telegraf {
     TELEGRAF_TABLE=$1
     META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
-    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "\"https://telegraf.relops.mozops.net/write?db=relops\"" '--data-binary' "\"${TELEGRAF_TABLE}${META_DATA} value=1\"")
+    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=1")
     curl "${CURL_OPTIONS[@]}" 2>&1
 }
 
