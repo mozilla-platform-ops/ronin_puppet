@@ -24,8 +24,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 },
             }
 
-            # TODO: fix dep ordering for fluent-plugins to use tdagent-gem
-            require packages::td_agent
             class { 'roles_profiles::profiles::logging':
                 worker_type => $worker_type,
             }
