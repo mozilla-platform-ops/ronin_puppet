@@ -209,6 +209,6 @@ rm -rf "$TMP_PUPPET_DIR"
 echo "System Installed: $(date)" >> /etc/issue
 
 # Success! Let's reboot
-#/sbin/reboot
+/sbin/reboot
 
 exit 0

@@ -95,8 +95,9 @@ EOF
 
 function notify_telegraf {
     TELEGRAF_TABLE=$1
+    TELEGRAF_VALUE=$2
     META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
-    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=1")
+    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
     curl "${CURL_OPTIONS[@]}" 2>&1
 }
 
@@ -137,7 +138,9 @@ function run_puppet {
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
 
     PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    SECONDS=0
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
+    PUPPET_RUN_DURATION=$SECONDS
     retval=$?
     # just in case, if there were any errors logged, flag it as an error run
     if grep -q "^Error:" "${TMP_LOG}"
@@ -145,15 +148,17 @@ function run_puppet {
         retval=1
     fi
 
-    LOG_OUT=$(cat "{$TMP_LOG}")
+    LOG_OUT=$(cat "${TMP_LOG}")
     rm "${TMP_LOG}"
     case $retval in
         0|2)
-            notify_telegraf "puppet_ronin_apply_success"
+            notify_telegraf "puppet_ronin_apply_success" "1"
+            # If puppet run is successful, report puppet run duration metric
+            notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
             return 0
             ;;
         *)
-            notify_telegraf "puppet_ronin_apply_failure"
+            notify_telegraf "puppet_ronin_apply_failure" "1"
             email_report "Puppet apply failed on ${FQDN}" "${LOG_OUT}"
             return 1
             ;;
