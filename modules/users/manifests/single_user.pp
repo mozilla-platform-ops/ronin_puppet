@@ -28,12 +28,11 @@ define users::single_user (
     # SIP workaround; module assumes sip is off
     case $::operatingsystem {
         'Darwin': {
-            file { [ '/var/db/dslocal',
-                     '/var/db/dslocal/nodes',
-                     '/var/db/dslocal/nodes/Default',
+            file { [ '/var/db/dslocal/nodes/Default',
                      '/var/db/dslocal/nodes/Default/users' ]:
-                ensure => 'directory',
-                mode   => 'g+r',
+                ensure  => 'directory',
+                recurse => true,
+                mode    => 'g+r',
             }
         }
     }
