@@ -25,6 +25,19 @@ define users::single_user (
         default  => "/home/${user}"
     }
 
+    # SIP workaround; module assumes sip is off
+    case $::operatingsystem {
+        'Darwin': {
+            file { [ '/var/db/dslocal',
+                     '/var/db/dslocal/nodes',
+                     '/var/db/dslocal/nodes/Default',
+                     '/var/db/dslocal/nodes/Default/users' ]:
+                ensure => 'directory',
+                mode   => 'g+r',
+            }
+        }
+    }
+
     case $facts['os']['family'] {
         'Darwin', 'Debian': {
             # If values for password, salt and iteration are passed, then set the user with a password
