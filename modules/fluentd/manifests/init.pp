@@ -15,7 +15,7 @@ class fluentd (
             require packages::td_agent  # use treasure data's build
 
             # use google's plugin for output ot stackdriver
-            contain packages::fluent_plugin_google_cloud
+            require packages::fluent_plugin_google_cloud
             # td-agent.conf assumes this plugin is present
 
             file {
