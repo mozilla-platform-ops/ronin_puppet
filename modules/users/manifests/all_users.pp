@@ -12,4 +12,16 @@ class users::all_users (
             ssh_keys => $ssh_keys,
         }
     }
+
+    # SIP workaround; module assumes sip is off
+    case $::operatingsystem {
+        'Darwin': {
+            file { [ '/var/db/dslocal/nodes/Default',
+                     '/var/db/dslocal/nodes/Default/users' ]:
+                ensure  => 'directory',
+                recurse => true,
+                mode    => 'g+r',
+            }
+        }
+    }
 }
