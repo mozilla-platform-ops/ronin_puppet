@@ -16,11 +16,13 @@ class users::all_users (
     # SIP workaround; module assumes sip is off
     case $::operatingsystem {
         'Darwin': {
-            file { [ '/var/db/dslocal/nodes/Default',
-                     '/var/db/dslocal/nodes/Default/users' ]:
-                ensure  => 'directory',
-                recurse => true,
-                mode    => 'g+r',
+            exec { 'fix_account_plist_perms':
+                command =>
+                    "chmod g+r /var/db/dslocal/nodes/Default && "\
+                    "chmod -R g+r /var/db/dslocal/nodes/Default/users",
+                onlyif  =>  [
+                    'test -d /var/db/dslocal/nodes/Default/users',
+                ],
             }
         }
     }
