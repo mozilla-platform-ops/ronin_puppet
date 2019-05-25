@@ -148,7 +148,7 @@ function run_puppet {
         retval=1
     fi
 
-    LOG_OUT=$(cat "{$TMP_LOG}")
+    LOG_OUT=$(cat "${TMP_LOG}")
     rm "${TMP_LOG}"
     case $retval in
         0|2)
