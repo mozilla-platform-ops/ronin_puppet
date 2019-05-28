@@ -17,7 +17,7 @@ class users::all_users (
     case $::operatingsystem {
         'Darwin': {
             exec { 'fix_account_plist_perms':
-                command => '/bin/chmod g+r /var/db/dslocal/nodes/Default && /bin/chmod -R g+r /var/db/dslocal/nodes/Default/users',
+                command => '/bin/chmod g+r /var/db/dslocal/nodes/Default && /bin/chmod -R g+r /var/db/dslocal/nodes/Default/users || exit 0',
                 onlyif  =>  [
                     '/bin/test -d /var/db/dslocal/nodes/Default/users',
                 ],
