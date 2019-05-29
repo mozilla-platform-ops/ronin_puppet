@@ -102,9 +102,11 @@ define python::virtualenv (
 
     # Unless activate exists and VIRTUAL_ENV is correct we re-create the virtualenv
     exec { "python_virtualenv_${venv_dir}":
-      command     => "true ${proxy_command} && "\
-                    "${virtualenv_cmd} ${system_pkgs_flag} -p ${python} ${venv_dir} && "\
-                    "${pip_cmd} --log ${venv_dir}/pip.log install ${pip_flags} --upgrade pip",
+      command     => @("COMMAND"/L),
+        true ${proxy_command} && \
+        ${virtualenv_cmd} ${system_pkgs_flag} -p ${python} ${venv_dir} && \
+        ${pip_cmd} --log ${venv_dir}/pip.log install ${pip_flags} --upgrade pip
+        |-COMMAND
       user        => $owner,
       creates     => "${venv_dir}/bin/activate",
       path        => $path,
@@ -116,8 +118,10 @@ define python::virtualenv (
 
     if $requirements {
       exec { "python_requirements_initial_install_${requirements}_${venv_dir}":
-        command     => "${pip_cmd} --log ${venv_dir}/pip.log install ${pypi_index} "\
-                      "${proxy_flag} -r ${requirements} ${extra_pip_args}",
+        command     => @("COMMAND"/L),
+          ${pip_cmd} --log ${venv_dir}/pip.log install ${pypi_index} \
+          ${proxy_flag} -r ${requirements} ${extra_pip_args}
+          |-COMMAND
         refreshonly => true,
         timeout     => $timeout,
         user        => $owner,
