@@ -75,12 +75,6 @@ function run_puppet {
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     retval=$?
 
-    # just in case, if there were any errors logged, flag it as an error run
-    #if grep -q "^Error:" "${TMP_LOG}"
-    #then
-    #    retval=1
-    #fi
-
     rm "${TMP_LOG}"
     case $retval in
         0|2) return 0;;
