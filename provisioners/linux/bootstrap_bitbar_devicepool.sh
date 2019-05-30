@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 ROLE="bitbar_devicepool"
 PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
