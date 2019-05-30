@@ -135,6 +135,8 @@ dpkg -i /var/tmp/*.deb
 apt-get update -y && apt-get install -y puppet-agent
 ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
 # install r10k
+# to handle https://github.com/puppetlabs/r10k/issues/930
+/opt/puppetlabs/puppet/bin/gem install cri -v 2.15.6
 /opt/puppetlabs/puppet/bin/gem install r10k
 
 # get the repo
