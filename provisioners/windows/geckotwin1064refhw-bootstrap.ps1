@@ -349,10 +349,9 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
   $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-  If (!(Get-Service nxlog -ErrorAction SilentlyContinue)) {
-    Setup-Logging
-    Name-Node
-  }
+  Setup-Logging
+  Install-Prerequ
+  Name-Node
   Set-RoninRegOptions
   shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup, registry setup, and node renamed', '-f', '-d', '4:5')
 }
