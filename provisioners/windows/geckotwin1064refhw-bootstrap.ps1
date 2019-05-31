@@ -42,15 +42,88 @@ function Write-Log {
     Write-Host -object $message -ForegroundColor $fc
   }
 }
+function Setup-Logging {
+  param (
+    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+    [string] $local_dir = "$env:systemdrive\BootStrap",
+    [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
+    [string] $nxlog_conf = "nxlog.conf",
+    [string] $nxlog_pem  = "papertrail-bundle.pem",
+    [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
+
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    New-Item -ItemType Directory -Force -Path $local_dir
+
+    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi
+    msiexec /i $local_dir\$nxlog_msi /passive
+    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile $nxlog_dir\conf\$nxlog_conf
+    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile $nxlog_dir\cert\$nxlog_pem
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Install-Prerequ {
+  param (
+    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+    [string] $local_dir = "$env:systemdrive\BootStrap",
+    [string] $git = "Git-2.18.0-64-bit.exe",
+    [string] $puppet = "puppet-agent-6.0.0-x64.msi"
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+
+    Invoke-WebRequest  $ext_src/$git -outfile $local_dir\$git
+    Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet
+
+    & $local_dir\$git /verysilent
+    msiexec /i $local_dir\$puppet /quiet
+
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Name-Node {
+  param (
+    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+    [string] $local_dir = "$env:systemdrive\BootStrap",
+    [string] $namefile = "bitbar_name_by_mac.txt"
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+
+    Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile
+    $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
+    $name = ($name_mac.trim("$mac/:"))
+    if ($name -NotMatch $env:COMPUTERNAME) {
+      Rename-Computer -NewName "$name"
+    }
+    & $local_dir\$git /verysilent
+    msiexec /i $local_dir\$puppet /quiet
+
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Set-RoninRegOptions {
   param (
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
     [string] $workerType = 'gecko-t-win10-64-ref-hw',
-    [string] $src_Organisation = 'mozilla-platform-ops',
+    [string] $src_Organisation = 'markcor',
     [string] $src_Repository = 'ronin_puppet',
-    [string] $src_Revision = 'master'
+    [string] $src_Revision = 'bug1555027'
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -276,10 +349,15 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
   $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+  If (!(Get-Service nxlog -ErrorAction SilentlyContinue)) {
+    Setup-Logging
+    Name-Node
+    shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and node renamed', '-f', '-d', '4:5')
+  }
   Set-RoninRegOptions
-  Ronin-PreRun
 }
 If ($stage -ne 'complete') {
+  Ronin-PreRun
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
