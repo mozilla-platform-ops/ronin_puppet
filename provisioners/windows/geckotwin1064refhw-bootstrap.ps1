@@ -352,9 +352,9 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   If (!(Get-Service nxlog -ErrorAction SilentlyContinue)) {
     Setup-Logging
     Name-Node
-    shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and node renamed', '-f', '-d', '4:5')
   }
   Set-RoninRegOptions
+  shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup, registry setup, and node renamed', '-f', '-d', '4:5')
 }
 If ($stage -ne 'complete') {
   Ronin-PreRun
