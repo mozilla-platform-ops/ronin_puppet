@@ -101,11 +101,9 @@ function Name-Node {
   }
   process {
 
-    $mac = (gwmi Win32_NetworkAdapter -Filter "MacAddress like '%:%'" | select -exp macaddress)
     Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile
     $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
     $name = ($name_mac.trim("$mac/:"))
-    write-host $name
     if ($name -NotMatch $env:COMPUTERNAME) {
       Rename-Computer -NewName "$name"
     }
@@ -148,10 +146,6 @@ function Set-RoninRegOptions {
     New-ItemProperty -Path "$source_key" -Name 'Organisation' -Value "$src_Organisation" -PropertyType String
     New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String
     New-ItemProperty -Path "$source_key" -Name 'Revision' -Value "$src_Revision" -PropertyType String
-
-    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1"
-    Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
-    Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
 
   }
   end {
@@ -360,7 +354,6 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Name-Node
   Set-RoninRegOptions
   shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup, registry setup, and node renamed', '-f', '-d', '4:5')
-  pause
 }
 If ($stage -ne 'complete') {
   Ronin-PreRun
