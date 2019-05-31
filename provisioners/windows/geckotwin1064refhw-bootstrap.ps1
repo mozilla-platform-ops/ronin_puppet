@@ -361,7 +361,6 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Name-Node
   Set-RoninRegOptions
   shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup, registry setup, and node renamed', '-f', '-d', '4:5')
-  pause
 }
 If ($stage -ne 'complete') {
   Ronin-PreRun
