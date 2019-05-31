@@ -15,7 +15,6 @@ class roles_profiles::roles::geckotwin1064refhw {
     # Adminstration
     include roles_profiles::profiles::logging
     include roles_profiles::profiles::common_tools
-    include roles_profiles::profiles::microsoft_network_services
     include roles_profiles::profiles::vnc
     include roles_profiles::profiles::windows_datacenter_administrator
     # Openssh Fails when Puppet runs as a  schedule task
