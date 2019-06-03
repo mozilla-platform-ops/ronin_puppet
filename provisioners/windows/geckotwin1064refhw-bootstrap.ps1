@@ -111,8 +111,6 @@ function Name-Node {
     if ($name -NotMatch $env:COMPUTERNAME) {
       Rename-Computer -NewName "$name"
     }
-    & $local_dir\$git /verysilent
-    msiexec /i $local_dir\$puppet /quiet
 
   }
   end {
