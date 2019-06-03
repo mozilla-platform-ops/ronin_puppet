@@ -60,8 +60,10 @@ function Setup-Logging {
 
     Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi
     msiexec /i $local_dir\$nxlog_msi /passive
-    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile $nxlog_dir\conf\$nxlog_conf
-    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile $nxlog_dir\cert\$nxlog_pem
+    while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf"
+    while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem"
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -92,7 +94,9 @@ function Install-Prerequ {
 }
 function Name-Node {
   param (
-    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+    [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
+    [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
+    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
     [string] $local_dir = "$env:systemdrive\BootStrap",
     [string] $namefile = "bitbar_name_by_mac.txt"
   )
@@ -101,15 +105,13 @@ function Name-Node {
   }
   process {
 
-    $mac = (gwmi Win32_NetworkAdapter -Filter "MacAddress like '%:%'" | select -exp macaddress)
-    Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile
+    Invoke-WebRequest  https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/resources/$namefile -outfile $local_dir\$namefile
     $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
     $name = ($name_mac.trim("$mac/:"))
-    write-host $name
     if ($name -NotMatch $env:COMPUTERNAME) {
       Rename-Computer -NewName "$name"
     }
-    & "$local_dir\$git" /verysilent
+    & $local_dir\$git /verysilent
     msiexec /i $local_dir\$puppet /quiet
 
   }
@@ -149,11 +151,6 @@ function Set-RoninRegOptions {
     New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String
     New-ItemProperty -Path "$source_key" -Name 'Revision' -Value "$src_Revision" -PropertyType String
 
-    $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
-    Invoke-WebRequest https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_Revision/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1"
-    Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
-    Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
-
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -192,6 +189,27 @@ Function Clone-Ronin {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+Function Bootstrap-schtasks {
+  param (
+    [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
+    [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
+    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
+    [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
+    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1"
+    Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
+    Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
 Function Ronin-PreRun {
   param (
     [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
@@ -357,12 +375,14 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Setup-Logging
-  Install-Prerequ
-  Name-Node
   Set-RoninRegOptions
-  shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup, registry setup, and node renamed', '-f', '-d', '4:5')
+  Bootstrap-schtasks
+  Name-Node
+  write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and registry setup', '-f', '-d', '4:5')
+  pause
 }
 If ($stage -ne 'complete') {
+  Install-Prerequ
   Ronin-PreRun
   Bootstrap-Puppet
 }
