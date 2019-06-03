@@ -1,6 +1,9 @@
 $DhcpDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'DhcpDomain')
+$NVDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain')
 
-if ($DhcpDomain -like "*ec2*") {
+if ($NVDomain -like "*bitbar*") {
+  $location = "bitbar"
+} elseif ($DhcpDomain -like "*ec2*") {
 	$location = "aws"
 } else {
 	$location = "datacenter"

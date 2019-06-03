@@ -148,6 +148,9 @@ function Set-RoninRegOptions {
     New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String
     New-ItemProperty -Path "$source_key" -Name 'Revision' -Value "$src_Revision" -PropertyType String
 
+    # testing ONLY!!!!!!!!!!!!!!!!!!!!
+    reg ADD HKLM\SYSTEM\CurrentControlSet\services\Tcpip\Parameters /v "NV Domain" /d  mozilla.hc.bitbar /f
+
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

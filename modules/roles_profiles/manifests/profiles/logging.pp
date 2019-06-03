@@ -13,10 +13,16 @@ class roles_profiles::profiles::logging (
 
             $location        = $facts['locations']
             $programfilesx86 = $facts['custom_win_programfilesx86']
+            if ($location == 'datacenter') {
+                $conf_file = epp('win_nxlog/nxlog.conf.epp')
+            } else {
+                $conf_file = file('win_nxlog/non_datacenter_nxlog.conf')
+            }
 
             class { 'win_nxlog':
                 nxlog_dir => "${programfilesx86}\\nxlog",
                 location  => $location,
+                conf_file => $conf_file,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
