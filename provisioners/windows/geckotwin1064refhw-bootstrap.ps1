@@ -94,9 +94,7 @@ function Install-Prerequ {
 }
 function Name-Node {
   param (
-    [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
-    [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
+    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
     [string] $local_dir = "$env:systemdrive\BootStrap",
     [string] $namefile = "bitbar_name_by_mac.txt"
   )
@@ -105,13 +103,14 @@ function Name-Node {
   }
   process {
 
-    Invoke-WebRequest  https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/resources/$namefile -outfile $local_dir\$namefile
+    $mac = (gwmi Win32_NetworkAdapter -Filter "MacAddress like '%:%'" | select -exp macaddress)
+    Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile
     $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
     $name = ($name_mac.trim("$mac/:"))
+    write-host $name
     if ($name -NotMatch $env:COMPUTERNAME) {
       Rename-Computer -NewName "$name"
     }
-
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -199,7 +198,7 @@ Function Bootstrap-schtasks {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    Set-ExecutionPolicy -Scope UserPolicy Unrestricted
+
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
     Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1"
     Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
