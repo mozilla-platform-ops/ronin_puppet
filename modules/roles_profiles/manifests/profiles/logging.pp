@@ -11,9 +11,9 @@ class roles_profiles::profiles::logging (
     case $::operatingsystem {
         'Windows': {
 
-            $location        = $facts['location']
+            $location        = $facts['custom_win_location']
             $programfilesx86 = $facts['custom_win_programfilesx86']
-            if ($facts['location'] == 'datacenter') {
+            if ($facts['custom_win_location'] == 'datacenter') {
                 $conf_file = epp('win_nxlog/nxlog.conf.epp')
             } else {
                 $conf_file = file('win_nxlog/non_datacenter_nxlog.conf')
