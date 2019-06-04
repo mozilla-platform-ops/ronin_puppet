@@ -86,7 +86,7 @@ function Install-Prerequ {
     Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet
 
     Start-Process $local_dir\$git /verysilent -wait
-    Start-Process msiexec /i $local_dir\$puppet /quiet -wait
+    Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
 
   }
   end {
