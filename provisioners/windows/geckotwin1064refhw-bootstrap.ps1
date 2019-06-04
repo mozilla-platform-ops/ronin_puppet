@@ -39,7 +39,7 @@ function Write-Log {
   Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
   if ([Environment]::UserInteractive) {
     $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
-    Write-Host -object $message -ForegroundColor $fc
+     -object $message -ForegroundColor $fc
   }
 }
 function Setup-Logging {
@@ -85,8 +85,8 @@ function Install-Prerequ {
     Invoke-WebRequest  $ext_src/$git -outfile $local_dir\$git
     Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet
 
-    & $local_dir\$git /verysilent
-    msiexec /i $local_dir\$puppet /quiet
+    Start-Process $local_dir\$git /verysilent -wait
+    Start-Process msiexec /i $local_dir\$puppet /quiet -wait
 
   }
   end {
@@ -108,7 +108,7 @@ function Name-Node {
     Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile
     $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
     $name = ($name_mac.trim("$mac/:"))
-    write-host $name
+     $name
     if ($name -NotMatch $env:COMPUTERNAME) {
       Rename-Computer -NewName "$name"
     }
@@ -238,8 +238,8 @@ Function Ronin-PreRun {
 
     if (!(Test-path $nodes_def)) {
       Copy-item -path $nodes_def_src -destination $nodes_def -force
-      write-host here
-      write-host $workerType
+       here
+       $workerType
       (Get-Content -path $nodes_def) -replace 'roles::role', "roles::$role" | Set-Content $nodes_def
     }
     if (!(Test-path $secrets)) {
@@ -329,24 +329,24 @@ function Bootstrap-Puppet {
         if($last_exit -eq 0) {
           Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
-          write -host shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif ($last_exit -ne 0){
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 600
-          write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
-        write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
+        shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $last_exit
         Start-sleep -s 600
-        write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
       }
     }
   }
@@ -380,13 +380,11 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Setup-Logging
   Set-RoninRegOptions
   Install-Prerequ
-  #Bootstrap-schtasks
+  Bootstrap-schtasks
   Name-Node
-  write-host write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and registry setup', '-f', '-d', '4:5')
-  pause
+  shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and registry setup', '-f', '-d', '4:5')
 }
 If ($stage -ne 'complete') {
-  Install-Prerequ
   Ronin-PreRun
   Bootstrap-Puppet
 }
