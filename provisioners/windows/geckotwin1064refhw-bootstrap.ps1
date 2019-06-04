@@ -64,6 +64,7 @@ function Setup-Logging {
     Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf"
     while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
     Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem"
+    Restart-Service -Name nxlog -force
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -328,24 +329,24 @@ function Bootstrap-Puppet {
         if($last_exit -eq 0) {
           Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
-          shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          write -host shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif ($last_exit -ne 0){
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 600
-          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
+        write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $last_exit
         Start-sleep -s 600
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
       }
     }
   }
@@ -378,9 +379,10 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Setup-Logging
   Set-RoninRegOptions
-  Bootstrap-schtasks
+  Install-Prerequ
+  #Bootstrap-schtasks
   Name-Node
-  write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and registry setup', '-f', '-d', '4:5')
+  write-host write -host shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and registry setup', '-f', '-d', '4:5')
   pause
 }
 If ($stage -ne 'complete') {
