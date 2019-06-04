@@ -3,6 +3,7 @@ $NVDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\
 
 if ($NVDomain -like "*bitbar*") {
   $location = "bitbar"
+  $mozspace = "bitbar"
 } elseif ($DhcpDomain -like "*ec2*") {
 	$location = "aws"
 } else {
