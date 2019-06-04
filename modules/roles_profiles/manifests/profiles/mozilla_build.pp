@@ -14,8 +14,8 @@ class roles_profiles::profiles::mozilla_build {
         $install_path       = "${facts['custom_win_systemdrive']}\\mozilla-build"
         $system_drive       = $facts['custom_win_systemdrive']
         $cache_drive        = $facts['custom_win_location'] ? {
-            'datacenter' => $system_drive,
-            'aws'        => 'y:',
+            'aws'    => 'y:',
+            defualt  => $system_drive,
         }
         $program_files      = $facts['custom_win_programfiles']
         $programdata        = $facts['custom_win_programdata']
