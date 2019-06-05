@@ -58,7 +58,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_14_1_2 {
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
                 worker_type              => $facts['custom_win_gw_workertype'],
-                client_id                => 'project/releng/generic-worker/gecko-t-win10-64-hw/production',
+                client_id                => 'project/releng/generic-worker/datacenter-gecko-t-win10-64-hw/production',
                 generic_worker_dir       => "${facts['custom_win_systemdrive']}\\\\generic-worker",
                 provisioner_id           => 'releng-hardware',
                 idle_timeout             => 7200,
