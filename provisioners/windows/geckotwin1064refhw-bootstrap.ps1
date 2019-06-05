@@ -86,7 +86,9 @@ function Install-Prerequ {
     Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet
 
     Start-Process $local_dir\$git /verysilent -wait
+    Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
     Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
+    Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
 
   }
   end {
@@ -108,9 +110,9 @@ function Name-Node {
     Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile
     $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
     $name = ($name_mac.trim("$mac/:"))
-     $name
     if ($name -NotMatch $env:COMPUTERNAME) {
       Rename-Computer -NewName "$name"
+      Write-Log -message  ('{0} :: Node renamed {1}' -f $($MyInvocation.MyCommand.Name), ("$name")) -severity 'DEBUG'
     }
   }
   end {
@@ -382,7 +384,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Install-Prerequ
   Bootstrap-schtasks
   Name-Node
-  shutdown @('-r', '-t', '0', '-c', 'Reboot; Logging setup and registry setup', '-f', '-d', '4:5')
+  shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If ($stage -ne 'complete') {
   Ronin-PreRun
