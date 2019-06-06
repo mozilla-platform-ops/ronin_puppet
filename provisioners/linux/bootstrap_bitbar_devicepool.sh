@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 ROLE="bitbar_devicepool"
 PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
@@ -73,11 +74,6 @@ function run_puppet {
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     retval=$?
-    # just in case, if there were any errors logged, flag it as an error run
-    if grep -q "^Error:" "${TMP_LOG}"
-    then
-        retval=1
-    fi
 
     rm "${TMP_LOG}"
     case $retval in
@@ -133,6 +129,8 @@ dpkg -i /var/tmp/*.deb
 apt-get update -y && apt-get install -y puppet-agent
 ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
 # install r10k
+# to handle https://github.com/puppetlabs/r10k/issues/930
+/opt/puppetlabs/puppet/bin/gem install cri -v 2.15.6
 /opt/puppetlabs/puppet/bin/gem install r10k
 
 # get the repo
