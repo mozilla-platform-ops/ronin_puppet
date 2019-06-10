@@ -34,6 +34,12 @@ function update_puppet {
         git remote add origin "${PUPPET_REPO}" || return 1
     fi
 
+    # detect if origin doesn't match what's configured. if it is, delete origin and add new
+    if [ "$(git remote -v | head -n 1 | awk '{print $2}')" != "$PUPPET_REPO" ]; then
+        git remote remove origin
+        git remote add origin "$REPO_URL"
+    fi
+
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
     git checkout --force origin/${PUPPET_BRANCH} || return 1
