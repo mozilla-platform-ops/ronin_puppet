@@ -6,6 +6,12 @@ class bitbar_devicepool {
 
   include ::bitbar_devicepool::systemd_reload
 
+  # set timezone to pacific
+  class { 'timezone':
+    timezone   => 'America/Los_Angeles',
+    rtc_is_utc => false,
+  }
+
   # vim is a requirement
   $desired_packages = ['vim', 'screen', 'python', 'virtualenv', 'git']
 
