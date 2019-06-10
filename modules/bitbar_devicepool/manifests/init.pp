@@ -95,16 +95,6 @@ class bitbar_devicepool {
     ],
   }
 
-  # we set to stopped as we don't expect to run this past initial convergence
-  # multiple devicepools running is more problematic than none
-  # TODO: figure out how to make one node have it enabled/running
-  # service { 'bitbar':
-  #   ensure   => stopped,
-  #   provider => systemd,
-  #   enable   => false,
-  #   require  => Class['bitbar_devicepool::systemd_reload'],
-  # }
-
   # TODO: eventually place bitbar env file (encrypt somehow)
   notify {" \n\n \
 .88b  d88.  .d8b.  d8b   db db    db  .d8b.  db \n \
