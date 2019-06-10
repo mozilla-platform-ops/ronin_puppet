@@ -9,7 +9,7 @@ class bitbar_devicepool {
   # set timezone to pacific
   class { 'timezone':
     timezone   => 'America/Los_Angeles',
-    rtc_is_utc => false,
+    rtc_is_utc => true,
   }
 
   # vim is a requirement
