@@ -62,6 +62,23 @@ class bitbar_devicepool {
     user     => 'bitbar',
   }
 
+  # place apk files required for starting jobs via API
+  file { '/home/bitbar/mozilla-bitbar-devicepool/files/aerickson-empty-test.zip':
+    ensure => file,
+    source => 'puppet:///modules/bitbar_devicepool/aerickson-empty-test.zip',
+    owner  => 'bitbar',
+    group  => 'bitbar',
+    mode   => '0644',
+
+  }
+  file { '/home/bitbar/mozilla-bitbar-devicepool/files/aerickson-Testdroid.apk':
+    ensure => file,
+    source => 'puppet:///modules/bitbar_devicepool/aerickson-Testdroid.apk',
+    owner  => 'bitbar',
+    group  => 'bitbar',
+    mode   => '0644',
+  }
+
   # place systemd unit file for devicepool
   file { '/etc/systemd/system/bitbar.service':
     ensure => file,
