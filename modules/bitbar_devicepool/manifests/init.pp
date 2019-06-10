@@ -95,27 +95,4 @@ class bitbar_devicepool {
     ],
   }
 
-  # TODO: eventually place bitbar env file (encrypt somehow)
-  notify {" \n\n \
-.88b  d88.  .d8b.  d8b   db db    db  .d8b.  db \n \
-88'YbdP`88 d8' `8b 888o  88 88    88 d8' `8b 88 \n \
-88  88  88 88ooo88 88V8o 88 88    88 88ooo88 88 \n \
-88  88  88 88~~~88 88 V8o88 88    88 88~~~88 88 \n \
-88  88  88 88   88 88  V888 88b  d88 88   88 88booo. \n \
-YP  YP  YP YP   YP VP   V8P ~Y8888P' YP   YP Y88888P \n \
- \n \
- \n \
-.d8888. d888888b d88888b d8888b. .d8888. \n \
-88'  YP `~~88~~' 88'     88  `8D 88'  YP \n \
-`8bo.      88    88ooooo 88oodD' `8bo. \n \
-  `Y8b.    88    88~~~~~ 88~~~     `Y8b.  \n \
-db   8D    88    88.     88      db   8D  \n \
-`8888Y'    YP    Y88888P 88      `8888Y' \n \
-\n \
-If this is the first time converging this host, please \n \
-place the bitbar env file at /etc/bitbar/bitbar.env \n \
-and run: \n \
-     sudo chown root:bitbar /etc/bitbar/bitbar.env \n \
-     sudo chmood 660 /etc/bitbar/bitbar.env \n\n":}
-
 }
