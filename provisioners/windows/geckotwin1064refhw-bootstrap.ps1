@@ -58,12 +58,12 @@ function Setup-Logging {
   process {
     New-Item -ItemType Directory -Force -Path $local_dir
 
-    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi
+    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
     msiexec /i $local_dir\$nxlog_msi /passive
     while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf"
+    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
     while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem"
+    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
     Restart-Service -Name nxlog -force
   }
   end {
@@ -82,8 +82,8 @@ function Install-Prerequ {
   }
   process {
 
-    Invoke-WebRequest  $ext_src/$git -outfile $local_dir\$git
-    Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet
+    Invoke-WebRequest  $ext_src/$git -outfile $local_dir\$git -UseBasicParsing
+    Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet -UseBasicParsing
 
     Start-Process $local_dir\$git /verysilent -wait
     Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
@@ -107,7 +107,7 @@ function Name-Node {
   process {
 
     $mac = (gwmi Win32_NetworkAdapter -Filter "MacAddress like '%:%'" | select -exp macaddress)
-    Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile
+    Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile -UseBasicParsing
     $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
     $name = ($name_mac.trim("$mac/:"))
     if ($name -NotMatch $env:COMPUTERNAME) {
