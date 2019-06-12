@@ -24,6 +24,17 @@ user_groups:
     - asasaki
     - nthomas
     - sfraser
+  notarization:
+    - notary1
+    - notary2
+    - notary3
+    - notary4
+    - notary5
+    - notary6
+    - notary7
+    - notary8
+    - notary9
+    - notary10
   cia:
     - bclary
 
