@@ -8,7 +8,7 @@ class bitbar_devicepool {
 
   # set timezone to pacific
   class { 'timezone':
-    timezone   => 'America/Los_Angeles',
+    timezone   => 'UTC',
     rtc_is_utc => true,
   }
 
