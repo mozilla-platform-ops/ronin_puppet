@@ -4,7 +4,6 @@
 class signing_worker::base {
     # Dependencies
 
-    contain packages::p7zip
     contain packages::python3
     file { '/tools/python3':
         ensure  => 'link',
