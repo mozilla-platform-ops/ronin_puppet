@@ -3,19 +3,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class signing_worker::base {
     # Dependencies
-
-    contain packages::python3
+    contain packages::python3_s3
     file { '/tools/python3':
-        ensure  => 'link',
-        target  => '/usr/local/bin/python3',
-        require => Class['packages::python3'],
+            ensure  => 'link',
+            target  => '/usr/local/bin/python3',
+            require => Class['packages::python3_s3'],
     }
+    contain packages::virtualenv_python3_s3
 
     file { $signing_worker::tmp_requirements:
         source => 'puppet:///modules/signing_worker/requirements.txt',
     }
 
-    contain packages::virtualenv
     python::virtualenv { 'signingworker' :
         ensure          => present,
         version         => '3',

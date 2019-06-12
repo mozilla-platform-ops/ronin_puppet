@@ -4,7 +4,6 @@
 
 class win_generic_worker::hw_config(
     String $taskcluster_access_token,
-    String $livelog_secret,
     String $worker_type,
     String $client_id,
     String $generic_worker_dir,
@@ -18,10 +17,7 @@ class win_generic_worker::hw_config(
     $cache_dir             = "${facts['custom_win_systemdrive']}\\\\cache"
     $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
     $ed25519signingkey     = "${generic_worker_dir}\\\\ed25519-private.key"
-    $livelog_crt           = "${generic_worker_dir}\\\\livelog.crt"
     $livelog_exe           = "${generic_worker_dir}\\\\livelog.exe"
-    $livelog_key           = "${generic_worker_dir}\\\\livelog.key"
-    $openpgpsigningkey     = "${generic_worker_dir}\\\\openpgp-private.key"
     $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
     $taskcluster_proxy_exe = "${generic_worker_dir}\\\\taskcluster-proxy.exe"
     $task_dir              = "${facts['custom_win_systemdrive']}\\\\Users"

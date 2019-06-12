@@ -11,7 +11,7 @@ win_dc_jumphosts: '10.49.48.100,10.49.48.101,10.51.48.100,10.51.48.101'
 win_datacenterntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
 
 # package managment
-win_ext_pkg_src: "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages"
+win_ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
 
 # Useful commands
 win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -file"
