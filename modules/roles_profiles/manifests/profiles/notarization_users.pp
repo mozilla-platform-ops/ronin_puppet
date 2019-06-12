@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::notarization_users {
-
     case $::operatingsystem {
         'Darwin': {
+            include sudo
             # Make sure the users profile is required
             # That is where the user virtual resources are generated
             require roles_profiles::profiles::users
@@ -24,6 +24,10 @@ class roles_profiles::profiles::notarization_users {
                 macos_utils::clean_appstate { $user:
                   user  => $user,
                   group => 'staff',
+                }
+
+                sudo::customfile { "sudo_to_${user}":
+                  content => "cltbld ALL=(${user}) NOPASSWD: ALL\n";
                 }
             }
             # Enable DevToolsSecurity
