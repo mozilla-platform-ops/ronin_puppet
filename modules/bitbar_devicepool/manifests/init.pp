@@ -53,11 +53,14 @@ class bitbar_devicepool {
     ensure => 'present',
   }
 
-  # add users to wheel group
-  User<| title == bclary |> { groups +> ['wheel', 'bitbar'] }
+  # add users to groups:
+  # - wheel: sudo without password
+  # - bitbar: to access devicepool stuff
+  # - adm: to view all systemd logs
+  User<| title == bclary |> { groups +> ['wheel', 'bitbar', 'adm'] }
   $relops = lookup('user_groups.relops', Array, undef, undef)
   $relops.each |String $user| {
-      User<| title == $user |> { groups +> ['wheel', 'bitbar']}
+      User<| title == $user |> { groups +> ['wheel', 'bitbar', 'adm']}
   }
 
   # clone repo
