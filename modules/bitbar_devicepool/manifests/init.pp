@@ -4,54 +4,11 @@
 
 class bitbar_devicepool {
 
-  include ::bitbar_devicepool::base
+  # helpers
   include ::bitbar_devicepool::systemd_reload
 
-  # clone repo
-  vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
-    ensure   => present,
-    provider => git,
-    source   => 'https://github.com/bclary/mozilla-bitbar-devicepool.git',
-    user     => 'bitbar',
-  }
-
-  # create venv and install requirement
-  $devicepool_path = '/home/bitbar/mozilla-bitbar-devicepool'
-  exec { 'create devicepool venv and install requirements':
-      command =>"/usr/bin/virtualenv venv && ${devicepool_path}/venv/bin/pip install -r requirements.txt",
-      cwd     => $devicepool_path,
-      user    => 'bitbar',
-      unless  => "/bin/ls ${devicepool_path}/venv"
-  }
-
-  # place apk files required for starting jobs via API
-  file { '/home/bitbar/mozilla-bitbar-devicepool/files/aerickson-empty-test.zip':
-    ensure => file,
-    source => 'puppet:///modules/bitbar_devicepool/aerickson-empty-test.zip',
-    owner  => 'bitbar',
-    group  => 'bitbar',
-    mode   => '0644',
-
-  }
-  file { '/home/bitbar/mozilla-bitbar-devicepool/files/aerickson-Testdroid.apk':
-    ensure => file,
-    source => 'puppet:///modules/bitbar_devicepool/aerickson-Testdroid.apk',
-    owner  => 'bitbar',
-    group  => 'bitbar',
-    mode   => '0644',
-  }
-
-  # place systemd unit file for devicepool
-  file { '/etc/systemd/system/bitbar.service':
-    ensure => file,
-    source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
-    notify => [
-      Class['bitbar_devicepool::systemd_reload'],
-      # Service['bitbar'],
-    ],
-  }
-
-  # add last_started_alert stuff
+  include ::bitbar_devicepool::base
+  include ::bitbar_devicepool::devicepool
   include ::bitbar_devicepool::last_started_alert
 
 }

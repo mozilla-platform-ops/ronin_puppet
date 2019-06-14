@@ -11,14 +11,7 @@ class bitbar_devicepool::last_started_alert {
     user     => 'bitbar',
   }
 
-  # TODO: create venv (currently done by devicepool_bootstrap_and_setup script)
-  # install python, create venv, install requirements
-  # python::virtualenv { '/home/bitbar/android-tools/devicepool_last_started_alert/venv':
-  #   ensure       => present,
-  #   version      => '3',
-  #   requirements => '/home/bitbar/android-tools/devicepool_last_started_alert/requirements.txt',
-  # }
-    # create venv and install requirement
+  # create venv and install requirement
   $last_started_path = '/home/bitbar/android-tools/devicepool_last_started_alert'
   exec { 'create last_started_alert venv and install requirements':
       command => "/usr/bin/virtualenv venv && ${last_started_path}/venv/bin/pip install -r requirements.txt",
