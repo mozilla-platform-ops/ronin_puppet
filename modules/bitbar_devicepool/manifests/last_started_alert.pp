@@ -11,7 +11,7 @@ class bitbar_devicepool::last_started_alert {
     user     => 'bitbar',
   }
 
-  # TODO: create venv
+  # TODO: create venv (currently done by devicepool_bootstrap_and_setup script)
 
   # place systemd unit file
     file { '/etc/systemd/system/bitbar-last_started_alert.service':
@@ -22,7 +22,7 @@ class bitbar_devicepool::last_started_alert {
     ],
   }
 
-  # TODO: things to add to docs or bootstrap script:
+  # things manually done (in docs):
   # - setting the PAGERDUTY_TOKEN in unit file
   # - enabling this service on primary
 
