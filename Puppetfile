@@ -18,8 +18,6 @@ mod 'ipcrm-registry_acl', '0.0.6'
 mod 'puppetlabs-scheduled_task', '1.0.1'
 mod 'puppetlabs-vcsrepo', '2.4.0'
 mod 'jorten-timezone', '0.1.0'
-mod 'puppet-python', '3.0.1'
-mod 'stahnma-epel', '1.3.1'
 
 mod 'mac_profiles_handler',
   :git => "https://github.com/keeleysam/puppet-mac_profiles_handler.git",
