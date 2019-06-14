@@ -15,7 +15,7 @@ class bitbar_devicepool::last_started_alert {
 
   # place systemd unit file
     file { '/etc/systemd/system/bitbar-last_started_alert.service':
-    ensure => file,
+    ensure => present,
     source => '/home/bitbar/android-tools/devicepool_last_started_alert/service/last_started_alert.service',
     notify => [
       Class['bitbar_devicepool::systemd_reload'],
