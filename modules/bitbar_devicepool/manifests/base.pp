@@ -54,22 +54,9 @@ class bitbar_devicepool::base {
     rtc_is_utc => true,
   }
 
-  # vim is a requirement
+  # install packages
+  #  - vim, screen are nice-to-haves
   $desired_packages = ['vim', 'screen', 'git', 'python', 'python3', 'virtualenv']
   ensure_packages($desired_packages, {'ensure' => 'present'})
-  # 'python', 'virtualenv' are installed below in python::virtualenv block
-
-  # class { 'python::pip::bootstrap':
-  #   version => 'pip',
-  # }
-
-  # python3 is used by last_started_alert, but install virtualenv and pip also
-  # class { 'python' :
-  #   version    => 'python3.6',
-  #   pip        => 'present',
-  #   dev        => 'absent',
-  #   virtualenv => 'present',
-  #   gunicorn   => 'absent',
-  # }
 
 }

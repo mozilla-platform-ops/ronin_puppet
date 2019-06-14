@@ -7,6 +7,7 @@ class bitbar_devicepool {
   # helpers
   include ::bitbar_devicepool::systemd_reload
 
+  # main classes
   include ::bitbar_devicepool::base
   include ::bitbar_devicepool::devicepool
   include ::bitbar_devicepool::last_started_alert

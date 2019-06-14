@@ -44,7 +44,6 @@ class bitbar_devicepool::devicepool {
     source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
     notify => [
       Class['bitbar_devicepool::systemd_reload'],
-      # Service['bitbar'],
     ],
   }
 
