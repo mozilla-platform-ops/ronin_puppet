@@ -141,7 +141,7 @@ ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
 /opt/puppetlabs/puppet/bin/gem install cri -v 2.15.6
 /opt/puppetlabs/puppet/bin/gem install r10k
 
-# TODO: disable puppet agent systemd service
+# disable puppet agent systemd service
 # - we run masterless and only converge manually
 systemctl disable puppet
 
