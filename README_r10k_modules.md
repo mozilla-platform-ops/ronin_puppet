@@ -9,3 +9,9 @@ $ r10k puppetfile install --moduledir=./r10k_modules -v --force
 ```
 
 After updating, commit changes to git and push.
+
+### Detecting missing dependencies
+
+```
+puppet module list --tree --modulepath=./r10k_modules
+```
