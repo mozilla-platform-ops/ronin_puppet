@@ -14,10 +14,11 @@ class bitbar_devicepool::last_started_alert {
   # TODO: create venv (currently done by devicepool_bootstrap_and_setup script)
 
   # place systemd unit file
-    file { '/etc/systemd/system/bitbar-last_started_alert.service':
-    ensure => present,
-    source => '/home/bitbar/android-tools/devicepool_last_started_alert/service/last_started_alert.service',
-    notify => [
+  file { '/etc/systemd/system/bitbar-last_started_alert.service':
+    ensure  => file,
+    replace => 'no',
+    source  => '/home/bitbar/android-tools/devicepool_last_started_alert/service/last_started_alert.service',
+    notify  => [
       Class['bitbar_devicepool::systemd_reload'],
     ],
   }
