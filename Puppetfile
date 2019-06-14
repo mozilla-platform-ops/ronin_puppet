@@ -1,6 +1,6 @@
 forge "https://forgeapi.puppetlabs.com"
 
-mod 'puppetlabs-stdlib', '5.1.0'
+mod 'puppetlabs-stdlib', '6.0.0'
 mod 'puppetlabs-concat', '5.1.0'
 mod 'puppetlabs-apt', '6.1.1'
 mod 'puppetlabs-motd', '2.1.1'
