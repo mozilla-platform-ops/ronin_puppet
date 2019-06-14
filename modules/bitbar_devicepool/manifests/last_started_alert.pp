@@ -14,7 +14,7 @@ class bitbar_devicepool::last_started_alert {
   # create venv and install requirement
   $last_started_path = '/home/bitbar/android-tools/devicepool_last_started_alert'
   exec { 'create last_started_alert venv and install requirements':
-      command => "/usr/bin/virtualenv venv && ${last_started_path}/venv/bin/pip install -r requirements.txt",
+      command => "/usr/bin/virtualenv -p python3 venv && ${last_started_path}/venv/bin/pip install -r requirements.txt",
       cwd     => $last_started_path,
       user    => 'bitbar',
       unless  => "/bin/ls ${last_started_path}/venv"
