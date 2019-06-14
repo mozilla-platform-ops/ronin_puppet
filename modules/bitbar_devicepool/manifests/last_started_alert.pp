@@ -22,6 +22,9 @@ class bitbar_devicepool::last_started_alert {
     ],
   }
 
+  # we need the user to be in this group so sudo isn't required to view logs
+  User<| title == bitbar |> { groups +> ['systemd-journal'] }
+
   # things manually done (in docs):
   # - setting the PAGERDUTY_TOKEN in unit file
   # - enabling this service on primary
