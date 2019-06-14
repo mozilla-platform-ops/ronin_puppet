@@ -71,6 +71,8 @@ class bitbar_devicepool {
     user     => 'bitbar',
   }
 
+  # TODO: create venv
+
   # place apk files required for starting jobs via API
   file { '/home/bitbar/mozilla-bitbar-devicepool/files/aerickson-empty-test.zip':
     ensure => file,
@@ -97,5 +99,8 @@ class bitbar_devicepool {
       # Service['bitbar'],
     ],
   }
+
+  # add last_started_alert stuff
+  include ::bitbar_devicepool::last_started_alert
 
 }
