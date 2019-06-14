@@ -4,64 +4,8 @@
 
 class bitbar_devicepool {
 
+  include ::bitbar_devicepool::base
   include ::bitbar_devicepool::systemd_reload
-
-  # set timezone to pacific
-  class { 'timezone':
-    timezone   => 'UTC',
-    rtc_is_utc => true,
-  }
-
-  # vim is a requirement
-  $desired_packages = ['vim', 'screen', 'python', 'virtualenv', 'git']
-
-  package { $desired_packages:
-    ensure => installed,
-  }
-
-  # create bitbar user & group
-  group { 'bitbar':
-    ensure => 'present',
-  }
-
-  user { 'bitbar':
-    ensure           => 'present',
-    home             => '/home/bitbar',
-    password         => '!!',
-    password_max_age => '99999',
-    password_min_age => '0',
-    shell            => '/bin/bash',
-    gid              => 'bitbar',
-  }
-
-  # create directories
-  file { '/home/bitbar':
-    ensure => directory,
-    owner  => 'bitbar',
-    group  => 'bitbar',
-    mode   => '0770'
-  }
-  file { '/etc/bitbar':
-    ensure => directory,
-    owner  => 'root',
-    group  => 'bitbar',
-    mode   => '0750'
-  }
-
-  # create wheel group
-  group { 'wheel':
-    ensure => 'present',
-  }
-
-  # add users to groups:
-  # - wheel: sudo without password
-  # - bitbar: to access devicepool stuff
-  # - adm: to view all systemd logs
-  User<| title == bclary |> { groups +> ['wheel', 'bitbar', 'adm'] }
-  $relops = lookup('user_groups.relops', Array, undef, undef)
-  $relops.each |String $user| {
-      User<| title == $user |> { groups +> ['wheel', 'bitbar', 'adm']}
-  }
 
   # clone repo
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
@@ -71,7 +15,14 @@ class bitbar_devicepool {
     user     => 'bitbar',
   }
 
-  # TODO: create venv
+  # create venv and install requirement
+  $devicepool_path = '/home/bitbar/mozilla-bitbar-devicepool'
+  exec { 'create devicepool venv and install requirements':
+      command =>"/usr/bin/virtualenv venv && ${devicepool_path}/venv/bin/pip install -r requirements.txt",
+      cwd     => $devicepool_path,
+      user    => 'bitbar',
+      unless  => "/bin/ls ${devicepool_path}/venv"
+  }
 
   # place apk files required for starting jobs via API
   file { '/home/bitbar/mozilla-bitbar-devicepool/files/aerickson-empty-test.zip':
