@@ -6,6 +6,40 @@ module Registry
   # For 64-bit OS, use 32-bit view. Ignored on 32-bit OS
   KEY_WOW64_32KEY = 0x200 unless defined? KEY_WOW64_32KEY
 
+  def self.hkeys
+    {
+      :hkcr => Win32::Registry::HKEY_CLASSES_ROOT,
+      :hklm => Win32::Registry::HKEY_LOCAL_MACHINE,
+      :hku  => Win32::Registry::HKEY_USERS,
+    }
+  end
+
+  def self.hive
+    hkeys[root]
+  end
+
+  def self.type2name_map
+    {
+      Win32::Registry::REG_NONE      => :none,
+      Win32::Registry::REG_SZ        => :string,
+      Win32::Registry::REG_EXPAND_SZ => :expand,
+      Win32::Registry::REG_BINARY    => :binary,
+      Win32::Registry::REG_DWORD     => :dword,
+      Win32::Registry::REG_QWORD     => :qword,
+      Win32::Registry::REG_MULTI_SZ  => :array
+    }
+  end
+
+  def self.type2name(type)
+    type2name_map[type]
+  end
+
+  def self.name2type(name)
+    name2type = {}
+    type2name_map.each_pair {|k,v| name2type[v] = k}
+    name2type[name]
+  end
+
   # This is the base class for Path manipulation.  This class is meant to be
   # abstract, RegistryKeyPath and RegistryValuePath will customize and override
   # this class.
@@ -41,6 +75,10 @@ module Registry
       filter_path[:root]
     end
 
+    def subkey
+      filter_path[:trailing_path]
+    end
+
     def ascend(&block)
       p = canonical
       while idx = p.rindex('\\')
@@ -58,21 +96,6 @@ module Registry
       result = {}
 
       path = @path
-
-      result[:valuename] = case path[-1, 1]
-      when '\\'
-        result[:is_default] = true
-        ''
-      else
-        result[:is_default] = false
-        idx = path.rindex('\\') || 0
-        if idx > 0
-          path[idx+1..-1]
-        else
-          ''
-        end
-      end
-
       # Strip off any trailing slash.
       path = path.gsub(/\\*$/, '')
 
@@ -124,37 +147,60 @@ module Registry
   end
 
   class RegistryKeyPath < RegistryPathBase
-    def subkey
-      filter_path[:trailing_path]
-    end
   end
 
   class RegistryValuePath < RegistryPathBase
+    attr_reader :valuename
+
+    # Combines a registry key path and valuename into a resource title for
+    # registry_value resource.
+    #
+    # To maintain backwards compatibility, only use the double backslash
+    # delimiter if the valuename actually contains a backslash
+    def self.combine_path_and_value(keypath, valuename)
+      if valuename.include?('\\')
+        keypath + '\\\\' + valuename
+      else
+        keypath + '\\' + valuename
+      end
+    end
+
+
+    # Extract the valuename from the path and then munge the actual path
+    def initialize(path)
+      raise ArgumentError, "Invalid registry key: #{path}" if !path.include?('\\')
+
+      # valuename appears after the the first double backslash
+      path, @valuename = path.split('\\\\', 2)
+      # no \\ but there is at least a single \ to split on
+      path, _, @valuename = path.rpartition('\\') if @valuename.nil?
+      @is_default = @valuename.empty?
+
+      super(path)
+    end
+
     def canonical
-      # This method gets called in the type and the provider.  We need to
-      # preserve the trailing backslash for the provider, otherwise it won't
-      # think this is a default value.
-      if default?
-        filter_path[:canonical] << "\\"
+      # Because we extracted the valuename in the initializer we
+      # need to add it back in when canonical is called.
+      if valuename.include?('\\')
+        filter_path[:canonical] + '\\\\' + valuename
       else
-        filter_path[:canonical]
+        filter_path[:canonical] + '\\' + valuename
       end
-    end
-
-    def subkey
-      if default?
-        filter_path[:trailing_path]
-      else
-        filter_path[:trailing_path].gsub(/^(.*)\\.*$/, '\1')
-      end
-    end
-
-    def valuename
-      filter_path[:valuename]
     end
 
     def default?
-      !!filter_path[:is_default]
+      @is_default
+    end
+
+    def filter_path
+      result = super
+
+      # It's possible to pass in a path of 'hklm' which can still be parsed, but is not valid registry key.  Only the default value 'hklm\'
+      # and named values 'hklm\something' are allowed
+      raise ArgumentError, "Invalid registry key: #{path}" if result[:trailing_path].empty? && valuename.empty? && !default?
+
+      result
     end
   end
 end
