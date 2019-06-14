@@ -6,6 +6,8 @@ set -x
 ROLE="bitbar_devicepool"
 PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
 PUPPET_BRANCH="master"
+# PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git"
+# PUPPET_BRANCH="devicepool_fixes_99"
 
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 PUPPET_ENV_DIR='/etc/puppetlabs/environments'
