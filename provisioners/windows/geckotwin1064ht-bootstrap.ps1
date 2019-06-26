@@ -47,7 +47,7 @@ function Set-RoninRegOptions {
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
-    [string] $workerType = 'gecko-t-win10-64-ht',
+    [string] $workerType = 'gecko-t-win10-64-hw',
     [string] $src_Organisation = 'markcor',
     [string] $src_Repository = 'ronin_puppet',
     [string] $src_Revision = 'bug1555027'
