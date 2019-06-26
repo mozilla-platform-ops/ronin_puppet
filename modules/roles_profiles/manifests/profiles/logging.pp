@@ -7,10 +7,10 @@ class roles_profiles::profiles::logging (
     String $stackdriver_project = 'fx-worker-logging-prod',
 ) {
 
-  # use a single write-only service account for each project
-  $stackdriver_keyid    = lookup("stackdriver.${stackdriver_project}.keyid")
-  $stackdriver_key      = lookup("stackdriver.${stackdriver_project}.key")
-  $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid")
+    # use a single write-only service account for each project
+    $stackdriver_keyid    = lookup("stackdriver.${stackdriver_project}.keyid")
+    $stackdriver_key      = lookup("stackdriver.${stackdriver_project}.key")
+    $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid")
 
     case $::operatingsystem {
         'Windows': {
