@@ -3,6 +3,9 @@
 .vagrant/*
 .kitchen
 
+# ignore local r10k files
+.r10k/
+
 # Ignore swap files
 *.swp
 *.swo

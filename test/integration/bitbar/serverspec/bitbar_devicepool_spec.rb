@@ -49,3 +49,22 @@ describe 'service' do
     its(:exit_status) { should eq 3 }
   end
 end
+
+describe command('python --version') do
+  its(:exit_status) { should eq 0 }
+end
+
+describe command('/home/bitbar/mozilla-bitbar-devicepool/venv/bin/python --version') do
+  its(:exit_status) { should eq 0 }
+end
+
+# last_started_alert stuff
+
+describe command('python3 --version') do
+  its(:exit_status) { should eq 0 }
+end
+
+describe command('/home/bitbar/android-tools/devicepool_last_started_alert/venv/bin/python --version') do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match /Python 3/ }
+end
