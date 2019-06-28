@@ -15,6 +15,22 @@ class signing_worker::base {
         source => 'puppet:///modules/signing_worker/requirements.txt',
     }
 
+    # DeveloperIDCA.cer is only required on dep, but is harmless on prod
+    file {
+        "${root}/DeveloperIDCA.cer":
+            source => 'puppet:///modules/signing_worker/DeveloperIDCA.cer',
+    }
+    exec {
+        'install-developer-id-root':
+            command => "/usr/bin/security add-trusted-cert -r trustAsRoot -k /Library/Keychains/System.keychain ${root}/DeveloperIDCA.cer",
+            require => File["${root}/DeveloperIDCA.cer"],
+            unless  => "/usr/bin/security dump-keychain /Library/Keychains/System.keychain | /usr/bin/grep 'Developer ID Certification'",
+            # This command returns an error despite actually importing
+            # the certificate correctly.
+            # For posterity, the error returned is "SecTrustSettingsSetTrustSettings: The authorization was denied since no user interaction was possible.".
+            returns => [1];
+    }
+
     contain packages::virtualenv
     python::virtualenv { 'signingworker' :
         ensure          => present,
