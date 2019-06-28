@@ -21,11 +21,11 @@ mod 'jorten-timezone', '0.1.0'
 
 mod 'mac_profiles_handler',
   :git => "https://github.com/keeleysam/puppet-mac_profiles_handler.git",
-  :ref => '55b5e8c905b2cdaabccf3fa5e2880bc3522f7a88'
+  :commit => '55b5e8c905b2cdaabccf3fa5e2880bc3522f7a88'
 
 mod 'hiera_vault',
-  :git => "https://github.com/fuero/hiera-vault.git",
-  :ref => '46cd49570a2f4a8b3aa9e9e1912103b50cd64d46'
+  :git => "https://github.com/jweisner/hiera-vault.git",
+  :commit => '46cd49570a2f4a8b3aa9e9e1912103b50cd64d46'
 
 # comment
 
