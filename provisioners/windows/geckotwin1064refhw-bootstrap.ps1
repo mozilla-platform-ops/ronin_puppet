@@ -81,10 +81,9 @@ function Install-Prerequ {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-	# Bug 1561090 Downloading these fail when on the Bitbar network
-	# The current work around is placing the packages on the node before bootstrap
-    # Invoke-WebRequest  $ext_src/$git -outfile $local_dir\$git -UseBasicParsing
-    # Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet -UseBasicParsing
+    Invoke-WebRequest -Uri  https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/Windows/prerequisites/BootStrap.zip  -UseBasicParsing
+    Expand-Archive -path BootStrap.zip -DestinationPath C:\
+    Read-Host "Enusre c:\bootstrap\secrets\vault.yam is present, and then press eneter to continue"
 
     Start-Process $local_dir\$git /verysilent -wait
     Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
