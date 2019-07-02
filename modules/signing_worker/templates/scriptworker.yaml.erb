@@ -1,0 +1,33 @@
+provisioner_id: <%= @provisioner_id %>
+worker_group: <%= @worker_group %>
+worker_type: <%= @worker_type %>
+worker_id: <%= @worker_id %>
+
+credentials:
+    clientId: <%= @taskcluster_client_id %>
+    accessToken: <%= @taskcluster_access_token %>
+
+artifact_upload_timeout: <%= @artifact_upload_timeout %>
+task_max_timeout: <%= @task_max_timeout %>
+task_script: ["<%= @task_script %>", "<%= @task_script_config %>"]
+verbose: <%= @verbose_logging %>
+
+sign_chain_of_trust: <%= @sign_chain_of_trust %>
+verify_chain_of_trust: <%= @verify_chain_of_trust %>
+verify_cot_signature: <%= @verify_cot_signature %>
+cot_job_type: scriptworker
+cot_product: <%= @cot_product %>
+# Calls to Github API are limited to 60 an hour. Using an API token allows to raise the limit to
+# 5000 per hour. https://developer.github.com/v3/#rate-limiting
+github_oauth_token: "<%= @github_oauth_token %>"
+
+log_dir: <%= @base_dir %>/logs
+work_dir: <%= @work_dir %>
+artifact_dir: <%= @base_dir %>/artifacts
+task_log_dir: <%= @base_dir %>/artifacts/public/logs
+watch_log_file: true
+
+scriptworker_provisioners:
+    - scriptworker-prov-v1
+
+ed25519_private_key_path: /Users/<%= @username %>/ed25519_privkey

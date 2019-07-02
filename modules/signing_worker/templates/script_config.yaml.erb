@@ -1,30 +1,70 @@
-work_dir: /tmp/work
-artifact_dir: /tmp/artifacts
-taskcluster_scope_prefix: "project:releng:signing:"
-verbose: true
-local_notarization_accounts: ["account1"]
-concurrency_limit: 2
-7z: /usr/ocal/bin/7z
+work_dir: <%= @work_dir %>
+artifact_dir: "<%= @base_dir %>/artifacts"
+taskcluster_scope_prefix: "<%= @taskcluster_scope_prefix %>"
+verbose: <%= @verbose_logging %>
+local_notarization_accounts:
+    - notary1
+    - notary2
+    - notary3
+    - notary4
+    - notary5
+    - notary6
+    - notary7
+    - notary8
+    - notary9
+    - notary10
+default_keychains:
+    - "/Users/<%= @username %>/Library/Keychains/login.keychain-db"
+    - "/Library/Keychains/System.keychain"
+dmg_prefix: <%= @dmg_prefix %>
 mac_config:
-    dep:
+    nightly:
         notarize_type: multi_account
-        signing_keychain: /path/to/dep.keychain
+        signing_keychain: <%= @base_dir %>/nightly-signing.keychain
         supported_behaviors:
-            - mac_pkg
             - mac_sign
             - mac_sign_and_pkg
+            - mac_pkg
             - mac_notarize
-        sign_with_entitlements: true
-        base_bundle_id: org.mozilla.firefox_dep
-        identity: ...
-        keychain_password: ...
-        pkg_cert_id: ...
-        apple_notarization_account: ...
-        apple_notarization_password: ...
-        concurrency_limit: 10
-        notarization_poll_timeout: 900
-        widevine_url: ...
-        widevine_user: ...
-        widevine_pass: ...
-        widevine_cert: ...
-
+        sign_with_entitlements: <%= @nightly_sign_with_entitlements %>
+        verify_mac_signature: <%= @nightly_verify_mac_signature %>
+        base_bundle_id: <%= @nightly_base_bundle_id %>
+        identity: <%= @nightly_identity %>
+        keychain_password: "<%= @nightly_keychain_password %>"
+        pkg_cert_id: <%= @nightly_pkg_cert_id %>
+        apple_notarization_account: <%= @notarization_account %>
+        apple_notarization_password: "<%= @notarization_password %>"
+        apple_asc_provider: <%= @apple_asc_provider %>
+        notarization_poll_timeout: <%= @notarization_poll_timeout %>
+        widevine_url: <%= @nightly_widevine_url %>
+        widevine_user: <%= @nightly_widevine_user %>
+        widevine_pass: <%= @nightly_widevine_pass %>
+        widevine_cert: <%= @nightly_widevine_cert %>
+        omnija_url: <%= @nightly_omnija_url %>
+        omnija_user: <%= @nightly_omnija_user %>
+        omnija_pass: <%= @nightly_omnija_pass %>
+    release:
+        notarize_type: multi_account
+        signing_keychain: <%= @base_dir %>/release-signing.keychain
+        supported_behaviors:
+            - mac_sign
+            - mac_sign_and_pkg
+            - mac_pkg
+            - mac_notarize
+        sign_with_entitlements: <%= @release_sign_with_entitlements %>
+        verify_mac_signature: <%= @release_verify_mac_signature %>
+        base_bundle_id: <%= @release_base_bundle_id %>
+        identity: <%= @release_identity %>
+        keychain_password: <%= @release_keychain_password %>
+        pkg_cert_id: <%= @release_pkg_cert_id %>
+        apple_notarization_account: <%= @notarization_account %>
+        apple_notarization_password: <%= @notarization_password %>
+        apple_asc_provider: <%= @apple_asc_provider %>
+        notarization_poll_timeout: <%= @notarization_poll_timeout %>
+        widevine_url: <%= @release_widevine_url %>
+        widevine_user: <%= @release_widevine_user %>
+        widevine_pass: <%= @release_widevine_pass %>
+        widevine_cert: <%= @base_dir %>/widevine_prod.crt
+        omnija_url: <%= @release_omnija_url %>
+        omnija_user: <%= @release_omnija_user %>
+        omnija_pass: <%= @release_omnija_pass %>
