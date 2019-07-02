@@ -31,6 +31,12 @@ class signing_worker::base {
             returns => [1];
     }
 
+    # Accept the xcode licence
+    exec {
+        'xcode_license_agree':
+            command => '/usr/bin/xcodebuild -license accept',
+    }
+
     contain packages::virtualenv
     python::virtualenv { 'signingworker' :
         ensure          => present,
