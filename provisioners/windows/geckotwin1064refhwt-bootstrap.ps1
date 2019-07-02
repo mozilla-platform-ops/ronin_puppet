@@ -74,6 +74,7 @@ function Install-Prerequ {
   param (
     [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
     [string] $local_dir = "$env:systemdrive\BootStrap",
+    [string] $work_dir = "$env:systemdrive\scratch",
     [string] $git = "Git-2.18.0-64-bit.exe",
     [string] $puppet = "puppet-agent-6.0.0-x64.msi"
   )
@@ -81,10 +82,15 @@ function Install-Prerequ {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-	# Bug 1561090 Downloading these fail when on the Bitbar network
-	# The current work around is placing the packages on the node before bootstrap
-    # Invoke-WebRequest  $ext_src/$git -outfile $local_dir\$git -UseBasicParsing
-    # Invoke-WebRequest  $ext_src/$puppet -outfile $local_dir\$puppet -UseBasicParsing
+
+    remove-item $local_dir   -Recurse  -force
+    New-Item -path $work_dir -ItemType "directory"
+    Set-location -path $work_dir
+    Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
+    Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
+    Read-Host "Enusre c:\bootstrap\secrets\vault.yam is present, and then press eneter to continue"
+    Set-location -path $local_dir
+    remove-item $work_dir   -Recurse  -force
 
     Start-Process $local_dir\$git /verysilent -wait
     Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
@@ -125,7 +131,7 @@ function Set-RoninRegOptions {
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
-    [string] $workerType = 'gecko-t-win10-64-ref-hwt',
+    [string] $workerType = 'gecko-t-win10-64-ref-ht',
     [string] $src_Organisation = 'mozilla-platform-ops',
     [string] $src_Repository = 'ronin_puppet',
     [string] $src_Revision = 'master'
@@ -150,6 +156,8 @@ function Set-RoninRegOptions {
 
     New-ItemProperty -Path "$source_key" -Name 'Organisation' -Value "$src_Organisation" -PropertyType String
     New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String
+    New-ItemProperty -Path "$source_key" -Name 'Revision' -Value "$src_Revision" -PropertyType String
+
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
