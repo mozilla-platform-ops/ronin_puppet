@@ -244,8 +244,6 @@ Function Ronin-PreRun {
 
     if (!(Test-path $nodes_def)) {
       Copy-item -path $nodes_def_src -destination $nodes_def -force
-       here
-       $workerType
       (Get-Content -path $nodes_def) -replace 'roles::role', "roles::$role" | Set-Content $nodes_def
     }
     if (!(Test-path $secrets)) {
