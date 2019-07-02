@@ -1,0 +1,34 @@
+work_dir: <%= @work_dir %>
+artifact_dir: "<%= @base_dir %>/artifacts"
+taskcluster_scope_prefix: "<%= @taskcluster_scope_prefix %>"
+verbose: <%= @verbose_logging %>
+local_notarization_accounts: []
+default_keychains:
+    - "/Users/<%= @username %>/Library/Keychains/login.keychain-db"
+    - "/Library/Keychains/System.keychain"
+dmg_prefix: <%= @dmg_prefix %>
+mac_config:
+    dep:
+        notarize_type: multi_account
+        signing_keychain: <%= @base_dir %>/dep-signing.keychain
+        supported_behaviors:
+            - mac_sign
+            - mac_sign_and_pkg
+            - mac_pkg
+        sign_with_entitlements: <%= @dep_sign_with_entitlements %>
+        verify_mac_signature: <%= @dep_verify_mac_signature %>
+        base_bundle_id: <%= @dep_base_bundle_id %>
+        identity: <%= @dep_identity %>
+        keychain_password: "<%= @dep_keychain_password %>"
+        pkg_cert_id: <%= @dep_pkg_cert_id %>
+        apple_notarization_account: <%= @notarization_account %>
+        apple_notarization_password: "<%= @notarization_password %>"
+        apple_asc_provider: <%= @apple_asc_provider %>
+        notarization_poll_timeout: <%= @notarization_poll_timeout %>
+        widevine_url: <%= @dep_widevine_url %>
+        widevine_user: <%= @dep_widevine_user %>
+        widevine_pass: <%= @dep_widevine_pass %>
+        widevine_cert: <%= @dep_widevine_cert %>
+        omnija_url: <%= @dep_omnija_url %>
+        omnija_user: <%= @dep_omnija_user %>
+        omnija_pass: <%= @dep_omnija_pass %>
