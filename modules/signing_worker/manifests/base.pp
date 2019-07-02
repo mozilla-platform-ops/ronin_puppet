@@ -31,6 +31,13 @@ class signing_worker::base {
             returns => [1];
     }
 
+    # Install certifi's set of CAs to override the system set
+    exec {
+        'install_python_certs':
+            command => '/Applications/Python\ 3.7/Install\ Certificates.command',
+            unless =>  "test -h /Library/Frameworks/Python.framework/Versions/3.7/etc/openssl/cert.pm"
+    }
+
     # Accept the xcode licence
     exec {
         'xcode_license_agree':
