@@ -88,7 +88,7 @@ function Install-Prerequ {
     Set-location -path $work_dir
     Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
     Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
-    Read-Host "Enusre c:\bootstrap\secrets\vault.yam is present, and then press eneter to continue"
+    Read-Host "Enusre c:\bootstrap\secrets\vault.yaml is present, and then press enter to continue"
     Set-location -path $local_dir
     remove-item $work_dir   -Recurse  -force
 
