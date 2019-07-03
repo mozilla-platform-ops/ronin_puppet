@@ -10,7 +10,12 @@ class roles_profiles::profiles::notarization_users {
             # That is where the user virtual resources are generated
             require roles_profiles::profiles::users
             # Lookup the group array and realize their user resource
-            $users = lookup('user_groups.notarization', Array, undef, undef)
+            case $::hostname {
+                '/^(tb-)?mac-v3-signing\d+\.':
+                    $users = lookup('user_groups.notarization', Array, undef, undef);
+                '/^dep-mac-v3-signing\d+\.':
+                    $users = lookup('user_groups.dep_notarization', Array, undef, undef);
+            }
             realize(Users::Single_user[$users])
 
             # Monkey patching directoryservice.rb in order to create users also breaks group merging
@@ -26,9 +31,16 @@ class roles_profiles::profiles::notarization_users {
                   group => 'staff',
                 }
 
-                sudo::customfile { "sudo_to_${user}":
-                  content => "cltbld ALL=(${user}) NOPASSWD: ALL\n";
+                case $::hostname {
+                    '/^(tb-)?mac-v3-signing\d+\.':
+                        $content = "cltbld ALL=(${user}) NOPASSWD: ALL\n";
+                    '/^dep-mac-v3-signing\d+\.':
+                        $content = "${user} ALL=(root) NOPASSWD: /usr/bin/pkgbuild\n";
                 }
+                sudo::customfile { "sudo_to_${user}":
+                  content => $content;
+                }
+
             }
             # Enable DevToolsSecurity
             include macos_utils::enable_dev_tools_security

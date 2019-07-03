@@ -35,6 +35,10 @@ user_groups:
     - notary8
     - notary9
     - notary10
+  dep_notarization:
+    - depbld1
+    - depbld2
+    - tbbld
   cia:
     - bclary
 
