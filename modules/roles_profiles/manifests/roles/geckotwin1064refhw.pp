@@ -15,8 +15,7 @@ class roles_profiles::roles::geckotwin1064refhw {
     # Adminstration
     include roles_profiles::profiles::logging
     include roles_profiles::profiles::common_tools
-    include roles_profiles::profiles::microsoft_network_services
-    include roles_profiles::profiles::vnc
+    # This role will use a different secrets file
     include roles_profiles::profiles::windows_datacenter_administrator
     # Openssh Fails when Puppet runs as a  schedule task
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1544141
@@ -25,6 +24,6 @@ class roles_profiles::roles::geckotwin1064refhw {
     # Worker
     include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
-    include roles_profiles::profiles::windows_datacenter_generic_worker_14_1_2
+    include roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2
     include roles_profiles::profiles::microsoft_tools
 }
