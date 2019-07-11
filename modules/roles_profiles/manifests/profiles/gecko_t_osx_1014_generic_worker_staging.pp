@@ -15,6 +15,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
+                puppet_branch     => 'staging',
                 # Note the camelCase key names
                 meta_data         => {
                     workerType    => $worker_type,
