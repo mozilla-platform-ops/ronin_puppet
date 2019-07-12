@@ -9,16 +9,7 @@ class roles_profiles::profiles::microsoft_network_services {
 
     case $::operatingsystem {
         'Windows': {
-
-            if $facts['custom_win_location'] == 'aws' {
-                $kms_server = lookup('windows_servers.kms_mdc1_ip')
-            } else {
-                $kms_server = 'any'
-      }
-
-            class{ 'win_kms':
-        kms_server => $kms_server,
-      }
+            include win_kms
             # Bug List
             # kms
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510828

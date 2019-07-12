@@ -2,9 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_kms (
-    Any $kms_server
-) {
+class win_kms {
 
     if $::operatingsystem == 'Windows' {
         include win_kms::fw_exception
