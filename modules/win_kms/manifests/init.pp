@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_kms (
-    String $kms_server
+    Any $kms_server
 ) {
 
     if $::operatingsystem == 'Windows' {
