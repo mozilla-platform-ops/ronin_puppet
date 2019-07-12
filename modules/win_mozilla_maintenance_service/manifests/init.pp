@@ -9,7 +9,7 @@ class win_mozilla_maintenance_service {
     if $::operatingsystem == 'Windows' {
         include win_mozilla_maintenance_service::install
         include win_mozilla_maintenance_service::grant_registry_access
-        include win_mozilla_maintenance_service::grant-programdata_access
+        include win_mozilla_maintenance_service::grant_programdata_access
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
