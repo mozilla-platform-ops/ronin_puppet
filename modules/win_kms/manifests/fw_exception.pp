@@ -4,7 +4,9 @@
 
 class win_kms::fw_exception {
 
-    if $facts['custom_win_location'] == 'datacenter' {
+    $remote_ip = $win_kms::kms_server
+
+    if $facts['custom_win_location'] == 'datacenter'or 'aws' {
         # Resources from puppet-windows_firewall
         windows_firewall::exception { 'KMS_in':
             ensure       => present,
@@ -13,7 +15,7 @@ class win_kms::fw_exception {
             enabled      => true,
             protocol     => 'TCP',
             local_port   => 1688,
-            remote_port  => 'any',
+            remote_port  => $remote_ip,
             display_name => 'Allow KMS in',
             description  => 'Windows authentication',
         }
@@ -24,7 +26,7 @@ class win_kms::fw_exception {
             enabled      => true,
             protocol     => 'TCP',
             local_port   => 1688,
-            remote_port  => 'any',
+            remote_port  => $remote_ip,
             display_name => 'Allow KMS out',
             description  => 'Windows authentication',
         }

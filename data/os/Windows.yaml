@@ -19,3 +19,8 @@ win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\p
 # Taskcluster data
 taskcluster:
   root_url: "https://taskcluster.net"
+
+# Windows servers
+windows_servers:
+  # Needed for AWS license activation. Using KMS server is MDC1
+  kms_mdc1_ip:  "10.48.69.100"
