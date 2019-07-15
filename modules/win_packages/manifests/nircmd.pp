@@ -9,10 +9,10 @@ class win_packages::nircmd {
 
     file { "${system32}\\nircmd.exe":
         ensure => present,
-        source => "${srcloc}\\nircmd.exe",
+        source => "${srcloc}/nircmd.exe",
     }
     file { "${system32}\\nircmdc.exe":
         ensure => present,
-        source => "${srcloc}\\nircmdc.exe",
+        source => "${srcloc}/nircmdc.exe",
     }
 }
