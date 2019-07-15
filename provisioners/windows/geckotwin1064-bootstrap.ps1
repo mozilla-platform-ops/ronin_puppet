@@ -277,8 +277,8 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Set-RoninRegOptions
   Ronin-PreRun
-<#
 }
+<#
 If ($stage -ne 'complete') {
   Bootstrap-Puppet
 }
