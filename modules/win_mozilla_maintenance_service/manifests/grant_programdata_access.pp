@@ -6,8 +6,14 @@ class win_mozilla_maintenance_service::grant_programdata_access {
 
     require win_mozilla_maintenance_service::install
 
-  # using resource puppetlabs-acl
-    acl { "${facts['custom_win_programdata']}\\Mozilla":
+    $mozilla_programdata = "${facts['custom_win_programdata']}\\Mozilla"
+
+    file { $mozilla_programdata:
+        ensure => directory,
+    }
+
+    # using resource puppetlabs-acl
+    acl { $mozilla_programdata:
         permissions                =>   {
                                             identity    => 'everyone',
                                             rights      => ['full'],
