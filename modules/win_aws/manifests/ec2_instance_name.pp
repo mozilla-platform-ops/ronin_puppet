@@ -7,14 +7,11 @@ class win_aws::ec2_instance_name (
     String $current_name,
     String $instance_nv_domain
 ) {
-    notice('NAMING!')
-    notice($current_name)
-    notice($instance_name)
     $tcpip_param_key = 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters'
 
     if $instance_name != $current_name {
         exec { 'name_instance':
-            command => "C:\\Windows\\System32\\wbem\\WMIC.exe computersystem where caption=${current_name} rename ${current_name}",
+            command => "C:\\Windows\\System32\\wbem\\WMIC.exe computersystem where caption=${current_name} rename ${instance_name}",
         }
     }
     registry_value { "${tcpip_param_key}\\Domain":
