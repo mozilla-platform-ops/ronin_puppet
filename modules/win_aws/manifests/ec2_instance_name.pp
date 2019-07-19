@@ -16,11 +16,11 @@ class win_aws::ec2_instance_name (
         }
     }
     registry_value { "${tcpip_param_key}\\Domain":
-        type => dword,
+        type => string,
         data => $instance_nv_domain,
     }
     registry_value { "${tcpip_param_key}\\NV domain":
-        type => dword,
+        type => string,
         data => $instance_nv_domain,
     }
 }
