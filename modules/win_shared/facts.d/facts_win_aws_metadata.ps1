@@ -5,7 +5,7 @@ function Get-InstanceData {
 	[string] $az = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone'),
 	# commented out for testing
 	#[string] $workerType = $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType })
-	[string] $workerType = "10-64-puppet-testing"
+	[string] $workerType = "gecko-t-win10-64-pup"
 )
 
   process {
