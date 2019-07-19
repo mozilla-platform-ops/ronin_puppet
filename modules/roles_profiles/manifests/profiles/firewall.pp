@@ -8,9 +8,7 @@ class roles_profiles::profiles::firewall {
         'Windows': {
             include win_firewall::allow_ping
             if $facts['custom_win_location'] == 'aws' {
-                class { 'windows_firewall':
-                    ensure => 'stopped'
-                }
+                include win_firewall::disable_firewall
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510834
