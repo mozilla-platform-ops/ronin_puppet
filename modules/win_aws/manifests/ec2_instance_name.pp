@@ -11,7 +11,7 @@ class win_aws::ec2_instance_name (
 
     if $instance_name != $current_name {
         exec { 'name_instance':
-            command => "C:\\Windows\\System32\\wbem\\WMIC.exe computersystem where caption=\"${current_name}\" rename ${instance_name}",
+            command => "C:\\Windows\\System32\\wbem\\WMIC.exe computersystem where caption=\"${current_name}\" rename \"${instance_name}\"",
         }
     }
     registry_value { "${tcpip_param_key}\\Domain":
