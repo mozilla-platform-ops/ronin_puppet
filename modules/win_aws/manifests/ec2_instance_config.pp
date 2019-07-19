@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_aws::ec2_config {
+class win_aws::ec2_instance_config {
 
   $conf_file = "${facts['custom_win_programfiles']}\\Amazon\\Ec2ConfigService\\Settings\\Config.xml"
 
