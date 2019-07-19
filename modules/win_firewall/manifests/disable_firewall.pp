@@ -5,6 +5,6 @@
 class win_firewall::disable_firewall {
 
     exec { 'windows_firewall':
-        command => 'C:\Windows\System32\netsh advfirewall set allprofiles state off'
+        command => 'C:\Windows\System32\netsh.exe advfirewall set allprofiles state off'
     }
 }
