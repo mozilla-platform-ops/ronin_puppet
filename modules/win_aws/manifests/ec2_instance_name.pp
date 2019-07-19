@@ -8,7 +8,7 @@ class win_aws::ec2_instance_name (
     String $instance_nv_domain
 ) {
 
-    $tcpip_param_key = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'
+    $tcpip_param_key = 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters'
 
     if $instance_name != $current_name {
         exec { 'name_instance':
