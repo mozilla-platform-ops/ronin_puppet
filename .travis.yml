@@ -12,6 +12,7 @@ gemfile: ".gemfile"
 script:
   - "bundle exec puppet parser validate `find modules -name '*.pp'`"
   - "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
+  - "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
 
 notifications:
   irc:
