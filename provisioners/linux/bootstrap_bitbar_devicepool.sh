@@ -6,6 +6,8 @@ set -x
 ROLE="bitbar_devicepool"
 PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
 PUPPET_BRANCH="master"
+# PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git"
+# PUPPET_BRANCH="devicepool_fixes_99"
 
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 PUPPET_ENV_DIR='/etc/puppetlabs/environments'
@@ -34,17 +36,23 @@ function update_puppet {
         git remote add origin "${PUPPET_REPO}" || return 1
     fi
 
+    # detect if origin doesn't match what's configured. if it is, delete origin and add new
+    if [ "$(git remote -v | head -n 1 | awk '{print $2}')" != "$PUPPET_REPO" ]; then
+        git remote remove origin
+        git remote add origin "$PUPPET_REPO"
+    fi
+
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
     git checkout --force origin/${PUPPET_BRANCH} || return 1
 
     # Purge modules no longer managed by Puppetfile
-    R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
-    $R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
+    #R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
+    #$R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
 
     # Install r10k modules
-    R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
-    $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
+    #R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
+    #$R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
     FQDN=$(${FACTER_BIN} networking.fqdn)
 
@@ -132,6 +140,10 @@ ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
 # to handle https://github.com/puppetlabs/r10k/issues/930
 /opt/puppetlabs/puppet/bin/gem install cri -v 2.15.6
 /opt/puppetlabs/puppet/bin/gem install r10k
+
+# disable puppet agent systemd service
+# - we run masterless and only converge manually
+systemctl disable puppet
 
 # get the repo
 update_puppet

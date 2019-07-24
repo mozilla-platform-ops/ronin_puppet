@@ -47,7 +47,7 @@ function Set-RoninRegOptions {
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
-    [string] $workerType = 'gecko-t-win10-64-ux',
+    [string] $workerType = 'gecko-t-win10-64',
     [string] $src_Organisation = 'mozilla-platform-ops',
     [string] $src_Repository = 'ronin_puppet',
     [string] $src_Revision = 'master'
@@ -204,7 +204,7 @@ function Bootstrap-Puppet {
     # Setting Env variabes for PuppetFile install and Puppet run
     # The ssl variables are needed for R10k
     Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    $env:path = "$env:programfiles\Puppet Labs\Puppet\puppet\bin;$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
+    $env:path = "$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
     $env:SSL_CERT_FILE = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl\cert.pem"
     $env:SSL_CERT_DIR = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl"
     $env:FACTER_env_windows_installdir = "$env:programfiles\Puppet Labs\Puppet"
@@ -216,11 +216,9 @@ function Bootstrap-Puppet {
     $env:USERNAME = "Administrator"
     $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
-    Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    R10k puppetfile install  --moduledir=r10k_modules
-   	# Needs to be removed from path or a wrong puppet file will be used
-    $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
+    Write-Log -message  ('{0} :: Moving old logs.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
+    Write-Log -message  ('{0} :: Running Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
     [int]$puppet_exit = $LastExitCode
 
@@ -280,9 +278,10 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Set-RoninRegOptions
   Ronin-PreRun
 }
+<#
 If ($stage -ne 'complete') {
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
   Bootstrap-CleanUp
-}
+} #>

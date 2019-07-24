@@ -3,8 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_nxlog (
-    $nxlog_dir = undef,
-    $location = undef
+    String $nxlog_dir,
+    String $location,
+    String $conf_file
 ){
 
     if $::operatingsystem == 'Windows' {
@@ -12,9 +13,6 @@ class win_nxlog (
         include win_nxlog::configuration
         include win_nxlog::fw_exception
         include win_nxlog::service
-        if ($location == 'aws') {
-            include win_nxlog::pem_file
-        }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }

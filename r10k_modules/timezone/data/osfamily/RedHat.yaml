@@ -1,0 +1,5 @@
+timezone::package: 'tzdata'
+timezone::timedatectl_cmd: '/usr/bin/timedatectl set-timezone'
+timezone::timedatectl_chk: "/usr/bin/timedatectl status | grep 'Time zone:' | grep -q"
+timezone::setlocalrtc_cmd: '/usr/bin/timedatectl set-local-rtc'
+timezone::setlocalrtc_chk: "/usr/bin/timedatectl status | grep 'RTC in local TZ:' | grep -q"
