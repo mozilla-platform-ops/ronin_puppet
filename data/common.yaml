@@ -35,13 +35,10 @@ user_groups:
     - notary8
     - notary9
     - notary10
-<<<<<<< HEAD
-=======
   dep_notarization:
     - depbld1
     - depbld2
     - tbbld
->>>>>>> efc4f3c565c7a051889ce9555a4aca7442008ca8
   cia:
     - bclary
 
