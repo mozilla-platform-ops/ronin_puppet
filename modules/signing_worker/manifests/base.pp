@@ -4,11 +4,11 @@
 class signing_worker::base {
     # Dependencies
 
-    contain packages::python3
+    contain packages::python3_s3
     file { '/tools/python3':
         ensure  => 'link',
         target  => '/usr/local/bin/python3',
-        require => Class['packages::python3'],
+        require => Class['packages::python3_s3'],
     }
 
     file { $signing_worker::tmp_requirements:
@@ -44,7 +44,7 @@ class signing_worker::base {
             command => '/usr/bin/xcodebuild -license accept',
     }
 
-    contain packages::virtualenv
+    contain packages::virtualenv_python3_s3
     python::virtualenv { 'signingworker' :
         ensure          => present,
         version         => '3',

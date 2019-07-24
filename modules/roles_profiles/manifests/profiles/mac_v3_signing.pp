@@ -33,14 +33,6 @@ class roles_profiles::profiles::mac_v3_signing {
 
             include dirs::tools
 
-            contain packages::python3_s3
-            file { '/tools/python3':
-                    ensure  => 'link',
-                    target  => '/usr/local/bin/python3',
-                    require => Class['packages::python3_s3'],
-            }
-            contain packages::virtualenv_python3_s3
-
             class { 'signing_worker': }
         }
         default: {
