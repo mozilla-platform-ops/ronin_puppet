@@ -10,11 +10,12 @@ class roles_profiles::profiles::notarization_users {
             # That is where the user virtual resources are generated
             require roles_profiles::profiles::users
             # Lookup the group array and realize their user resource
-            case $::hostname {
-                '/^(tb-)?mac-v3-signing\d+\.':
-                    $users = lookup('user_groups.notarization', Array, undef, undef);
-                '/^dep-mac-v3-signing\d+\.':
-                    $users = lookup('user_groups.dep_notarization', Array, undef, undef);
+            $users = $::hostname ? {
+                /^(tb-)?mac-v3-signing\d+/ =>
+                    lookup('user_groups.notarization', Array, undef, []),
+                /^dep-mac-v3-signing\d+/ =>
+                    lookup('user_groups.dep_notarization', Array, undef, undef),
+                default => [],
             }
             realize(Users::Single_user[$users])
 
@@ -30,12 +31,12 @@ class roles_profiles::profiles::notarization_users {
                   user  => $user,
                   group => 'staff',
                 }
-
-                case $::hostname {
-                    '/^(tb-)?mac-v3-signing\d+\.':
-                        $content = "cltbld ALL=(${user}) NOPASSWD: ALL\n";
-                    '/^dep-mac-v3-signing\d+\.':
-                        $content = "${user} ALL=(root) NOPASSWD: /usr/bin/pkgbuild\n";
+                $content = $::hostname? {
+                  '/^(tb-)?mac-v3-signing\d+\.' =>
+                        "cltbld ALL=(${user}) NOPASSWD: ALL\n".
+                  '/^dep-mac-v3-signing\d+\.' =>
+                        "${user} ALL=(root) NOPASSWD: /usr/bin/pkgbuild\n",
+                  default => fail("No matching hostname"),
                 }
                 sudo::customfile { "sudo_to_${user}":
                   content => $content;
