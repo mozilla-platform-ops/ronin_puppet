@@ -11,7 +11,7 @@ class win_openssh::install {
     win_packages::win_zip_pkg { 'OpenSSH-Win64':
         pkg         => 'OpenSSH-Win64.zip',
         creates     => "${win_openssh::programfiles}\\OpenSSH-Win64\\ssh.exe",
-        destination => $local_program_dir,
+        destination => "${local_program_dir}\\",
     }
     win_shared::execonce { 'install_openssh':
         command   => "${win_openssh::pwrshl_run_script} ${ssh_script}",
