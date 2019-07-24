@@ -33,7 +33,7 @@ class roles_profiles::profiles::notarization_users {
                 }
                 $content = $::hostname? {
                   /^(tb-)?mac-v3-signing\d+/ =>
-                        "cltbld ALL=(${user}) NOPASSWD: ALL\n".
+                        "cltbld ALL=(${user}) NOPASSWD: ALL\n",
                   /^dep-mac-v3-signing\d+/ =>
                         "${user} ALL=(root) NOPASSWD: /usr/bin/pkgbuild\n",
                   default => fail("No matching hostname"),
