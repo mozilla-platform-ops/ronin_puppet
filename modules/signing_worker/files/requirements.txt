@@ -1,2 +1,5 @@
+-e git+https://github.com/escapewindow/scriptworker-scripts#egg=scriptworker_client&subdirectory=vendored/mozbuild
 -e git+https://github.com/escapewindow/scriptworker-scripts#egg=scriptworker_client&subdirectory=scriptworker_client
 -e git+https://github.com/escapewindow/scriptworker-scripts#egg=iscript&subdirectory=iscript
+scriptworker
+# TODO add widevine once we have a wheel or private repo solution
