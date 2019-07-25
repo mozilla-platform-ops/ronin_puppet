@@ -17,6 +17,8 @@ class roles_profiles::profiles::files_system_managment {
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1515779
+            # Paging file
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1562974
         }
         default: {
             fail("${::operatingsystem} not supported")
