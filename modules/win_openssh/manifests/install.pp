@@ -4,8 +4,9 @@
 
 class win_openssh::install {
 
-    # Becuase of the need for the script path to be double quoted, needed to hard code the path.
-    # $ssh_script        = "\"${win_openssh::programfiles}\\install-sshd.ps1\""
+    # This is being extracting into C:\programdata\ssh
+    # This is not ideal, but puppet hit issues with extracting into C:\program files
+
     $local_program_dir = $win_openssh::ssh_program_data
     $package           = 'OpenSSH-Win64'
     $ssh_script        = "${local_program_dir}\\${package}\\install-sshd.ps1"
@@ -23,4 +24,3 @@ class win_openssh::install {
 }
 # Bug List
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1527484
-# The powershell command fails on 1st run but is OK on the second run
