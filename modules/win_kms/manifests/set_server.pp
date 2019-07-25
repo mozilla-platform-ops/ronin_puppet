@@ -7,7 +7,7 @@ define win_kms::set_server (
     Integer $port = 1688
 ) {
 
-    $kms_key = 'HKLM\SYSTEM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform'
+    $kms_key = "HKLM\\SYSTEM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SoftwareProtectionPlatform"
 
     registry_value { "${kms_key}\\KeyManagementServiceName":
         type => string,
