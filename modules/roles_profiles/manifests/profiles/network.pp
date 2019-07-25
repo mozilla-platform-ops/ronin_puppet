@@ -21,6 +21,9 @@ class roles_profiles::profiles::network {
                     }
                 }
             }
+            # Bug list
+            # Network category
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1563287
         }
         default: {
             fail("${::operatingsystem} not supported")
