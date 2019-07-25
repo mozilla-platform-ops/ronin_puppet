@@ -8,7 +8,7 @@ define win_filesystem::set_paging_file (
     Integer $max_size
 ) {
 
-    $paging_file_key = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Memory\ Management"
+    $paging_file_key = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management"
 
     registry_value { "${paging_file_key}\\PagingFiles":
         type => array,
