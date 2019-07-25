@@ -13,5 +13,18 @@ $win_os_build = [System.Environment]::OSVersion.Version.build
 $administrator_info = Get-WmiObject win32_useraccount -Filter "name = 'Administrator'"
 $win_admin_sid = $administrator_info.sid
 
+# Network profile
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1563287
+$NetCategory =  Get-NetConnectionProfile | select NetworkCategory
+
+write-host $NetCategory
+
+if ($NetCategory -like '*private*') {
+	$NetworkCategory = "private"
+} else {
+	$NetworkCategory = "other"
+}
+
 write-host "custom_win_release_id=$release_id"
 write-host "custom_win_admin_sid=$win_admin_sid"
+Write-host "custom_win_net_category=$NetworkCategory"
