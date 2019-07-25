@@ -11,6 +11,7 @@ class roles_profiles::roles::geckotwin1064 {
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
     include roles_profiles::profiles::scheduled_tasks
+    include roles_profiles::profiles::network
     # System-AWS
     include roles_profiles::profiles::ec2_instance_configuration
 
