@@ -11,9 +11,11 @@ class roles_profiles::profiles::network {
         }
         'Windows': {
 
-            include win_network::set_search_domain
             include win_network::disable_ipv6
             if $facts['custom_win_location'] == 'datacenter' {
+                include win_network::set_search_domain
+            }
+            if $facts['custom_win_location'] != 'datacenter' {
                 $net_category = 'private'
                 if $facts['custom_win_net_category'] != $net_category {
                     win_network::set_network_category { 'aws_network_category':
