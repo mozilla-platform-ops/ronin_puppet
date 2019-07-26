@@ -5,9 +5,15 @@
 # Custom facts based off OS details that are not included in the default facts
 
 # Windows release ID.
-#  From time to time we need to have the different releases of the same OS version
+# From time to time we need to have the different releases of the same OS version
 $release_id = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $win_os_build = [System.Environment]::OSVersion.Version.build
+
+# OS caption
+# Used to determine which KMS license for cloud workers
+$caption = ((Get-WmiObject Win32_OperatingSystem).caption)
+$caption = $caption.ToLower()
+$os_caption = $caption -replace ' ', '_'
 
 # Administrator SID
 $administrator_info = Get-WmiObject win32_useraccount -Filter "name = 'Administrator'"
@@ -26,5 +32,6 @@ if ($NetCategory -like '*private*') {
 }
 
 write-host "custom_win_release_id=$release_id"
+write-host "custom_win_os_caption=$os_caption"
 write-host "custom_win_admin_sid=$win_admin_sid"
 Write-host "custom_win_net_category=$NetworkCategory"

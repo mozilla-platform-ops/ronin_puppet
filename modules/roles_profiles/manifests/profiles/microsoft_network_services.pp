@@ -11,10 +11,13 @@ class roles_profiles::profiles::microsoft_network_services {
         'Windows': {
             include win_kms
             if $facts['custom_win_location'] == 'aws' {
+                $server = lookup('kms.server.mdc1_ip')
+                $key = lookup("kms.key.${facts['custom_win_os_caption']}")
                 # Hardcode AWS to MDC1 KMS server
                 # Datacenter nodes should pick up the KMS server through local DNS
-                win_kms::set_server { 'set_aws_kms':
-                    server => '10.48.69.100',
+                win_kms::set_registry { 'set_aws_kms':
+                    server => $server,
+                    key    => $key,
                 }
             }
             # Bug List
