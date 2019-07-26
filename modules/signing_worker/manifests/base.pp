@@ -60,13 +60,4 @@ class signing_worker::base {
     file { $signing_worker::script_config_file:
         content => template('signing_worker/script_config.yaml.erb'),
     }
-
-    # Start service
-    supervisord::supervise {
-      'signingworker':
-          command      => "${signing_worker::virtualenv_dir}/bin/iscript ${signing_worker::script_config_file}",
-          user         => $signing_worker::user,
-          extra_config => template('signing_worker/supervisor_config.erb');
-  }
-
 }
