@@ -17,13 +17,13 @@ class signing_worker::base {
 
     # DeveloperIDCA.cer is only required on dep, but is harmless on prod
     file {
-        "${root}/DeveloperIDCA.cer":
+        "/tmp/DeveloperIDCA.cer":
             source => 'puppet:///modules/signing_worker/DeveloperIDCA.cer',
     }
     exec {
         'install-developer-id-root':
-            command => "/usr/bin/security add-trusted-cert -r trustAsRoot -k /Library/Keychains/System.keychain ${root}/DeveloperIDCA.cer",
-            require => File["${root}/DeveloperIDCA.cer"],
+            command => "/usr/bin/security add-trusted-cert -r trustAsRoot -k /Library/Keychains/System.keychain /tmp/DeveloperIDCA.cer",
+            require => File["/tmp/DeveloperIDCA.cer"],
             unless  => "/usr/bin/security dump-keychain /Library/Keychains/System.keychain | /usr/bin/grep 'Developer ID Certification'",
             # This command returns an error despite actually importing
             # the certificate correctly.
