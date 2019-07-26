@@ -35,6 +35,7 @@ class signing_worker::base {
     exec {
         'install_python_certs':
             command => '/Applications/Python\ 3.7/Install\ Certificates.command',
+            path => ['/usr/bin', '/usr/sbin', '/bin'],
             unless =>  "test -h /Library/Frameworks/Python.framework/Versions/3.7/etc/openssl/cert.pm"
     }
 
