@@ -55,6 +55,7 @@ class signing_worker::base {
         owner           => $signing_worker::user,
         group           => $signing_worker::group,
         timeout         => 0,
+        path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
     }
     # scriptworker config
     file { $signing_worker::script_config_file:
