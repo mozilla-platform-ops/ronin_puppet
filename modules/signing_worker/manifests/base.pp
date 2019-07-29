@@ -11,7 +11,12 @@ class signing_worker::base {
         require => Class['packages::python3_s3'],
     }
 
-    file { $signing_worker::tmp_requirements:
+    $virtualenv_dir = "${scriptworker_base}/virtualenv",
+    $tmp_requirements = "${scriptworker_base}/requirements.txt",
+    $scriptworker_config_file = "${scriptworker_base}/scriptworker.yaml",
+    $script_config_file = "${scriptworker_base}/script_config.yaml",
+
+    file { $tmp_requirements:
         source => 'puppet:///modules/signing_worker/requirements.txt',
     }
 
@@ -45,12 +50,18 @@ class signing_worker::base {
             command => '/usr/bin/xcodebuild -license accept',
     }
 
+    file { '/builds/scriptworker':
+      ensure => 'directory',
+      owner  =>  $signing_worker::user,
+      group  =>  $signing_worker::group,
+      mode   => '0750',
+    }
     contain packages::virtualenv_python3_s3
     python::virtualenv { 'signingworker' :
         ensure          => present,
         version         => '3',
-        requirements    => $signing_worker::tmp_requirements,
-        venv_dir        => $signing_worker::virtualenv_dir,
+        requirements    => $tmp_requirements,
+        venv_dir        => $virtualenv_dir,
         ensure_venv_dir => true,
         owner           => $signing_worker::user,
         group           => $signing_worker::group,
@@ -58,7 +69,7 @@ class signing_worker::base {
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
     }
     # scriptworker config
-    file { $signing_worker::script_config_file:
+    file { $script_config_file:
         content => template('signing_worker/script_config.yaml.erb'),
     }
 }
