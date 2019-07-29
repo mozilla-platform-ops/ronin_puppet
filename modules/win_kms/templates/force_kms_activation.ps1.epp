@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 $keyManagementServiceMachine = "<%= $win_kms::force_activation::server  %>"
-$keyManagementServicePort = "<%= $win_kms::force_activation::key %>"
-$productKey = "<%= $win_kms::force_activation::port %>"
+$keyManagementServicePort = "<%= $win_kms::force_activation::port %>"
+$productKey = "<%= $win_kms::force_activation::key %>"
 
 $sls = (Get-WMIObject SoftwareLicensingService)
 $sls.SetKeyManagementServiceMachine($keyManagementServiceMachine)
