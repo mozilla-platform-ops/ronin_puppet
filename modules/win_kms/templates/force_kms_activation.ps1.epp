@@ -1,0 +1,19 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+$keyManagementServiceMachine = "<%= $win_kms::force_activation::server  %>"
+$keyManagementServicePort = "<%= win_kms::force_activation::key %>"
+$productKey = "<%= win_kms::force_activation::port %>"
+
+$sls = (Get-WMIObject SoftwareLicensingService)
+$sls.SetKeyManagementServiceMachine($keyManagementServiceMachine)
+
+$sls.SetKeyManagementServicePort($keyManagementServicePort)
+$sls.InstallProductKey($productKey)
+$sls.RefreshLicenseStatus()
+
+$slp = (Get-WmiObject SoftwareLicensingProduct | ? { (($_.ApplicationId -eq '55c92734-d682-4d71-983e-d6ec3f16059f') -and ($_.PartialProductKey) -and (-not $_.LicenseIsAddon)) })
+$slp.SetKeyManagementServiceMachine($keyManagementServiceMachine)
+$slp.SetKeyManagementServicePort($keyManagementServicePort)
+$slp.Activate()
