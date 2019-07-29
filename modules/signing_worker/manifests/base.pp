@@ -10,7 +10,7 @@ class signing_worker::base {
         target  => '/usr/local/bin/python3',
         require => Class['packages::python3_s3'],
     }
-    file { ['/builds', '/builds/scriptworker']:
+    file { ['/builds', '/builds/scriptworker', '/builds/scriptworker/certs']:
       ensure => 'directory',
       owner  =>  $signing_worker::user,
       group  =>  $signing_worker::group,
@@ -68,6 +68,18 @@ class signing_worker::base {
         timeout         => 0,
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
     }
+
+    file { "${signing_worker::scriptworker_base}/certs/widevine_prod.crt":
+        content => lookup('signing_keys.widevine_prod_crt'),
+    }
+    file { "${signing_worker::scriptworker_base}/certs/nightly_signing.keychain":
+        content => lookup('signing_keys.nightly_signing_keychain'),
+    }
+    file { "${signing_worker::scriptworker_base}/certs/release_signing.keychain":
+        content => lookup('signing_keys.release_signing_keychain'),
+    }
+
+
     # scriptworker config
     file { $script_config_file:
         content => template('signing_worker/script_config.yaml.erb'),
