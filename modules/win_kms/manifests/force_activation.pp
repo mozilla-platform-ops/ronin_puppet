@@ -8,8 +8,14 @@ define win_kms::force_activation (
     Integer $port = 1688
 ) {
 
+    $force_kms_script = "${facts['custom_win_roninprogramdata']}\\force_kms_activation.ps1"
+
+    file{ $force_kms_script:
+        content => epp('win_kms/force_kms_activation.ps1.epp'),
+    }
+
     exec { 'kms_activation':
-        command  => epp('win_kms/force_kms_activation.ps1.epp'),
+        command  => $force_kms_script,
         provider => powershell,
     }
 }
