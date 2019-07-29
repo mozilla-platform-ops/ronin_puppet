@@ -11,10 +11,10 @@ class signing_worker::base {
         require => Class['packages::python3_s3'],
     }
 
-    $virtualenv_dir = "${scriptworker_base}/virtualenv",
-    $tmp_requirements = "${scriptworker_base}/requirements.txt",
-    $scriptworker_config_file = "${scriptworker_base}/scriptworker.yaml",
-    $script_config_file = "${scriptworker_base}/script_config.yaml",
+    $virtualenv_dir = "${scriptworker_base}/virtualenv"
+    $tmp_requirements = "${scriptworker_base}/requirements.txt"
+    $scriptworker_config_file = "${scriptworker_base}/scriptworker.yaml"
+    $script_config_file = "${scriptworker_base}/script_config.yaml"
 
     file { $tmp_requirements:
         source => 'puppet:///modules/signing_worker/requirements.txt',
