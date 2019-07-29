@@ -10,6 +10,12 @@ class signing_worker::base {
         target  => '/usr/local/bin/python3',
         require => Class['packages::python3_s3'],
     }
+    file { ['/builds', '/builds/scriptworker']:
+      ensure => 'directory',
+      owner  =>  $signing_worker::user,
+      group  =>  $signing_worker::group,
+      mode   => '0750',
+    }
 
     $virtualenv_dir = "${signing_worker::scriptworker_base}/virtualenv"
     $tmp_requirements = "${signing_worker::scriptworker_base}/requirements.txt"
@@ -50,12 +56,6 @@ class signing_worker::base {
             command => '/usr/bin/xcodebuild -license accept',
     }
 
-    file { '/builds/scriptworker':
-      ensure => 'directory',
-      owner  =>  $signing_worker::user,
-      group  =>  $signing_worker::group,
-      mode   => '0750',
-    }
     contain packages::virtualenv_python3_s3
     python::virtualenv { 'signingworker' :
         ensure          => present,
