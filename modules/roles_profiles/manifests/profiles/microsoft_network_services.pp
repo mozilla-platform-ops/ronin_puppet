@@ -15,7 +15,7 @@ class roles_profiles::profiles::microsoft_network_services {
                 $key = lookup("kms.key.${facts['custom_win_os_caption']}")
                 # Hardcode AWS to MDC1 KMS server
                 # Datacenter nodes should pick up the KMS server through local DNS
-                win_kms::set_registry { 'set_aws_kms':
+                win_kms::force_activation { 'set_aws_kms':
                     server => $server,
                     key    => $key,
                 }
