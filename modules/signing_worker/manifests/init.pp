@@ -4,10 +4,7 @@
 class signing_worker (
     String $user = 'cltbld',
     String $group = 'staff',
-    String $virtualenv_dir = '/builds/scriptworker/virtualenv',
-    String $tmp_requirements = '/Users/cltbld/requirements.txt',
-    String $scriptworker_config_file = '/builds/scriptworker/scriptworker.yaml',
-    String $script_config_file = '/builds/scriptworker/script_config.yaml',
+    String $scriptworker_base = '/builds/scriptworker',
 ) {
     include signing_worker::base
 }
