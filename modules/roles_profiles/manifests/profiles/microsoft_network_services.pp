@@ -10,14 +10,17 @@ class roles_profiles::profiles::microsoft_network_services {
     case $::operatingsystem {
         'Windows': {
             include win_kms
-            if $facts['custom_win_location'] == 'aws' {
-                $server = lookup('kms.server.mdc1_ip')
-                $key = lookup("kms.key.${facts['custom_win_os_caption']}")
-                # Hardcode AWS to MDC1 KMS server
-                # Datacenter nodes should pick up the KMS server through local DNS
-                class { 'win_kms::force_activation':
-                    server => $server,
-                    key    => $key,
+            if $facts['custom_win_kms_activated'] != 'activated' {
+                if $facts['custom_win_location'] == 'aws' {
+                    $server = lookup('kms.server.mdc1_ip')
+                    $key = lookup("kms.key.${facts['custom_win_os_caption']}")
+                    # Hardcode AWS to MDC1 KMS server
+                    # Datacenter nodes should pick up the KMS server through local DNS
+
+                    class { 'win_kms::force_activation':
+                        server => $server,
+                        key    => $key,
+                    }
                 }
             }
             # Bug List

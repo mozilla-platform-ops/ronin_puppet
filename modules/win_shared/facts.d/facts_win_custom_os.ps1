@@ -14,6 +14,14 @@ $win_os_build = [System.Environment]::OSVersion.Version.build
 $caption = ((Get-WmiObject Win32_OperatingSystem).caption)
 $caption = $caption.ToLower()
 $os_caption = $caption -replace ' ', '_'
+# Windows activation status
+$status = (Get-CimInstance -ClassName SoftwareLicensingProduct -Filter "Name like 'Windows%'" | where PartialProductKey).licensestatus
+
+If ($status -eq '1') {
+$kms_status = "activated"
+} else {
+$kms_status = "needs_activation"
+}
 
 # Administrator SID
 $administrator_info = Get-WmiObject win32_useraccount -Filter "name = 'Administrator'"
@@ -33,5 +41,6 @@ if ($NetCategory -like '*private*') {
 
 write-host "custom_win_release_id=$release_id"
 write-host "custom_win_os_caption=$os_caption"
+write-host "custom_win_kms_activated=$kms_status"
 write-host "custom_win_admin_sid=$win_admin_sid"
 Write-host "custom_win_net_category=$NetworkCategory"
