@@ -18,9 +18,25 @@ class signing_worker::base {
     }
 
     $virtualenv_dir = "${signing_worker::scriptworker_base}/virtualenv"
+    $certs_dir = "${signing_worker::scriptworker_base}/certs"
     $tmp_requirements = "${signing_worker::scriptworker_base}/requirements.txt"
     $scriptworker_config_file = "${signing_worker::scriptworker_base}/scriptworker.yaml"
     $script_config_file = "${signing_worker::scriptworker_base}/script_config.yaml"
+
+    $cot_product = $::hostname? {
+        /^mac-v3-signing\d+/ => "firefox",
+        /^tb-mac-v3-signing\d+/ => "thunderbird",
+        /^dep-mac-v3-signing\d+/ => "firefox",
+        default => fail("No matching hostname"),
+    }
+
+    $taskcluster_scope_prefix = $::hostname? {
+        /^mac-v3-signing\d+/ => "project:releng:signing:",
+        /^tb-mac-v3-signing\d+/ => "project:comm:thunderbird:releng:signing:",
+        /^dep-mac-v3-signing\d+/ => "project:releng:signing:",
+        default => fail("No matching hostname"),
+    }
+
 
     file { $tmp_requirements:
         source => 'puppet:///modules/signing_worker/requirements.txt',
@@ -69,19 +85,34 @@ class signing_worker::base {
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
     }
 
-    file { "${signing_worker::scriptworker_base}/certs/widevine_prod.crt":
+    file { "${certs_dir}/widevine_prod.crt":
+        owner           => $signing_worker::user,
+        group           => $signing_worker::group,
         content => lookup('signing_keys.widevine_prod_crt'),
     }
-    file { "${signing_worker::scriptworker_base}/certs/nightly_signing.keychain":
+    file { "${certs_dir}/nightly_signing.keychain":
+        owner           => $signing_worker::user,
+        group           => $signing_worker::group,
         content => lookup('signing_keys.nightly_signing_keychain'),
     }
-    file { "${signing_worker::scriptworker_base}/certs/release_signing.keychain":
+    file { "${certs_dir}/release_signing.keychain":
+        owner           => $signing_worker::user,
+        group           => $signing_worker::group,
         content => lookup('signing_keys.release_signing_keychain'),
+    }
+    file { "${certs_dir}/ed25519_privkey":
+        owner           => $signing_worker::user,
+        group           => $signing_worker::group,
+        content => lookup('signing_keys.ed25519_privkey'),
+        mode => '0400',
     }
 
 
     # scriptworker config
     file { $script_config_file:
         content => template('signing_worker/script_config.yaml.erb'),
+    }
+    file { $scriptworker_config_file:
+        content => template('signing_worker/scriptworker.yaml.erb'),
     }
 }
