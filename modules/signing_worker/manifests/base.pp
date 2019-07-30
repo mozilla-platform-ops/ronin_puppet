@@ -23,20 +23,15 @@ class signing_worker::base {
     $scriptworker_config_file = "${signing_worker::scriptworker_base}/scriptworker.yaml"
     $script_config_file = "${signing_worker::scriptworker_base}/script_config.yaml"
 
-    $cot_product = $::hostname? {
-        /^mac-v3-signing\d+/ => "firefox",
-        /^tb-mac-v3-signing\d+/ => "thunderbird",
-        /^dep-mac-v3-signing\d+/ => "firefox",
+    $role = $::hostname? {
+        /^mac-v3-signing\d+/ => "ff-prod",
+        /^tb-mac-v3-signing\d+/ => "tb-prod",
+        /^dep-mac-v3-signing\d+/ => "dep",
         default => fail("No matching hostname"),
     }
 
-    $taskcluster_scope_prefix = $::hostname? {
-        /^mac-v3-signing\d+/ => "project:releng:signing:",
-        /^tb-mac-v3-signing\d+/ => "project:comm:thunderbird:releng:signing:",
-        /^dep-mac-v3-signing\d+/ => "project:releng:signing:",
-        default => fail("No matching hostname"),
-    }
-
+    # Load hash of all the template variables
+    $role_config = lookup("signingworker.${role}", Hash, undef, undef)
 
     file { $tmp_requirements:
         source => 'puppet:///modules/signing_worker/requirements.txt',
