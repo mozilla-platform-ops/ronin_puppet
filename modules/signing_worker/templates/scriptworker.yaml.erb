@@ -3,14 +3,9 @@ worker_group: signing-mac-v1
 worker_type: tb-signing-mac-v1
 worker_id: '<%= @hostname %>'
 
-
 credentials:
-    clientId: project/releng/scriptworker/iscript/tb-prod
-    accessToken: ROmkQFUbQDaHx1msc5UJHQg_47N_UDRxSDmOCcZB9Gwg
-
-credentials:
-    clientId: '<%= @taskcluster_client_id %>'
-    accessToken: '<%= @taskcluster_access_token %>'
+    clientId: "<%= @role_config['taskcluster_client_id'] %>"
+    accessToken: "<%= @role_config['taskcluster_access_token'] %>"
 
 artifact_upload_timeout: 1200
 task_max_timeout: 7200

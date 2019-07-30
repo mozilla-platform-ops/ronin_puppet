@@ -26,8 +26,8 @@ mac_config:
             - mac_sign_and_pkg
             - mac_pkg
             - mac_notarize
-        sign_with_entitlements: "<%= @role_config['nightly_sign_with_entitlements'] %>"
-        verify_mac_signature: "<%= @role_config['nightly_verify_mac_signature'] %>"
+        sign_with_entitlements: <%= @role_config['nightly_sign_with_entitlements'] %>
+        verify_mac_signature: <%= @role_config['nightly_verify_mac_signature'] %>
         base_bundle_id: "<%= @role_config['nightly_base_bundle_id'] %>"
         identity: "<%= @role_config['nightly_identity'] %>"
         keychain_password: "<%= @role_config['nightly_keychain_password'] %>"
@@ -35,11 +35,11 @@ mac_config:
         apple_notarization_account: "<%= @role_config['notarization_account'] %>"
         apple_notarization_password: "<%= @role_config['notarization_password'] %>"
         apple_asc_provider: "<%= @role_config['apple_asc_provider'] %>"
-        notarization_poll_timeout: "<%= @role_config['notarization_poll_timeout'] %>"
+        notarization_poll_timeout: <%= @role_config['notarization_poll_timeout'] %>
         widevine_url: "<%= @role_config['nightly_widevine_url'] %>"
         widevine_user: "<%= @role_config['nightly_widevine_user'] %>"
         widevine_pass: "<%= @role_config['nightly_widevine_pass'] %>"
-        widevine_cert: "<%= @role_config['nightly_widevine_cert'] %>"
+        widevine_cert: "<%= scope['signing_worker::scriptworker_base'] %>/widevine_prod.crt"
         omnija_url: "<%= @role_config['nightly_omnija_url'] %>"
         omnija_user: "<%= @role_config['nightly_omnija_user'] %>"
         omnija_pass: "<%= @role_config['nightly_omnija_pass'] %>"
@@ -51,8 +51,8 @@ mac_config:
             - mac_sign_and_pkg
             - mac_pkg
             - mac_notarize
-        sign_with_entitlements: "<%= @role_config['release_sign_with_entitlements'] %>"
-        verify_mac_signature: "<%= @role_config['release_verify_mac_signature'] %>"
+        sign_with_entitlements: <%= @role_config['release_sign_with_entitlements'] %>
+        verify_mac_signature: <%= @role_config['release_verify_mac_signature'] %>
         base_bundle_id: "<%= @role_config['release_base_bundle_id'] %>"
         identity: "<%= @role_config['release_identity'] %>"
         keychain_password: "<%= @role_config['release_keychain_password'] %>"
@@ -60,11 +60,11 @@ mac_config:
         apple_notarization_account: "<%= @role_config['notarization_account'] %>"
         apple_notarization_password: "<%= @role_config['notarization_password'] %>"
         apple_asc_provider: "<%= @role_config['apple_asc_provider'] %>"
-        notarization_poll_timeout: "<%= @role_config['notarization_poll_timeout'] %>"
+        notarization_poll_timeout: <%= @role_config['notarization_poll_timeout'] %>
         widevine_url: "<%= @role_config['release_widevine_url'] %>"
         widevine_user: "<%= @role_config['release_widevine_user'] %>"
         widevine_pass: "<%= @role_config['release_widevine_pass'] %>"
-        widevine_cert: "<%= @base_dir %>/widevine_prod.crt"
+        widevine_cert: "<%= scope['signing_worker::scriptworker_base'] %>/widevine_prod.crt"
         omnija_url: "<%= @role_config['release_omnija_url'] %>"
         omnija_user: "<%= @role_config['release_omnija_user'] %>"
         omnija_pass: "<%= @role_config['release_omnija_pass'] %>"
