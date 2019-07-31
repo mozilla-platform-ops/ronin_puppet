@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class signing_worker::system_user (
     String $user = 'cltbld',
-{
+) {
     case $::operatingsystem {
         'Darwin': {
             $password     = lookup("${user}_user.password")
