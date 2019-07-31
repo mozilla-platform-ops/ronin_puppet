@@ -41,27 +41,27 @@ class roles_profiles::profiles::mac_v3_signing {
                         scriptworker_base => '/builds/dep1',
                         dmg_prefix        => 'dep1',
                         worker_id_suffix  => 'a',
-                        cot_product       => "firefox",
+                        cot_product       => 'firefox',
                     }
                     class { 'signing_worker':
                         user              => 'depbld2',
                         scriptworker_base => '/builds/dep2',
                         dmg_prefix        => 'dep2',
                         worker_id_suffix  => 'b',
-                        cot_product       => "firefox",
+                        cot_product       => 'firefox',
                     }
                     class { 'signing_worker':
                         user              => 'tbbld',
                         scriptworker_base => '/builds/tb-dep',
                         dmg_prefix        => 'tb',
                         worker_id_suffix  => 'tb',
-                        cot_product       => "thunderbird",
+                        cot_product       => 'thunderbird',
                     }
 
                 }
                 /^tb-mac-v3-signing\d+/: {
                     class { 'signing_worker':
-                        cot_product => "thunderbird",
+                        cot_product => 'thunderbird',
                     }
                 }
                 default: {
