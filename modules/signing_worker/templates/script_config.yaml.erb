@@ -16,7 +16,7 @@ local_notarization_accounts:
 default_keychains:
     - "/Users/<%= scope['signing_worker::user'] %>/Library/Keychains/login.keychain-db"
     - "/Library/Keychains/System.keychain"
-dmg_prefix: "<%= @role_config['dmg_prefix'] %>"
+dmg_prefix: "<%= scope['signing_worker::dmg_prefix %>"
 mac_config:
     nightly:
         notarize_type: multi_account
@@ -39,7 +39,7 @@ mac_config:
         widevine_url: "<%= @role_config['nightly_widevine_url'] %>"
         widevine_user: "<%= @role_config['nightly_widevine_user'] %>"
         widevine_pass: "<%= @role_config['nightly_widevine_pass'] %>"
-        widevine_cert: "<%= scope['signing_worker::scriptworker_base'] %>/widevine_prod.crt"
+        widevine_cert: "<%= @widevine_cert_path %>"
         omnija_url: "<%= @role_config['nightly_omnija_url'] %>"
         omnija_user: "<%= @role_config['nightly_omnija_user'] %>"
         omnija_pass: "<%= @role_config['nightly_omnija_pass'] %>"
@@ -64,7 +64,7 @@ mac_config:
         widevine_url: "<%= @role_config['release_widevine_url'] %>"
         widevine_user: "<%= @role_config['release_widevine_user'] %>"
         widevine_pass: "<%= @role_config['release_widevine_pass'] %>"
-        widevine_cert: "<%= scope['signing_worker::scriptworker_base'] %>/widevine_prod.crt"
+        widevine_cert: "<%= @widevine_cert_path %>"
         omnija_url: "<%= @role_config['release_omnija_url'] %>"
         omnija_user: "<%= @role_config['release_omnija_user'] %>"
         omnija_pass: "<%= @role_config['release_omnija_pass'] %>"

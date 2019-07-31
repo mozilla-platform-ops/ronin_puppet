@@ -5,6 +5,9 @@ class signing_worker (
     String $user = 'cltbld',
     String $group = 'staff',
     String $scriptworker_base = '/builds/scriptworker',
+    String $dmg_prefix = 'prod',
+    String $worker_id_suffix = "",
+    String $cot_product = "firefox",
 ) {
     include signing_worker::base
 }

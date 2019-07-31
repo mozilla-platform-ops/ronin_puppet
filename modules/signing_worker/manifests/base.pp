@@ -2,16 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class signing_worker::base {
-    # Dependencies
 
-    contain packages::python3_s3
-    file { '/tools/python3':
-        ensure  => 'link',
-        target  => '/usr/local/bin/python3',
-        require => Class['packages::python3_s3'],
-    }
     $required_directories = [
-      '/builds',
       $signing_worker::scriptworker_base,
       "${signing_worker::scriptworker_base}/certs",
       "${signing_worker::scriptworker_base}/logs",
@@ -31,6 +23,9 @@ class signing_worker::base {
     $script_config_file = "${signing_worker::scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper = "${signing_worker::scriptworker_base}/scriptworker_wrapper.sh"
 
+    # Dep workers have a non-deterministic suffix
+    $worker_id = "${::hostname}${signing_worker::worker_id_suffix}"
+
     $role = $::hostname? {
         /^mac-v3-signing\d+/ => 'ff-prod',
         /^tb-mac-v3-signing\d+/ => 'tb-prod',
@@ -45,36 +40,6 @@ class signing_worker::base {
         source => 'puppet:///modules/signing_worker/requirements.txt',
     }
 
-    # DeveloperIDCA.cer is only required on dep, but is harmless on prod
-    file {
-        '/tmp/DeveloperIDCA.cer':
-            source => 'puppet:///modules/signing_worker/DeveloperIDCA.cer',
-    }
-    exec {
-        'install-developer-id-root':
-            command => '/usr/bin/security add-trusted-cert -r trustAsRoot -k /Library/Keychains/System.keychain /tmp/DeveloperIDCA.cer',
-            require => File['/tmp/DeveloperIDCA.cer'],
-            unless  => "/usr/bin/security dump-keychain /Library/Keychains/System.keychain | /usr/bin/grep 'Developer ID Certification'",
-            # This command returns an error despite actually importing
-            # the certificate correctly.
-            # For posterity, the error returned is "SecTrustSettingsSetTrustSettings: The authorization was
-            # denied since no user interaction was possible.".
-            returns => [1];
-    }
-
-    # Install certifi's set of CAs to override the system set
-    exec {
-        'install_python_certs':
-            command => "'/Applications/Python 3.7/Install Certificates.command'",
-            path    => ['/usr/bin', '/usr/sbin', '/bin'],
-            unless  =>  'test -h /Library/Frameworks/Python.framework/Versions/3.7/etc/openssl/cert.pm'
-    }
-
-    # Accept the xcode licence
-    exec {
-        'xcode_license_agree':
-            command => '/usr/bin/xcodebuild -license accept',
-    }
 
     contain packages::virtualenv_python3_s3
     python::virtualenv { 'signingworker' :
@@ -89,28 +54,53 @@ class signing_worker::base {
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
     }
 
-    file { "${certs_dir}/widevine_prod.crt":
-        owner   => $signing_worker::user,
-        group   => $signing_worker::group,
-        content => lookup('signing_keys.widevine_prod_crt'),
-    }
-    file { "${certs_dir}/nightly_signing.keychain":
-        owner   => $signing_worker::user,
-        group   => $signing_worker::group,
-        content => lookup('signing_keys.nightly_signing_keychain'),
-    }
-    file { "${certs_dir}/release_signing.keychain":
-        owner   => $signing_worker::user,
-        group   => $signing_worker::group,
-        content => lookup('signing_keys.release_signing_keychain'),
-    }
-    file { "${certs_dir}/ed25519_privkey":
-        owner   => $signing_worker::user,
-        group   => $signing_worker::group,
-        content => lookup('signing_keys.ed25519_privkey'),
-        mode    => '0400',
+
+    case $::hostname {
+        /^dep-mac-v3-signing\d+/: {
+            file { "${certs_dir}/widevine_dep.crt":
+                owner   => $signing_worker::user,
+                group   => $signing_worker::group,
+                content => lookup('signing_keys.widevine_dep_crt'),
+            }
+            file { "${certs_dir}/dep-signing.keychain":
+                owner   => $signing_worker::user,
+                group   => $signing_worker::group,
+                content => lookup('signing_keys.dep_signing_keychain'),
+            }
+        }
+        default: {
+            file { "${certs_dir}/widevine_prod.crt":
+                owner   => $signing_worker::user,
+                group   => $signing_worker::group,
+                content => lookup('signing_keys.widevine_prod_crt'),
+            }
+            file { "${certs_dir}/nightly_signing.keychain":
+                owner   => $signing_worker::user,
+                group   => $signing_worker::group,
+                content => lookup('signing_keys.nightly_signing_keychain'),
+            }
+            file { "${certs_dir}/release_signing.keychain":
+                owner   => $signing_worker::user,
+                group   => $signing_worker::group,
+                content => lookup('signing_keys.release_signing_keychain'),
+            }
+            file { "${certs_dir}/ed25519_privkey":
+                owner   => $signing_worker::user,
+                group   => $signing_worker::group,
+                content => lookup('signing_keys.ed25519_privkey'),
+                mode    => '0400',
+            }
+        }
     }
 
+    $widevine_cert_path = $::hostname? {
+        /^dep-mac-v3-signing\d+/ => "${certs_dir}/widevine_dep.crt",
+        default => "${certs_dir}/widevine_prod.crt",
+    }
+    $ed_key_path = $::hostname? {
+        /^dep-mac-v3-signing\d+/ => '/dev/null',
+        default => "${certs_dir}/ed25519_privkey",
+    }
 
     # scriptworker config
     file { $script_config_file:
