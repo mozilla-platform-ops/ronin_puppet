@@ -16,7 +16,7 @@ local_notarization_accounts:
 default_keychains:
     - "/Users/<%= scope['signing_worker::user'] %>/Library/Keychains/login.keychain-db"
     - "/Library/Keychains/System.keychain"
-dmg_prefix: "<%= scope['signing_worker::dmg_prefix %>"
+dmg_prefix: "<%= scope['signing_worker::dmg_prefix'] %>"
 mac_config:
     nightly:
         notarize_type: multi_account
