@@ -1,17 +1,8 @@
 #
 # @summary Creates Python virtualenv.
 #
-<<<<<<< HEAD
-<<<<<<< HEAD
 # Modified from https://github.com/voxpupuli/puppet-python by
 # sfraser@mozilla.com for isolated Darwin support.
-=======
-# Modified from https://github.com/voxpupuli/puppet-python by sfraser@mozilla.com for isolated Darwin support.
->>>>>>> e19a188... Draft: Signing worker python environment
-=======
-# Modified from https://github.com/voxpupuli/puppet-python by
-# sfraser@mozilla.com for isolated Darwin support.
->>>>>>> 19b2d9f... Line length fixes
 #
 # @param ensure
 # @param version Python version to use.
