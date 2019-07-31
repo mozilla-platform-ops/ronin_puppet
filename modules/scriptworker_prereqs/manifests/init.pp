@@ -16,7 +16,7 @@ class scriptworker_prereqs {
     # DeveloperIDCA.cer is only required on dep, but is harmless on prod
     file {
         '/tmp/DeveloperIDCA.cer':
-            source => 'puppet:///modules/signing_worker/DeveloperIDCA.cer',
+            source => 'puppet:///modules/scriptworker_prereqs/DeveloperIDCA.cer',
     }
     exec {
         'install-developer-id-root':
