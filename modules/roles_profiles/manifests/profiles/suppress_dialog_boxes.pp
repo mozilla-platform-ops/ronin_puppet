@@ -15,6 +15,9 @@ class roles_profiles::profiles::suppress_dialog_boxes {
             include macos_mobileconfig_profiles::skipdataandprivacy
             include macos_mobileconfig_profiles::skipicloudsetup
 
+            # Disable the welcome tour notification
+            include macos_mobileconfig_profiles::skipmojavewelcometour
+
             # Suppress the bluetooth keyboard/mouse setup dialog boxes that appear when there is no keyboard and/or mouse connected
             include macos_utils::disable_bluetooth_setup
 
