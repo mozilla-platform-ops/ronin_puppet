@@ -125,6 +125,5 @@ class signing_worker::base {
     exec { "${signing_worker::user}_launchctl_load":
         command => "/bin/launchctl load ${$launchd_script}",
         subscribe   => File[$launchd_script],
-        refreshonly => true,
     }
 }
