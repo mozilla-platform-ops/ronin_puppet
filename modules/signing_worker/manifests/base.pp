@@ -42,7 +42,7 @@ class signing_worker::base {
 
 
     contain packages::virtualenv_python3_s3
-    python::virtualenv { 'signingworker' :
+    python::virtualenv { "signingworker_${signing_worker::user}" :
         ensure          => present,
         version         => '3',
         requirements    => $tmp_requirements,
@@ -117,7 +117,7 @@ class signing_worker::base {
         group   => $signing_worker::group,
     }
 
-    file { '/Library/LaunchDaemons/org.mozilla.scriptworker.plist':
+    file { "/Library/LaunchDaemons/org.mozilla.scriptworker.${signing_worker::user}.plist":
         content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
         mode    => '0644',
     }
