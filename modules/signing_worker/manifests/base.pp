@@ -22,7 +22,7 @@ class signing_worker::base {
     $scriptworker_config_file = "${signing_worker::scriptworker_base}/scriptworker.yaml"
     $script_config_file = "${signing_worker::scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper = "${signing_worker::scriptworker_base}/scriptworker_wrapper.sh"
-`
+
     # Dep workers have a non-deterministic suffix
     $worker_id = "${::hostname}${signing_worker::worker_id_suffix}"
 
