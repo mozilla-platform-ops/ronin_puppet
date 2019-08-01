@@ -22,7 +22,7 @@ class signing_worker::base {
     $scriptworker_config_file = "${signing_worker::scriptworker_base}/scriptworker.yaml"
     $script_config_file = "${signing_worker::scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper = "${signing_worker::scriptworker_base}/scriptworker_wrapper.sh"
-
+`
     # Dep workers have a non-deterministic suffix
     $worker_id = "${::hostname}${signing_worker::worker_id_suffix}"
 
@@ -60,29 +60,29 @@ class signing_worker::base {
             file { "${certs_dir}/widevine_dep.crt":
                 owner   => $signing_worker::user,
                 group   => $signing_worker::group,
-                content => lookup('signing_keys.widevine_dep_crt'),
+                content => base64('decode', lookup('signing_keys.widevine_dep_crt')),
             }
             file { "${certs_dir}/dep-signing.keychain":
                 owner   => $signing_worker::user,
                 group   => $signing_worker::group,
-                content => lookup('signing_keys.dep_signing_keychain'),
+                content => base64('decode', lookup('signing_keys.dep_signing_keychain')),
             }
         }
         default: {
             file { "${certs_dir}/widevine_prod.crt":
                 owner   => $signing_worker::user,
                 group   => $signing_worker::group,
-                content => lookup('signing_keys.widevine_prod_crt'),
+                content => base64('decode', lookup('signing_keys.widevine_prod_crt')),
             }
             file { "${certs_dir}/nightly_signing.keychain":
                 owner   => $signing_worker::user,
                 group   => $signing_worker::group,
-                content => lookup('signing_keys.nightly_signing_keychain'),
+                content => base64('decode', lookup('signing_keys.nightly_signing_keychain')),
             }
             file { "${certs_dir}/release_signing.keychain":
                 owner   => $signing_worker::user,
                 group   => $signing_worker::group,
-                content => lookup('signing_keys.release_signing_keychain'),
+                content => base64('decode', lookup('signing_keys.release_signing_keychain')),
             }
             file { "${certs_dir}/ed25519_privkey":
                 owner   => $signing_worker::user,
