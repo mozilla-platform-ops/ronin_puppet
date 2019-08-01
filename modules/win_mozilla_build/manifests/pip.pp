@@ -17,7 +17,7 @@ class win_mozilla_build::pip {
     }
     # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::cache_drive}\\pip-cache":
-        target      => "${win_mozilla_build::systemdrive}\\pip-cache",
+        target      => "${win_mozilla_build::cache_drive}\\pip-cache",
         permissions => {
             identity                   => 'everyone',
             rights                     => ['full'],

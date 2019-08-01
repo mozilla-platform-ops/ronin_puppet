@@ -4,8 +4,7 @@
 
 class win_firewall::disable_firewall {
 
-    # Resource from puppet/windows_firewall
-    class { 'windows_firewall':
-        ensure => 'stopped'
+    exec { 'windows_firewall':
+        command => 'C:\Windows\System32\netsh.exe advfirewall set allprofiles state off'
     }
 }
