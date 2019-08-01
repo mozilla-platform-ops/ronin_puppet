@@ -117,9 +117,14 @@ class signing_worker::base {
         group   => $signing_worker::group,
     }
 
-    file { "/Library/LaunchDaemons/org.mozilla.scriptworker.${signing_worker::user}.plist":
+    $launchd_script = "/Library/LaunchDaemons/org.mozilla.scriptworker.${signing_worker::user}.plist"
+    file { $launchd_script:
         content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
         mode    => '0644',
     }
-
+    exec { "${signing_worker::user}_launchctl_load":
+        command => "/bin/launchctl load ${$launchd_script}",
+        subscribe   => File[$launchd_script],
+        refreshonly => true,
+    }
 }
