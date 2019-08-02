@@ -10,6 +10,10 @@ class bitbar_devicepool {
   # main classes
   include ::bitbar_devicepool::base
   include ::bitbar_devicepool::devicepool
+  # place android-tools repo
+  include ::bitbar_devicepool::other_repos
+  # install other utilities
   include ::bitbar_devicepool::last_started_alert
+  include ::bitbar_devicepool::worker_health
 
 }
