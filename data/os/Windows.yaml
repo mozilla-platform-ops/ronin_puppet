@@ -24,3 +24,10 @@ taskcluster:
 windows_servers:
   # Needed for AWS license activation. Using KMS server is MDC1
   kms_mdc1_ip:  "10.48.69.100"
+
+# Windows KMS
+kms:
+  server:
+    mdc1_ip:  "10.48.69.100"
+  key:
+    microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
