@@ -1,4 +1,4 @@
-class bitbar_devicepool::other_repos {
+class bitbar_devicepool::android_tools {
 
   vcsrepo { '/home/bitbar/android-tools':
     ensure   => present,
