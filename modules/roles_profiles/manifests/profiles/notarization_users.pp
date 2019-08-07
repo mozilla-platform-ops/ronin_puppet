@@ -14,7 +14,7 @@ class roles_profiles::profiles::notarization_users {
                 /^(tb-)?mac-v3-signing\d+/ =>
                     lookup('user_groups.notarization', Array, undef, []),
                 /^dep-mac-v3-signing\d+/ =>
-                    lookup('user_groups.dep_notarization', Array, undef, undef),
+                    lookup('user_groups.dep_notarization', Array, undef, []),
                 default => [],
             }
             realize(Users::Single_user[$users])
