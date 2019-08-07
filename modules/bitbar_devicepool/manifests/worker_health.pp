@@ -15,7 +15,7 @@ class bitbar_devicepool::worker_health {
 
   # create venv and install requirement
   $influx_logger_path = '/home/bitbar/android-tools/worker_health'
-  exec { 'create influx_logger pipenv':
+  exec { 'create and install worker_health pipenv':
       command => '/home/bitbar/.local/bin/pipenv --python 3.6 install',
       cwd     => $influx_logger_path,
       user    => 'bitbar',
