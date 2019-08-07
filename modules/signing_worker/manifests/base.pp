@@ -122,8 +122,15 @@ class signing_worker::base {
         content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
         mode    => '0644',
     }
+    /* Disabled until full setup is complete.
     exec { "${signing_worker::user}_launchctl_load":
         command   => "/bin/launchctl load ${$launchd_script}",
+        subscribe => File[$launchd_script],
+    }
+    */
+    /* Remove this notify when enabling the exec launchctl, above */
+    notify { "launchctl_${signing_worker::user}":
+        message   => "Run: /bin/launchctl load ${$launchd_script}",
         subscribe => File[$launchd_script],
     }
 }
