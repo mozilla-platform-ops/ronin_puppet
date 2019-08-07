@@ -43,6 +43,9 @@ mac_config:
         omnija_url: "<%= @role_config['nightly_omnija_url'] %>"
         omnija_user: "<%= @role_config['nightly_omnija_user'] %>"
         omnija_pass: "<%= @role_config['nightly_omnija_pass'] %>"
+        langpack_url: "<%= @role_config['nightly_langpack_url'] %>"
+        langpack_user: "<%= @role_config['nightly_langpack_user'] %>"
+        langpack_pass: "<%= @role_config['nightly_langpack_pass'] %>"
     release:
         notarize_type: multi_account
         signing_keychain: "<%= @certs_dir %>/release-signing.keychain"
@@ -68,3 +71,6 @@ mac_config:
         omnija_url: "<%= @role_config['release_omnija_url'] %>"
         omnija_user: "<%= @role_config['release_omnija_user'] %>"
         omnija_pass: "<%= @role_config['release_omnija_pass'] %>"
+        langpack_url: "<%= @role_config['release_langpack_url'] %>"
+        langpack_user: "<%= @role_config['release_langpack_user'] %>"
+        langpack_pass: "<%= @role_config['release_langpack_pass'] %>"
