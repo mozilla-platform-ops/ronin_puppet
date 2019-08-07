@@ -26,14 +26,23 @@ class bitbar_devicepool::worker_health {
   User<| title == bitbar |> { groups +> ['systemd-journal'] }
 
   # place systemd unit files
-  # file { '/etc/systemd/system/bitbar-last_started_alert.service':
-  #   ensure  => file,
-  #   replace => 'no',
-  #   source  => '/home/bitbar/android-tools/devicepool_last_started_alert/service/last_started_alert.service',
-  #   notify  => [
-  #     Class['bitbar_devicepool::systemd_reload'],
-  #   ],
-  # }
+  file { '/etc/systemd/system/bitbar-slack_alert.service':
+    ensure  => file,
+    replace => 'no',
+    source  => '/home/bitbar/android-tools/worker_health/service/slack_alert.service',
+    notify  => [
+      Class['bitbar_devicepool::systemd_reload'],
+    ],
+  }
+
+  file { '/etc/systemd/system/bitbar-influx_logger.service':
+    ensure  => file,
+    replace => 'no',
+    source  => '/home/bitbar/android-tools/worker_health/service/influx_logger.service',
+    notify  => [
+      Class['bitbar_devicepool::systemd_reload'],
+    ],
+  }
 
   # things manually done (in docs):
   # - configure ~/.bitbar_slack_alert.toml
