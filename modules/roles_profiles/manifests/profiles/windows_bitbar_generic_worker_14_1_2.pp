@@ -55,10 +55,17 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2 {
             # These are specifically needed for the config file which Puppet only manages for hardware
             # Cloud instances will receive the config file during provisioning
             # Paths in the  config file need to have \\ hence the \\\\ below
+            if $facts['custom_win_gw_workertype'] == 'gecko-t-win10-64-ref-hw' {
+                $client_id = 'project/releng/generic-worker/vendor-gecko-t-win10-64-ref-hw/production'
+            } else {
+                $client_id = "project/releng/generic-worker/bitbar-${facts['custom_win_gw_workertype']}"
+            }
+
+
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
                 worker_type              => $facts['custom_win_gw_workertype'],
-                client_id                => 'project/releng/generic-worker/vendor-gecko-t-win10-64-ref-hw/production',
+                client_id                => $client_id,
                 generic_worker_dir       => "${facts['custom_win_systemdrive']}\\\\generic-worker",
                 provisioner_id           => 'releng-hardware',
                 idle_timeout             => 7200,
