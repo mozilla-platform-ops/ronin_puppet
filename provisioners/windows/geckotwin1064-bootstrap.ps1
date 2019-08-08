@@ -47,11 +47,10 @@ function Set-RoninRegOptions {
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
-    [string] $workerType = 'gecko-t-win10-64-hw-dev',
+    [string] $workerType = 'gecko-t-win10-64',
     [string] $src_Organisation = 'mozilla-platform-ops',
     [string] $src_Repository = 'ronin_puppet',
     [string] $src_Revision = 'master'
->>>>>>> b978ee00df873b4c8fdef2324e7086de532c4cb2
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -279,9 +278,10 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Set-RoninRegOptions
   Ronin-PreRun
 }
+<#
 If ($stage -ne 'complete') {
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
   Bootstrap-CleanUp
-}
+} #>
