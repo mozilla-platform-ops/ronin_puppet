@@ -4,17 +4,17 @@ worker_type: tb-signing-mac-v1
 worker_id: "<%= @worker_id %>"
 
 credentials:
-    clientId: "<%= @role_config['taskcluster_client_id'] %>"
-    accessToken: "<%= @role_config['taskcluster_access_token'] %>"
+    clientId: "<%= @worker_config['taskcluster_client_id'] %>"
+    accessToken: "<%= @worker_config['taskcluster_access_token'] %>"
 
 artifact_upload_timeout: 1200
 task_max_timeout: 7200
 task_script: ["<%= @virtualenv_dir %>/bin/iscript", "<%= @script_config_file %>"]
 verbose: true
 
-sign_chain_of_trust: <%= @role_config['sign_chain_of_trust'] %>
-verify_chain_of_trust: <%= @role_config['verify_chain_of_trust'] %>
-verify_cot_signature: <%= @role_config['verify_cot_signature'] %>
+sign_chain_of_trust: <%= @worker_config['sign_chain_of_trust'] %>
+verify_chain_of_trust: <%= @worker_config['verify_chain_of_trust'] %>
+verify_cot_signature: <%= @worker_config['verify_cot_signature'] %>
 cot_job_type: signing
 cot_product: "<%= scope['signing_worker::cot_product'] %>"
 # Calls to Github API are limited to 60 an hour. Using an API token allows to raise the limit to

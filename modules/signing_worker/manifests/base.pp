@@ -34,7 +34,8 @@ class signing_worker::base {
     }
 
     # Load hash of all the template variables
-    $role_config = lookup("signingworker.${role}", Hash, undef, undef)
+    $signingworker_config = lookup("signingworker_config.${role}", Hash, undef, undef)
+    $role_config = lookup("signingworker_roles.${role}", Hash, undef, undef)
 
     file { $tmp_requirements:
         source => 'puppet:///modules/signing_worker/requirements.txt',
