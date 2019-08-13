@@ -58,7 +58,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 livelog_version           => 'v1.1.0',
                 livelog_sha256            => 'caabc35ec26498e755863d08c4c8b79e8b041a1d11b1fc8be0909718fc81113d',
                 user                      => 'root',
-                user_homedir              => '/var/root',
+                user_homedir              => '/etc/generic-worker',
             }
 
             include dirs::tools
