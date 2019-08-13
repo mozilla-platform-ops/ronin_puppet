@@ -13,6 +13,17 @@ rm -f tasks-resolved-count.txt
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 source /usr/local/share/generic-worker/bugzilla-utils.sh
 
+. /etc/rc.common
+
+CheckForNetwork
+
+while [ "${NETWORKUP}" != "-YES-" ]
+do
+  sleep 5
+  NETWORKUP=
+  CheckForNetwork
+done
+
 # First run the generic-worker, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/generic-worker "$@" 2>&1 | logger -t generic-worker -s
