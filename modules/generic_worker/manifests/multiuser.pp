@@ -32,7 +32,7 @@ class generic_worker::multiuser (
         taskcluster_proxy_version => $taskcluster_proxy_version,
         taskcluster_proxy_sha256  => $taskcluster_proxy_sha256,
         quarantine_worker_version => $quarantine_worker_version,
-        quarantine_worker_sha256  => $quarantine_worker_sha256
+        quarantine_worker_sha256  => $quarantine_worker_sha256,
         livelog_version           => $livelog_version,
         livelog_sha256            => $livelog_sha256
     }
@@ -67,7 +67,7 @@ class generic_worker::multiuser (
             file {
                 '/Library/LaunchDaemons/net.generic.worker.plist':
                     ensure  => present,
-                    content => template('generic_worker/generic-worker.plist.erb'),
+                    content => template('generic_worker/generic-worker.plist.multiuser.erb'),
                     mode    => '0644',
                     owner   => $::root_user,
                     group   => $::root_group;
@@ -79,12 +79,19 @@ class generic_worker::multiuser (
                     owner   => $::root_user,
                     group   => $::root_group;
 
-                '/etc/generic-worker.config':
+                '/etc/generic-worker':
+                    ensure => directory,
+                    mode   => '0644',
+                    owner  => $::root_user,
+                    group  => $::root_group;
+
+                '/etc/generic-worker/config':
                     ensure  => present,
-                    content => template('generic_worker/generic-worker.config.erb'),
+                    content => template('generic_worker/generic-worker.config.multiuser.erb'),
                     mode    => '0644',
                     owner   => $::root_user,
-                    group   => $::root_group;
+                    group   => $::root_group,
+                    require => File['/etc/generic-worker'];
             }
 
             service { 'net.generic.worker':
