@@ -21,8 +21,7 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 # pull and generate vault secrets to yaml (or json).  Block if secrets don't exist, soft fail if cached
 
 # URL of puppet repo to download
-# TODO: change this url to track master on the moz platform ops org relop
-PUPPET_REPO='https://github.com/mozilla-platform-ops/ronin_puppet/archive/master.tar.gz'
+PUPPET_REPO=${PUPPET_REPO:-'https://github.com/mozilla-platform-ops/ronin_puppet/archive/master.tar.gz'}
 
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {
