@@ -6,8 +6,8 @@ $gw_file     = "$env:systemdrive\generic-worker\generic-worker.exe"
 
 # Generic-worker
 
-$gw_status = (Get-Service $serviceName -ErrorAction SilentlyContinue)
-If ((Get-Service $serviceName).Status -eq 'Running') {
+$gw_status = (Get-Service "Generic Worker" -ErrorAction SilentlyContinue)
+If ((Get-Service $gw_status).Status -eq 'Running') {
     $gw_service = 'running'
 } Else {
     $gw_service = 'missing'
