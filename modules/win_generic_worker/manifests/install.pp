@@ -17,7 +17,7 @@ class win_generic_worker::install {
         source => $win_generic_worker::generic_worker_exe_source,
     }
 
-    if $win_generic_worker::gw_service_status != 'running' {
+    if $win_generic_worker::gw_service_status != 'present' {
         exec { 'install_generic_worker_service':
             command => $win_generic_worker::generic_worker_install_command,
             require => File[$win_generic_worker::generic_worker_exe],

@@ -6,13 +6,16 @@ $gw_file     = "$env:systemdrive\generic-worker\generic-worker.exe"
 
 # Generic-worker
 
-$gw_status = (Get-Service "Generic Worker" -ErrorAction SilentlyContinue)
-If ((Get-Service $gw_status).Status -eq 'Running') {
-    $gw_service = 'running'
+$serviceName = 'Generic Worker'
+
+If (Get-Service $serviceName -ErrorAction SilentlyContinue) {
+	$gw_service = "present"
 } Else {
-    $gw_service = 'missing'
+	$gw_service = "missing"
 }
+
 write-host "custom_win_genericworker_service=$gw_service"
+
 # The command will typically write out multiple strings including stdout.
 # There is need to drop what is is writen to stdout and selct the version
 # out of the remaining string.
