@@ -25,6 +25,7 @@ class roles_profiles::roles::geckotwin1064ht {
     # Worker
     include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
-    include roles_profiles::profiles::windows_datacenter_generic_worker_14_1_2
+#    include roles_profiles::profiles::windows_datacenter_generic_worker_14_1_2
+    include roles_profiles::profiles::windows_datacenter_generic_worker_15_1_0
     include roles_profiles::profiles::microsoft_tools
 }
