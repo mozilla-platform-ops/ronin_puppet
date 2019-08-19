@@ -11,8 +11,13 @@ class roles_profiles::profiles::common_tools {
             include win_packages::gpg4win
             include win_packages::sevenzip
             include win_packages::sublimetxt
+            if $facts['custom_win_location'] == 'aws' {
+                include win_packages::nircmd
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
+            # nircmd
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1562042
         }
         default: {
             fail("${::operatingsystem} not supported")
