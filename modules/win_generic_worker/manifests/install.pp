@@ -7,11 +7,17 @@ class win_generic_worker::install {
     require win_generic_worker::directories
     require win_packages::nssm
 
+    if $win_generic_worker::current_gw_version != $win_generic_worker::needed_gw_version {
+        exec { 'purge_old_gw_exe':
+            command  => "remove-Item –path ${win_generic_worker::generic_worker_exe}",
+            provider => powershell,
+        }
+    }
     file { $win_generic_worker::generic_worker_exe:
         source => $win_generic_worker::generic_worker_exe_source,
     }
 
-    if $win_generic_worker::current_gw_version != $win_generic_worker::needed_gw_version {
+    if $win_generic_worker::gw_service_status != 'running' {
         exec { 'install_generic_worker_service':
             command => $win_generic_worker::generic_worker_install_command,
             require => File[$win_generic_worker::generic_worker_exe],
