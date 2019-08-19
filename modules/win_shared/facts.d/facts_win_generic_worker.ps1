@@ -8,9 +8,9 @@ $gw_file     = "$env:systemdrive\generic-worker\generic-worker.exe"
 
 $gw_status = (Get-Service $serviceName -ErrorAction SilentlyContinue)
 If ((Get-Service $serviceName).Status -eq 'Running') {
-    $gw_service = running
+    $gw_service = 'running'
 } Else {
-    $gw_service = missing
+    $gw_service = 'missing'
 }
 write-host "custom_win_genericworker_service=$gw_service"
 # The command will typically write out multiple strings including stdout.
