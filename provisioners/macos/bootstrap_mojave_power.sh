@@ -51,6 +51,22 @@ function install() {
   done < <(hdiutil mount -plist -nobrowse -readonly -noidme -mountrandom /tmp "$dmg" | grep '\(\/dev\/disk.s\|\/private\/tmp\)' | sed -e 's/.*>\([^<]*\)<.*/\1/' | tr $'\n' ' '; echo); 
 }
 
+echo "Checking Xcode CLI tools"
+# See http://apple.stackexchange.com/questions/107307/how-can-i-install-the-command-line-tools-completely-from-the-command-line
+xcode-select -p &> /dev/null
+if [ $? -ne 0 ]; then
+  echo "Xcode CLI tools not found. Installing them..."
+  touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
+  PROD=$(softwareupdate -l |
+    grep "\*.*Command Line" |
+    head -n 1 | awk -F"*" '{print $2}' |
+    sed -e 's/^ *//' |
+    tr -d '\n')
+  softwareupdate -i "$PROD" --verbose;
+else
+  echo "Xcode CLI tools OK"
+fi
+
 [[ "2.21.0" == $(git --version | cut -d\  -f3) ]] \
   && git --version \
   || install "https://downloads.sourceforge.net/project/git-osx-installer/git-2.21.0-intel-universal-mavericks.dmg" \
