@@ -19,8 +19,8 @@ class roles_profiles::roles::bitbar_mbp {
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::cltbld_user
-    #include ::roles_profiles::profiles::homebrew
+    include ::roles_profiles::profiles::homebrew
     include ::roles_profiles::profiles::relops_users
-    #include ::roles_profiles::profiles::gecko_t_osx_1014_generic_worker
+    include ::roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker
     #include ::fw::roles::osx_taskcluster_worker
 }
