@@ -1,5 +1,8 @@
 #!/bin/bash
 
+PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet.git"}
+PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
+
 host=$(scutil --get ComputerName)
 echo $host
 
@@ -70,10 +73,13 @@ checksum "/Applications/Intel Power Gadget/PowerLog" \
     /Applications/Intel\ Power\ Gadget/PowerLog -resolution 1000 -file /dev/stdout -cmd "for I in {1..3}; do sleep 1; done"
   )
 
-curl -L -O https://raw.githubusercontent.com/davehouse/ronin_puppet/bug1572190_bitbar-mbp/provisioners/macos/bootstrap_mojave.sh
+PUPPET_FORK="${PUPPET_REPO%.git}"
+PUPPET_FORK="${PUPPET_FORK#*.com}"
+PUPPET_REPO_BUNDLE="https://raw.githubusercontent.com${PUPPET_FORK}/${PUPPET_BRANCH}/provisioners/macos/bootstrap_mojave.sh"
+curl -L -O "${PUPPET_REPO_BUNDLE}"
 
-export PUPPET_REPO="https://github.com/davehouse/ronin_puppet.git"
-export PUPPET_BRANCH="bug1572190_bitbar-mbp"
+export PUPPET_REPO
+export PUPPET_BRANCH
 
 screenshot
 sed -i.bak '/reboot/d' ./bootstrap_mojave.sh
