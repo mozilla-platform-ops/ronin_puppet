@@ -116,8 +116,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Bootstrap-schtasks
   shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
-If ($stage -eq 'setup') or ($stage -eq 'inprogress'){
-
+If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
   Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
   Ronin-PreRun
   Bootstrap-Puppet
