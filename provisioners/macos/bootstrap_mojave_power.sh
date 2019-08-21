@@ -49,6 +49,16 @@ sudo systemsetup \
     -setallowpowerbuttontosleepcomputer off \
     -setrestartfreeze on
 
+# Print NVRAM
+/usr/sbin/nvram -p
+fmm-computer-name=$(nvram fmm-computer-name | cut -d\  -f2)
+fmm-mobileme-token-FMM=$(nvram fmm-mobileme-token-FMM | cut -d\  -f2)
+if [[ -n "${fmm-computer-name}" ]]; then
+    echo "Find-my-mac is enabled!?"
+    echo "fmm-computer-name= ${fmm-computer-name}"
+    echo "fmm-mobileme-token-FMM= ${fmm-mobileme-token-FMM}"
+fi
+
 # Ensure no fingerprints are stored for login
 fingerprints=$(declare -i count=0;\
   while read -r line; do count+=$line; done \
@@ -56,6 +66,17 @@ fingerprints=$(declare -i count=0;\
 [[ $fingerprints == 0 ]] \
   && echo "No fingerprints." \
   || fail "Fingerprints stored!"
+
+# Check if configured for iCloud
+if grep -i account /Users/*/Library/Preferences/MobileMeAccounts.plist \
+    2>/dev/null; then
+  fail "iCloud is configured"
+fi
+icloud_status=$(brctl status 2>&1)
+if [[ $icloud_status == *"iCloud Drive is not configured"* \
+   || $icloud_status == *"com.apple.bird was invalidated"* ]]; then
+  echo "iCloud is disabled: $icloud_status"
+fi
 
 function checksum() {
   sum=$(shasum -a 256 "$1" 2>/dev/null || openssl dgst -sha256 "$1" 2>/dev/null)
