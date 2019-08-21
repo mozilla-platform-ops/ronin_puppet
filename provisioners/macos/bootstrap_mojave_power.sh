@@ -4,40 +4,37 @@ PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet
 PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
 PUPPET_ROLE=${PUPPET_ROLE:-"bitbar_mbp"}
 
+git_version="2.21.0"
+puppet_version="6.3.0-1"
+
+
+declare -i screenshotcounter=0
+function screenshot() {
+  filename=/tmp/screenshot_bootstrap_${screenshotcounter}_$(date +"%Y-%m-%d-%H:%M:%S").jpg
+  screencapture -x $filename
+  chmod ugo+r $filename
+  screenshotcounter+=1
+}
+
 function fail {
     echo "${@}"
     date
     echo "[sleep 120 ...]"
+    screenshot
     sleep 120
     exit 1
 }
 
+
+# Check base system state
 host=$(scutil --get ComputerName)
 echo $host
 
-echo $PUPPET_ROLE > /etc/puppet_role
-cat /etc/puppet_role
-
-declare -i screenshotcounter=0
-function screenshot() {
-  filename=~relops/screenshot_bootstrap_${screenshotcounter}_$(date +"%Y-%m-%d-%H:%M:%S").jpg
-  screencapture -x $filename
-  chown relops $filename
-  chmod ugo+r $filename
-  screenshotcounter+=1
-}
-screenshot
-
 ioreg -l | grep IOPlatformSerialNumber
 
-if csrutil status | grep -q "enabled"; then
-   fail "SIP is enabled!"
-fi
+ifconfig | grep -v "127.0.0.1\|169." | grep -C4 "inet [0-9]\+\.[0-9]\+"
 
-ifconfig|grep -v "127.0.0.1\|169."|grep -C4 "inet [0-9]\+\.[0-9]\+"
-
-# Enable ssh
-sudo systemsetup -setremotelogin on
+/usr/sbin/nvram -p
 
 # Print config
 sudo systemsetup $(sudo systemsetup -help | grep -o '\-get[^ ]*')
@@ -49,14 +46,22 @@ sudo systemsetup \
     -setallowpowerbuttontosleepcomputer off \
     -setrestartfreeze on
 
-# Print NVRAM
-/usr/sbin/nvram -p
+# Enable ssh
+sudo systemsetup -setremotelogin on
+
+# SIP check
+# ensure ssh and no power-savings before failing on this
+if csrutil status | grep -q "enabled"; then
+   fail "SIP is enabled!"
+fi
+
+# Check for find-my-mac
 fmm-computer-name=$(nvram fmm-computer-name | cut -d\  -f2)
 fmm-mobileme-token-FMM=$(nvram fmm-mobileme-token-FMM | cut -d\  -f2)
 if [[ -n "${fmm-computer-name}" ]]; then
-    echo "Find-my-mac is enabled!?"
     echo "fmm-computer-name= ${fmm-computer-name}"
     echo "fmm-mobileme-token-FMM= ${fmm-mobileme-token-FMM}"
+    echo "Find-my-mac is enabled!?"
 fi
 
 # Ensure no fingerprints are stored for login
@@ -67,16 +72,10 @@ fingerprints=$(declare -i count=0;\
   && echo "No fingerprints." \
   || fail "Fingerprints stored!"
 
-# Check if configured for iCloud
-if grep -i account /Users/*/Library/Preferences/MobileMeAccounts.plist \
-    2>/dev/null; then
-  fail "iCloud is configured"
-fi
-icloud_status=$(brctl status 2>&1)
-if [[ $icloud_status == *"iCloud Drive is not configured"* \
-   || $icloud_status == *"com.apple.bird was invalidated"* ]]; then
-  echo "iCloud is disabled: $icloud_status"
-fi
+screenshot
+
+
+# Install pre-reqs for puppet run
 
 function checksum() {
   sum=$(shasum -a 256 "$1" 2>/dev/null || openssl dgst -sha256 "$1" 2>/dev/null)
@@ -115,18 +114,54 @@ else
   echo "Xcode CLI tools OK"
 fi
 
-[[ "2.21.0" == $(git --version | cut -d\  -f3) ]] \
+[[ $git_version == $(git --version | cut -d\  -f3) ]] \
   && git --version \
-  || install "https://downloads.sourceforge.net/project/git-osx-installer/git-2.21.0-intel-universal-mavericks.dmg" \
+  || install "https://downloads.sourceforge.net/project/git-osx-installer/git-${git_version}-intel-universal-mavericks.dmg" \
     7a828be2ea16ad48797157769d29028f2d1c0040c87525467fd5addbb11a2cac \
     || fail "git install failed"
 
-[[ "6.3.0" == $(puppet --version) ]] \
+[[ "${puppet_version%%-*}" == $(puppet --version) ]] \
   && printf "puppet version %s\n" $(puppet --version) \
-  || install "https://downloads.puppetlabs.com/mac/puppet/10.14/x86_64/puppet-agent-6.3.0-1.osx10.14.dmg" \
+  || install "https://downloads.puppetlabs.com/mac/puppet/10.14/x86_64/puppet-agent-${puppet_version}.osx10.14.dmg" \
     b8ffdb76613adac062dea5be6ccfab8d310fd4c203396a28614f6c62f56f4deb \
     || fail "puppet install failed"
 
+screenshot
+
+
+# Run puppet
+
+PUPPET_FORK="${PUPPET_REPO%.git}"
+PUPPET_FORK="${PUPPET_FORK#*.com}"
+PUPPET_REPO_BUNDLE="https://raw.githubusercontent.com${PUPPET_FORK}/${PUPPET_BRANCH}/provisioners/macos/bootstrap_mojave.sh"
+curl -L -O "${PUPPET_REPO_BUNDLE}"
+
+echo $PUPPET_ROLE > /etc/puppet_role
+cat /etc/puppet_role
+
+export PUPPET_REPO
+export PUPPET_BRANCH
+sed -i.bak '/reboot/d' ./bootstrap_mojave.sh
+bash bootstrap_mojave.sh \
+  && echo Success \
+  || fail "Puppet failed!?"
+
+
+# Review setup/prompts
+defaults read com.apple.SetupAssistant
+
+# Check if configured for iCloud
+if grep -i account /Users/*/Library/Preferences/MobileMeAccounts.plist \
+    2>/dev/null; then
+  fail "iCloud is configured"
+fi
+icloud_status=$(brctl status 2>&1)
+if [[ $icloud_status == *"iCloud Drive is not configured"* \
+   || $icloud_status == *"com.apple.bird was invalidated"* ]]; then
+  echo "iCloud is disabled: $icloud_status"
+fi
+
+# Install Intel Power Gadget until managed by puppet
 checksum "/Applications/Intel Power Gadget/PowerLog" \
   9210e37554afc4449dcd3896aa6c9a884b20f0788e75ed2dcfae79f294b2d151 \
   || install "https://software.intel.com/sites/default/files/managed/34/fb/Intel%C2%AE%20Power%20Gadget.dmg" \
@@ -138,19 +173,5 @@ checksum "/Applications/Intel Power Gadget/PowerLog" \
     /Applications/Intel\ Power\ Gadget/PowerLog -resolution 1000 -file /dev/stdout -cmd "for I in {1..3}; do sleep 1; done"
   ) \
     || fail "intel power gadget install failed"
-
-screenshot
-
-PUPPET_FORK="${PUPPET_REPO%.git}"
-PUPPET_FORK="${PUPPET_FORK#*.com}"
-PUPPET_REPO_BUNDLE="https://raw.githubusercontent.com${PUPPET_FORK}/${PUPPET_BRANCH}/provisioners/macos/bootstrap_mojave.sh"
-curl -L -O "${PUPPET_REPO_BUNDLE}"
-
-export PUPPET_REPO
-export PUPPET_BRANCH
-sed -i.bak '/reboot/d' ./bootstrap_mojave.sh
-bash bootstrap_mojave.sh \
-  && echo Success \
-  || fail "Puppet failed!?"
 
 screenshot
