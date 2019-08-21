@@ -20,7 +20,7 @@ cat /etc/puppet_role
 
 declare -i screenshotcounter=0
 function screenshot() {
-  filename="~relops/screenshot_bootstrap_${screenshotcounter}_$(date +"%Y-%m-%d-%H:%M:%S").jpg"
+  filename=~relops/screenshot_bootstrap_${screenshotcounter}_$(date +"%Y-%m-%d-%H:%M:%S").jpg
   screencapture -x $filename
   chown relops $filename
   chmod ugo+r $filename
