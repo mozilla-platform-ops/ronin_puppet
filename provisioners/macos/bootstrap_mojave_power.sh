@@ -134,7 +134,7 @@ screenshot
 PUPPET_FORK="${PUPPET_REPO%.git}"
 PUPPET_FORK="${PUPPET_FORK#*.com}"
 PUPPET_REPO_BUNDLE="https://raw.githubusercontent.com${PUPPET_FORK}/${PUPPET_BRANCH}/provisioners/macos/bootstrap_mojave.sh"
-curl -L -O "${PUPPET_REPO_BUNDLE}"
+curl --silent -L -O "${PUPPET_REPO_BUNDLE}"
 
 echo $PUPPET_ROLE > /etc/puppet_role
 cat /etc/puppet_role
