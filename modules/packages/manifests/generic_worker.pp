@@ -37,7 +37,7 @@ class packages::generic_worker (
         checksum            => $quarantine_worker_sha256,
     }
 
-    packages::macos_package_from_s3 { "livelog-darwin-amd64-${quarantine_worker_version}":
+    packages::macos_package_from_s3 { "livelog-darwin-amd64-${livelog_version}":
         private             => false,
         os_version_specific => true,
         type                => 'bin',
