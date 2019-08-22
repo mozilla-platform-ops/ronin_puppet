@@ -22,6 +22,15 @@
     <string>/var/log/genericworker/stderr.log</string>
     <key>RunAtLoad</key>
     <true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>PathState</key>
+        <dict>
+            <!-- start if this file exists (the name is a legacy from buildbot days) -->
+            <key>/var/tmp/semaphore/run-buildbot</key>
+            <true/>
+        </dict>
+    </dict>
     <key>UserName</key>
     <string>root</string>
 </dict>
