@@ -1,0 +1,28 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+####  This file under configuration management control
+####  DO NOT EDIT MANUALLY
+
+<%- if @operatingsystem == 'Ubuntu' -%>
+pid_file=/var/run/nagios/nrpe.pid
+<%- else -%>
+pid_file=/var/run/nrpe.pid
+<%- end -%>
+server_port=5666
+nrpe_user=nagios
+nrpe_group=nagios
+allowed_hosts=<%= scope.lookupvar('::config::nrpe_allowed_hosts') %>
+dont_blame_nrpe=1
+include_dir=/etc/nagios/nrpe.d
+command_timeout=60
+
+# basic, common checks
+command[check_load]=<%=@plugins_dir%>/check_load -w $ARG1$ -c $ARG2$
+command[check_users]=<%=@plugins_dir%>/check_users -w $ARG1$ -c $ARG2$
+command[check_disk]=<%=@plugins_dir%>/check_disk -w $ARG1$ -c $ARG2$ -p $ARG3$
+command[check_inodes]=<%=@plugins_dir%>/check_disk -W $ARG1$ -C $ARG2$ -p $ARG3$
+command[check_procs]=<%=@plugins_dir%>/check_procs -w $ARG1$ -c $ARG2$ -s $ARG3$
+command[check_procs_age]=<%=@plugins_dir%>/check_procs -m ELAPSED -a $ARG1$ -c $ARG2$
+command[check_file_age]=<%=@plugins_dir%>/check_file_age $ARG1$
