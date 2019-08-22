@@ -31,6 +31,7 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2 {
                 downloads_dir                  => "${facts['custom_win_systemdrive']}\\downloads",
                 livelogputport                 => 60022,
                 current_gw_version             => $current_gw_version,
+                gw_service_status              => $facts['custom_win_genericworker_service'],
                 needed_gw_version              => $needed_gw_version,
                 generic_worker_config          => $generic_worker_config,
                 generic_worker_exe             => $generic_worker_exe,
