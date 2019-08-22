@@ -148,8 +148,8 @@ bash bootstrap_mojave.sh \
   || fail "Puppet failed!?"
 
 
-# Review setup/prompts
-defaults read com.apple.SetupAssistant
+# Review setup/prompts for test-runner user
+sudo -u cltbld defaults read com.apple.SetupAssistant
 
 # Check if configured for iCloud
 if grep -i account /Users/*/Library/Preferences/MobileMeAccounts.plist \
