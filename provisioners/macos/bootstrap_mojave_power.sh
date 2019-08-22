@@ -57,8 +57,8 @@ if csrutil status | grep -q "enabled"; then
 fi
 
 # Check for find-my-mac
-fmm-computer-name=$(nvram fmm-computer-name 2>/dev/null | cut -d\  -f2)
-fmm-mobileme-token-FMM=$(nvram fmm-mobileme-token-FMM 2>/dev/null | cut -d\  -f2)
+fmm-computer-name=$(nvram fmm-computer-name 2>/dev/null | cut -d$'\t' -f2)
+fmm-mobileme-token-FMM=$(nvram fmm-mobileme-token-FMM 2>/dev/null | cut -d$'\t' -f2)
 if [[ -n "${fmm-mobileme-token-FMM}" ]]; then
     echo "fmm-computer-name= ${fmm-computer-name}"
     echo "fmm-mobileme-token-FMM= ${fmm-mobileme-token-FMM}"
