@@ -9,8 +9,9 @@ puppet_version="6.3.0-1"
 
 
 declare -i screenshotcounter=0
+screenshot_filename_base=/tmp/screenshot_bootstrap_$(date +"%Y-%m-%d-%H:%M:%S")
 function screenshot() {
-  filename=/tmp/screenshot_bootstrap_${screenshotcounter}_$(date +"%Y-%m-%d-%H:%M:%S").jpg
+  filename="${screenshot_filename_base}_${screenshotcounter}_$(date +"%H:%M:%S").jpg"
   screencapture -x $filename
   chmod ugo+r $filename
   screenshotcounter+=1
@@ -56,12 +57,12 @@ if csrutil status | grep -q "enabled"; then
 fi
 
 # Check for find-my-mac
-fmm-computer-name=$(nvram fmm-computer-name | cut -d\  -f2)
-fmm-mobileme-token-FMM=$(nvram fmm-mobileme-token-FMM | cut -d\  -f2)
-if [[ -n "${fmm-computer-name}" ]]; then
+fmm-computer-name=$(nvram fmm-computer-name 2>/dev/null | cut -d\  -f2)
+fmm-mobileme-token-FMM=$(nvram fmm-mobileme-token-FMM 2>/dev/null | cut -d\  -f2)
+if [[ -n "${fmm-mobileme-token-FMM}" ]]; then
     echo "fmm-computer-name= ${fmm-computer-name}"
     echo "fmm-mobileme-token-FMM= ${fmm-mobileme-token-FMM}"
-    echo "Find-my-mac is enabled!?"
+    fail "Find-my-mac is enabled!?"
 fi
 
 # Ensure no fingerprints are stored for login
