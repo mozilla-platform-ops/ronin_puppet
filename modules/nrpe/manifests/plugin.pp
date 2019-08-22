@@ -36,6 +36,8 @@ define nrpe::plugin {
                     content => template("nrpe/${script_name}.erb")
                 }
             }
+            default: {
+            }
         }
     }
 }
