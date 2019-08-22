@@ -9,9 +9,11 @@ class packages::generic_worker (
     String                      $taskcluster_proxy_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
     String                      $quarantine_worker_sha256,
+    Pattern[/^v\d+\.\d+\.\d+$/] $livelog_version,
+    String                      $livelog_sha256,
 ) {
 
-    packages::macos_package_from_s3 { "generic-worker-darwin-amd64-${generic_worker_version}":
+    packages::macos_package_from_s3 { "generic-worker-multiuser-darwin-amd64-${generic_worker_version}":
         private             => false,
         os_version_specific => true,
         type                => 'bin',
@@ -33,5 +35,13 @@ class packages::generic_worker (
         type                => 'bin',
         file_destination    => '/usr/local/bin/quarantine-worker',
         checksum            => $quarantine_worker_sha256,
+    }
+
+    packages::macos_package_from_s3 { "livelog-darwin-amd64-${livelog_version}":
+        private             => false,
+        os_version_specific => true,
+        type                => 'bin',
+        file_destination    => '/usr/local/bin/livelog',
+        checksum            => $livelog_sha256,
     }
 }

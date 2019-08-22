@@ -4,6 +4,7 @@ create_bug_self_failure() {
     BUGZILLA_API_KEY="<%= @bugzilla_api_key %>"
     logfile="<%= @log_file %>"
     product="Infrastructure & Operations"
+    type="defect"
     component="CIDuty"
     # Store the json into the file
     json_file="<%= @user_homedir  %>/bug.json"
