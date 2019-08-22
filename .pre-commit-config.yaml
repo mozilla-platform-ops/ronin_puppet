@@ -21,7 +21,7 @@ repos:
     - --fix
     - --fail-on-warnings
 
-#- repo: https://github.com/jumanjihouse/pre-commit-hooks
-#  rev: 1.11.0
-#  hooks:
-#    - id: shellcheck
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 1.11.0
+  hooks:
+    - id: shellcheck
