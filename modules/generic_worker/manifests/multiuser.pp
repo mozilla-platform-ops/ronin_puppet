@@ -13,7 +13,7 @@ class generic_worker::multiuser (
     String $bugzilla_api_key,
     String $user,
     String $user_homedir,
-    String $taskdir,
+    String $task_dir,
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
     String $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
