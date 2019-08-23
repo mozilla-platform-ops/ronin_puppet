@@ -155,12 +155,12 @@ bash bootstrap_mojave.sh \
 sudo -u cltbld defaults read com.apple.SetupAssistant
 
 # Power savings stayed off?
-if ! $(sudo systemsetup -getsleep | grep Computer | grep Never); then
+if ! (sudo systemsetup -getsleep | grep Computer | grep Never); then
   fail "Power saving need to be turned off."
 fi
 
 # Software updates are turned off?
-if ! $(sudo softwareupdate --schedule | grep 'Automatic check is off'); then
+if ! (sudo softwareupdate --schedule | grep 'Automatic check is off'); then
   fail "Software updates are turned on."
 fi
 
