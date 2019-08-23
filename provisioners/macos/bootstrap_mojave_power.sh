@@ -4,6 +4,7 @@ PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet
 PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
 PUPPET_ROLE=${PUPPET_ROLE:-"bitbar_mbp"}
 
+macos_version="10.14.6"
 git_version="2.21.0"
 puppet_version="6.3.0-1"
 
@@ -34,6 +35,8 @@ echo $host
 ioreg -l | grep IOPlatformSerialNumber
 
 ifconfig | grep -v "127.0.0.1\|169." | grep -C4 "inet [0-9]\+\.[0-9]\+"
+
+sw_vers
 
 /usr/sbin/nvram -p
 
@@ -151,6 +154,16 @@ bash bootstrap_mojave.sh \
 # Review setup/prompts for test-runner user
 sudo -u cltbld defaults read com.apple.SetupAssistant
 
+# Power savings stayed off?
+if ! $(sudo systemsetup -getsleep | grep Computer | grep Never); then
+  fail "Power saving need to be turned off."
+fi
+
+# Software updates are turned off?
+if ! $(sudo softwareupdate --schedule | grep 'Automatic check is off'); then
+  fail "Software updates are turned on."
+fi
+
 # Check if configured for iCloud
 if grep -i account /Users/*/Library/Preferences/MobileMeAccounts.plist \
     2>/dev/null; then
@@ -176,3 +189,8 @@ checksum "/Applications/Intel Power Gadget/PowerLog" \
     || fail "intel power gadget install failed"
 
 screenshot
+
+if [[ $(sw_vers -productVersion) != "${macos_version}" ]]; then
+  fail "Please upgrade to MacOS ${macos_version}."
+  echo "https://updates.cdn-apple.com/2019/macos/041-94408-20190801-a9bffb44-63dd-4972-ac53-a76ee3d7924d/macOSUpd10.14.6.dmg"
+fi
