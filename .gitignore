@@ -10,6 +10,9 @@
 *.swp
 *.swo
 
+# editors
+.vscode/
+
 # Do not include secrets
 /data/secrets/*
 

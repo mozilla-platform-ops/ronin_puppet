@@ -9,6 +9,7 @@ class win_generic_worker (
     Integer $livelogputport,
     String $livelog_exe_source,
     String $taskcluster_proxy_exe_source,
+    String $gw_service_status,
     String $generic_worker_exe_source,
     String $generic_worker_exe,
     String $current_gw_version,
