@@ -12,7 +12,8 @@ class win_packages::chrome {
                         "${chrome_key}\\SafeBrowsingExtendedReportingEnabled",
                         "${chrome_key}\\ChromeCleanupReportingEnabled"
                         ]
-
+    # Pulling directly from source to ensure latest release
+    # Existing installs will update automaticly
     file { $installer_path:
         source => "https://dl.google.com/tag/s/dl/chrome/install/${installer}",
     }
@@ -21,7 +22,12 @@ class win_packages::chrome {
         source  => $installer_path,
         require => File[$installer_path],
     }
-
+    registry_key { 'HKLM\System\SOFTWARE\Policies\Google':
+        ensure => present,
+    }
+    registry_key { $chrome_key:
+        ensure => present,
+    }
     # disable reporting back to google
     registry_value { '$chrome_reg_value':
         ensure => present,
