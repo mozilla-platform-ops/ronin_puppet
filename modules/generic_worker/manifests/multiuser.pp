@@ -13,6 +13,7 @@ class generic_worker::multiuser (
     String $bugzilla_api_key,
     String $user,
     String $user_homedir,
+    String $taskdir,
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
     String $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
@@ -44,7 +45,6 @@ class generic_worker::multiuser (
 
     $livelog_certificate = "${user_homedir}/livelog.crt"
     $livelog_key         = "${user_homedir}/livelog.key"
-    $task_dir            = "${user_homedir}/tasks"
     $caches_dir          = "${user_homedir}/caches"
     $downloads_dir       = "${user_homedir}/downloads"
     $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
