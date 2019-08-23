@@ -29,7 +29,7 @@ class win_packages::chrome {
         ensure => present,
     }
     # disable reporting back to google
-    registry_value { '$chrome_reg_value':
+    registry_value { $chrome_reg_value:
         ensure => present,
         type   => dword,
         data   => '0'
