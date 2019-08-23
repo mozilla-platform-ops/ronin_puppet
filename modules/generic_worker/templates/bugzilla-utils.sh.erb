@@ -5,7 +5,7 @@ create_bug_self_failure() {
     logfile="<%= @log_file %>"
     product="Infrastructure & Operations"
     type="defect"
-    component="CIDuty"
+    component="RelOps: Hardware"
     # Store the json into the file
     json_file="<%= @user_homedir  %>/bug.json"
     # Store the id of the bug into the file, for future use
@@ -26,6 +26,7 @@ create_bug_self_failure() {
     {
        "api_key": "$BUGZILLA_API_KEY",
        "product" : "$product",
+       "type" : "$type",
        "component" : "$component",
        "version" : "unspecified",
        "summary" : "$summary",
