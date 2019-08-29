@@ -11,6 +11,7 @@ class bitbar_devicepool {
   include ::bitbar_devicepool::base
   # install the devicepool app
   include ::bitbar_devicepool::devicepool
+  include ::bitbar_devicepool::telegraf
   # place android-tools repo
   include ::bitbar_devicepool::android_tools
   # install other utilities
