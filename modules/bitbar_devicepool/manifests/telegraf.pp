@@ -17,13 +17,13 @@ class bitbar_devicepool::telegraf {
       'id'     => '05CE15085FC09D18E99EFB22684A14CF2582E0C5',
       'source' => "${telegraf_repo_location}influxdb.key",
     },
-    notify   => Exec['apt_update']
+    before   => Exec['apt_update']
   }
 
   $desired_packages = ['telegraf']
   ensure_packages($desired_packages,{
     'ensure' => 'present',
-    subscribe => Exec['apt_update'],
+    require => Exec['apt_update'],
   })
 
   # TODO: place config
