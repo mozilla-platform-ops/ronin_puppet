@@ -27,7 +27,12 @@ class bitbar_devicepool::telegraf {
   })
 
   # TODO: place config
+  file { '/etc/telegraf/telegraf.conf':
+    ensure  => file,
+    source  => 'puppet:///modules/bitbar_devicepool/telegraf.conf',
+  }
 
   # TOOD: restart service if config changed
+  # - hmm, but we need to sed the config file before it's correct...
 
 }
