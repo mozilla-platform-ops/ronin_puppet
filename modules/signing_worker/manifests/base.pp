@@ -22,7 +22,7 @@ class signing_worker::base {
     $scriptworker_config_file = "${signing_worker::scriptworker_base}/scriptworker.yaml"
     $script_config_file = "${signing_worker::scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper = "${signing_worker::scriptworker_base}/scriptworker_wrapper.sh"
-
+    $widevine_clone_dir = "${signing_worker::scriptworker_base}/widevine"
     # Dep workers have a non-deterministic suffix
     $worker_id = "${::hostname}${signing_worker::worker_id_suffix}"
 
@@ -34,13 +34,26 @@ class signing_worker::base {
     }
 
     # Load hash of all the template variables
-    $signingworker_config = lookup("signingworker_config.${role}", Hash, undef, undef)
+    $worker_config = lookup("signingworker_config.${role}", Hash, undef, undef)
     $role_config = lookup("signingworker_roles.${role}", Hash, undef, undef)
 
+    # For cloning the widevine repository
+    $widevine_user = lookup('widevine_config.user')
+    $widevine_key = lookup('widevine_config.key')
+
     file { $tmp_requirements:
-        source => 'puppet:///modules/signing_worker/requirements.txt',
+        content => template('signing_worker/requirements.txt.erb'),
     }
 
+    vcsrepo { $widevine_clone_dir:
+      ensure   => present,
+      provider => git,
+      source   => "https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine",
+    }
+    ->file { 'Remove credentials from widevine clone':
+      ensure => absent,
+      path   => "${widevine_clone_dir}/.git/config",
+    }
 
     contain packages::virtualenv_python3_s3
     python::virtualenv { "signingworker_${signing_worker::user}" :
@@ -54,7 +67,6 @@ class signing_worker::base {
         timeout         => 0,
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
     }
-
 
     case $::hostname {
         /^dep-mac-v3-signing\d+/: {
