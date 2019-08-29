@@ -36,6 +36,7 @@ class bitbar_devicepool::telegraf {
     ensure  => file,
     replace => false,
     source  => 'puppet:///modules/bitbar_devicepool/telegraf.conf',
+    require => Package['telegraf'],
   }
 
   # TOOD: restart service if config changed
