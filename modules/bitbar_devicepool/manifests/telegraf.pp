@@ -27,8 +27,9 @@ class bitbar_devicepool::telegraf {
   })
 
   # TODO: place config
-  file { '/etc/telegraf/telegraf.conf':
+  file { '/etc/telegraf/telegraf.d/devicepool.conf':
     ensure  => file,
+    replace => false,
     source  => 'puppet:///modules/bitbar_devicepool/telegraf.conf',
   }
 
