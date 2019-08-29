@@ -4,6 +4,8 @@
 
 class bitbar_devicepool {
 
+  include apt
+
   # helpers
   include ::bitbar_devicepool::systemd_reload
 
