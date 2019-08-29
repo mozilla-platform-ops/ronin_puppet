@@ -28,8 +28,8 @@ class bitbar_devicepool::telegraf {
 
   # place configs
   file { '/etc/telegraf/telegraf.conf':
-    ensure  => file,
-    source  => 'puppet:///modules/bitbar_devicepool/empty_telegraf.conf',
+    ensure => file,
+    source => 'puppet:///modules/bitbar_devicepool/empty_telegraf.conf',
   }
   # don't replace this file as we're going to do sed later in bootstrap
   file { '/etc/telegraf/telegraf.d/devicepool.conf':
