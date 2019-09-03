@@ -4,7 +4,6 @@
 class nrpe::base {
     include nrpe::settings
     include nrpe::service
-    include config # for vars for templates
 
     $plugins_dir = $nrpe::settings::plugins_dir
     $nrpe_etcdir = $nrpe::settings::nrpe_etcdir
@@ -16,19 +15,19 @@ class nrpe::base {
             file {
                 $nrpe_etcdir:
                     ensure  => directory,
-                    owner   => $::users::root::username,
-                    group   => $::users::root::group,
+                    owner   => $::root_user,
+                    group   => $::root_group,
                     require => Class['packages::nrpe'];
                 "${nrpe_etcdir}/nrpe.cfg":
                     content => template('nrpe/nrpe.cfg.erb'),
-                    owner   => $::users::root::username,
-                    group   => $::users::root::group,
+                    owner   => $::root_user,
+                    group   => $::root_group,
                     require => Class['packages::nrpe'],
                     notify  => Class['nrpe::service'];
                 "${nrpe_etcdir}/nrpe.d":
                     ensure  => directory,
-                    owner   => $::users::root::username,
-                    group   => $::users::root::group,
+                    owner   => $::root_user,
+                    group   => $::root_group,
                     recurse => true,
                     purge   => true,
                     require => Class['packages::nrpe'],

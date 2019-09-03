@@ -11,8 +11,8 @@ define nrpe::check($cfg=undef, $nsclient_cfg=undef) {
         Darwin: {
             file {
                 "${nrpe::settings::nrpe_etcdir}/nrpe.d/${title}.cfg":
-                    owner   => $::users::root::username,
-                    group   => $::users::root::group,
+                    owner   => $::root_user,
+                    group   => $::root_group,
                     notify  => Class['nrpe::service'],
                     content => "command[${title}]=${cfg}\n";
             }
