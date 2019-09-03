@@ -96,9 +96,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
                     target  => '/usr/local/bin/python3',
                     require => Class['packages::python3'],
             }
+            # non-talos tests expect this dir link
             file { '/tools/python37':
                     ensure  => 'link',
-                    target  => '/usr/local/bin/python3.7',
+                    target  => '/usr/local/',
                     require => Class['packages::python3'],
             }
 
