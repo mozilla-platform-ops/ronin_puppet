@@ -96,6 +96,11 @@ class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
                     target  => '/usr/local/bin/python3',
                     require => Class['packages::python3'],
             }
+            file { '/tools/python37':
+                    ensure  => 'link',
+                    target  => '/usr/local/bin/python3.7',
+                    require => Class['packages::python3'],
+            }
 
             contain packages::virtualenv
 
