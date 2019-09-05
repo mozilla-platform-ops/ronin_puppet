@@ -27,12 +27,6 @@ class roles_profiles::profiles::cltbld_user {
                 require => User['cltbld'],
             }
 
-            # Set user to autologin
-            class { 'macos_utils::autologin_user':
-                user       => 'cltbld',
-                kcpassword => $kcpassword,
-            }
-
             # Enable DevToolsSecurity
             include macos_utils::enable_dev_tools_security
 

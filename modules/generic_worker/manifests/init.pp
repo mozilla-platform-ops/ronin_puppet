@@ -69,6 +69,12 @@ class generic_worker (
 
             $reboot_command = '/usr/bin/sudo /sbin/reboot'
 
+            # Set user to autologin
+            class { 'macos_utils::autologin_user':
+                user       => 'cltbld',
+                kcpassword => $kcpassword,
+            }
+
             file {
                 '/Library/LaunchAgents/net.generic.worker.plist':
                     ensure  => present,
