@@ -9,7 +9,7 @@ class roles_profiles::profiles::cltbld_user {
             $password     = lookup('cltbld_user.password')
             $salt         = lookup('cltbld_user.salt')
             $iterations   = lookup('cltbld_user.iterations')
-            $kcpassword   = lookup('cltbld_user.kcpassword')
+
 
             # Create the cltbld user
             users::single_user { 'cltbld':

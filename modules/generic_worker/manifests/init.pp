@@ -38,6 +38,7 @@ class generic_worker (
         bugzilla_api_key => $bugzilla_api_key,
     }
 
+    $kcpassword          = lookup('cltbld_user.kcpassword')
     $livelog_certificate = "${user_homedir}/livelog.crt"
     $livelog_key         = "${user_homedir}/livelog.key"
     $task_dir            = "${user_homedir}/tasks"
