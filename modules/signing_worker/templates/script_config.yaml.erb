@@ -21,7 +21,7 @@ mac_config:
 <% @role_config.each do |role, role_data| -%>
     <%= role %>:
         notarize_type: multi_account
-        signing_keychain: "<%= @certs_dir %>/nightly-signing.keychain"
+        signing_keychain: "<%= @certs_dir %>/<%= role %>-signing.keychain"
         supported_behaviors:
             - mac_sign
             - mac_sign_and_pkg

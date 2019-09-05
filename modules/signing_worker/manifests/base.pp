@@ -87,12 +87,12 @@ class signing_worker::base {
                 group   => $signing_worker::group,
                 content => base64('decode', lookup('signing_keys.widevine_prod_crt')),
             }
-            file { "${certs_dir}/nightly_signing.keychain":
+            file { "${certs_dir}/nightly-signing.keychain":
                 owner   => $signing_worker::user,
                 group   => $signing_worker::group,
                 content => base64('decode', lookup('signing_keys.nightly_signing_keychain')),
             }
-            file { "${certs_dir}/release_signing.keychain":
+            file { "${certs_dir}/release-signing.keychain":
                 owner   => $signing_worker::user,
                 group   => $signing_worker::group,
                 content => base64('decode', lookup('signing_keys.release_signing_keychain')),
