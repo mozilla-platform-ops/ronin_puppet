@@ -10,8 +10,10 @@
     <string><%= scope['signing_worker::user'] %></string>
     <key>GroupName</key>
     <string><%= scope['signing_worker::group'] %></string>
-	<key>Program</key>
-	<string><%= @scriptworker_wrapper %></string>
+    <key>SessionCreate</key>
+    <true/>
+    <key>Program</key>
+    <string><%= @scriptworker_wrapper %></string>
 </dict>
 </plist>
 
