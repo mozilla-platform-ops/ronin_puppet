@@ -8,6 +8,8 @@ class roles_profiles::profiles::chrome {
         'Windows': {
             include win_packages::chrome
         }
+        # Bug  list
+        # https://bugzilla.mozilla.org/show_bug.cgi?id=1570767
         default: {
             fail("${::operatingsystem} not supported")
         }
