@@ -4,24 +4,19 @@
 
 class win_packages::chrome {
 
-    $installer        = 'googlechromestandaloneenterprise64.msi'
-    $installer_path   = "${facts['custom_win_temp_dir']}\\${installer}"
     $chrome_key       = "HKLM\\SOFTWARE\\Policies\\Google\\Chrome"
     $chrome_reg_value = [
                         "${chrome_key}\\MetricsReportingEnabled",
                         "${chrome_key}\\SafeBrowsingExtendedReportingEnabled",
                         "${chrome_key}\\ChromeCleanupReportingEnabled"
                         ]
-    # Pulling directly from source to ensure latest release
+    # This will install and update
+    # Ref: https://bugzilla.mozilla.org/show_bug.cgi?id=1570767#c6
     # Existing installs will update automaticly
-    file { $installer_path:
-        source => "https://dl.google.com/tag/s/dl/chrome/install/${installer}",
+    win_packages::win_msi_pkg { 'Google Chrome':
+        pkg             => 'googlechromestandaloneenterprise64.msi',
     }
-    package { 'Google Chrome':
-        ensure  => installed,
-        source  => $installer_path,
-        require => File[$installer_path],
-    }
+
     registry_key { 'HKLM\System\SOFTWARE\Policies\Google':
         ensure => present,
     }
