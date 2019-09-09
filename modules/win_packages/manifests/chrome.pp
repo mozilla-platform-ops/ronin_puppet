@@ -17,7 +17,7 @@ class win_packages::chrome {
     file { $installer_path:
         source => "https://dl.google.com/tag/s/dl/chrome/install/${installer}",
     }
-    package { 'chrome':
+    package { 'Google Chrome':
         ensure  => installed,
         source  => $installer_path,
         require => File[$installer_path],
