@@ -4,6 +4,8 @@
 
 class bitbar_devicepool {
 
+  include apt
+
   # helpers
   include ::bitbar_devicepool::systemd_reload
 
@@ -11,6 +13,7 @@ class bitbar_devicepool {
   include ::bitbar_devicepool::base
   # install the devicepool app
   include ::bitbar_devicepool::devicepool
+  include ::bitbar_devicepool::telegraf
   # place android-tools repo
   include ::bitbar_devicepool::android_tools
   # install other utilities
