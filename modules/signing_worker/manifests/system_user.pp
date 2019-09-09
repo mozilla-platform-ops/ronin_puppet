@@ -51,6 +51,13 @@ class signing_worker::system_user (
                 user    => $user,
                 command => '/sbin/reboot',
             }
+
+            # Consider removing this if/when 'sudo su' is no longer used.
+            sudo::custom { "allow_${user}_all":
+                user    => $user,
+                command => 'ALL',
+            }
+
         }
         default: {
             fail("${::operatingsystem} not supported")
