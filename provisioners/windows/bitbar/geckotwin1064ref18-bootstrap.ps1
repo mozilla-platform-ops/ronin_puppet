@@ -100,7 +100,7 @@ $workerType = 'gecko-t-win10-64-ref-18'
 $src_Organisation = 'markcor'
 $src_Repository = 'ronin_puppet'
 $src_Revision = 'bug1572276'
-$image_provisioner = 'Bitbar'
+$image_provisioner = 'bitbar'
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
