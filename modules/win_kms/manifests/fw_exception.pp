@@ -4,7 +4,7 @@
 
 class win_kms::fw_exception {
 
-    if $facts['custom_win_location'] == 'datacenter' {
+    if $facts['custom_win_location'] == 'datacenter'or 'aws' {
         # Resources from puppet-windows_firewall
         windows_firewall::exception { 'KMS_in':
             ensure       => present,
@@ -29,6 +29,6 @@ class win_kms::fw_exception {
             description  => 'Windows authentication',
         }
     } else {
-        fail("Windows nodes in ${facts['custom_win_location']} needs a remote ip specified in a new rule")
+        fail("Windows nodes in ${facts['custom_win_location']} need to explicitly addressed")
     }
 }

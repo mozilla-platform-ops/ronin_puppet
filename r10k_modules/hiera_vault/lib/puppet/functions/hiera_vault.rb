@@ -88,12 +88,10 @@ Puppet::Functions.create_function(:hiera_vault) do
     begin
       $vault.configure do |config|
         config.address = options['address'] unless options['address'].nil?
-        unless options['token'].nil?
-          if options['token'].start_with?('/') and File.exist?(options['token'])
-            config.token = File.read(options['token']).strip.chomp
-          else
-            config.token = options['token']
-          end
+        if options['token'].start_with?('/') and File.exist?(options['token'])
+          config.token = File.read(options['token']).strip.chomp
+        else
+          config.token = options['token']
         end
         config.ssl_pem_file = options['ssl_pem_file'] unless options['ssl_pem_file'].nil?
         config.ssl_verify = options['ssl_verify'] unless options['ssl_verify'].nil?
@@ -121,21 +119,21 @@ Puppet::Functions.create_function(:hiera_vault) do
       kv_mounts = options['mounts'].dup
     end
 
-    context.explain { "[hiera-vault] kv_mounts #{kv_mounts}" }
     # Only kv mounts supported so far
-    kv_mounts.each do |mount, paths|
-      paths.each do |p|
-        # Default to kv v1
-        path = context.interpolate(File.join(mount, p, key))
+    kv_mounts.each_pair do |mount, paths|
+      paths.each do |path|
 
-        context.explain { "[hiera-vault] Looking in path #{path}" }
+        # Default to kv v1
+        secretpath = context.interpolate(File.join(mount, path, key))
+
+        context.explain { "[hiera-vault] Looking in path #{secretpath}" }
 
         begin
-          secret = $vault.logical.read(path)
+          secret = $vault.logical.read(secretpath)
         rescue Vault::HTTPConnectionError
-          context.explain { "[hiera-vault] Could not connect to read secret: #{path}" }
+          context.explain { "[hiera-vault] Could not connect to read secret: #{secretpath}" }
         rescue Vault::HTTPError => e
-          context.explain { "[hiera-vault] Could not read secret #{path}: #{e.errors.join("\n").rstrip}" }
+          context.explain { "[hiera-vault] Could not read secret #{secretpath}: #{e.errors.join("\n").rstrip}" }
         end
 
         next if secret.nil?
@@ -162,11 +160,13 @@ Puppet::Functions.create_function(:hiera_vault) do
           new_answer = secret.data.inject({}) { |h, (k, v)| h[k.to_s] = stringify_keys v; h }
         end
 
-        if ! new_answer.nil?
+        unless new_answer.nil?
           answer = new_answer
           break
         end
       end
+
+      break unless answer.nil?
     end
 
     answer = context.not_found if answer.nil?
