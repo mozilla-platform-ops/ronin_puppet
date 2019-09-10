@@ -48,9 +48,9 @@ function Set-RoninRegOptions {
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
     [string] $workerType = 'gecko-t-win10-64-ht',
-    [string] $src_Organisation = 'mozilla-platform-ops',
+    [string] $src_Organisation = 'markcor',
     [string] $src_Repository = 'ronin_puppet',
-    [string] $src_Revision = 'master'
+    [string] $src_Revision = 'bug1570711'
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

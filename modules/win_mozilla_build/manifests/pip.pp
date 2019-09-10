@@ -6,6 +6,14 @@ class win_mozilla_build::pip {
 
     require win_mozilla_build::install
 
+    $needed_py3_pip_ver = $win_mozilla_build::needed_py3_pip_ver
+    $mozbld = $win_mozilla_build::install_path
+
+    if $win_mozilla_build::current_py3_pip_ver != $needed_py3_pip_ver {
+        exec { 'upgrade-py3_pip':
+            command => "${mozbld}\\python3\\python3.exe -m pip install --upgrade==${needed_py3_pip_ver}",
+        }
+    }
     file {"${win_mozilla_build::programdata}\\pip":
         ensure => directory,
     }

@@ -7,6 +7,8 @@ class win_mozilla_build (
     String $needed_mozbld_ver,
     String $current_hg_ver,
     String $needed_hg_ver,
+    String $current_py3_pip_ver,
+    String $needed_py3_pip_ver,
     String $install_path,
     String $system_drive,
     String $cache_drive,
