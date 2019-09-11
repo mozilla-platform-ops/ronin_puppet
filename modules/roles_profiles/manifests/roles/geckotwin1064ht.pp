@@ -28,4 +28,5 @@ class roles_profiles::roles::geckotwin1064ht {
     #include roles_profiles::profiles::windows_datacenter_generic_worker_14_1_2
     include roles_profiles::profiles::windows_datacenter_generic_worker_15_1_0
     include roles_profiles::profiles::microsoft_tools
+    include roles_profiles::profiles::google_chrome
 }
