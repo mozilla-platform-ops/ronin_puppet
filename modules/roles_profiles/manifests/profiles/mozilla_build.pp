@@ -15,7 +15,7 @@ class roles_profiles::profiles::mozilla_build {
         $install_path              = "${facts['custom_win_systemdrive']}\\mozilla-build"
         $current_py3_pip_ver       = $facts['custom_win_py3_pip_version']
         $needed_py3_pip_ver        = '19.2.1'
-        $current_py3_zstandard_ver = $facts['custom_win_zstandard_pip_version']
+        $current_py3_zstandard_ver = $facts['custom_win_py3_zstandard_version']
         $needed_py3_zstandard_ver  = '0.11.1'
         $system_drive              = $facts['custom_win_systemdrive']
         $cache_drive               = $facts['custom_win_location'] ? {
