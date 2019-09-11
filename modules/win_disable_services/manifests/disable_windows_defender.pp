@@ -50,7 +50,7 @@ class win_disable_services::disable_windows_defender {
         # and there start registry value needs to be changed and then the node needs rebooted
         # Also note this will fail on Windows 7
 
-        if $facts['custom_win_release_id'] == '1803' {
+        if $facts['custom_win_release_id'] == '1809' {
             registry_key {"${win_defend_key}\\Sense":
                 ensure => present,
             }
