@@ -8,7 +8,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
     $worker_type  = 'gecko-t-osx-1014-staging'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
-    $task_user    = inline_template("<%= `/usr/bin/defaults read '/Library/Preferences/com.apple.loginwindow' autoLoginUser` %>")
 
     case $::operatingsystem {
         'Darwin': {
@@ -31,7 +30,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             }
 
             class { 'talos':
-                user => "${task_user}",
+                user => 'cltbld',
             }
 
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
