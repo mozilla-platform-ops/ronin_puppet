@@ -51,7 +51,7 @@ class win_disable_services::disable_windows_defender {
         # Also note this will fail on Windows 7
 
         if $facts['custom_win_release_id'] == '1809' {
-            registry_key {"${win_defend_key}\\Sense":
+            registry_key {"${services_key}\\Sense":
                 ensure => present,
             }
         }
