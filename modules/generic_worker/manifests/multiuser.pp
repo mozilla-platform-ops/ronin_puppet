@@ -74,7 +74,7 @@ class generic_worker::multiuser (
 
                 '/usr/local/bin/run-generic-worker.sh':
                     ensure  => present,
-                    content => template('generic_worker/run-generic-worker.sh.erb'),
+                    content => template('generic_worker/run-generic-worker.sh.multiuser.erb'),
                     mode    => '0755',
                     owner   => $::root_user,
                     group   => $::root_group;
