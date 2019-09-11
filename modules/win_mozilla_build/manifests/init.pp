@@ -9,6 +9,8 @@ class win_mozilla_build (
     String $needed_hg_ver,
     String $current_py3_pip_ver,
     String $needed_py3_pip_ver,
+    String $current_py3_zstandard_ver,
+    String $needed_py3_zstandard_ver,
     String $install_path,
     String $system_drive,
     String $cache_drive,
@@ -31,6 +33,7 @@ class win_mozilla_build (
         include win_mozilla_build::virtualenv_support
         include win_mozilla_build::pip
         include win_mozilla_build::grant_symlnk_access
+        include win_mozilla_build::zstandard
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
