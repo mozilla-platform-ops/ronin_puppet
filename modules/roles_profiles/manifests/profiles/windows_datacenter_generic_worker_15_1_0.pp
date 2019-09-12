@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2 {
+class roles_profiles::profiles::windows_datacenter_generic_worker_15_1_0 {
 
     case $::operatingsystem {
         'Windows': {
@@ -19,7 +19,7 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2 {
             # Defining below  as variables because there may be
             # a need to add logic to determine which source or version is needed
             # dependent on OS or architecture.
-            $needed_gw_version         = '14.1.2'
+            $needed_gw_version         = '15.1.0'
             $needed_tc_proxy_version   = '5.1.0'
             $needed_livelog_version    = '1.1.0'
             # Requires win_packages::nssm
@@ -30,15 +30,15 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2 {
                 cache_dir                      => "${facts['custom_win_systemdrive']}\\cache",
                 downloads_dir                  => "${facts['custom_win_systemdrive']}\\downloads",
                 livelogputport                 => 60022,
-                current_gw_version             => $current_gw_version,
                 gw_service_status              => $facts['custom_win_genericworker_service'],
+                current_gw_version             => $current_gw_version,
                 needed_gw_version              => $needed_gw_version,
                 generic_worker_config          => $generic_worker_config,
                 generic_worker_exe             => $generic_worker_exe,
                 generic_worker_install_command =>
                     "${generic_worker_exe} install service --nssm ${nssm_command} --config ${generic_worker_config}",
                 run_generic_worker_command     => "${generic_worker_exe} run --config ${generic_worker_config}",
-                generic_worker_exe_source      => "${tc_pkg_source}/generic-worker-nativeEngine-windows-amd64-${needed_gw_version}.exe",
+                generic_worker_exe_source      => "${tc_pkg_source}/generic-worker-multiuser-windows-amd64-${needed_gw_version}.exe",
                 taskcluster_proxy_exe_source   => "${tc_pkg_source}/taskcluster-proxy-windows-amd64-${needed_tc_proxy_version}.exe",
                 livelog_exe_source             => "${tc_pkg_source}/livelog-windows-amd64-${needed_livelog_version}.exe",
 
@@ -56,17 +56,10 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2 {
             # These are specifically needed for the config file which Puppet only manages for hardware
             # Cloud instances will receive the config file during provisioning
             # Paths in the  config file need to have \\ hence the \\\\ below
-            if $facts['custom_win_gw_workertype'] == 'gecko-t-win10-64-ref-hw' {
-                $client_id = 'project/releng/generic-worker/vendor-gecko-t-win10-64-ref-hw/production'
-            } else {
-                $client_id = "project/releng/generic-worker/bitbar-${facts['custom_win_gw_workertype']}"
-            }
-
-
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
                 worker_type              => $facts['custom_win_gw_workertype'],
-                client_id                => $client_id,
+                client_id                => "project/releng/generic-worker/datacenter-${facts['custom_win_gw_workertype']}",
                 generic_worker_dir       => "${facts['custom_win_systemdrive']}\\\\generic-worker",
                 provisioner_id           => 'releng-hardware',
                 idle_timeout             => 7200,
