@@ -50,6 +50,8 @@ class win_disable_services::disable_windows_defender {
         # and there start registry value needs to be changed and then the node needs rebooted
         # Also note this will fail on Windows 7
 
+        # This will not be needed if if it is decide to revert the ref-18 laptops
+        # to 1703. See https://bugzilla.mozilla.org/show_bug.cgi?id=1572276
         if $facts['custom_win_release_id'] == '1809' {
             registry_key {"${services_key}\\Sense\\start":
                 ensure => present,
