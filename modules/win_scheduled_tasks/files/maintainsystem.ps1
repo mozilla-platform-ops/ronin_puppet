@@ -153,7 +153,7 @@ Function UpdateRonin {
     $sourceRev = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision').Revision } else { 'master' })
 
     Remove-Item -Recurse -Force $ronin_repo
-    Start-Sleep -s 5
+    Start-Sleep -s 60
     Write-Log -message  ('{0} :: Removing old Ronin repo .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
     $git_exit = $LastExitCode
