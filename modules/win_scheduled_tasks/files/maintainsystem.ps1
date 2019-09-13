@@ -152,19 +152,23 @@ Function UpdateRonin {
     $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository').Repository } else { 'ronin_puppet' })
     $sourceRev = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision').Revision } else { 'master' })
 
-    Remove-Item -Recurse -Force $ronin_repo
-    Start-Sleep -s 60
-    Write-Log -message  ('{0} :: Removing old Ronin repo .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+    Set-Location "$env:systemdrive\ronin"
+    git pull https://github.com/$sourceOrg/$sourceRepo $sourceRev
     $git_exit = $LastExitCode
     if ($git_exit -eq 0) {
       $git_hash = (git rev-parse --verify HEAD)
       Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
-      Write-Log -message  ('{0} :: Cloning from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
+      Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
     } else {
       # For now log and exit
-     Write-Log -message  ('{0} :: Git clane failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-     Exit-PSSession
+     Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
+	 Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
+	 Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
+	 Remove-Item -Recurse -Force $ronin_repo
+	 Start-Sleep -s 2
+	 git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+	  Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
+	  Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
     }
   }
   end {
