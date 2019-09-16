@@ -5,7 +5,8 @@
 class packages::python2_zstandard {
     require packages::python2
 
-    package { 'zstandard':
+    package { 'python2-zstandard':
+        name     => 'zstandard',
         ensure   => '0.11.1',
         provider => pip,
         require  => Class['packages::python2'],
