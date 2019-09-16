@@ -23,7 +23,7 @@ class talos (
                     ensure  => directory,
                     owner   => $user,
                     group   => 'staff',
-                    mode    => '0755',
+                    mode    => '0777',
                     require => User[$user],
             }
 
