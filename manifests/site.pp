@@ -23,11 +23,11 @@ case $::operatingsystem {
     }
 }
 
-node /vagrantup.com/ {
-    # ok, no need to fail
-}
+# node /vagrantup.com/ {
+#     # ok, no need to fail
+# }
 
 # Default node should always fail
 node default {
-  fail("Missing node classification for current host (node '${networking['fqdn']}')!")
+#   fail("Missing node classification for current host (node '${networking['fqdn']}')!")
 }

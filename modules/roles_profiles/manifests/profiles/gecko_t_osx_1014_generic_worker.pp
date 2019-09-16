@@ -60,6 +60,9 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
             include dirs::tools
 
+            class { 'packages::google_chrome':
+                version => 'v76.0.3809.132',
+            }
             contain packages::nodejs
             contain packages::wget
             contain packages::tooltool
@@ -98,6 +101,9 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             }
 
             contain packages::virtualenv
+
+            contain packages::python2_zstandard
+            contain packages::python3_zstandard
 
             include mercurial::ext::robustcheckout
         }
