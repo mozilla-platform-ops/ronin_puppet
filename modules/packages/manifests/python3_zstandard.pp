@@ -6,8 +6,8 @@ class packages::python3_zstandard {
     require packages::python3
 
     package { 'python3-zstandard':
-        name     => 'zstandard',
         ensure   => '0.11.1',
+        name     => 'zstandard',
         provider => pip3,
         require  => Class['packages::python3'],
     }
