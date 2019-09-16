@@ -61,7 +61,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             include dirs::tools
 
-            class { 'packages::gooogle_chrome':
+            class { 'packages::google_chrome':
                 version => 'v76.0.3809.132',
             }
             contain packages::nodejs
