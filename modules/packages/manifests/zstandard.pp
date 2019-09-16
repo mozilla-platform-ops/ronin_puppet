@@ -3,10 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::zstandard (
-    Pattern[/^v\d+\.\d+\.\d+$/] $zstandard_version,
+    Pattern[/^v\d+\.\d+\.\d+$/] $version,
 ) {
 
-    packages::macos_package_from_s3 { "zstd-${zstandard_version}.dmg":
+    packages::macos_package_from_s3 { "zstd-${version}.dmg":
         private             => false,
         os_version_specific => false,
         type                => 'dmg',
