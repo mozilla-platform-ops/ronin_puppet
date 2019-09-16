@@ -41,7 +41,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
             class { 'zstandard':
                 zstandard_version => '1.3.8',
-                zstandard_sha256  => 'fa4c25da32000a6a6ab8135e72a4159e15b54bbda7f83c3947beb7a889ffd60a',
             }
 
             class { 'generic_worker':

@@ -4,13 +4,11 @@
 
 class packages::zstandard (
     Pattern[/^v\d+\.\d+\.\d+$/] $zstandard_version,
-    String                      $zstandard_sha256,
 ) {
 
     packages::macos_package_from_s3 { "zstd-${zstandard_version}.dmg":
         private             => false,
         os_version_specific => false,
         type                => 'dmg',
-        checksum            => $zstandard_sha256,
     }
 }
