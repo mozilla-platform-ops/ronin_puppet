@@ -56,8 +56,6 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_14_1_2 {
             # These are specifically needed for the config file which Puppet only manages for hardware
             # Cloud instances will receive the config file during provisioning
             # Paths in the  config file need to have \\ hence the \\\\ below
-
-
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
                 worker_type              => $facts['custom_win_gw_workertype'],
