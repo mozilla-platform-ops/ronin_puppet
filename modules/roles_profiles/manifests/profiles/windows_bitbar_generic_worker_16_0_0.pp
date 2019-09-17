@@ -19,7 +19,7 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_16_0_0 {
             # Defining below  as variables because there may be
             # a need to add logic to determine which source or version is needed
             # dependent on OS or architecture.
-            $needed_gw_version         = '15.1.0'
+            $needed_gw_version         = '16.0.0'
             $needed_tc_proxy_version   = '5.1.0'
             $needed_livelog_version    = '1.1.0'
             # Requires win_packages::nssm
