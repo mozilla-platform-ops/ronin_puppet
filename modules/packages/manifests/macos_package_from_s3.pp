@@ -3,13 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define packages::macos_package_from_s3 (
-    Optional[String] $bucket           = undef,
-    Optional[String] $s3_domain        = undef,
-    Optional[String] $file_destination = undef,
-    Optional[String] $checksum         = undef,
-    Boolean $private                   = false,
-    Boolean $os_version_specific       = true,
-    Enum['bin', 'pkg', 'dmg'] $type    = 'bin',
+    Optional[String] $bucket                     = undef,
+    Optional[String] $s3_domain                  = undef,
+    Optional[String] $file_destination           = undef,
+    Optional[String] $checksum                   = undef,
+    Boolean $private                             = false,
+    Boolean $os_version_specific                 = true,
+    Enum['bin', 'pkg', 'dmg', 'appdmg'] $type    = 'bin',
 ) {
 
     require packages::setup
@@ -48,6 +48,14 @@ define packages::macos_package_from_s3 (
             package { $title:
                     ensure   => 'installed',
                     provider => 'pkgdmg',
+                    source   => $source,
+            }
+        }
+        'appdmg': {
+            # Install dmg with an app folder inside
+            package { $title:
+                    ensure   => 'installed',
+                    provider => 'appdmg',
                     source   => $source,
             }
         }

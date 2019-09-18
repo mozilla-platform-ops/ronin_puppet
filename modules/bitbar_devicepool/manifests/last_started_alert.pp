@@ -4,13 +4,6 @@
 
 class bitbar_devicepool::last_started_alert {
 
-  vcsrepo { '/home/bitbar/android-tools':
-    ensure   => present,
-    provider => git,
-    source   => 'https://github.com/mozilla-platform-ops/android-tools.git',
-    user     => 'bitbar',
-  }
-
   # create venv and install requirement
   $last_started_path = '/home/bitbar/android-tools/devicepool_last_started_alert'
   exec { 'create last_started_alert venv and install requirements':
