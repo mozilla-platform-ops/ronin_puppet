@@ -97,9 +97,9 @@ function Install-BootstrapModule {
 }
 
 $workerType = 'gecko-t-win10-64-ref-18'
-$src_Organisation = 'markcor'
+$src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
-$src_Revision = 'bug1572276'
+$src_Revision = 'master'
 $image_provisioner = 'bitbar'
 
 # Ensuring scripts can run uninhibited
@@ -113,7 +113,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
   Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
   Install-Prerequ
-#  Bootstrap-schtasks
+  Bootstrap-schtasks
   shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
