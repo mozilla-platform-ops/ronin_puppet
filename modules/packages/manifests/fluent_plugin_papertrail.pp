@@ -8,7 +8,7 @@ class packages::fluent_plugin_papertrail {
     $version = '0.2.7'
 
     exec {
-        'install plugin with agent ruby':
+        'install papertrail plugin with agent ruby':
             path    => ['/bin', '/sbin', '/usr/sbin', '/usr/local/bin', '/usr/bin'],
             command => "/usr/sbin/td-agent-gem install fluent-plugin-papertrail --version ${version}",
             unless  => "test -f /opt/td-agent/embedded/lib/ruby/gems/2.4.0/gems/fluent-plugin-papertrail-${version}",
