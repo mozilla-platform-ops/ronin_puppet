@@ -17,10 +17,11 @@ class fluentd (
             require packages::td_agent  # use treasure data's build
 
             # the agent config assumes these plugins are available:
+
             # google's plugin for output ot stackdriver:
             include packages::fluent_plugin_google_cloud
-            # solarwind's plugin for output to syslog/papertrail:
-            include packages::fluent_plugin_papertrail
+
+            include packages::fluent_plugin_remote_syslog
 
             file {
                 '/etc/google':
