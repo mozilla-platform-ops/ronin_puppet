@@ -9,7 +9,7 @@ class fluentd (
     String $stackdriver_key,
     String $stackdriver_clientid,
     String $syslog_host,
-    String $syslog_port,
+    Integer $syslog_port,
 ) {
 
     case $facts['os']['name'] {
