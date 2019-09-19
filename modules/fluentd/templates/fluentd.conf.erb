@@ -25,6 +25,19 @@
   @type null
 </match>
 
+<match system>
+  @type copy
+  <store>
+    @type papertrail
+    papertrail_host <%= @syslog_host %>
+    papertrail_port <%= @syslog_port %>
+    # options default:
+    # flush_interval 1
+    # retry_wait 1
+    # retry_limit 17
+  </store>
+</match>
+
 # Add a unique insertId to each log entry that doesn't already have it.
 # This helps guarantee the order and prevent log duplication.
 <filter system>
