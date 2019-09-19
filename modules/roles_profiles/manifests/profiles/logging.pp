@@ -5,6 +5,8 @@
 class roles_profiles::profiles::logging (
     String $worker_type         = '',  # not used by windows
     String $stackdriver_project = 'fx-worker-logging-prod',
+    String $syslog_host         = 'log-aggregator',
+    Integer $syslog_port        = 514,
 ) {
 
     # use a single write-only service account for each project
@@ -38,6 +40,8 @@ class roles_profiles::profiles::logging (
                 stackdriver_keyid    => $stackdriver_keyid,
                 stackdriver_key      => $stackdriver_key,
                 stackdriver_clientid => $stackdriver_clientid,
+                syslog_host          => $syslog_host,
+                syslog_port          => $syslog_port,
             }
         }
         default: {
