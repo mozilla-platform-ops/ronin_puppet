@@ -8,15 +8,19 @@ class fluentd (
     String $stackdriver_keyid,
     String $stackdriver_key,
     String $stackdriver_clientid,
+    String $syslog_host,
+    String $syslog_port,
 ) {
 
     case $facts['os']['name'] {
         'Darwin': {
             require packages::td_agent  # use treasure data's build
 
-            # use google's plugin for output ot stackdriver
+            # the agent config assumes these plugins are available:
+            # google's plugin for output ot stackdriver:
             include packages::fluent_plugin_google_cloud
-            # td-agent.conf assumes this plugin is present
+            # solarwind's plugin for output to syslog/papertrail:
+            include packages::fluent_plugin_papertrail
 
             file {
                 '/etc/google':
