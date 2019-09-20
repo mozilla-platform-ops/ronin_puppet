@@ -27,7 +27,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             class { 'roles_profiles::profiles::logging':
                 worker_type => $worker_type,
-                syslog_host => 'log-aggregator.srv.releng.' + $worker_group + '.mozilla.com',
+                syslog_host => "log-aggregator.srv.releng.${worker_group}.mozilla.com",
             }
 
             class { 'talos':
