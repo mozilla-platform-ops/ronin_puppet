@@ -5,7 +5,7 @@
 class roles_profiles::profiles::logging (
     String $worker_type         = '',  # not used by windows
     String $stackdriver_project = 'fx-worker-logging-prod',
-    String $syslog_host         = 'log-aggregator',
+    String $syslog_host         = "log-aggregator.srv.${Socket.gethostname.split('.')[2..-1].join('.')}",
     Integer $syslog_port        = 514,
 ) {
 
