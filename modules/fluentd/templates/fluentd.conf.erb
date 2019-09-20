@@ -28,10 +28,12 @@
 <match system>
   @type copy
   <store>
-    @type remote_syslog
-    host <%= @syslog_host %>
+    @type syslog
+    hostname "#{Socket.gethostname}"
+    remote_syslog <%= @syslog_host %>
     port <%= @syslog_port %>
     # flush_interval 5
+    use_record true
   </store>
 </match>
 
