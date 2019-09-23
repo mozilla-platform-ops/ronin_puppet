@@ -160,9 +160,16 @@ Function UpdateRonin {
       Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
       Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
     } else {
-      # For now log and exit
+      # Fall back to clone if pull fails
      Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-     Exit-PSSession
+     Write-Log -message  ('{0} :: Deleting old repository and cloning repository .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+	 Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
+	 Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
+	 Remove-Item -Recurse -Force $ronin_repo
+	 Start-Sleep -s 2
+	 git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+	 Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
+	 Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
     }
   }
   end {
