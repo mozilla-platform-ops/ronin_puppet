@@ -5,7 +5,8 @@
       --timeout 1d \
     | tail -n +3 \
     | sed -Ee 's/Default/Error/' \
-    | grep -E '(Error|Warn|Fault)' \
+    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Error|Warn|Fault) ' \
+    | sed -E -e 's/Default/error/' -e 's/Info/warn/' -e 's/Error/err/' -e 's/Warning/warn/'
     "
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
