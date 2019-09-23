@@ -4,6 +4,8 @@
     log stream --color none --level info --type log \
       --timeout 1d \
     | tail -n +3 \
+    | sed -Ee 's/Default/Error/' \
+    | grep -E '(Error|Warn|Fault)' \
     "
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
@@ -11,9 +13,9 @@
     #   2019-05-17 22:49:59.070398+0000 0x195      Info        0x0                  0      0    kernel: (IOHIDFamily) HID Activity Tickle (type:0 sender:100007033)
   <parse>
     @type regexp
-    expression /^(?<timestamp>.{31}) (?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+(?<message>.*)$/
+    expression /^(?<time>.{31}) (?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<message>.*)$/
     types pid:integer
-    time_key timestamp
+    time_key time
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
     utc true
   </parse>
@@ -25,15 +27,38 @@
   @type null
 </match>
 
+<filter system>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    severity ${record["severity"].downcase!}
+  </record>
+</filter>
+
+# <match system>
+#   @type copy
+#   <store>
+#     @type "stdout"
+#   </store>
+# </match>
+# stdout from here, these logs look like:
+# 2019-09-20 18:48:52.094273000 +0000 system: {"thread":"0x1f743","severity":"Default","activity":"0x0","pid":1206,"ttl":"0","facility":"appstoreagent:","message":"(ApplePushService) [com.apple.apsd:connection] <private>: Reconnect scheduled, skipping immediate connection to com.apple.apsd"}
+
 <match system>
   @type copy
   <store>
-    @type syslog
+    @type remote_syslog
     hostname "#{Socket.gethostname}"
-    remote_syslog <%= @syslog_host %>
+    host <%= @syslog_host %>
     port <%= @syslog_port %>
-    # flush_interval 5
-    use_record true
+    <buffer program,severity>
+    </buffer>
+    program "${program}"
+    severity "${severity}"
+    <format>
+      @type single_value
+      message_key message
+    </format>
   </store>
 </match>
 
