@@ -5,7 +5,7 @@
 class roles_profiles::profiles::logging (
     String $worker_type         = '',  # not used by windows
     String $stackdriver_project = 'fx-worker-logging-prod',
-    String $syslog_host         = join(["log-aggregator", "${1 + fqdn_rand(2)}", ".srv.releng.", regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'), ".mozilla.com"])
+    String $syslog_host         = join(["log-aggregator", "${1 + fqdn_rand(2)}", ".srv.releng.", regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'), ".mozilla.com"]),
     Integer $syslog_port        = 514,
 ) {
 
