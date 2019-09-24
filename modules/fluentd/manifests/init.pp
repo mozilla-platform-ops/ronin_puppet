@@ -11,6 +11,12 @@ class fluentd (
     String $syslog_host,
     Integer $syslog_port,
 ) {
+    if $syslog_host == undef {
+        $syslog_host = lookup('papertrail.host')
+    }
+    if $syslog_port == undef {
+        $syslog_port = lookup('papertrail.port')
+    }
 
     case $facts['os']['name'] {
         'Darwin': {
@@ -22,6 +28,7 @@ class fluentd (
             include packages::fluent_plugin_google_cloud
 
             include packages::fluent_plugin_remote_syslog
+            include packages::fluent_plugin_papertrail
 
             file {
                 '/etc/google':
