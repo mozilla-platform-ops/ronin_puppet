@@ -23,27 +23,29 @@ class fluentd (
             require packages::td_agent  # use treasure data's build
 
             # the agent config assumes these plugins are available:
-
-            # google's plugin for output ot stackdriver:
-            include packages::fluent_plugin_google_cloud
-
             include packages::fluent_plugin_remote_syslog
             include packages::fluent_plugin_papertrail
 
+            if $stackdriver_clientid != undef {
+                include packages::fluent_plugin_google_cloud
+
+                file {
+                    '/etc/google':
+                        ensure => 'directory';
+
+                    '/etc/google/auth':
+                        ensure => 'directory';
+
+                    '/etc/google/auth/application_default_credentials.json':
+                        ensure  => present,
+                        content => template('fluentd/application_default_credentials.json.erb'),
+                        mode    => '0600',
+                        owner   => $::root_user,
+                        group   => $::root_group;
+                }
+            }
+
             file {
-                '/etc/google':
-                    ensure => 'directory';
-
-                '/etc/google/auth':
-                    ensure => 'directory';
-
-                '/etc/google/auth/application_default_credentials.json':
-                    ensure  => present,
-                    content => template('fluentd/application_default_credentials.json.erb'),
-                    mode    => '0600',
-                    owner   => $::root_user,
-                    group   => $::root_group;
-
                 '/Library/LaunchDaemons/td-agent.plist':
                     ensure  => present,
                     content => template('fluentd/td-agent.plist.erb'),

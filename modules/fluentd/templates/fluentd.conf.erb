@@ -42,6 +42,16 @@
   </record>
 </filter>
 
+<% if @syslog_host =~ /papertrail/ %>
+<match system>
+  @type copy
+  <store>
+    type papertrail
+    papertrail_host <%= @syslog_host %>
+    papertrail_port <%= @syslog_port %>
+  </store>
+</match>
+<% else %>
 <match system>
   @type copy
   <store>
@@ -59,7 +69,9 @@
     </format>
   </store>
 </match>
+<% end %>
 
+<% if @stackdriver_clientid %>
 # Add a unique insertId to each log entry that doesn't already have it.
 # This helps guarantee the order and prevent log duplication.
 <filter system>
@@ -120,3 +132,6 @@
     partial_success true
   </store>
 </match>
+<% else %>
+# disabled stackdriver output. clientid not found
+<% end %>
