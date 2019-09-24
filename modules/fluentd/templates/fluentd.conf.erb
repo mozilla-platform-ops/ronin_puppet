@@ -49,6 +49,9 @@
     type papertrail
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
+    <buffer program,severity>
+    </buffer>
+    hostname "#{Socket.gethostname}"
   </store>
 </match>
 <% else %>
