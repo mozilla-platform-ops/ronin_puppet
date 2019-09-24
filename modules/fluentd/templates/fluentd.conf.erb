@@ -4,13 +4,13 @@
     log stream --color none --level default --type log \
       --timeout 1d \
     | tail -n +3 \
-    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Default|Error|Warn|Fault)' \
+    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Default|Warn|Error|Fault)' \
     | sed -E \
-      -e 's/Info/info/' \
-      -e 's/Default/notice/' \
-      -e 's/Warning/warn/' \
-      -e 's/Error/err/' \
-      -e 's/Fault/crit/' \
+      -e 's/ Info +0x/ info 0x/' \
+      -e 's/ Default +0x/ notice 0x/' \
+      -e 's/ Warning +0x/ warn 0x/' \
+      -e 's/ Error +0x/ err 0x/' \
+      -e 's/ Fault +0x/ crit 0x/' \
     "
     # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
     # tail to omit first 2 lines that cause parsing to fail:
