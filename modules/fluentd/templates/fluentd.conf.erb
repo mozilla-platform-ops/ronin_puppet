@@ -71,7 +71,7 @@
 </match>
 <% end %>
 
-<% if @stackdriver_clientid %>
+<% if @stackdriver_clientid != '' %>
 # Add a unique insertId to each log entry that doesn't already have it.
 # This helps guarantee the order and prevent log duplication.
 <filter system>

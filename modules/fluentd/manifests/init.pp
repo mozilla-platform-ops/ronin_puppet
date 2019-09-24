@@ -4,17 +4,17 @@
 
 class fluentd (
     String $worker_type,
-    String $stackdriver_project,
-    String $stackdriver_keyid,
-    String $stackdriver_key,
-    String $stackdriver_clientid,
-    String $syslog_host,
-    Integer $syslog_port,
+    String $stackdriver_project  = '',
+    String $stackdriver_keyid    = '',
+    String $stackdriver_key      = '',
+    String $stackdriver_clientid = '',
+    String $syslog_host  = 'papertrail',
+    Integer $syslog_port = -1,
 ) {
-    if $syslog_host == undef {
+    if $syslog_host == 'papertrail' {
         $syslog_host = lookup('papertrail.host')
     }
-    if $syslog_port == undef {
+    if $syslog_port == -1 {
         $syslog_port = lookup('papertrail.port')
     }
 
@@ -26,7 +26,7 @@ class fluentd (
             include packages::fluent_plugin_remote_syslog
             include packages::fluent_plugin_papertrail
 
-            if $stackdriver_clientid != undef {
+            if $stackdriver_clientid != '' {
                 include packages::fluent_plugin_google_cloud
 
                 file {
