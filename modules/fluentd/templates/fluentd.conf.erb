@@ -4,11 +4,10 @@
     log stream --color none --level default --type log \
       --timeout 1d \
     | tail -n +3 \
-    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Default|Warn|Error|Fault)' \
+    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Info|Default|Error|Fault)' \
     | sed -E \
       -e 's/ Info +0x/ info 0x/' \
-      -e 's/ Default +0x/ notice 0x/' \
-      -e 's/ Warning +0x/ warn 0x/' \
+      -e 's/ Default +0x/ warn 0x/' \
       -e 's/ Error +0x/ err 0x/' \
       -e 's/ Fault +0x/ crit 0x/' \
     "
@@ -33,26 +32,15 @@
   @type null
 </match>
 
-# rewrite severity for syslog
-# SEVERITIES
+# rewrite severity for syslog valid values:
 # https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
 <filter system>
   @type record_transformer
   enable_ruby true
   <record>
     message pid:${record["pid"]} ttl:${record["ttl"]} ${record["message"]}
-    #severity ${record["severity"].downcase!}
   </record>
 </filter>
-
-# <match system>
-#   @type copy
-#   <store>
-#     @type "stdout"
-#   </store>
-# </match>
-# stdout from here, these logs look like:
-# 2019-09-20 18:48:52.094273000 +0000 system: {"thread":"0x1f743","severity":"Default","activity":"0x0","pid":1206,"ttl":"0","facility":"appstoreagent:","message":"(ApplePushService) [com.apple.apsd:connection] <private>: Reconnect scheduled, skipping immediate connection to com.apple.apsd"}
 
 <match system>
   @type copy
