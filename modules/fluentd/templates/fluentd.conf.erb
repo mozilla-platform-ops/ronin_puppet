@@ -4,10 +4,15 @@
     log stream --color none --level info --type log \
       --timeout 1d \
     | tail -n +3 \
-    | sed -Ee 's/Default/Error/' \
-    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Error|Warn|Fault) ' \
-    | sed -E -e 's/Default/error/' -e 's/Info/warn/' -e 's/Error/err/' -e 's/Warning/warn/'
+    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Default|Error|Warn|Fault)' \
+    | sed -E \
+      -e 's/Info/info/' \
+      -e 's/Default/notice/' \
+      -e 's/Warning/warn/' \
+      -e 's/Error/err/' \
+      -e 's/Fault/crit/' \
     "
+    # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
     #   Timestamp                       Thread     Type        Activity             PID    TTL
@@ -28,6 +33,9 @@
   @type null
 </match>
 
+# rewrite severity for syslog
+# SEVERITIES
+# https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
 <filter system>
   @type record_transformer
   enable_ruby true
