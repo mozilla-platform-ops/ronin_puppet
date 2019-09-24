@@ -1,7 +1,7 @@
 <source>
   @type exec
   command "\
-    log stream --color none --level info --type log \
+    log stream --color none --level default --type log \
       --timeout 1d \
     | tail -n +3 \
     | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Default|Error|Warn|Fault)' \
@@ -40,7 +40,8 @@
   @type record_transformer
   enable_ruby true
   <record>
-    severity ${record["severity"].downcase!}
+    message pid:${record["pid"]} ttl:${record["ttl"]} ${record["message"]}
+    #severity ${record["severity"].downcase!}
   </record>
 </filter>
 
@@ -62,8 +63,8 @@
     port <%= @syslog_port %>
     <buffer program,severity>
     </buffer>
-    program "${program}"
-    severity "${severity}"
+    program ${program}
+    severity ${severity}
     <format>
       @type single_value
       message_key message
