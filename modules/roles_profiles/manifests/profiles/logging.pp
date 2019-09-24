@@ -5,9 +5,15 @@
 class roles_profiles::profiles::logging (
     String $worker_type         = '',  # not used by windows
     String $stackdriver_project = 'fx-worker-logging-prod',
-    String $syslog_host         = 'log-aggregator1.srv.releng.mdc1.mozilla.com',
+    String $syslog_host         = 'default',
     Integer $syslog_port        = 514,
 ) {
+
+    if $syslog_host == 'default' {
+        $datacenter  = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
+        $syslog_rand = 1 + fqdn_rand(2);
+        $syslog_host = "log-aggregator${syslog_rand}.srv.releng.${datacenter}.mozilla.com"
+    }
 
     # use a single write-only service account for each project
     $stackdriver_keyid    = lookup("stackdriver.${stackdriver_project}.keyid")
