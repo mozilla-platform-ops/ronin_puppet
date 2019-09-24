@@ -8,15 +8,9 @@ class fluentd (
     String $stackdriver_keyid    = '',
     String $stackdriver_key      = '',
     String $stackdriver_clientid = '',
-    String $syslog_host  = 'papertrail',
-    Integer $syslog_port = -1,
+    String $syslog_host  = lookup('papertrail.host'),
+    Integer $syslog_port = lookup('papertrail.port'),
 ) {
-    if $syslog_host == 'papertrail' {
-        $syslog_host = lookup('papertrail.host')
-    }
-    if $syslog_port == -1 {
-        $syslog_port = lookup('papertrail.port')
-    }
 
     case $facts['os']['name'] {
         'Darwin': {
