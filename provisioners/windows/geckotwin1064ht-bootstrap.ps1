@@ -283,5 +283,5 @@ If ($stage -ne 'complete') {
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
-  Bootstrap-CleanUp
+  #Bootstrap-CleanUp
 }
