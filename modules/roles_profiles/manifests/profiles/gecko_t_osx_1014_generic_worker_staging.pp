@@ -27,7 +27,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             class { 'roles_profiles::profiles::logging':
                 worker_type   => $worker_type,
-                mac_log_level => 'default',
+                mac_log_level => 'info',
             }
 
             class { 'talos':
