@@ -38,6 +38,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             $quarantine_access_token  = lookup('generic_worker.gecko_t_osx_1014.quarantine_access_token')
             $bugzilla_api_key         = lookup('generic_worker.gecko_t_osx_1014.bugzilla_api_key')
 
+            class { 'packages::zstandard':
+                version => '1.3.8',
+            }
+
             class { 'generic_worker::multiuser':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
@@ -62,6 +66,9 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             include dirs::tools
 
+            class { 'packages::google_chrome':
+                version => 'v76.0.3809.132',
+            }
             contain packages::nodejs
             contain packages::wget
             contain packages::tooltool
@@ -100,6 +107,9 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             }
 
             contain packages::virtualenv
+
+            contain packages::python2_zstandard
+            contain packages::python3_zstandard
 
             include mercurial::ext::robustcheckout
         }
