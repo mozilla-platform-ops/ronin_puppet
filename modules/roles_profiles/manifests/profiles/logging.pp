@@ -13,6 +13,7 @@ class roles_profiles::profiles::logging (
       '.mozilla.com'
     ]),
     Integer $syslog_port        = 514,
+    String $mac_log_level       = 'default',
 ) {
 
     # use a single write-only service account for each project
@@ -48,6 +49,7 @@ class roles_profiles::profiles::logging (
                 stackdriver_clientid => $stackdriver_clientid,
                 syslog_host          => $syslog_host,
                 syslog_port          => $syslog_port,
+                mac_log_level        => $mac_log_level,
             }
         }
         default: {

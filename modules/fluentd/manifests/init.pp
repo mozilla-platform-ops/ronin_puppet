@@ -8,8 +8,9 @@ class fluentd (
     String $stackdriver_keyid    = '',
     String $stackdriver_key      = '',
     String $stackdriver_clientid = '',
-    String $syslog_host  = lookup('papertrail.host'),
-    Integer $syslog_port = lookup('papertrail.port'),
+    String $syslog_host          = lookup('papertrail.host'),
+    Integer $syslog_port         = lookup('papertrail.port'),
+    String $mac_log_level        = 'default',
 ) {
 
     case $facts['os']['name'] {

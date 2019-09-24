@@ -1,7 +1,7 @@
 <source>
   @type exec
   command "\
-    log stream --color none --level default --type log \
+    log stream --color none --level <%= @mac_log_level %> --type log \
       --timeout 1d \
     | tail -n +3 \
     | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Info|Default|Error|Fault)' \
