@@ -39,6 +39,9 @@
   enable_ruby true
   <record>
     message pid:${record["pid"]} ttl:${record["ttl"]} ${record["message"]}
+<% if @syslog_host =~ /papertrail/ %>
+    hostname "#{Socket.gethostname}"
+<% end %>
   </record>
 </filter>
 
@@ -46,10 +49,9 @@
 <match system>
   @type copy
   <store>
-    type papertrail
+    @type papertrail
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
-    hostname "#{Socket.gethostname}"
   </store>
 </match>
 <% else %>
