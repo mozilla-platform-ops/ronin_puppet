@@ -42,12 +42,12 @@ class roles_profiles::profiles::logging (
         'Darwin': {
             class { 'fluentd':
                 worker_type          => $worker_type,
-                stackdriver_project  => $stackdriver_project,
-                stackdriver_keyid    => $stackdriver_keyid,
-                stackdriver_key      => $stackdriver_key,
-                stackdriver_clientid => $stackdriver_clientid,
-                syslog_host          => $syslog_host,
-                syslog_port          => $syslog_port,
+                #stackdriver_project  => $stackdriver_project,
+                #stackdriver_keyid    => $stackdriver_keyid,
+                #stackdriver_key      => $stackdriver_key,
+                #stackdriver_clientid => $stackdriver_clientid,
+                #syslog_host          => $syslog_host,
+                #syslog_port          => $syslog_port,
             }
         }
         default: {
