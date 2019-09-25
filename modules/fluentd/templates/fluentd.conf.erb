@@ -48,38 +48,6 @@
   </record>
 </filter>
 
-<% if @syslog_host =~ /papertrail/ %>
-<match system>
-  @type copy
-  <store>
-    @type papertrail
-    papertrail_host <%= @syslog_host %>
-    papertrail_port <%= @syslog_port %>
-  </store>
-</match>
-<% elsif @syslog_host != '' %>
-<match system>
-  @type copy
-  <store>
-    @type remote_syslog
-    hostname "#{Socket.gethostname}"
-    host <%= @syslog_host %>
-    port <%= @syslog_port %>
-    <buffer program,severity>
-    </buffer>
-    program ${program}
-    severity ${severity}
-    <format>
-      @type single_value
-      message_key message
-    </format>
-  </store>
-</match>
-<% else %>
-# Disabled syslog output. (syslog_host: <%= @syslog_host %>)
-<% end %>
-
-<% if @stackdriver_clientid != '' %>
 # Add a unique insertId to each log entry that doesn't already have it.
 # This helps guarantee the order and prevent log duplication.
 <filter system>
@@ -110,6 +78,32 @@
 
 <match system>
   @type copy
+<% if @syslog_host =~ /papertrail/ %>
+  <store>
+    @type papertrail
+    papertrail_host <%= @syslog_host %>
+    papertrail_port <%= @syslog_port %>
+  </store>
+<% elsif @syslog_host != '' %>
+  <store>
+    @type remote_syslog
+    hostname "#{Socket.gethostname}"
+    host <%= @syslog_host %>
+    port <%= @syslog_port %>
+    <buffer program,severity>
+    </buffer>
+    program ${program}
+    severity ${severity}
+    <format>
+      @type single_value
+      message_key message
+    </format>
+  </store>
+<% else %>
+# Disabled syslog output. (syslog_host: <%= @syslog_host %>)
+<% end %>
+
+<% if @stackdriver_clientid != '' %>
   <store>
     @type google_cloud
     log_level debug 
@@ -142,7 +136,7 @@
     # valid ones and drop the invalid ones instead of dropping everything.
     partial_success true
   </store>
-</match>
 <% else %>
 # Disabled stackdriver output. (clientid: <%= @stackdriver_clientid %>)
 <% end %>
+</match>
