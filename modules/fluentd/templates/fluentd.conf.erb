@@ -29,21 +29,25 @@
   @type record_transformer
   enable_ruby true
   <record>
-    message pid:${record["pid"]} ttl:${record["ttl"]} ${record["message"]}
 <% if @syslog_host =~ /papertrail/ %>
     hostname "#{Socket.gethostname}"
 <% end %>
+    # Logging pid can be enabled:
+    # message pid:${record["pid"]} ${record["message"]}
     # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
-    # syslog valid values:
+<% if @syslog_host != '' %>
+    # syslog severities:
     #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
-    syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'notice', 'Error' => 'err', 'Fault' => 'crit')}
-    # stackdriver severities
+    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'notice', 'Error' => 'err', 'Fault' => 'crit')}
+<% end %>
+<% if @stackdriver_clientid != '' %>
+    # stackdriver severities: 
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
-    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'notice', 'Error' => 'error', 'Fault' => 'critical')}
+    stackdriver_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'notice', 'Error' => 'error', 'Fault' => 'critical')}
+<% end %>
   </record>
 </filter>
 
-# syslog_host: <%= @syslog_host %>
 <% if @syslog_host =~ /papertrail/ %>
 <match system>
   @type copy
@@ -61,16 +65,18 @@
     hostname "#{Socket.gethostname}"
     host <%= @syslog_host %>
     port <%= @syslog_port %>
-    <buffer program,syslog_severity>
+    <buffer program,severity>
     </buffer>
     program ${program}
-    severity ${syslog_severity}
+    severity ${severity}
     <format>
       @type single_value
       message_key message
     </format>
   </store>
 </match>
+<% else %>
+# Disabled syslog output. (syslog_host: <%= @syslog_host %>)
 <% end %>
 
 <% if @stackdriver_clientid != '' %>
@@ -97,12 +103,16 @@
   <record>
     workerGroup "#{Socket.gethostname.split('.')[3]}"
   </record>
+  <record>
+    severity ${stackdriver_severity}
+  </record>
 </filter>
 
 <match system>
   @type copy
   <store>
     @type google_cloud
+    log_level debug 
     use_metadata_service false
     vm_id "#{Socket.gethostname}"
     zone "#{Socket.gethostname.split('.')[3]}"
@@ -134,5 +144,5 @@
   </store>
 </match>
 <% else %>
-# disabled stackdriver output. clientid not found
+# Disabled stackdriver output. (clientid: <%= @stackdriver_clientid %>)
 <% end %>
