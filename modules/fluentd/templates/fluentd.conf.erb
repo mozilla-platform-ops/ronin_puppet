@@ -43,6 +43,7 @@
   </record>
 </filter>
 
+# <%= @syslog_host %>
 <% if @syslog_host =~ /papertrail/ %>
 <match system>
   @type copy
@@ -52,7 +53,6 @@
     papertrail_port <%= @syslog_port %>
   </store>
 </match>
-# <%= @syslog_host %>
 <% elseif @syslog_host != '' %>
 <match system>
   @type copy
