@@ -4,20 +4,11 @@
     log stream --color none --level <%= @mac_log_level %> --type log \
       --timeout 1d \
     | tail -n +3 \
-    | grep -E '^[0-9\-]+ [0-9:\.\+]+ 0x[0-9a-f]+ +(Info|Default|Error|Fault)' \
-    | sed -E \
-      -e 's/ Info +0x/ info 0x/' \
-      -e 's/ Default +0x/ warn 0x/' \
-      -e 's/ Error +0x/ err 0x/' \
-      -e 's/ Fault +0x/ crit 0x/' \
     "
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
     #   Timestamp                       Thread     Type        Activity             PID    TTL
     #   2019-05-17 22:49:59.070398+0000 0x195      Info        0x0                  0      0    kernel: (IOHIDFamily) HID Activity Tickle (type:0 sender:100007033)
-    # rewrite severity for syslog valid values:
-    #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
-    #   MacOS Unified logging levels: Fault, Error, Default, Info, Debug
   <parse>
     @type regexp
     expression /^(?<time>.{31}) (?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<message>.*)$/
@@ -42,6 +33,13 @@
 <% if @syslog_host =~ /papertrail/ %>
     hostname "#{Socket.gethostname}"
 <% end %>
+    # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
+    # syslog valid values:
+    #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
+    syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'notice', 'Error' => 'err', 'Fault' => 'crit')}
+    # stackdriver severities
+    #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
+    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'notice', 'Error' => 'error', 'Fault' => 'critical')}
   </record>
 </filter>
 
@@ -54,7 +52,7 @@
     papertrail_port <%= @syslog_port %>
   </store>
 </match>
-<% else %>
+<% elseif @syslog_host != '' %>
 <match system>
   @type copy
   <store>
@@ -62,10 +60,10 @@
     hostname "#{Socket.gethostname}"
     host <%= @syslog_host %>
     port <%= @syslog_port %>
-    <buffer program,severity>
+    <buffer program,syslog_severity>
     </buffer>
     program ${program}
-    severity ${severity}
+    severity ${syslog_severity}
     <format>
       @type single_value
       message_key message
@@ -81,6 +79,8 @@
   @type add_insert_ids
 </filter>
 
+# string/numbers only
+# msgpack cannot encode ruby Time fields
 <filter system>
   @type record_transformer
   remove_keys ["host"]
@@ -100,9 +100,6 @@
 
 <match system>
   @type copy
-  #<store>
-  #  @type stdout
-  #</store>
   <store>
     @type google_cloud
     use_metadata_service false
