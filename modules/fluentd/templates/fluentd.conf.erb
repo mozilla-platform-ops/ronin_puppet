@@ -11,11 +11,13 @@
       -e 's/ Error +0x/ err 0x/' \
       -e 's/ Fault +0x/ crit 0x/' \
     "
-    # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
     #   Timestamp                       Thread     Type        Activity             PID    TTL
     #   2019-05-17 22:49:59.070398+0000 0x195      Info        0x0                  0      0    kernel: (IOHIDFamily) HID Activity Tickle (type:0 sender:100007033)
+    # rewrite severity for syslog valid values:
+    #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
+    #   MacOS Unified logging levels: Fault, Error, Default, Info, Debug
   <parse>
     @type regexp
     expression /^(?<time>.{31}) (?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<message>.*)$/
@@ -32,8 +34,6 @@
   @type null
 </match>
 
-# rewrite severity for syslog valid values:
-# https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
 <filter system>
   @type record_transformer
   enable_ruby true
