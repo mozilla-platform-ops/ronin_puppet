@@ -52,6 +52,7 @@
     papertrail_port <%= @syslog_port %>
   </store>
 </match>
+# <%= @syslog_host %>
 <% elseif @syslog_host != '' %>
 <match system>
   @type copy
