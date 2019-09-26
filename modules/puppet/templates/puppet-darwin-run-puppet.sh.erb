@@ -56,17 +56,19 @@ function valid_ip {
 
 function block_on_network {
     local delay=1
-	while true; do
-		IP=`ifconfig en0 | grep "inet "| awk '{print $2}'`
-		if valid_ip $IP; then
-			echo "Network connectivity check passed $IP"
-			break
-		else
+    while true; do
+        interface=$(route get 1.1.1.1 | grep interface | cut -d\: -f2)
+        ifconfig $interface 2>&1 >/dev/null || interface="en0"
+        IP=$(ipconfig getifaddr $interface)
+        if valid_ip $IP; then
+            echo "Network connectivity check passed $IP"
+            break
+        else
             echo "Network connectivity failed; retry in ${delay}s"
-			sleep $delay
+            sleep $delay
             (( delay *= delay<60?2:1 ))
-		fi
-	done
+        fi
+    done
 }
 
 function email_report {
