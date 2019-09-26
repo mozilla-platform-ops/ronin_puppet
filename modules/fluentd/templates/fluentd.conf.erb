@@ -107,7 +107,6 @@
 <% if @stackdriver_clientid != '' %>
   <store>
     @type google_cloud
-    log_level debug 
     use_metadata_service false
     vm_id "#{Socket.gethostname}"
     zone "#{Socket.gethostname.split('.')[3]}"
