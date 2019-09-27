@@ -36,10 +36,12 @@ class roles_profiles::profiles::disable_chrome_updater (
                 file { [ '/Library/Caches/com.google.Keystone.agent',
                          '/Users/cltbld/Library/Caches/com.google.Keystone.agent' ]:
                     ensure  => absent,
+                    force   => true,
                 }
                 file { [ '/Library/LaunchAgents/com.google.Keystone.agent.plist',
                          '/Users/cltbld/Library/LaunchAgents/com.google.Keystone.agent.plist' ]:
                     ensure  => absent,
+                    force   => true,
                 }
             } else {
                 exec {
