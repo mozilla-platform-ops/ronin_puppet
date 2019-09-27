@@ -52,14 +52,6 @@ class roles_profiles::profiles::disable_chrome_updater (
                     'chrome-update-service-no-interval-cltbld':
                         command => '/usr/bin/sudo -u cltbld /usr/bin/defaults write com.google.Keystone.Agent checkInterval 0',
                 }
-                service {
-                    [
-                      'com.google.keystone.system.agent',
-                      'com.google.keystone.system.xpcservice',
-                    ]:
-                        ensure => 'stopped',
-                        enable => false,
-                }
             }
         }
         default: {
