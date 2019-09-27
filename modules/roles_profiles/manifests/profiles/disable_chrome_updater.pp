@@ -24,23 +24,33 @@ class roles_profiles::profiles::disable_chrome_updater (
             }
             if $purge {
                 file { [ '/Library/Google',
-                         '/Library/Google/GoogleSoftwareUpdate' ]:
+                         '/Library/Google/GoogleSoftwareUpdate',
+                         '/Users/cltbld',
+                         '/Users/cltbld/Library',
+                         '/Users/cltbld/Library/Google',
+                         '/Users/cltbld/Library/Google/GoogleSoftwareUpdate' ]:
                     ensure  => directory,
                     purge   => true,
                     force   => true,
                     recurse => true,
                     mode    => '0444',
                 }
-                file { '/Library/Caches/com.google.Keystone.agent':
+                file { [ '/Library/Caches/com.google.Keystone.agent',
+                         '/Users/cltbld/Library/Caches/com.google.Keystone.agent' ]:
                     ensure  => absent,
                 }
-                file { '/Library/LaunchAgents/com.google.Keystone.agent.plist':
+                file { [ '/Library/LaunchAgents/com.google.Keystone.agent.plist',
+                         '/Users/cltbld/Library/LaunchAgents/com.google.Keystone.agent.plist' ]:
                     ensure  => absent,
                 }
             } else {
                 exec {
                     'chrome-update-service-no-interval':
-                        command     => 'defaults write com.google.Keystone.Agent checkInterval 0',
+                        command => 'defaults write com.google.Keystone.Agent checkInterval 0',
+                }
+                exec {
+                    'chrome-update-service-no-interval-cltbld':
+                        command => 'sudo -u cltbld defaults write com.google.Keystone.Agent checkInterval 0',
                 }
                 service {
                     [
