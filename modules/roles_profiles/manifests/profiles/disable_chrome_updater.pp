@@ -46,11 +46,11 @@ class roles_profiles::profiles::disable_chrome_updater (
             } else {
                 exec {
                     'chrome-update-service-no-interval':
-                        command => 'defaults write com.google.Keystone.Agent checkInterval 0',
+                        command => '/usr/bin/defaults write com.google.Keystone.Agent checkInterval 0',
                 }
                 exec {
                     'chrome-update-service-no-interval-cltbld':
-                        command => 'sudo -u cltbld defaults write com.google.Keystone.Agent checkInterval 0',
+                        command => '/usr/bin/sudo -u cltbld /usr/bin/defaults write com.google.Keystone.Agent checkInterval 0',
                 }
                 service {
                     [
