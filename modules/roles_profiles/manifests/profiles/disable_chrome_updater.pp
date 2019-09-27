@@ -25,8 +25,6 @@ class roles_profiles::profiles::disable_chrome_updater (
             if $purge {
                 file { [ '/Library/Google',
                          '/Library/Google/GoogleSoftwareUpdate',
-                         '/Users/cltbld',
-                         '/Users/cltbld/Library',
                          '/Users/cltbld/Library/Google',
                          '/Users/cltbld/Library/Google/GoogleSoftwareUpdate' ]:
                     ensure  => directory,
