@@ -1,0 +1,44 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+class roles_profiles::profiles::disable_chrome_updater {
+    Boolean purge = true,
+) {
+
+    case $::operatingsystem {
+        'Darwin': {
+            if $purge {
+                file { '/Library/Google/GoogleSoftwareUpdate':
+                    ensure  => directory,
+                    purge   => true,
+                    force   => true,
+                    recurse => true,
+                    mode    => '0444',
+                }
+                file { '/Library/Caches/com.google.Keystone.agent':
+                    ensure  => absent,
+                }
+                file { '/Library/LaunchAgents/com.google.Keystone.agent.plist':
+                    ensure  => absent,
+                }
+            } else {
+                exec {
+                    'chrome-update-service-no-interval':
+                        command     => 'defaults write com.google.Keystone.Agent checkInterval 0',
+                }
+                service {
+                    [
+                      'com.google.keystone.system.agent',
+                      'com.google.keystone.system.xpcservice',
+                    ]:
+                        ensure => 'stopped',
+                        enable => false,
+                }
+            }
+        }
+        default: {
+            fail("${::operatingsystem} not supported")
+        }
+    }
+}
