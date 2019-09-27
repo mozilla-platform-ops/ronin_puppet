@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::disable_chrome_updater (
-    Boolean purge = true,
+    Boolean $purge = true,
 ) {
 
     case $::operatingsystem {
