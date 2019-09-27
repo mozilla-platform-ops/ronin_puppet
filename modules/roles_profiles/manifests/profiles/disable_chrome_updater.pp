@@ -12,7 +12,6 @@ class roles_profiles::profiles::disable_chrome_updater (
                      '/System/Library/User Template/English.lproj/Library/Google',
                      '/System/Library/User Template/English.lproj/Library/Google/GoogleSoftwareUpdate' ]:
                 ensure  => directory,
-                purge   => true,
                 force   => true,
                 recurse => true,
                 mode    => '0444',
