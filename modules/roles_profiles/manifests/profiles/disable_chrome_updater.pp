@@ -8,18 +8,20 @@ class roles_profiles::profiles::disable_chrome_updater (
 
     case $::operatingsystem {
         'Darwin': {
-            file { '/System/Library/User Template/English.lproj/Library/LaunchAgents/com.google.keystone.agent.plist':
-                ensure  => file,
-                force   => true,
-                mode    => '0444',
-                content => '',
-            }
-            file { '/System/Library/User Template/English.lproj/Library/Google/GoogleSoftwareUpdate':
+            file { [ '/System/Library/User Template/English.lproj/Library/LaunchAgents',
+                     '/System/Library/User Template/English.lproj/Library/Google',
+                     '/System/Library/User Template/English.lproj/Library/Google/GoogleSoftwareUpdate' ]:
                 ensure  => directory,
                 purge   => true,
                 force   => true,
                 recurse => true,
                 mode    => '0444',
+            }
+            file { '/System/Library/User Template/English.lproj/Library/LaunchAgents/com.google.keystone.agent.plist':
+                ensure  => file,
+                force   => true,
+                mode    => '0444',
+                content => '',
             }
             if $purge {
                 file { '/Library/Google/GoogleSoftwareUpdate':
