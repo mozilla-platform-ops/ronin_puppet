@@ -2,13 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::disable_chrome_updater {
+class roles_profiles::profiles::disable_chrome_updater (
     Boolean purge = true,
 ) {
 
     case $::operatingsystem {
         'Darwin': {
-            file { '/System/Library/User Template/English.lproj/Library/LaunchAgents/com.google.keystone.agent.plist':
+            file: { '/System/Library/User Template/English.lproj/Library/LaunchAgents/com.google.keystone.agent.plist':
                 ensure  => file,
                 force   => true,
                 mode    => '0444',
