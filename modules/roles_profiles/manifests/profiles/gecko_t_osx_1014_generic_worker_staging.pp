@@ -68,7 +68,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             class { 'packages::google_chrome':
                 version => 'v76.0.3809.132',
             }
-            include roles_profiles::profiles::disable_chrome_updater'
+            include roles_profiles::profiles::disable_chrome_updater
 
             contain packages::nodejs
             contain packages::wget
