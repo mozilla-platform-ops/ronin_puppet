@@ -8,9 +8,11 @@ class roles_profiles::profiles::disable_chrome_updater (
 
     case $::operatingsystem {
         'Darwin': {
-            file { [ '/System/Library/User Template/English.lproj/Library/LaunchAgents',
-                  '/System/Library/User Template/English.lproj/Library/Google',
-                  '/System/Library/User Template/English.lproj/Library/Google/GoogleSoftwareUpdate' ]:
+            # For new users (potentially created by multiuser generic-worker),
+            # executing Chrome will install the updater and create a user launch agent to run updates.
+            # We cannot block users from installing the updater.
+            # Let's block creation of the user launchagent
+            file { [ '/System/Library/User Template/English.lproj/Library/LaunchAgents' ]:
                 ensure  => directory,
                 force   => true,
                 recurse => true,
@@ -22,6 +24,9 @@ class roles_profiles::profiles::disable_chrome_updater (
                 mode    => '0444',
                 content => '',
             }
+            # For the cltbld user and the system (if Chrome was run by an admin),
+            # purge the updater application and service,
+            # or set the update interval to 0(never).
             if $purge {
                 file { [ '/Library/Google',
                       '/Library/Google/GoogleSoftwareUpdate',
@@ -34,18 +39,15 @@ class roles_profiles::profiles::disable_chrome_updater (
                     mode    => '0444',
                 }
                 file { [ '/Library/Caches/com.google.Keystone.agent',
-                      '/Users/cltbld/Library/Caches/com.google.Keystone.agent' ]:
-                    ensure => absent,
-                    force  => true,
-                }
-                file { [ '/Library/LaunchAgents/com.google.Keystone.agent.plist',
+                      '/Users/cltbld/Library/Caches/com.google.Keystone.agent',
+                      '/Library/LaunchAgents/com.google.Keystone.agent.plist',
                       '/Users/cltbld/Library/LaunchAgents/com.google.Keystone.agent.plist' ]:
                     ensure => absent,
                     force  => true,
                 }
             } else {
                 exec {
-                    'chrome-update-service-no-interval':
+                    'chrome-update-service-no-interval-system':
                         command => '/usr/bin/defaults write com.google.Keystone.Agent checkInterval 0',
                 }
                 exec {
