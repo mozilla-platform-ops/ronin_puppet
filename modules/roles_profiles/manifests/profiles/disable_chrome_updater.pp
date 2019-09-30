@@ -9,8 +9,8 @@ class roles_profiles::profiles::disable_chrome_updater (
     case $::operatingsystem {
         'Darwin': {
             file { [ '/System/Library/User Template/English.lproj/Library/LaunchAgents',
-                     '/System/Library/User Template/English.lproj/Library/Google',
-                     '/System/Library/User Template/English.lproj/Library/Google/GoogleSoftwareUpdate' ]:
+                  '/System/Library/User Template/English.lproj/Library/Google',
+                  '/System/Library/User Template/English.lproj/Library/Google/GoogleSoftwareUpdate' ]:
                 ensure  => directory,
                 force   => true,
                 recurse => true,
@@ -24,9 +24,9 @@ class roles_profiles::profiles::disable_chrome_updater (
             }
             if $purge {
                 file { [ '/Library/Google',
-                         '/Library/Google/GoogleSoftwareUpdate',
-                         '/Users/cltbld/Library/Google',
-                         '/Users/cltbld/Library/Google/GoogleSoftwareUpdate' ]:
+                      '/Library/Google/GoogleSoftwareUpdate',
+                      '/Users/cltbld/Library/Google',
+                      '/Users/cltbld/Library/Google/GoogleSoftwareUpdate' ]:
                     ensure  => directory,
                     purge   => true,
                     force   => true,
@@ -34,14 +34,14 @@ class roles_profiles::profiles::disable_chrome_updater (
                     mode    => '0444',
                 }
                 file { [ '/Library/Caches/com.google.Keystone.agent',
-                         '/Users/cltbld/Library/Caches/com.google.Keystone.agent' ]:
-                    ensure  => absent,
-                    force   => true,
+                      '/Users/cltbld/Library/Caches/com.google.Keystone.agent' ]:
+                    ensure => absent,
+                    force  => true,
                 }
                 file { [ '/Library/LaunchAgents/com.google.Keystone.agent.plist',
-                         '/Users/cltbld/Library/LaunchAgents/com.google.Keystone.agent.plist' ]:
-                    ensure  => absent,
-                    force   => true,
+                      '/Users/cltbld/Library/LaunchAgents/com.google.Keystone.agent.plist' ]:
+                    ensure => absent,
+                    force  => true,
                 }
             } else {
                 exec {
