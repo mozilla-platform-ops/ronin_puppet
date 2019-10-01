@@ -46,7 +46,7 @@ class roles_profiles::profiles::logging (
                 stackdriver_project  => $stackdriver_project,
                 stackdriver_keyid    => $stackdriver_keyid,
                 stackdriver_key      => $stackdriver_key,
-                stackdriver_clientid => $stackdriver_clientid,
+                stackdriver_clientid => '',  # $stackdriver_clientid,
                 syslog_host          => $syslog_host,
                 syslog_port          => $syslog_port,
                 mac_log_level        => $mac_log_level,
