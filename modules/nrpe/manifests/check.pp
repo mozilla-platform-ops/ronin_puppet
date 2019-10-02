@@ -2,7 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # used from nrpe::check::*; do not use directly
-define nrpe::check($cfg=undef, $nsclient_cfg=undef) {
+define nrpe::check(
+    String $cfg          = undef,
+    String $nsclient_cfg = undef,
+    ) {
     include nrpe::base
     include nrpe::settings
     include users::root
