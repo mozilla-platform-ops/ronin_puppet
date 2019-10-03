@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::logging (
     String $worker_type         = '',  # not used by windows
-    String $stackdriver_project = 'fx-worker-logging-prod',
+    String $stackdriver_project = 'none',
     String $syslog_host         = join([
       'log-aggregator',
       "${1 + fqdn_rand(2)}",
@@ -17,9 +17,9 @@ class roles_profiles::profiles::logging (
 ) {
 
     # use a single write-only service account for each project
-    $stackdriver_keyid    = lookup("stackdriver.${stackdriver_project}.keyid")
-    $stackdriver_key      = lookup("stackdriver.${stackdriver_project}.key")
-    $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid")
+    $stackdriver_keyid    = lookup("stackdriver.${stackdriver_project}.keyid", {'default_value' => ''})
+    $stackdriver_key      = lookup("stackdriver.${stackdriver_project}.key", {'default_value' => ''})
+    $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid", {'default_value' => ''})
 
     case $::operatingsystem {
         'Windows': {
@@ -46,7 +46,7 @@ class roles_profiles::profiles::logging (
                 stackdriver_project  => $stackdriver_project,
                 stackdriver_keyid    => $stackdriver_keyid,
                 stackdriver_key      => $stackdriver_key,
-                stackdriver_clientid => '',  # $stackdriver_clientid,
+                stackdriver_clientid => $stackdriver_clientid,
                 syslog_host          => $syslog_host,
                 syslog_port          => $syslog_port,
                 mac_log_level        => $mac_log_level,
