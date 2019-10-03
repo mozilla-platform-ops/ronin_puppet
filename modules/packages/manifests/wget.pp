@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::wget (
-    Pattern[/^\d+\.\d+\.\d+$/] $version = '1.20.3_1',
+    Pattern[/^\d+\.\d+\.\d+_?\d*$/] $version = '1.20.3_1',
 ) {
 
     packages::macos_package_from_s3 { "wget-${version}.dmg":

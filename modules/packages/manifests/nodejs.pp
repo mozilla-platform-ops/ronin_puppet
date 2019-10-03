@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::nodejs (
-    Pattern[/^\d+\.\d+\.\d+$/] $version = '12.10.0',
+    Pattern[/^\d+\.\d+\.\d+_?\d*$/] $version = '12.10.0',
 ) {
 
     packages::macos_package_from_s3 { "node-${version}.dmg":
