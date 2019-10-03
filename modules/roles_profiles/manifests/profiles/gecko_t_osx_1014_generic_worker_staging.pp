@@ -101,7 +101,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                     require => Class['packages::python2'];
             }
 
-            contain packages::python3
+            contain packages::python3_s3
             file { '/tools/python3':
                     ensure  => 'link',
                     target  => '/usr/local/bin/python3',
