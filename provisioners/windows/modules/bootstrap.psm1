@@ -333,6 +333,25 @@ function Bootstrap-Puppet {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+Function set-restore_point {
+  param (
+    [string] $ronnin_key = "$mozilla_key\ronin_puppet",
+    [string] $date = (Get-Date -Format "yyyy/mm/dd/ HH:mm")
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    vssadmin delete shadows /all /quiet
+    powershell.exe -Command Checkpoint-Computer -Description "default" -RestorePointType MODIFY_SETTINGS
+    New-Item -Path $ronnin_key -Name source –Force
+    Set-ItemProperty -Path "$ronnin_key" -name reboot_count -type  dword -value 0
+    Set-ItemProperty -Path "$ronnin_key" -name last_restore_point -type  string -value $date
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 Function Bootstrap-CleanUp {
   param (
     [string] $bootstrapdir  = "$env:systemdrive\BootStrap\"
