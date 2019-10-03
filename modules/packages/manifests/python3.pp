@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::python3 (
-    Pattern[/^\d+\.\d+\.\d+$/] $version = '3.7.4_1',
+    Pattern[/^\d+\.\d+\.\d+$/] $version = '3.7.3',
 ) {
 
     packages::macos_package_from_s3 { "python-${version}.dmg":
