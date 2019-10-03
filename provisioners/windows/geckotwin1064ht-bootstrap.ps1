@@ -277,7 +277,7 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   vssadmin delete shadows /all /quiet
-  powershell.exe -NoExit -Command Checkpoint-Computer -Description "default" -RestorePointType MODIFY_SETTINGS
+  powershell.exe -Command Checkpoint-Computer -Description "default" -RestorePointType MODIFY_SETTINGS
   Set-RoninRegOptions
   Ronin-PreRun
 }
