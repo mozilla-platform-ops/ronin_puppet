@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::mercurial (
-    Pattern[/^\d+\.\d+\.\d+$/] $version = '5.1.1_2',
+    Pattern[/^\d+\.\d+\.\d+_?\d*$/] $version = '5.1.1_2',
 ) {
 
     packages::macos_package_from_s3 { "mercurial-${version}.dmg":
