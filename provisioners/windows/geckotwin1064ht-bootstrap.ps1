@@ -276,6 +276,8 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
   $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+  vssadmin delete shadows /all /quiet
+  powershell.exe -NoExit -Command Checkpoint-Computer -Description "default" -RestorePointType MODIFY_SETTINGS
   Set-RoninRegOptions
   Ronin-PreRun
 }
