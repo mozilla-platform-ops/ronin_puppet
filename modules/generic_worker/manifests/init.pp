@@ -23,6 +23,7 @@ class generic_worker (
 ) {
 
     include httpd
+    include generic_worker::settings
 
     class { 'packages::generic_worker':
         generic_worker_version    => $generic_worker_version,
@@ -74,22 +75,22 @@ class generic_worker (
                     ensure  => present,
                     content => template('generic_worker/generic-worker.plist.erb'),
                     mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    owner   => $generic_worker::setttings::root_user,
+                    group   => $generic_worker::setttings::root_group;
 
                 '/usr/local/bin/run-generic-worker.sh':
                     ensure  => present,
                     content => template('generic_worker/run-generic-worker.sh.erb'),
                     mode    => '0755',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    owner   => $generic_worker::setttings::root_user,
+                    group   => $generic_worker::setttings::root_group;
 
                 '/etc/generic-worker.config':
                     ensure  => present,
                     content => template('generic_worker/generic-worker.config.erb'),
                     mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    owner   => $generic_worker::setttings::root_user,
+                    group   => $generic_worker::setttings::root_group;
             }
 
             service { 'net.generic.worker':

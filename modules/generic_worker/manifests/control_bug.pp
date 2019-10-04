@@ -10,19 +10,21 @@ class generic_worker::control_bug (
     String $bugzilla_url = 'https://bugzilla.mozilla.org'
 ) {
 
+    include generic_worker::settings
+
     $log_file = '/var/log/system.log'
 
     file {
         '/usr/local/share/generic-worker':
             ensure => directory,
-            owner  => $::root_user,
-            group  => $::root_group;
+            owner  => $generic_worker::setttings::root_user,
+            group  => $generic_worker::setttings::root_group;
 
         '/usr/local/share/generic-worker/bugzilla-utils.sh':
             ensure  => present,
             content => template('generic_worker/bugzilla-utils.sh.erb'),
             mode    => '0755',
-            owner   => $::root_user,
-            group   => $::root_group;
+            owner   => $generic_worker::setttings::root_user,
+            group   => $generic_worker::setttings::root_group;
     }
 }

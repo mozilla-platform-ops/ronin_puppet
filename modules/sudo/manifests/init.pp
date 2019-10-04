@@ -5,8 +5,8 @@
 class sudo {
 
     concat { '/etc/sudoers':
-        owner => $::root_user,
-        group => $::root_group,
+        owner => $sudo::settings::root_user,
+        group => $sudo::settings::root_group,
         mode  => '0440',
     }
 

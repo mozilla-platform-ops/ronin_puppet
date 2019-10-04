@@ -9,7 +9,7 @@ class mercurial::ext::common {
 
     file { $mercurial::settings::hgext_dir:
         ensure => directory,
-        owner  => $::root_user,
+        owner  => $mercurial::settings::root_user,
         mode   => '0755',
     }
 }

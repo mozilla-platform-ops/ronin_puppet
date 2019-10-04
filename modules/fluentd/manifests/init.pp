@@ -13,6 +13,8 @@ class fluentd (
     String $mac_log_level        = 'default',
 ) {
 
+    include fluentd::settings
+
     case $facts['os']['name'] {
         'Darwin': {
             require packages::td_agent  # use treasure data's build
@@ -35,8 +37,8 @@ class fluentd (
                         ensure  => present,
                         content => template('fluentd/application_default_credentials.json.erb'),
                         mode    => '0600',
-                        owner   => $::root_user,
-                        group   => $::root_group;
+                        owner   => $fluentd::settings::root_user,
+                        group   => $fluentd::settings::root_group;
                 }
             }
 
@@ -45,21 +47,21 @@ class fluentd (
                     ensure  => present,
                     content => template('fluentd/td-agent.plist.erb'),
                     mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    owner   => $fluentd::settings::root_user,
+                    group   => $fluentd::settings::root_group;
 
                 '/etc/td-agent/td-agent.conf':
                     ensure  => present,
                     content => template('fluentd/fluentd.conf.erb'),
                     mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    owner   => $fluentd::settings::root_user,
+                    group   => $fluentd::settings::root_group;
 
                 '/var/log/td-agent':
                     ensure => directory,
                     mode   => '0755',
-                    owner  => $::root_user,
-                    group  => $::root_group;
+                    owner  => $fluentd::settings::root_user,
+                    group  => $fluentd::settings::root_group;
             }
 
             service { 'td-agent':

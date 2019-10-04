@@ -12,6 +12,7 @@ define packages::macos_package_from_s3 (
     Enum['bin', 'pkg', 'dmg', 'appdmg'] $type    = 'bin',
 ) {
 
+    include packages::settings
     require packages::setup
 
     $_bucket = $bucket ? { true => $bucket, default => $packages::setup::default_bucket }
@@ -39,8 +40,8 @@ define packages::macos_package_from_s3 (
                 checksum       => 'sha256',
                 checksum_value => $checksum,
                 mode           => '0755',
-                owner          => $::root_user,
-                group          => $::root_group,
+                owner          => $packages::settings::root_user,
+                group          => $packages::settings::root_group,
             }
         }
         'pkg','dmg': {

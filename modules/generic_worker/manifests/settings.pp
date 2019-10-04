@@ -2,11 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class mercurial::settings {
-
-    $hgext_dir       = '/usr/local/lib/hgext'
-    $hgrc            = '/etc/mercurial/hgrc'
-    $hgrc_parentdirs = ['/etc/mercurial']
+class generic_worker::settings {
 
     case $::operatingsystem {
         'Windows': {
@@ -24,5 +20,4 @@ class mercurial::settings {
         default: {
         }
     }
-
 }

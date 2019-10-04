@@ -9,12 +9,12 @@ class mercurial::system_hgrc {
 
     file { $::mercurial::settings::hgrc_parentdirs:
         ensure => directory,
-        owner  => $::root_user,
-        group  => $::root_group,
+        owner  => $mercurial::settings::root_user,
+        group  => $mercurial::settings::root_group,
     }
 
     mercurial::hgrc { $::mercurial::settings::hgrc:
-        user  => $::root_user,
-        group => $::root_group,
+        user  => $mercurial::settings::root_user,
+        group => $mercurial::settings::root_group,
     }
 }

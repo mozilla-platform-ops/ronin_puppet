@@ -18,6 +18,7 @@ define packages::macos_package_from_github (
     Enum['bin', 'pkg', 'dmg'] $type = 'bin',
 ) {
 
+    include packages::settings
     require packages::setup
 
     $release_url = "https://github.com/${github_repo_slug}/releases/download/${version}/${filename}"
@@ -28,8 +29,8 @@ define packages::macos_package_from_github (
                 ensure => 'file',
                 source => $release_url,
                 mode   => '0755',
-                owner  => $::root_user,
-                group  => $::root_group,
+                owner  => $packages::settings::root_user,
+                group  => $packages::settings::root_group,
             }
         }
         'pkg','dmg': {
