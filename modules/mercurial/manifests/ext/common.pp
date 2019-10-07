@@ -6,10 +6,13 @@ class mercurial::ext::common {
 
     include mercurial::settings
     include packages::python2
+    include shared
 
-    file { $mercurial::settings::hgext_dir:
-        ensure => directory,
-        owner  => $mercurial::settings::root_user,
-        mode   => '0755',
+    file {
+        default: * => $::shared::file_defaults;
+
+        $mercurial::settings::hgext_dir:
+            ensure => directory,
+            mode   => '0755';
     }
 }

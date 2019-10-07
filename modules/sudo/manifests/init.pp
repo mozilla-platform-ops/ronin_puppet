@@ -4,9 +4,15 @@
 
 class sudo {
 
+    include shared
+
+    # Get systems default root user and group
+    $root_user = $::shared::file_defaults['owner']
+    $root_group = $::shared::file_defaults['group']
+
     concat { '/etc/sudoers':
-        owner => $sudo::settings::root_user,
-        group => $sudo::settings::root_group,
+        owner => $root_user,
+        group => $root_group,
         mode  => '0440',
     }
 

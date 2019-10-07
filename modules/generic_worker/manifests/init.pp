@@ -23,7 +23,7 @@ class generic_worker (
 ) {
 
     include httpd
-    include generic_worker::settings
+    include shared
 
     class { 'packages::generic_worker':
         generic_worker_version    => $generic_worker_version,
@@ -71,26 +71,22 @@ class generic_worker (
             $reboot_command = '/usr/bin/sudo /sbin/reboot'
 
             file {
+                default: * => $::shared::file_defaults;
+
                 '/Library/LaunchAgents/net.generic.worker.plist':
                     ensure  => present,
                     content => template('generic_worker/generic-worker.plist.erb'),
-                    mode    => '0644',
-                    owner   => $generic_worker::setttings::root_user,
-                    group   => $generic_worker::setttings::root_group;
+                    mode    => '0644';
 
                 '/usr/local/bin/run-generic-worker.sh':
                     ensure  => present,
                     content => template('generic_worker/run-generic-worker.sh.erb'),
-                    mode    => '0755',
-                    owner   => $generic_worker::setttings::root_user,
-                    group   => $generic_worker::setttings::root_group;
+                    mode    => '0755';
 
                 '/etc/generic-worker.config':
                     ensure  => present,
                     content => template('generic_worker/generic-worker.config.erb'),
-                    mode    => '0644',
-                    owner   => $generic_worker::setttings::root_user,
-                    group   => $generic_worker::setttings::root_group;
+                    mode    => '0644';
             }
 
             service { 'net.generic.worker':
