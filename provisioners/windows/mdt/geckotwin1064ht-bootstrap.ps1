@@ -86,6 +86,11 @@ function Install-BootstrapModule {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+
+    # Delete the existing module to ensure latest is used.
+    if (Test-Path "$modulesPath\\$filename") {
+        Remove-Item "$modulesPath\\$filename"
+    }
     mkdir $bootstrap_module  -ErrorAction SilentlyContinue
     Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$filename" -UseBasicParsing
     Get-Content -Encoding UTF8 "$bootstrap_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
