@@ -13,6 +13,8 @@ class fluentd (
     String $mac_log_level        = 'default',
 ) {
 
+    include shared
+
     case $facts['os']['name'] {
         'Darwin': {
             require packages::td_agent  # use treasure data's build
@@ -25,6 +27,8 @@ class fluentd (
                 include packages::fluent_plugin_google_cloud
 
                 file {
+                    default: * => $::shared::file_defaults;
+
                     '/etc/google':
                         ensure => 'directory';
 
@@ -34,32 +38,26 @@ class fluentd (
                     '/etc/google/auth/application_default_credentials.json':
                         ensure  => present,
                         content => template('fluentd/application_default_credentials.json.erb'),
-                        mode    => '0600',
-                        owner   => $::root_user,
-                        group   => $::root_group;
+                        mode    => '0600';
                 }
             }
 
             file {
+                default: * => $::shared::file_defaults;
+
                 '/Library/LaunchDaemons/td-agent.plist':
                     ensure  => present,
                     content => template('fluentd/td-agent.plist.erb'),
-                    mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    mode    => '0644';
 
                 '/etc/td-agent/td-agent.conf':
                     ensure  => present,
                     content => template('fluentd/fluentd.conf.erb'),
-                    mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    mode    => '0644';
 
                 '/var/log/td-agent':
                     ensure => directory,
-                    mode   => '0755',
-                    owner  => $::root_user,
-                    group  => $::root_group;
+                    mode   => '0755';
             }
 
             service { 'td-agent':
