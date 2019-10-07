@@ -340,7 +340,7 @@ Function set-restore_point {
   param (
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
-    [string] $date = (Get-Date -Format "yyyy/mm/dd/ HH:mm")
+    [string] $date = (Get-Date -Format "yyyy/mm/dd-HH:mm")
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
