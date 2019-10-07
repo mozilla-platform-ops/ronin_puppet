@@ -335,6 +335,7 @@ function Bootstrap-Puppet {
 }
 Function set-restore_point {
   param (
+    [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $date = (Get-Date -Format "yyyy/mm/dd/ HH:mm")
   )
@@ -345,8 +346,8 @@ Function set-restore_point {
     vssadmin delete shadows /all /quiet
     powershell.exe -Command Checkpoint-Computer -Description "default" -RestorePointType MODIFY_SETTINGS
     New-Item -Path $ronnin_key -Name source –Force
-    Set-ItemProperty -Path "$ronnin_key" -name reboot_count -type  dword -value 0
-    Set-ItemProperty -Path "$ronnin_key" -name last_restore_point -type  string -value $date
+    Set-ItemProperty -Path "$ronnin_key" -name "reboot_count" -type  dword -value 0
+    Set-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -type  string -value $date
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
