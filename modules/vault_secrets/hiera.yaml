@@ -1,0 +1,18 @@
+---
+version: 5
+
+defaults:  # Used for any hierarchy level that omits these keys.
+  datadir: data         # This path is relative to hiera.yaml's directory.
+  data_hash: yaml_data  # Use the built-in YAML backend.
+
+hierarchy:
+  - name: "Hiera-vault lookup"
+    lookup_key: hiera_vault
+    options:
+      ssl_verify: false
+      address: http://localhost:8200
+      token: /etc/vault_token
+      mounts:
+        hiera:
+          - "data/roles/%{facts.puppet_role}/"
+          - "data/common/"
