@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class telegraf (
-    Hash global_tags = {},
+    Hash $global_tags = {},
 ) {
 
     include shared
