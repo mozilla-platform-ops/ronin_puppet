@@ -13,8 +13,8 @@ class telegraf (
             require packages::telegraf
 
             $influxdb_url      = 'https://telegraf.relops.mozops.net'
-            $influxdb_username = lookup('telegraf.user', '')
-            $influxdb_password = lookup('telegraf.password', '')
+            $influxdb_username = lookup('telegraf.user')
+            $influxdb_password = lookup('telegraf.password')
 
             file {
                 default: * => $::shared::file_defaults;
