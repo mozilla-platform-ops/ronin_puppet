@@ -1,0 +1,59 @@
+# Telegraf Configuration
+<% if @global_tags -%>
+[global_tags]
+<%   @global_tags.sort.each do |key, value| -%>
+  <%= key %> = "<%= value %>"
+<%   end -%>
+<% end -%>
+
+[agent]
+  interval = "120s"
+  round_interval = true
+  metric_batch_size = 5000
+  metric_buffer_limit = 20000
+  collection_jitter = "300s"
+  flush_interval = "120s"
+  flush_jitter = "0s"
+  precision = "s"
+  debug = false
+  quiet = false
+  logfile = ""
+  hostname = "$HOSTNAME"
+  omit_hostname = false
+
+[[outputs.influxdb]]
+  # dev influxdb:
+  urls = ["<%= @influxdb_url %>"]
+  database = "relops"
+  #skip_database_creation = true
+  username = "<%= @influxdb_username %>"
+  password = "<%= @influxdb_password %>"
+  retention_policy = ""
+  write_consistency = "any"
+  timeout = "120s"
+
+[inputs.cpu]]
+  ## Whether to report per-cpu stats or not
+  percpu = true
+  ## Whether to report total system cpu stats or not
+  totalcpu = true
+  ## If true, collect raw CPU time metrics.
+  collect_cpu_time = false
+  ## If true, compute and report the sum of all non-idle CPU states.
+  report_active = false
+
+[[inputs.disk]]
+  ignore_fs = ["tmpfs", "devtmpfs"]
+
+[[inputs.mem]]
+  # no configuration
+
+[[inputs.swap]]
+  # no configuration
+
+[[inputs.system]]
+  # no configuration
+
+[[inputs.procstat]]
+  exe = "generic-worker"
+
