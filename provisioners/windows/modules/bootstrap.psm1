@@ -348,13 +348,11 @@ Function set-restore_point {
   process {
     vssadmin delete shadows /all /quiet
     powershell.exe -Command Checkpoint-Computer -Description "default" -RestorePointType MODIFY_SETTINGS
-#    New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
-#	New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+    New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
+	New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
 
-    reg add $mozilla_key /f
-    reg add $ronnin_key /f
-    Set-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  dword -value 0
-    Set-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
+    New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  dword -value 0
+    New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
