@@ -338,7 +338,7 @@ function Bootstrap-Puppet {
 }
 Function set-restore_point {
   param (
-    [string] $mozilla_key = "HKLM\SOFTWARE\Mozilla\",
+    [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $date = (Get-Date -Format "yyyy/mm/dd-HH:mm")
   )
