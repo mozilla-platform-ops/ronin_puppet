@@ -42,6 +42,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             class { 'packages::zstandard':
                 version => '1.3.8',
             }
+
             class { 'generic_worker::multiuser':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
