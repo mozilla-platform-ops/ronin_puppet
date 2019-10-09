@@ -362,6 +362,39 @@ Function set-restore_point {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+Function Start-Restore {
+  param (
+	[int32] $boots = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").reboot_count,
+	[int32] $max_boots = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").max_boots,
+	[string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").restore_needed
+	[string] $checkpoint_date = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").last_restore_point
+
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+	if ($boots -ge $max_boots)  -or ($restore_needed -eq true) {
+		if ($boots -ge $max_boots){
+			Write-Log -message  ('{0} :: System has reach the maxium number of reboots set at HKLM:\SOFTWARE\Mozilla\ronin_puppet\source\max_boots .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+		}
+		if ($restore_needed -eq "gw_bad_config") {
+			Write-Log -message  ('{0} :: Generic_worker has faild to start multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+		}
+		Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+		Stop-process -name generic-worker -force
+		Remove-Item -Recurse -Force $env:systemdrive\generic-worker
+		Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
+		# set-restore_point delets all existing check points to ensure the one needed is "1"
+		Restore-Computer -RestorePoint 1
+	} else {
+        Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 Function Bootstrap-CleanUp {
   param (
     [string] $bootstrapdir  = "$env:systemdrive\BootStrap\"

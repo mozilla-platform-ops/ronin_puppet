@@ -129,6 +129,6 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-#  Bootstrap-CleanUp
+  Import-Module bootstrap
+  Start-Restore
 }
