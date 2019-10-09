@@ -253,7 +253,8 @@ function Puppet-Run {
 }
 
 $bootstrap_stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-If (Test-Path -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet\reboot_count") {
+$reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet reboot_count -ErrorAction SilentlyContinue
+  If ( $reboot_count_exists -ne $null) {
   $previous_boots = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").reboot_count
   $new_count = $previous_boots + 1
   Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name reboot_count -value $new_count -force
