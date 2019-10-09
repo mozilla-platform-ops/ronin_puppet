@@ -7,7 +7,7 @@
 <% end -%>
 
 [agent]
-  interval = "120s"
+  interval = "60s"
   round_interval = true
   metric_batch_size = 5000
   metric_buffer_limit = 20000
@@ -18,7 +18,6 @@
   debug = false
   quiet = false
   logfile = ""
-  hostname = "${HOSTNAME}"
   omit_hostname = false
 
 [[outputs.influxdb]]
