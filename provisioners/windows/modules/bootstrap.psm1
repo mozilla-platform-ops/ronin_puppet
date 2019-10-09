@@ -340,7 +340,8 @@ Function set-restore_point {
   param (
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
-    [string] $date = (Get-Date -Format "yyyy/mm/dd-HH:mm")
+    [string] $date = (Get-Date -Format "yyyy/mm/dd-HH:mm"),
+	[int32] $max_boots
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -354,6 +355,8 @@ Function set-restore_point {
 
     New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  dword -value 0
     New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
+    New-ItemProperty -Path "$ronnin_key" -name "restore_needed" -PropertyType  string -value false
+	New-ItemProperty -Path "$ronnin_key" -name "max_boots" -PropertyType  string -value $max_boots
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

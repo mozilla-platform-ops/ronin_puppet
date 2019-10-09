@@ -106,6 +106,7 @@ $src_Organisation = 'markcor'
 $src_Repository = 'ronin_puppet'
 $src_Revision = 'restore2'
 $image_provisioner = 'mdt'
+$max_boots = 200
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
@@ -116,7 +117,7 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Setup-Logging
   Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Set-restore_point
+  Set-restore_point -max_boots $max_boots
   Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
   Install-Prerequ
   Bootstrap-schtasks
