@@ -56,8 +56,8 @@ class telegraf (
             }
 
             service { 'telegraf':
-                require => File['/Library/LaunchDaemons/telegraf.plist'],
                 ensure  => running,
+                require => File['/Library/LaunchDaemons/telegraf.plist'],
                 enable  => true,
             }
 
