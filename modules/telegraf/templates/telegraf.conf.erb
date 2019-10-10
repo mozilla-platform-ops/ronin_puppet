@@ -65,11 +65,11 @@
   ]
   timeout = "60s"
   data_format = "influx"
-<% else %>
+<% else -%>
 [[inputs.temp]]
 
 [[inputs.hddtemp]]
-<% end %>
+<% end -%>
 
 [[inputs.filecount]]
 <% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
