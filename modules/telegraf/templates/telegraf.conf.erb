@@ -8,7 +8,7 @@
 
 [agent]
 <% @agent_params.sort.each do |key, value| -%>
-  <%= key %> = "<%= value %>"
+  <%= key -%> = <% if value.is_a?(String) %>"<%= value %>"<% elsif value.is_a?(Array) %><%= value.inspect %><% else %><%= value %><% end %>
 <%   end -%>
 
 [[outputs.influxdb]]
