@@ -6,15 +6,21 @@ class mercurial::system_hgrc {
 
     include mercurial::settings
     include mercurial::cacert
+    include shared
 
-    file { $::mercurial::settings::hgrc_parentdirs:
-        ensure => directory,
-        owner  => $::root_user,
-        group  => $::root_group,
+    file {
+        default: * => $::shared::file_defaults;
+
+        $::mercurial::settings::hgrc_parentdirs:
+            ensure => directory;
     }
 
+    # Get systems default root user and group
+    $root_user = $::shared::file_defaults['owner']
+    $root_group = $::shared::file_defaults['group']
+
     mercurial::hgrc { $::mercurial::settings::hgrc:
-        user  => $::root_user,
-        group => $::root_group,
+        user  => $root_user,
+        group => $root_group,
     }
 }
