@@ -8,13 +8,14 @@ class telegraf (
 
     include shared
 
+    require packages::telegraf
+
+    $influxdb_url      = 'https://telegraf.relops.mozops.net'
+    $influxdb_username = lookup('telegraf.user')
+    $influxdb_password = lookup('telegraf.password')
+
     case $facts['os']['name'] {
         'Darwin': {
-            require packages::telegraf
-
-            $influxdb_url      = 'https://telegraf.relops.mozops.net'
-            $influxdb_username = lookup('telegraf.user')
-            $influxdb_password = lookup('telegraf.password')
 
             file {
                 default: * => $::shared::file_defaults;
@@ -30,14 +31,14 @@ class telegraf (
                     content => template('telegraf/telegraf.conf.erb'),
                     mode    => '0600';
 
+                '/var/log/telegraf':
+                    ensure => directory,
+                    mode   => '0755';
+
                 '/Library/LaunchDaemons/telegraf.plist':
                     ensure  => present,
                     content => template('telegraf/telegraf.plist.erb'),
                     mode    => '0644';
-
-                '/var/log/telegraf':
-                    ensure => directory,
-                    mode   => '0755';
             }
 
             service { 'telegraf':
