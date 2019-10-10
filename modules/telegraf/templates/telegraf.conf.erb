@@ -7,18 +7,9 @@
 <% end -%>
 
 [agent]
-  interval = "60s"
-  round_interval = true
-  metric_batch_size = 5000
-  metric_buffer_limit = 20000
-  collection_jitter = "300s"
-  flush_interval = "120s"
-  flush_jitter = "0s"
-  precision = "s"
-  debug = false
-  quiet = false
-  logfile = ""
-  omit_hostname = false
+<% @agent_params.sort.each do |key, value| -%>
+  <%= key %> = "<%= value %>"
+<%   end -%>
 
 [[outputs.influxdb]]
   urls = ["<%= @influxdb_url %>"]

@@ -3,7 +3,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class telegraf (
-    Hash $global_tags = {},
+    Hash $global_tags  = {},
+    Hash $agent_params = {
+        'interval' => '60s',
+        'round_interval' => true,
+        'metric_batch_size' => 5000,
+        'metric_buffer_limit' => 20000,
+        'collection_jitter' => '0s',
+        'flush_interval' => '120s',
+        'flush_jitter' => '60s',
+        'precision' => 's',
+        'debug' => false,
+        'quiet' => false,
+        'logfile' => '',
+        'omit_hostname' => false,
+    },
 ) {
 
     include shared
