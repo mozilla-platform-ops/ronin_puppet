@@ -21,7 +21,6 @@
   omit_hostname = false
 
 [[outputs.influxdb]]
-  # dev influxdb:
   urls = ["<%= @influxdb_url %>"]
   database = "relops"
   #skip_database_creation = true
@@ -44,14 +43,41 @@
 [[inputs.disk]]
   ignore_fs = ["tmpfs", "devtmpfs"]
 
+[[inputs.diskio]]
+
 [[inputs.mem]]
-  # no configuration
 
 [[inputs.swap]]
-  # no configuration
 
 [[inputs.system]]
-  # no configuration
+
+<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+[[inputs.exec]]
+  commands = [
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+  ]
+  timeout = "60s"
+  data_format = "influx"
+
+[[inputs.exec]]
+  commands = [
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+  ]
+  timeout = "60s"
+  data_format = "influx"
+<% else %>
+[[inputs.temp]]
+
+[[inputs.hddtemp]]
+<% end %>
+
+[[inputs.filecount]]
+<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+  directories = ["/Users/task*"]
+<% else -%>
+  directories = ["/home/task*"]
+<% end -%>
+  tagexclude = ["directory"]
 
 [[inputs.procstat]]
   exe = "generic-worker"
