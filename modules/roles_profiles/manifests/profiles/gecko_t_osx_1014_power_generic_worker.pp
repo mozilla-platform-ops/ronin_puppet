@@ -28,6 +28,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
                 worker_type => $worker_type,
             }
 
+            require packages::xcode_cmd_line_tools
+
             class { 'talos':
                 user => 'cltbld',
             }
