@@ -353,10 +353,10 @@ Function set-restore_point {
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
 
-    New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  dword -value 0
+    New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  BINARY -value 0
     New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
     New-ItemProperty -Path "$ronnin_key" -name "restore_needed" -PropertyType  string -value false
-	New-ItemProperty -Path "$ronnin_key" -name "max_boots" -PropertyType  dword -value $max_boots
+	New-ItemProperty -Path "$ronnin_key" -name "max_boots" -PropertyType  BINARY -value $max_boots
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
