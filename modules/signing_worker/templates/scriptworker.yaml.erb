@@ -1,7 +1,7 @@
 provisioner_id: scriptworker-prov-v1
 worker_group: signing-mac-v1
-worker_type: tb-signing-mac-v1
-worker_id: "<%= @worker_id %>"
+worker_type: <%= @worker_config['worker_type'] %>
+worker_id: <%= @worker_id %>
 
 credentials:
     clientId: "<%= @worker_config['taskcluster_client_id'] %>"
