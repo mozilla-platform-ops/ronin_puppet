@@ -366,7 +366,7 @@ Function Start-Restore {
   param (
 	[int32] $boots = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").reboot_count,
 	[int32] $max_boots = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").max_boots,
-	[string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").restore_needed
+	[string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").restore_needed,
 	[string] $checkpoint_date = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").last_restore_point
 
   )
