@@ -7,6 +7,7 @@ class packages::python3 (
 ) {
 
     # https://www.python.org/ftp/python/3.7.4/python-3.7.4-macosx10.9.pkg
+    # 9c7771bc539c619e47aed34074d07d67abb80013610754a561bbc40d70eefe5b
 
     packages::macos_package_from_s3 { "python-${version}-macosx10.9.pkg":
         private             => false,
