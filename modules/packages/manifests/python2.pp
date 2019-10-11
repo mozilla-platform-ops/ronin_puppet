@@ -6,6 +6,9 @@ class packages::python2 (
     Pattern[/^\d+\.\d+\.\d+_?\d*$/] $version = '2.7.16',
 ) {
 
+    # https://www.python.org/ftp/python/2.7.16/python-2.7.16-macosx10.9.pkg
+    # c4354a53f4a85c28470d191cc44292f01745984040bc0e8e311894776d0b906c
+
     packages::macos_package_from_s3 { "python-${version}-macosx10.9.pkg":
         private             => false,
         os_version_specific => false,
