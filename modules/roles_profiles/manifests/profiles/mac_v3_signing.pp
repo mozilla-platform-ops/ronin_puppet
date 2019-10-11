@@ -38,13 +38,6 @@ class roles_profiles::profiles::mac_v3_signing {
                 # workerGroup: mdcN (3rd dot-separated string in fqdn)
                 # workerType: $worker_type
                 worker_type => $worker_type,
-                # If not using the default gcp project "fx-worker-logging-prod",
-                # vault secrets are required for:
-                # stackdriver.${stackdriver_project}.keyid
-                # stackdriver.${stackdriver_project}.key
-                # stackdriver.${stackdriver_project}.clientid
-                # For a service account with logging write access.
-                stackdriver_project => 'fx-worker-logging-prod',
             }
 
             include dirs::tools

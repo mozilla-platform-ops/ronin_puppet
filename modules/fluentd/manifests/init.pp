@@ -4,34 +4,43 @@
 
 class fluentd (
     String $worker_type,
-    String $stackdriver_project,
-    String $stackdriver_keyid,
-    String $stackdriver_key,
-    String $stackdriver_clientid,
+    String $stackdriver_project  = '',
+    String $stackdriver_keyid    = '',
+    String $stackdriver_key      = '',
+    String $stackdriver_clientid = '',
+    String $syslog_host          = lookup('papertrail.host', {'default_value' => ''}),
+    Integer $syslog_port         = lookup('papertrail.port', {'default_value' => 514}),
+    String $mac_log_level        = 'default',
 ) {
 
     case $facts['os']['name'] {
         'Darwin': {
             require packages::td_agent  # use treasure data's build
 
-            # use google's plugin for output ot stackdriver
-            include packages::fluent_plugin_google_cloud
-            # td-agent.conf assumes this plugin is present
+            # the agent config assumes these plugins are available:
+            include packages::fluent_plugin_remote_syslog
+            include packages::fluent_plugin_papertrail
+
+            if $stackdriver_clientid != '' {
+                include packages::fluent_plugin_google_cloud
+
+                file {
+                    '/etc/google':
+                        ensure => 'directory';
+
+                    '/etc/google/auth':
+                        ensure => 'directory';
+
+                    '/etc/google/auth/application_default_credentials.json':
+                        ensure  => present,
+                        content => template('fluentd/application_default_credentials.json.erb'),
+                        mode    => '0600',
+                        owner   => $::root_user,
+                        group   => $::root_group;
+                }
+            }
 
             file {
-                '/etc/google':
-                    ensure => 'directory';
-
-                '/etc/google/auth':
-                    ensure => 'directory';
-
-                '/etc/google/auth/application_default_credentials.json':
-                    ensure  => present,
-                    content => template('fluentd/application_default_credentials.json.erb'),
-                    mode    => '0600',
-                    owner   => $::root_user,
-                    group   => $::root_group;
-
                 '/Library/LaunchDaemons/td-agent.plist':
                     ensure  => present,
                     content => template('fluentd/td-agent.plist.erb'),
