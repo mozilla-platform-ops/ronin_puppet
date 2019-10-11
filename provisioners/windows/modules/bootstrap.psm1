@@ -374,7 +374,7 @@ Function Start-Restore {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-	if ($boots -ge $max_boots)  -or ($restore_needed -eq true) {
+	if ($boots -ge $max_boots)  -or ($restore_needed -notlike false) {
 		if ($boots -ge $max_boots){
 			Write-Log -message  ('{0} :: System has reach the maxium number of reboots set at HKLM:\SOFTWARE\Mozilla\ronin_puppet\source\max_boots .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		}
