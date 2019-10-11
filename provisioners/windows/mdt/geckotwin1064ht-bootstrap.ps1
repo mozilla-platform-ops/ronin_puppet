@@ -130,5 +130,5 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
 }
 If ($stage -eq 'complete') {
   Import-Module bootstrap
-#  Start-Restore
+  Start-Restore
 }
