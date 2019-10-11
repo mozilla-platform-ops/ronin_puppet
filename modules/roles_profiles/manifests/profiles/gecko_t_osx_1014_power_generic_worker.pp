@@ -106,6 +106,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
             contain packages::virtualenv
 
             include mercurial::ext::robustcheckout
+
+            contain packages::intel_power_gadget
         }
         default: {
             fail("${::operatingsystem} not supported")
