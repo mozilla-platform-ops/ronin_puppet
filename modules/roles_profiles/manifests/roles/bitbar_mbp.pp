@@ -7,6 +7,7 @@ class roles_profiles::roles::bitbar_mbp {
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::ntp
     include ::roles_profiles::profiles::network
+    include ::roles_profiles::profiles::ssh
     include ::roles_profiles::profiles::disable_services
     include ::roles_profiles::profiles::vnc
     include ::roles_profiles::profiles::suppress_dialog_boxes
