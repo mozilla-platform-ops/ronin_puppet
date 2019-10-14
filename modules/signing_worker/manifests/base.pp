@@ -68,11 +68,11 @@ class signing_worker::base {
       source   => "https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine",
     }
     ->file { 'Remove widevine directory':
-      ensure => absent,
-      path => $widevine_clone_dir,
+      ensure  => absent,
+      path    => $widevine_clone_dir,
       recurse => true,
-      purge => true,
-      force => true,
+      purge   => true,
+      force   => true,
     }
 
     contain packages::virtualenv_python3_s3

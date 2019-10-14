@@ -45,16 +45,6 @@ class fluentd (
             file {
                 default: * => $::shared::file_defaults;
 
-                    '/etc/google/auth/application_default_credentials.json':
-                        ensure  => present,
-                        content => template('fluentd/application_default_credentials.json.erb'),
-                        mode    => '0600',
-                        owner   => $::root_user,
-                        group   => $::root_group;
-                }
-            }
-
-            file {
                 '/Library/LaunchDaemons/td-agent.plist':
                     ensure  => present,
                     content => template('fluentd/td-agent.plist.erb'),
