@@ -11,7 +11,7 @@ class packages::fluent_plugin_remote_syslog {
         'install remote syslog plugin with agent ruby':
             path    => ['/bin', '/sbin', '/usr/sbin', '/usr/local/bin', '/usr/bin'],
             command => "/usr/sbin/td-agent-gem install fluent-plugin-remote_syslog --version ${version}",
-            unless  => "test -f /opt/td-agent/embedded/lib/ruby/gems/2.4.0/gems/fluent-plugin-remote_syslog-${version}",
+            unless  => "test -e /opt/td-agent/embedded/lib/ruby/gems/2.4.0/gems/fluent-plugin-remote_syslog-${version}",
             require => Class['packages::td_agent'];
     }
 }
