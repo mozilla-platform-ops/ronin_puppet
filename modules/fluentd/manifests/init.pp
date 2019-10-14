@@ -8,10 +8,12 @@ class fluentd (
     String $stackdriver_keyid    = '',
     String $stackdriver_key      = '',
     String $stackdriver_clientid = '',
-    String $syslog_host          = lookup('papertrail.host', {'default_value' => ''}),
-    Integer $syslog_port         = lookup('papertrail.port', {'default_value' => 514}),
+    String $syslog_host          = lookup('papertrail.host'),
+    Integer $syslog_port         = lookup('papertrail.port'),
     String $mac_log_level        = 'default',
 ) {
+
+    include shared
 
     case $facts['os']['name'] {
         'Darwin': {
@@ -25,11 +27,23 @@ class fluentd (
                 include packages::fluent_plugin_google_cloud
 
                 file {
+                    default: * => $::shared::file_defaults;
+
                     '/etc/google':
                         ensure => 'directory';
 
                     '/etc/google/auth':
                         ensure => 'directory';
+
+                    '/etc/google/auth/application_default_credentials.json':
+                        ensure  => present,
+                        content => template('fluentd/application_default_credentials.json.erb'),
+                        mode    => '0600';
+                }
+            }
+
+            file {
+                default: * => $::shared::file_defaults;
 
                     '/etc/google/auth/application_default_credentials.json':
                         ensure  => present,
@@ -44,22 +58,16 @@ class fluentd (
                 '/Library/LaunchDaemons/td-agent.plist':
                     ensure  => present,
                     content => template('fluentd/td-agent.plist.erb'),
-                    mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    mode    => '0644';
 
                 '/etc/td-agent/td-agent.conf':
                     ensure  => present,
                     content => template('fluentd/fluentd.conf.erb'),
-                    mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    mode    => '0644';
 
                 '/var/log/td-agent':
                     ensure => directory,
-                    mode   => '0755',
-                    owner  => $::root_user,
-                    group  => $::root_group;
+                    mode   => '0755';
             }
 
             service { 'td-agent':

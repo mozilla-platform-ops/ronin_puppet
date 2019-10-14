@@ -2,7 +2,7 @@
 
 ntp_server: "0.pool.ntp.org"
 
-smtp_relay_host: "smtp1.private.mdc1.mozilla.com"
+smtp_relay_host: "smtp1.mail.mdc1.mozilla.com"
 
 # Apple firmware acceptance hash
 apple_firmware_acceptance:
