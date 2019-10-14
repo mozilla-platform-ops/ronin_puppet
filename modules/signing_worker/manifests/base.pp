@@ -33,6 +33,21 @@ class signing_worker::base {
         default => fail('No matching hostname'),
     }
 
+    # Lookup the group array and realize their user resource
+    $notarization_users = $::hostname ? {
+        /^(tb-)?mac-v3-signing\d+/ =>
+            lookup('user_groups.notarization', Array, undef, []),
+        /^dep-mac-v3-signing\d+/ =>
+            lookup('user_groups.dep_notarization', Array, undef, []),
+        default => [],
+    }
+
+    $supported_behaviors = $::hostname ? {
+        /^(tb-)?mac-v3-signing\d+/ => ['mac_sign', 'mac_sign_and_pkg', 'mac_geckoview', 'mac_notarize'],
+        /^dep-mac-v3-signing\d+/ => ['mac_sign', 'mac_sign_and_pkg'],
+        default => [],
+    }
+
     # Load hash of all the template variables
     $worker_config = lookup("signingworker_config.${role}", Hash, undef, undef)
     $role_config = lookup("signingworker_roles.${role}", Hash, undef, undef)
