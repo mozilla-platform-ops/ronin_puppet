@@ -353,10 +353,10 @@ Function set-restore_point {
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
 
-    New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  BINARY -value 0
+    New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  Dword -value 0
     New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
     New-ItemProperty -Path "$ronnin_key" -name "restore_needed" -PropertyType  string -value false
-	New-ItemProperty -Path "$ronnin_key" -name "max_boots" -PropertyType  BINARY -value $max_boots
+	New-ItemProperty -Path "$ronnin_key" -name "max_boots" -PropertyType  Dword -value $max_boots
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -364,10 +364,11 @@ Function set-restore_point {
 }
 Function Start-Restore {
   param (
-	[int32] $boots = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").reboot_count,
-	[int32] $max_boots = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").max_boots,
-	[string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").restore_needed,
-	[string] $checkpoint_date = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").last_restore_point
+    [string] $ronin_key "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
+	[int32] $boots = (Get-ItemProperty $ronin_key).reboot_count,
+	[int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
+	[string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
+	[string] $checkpoint_date = (Get-ItemProperty $ronin_key).last_restore_point
 
   )
   begin {
