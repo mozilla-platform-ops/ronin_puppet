@@ -364,7 +364,7 @@ Function set-restore_point {
 }
 Function Start-Restore {
   param (
-    [string] $ronin_key "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
+    [string] $ronin_key = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
 	[int32] $boots = (Get-ItemProperty $ronin_key).reboot_count,
 	[int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
 	[string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
