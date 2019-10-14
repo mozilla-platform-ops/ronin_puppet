@@ -2,14 +2,13 @@ work_dir: "<%= scope['signing_worker::scriptworker_base'] %>/work"
 artifact_dir: "<%= scope['signing_worker::scriptworker_base'] %>/artifacts"
 taskcluster_scope_prefix: "<%= @worker_config['taskcluster_scope_prefix'] %>"
 verbose: true
-<% if @notarization_users.empty? %>
+<% if @notarization_users.empty? -%>
 local_notarization_accounts: []
-<% else %>
+<% else -%>
 local_notarization_accounts:
 <% @notarization_users.each do |user| -%>
     - <%= user %>
-<% end %>
-<% end %>
+<% end -%><% end -%>
 default_keychains:
     - "/Users/<%= scope['signing_worker::user'] %>/Library/Keychains/login.keychain-db"
     - "/Library/Keychains/System.keychain"
@@ -22,7 +21,7 @@ mac_config:
         supported_behaviors:
 <% @supported_behaviors.each do |behavior| -%>
             - <%= behavior %>
-<% end %>
+<% end -%>
         sign_with_entitlements: <%= role_data['sign_with_entitlements'] %>
         verify_mac_signature: <%= role_data['verify_mac_signature'] %>
         base_bundle_id: "<%= role_data['base_bundle_id'] %>"
