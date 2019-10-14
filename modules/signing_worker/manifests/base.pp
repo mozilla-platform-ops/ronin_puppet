@@ -54,12 +54,6 @@ class signing_worker::base {
       ensure => absent,
       path   => "${widevine_clone_dir}/.git/config",
     }
-    ->file_line { 'Remove credentials from widevine clone':
-      ensure => present,
-      path   => "${widevine_clone_dir}/.git/config",
-      line   => "        url = git@github.com:mozilla-services/widevine.git",
-      match  => '^.*url.*',
-    }
 
     contain packages::virtualenv_python3_s3
     python::virtualenv { "signingworker_${signing_worker::user}" :
