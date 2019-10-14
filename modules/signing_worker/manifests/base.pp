@@ -58,6 +58,8 @@ class signing_worker::base {
 
     file { $tmp_requirements:
         content => template('signing_worker/requirements.txt.erb'),
+        owner   =>  $signing_worker::user,
+        group   =>  $signing_worker::group,
     }
 
     vcsrepo { $widevine_clone_dir:
@@ -65,9 +67,12 @@ class signing_worker::base {
       provider => git,
       source   => "https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine",
     }
-    ->file { 'Remove credentials from widevine clone':
+    ->file { 'Remove widevine directory':
       ensure => absent,
-      path   => "${widevine_clone_dir}/.git/config",
+      path => $widevine_clone_dir,
+      recurse => true,
+      purge => true,
+      force => true,
     }
 
     contain packages::virtualenv_python3_s3
@@ -133,9 +138,13 @@ class signing_worker::base {
     # scriptworker config
     file { $script_config_file:
         content => template('signing_worker/script_config.yaml.erb'),
+        owner   => $signing_worker::user,
+        group   => $signing_worker::group,
     }
     file { $scriptworker_config_file:
         content => template('signing_worker/scriptworker.yaml.erb'),
+        owner   => $signing_worker::user,
+        group   => $signing_worker::group,
     }
 
     file { $scriptworker_wrapper:
