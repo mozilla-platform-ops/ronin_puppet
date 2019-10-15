@@ -276,11 +276,13 @@ function Bootstrap-Puppet {
         Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
       } else {
         Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-        DO {
-          Start-Sleep -s 60
-          git pull https://github.com/$sourceOrg/$sourceRepo $sourceRev
-          $git_exit = $LastExitCode
-        } Until ( $git_exit -eq 0)
+	 	Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
+	 	Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
+	 	Remove-Item -Recurse -Force $ronin_repo
+	 	Start-Sleep -s 2
+	 	git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+	 	Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
+	 	Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
       }
     }
     Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
@@ -387,7 +389,6 @@ Function Start-Restore {
 		Stop-process -name generic-worker -force
 		Remove-Item -Recurse -Force $env:systemdrive\generic-worker
         Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
-        Remove-Item -Recurse -Force $env:systemdrive\ronin
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
         sc delete "generic-worker"
