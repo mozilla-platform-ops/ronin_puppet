@@ -83,12 +83,10 @@ function Install-Prerequ {
   }
   process {
 
-    remove-item $local_dir   -Recurse  -force
     New-Item -path $work_dir -ItemType "directory"
     Set-location -path $work_dir
     Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
     Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
-    Read-Host "Ensure c:\bootstrap\secrets\vault.yaml is present, and then press enter to continue"
     Set-location -path $local_dir
     remove-item $work_dir   -Recurse  -force
 
@@ -102,39 +100,17 @@ function Install-Prerequ {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Name-Node {
-  param (
-    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
-    [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $namefile = "bitbar_name_by_mac.txt"
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
 
-    $mac = (gwmi Win32_NetworkAdapter -Filter "MacAddress like '%:%'" | select -exp macaddress)
-    Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile -UseBasicParsing
-    $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
-    $name = ($name_mac.trim("$mac/:"))
-    if ($name -NotMatch $env:COMPUTERNAME) {
-      Rename-Computer -NewName "$name"
-      Write-Log -message  ('{0} :: Node renamed {1}' -f $($MyInvocation.MyCommand.Name), ("$name")) -severity 'DEBUG'
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
 function Set-RoninRegOptions {
   param (
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
-    [string] $workerType = 'gecko-t-win10-64-ref-hw',
-    [string] $src_Organisation = 'mozilla-platform-ops',
-    [string] $src_Repository = 'ronin_puppet',
-    [string] $src_Revision = 'master'
+    [string] $image_provisioner,
+    [string] $workerType,
+    [string] $src_Organisation,
+    [string] $src_Repository,
+    [string] $src_Revision
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -144,6 +120,7 @@ function Set-RoninRegOptions {
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
     New-Item -Path $ronnin_key -Name source –Force
 
+    New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String
     New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
     $role = $workerType -replace '-',''
     New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
@@ -153,6 +130,7 @@ function Set-RoninRegOptions {
     New-ItemProperty -Path "$ronnin_key" -Name 'runtosuccess' -Value 'true' -PropertyType String
     New-ItemProperty -Path "$ronnin_key" -Name 'last_run_exit' -Value '0' -PropertyType Dword
     New-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'setup' -PropertyType String
+
 
     New-ItemProperty -Path "$source_key" -Name 'Organisation' -Value "$src_Organisation" -PropertyType String
     New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String
@@ -202,7 +180,8 @@ Function Bootstrap-schtasks {
     [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
     [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
     [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
-    [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+    [string] $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage,
+    [string] $image_provisioner = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").image_provisioner
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -210,7 +189,7 @@ Function Bootstrap-schtasks {
   process {
 
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
+    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$image_provisioner/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
     Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
     Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
   }
@@ -252,10 +231,6 @@ Function Ronin-PreRun {
 
     Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
     Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
-
-    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1"
-    Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
-    Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
 
   }
   end {
@@ -375,23 +350,4 @@ Function Bootstrap-CleanUp {
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
-}
-
-If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
-  $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-}
-If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-  Setup-Logging
-  Set-RoninRegOptions
-  Install-Prerequ
-  Bootstrap-schtasks
-  Name-Node
-  shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
-}
-If ($stage -ne 'complete') {
-  Ronin-PreRun
-  Bootstrap-Puppet
-}
-If ($stage -eq 'complete') {
-  Bootstrap-CleanUp
 }

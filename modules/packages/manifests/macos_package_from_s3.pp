@@ -3,15 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define packages::macos_package_from_s3 (
-    Optional[String] $bucket           = undef,
-    Optional[String] $s3_domain        = undef,
-    Optional[String] $file_destination = undef,
-    Optional[String] $checksum         = undef,
-    Boolean $private                   = false,
-    Boolean $os_version_specific       = true,
-    Enum['bin', 'pkg', 'dmg'] $type    = 'bin',
+    Optional[String] $bucket                     = undef,
+    Optional[String] $s3_domain                  = undef,
+    Optional[String] $file_destination           = undef,
+    Optional[String] $checksum                   = undef,
+    Boolean $private                             = false,
+    Boolean $os_version_specific                 = true,
+    Enum['bin', 'pkg', 'dmg', 'appdmg'] $type    = 'bin',
 ) {
 
+    include shared
     require packages::setup
 
     $_bucket = $bucket ? { true => $bucket, default => $packages::setup::default_bucket }
@@ -33,14 +34,15 @@ define packages::macos_package_from_s3 (
 
     case $type {
         'bin': {
-            file { $file_destination:
-                ensure         => 'file',
-                source         => $source,
-                checksum       => 'sha256',
-                checksum_value => $checksum,
-                mode           => '0755',
-                owner          => $::root_user,
-                group          => $::root_group,
+            file {
+                default: * => $::shared::file_defaults;
+
+                $file_destination:
+                    ensure         => 'file',
+                    source         => $source,
+                    checksum       => 'sha256',
+                    checksum_value => $checksum,
+                    mode           => '0755';
             }
         }
         'pkg','dmg': {
@@ -48,6 +50,14 @@ define packages::macos_package_from_s3 (
             package { $title:
                     ensure   => 'installed',
                     provider => 'pkgdmg',
+                    source   => $source,
+            }
+        }
+        'appdmg': {
+            # Install dmg with an app folder inside
+            package { $title:
+                    ensure   => 'installed',
+                    provider => 'appdmg',
                     source   => $source,
             }
         }

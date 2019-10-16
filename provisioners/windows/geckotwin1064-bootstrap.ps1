@@ -39,91 +39,7 @@ function Write-Log {
   Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
   if ([Environment]::UserInteractive) {
     $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
-    Write-Host  -object $message -ForegroundColor $fc
-  }
-}
-function Setup-Logging {
-  param (
-    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
-    [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
-    [string] $nxlog_conf = "nxlog.conf",
-    [string] $nxlog_pem  = "papertrail-bundle.pem",
-    [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
-
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    New-Item -ItemType Directory -Force -Path $local_dir
-
-    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
-    msiexec /i $local_dir\$nxlog_msi /passive
-    while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
-    while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
-    Restart-Service -Name nxlog -force
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-function Install-Prerequ {
-  param (
-    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
-    [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $work_dir = "$env:systemdrive\scratch",
-    [string] $git = "Git-2.18.0-64-bit.exe",
-    [string] $puppet = "puppet-agent-6.0.0-x64.msi"
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-
-    remove-item $local_dir   -Recurse  -force
-    New-Item -path $work_dir -ItemType "directory"
-    Set-location -path $work_dir
-    Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
-    Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
-    Read-Host "Enusre c:\bootstrap\secrets\vault.yam is present, and then press eneter to continue"
-    Set-location -path $local_dir
-    remove-item $work_dir   -Recurse  -force
-
-    Start-Process $local_dir\$git /verysilent -wait
-    Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
-    Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
-    Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
-
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-function Name-Node {
-  param (
-    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
-    [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $namefile = "bitbar_name_by_mac.txt"
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-
-    $mac = (gwmi Win32_NetworkAdapter -Filter "MacAddress like '%:%'" | select -exp macaddress)
-    Invoke-WebRequest  $ext_src/$namefile -outfile $local_dir\$namefile -UseBasicParsing
-    $name_mac = (Get-content "$local_dir\$namefile"| Where-Object { $_.Contains("$mac") })
-    $name = ($name_mac.trim("$mac/:"))
-    if ($name -NotMatch $env:COMPUTERNAME) {
-      Rename-Computer -NewName "$name"
-      Write-Log -message  ('{0} :: Node renamed {1}' -f $($MyInvocation.MyCommand.Name), ("$name")) -severity 'DEBUG'
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    Write-Host -object $message -ForegroundColor $fc
   }
 }
 function Set-RoninRegOptions {
@@ -131,7 +47,7 @@ function Set-RoninRegOptions {
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
     [string] $ronnin_key = "$mozilla_key\ronin_puppet",
     [string] $source_key = "$ronnin_key\source",
-    [string] $workerType = 'gecko-t-win10-64-ref-ht',
+    [string] $workerType = 'gecko-t-win10-64',
     [string] $src_Organisation = 'mozilla-platform-ops',
     [string] $src_Repository = 'ronin_puppet',
     [string] $src_Revision = 'master'
@@ -196,29 +112,6 @@ Function Clone-Ronin {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-Function Bootstrap-schtasks {
-  param (
-    [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
-    [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
-    [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
-    [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-
-    Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
-    Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
-    Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-
 Function Ronin-PreRun {
   param (
     [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
@@ -231,8 +124,7 @@ Function Ronin-PreRun {
     [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
     [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
     [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
-    [string] $winlogon = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision
 
   )
   begin {
@@ -244,6 +136,8 @@ Function Ronin-PreRun {
 
     if (!(Test-path $nodes_def)) {
       Copy-item -path $nodes_def_src -destination $nodes_def -force
+      write-host here
+      write-host $workerType
       (Get-Content -path $nodes_def) -replace 'roles::role', "roles::$role" | Set-Content $nodes_def
     }
     if (!(Test-path $secrets)) {
@@ -310,7 +204,7 @@ function Bootstrap-Puppet {
     # Setting Env variabes for PuppetFile install and Puppet run
     # The ssl variables are needed for R10k
     Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    $env:path = $env:path = "$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
+    $env:path = "$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
     $env:SSL_CERT_FILE = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl\cert.pem"
     $env:SSL_CERT_DIR = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl"
     $env:FACTER_env_windows_installdir = "$env:programfiles\Puppet Labs\Puppet"
@@ -381,17 +275,13 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
   $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-  Setup-Logging
   Set-RoninRegOptions
-  Install-Prerequ
-  Bootstrap-schtasks
-  Name-Node
-  shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
-}
-If ($stage -ne 'complete') {
   Ronin-PreRun
+}
+<#
+If ($stage -ne 'complete') {
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
   Bootstrap-CleanUp
-}
+} #>

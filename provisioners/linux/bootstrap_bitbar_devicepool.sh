@@ -47,12 +47,12 @@ function update_puppet {
     git checkout --force origin/${PUPPET_BRANCH} || return 1
 
     # Purge modules no longer managed by Puppetfile
-    R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
-    $R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
+    #R10K_PURGE_OPTIONS=("--moduledir=${R10K_DIR}" '-v')
+    #$R10K_BIN puppetfile purge "${R10K_PURGE_OPTIONS[@]}"
 
     # Install r10k modules
-    R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
-    $R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
+    #R10K_INSTALL_OPTIONS=("--moduledir=${R10K_DIR}" '--force' '-v')
+    #$R10K_BIN puppetfile install "${R10K_INSTALL_OPTIONS[@]}"
 
     FQDN=$(${FACTER_BIN} networking.fqdn)
 
