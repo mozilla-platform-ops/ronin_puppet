@@ -180,7 +180,7 @@ fi
 checksum "/Applications/Intel Power Gadget/PowerLog" \
   9210e37554afc4449dcd3896aa6c9a884b20f0788e75ed2dcfae79f294b2d151 \
   || install "https://software.intel.com/sites/default/files/managed/16/90/Intel%20Power%20Gadget.dmg" \
-    efd306800c28abda0d5543fbc5bf78eb142a43a96feb56fcf211e3bbc83a78d3 \
+    f88af78566e406a06bf96349a7314a811cedfa698b38252ffc36f4f19ab52b65 \
   && (
     sudo kextutil /Library/Extensions/EnergyDriver.kext
     sudo kextload /Library/Extensions/EnergyDriver.kext
