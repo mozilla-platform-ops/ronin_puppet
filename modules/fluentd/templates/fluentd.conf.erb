@@ -72,9 +72,11 @@
   <record>
     workerGroup "#{Socket.gethostname.split('.')[3]}"
   </record>
+<% if @stackdriver_clientid != '' %>
   <record>
     severity #{record["stackdriver_severity"]}
   </record>
+<% end %>
 </filter>
 
 <match system>
