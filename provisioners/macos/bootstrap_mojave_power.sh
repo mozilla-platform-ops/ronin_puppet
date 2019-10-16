@@ -175,12 +175,17 @@ if [[ $icloud_status == *"iCloud Drive is not configured"* \
   echo "iCloud is disabled: $icloud_status"
 fi
 
-# Install Intel Power Gadget until managed by puppet
-#  || install "https://software.intel.com/sites/default/files/managed/34/fb/Intel%C2%AE%20Power%20Gadget.dmg" \
+# Install Intel Power Gadget (also in puppet. this checks sha)
+# 3.5.5 https://software.intel.com/sites/default/files/managed/16/90/Intel%20Power%20Gadget.dmg
+#   PowerLog 9210e37554afc4449dcd3896aa6c9a884b20f0788e75ed2dcfae79f294b2d151 \
+#   dmg efd306800c28abda0d5543fbc5bf78eb142a43a96feb56fcf211e3bbc83a78d3
+# 3.6.1 https://software.intel.com/sites/default/files/managed/16/90/Intel%20Power%20Gadget.dmg
+#   PowerLog 15ac1c8ca6a99bb4856cb9e1a06293c4f088875741b46cc8a3246a453405143d
+#   dmg f88af78566e406a06bf96349a7314a811cedfa698b38252ffc36f4f19ab52b65
 checksum "/Applications/Intel Power Gadget/PowerLog" \
   9210e37554afc4449dcd3896aa6c9a884b20f0788e75ed2dcfae79f294b2d151 \
-  || install "https://software.intel.com/sites/default/files/managed/16/90/Intel%20Power%20Gadget.dmg" \
-    f88af78566e406a06bf96349a7314a811cedfa698b38252ffc36f4f19ab52b65 \
+  || install "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/macos/public/common/Intel_Power_Gadget_3.5.5.dmg" \
+    efd306800c28abda0d5543fbc5bf78eb142a43a96feb56fcf211e3bbc83a78d3 \
   && (
     sudo kextutil /Library/Extensions/EnergyDriver.kext
     sudo kextload /Library/Extensions/EnergyDriver.kext
