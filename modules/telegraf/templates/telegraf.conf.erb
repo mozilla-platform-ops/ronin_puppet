@@ -64,9 +64,9 @@
 
 [[inputs.filecount]]
 <% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
-  directories = ["/Users/task*"]
+  directories = ["/Users/task*","Users/cltbld"]
 <% else -%>
-  directories = ["/home/task*"]
+  directories = ["/home/task*","/home/cltbld"]
 <% end -%>
   tagexclude = ["directory"]
 
