@@ -118,6 +118,7 @@ function update_puppet {
       git remote rm upstream
       git remote rename origin upstream
       git remote add origin "${PUPPET_REPO}"
+      git checkout --force "origin/${PUPPET_BRANCH}"
     ) || return 1
 
     # Copy secrets
