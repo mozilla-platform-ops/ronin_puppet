@@ -49,11 +49,13 @@
   </record>
 </filter>
 
+<% if @stackdriver_clientid != '' %>
 # Add a unique insertId to each log entry that doesn't already have it.
 # This helps guarantee the order and prevent log duplication.
 <filter system>
   @type add_insert_ids
 </filter>
+<% end %>
 
 # string/numbers only
 # msgpack cannot encode ruby Time fields
