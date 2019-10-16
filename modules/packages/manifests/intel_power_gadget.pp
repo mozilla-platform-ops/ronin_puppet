@@ -4,7 +4,7 @@
 
 class packages::intel_power_gadget {
 
-    packages::macos_package_from_s3 { 'Intel Power Gadget.dmg':
+    packages::macos_package_from_s3 { 'Intel_Power_Gadget_2019-10-10.dmg':
         private             => false,
         os_version_specific => false,
         type                => 'dmg',
