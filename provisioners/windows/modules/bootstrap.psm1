@@ -384,7 +384,7 @@ Function Start-Restore {
 		if ($restore_needed -eq "gw_bad_config") {
 			Write-Log -message  ('{0} :: Generic_worker has faild to start multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		}
-        Stop-ScheduledTask -TaskName maintain_system
+        <# Stop-ScheduledTask -TaskName maintain_system
 		Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		Stop-process -name generic-worker -force
 		Remove-Item -Recurse -Force $env:systemdrive\generic-worker
@@ -393,7 +393,8 @@ Function Start-Restore {
         sc delete "generic-worker"
 		Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
 		# set-restore_point delets all existing check points to ensure the one needed is "1"
-		Restore-Computer -RestorePoint 1
+		Restore-Computer -RestorePoint 1 #>
+
 	} else {
         Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     }
