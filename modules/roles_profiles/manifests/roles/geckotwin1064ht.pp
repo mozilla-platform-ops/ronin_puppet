@@ -20,7 +20,7 @@ class roles_profiles::roles::geckotwin1064ht {
     include roles_profiles::profiles::windows_datacenter_administrator
     # Openssh Fails when Puppet runs as a  schedule task
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1544141
-    include roles_profiles::profiles::ssh
+    # include roles_profiles::profiles::ssh
 
     # Worker
     include roles_profiles::profiles::mozilla_build
