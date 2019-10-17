@@ -350,7 +350,7 @@ Function set-restore_point {
   }
   process {
     vssadmin delete shadows /all /quiet
-    powershell.exe -Command Checkpoint-Computer -Description "default" -RestorePointType MODIFY_SETTINGS
+    powershell.exe -Command Checkpoint-Computer -Description "default"
 
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
