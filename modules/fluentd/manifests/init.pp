@@ -63,6 +63,7 @@ class fluentd (
             service { 'td-agent':
                 require => File['/Library/LaunchDaemons/td-agent.plist'],
                 enable  => true,
+                ensure  => running,
             }
 
         }
