@@ -26,6 +26,20 @@
 </match>
 
 <filter system>
+  @type grep
+  <or>
+    <regexp>
+      key program
+      pattern /^(generic-worker|logger)$/
+    </regexp>
+    <regexp>
+      key severity
+      pattern /^(Fault|Error)$/
+    </regexp>
+  <or>
+</filter>
+
+<filter system>
   @type record_transformer
   enable_ruby true
   <record>
