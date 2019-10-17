@@ -14,4 +14,12 @@ class packages::python3 (
         os_version_specific => false,
         type                => 'pkg',
     }
+
+    # Install certifi's set of CAs to override the system set
+    exec {
+        'install_python_certs':
+            command => "/Applications/Python ${version[0,3]}/Install Certificates.command",
+            path    => ['/usr/bin', '/usr/sbin', '/bin'],
+            unless  => "test -h /Library/Frameworks/Python.framework/Versions/${version[0,3]}/etc/openssl/cert.pm",
+    }
 }
