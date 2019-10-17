@@ -20,6 +20,6 @@ class packages::python3 (
         'install_python_certs':
             command   => "'/Applications/Python ${version[0,3]}/Install Certificates.command'",
             path      => ['/usr/bin', '/usr/sbin', '/bin'],
-            subscribe => Package["python-${version}-macosx10.9.pkg"],
+            unless  => "test -L /Library/Frameworks/Python.framework/Versions/${version[0,3]}/etc/openssl/cert.pem",
     }
 }
