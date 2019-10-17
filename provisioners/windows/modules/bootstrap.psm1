@@ -390,6 +390,7 @@ Function Start-Restore {
 		Remove-Item -Recurse -Force $env:systemdrive\generic-worker
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
+        Remove-Item –Path -Force $env:windir\temp\*
         sc delete "generic-worker"
         sc delete sshd
         sc delete ssh-agent
