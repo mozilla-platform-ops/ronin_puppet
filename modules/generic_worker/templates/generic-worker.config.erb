@@ -10,14 +10,14 @@
   "idleTimeoutSecs": 345600,
   "instanceId": "",
   "instanceType": "",
-  <% unless @livelog_secret.nil? -%>
+<% unless @livelog_secret.nil? -%>
   "livelogCertificate": "<%= @livelog_certificate %>",
   "livelogExecutable": "livelog",
   "livelogGETPort": 60023,
   "livelogKey": "<%= @livelog_key %>",
   "livelogPUTPort": 60022,
   "livelogSecret": "<%= @livelog_secret %>",
-  <% end -%>
+<% end -%>
   "numberOfTasksToRun": 1,
   "privateIP": "",
   "provisionerId": "releng-hardware",
