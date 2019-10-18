@@ -2,9 +2,11 @@
   @type exec
   command "\
     log stream --color none --level <%= @mac_log_level %> --type log \
+      --predicate '(process MATCHES "(logger|sudo|generic-worker)") || (messageType > 2)' \
       --timeout 1d \
     | tail -n +3 \
     "
+    # messageTypes 0:Default 1:Info 2:Debug ?:Error
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
     #   Timestamp                       Thread     Type        Activity             PID    TTL
@@ -24,14 +26,6 @@
 <match fluent.**>
   @type null
 </match>
-
-<filter system>
-  @type grep
-    <regexp>
-      key program
-      pattern /^(?:generic-worker|logger|sudo|kernel)$/
-    </regexp>
-</filter>
 
 <filter system>
   @type record_transformer
