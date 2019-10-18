@@ -15,7 +15,7 @@ class packages::generic_worker (
 
     packages::macos_package_from_s3 { "generic-worker-darwin-amd64-${generic_worker_version}":
         private             => false,
-        os_version_specific => false,
+        os_version_specific => true,
         type                => 'bin',
         file_destination    => '/usr/local/bin/generic-worker',
         checksum            => $generic_worker_sha256,
