@@ -33,7 +33,7 @@ class generic_worker (
         taskcluster_proxy_version => $taskcluster_proxy_version,
         taskcluster_proxy_sha256  => $taskcluster_proxy_sha256,
         quarantine_worker_version => $quarantine_worker_version,
-        quarantine_worker_sha256  => $quarantine_worker_sha256
+        quarantine_worker_sha256  => $quarantine_worker_sha256,
         livelog_version           => $livelog_version,
         livelog_sha256            => $livelog_sha256,
     }
