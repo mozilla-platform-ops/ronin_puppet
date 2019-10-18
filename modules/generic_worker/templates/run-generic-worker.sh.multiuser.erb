@@ -10,7 +10,7 @@
 # to numberOfTasksToRun, the worker won't exit and machine won't reboot.
 rm -f tasks-resolved-count.txt
 
-export SHELL=/bin/bash
+env SHELL=/bin/bash
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 source /usr/local/share/generic-worker/bugzilla-utils.sh
 
