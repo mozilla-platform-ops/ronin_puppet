@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_bitbar_generic_worker_16_0_0 {
+class roles_profiles::profiles::windows_bitbar_generic_worker_16_2_0 {
 
     case $::operatingsystem {
         'Windows': {
@@ -19,7 +19,7 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_16_0_0 {
             # Defining below  as variables because there may be
             # a need to add logic to determine which source or version is needed
             # dependent on OS or architecture.
-            $needed_gw_version         = '16.0.0'
+            $needed_gw_version         = '16.2.0'
             $needed_tc_proxy_version   = '5.1.0'
             $needed_livelog_version    = '1.1.0'
             # Requires win_packages::nssm

@@ -10,12 +10,14 @@
   "idleTimeoutSecs": 345600,
   "instanceId": "",
   "instanceType": "",
+  <% unless @livelog_secret.nil? -%>
   "livelogCertificate": "<%= @livelog_certificate %>",
   "livelogExecutable": "livelog",
   "livelogGETPort": 60023,
   "livelogKey": "<%= @livelog_key %>",
   "livelogPUTPort": 60022,
   "livelogSecret": "<%= @livelog_secret %>",
+  <% end -%>
   "numberOfTasksToRun": 1,
   "privateIP": "",
   "provisionerId": "releng-hardware",
@@ -37,6 +39,8 @@
   "workerGroup": "<%= @worker_group %>",
   "workerId": "<%= @hostname %>",
   "workerType": "<%= @worker_type %>",
+  "wstAudience": "taskcluster-net",
+  "wstServerURL": "https://websocktunnel.tasks.build",
   "workerTypeMetadata": {
     "machine-setup": {
       "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.erb",

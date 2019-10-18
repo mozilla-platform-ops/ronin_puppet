@@ -35,7 +35,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker.gecko_t_osx_1014.livelog_secret')
             $quarantine_client_id     = lookup('generic_worker.gecko_t_osx_1014.quarantine_client_id')
             $quarantine_access_token  = lookup('generic_worker.gecko_t_osx_1014.quarantine_access_token')
             $bugzilla_api_key         = lookup('generic_worker.gecko_t_osx_1014.bugzilla_api_key')
@@ -47,14 +46,13 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             class { 'generic_worker':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
-                livelog_secret            => $livelog_secret,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
                 quarantine_client_id      => $quarantine_client_id,
                 quarantine_access_token   => $quarantine_access_token,
                 bugzilla_api_key          => $bugzilla_api_key,
-                generic_worker_version    => 'v13.0.3',
-                generic_worker_sha256     => '6e5c1543fb3c333ca783d0a5c4e557b2b5438aada4bc23dc02402682ae4e245e',
+                generic_worker_version    => 'v14.1.2',
+                generic_worker_sha256     => 'c7d55d62fbe46eb8576d7bde0c996e58a6d624f54d89bca0a36acea400136094',
                 taskcluster_proxy_version => 'v5.1.0',
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
