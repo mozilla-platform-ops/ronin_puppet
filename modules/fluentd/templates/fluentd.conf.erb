@@ -86,10 +86,6 @@
 <match system>
   @type copy
 
-  <store>
-    @type stdout
-  </store>
-
 <% if @syslog_host =~ /papertrail/ %>
   <store>
     @type papertrail
