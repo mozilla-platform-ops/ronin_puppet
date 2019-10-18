@@ -32,6 +32,9 @@
   "shutdownMachineOnInternalError": false,
   "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
   "taskclusterProxyPort": 8080,
+<% if @generic_worker_version[0,3] == "v13" -%>
+  "openpgpSigningKeyLocation": "<%= @opengpg_signing_key %>",
+<% end -%>
   "ed25519SigningKeyLocation": "<%= @ed25519_signing_key %>",
   "subdomain": "taskcluster-worker.net",
   "tasksDir": "<%= @task_dir %>",
