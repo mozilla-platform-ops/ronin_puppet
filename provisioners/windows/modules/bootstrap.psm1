@@ -388,15 +388,15 @@ Function Start-Restore {
 		Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		Stop-process -name generic-worker -force
 		Remove-Item -Recurse -Force $env:systemdrive\generic-worker
-        Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
         Remove-Item –Path -Force $env:windir\temp\*
         sc delete "generic-worker"
         sc delete sshd
         sc delete ssh-agent
+         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
 		Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
 		# set-restore_point delets all existing check points to ensure the one needed is "1"
-		# Restore-Computer -RestorePoint 1
+		Restore-Computer -RestorePoint 1
 
 	} else {
         Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
