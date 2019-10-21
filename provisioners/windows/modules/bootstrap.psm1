@@ -389,6 +389,7 @@ Function Start-Restore {
 		Stop-process -name generic-worker -force
 		Remove-Item -Recurse -Force $env:systemdrive\generic-worker
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
+        Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
         Remove-Item –Path -Force $env:windir\temp\*
         sc delete "generic-worker"
         # OpenSSH will need to be addressed it fails after restore
