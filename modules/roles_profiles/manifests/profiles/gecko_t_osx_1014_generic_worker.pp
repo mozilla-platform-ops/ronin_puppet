@@ -9,13 +9,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
     $worker_type  = 'gecko-t-osx-1014'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-    $meta_data        = {
-        workerType    => $worker_type,
-        workerGroup   => $worker_group,
-        provisionerId => 'releng-hardware',
-        workerId      => $facts['networking']['hostname'],
-    }
-
     case $::operatingsystem {
         'Darwin': {
 
@@ -23,16 +16,17 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
                 # Note the camelCase key names
-                meta_data         => $meta_data,
+                meta_data         => {
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    provisionerId => 'releng-hardware',
+                    workerId      => $facts['networking']['hostname'],
+                },
             }
 
             class { 'roles_profiles::profiles::logging':
                 worker_type   => $worker_type,
                 mac_log_level => 'default',
-            }
-
-            class { 'telegraf':
-                global_tags => $meta_data,
             }
 
             class { 'talos':
