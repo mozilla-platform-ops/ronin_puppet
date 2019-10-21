@@ -391,9 +391,11 @@ Function Start-Restore {
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
         Remove-Item –Path -Force $env:windir\temp\*
         sc delete "generic-worker"
-        sc delete sshd
-        sc delete ssh-agent
-         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
+        # OpenSSH will need to be addressed it fails after restore
+        # For now commented out of the roles manifests
+        #sc delete sshd
+        #sc delete ssh-agent
+        #Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
 		Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
 		# set-restore_point delets all existing check points to ensure the one needed is "1"
 		Restore-Computer -RestorePoint 1
