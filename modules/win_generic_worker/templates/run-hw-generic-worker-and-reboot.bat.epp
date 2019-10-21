@@ -76,12 +76,7 @@ exit
 ping -n 10 127.0.0.1 1>/nul
 for /f "delims=" %%a in ('type "<%= $win_generic_worker::generic_worker_dir %>\rebootcount" ' ) do set num=%%a
 set /a num=num + 1 > <%= $win_generic_worker::generic_worker_dir %>\rebootcount.txt
-if %num% GTR 5 GoTo WaitReboot
-echo Generic worker exit with code %gw_exit_code% more than once; Rebooting to recover  >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
-shutdown /r /t 0 /f /c "Generic worker has not recovered;  Rebooting"
-exit
-:WaitReboot
-echo Generic worker exit with code %gw_exit_code% %num% times; 1800 second delay and then rebooting  >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
-ping -n 1800 127.0.0.1 1>/nul
+echo Generic worker exit with code %gw_exit_code% more than once; Attempting restore  >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+reg add HKLM\SOFTWARE\Mozilla\ronin_puppet\restore_needed /t REG_SZ /v restore_needed /d gw_bad_config /f
 shutdown /r /t 0 /f /c "Generic worker has not recovered;  Rebooting"
 exit
