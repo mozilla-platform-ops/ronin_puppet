@@ -392,6 +392,7 @@ Function Start-Restore {
 		Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		Stop-process -name generic-worker -force
 		Remove-Item -Recurse -Force $env:systemdrive\generic-worker
+        Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
         Remove-Item –Path -Force $env:windir\temp\*
         sc delete "generic-worker"
