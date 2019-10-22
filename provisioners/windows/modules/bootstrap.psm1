@@ -352,7 +352,7 @@ Function set-restore_point {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    vssadmin delete shadows /all /quiet
+    #vssadmin delete shadows /all /quiet
     powershell.exe -Command Checkpoint-Computer -Description "default"
 
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
