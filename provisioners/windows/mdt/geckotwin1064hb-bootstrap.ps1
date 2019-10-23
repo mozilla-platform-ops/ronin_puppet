@@ -106,7 +106,7 @@ $src_Organisation = 'markcor'
 $src_Repository = 'ronin_puppet'
 $src_Revision = 'restore2'
 $image_provisioner = 'mdt'
-$max_boots = 5
+$max_boots = 150
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
