@@ -33,7 +33,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_multiuser {
 
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker.gecko_t_osx_1014.livelog_secret')
             $quarantine_client_id     = lookup('generic_worker.gecko_t_osx_1014.quarantine_client_id')
             $quarantine_access_token  = lookup('generic_worker.gecko_t_osx_1014.quarantine_access_token')
             $bugzilla_api_key         = lookup('generic_worker.gecko_t_osx_1014.bugzilla_api_key')
@@ -41,7 +40,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_multiuser {
             class { 'generic_worker::multiuser':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
-                livelog_secret            => $livelog_secret,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
                 quarantine_client_id      => $quarantine_client_id,
