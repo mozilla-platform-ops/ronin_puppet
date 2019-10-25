@@ -43,7 +43,7 @@ class signing_worker::base {
     }
 
     $supported_behaviors = $::hostname ? {
-        /^(tb-)?mac-v3-signing\d+/ => ['mac_sign', 'mac_sign_and_pkg', 'mac_geckoview', 'mac_notarize'],
+        /^(tb-)?mac-v3-signing\d+/ => ['mac_sign', 'mac_sign_and_pkg', 'mac_geckodriver', 'mac_notarize'],
         /^dep-mac-v3-signing\d+/ => ['mac_sign', 'mac_sign_and_pkg'],
         default => [],
     }
