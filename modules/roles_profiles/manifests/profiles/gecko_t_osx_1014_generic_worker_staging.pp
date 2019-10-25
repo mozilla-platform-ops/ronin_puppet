@@ -60,7 +60,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 bugzilla_api_key          => $bugzilla_api_key,
                 task_dir                  => '/Users',
                 generic_worker_version    => 'v16.4.0',
-                generic_worker_sha256     => 'caabc35ec26498e755863d08c4c8b79e8b041a1d11b1fc8be0909718fc81113d',
+                generic_worker_sha256     => 'eaf18131ff7f7e28810554719c71e5b658bec374d03ca469c5b9af272920e331',
                 taskcluster_proxy_version => 'v5.1.0',
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
