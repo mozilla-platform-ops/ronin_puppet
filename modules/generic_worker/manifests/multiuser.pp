@@ -11,7 +11,7 @@ class generic_worker::multiuser (
     String $quarantine_access_token,
     String $bugzilla_api_key,
     String $user,
-    String $user_homedir,
+    String $gw_dir,
     String $task_dir,
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
     String $generic_worker_sha256,
@@ -42,15 +42,15 @@ class generic_worker::multiuser (
         bugzilla_api_key => $bugzilla_api_key,
     }
 
-    $caches_dir          = "${user_homedir}/caches"
-    $downloads_dir       = "${user_homedir}/downloads"
-    $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
+    $caches_dir          = "${gw_dir}/caches"
+    $downloads_dir       = "${gw_dir}/downloads"
+    $ed25519_signing_key = "${gw_dir}/generic-worker.ed25519.signing.key"
 
     exec {
         'create ed25519 signing key':
             path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
             user    => $user,
-            cwd     => $user_homedir,
+            cwd     => $gw_dir,
             command => "generic-worker new-ed25519-keypair --file ${ed25519_signing_key}",
             unless  => "test -f ${ed25519_signing_key}",
             require => Class['packages::generic_worker'];
@@ -89,6 +89,12 @@ class generic_worker::multiuser (
                     owner   => $::root_user,
                     group   => $::root_group,
                     require => File['/etc/generic-worker'];
+
+                "${gw_dir}":
+                    ensure => directory,
+                    mode   => '0644',
+                    owner  => $::root_user,
+                    group  => $::root_group;
             }
 
             service { 'net.generic.worker':
