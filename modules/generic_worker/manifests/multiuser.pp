@@ -38,7 +38,7 @@ class generic_worker::multiuser (
     }
 
     class { 'generic_worker::control_bug':
-        user_homedir     => $user_homedir,
+        user_homedir     => $gs_dir,
         bugzilla_api_key => $bugzilla_api_key,
     }
 
