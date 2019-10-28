@@ -38,7 +38,7 @@ class generic_worker::multiuser (
     }
 
     class { 'generic_worker::control_bug':
-        user_homedir     => $gs_dir,
+        user_homedir     => $gw_dir,
         bugzilla_api_key => $bugzilla_api_key,
     }
 
@@ -90,7 +90,7 @@ class generic_worker::multiuser (
                     group   => $::root_group,
                     require => File['/etc/generic-worker'];
 
-                "${gw_dir}":
+                $gw_dir:
                     ensure => directory,
                     mode   => '0644',
                     owner  => $::root_user,
