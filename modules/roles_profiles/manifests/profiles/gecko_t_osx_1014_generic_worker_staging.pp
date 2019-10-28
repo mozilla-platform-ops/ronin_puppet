@@ -40,7 +40,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker.gecko_t_osx_1014.livelog_secret')
             $quarantine_client_id     = lookup('generic_worker.gecko_t_osx_1014.quarantine_client_id')
             $quarantine_access_token  = lookup('generic_worker.gecko_t_osx_1014.quarantine_access_token')
             $bugzilla_api_key         = lookup('generic_worker.gecko_t_osx_1014.bugzilla_api_key')
@@ -52,7 +51,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             class { 'generic_worker::multiuser':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
-                livelog_secret            => $livelog_secret,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
                 quarantine_client_id      => $quarantine_client_id,
@@ -68,7 +66,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 livelog_version           => 'v1.1.0',
                 livelog_sha256            => 'caabc35ec26498e755863d08c4c8b79e8b041a1d11b1fc8be0909718fc81113d',
                 user                      => 'root',
-                user_homedir              => '/etc/generic-worker',
+                gw_dir                    => '/var/local/generic-worker',
             }
 
             include dirs::tools
