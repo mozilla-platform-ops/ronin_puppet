@@ -90,6 +90,12 @@ class generic_worker::multiuser (
                     group   => $::root_group,
                     require => File['/etc/generic-worker'];
 
+                '/var/local':
+                    ensure => directory,
+                    mode   => '0644',
+                    owner  => $::root_user,
+                    group  => $::root_group;
+
                 $gw_dir:
                     ensure => directory,
                     mode   => '0644',
