@@ -2,6 +2,8 @@
 
 ntp_server: "0.pool.ntp.org"
 
+nrpe_allowed_hosts: "10.49.75.30,10.51.75.30" # nagios1.private.releng.mdc1.mozilla.com, nagios1.private.releng.mdc2.mozilla.com
+
 smtp_relay_host: "smtp1.mail.mdc1.mozilla.com"
 
 # Apple firmware acceptance hash

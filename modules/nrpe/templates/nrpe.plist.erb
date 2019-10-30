@@ -25,7 +25,7 @@
     <array>
         <string>/usr/local/bin/nrpe</string>
         <string>-c</string>
-        <string><%= scope.lookupvar('nrpe::settings::nrpe_etcdir') %>/nrpe.cfg</string>
+        <string><%= scope['nrpe::settings::nrpe_etcdir'] %>/nrpe.cfg</string>
         <string>-i</string>
     </array>
     <key>RunAtLoad</key>
