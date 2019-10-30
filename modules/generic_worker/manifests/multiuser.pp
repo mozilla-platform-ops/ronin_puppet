@@ -62,6 +62,10 @@ class generic_worker::multiuser (
             $reboot_command = '/usr/bin/sudo /sbin/reboot'
 
             file {
+                # Ensure old plist file doesn’t exist, and deletes it if necessary.
+                '/Library/LaunchAgents/net.generic.worker.plist':
+                    ensure  => absent;
+
                 '/Library/LaunchDaemons/net.generic.worker.plist':
                     ensure  => present,
                     content => template('generic_worker/generic-worker.plist.multiuser.erb'),
