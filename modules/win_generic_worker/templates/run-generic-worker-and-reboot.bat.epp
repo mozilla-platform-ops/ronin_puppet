@@ -1,3 +1,5 @@
+pause
+
 @echo off
 
 if exist C:\generic-worker\generic-worker.log copy /y C:\generic-worker\generic-worker.log c:\log\generic-worker-%time:~-5%.bak

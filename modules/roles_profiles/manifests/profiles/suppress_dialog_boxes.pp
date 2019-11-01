@@ -21,6 +21,15 @@ class roles_profiles::profiles::suppress_dialog_boxes {
             # Suppress Diagnostic Submissions
             include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
+        'Windows': {
+
+      include win_os_settings::disbale_notifications
+
+      # Bug list
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1373551
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58"
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }

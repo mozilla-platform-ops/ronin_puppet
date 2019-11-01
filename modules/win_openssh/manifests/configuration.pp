@@ -19,9 +19,6 @@ class win_openssh::configuration {
         type   => string,
         data   => '/c',
     }
-    file { $win_openssh::ssh_program_data:
-        ensure => directory,
-    }
     file { "${win_openssh::ssh_program_data}\\sshd_config":
         content => file('win_openssh/sshd_config'),
     }
