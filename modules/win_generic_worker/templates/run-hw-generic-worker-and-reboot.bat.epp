@@ -17,6 +17,18 @@ ping -n 2 127.0.0.1 1>/nul
 goto CheckForStateFlag
 
 :RunWorker
+:RunWorker
+FOR /F "tokens=* USEBACKQ" %%F IN (`powershell -command "(New-TimeSpan -Start (Get-Date "01/01/1970") -End (Get-Date)).TotalSeconds"`) DO (
+    SET gw_start=%%F
+)
+for /f "tokens=1,2 delims=." %%a  in ("%gw_start%") do (
+    SET start_time=%%a
+)
+SET /A total_time=%start_time%-%task_stop_time%
+SET /A tot_time=%total_time%/60
+
+echo "%tot_time% Minutes have passed since last generic-worker exit" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+
 echo File <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid found >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 echo Deleting <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid file >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 del /Q /F <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log 2>&1
@@ -24,6 +36,14 @@ pushd %~dp0
 set errorlevel=
 <%= $win_generic_worker::run_generic_worker_command %> >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log 2>&1
 set gw_exit_code=%errorlevel%
+
+FOR /F "tokens=* USEBACKQ" %%F IN (`powershell -command "(New-TimeSpan -Start (Get-Date "01/01/1970") -End (Get-Date)).TotalSeconds"`) DO (
+SET task_stop=%%F
+)
+for /f "tokens=1,2 delims=." %%a  in ("%task_stop%") do (
+    set stop_time=%%a
+)
+setx task_stop_time %stop_time% /m
 
 if %GW_EXIT_CODE% EQU 0 GoTo exit_0
 if %GW_EXIT_CODE% EQU 67 GoTo exit_67
