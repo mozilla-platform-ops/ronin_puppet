@@ -2,10 +2,10 @@
   @type exec
   command "\
     log stream --color none --level <%= @mac_log_level %> --type log \
-      --predicate '(process MATCHES \"(logger|sudo|generic-worker)\") || (messageType > 2)' \
       --timeout 1d \
     | tail -n +3 \
     "
+    #  --predicate '(process MATCHES \"(logger|sudo|generic-worker)\") || (messageType > 2)' \
     # messageTypes 0:Default 1:Info 2:Debug ?:Error
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
