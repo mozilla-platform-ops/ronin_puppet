@@ -19,9 +19,8 @@ class roles_profiles::roles::gecko_t_osx_1014 {
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::cltbld_user
+    include ::roles_profiles::profiles::homebrew
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::gecko_t_osx_1014_generic_worker
     include ::fw::roles::osx_taskcluster_worker
-
-    include ::macos_utils::uninstall_homebrew
 }
