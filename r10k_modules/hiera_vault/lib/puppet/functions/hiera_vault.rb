@@ -121,32 +121,36 @@ Puppet::Functions.create_function(:hiera_vault) do
       kv_mounts = options['mounts'].dup
     end
 
-    context.explain { "[hiera-vault] kv_mounts #{kv_mounts}" }
     # Only kv mounts supported so far
-    kv_mounts.each do |mount, paths|
-      paths.each do |p|
-        # Default to kv v1
-        path = context.interpolate(File.join(mount, p, key))
+    kv_mounts.each_pair do |mount, paths|
+      paths.each do |path|
 
-        context.explain { "[hiera-vault] Looking in path #{path}" }
+        secretpath = context.interpolate(File.join(mount, path))
+
+        context.explain { "[hiera-vault] Looking in path #{secretpath} for #{key}" }
 
         begin
-          secret = $vault.logical.read(path)
+
+          secret = get_kv_v1(secretpath, key)
+          if secret.nil?
+            secret = get_kv_v2(secretpath, key)
+          end
+
         rescue Vault::HTTPConnectionError
-          context.explain { "[hiera-vault] Could not connect to read secret: #{path}" }
+          context.explain { "[hiera-vault] Could not connect to read secret: #{secretpath}" }
         rescue Vault::HTTPError => e
-          context.explain { "[hiera-vault] Could not read secret #{path}: #{e.errors.join("\n").rstrip}" }
+          context.explain { "[hiera-vault] Could not read secret #{secretpath}: #{e.errors.join("\n").rstrip}" }
         end
 
         next if secret.nil?
 
         context.explain { "[hiera-vault] Read secret: #{key}" }
         if (options['default_field'] and ( ['ignore', nil].include?(options['default_field_behavior']) ||
-           (secret.data.has_key?(options['default_field'].to_sym) && secret.data.length == 1) ) )
+           (secret.has_key?(options['default_field'].to_sym) && secret.length == 1) ) )
 
-          return nil if ! secret.data.has_key?(options['default_field'].to_sym)
+          return nil if ! secret.has_key?(options['default_field'].to_sym)
 
-          new_answer = secret.data[options['default_field'].to_sym]
+          new_answer = secret[options['default_field'].to_sym]
 
           if options['default_field_parse'] == 'json'
             begin
@@ -159,19 +163,37 @@ Puppet::Functions.create_function(:hiera_vault) do
         else
           # Turn secret's hash keys into strings allow for nested arrays and hashes
           # this enables support for create resources etc
-          new_answer = secret.data.inject({}) { |h, (k, v)| h[k.to_s] = stringify_keys v; h }
+          new_answer = secret.inject({}) { |h, (k, v)| h[k.to_s] = stringify_keys v; h }
         end
 
-        if ! new_answer.nil?
+        unless new_answer.nil?
           answer = new_answer
           break
         end
       end
+
+      break unless answer.nil?
     end
 
     answer = context.not_found if answer.nil?
     $shutdown.call
     return answer
+  end
+
+  def get_kv_v1(secretpath, key)
+    res = $vault.logical.read(File.join(secretpath,key))
+    if ! res.nil?
+      res=res.data
+    end
+    return res
+  end
+
+  def get_kv_v2(secretpath, key)
+    res = $vault.logical.read(File.join(secretpath,'data',key))
+    if ! res.nil?
+      res=res.data[:data]
+    end
+    return res
   end
 
   # Stringify key:values so user sees expected results and nested objects

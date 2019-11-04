@@ -18,18 +18,20 @@ define packages::macos_package_from_github (
     Enum['bin', 'pkg', 'dmg'] $type = 'bin',
 ) {
 
+    include shared
     require packages::setup
 
     $release_url = "https://github.com/${github_repo_slug}/releases/download/${version}/${filename}"
 
     case $type {
         'bin': {
-            file { $file_destination:
-                ensure => 'file',
-                source => $release_url,
-                mode   => '0755',
-                owner  => $::root_user,
-                group  => $::root_group,
+            file {
+                default: * => $::shared::file_defaults;
+
+                $file_destination:
+                    ensure => 'file',
+                    source => $release_url,
+                    mode   => '0755';
             }
         }
         'pkg','dmg': {

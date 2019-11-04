@@ -10,11 +10,12 @@ echo Running generic-worker startup script (run-generic-worker.bat) ... >> <%= $
 if exist <%= $win_generic_worker::disable_desktop_interrupt %>.reg reg import <%= $win_generic_worker::generic_worker_dir %>\disable-desktop-interrupt.reg
 if exist <%= $win_generic_worker::generic_worker_dir %>\SetDefaultPrinter.ps1 powershell -NoLogo -file <%= $win_generic_worker::generic_worker_dir %>\SetDefaultPrinter.ps1 -WindowStyle hidden -NoProfile -ExecutionPolicy bypass
 
-:CheckForStateFlag
 echo Checking for <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+:CheckForStateFlag
 if exist <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid goto RunWorker
 ping -n 2 127.0.0.1 1>/nul
 goto CheckForStateFlag
+
 
 :RunWorker
 echo File <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid found >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
@@ -49,6 +50,7 @@ echo "Generic worker has reached idle timeout set in config file, <%= win_generi
 shutdown /r /t 0 /f /c "Generic worker has reached idle timeout; rebooting" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 
 :exit_69
+del /Q /F <%= $win_generic_worker::generic_worker_config %> >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 echo "Generic-worker panic! Issue with enviroment or worker bug. (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 Goto ErrorReboot
 :exit_71

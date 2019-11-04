@@ -16,6 +16,7 @@ class fw::roles::deploystudio {
             include ::fw::profiles::vnc_from_rejh_logging
             include ::fw::profiles::ssh_from_rejh_logging
             include ::fw::profiles::nrpe_from_nagios
+            include ::fw::profiles::bacula_from_mdc1_bacula_host
             include ::fw::profiles::bacula_from_mdc2_bacula_host
             include ::fw::profiles::deploystudio_from_mdc2_releng
         }
