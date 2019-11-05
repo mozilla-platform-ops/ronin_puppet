@@ -27,7 +27,7 @@ for /f "tokens=1,2 delims=." %%a  in ("%gw_start%") do (
 SET /A total_time=%start_time%-%task_stop_time%
 SET /A tot_time=%total_time%/60
 
-echo "%tot_time% Minutes have passed since last generic-worker exit" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+echo "%tot_time% Minutes (%total_time% seconds) have passed since last generic-worker exit" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 
 echo File <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid found >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 echo Deleting <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid file >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
