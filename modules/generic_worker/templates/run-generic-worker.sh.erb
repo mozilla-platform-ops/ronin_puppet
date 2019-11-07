@@ -15,7 +15,11 @@ source /usr/local/share/generic-worker/bugzilla-utils.sh
 
 # First run the generic-worker, passing through any arguments handed to this
 # wrapper script...
+<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+/usr/local/bin/generic-worker "$@"
+<% else %>
 /usr/local/bin/generic-worker "$@" 2>&1 | logger -t generic-worker -s
+<% end %>
 
 exitstatus="${PIPESTATUS[0]}"
 
