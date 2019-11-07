@@ -46,14 +46,17 @@
   @type record_transformer
   enable_ruby true
   <record>
+    program "generic-worker"
+<% if @syslog_host != '' -%>
     syslog_severity "${tag_parts[1]}"
+    log_message ${record["message"]}
+<% end -%>
 <% if @stackdriver_clientid != '' -%>
     # stackdriver severities: 
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
+    message ${record["program"]}: ${record['message']}
 <% end -%>
-    program "generic-worker"
-    log_message ${record["message"]}
   </record>
 </filter>
 
