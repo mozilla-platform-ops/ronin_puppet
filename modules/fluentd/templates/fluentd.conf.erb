@@ -2,6 +2,7 @@
   @type exec
   command "\
     log stream --color none --level <%= @mac_log_level %> --type log \
+      --predicate '(process MATCHES \"(logger|sudo|sshd|firefox|plugin-agent|generic-worker)\") || (messageType > 16)' \
       --timeout 1d \
     | tail -n +3 \
     "
