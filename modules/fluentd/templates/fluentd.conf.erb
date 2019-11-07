@@ -135,6 +135,8 @@
     host <%= @syslog_host %>
     port <%= @syslog_port %>
     <buffer program,syslog_severity>
+      flush_at_shutdown true
+      overflow_action block
     </buffer>
     program ${program}
     severity ${syslog_severity}
