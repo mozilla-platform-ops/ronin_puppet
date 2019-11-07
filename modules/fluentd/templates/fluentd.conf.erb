@@ -29,7 +29,14 @@
   path /var/log/genericworker/stderr.log
   pos_file /var/log/genericworker/stderr.log.pos
   <parse>
-    @type none
+    @type multiline
+    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
+    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /
+    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})( [A-Z]{3})? (?<message>.*)/
+    time_key time
+    time_format "%Y/%m/%d %H:%M:%S"
+    utc true
+    keep_time_key true
   </parse>
   tag worker.err
 </source>
@@ -38,7 +45,14 @@
   path /var/log/genericworker/stdout.log
   pos_file /var/log/genericworker/stdout.log.pos
   <parse>
-    @type none
+    @type multiline
+    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
+    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /
+    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})( [A-Z]{3})? (?<message>.*)/
+    time_key time
+    time_format "%Y/%m/%d %H:%M:%S"
+    utc true
+    keep_time_key true
   </parse>
   tag worker.info
 </source>
