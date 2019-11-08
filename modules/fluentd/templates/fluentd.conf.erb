@@ -27,8 +27,8 @@
   @type exec
   command "\
     log show --color none --info \
-      --start "$(date -j -f "%a %b %d %H:%M:%S" \
-      "$(last -1 shutdown | cut -c37-52):00" "+%Y-%m-%d %T")" \
+      --start \"$(date -j -f \"%a %b %d %H:%M:%S\" \
+      \"$(last -1 shutdown | cut -c37-52):00\" \"+%Y-%m-%d %T\")\" \
       --predicate '((process MATCHES \"(logger|sudo|sshd|firefox|plugin-agent|generic-worker)\") || (messageType > 2)) && (eventType = logEvent)' \
     | tail -n +3 \
     "
