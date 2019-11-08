@@ -178,7 +178,7 @@
 <% elsif @syslog_host != '' -%>
   <store>
     @type remote_syslog
-    hostname "#{Socket.gethostname}"
+    hostname "#{Socket.gethostname.split('.')[0]}"
     host <%= @syslog_host %>
     port <%= @syslog_port %>
     <buffer program,syslog_severity>
