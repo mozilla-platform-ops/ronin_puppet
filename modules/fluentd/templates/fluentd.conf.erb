@@ -25,6 +25,31 @@
 </source>
 
 <source>
+  @type exec
+  command "\
+    log show --color none --info --last 120s \
+      --predicate '((process MATCHES \"(logger|sudo|sshd|firefox|plugin-agent|generic-worker)\") || (messageType > 2)) && (eventType = logEvent)' \
+    | tail -n +3 \
+    "
+    # messageTypes 0:Default 1:Info 2:Debug ?:Error
+    # tail to omit first 2 lines that cause parsing to fail:
+    #   Filtering the log data using "type == 1024"
+    #   Timestamp                       Thread     Type        Activity             PID    TTL
+    #   2019-05-17 22:49:59.070398+0000 0x195      Info        0x0                  0      0    kernel: (IOHIDFamily) HID Activity Tickle (type:0 sender:100007033)
+  <parse>
+    @type regexp
+    expression /^(?<time>.{31}) (?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<log_message>.*)$/
+    types pid:integer
+    time_key time
+    time_format "%Y-%m-%d %H:%M:%S.%N%z"
+    utc true
+  </parse>
+  tag system
+  # run_interval 60s  # run once by default
+</source>
+
+
+<source>
   @type tail
   path /var/log/genericworker/stderr.log
   pos_file /var/log/genericworker/stderr.log.pos
