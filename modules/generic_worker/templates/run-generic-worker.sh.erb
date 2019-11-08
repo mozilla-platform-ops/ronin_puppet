@@ -10,6 +10,9 @@
 # to numberOfTasksToRun, the worker won't exit and machine won't reboot.
 rm -f tasks-resolved-count.txt
 
+exec 1> >(tee /var/log/genericworker/stdout.log >&1)
+exec 2> >(tee /var/log/genericworker/stderr.log >&2)
+
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 source /usr/local/share/generic-worker/bugzilla-utils.sh
 
