@@ -51,6 +51,7 @@
 
 <source>
   @type tail
+  read_from_head true
   path /var/log/genericworker/stderr.log
   pos_file /var/log/genericworker/stderr.log.pos
   <parse>
@@ -66,6 +67,7 @@
 </source>
 <source>
   @type tail
+  read_from_head true
   path /var/log/genericworker/stdout.log
   pos_file /var/log/genericworker/stdout.log.pos
   <parse>
