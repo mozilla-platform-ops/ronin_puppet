@@ -58,19 +58,29 @@
 </source>
 
 <filter worker.**>
+  @type grep
+  <exclude>
+    key message
+    pattern /^Disk available: \d+ bytes$/
+  </exclude>
+</filter>
+
+<filter worker.**>
   @type record_transformer
   enable_ruby true
   <record>
-    program "generic-worker"
+    program "worker"
 <% if @syslog_host != '' -%>
     syslog_severity "${tag_parts[1]}"
-    log_message ${record["message"]}
+    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
+    # No task 5h15m43 1
+    log_message #{record["message"].sub(/^(No task) claimed. Idle for (\d+)h(\d+)m(\d+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2:\3:\4 \5')}
 <% end -%>
 <% if @stackdriver_clientid != '' -%>
     # stackdriver severities: 
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
-    message ${record["program"]}: ${record['message']}
+    message #{record["program"]} #{record["message"].sub(/^(No task) claimed. Idle for (\d+)h(\d+)m(\d+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2:\3:\4 \5')}
 <% end -%>
   </record>
 </filter>
@@ -80,7 +90,7 @@
   enable_ruby true
   <record>
 <% if @syslog_host =~ /papertrail/ -%>
-    hostname "#{Socket.gethostname}"
+    hostname "#{Socket.gethostname.split('.')[0]}"
 <% end -%>
     # Logging pid can be enabled:
     # message pid:${record["pid"]} ${record["message"]}
