@@ -26,4 +26,5 @@ class roles_profiles::roles::geckotwin1064refhw {
     include roles_profiles::profiles::mozilla_maintenance_service
     include roles_profiles::profiles::microsoft_tools
     include roles_profiles::profiles::windows_bitbar_generic_worker_16_2_0
+    include roles_profiles::profiles::windows_rotate_secrets
 }
