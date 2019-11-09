@@ -26,6 +26,8 @@ set errorlevel=
 <%= $win_generic_worker::run_generic_worker_command %> >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log 2>&1
 set gw_exit_code=%errorlevel%
 
+del /Q /F <%= $facts[custom_win_roninsemaphoredir] %>\tasks-resolved-count.txt
+
 if %GW_EXIT_CODE% EQU 0 GoTo exit_0
 if %GW_EXIT_CODE% EQU 67 GoTo exit_67
 if %GW_EXIT_CODE% EQU 68 GoTo exit_68
