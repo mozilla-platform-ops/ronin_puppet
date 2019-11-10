@@ -52,6 +52,7 @@ echo "Generic worker has reached idle timeout set in config file, <%= win_generi
 shutdown /r /t 0 /f /c "Generic worker has reached idle timeout; rebooting" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 
 :exit_69
+del /Q /F <%= $win_generic_worker::generic_worker_dir %>\directory-caches.json
 del /Q /F <%= $win_generic_worker::generic_worker_config %> >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 echo "Generic-worker panic! Issue with enviroment or worker bug. (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 Goto ErrorReboot
