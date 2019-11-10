@@ -58,11 +58,8 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_16_2_0 {
             # Cloud instances will receive the config file during provisioning
             # Paths in the  config file need to have \\ hence the \\\\ below
 
-            if $facts['custom_win_gw_workertype'] == 'gecko-t-win10-64-ref-hw' {
-                $client_id = 'project/releng/generic-worker/vendor-gecko-t-win10-64-ref-hw/production'
-            } else {
-                $client_id = "project/releng/generic-worker/bitbar-${facts['custom_win_gw_workertype']}"
-            }
+            $client_id = "project/releng/generic-worker/bitbar-${facts['custom_win_gw_workertype']}"
+
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
                 taskcluster_root         => $taskcluster_root,
