@@ -11,7 +11,7 @@ class win_mozilla_build::tooltool {
     $tooltool_cache = "${builds}\\tooltool_cache"
 
     file { "${win_mozilla_build::install_path}\\tooltool.py":
-        source => 'https://raw.githubusercontent.com/mozilla/release-services/master/src/tooltool/client/tooltool.py',
+        source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/macos/public/common/tooltool.py',
     }
     file { $tooltool_cache:
         ensure => directory,
