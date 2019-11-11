@@ -19,7 +19,7 @@ win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\p
 
 # Taskcluster data
 taskcluster:
-  root_url: "https://firefox-ci-tc.services.mozilla.com/"
+  root_url: "https://firefox-ci-tc.services.mozilla.com"
 
 # Windows servers
 windows_servers:
