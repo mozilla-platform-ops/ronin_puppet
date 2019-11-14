@@ -4,7 +4,7 @@
 
 class packages::nrpe {
 
-    packages::macos_package_from_s3 { 'nrpe-2.14-moz1.dmg':
+    packages::macos_package_from_s3 { 'nrpe-3.2.1-moz1.dmg':
         os_version_specific => true,
         type                => 'dmg',
     }
