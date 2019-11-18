@@ -66,6 +66,9 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_16_2_0 {
                 provisioner_id           => 'releng-hardware',
                 idle_timeout             => 7200,
             }
+            # On static workers there are often several open profile registries
+            # left after tasks are complete. This will clean up those reg values.
+            include win_scheduled_tasks::clean_profilelist
         }
 
         default: {
