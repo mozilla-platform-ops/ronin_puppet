@@ -1,15 +1,14 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-class signing_worker::system_user (
-    String $user = 'cltbld',
+define signing_worker::system_user (
+    String $user,
+    String $password,
+    String $salt,
+    String $iterations,
 ) {
     case $::operatingsystem {
         'Darwin': {
-            $password     = lookup("${user}_user.password")
-            $salt         = lookup("${user}_user.salt")
-            $iterations   = lookup("${user}_user.iterations")
-            $kcpassword   = lookup("${user}_user.kcpassword")
 
             # Create the cltbld user
             users::single_user { $user:
@@ -28,10 +27,10 @@ class signing_worker::system_user (
             }
 
             # Set user to autologin
-            class { 'macos_utils::autologin_user':
-                user       => $user,
-                kcpassword => $kcpassword,
-            }
+            #  class { 'macos_utils::autologin_user':
+            #       user       => $user,
+            #       kcpassword => $kcpassword,
+            #   }
 
             # Enable DevToolsSecurity
             include macos_utils::enable_dev_tools_security
@@ -45,11 +44,6 @@ class signing_worker::system_user (
                 user    => $user,
                 group   => 'staff',
                 require => User[$user],
-            }
-
-            sudo::custom { "allow_${user}_reboot":
-                user    => $user,
-                command => '/sbin/reboot',
             }
 
             # Consider removing this if/when 'sudo su' is no longer used.

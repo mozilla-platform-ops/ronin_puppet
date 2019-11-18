@@ -8,10 +8,7 @@ class scriptworker_prereqs {
         target  => '/usr/local/bin/python3',
         require => Class['packages::python3_s3'],
     }
-    file { '/builds':
-      ensure => 'directory',
-      mode   => '0755',
-    }
+    include dirs::builds
 
     # DeveloperIDCA.cer is only required on dep, but is harmless on prod
     file {

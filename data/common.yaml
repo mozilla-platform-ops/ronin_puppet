@@ -24,23 +24,85 @@ user_groups:
     - asasaki
     - nthomas
     - sfraser
-  notarization:
-    - notary1
-    - notary2
-    - notary3
-    - notary4
-    - notary5
-    - notary6
-    - notary7
-    - notary8
-    - notary9
-    - notary10
-  dep_notarization:
-    - depbld1
-    - depbld2
-    - tbbld
   cia:
     - bclary
+
+
+scriptworker_users:
+  dep:
+    depbld1:
+      home: /builds/dep1
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+      dmg_prefix: "dep1"
+      worker_id_suffix: "a"
+      cot_product: "firefox"
+      widevine_filename: "widevine_dep.crt"
+    depbld1:
+      home: /builds/dep2
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+      dmg_prefix: "dep1"
+      worker_id_suffix: "b"
+      cot_product: "firefox"
+      widevine_filename: "widevine_dep.crt"
+    tbbld:
+      home: /builds/tb-dep
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+      dmg_prefix: "tb"
+      worker_id_suffix: "tb"
+      cot_product: "thunderbird"
+      widevine_filename: "widevine_dep.crt"
+  tb-prod:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_notarize
+      dmg_prefix: "prod"
+      cot_product: "thunderbird"
+      widevine_filename: "widevine_prod.crt"
+      ed_key_filename: "ed25519_privkey"
+      notarization_users:
+        - notary1
+        - notary2
+        - notary3
+        - notary4
+        - notary5
+        - notary6
+        - notary7
+        - notary8
+        - notary9
+        - notary10
+  ff-prod:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_notarize
+      dmg_prefix: "prod"
+      cot_product: "firefox"
+      widevine_filename: "widevine_prod.crt"
+      ed_key_filename: "ed25519_privkey"
+      notarization_users:
+        - notary1
+        - notary2
+        - notary3
+        - notary4
+        - notary5
+        - notary6
+        - notary7
+        - notary8
+        - notary9
+        - notary10
 
 
 all_users:

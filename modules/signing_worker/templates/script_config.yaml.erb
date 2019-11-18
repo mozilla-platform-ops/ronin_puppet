@@ -1,18 +1,18 @@
-work_dir: "<%= scope['signing_worker::scriptworker_base'] %>/work"
-artifact_dir: "<%= scope['signing_worker::scriptworker_base'] %>/artifacts"
+work_dir: "<%= @scriptworker_base %>/work"
+artifact_dir: "<%= @scriptworker_base %>/artifacts"
 taskcluster_scope_prefix: "<%= @worker_config['taskcluster_scope_prefix'] %>"
 verbose: true
-<% if @notarization_users.empty? -%>
+<% if @notary_users.empty? -%>
 local_notarization_accounts: []
 <% else -%>
 local_notarization_accounts:
-<% @notarization_users.each do |user| -%>
-    - <%= user %>
+<% @notary_users.each do |nuser| -%>
+    - <%= nuser %>
 <% end -%><% end -%>
 default_keychains:
-    - "/Users/<%= scope['signing_worker::user'] %>/Library/Keychains/login.keychain-db"
+    - "/Users/<%= @user %>/Library/Keychains/login.keychain-db"
     - "/Library/Keychains/System.keychain"
-dmg_prefix: "<%= scope['signing_worker::dmg_prefix'] %>"
+dmg_prefix: "<%= @dmg_prefix %>"
 mac_config:
 <% @role_config.each do |role, role_data| -%>
     <%= role %>:

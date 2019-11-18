@@ -41,40 +41,85 @@ class roles_profiles::profiles::mac_v3_signing {
             }
 
             include dirs::tools
+
             class { 'scriptworker_prereqs': }
 
-            case $::hostname {
-                /^dep-mac-v3-signing\d+/: {
-                    class { 'signing_worker':
-                        user              => 'depbld1',
-                        scriptworker_base => '/builds/dep1',
-                        dmg_prefix        => 'dep1',
-                        worker_id_suffix  => 'a',
-                        cot_product       => 'firefox',
-                    }
-                    class { 'signing_worker':
-                        user              => 'depbld2',
-                        scriptworker_base => '/builds/dep2',
-                        dmg_prefix        => 'dep2',
-                        worker_id_suffix  => 'b',
-                        cot_product       => 'firefox',
-                    }
-                    class { 'signing_worker':
-                        user              => 'tbbld',
-                        scriptworker_base => '/builds/tb-dep',
-                        dmg_prefix        => 'tb',
-                        worker_id_suffix  => 'tb',
-                        cot_product       => 'thunderbird',
-                    }
+            # Template variables for script_config.yaml
+            #   - taskcluster_scope_prefix
+            #   - config file role name
+            #   - sign_with_entitlements
+            #   - verify_mac_signature
+            #   - base_bundle_id
+            #   - identity
+            #   - keychain_password
+            #   - pkg_cert_id
+            #   - notarization_account
+            #   - notarization_password
+            #   - apple_asc_provider
+            #   - notarization_poll_timeout
+            #   - widevine_url
+            #   - widevine_user
+            #   - widevine_pass
+            #   - omnija_url
+            #   - omnija_user
+            #   - omnija_pass
+            #   - langpack_url
+            #   - langpack_user
+            #   - langpack_pass
+            # Template variables for scriptworker.yaml
+            #   - worker_type
+            #   - taskcluster_access_token
+            #   - taskcluster_client_id
+            #   - sign_chain_of_trust
+            #   - verify_chain_of_trust
+            #   - verify_cot_signature
 
-                }
-                /^tb-mac-v3-signing\d+/: {
-                    class { 'signing_worker':
-                        cot_product => 'thunderbird',
-                    }
-                }
-                default: {
-                    class { 'signing_worker': }
+            # TODO Don't create these if the secrets service is unsatisfatory.
+            # Cert files to create
+            #   - dep:
+            #     - widevine_dep.crt from signing_keys.widevine_dep_crt
+            #     - dep_signing.keychain from signing_keys.dep_signing_keychain
+            #  - default
+            #    - widevine_prod.crt
+            #    - nightly_signing.keychain
+            #    - release-signing.keychain
+            #    - ed25519_privkey
+            #
+
+            # For cloning the widevine repository
+            $widevine_user = lookup('widevine_config.user')
+            $widevine_key = lookup('widevine_config.key')
+
+            $role = $facts['networking']['hostname']? {
+                /^dep-mac-v3-signing\d+/ => 'dep',
+                /^tb-mac-v3-signing\d+/ => 'tb-prod',
+                default => 'ff-prod',
+            }
+
+            $worker_config = lookup("signingworker_config.${role}", Hash, undef, {})
+            $role_config = lookup("signingworker_roles.${role}", Hash, undef, {})
+
+            $scriptworker_users = lookup("scriptworker_users.${role}")
+
+            $scriptworker_users.each |String $user, Hash $user_data| {
+                signing_worker { "signing_worker_${user}":
+                    role                 => $role,
+                    user                 => $user,
+                    password             => lookup("${user}_user.password"),
+                    salt                 => lookup("${user}_user.salt"),
+                    iterations           => lookup("${user}_user.iterations"),
+                    scriptworker_base    => $user_data['home'],
+                    dmg_prefix           => $user_data['dmg_prefix'],
+                    worker_id_suffix     => $user_data['worker_id_suffix'],
+                    cot_product          => $user_data['cot_product'],
+                    supported_behaviors  => $user_data['supported_behaviors'],
+                    widevine_user        => $widevine_user,
+                    widevine_key         => $widevine_key,
+                    widevine_filename    => $user_data['widevine_filename'],
+                    worker_config        => $worker_config,
+                    role_config          => $role_config,
+                    notarization_users   => $user_data['notarization_users'],
+                    ed_key_filename      => $user_data['ed_key_filename'],
                 }
             }
         }
