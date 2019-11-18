@@ -4,7 +4,7 @@
 
 class win_scheduled_tasks::clean_profilelist {
 
-    $clean_profilelist_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
+    $clean_profilelist_ps1 = "${facts['custom_win_roninprogramdata']}\\clean_profilelist.ps1"
 
     if $::operatingsystem == 'Windows' {
         file { $clean_profilelist_ps1:
