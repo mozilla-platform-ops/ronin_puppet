@@ -14,8 +14,8 @@ class fw::roles::distinguished_puppetmaster {
             include ::fw::profiles::nrpe_from_nagios
         }
         /.*\.mdc2\.mozilla\.com/: {
+            include ::fw::profiles::bacula_from_mdc1_bacula_host
             include ::fw::profiles::bacula_from_mdc2_bacula_host
-
             include ::fw::profiles::puppetmaster_from_all_releng
             include ::fw::profiles::puppetmaster_sync_from_all_puppetmasters
             include ::fw::profiles::ssh_from_rejh_logging

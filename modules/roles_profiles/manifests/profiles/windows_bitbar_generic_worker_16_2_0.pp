@@ -2,13 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_bitbar_generic_worker_16_0_0 {
+class roles_profiles::profiles::windows_bitbar_generic_worker_16_2_0 {
 
     case $::operatingsystem {
         'Windows': {
 
             $taskcluster_access_token = lookup('taskcluster_access_token')
             $ext_pkg_src_loc          = lookup('win_ext_pkg_src')
+            $taskcluster_root         = lookup('taskcluster.root_url')
             $tc_pkg_source            = "${ext_pkg_src_loc}/taskcluster"
             # Determined in /modules/win_shared/facts.d/facts_win_application_versions.ps1
             $current_gw_version       = $facts['custom_win_genericworker_version']
@@ -19,7 +20,7 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_16_0_0 {
             # Defining below  as variables because there may be
             # a need to add logic to determine which source or version is needed
             # dependent on OS or architecture.
-            $needed_gw_version         = '16.0.0'
+            $needed_gw_version         = '16.2.0'
             $needed_tc_proxy_version   = '5.1.0'
             $needed_livelog_version    = '1.1.0'
             # Requires win_packages::nssm
@@ -57,13 +58,11 @@ class roles_profiles::profiles::windows_bitbar_generic_worker_16_0_0 {
             # Cloud instances will receive the config file during provisioning
             # Paths in the  config file need to have \\ hence the \\\\ below
 
-            if $facts['custom_win_gw_workertype'] == 'gecko-t-win10-64-ref-hw' {
-                $client_id = 'project/releng/generic-worker/vendor-gecko-t-win10-64-ref-hw/production'
-            } else {
-                $client_id = "project/releng/generic-worker/bitbar-${facts['custom_win_gw_workertype']}"
-            }
+            $client_id = "project/releng/generic-worker/bitbar-${facts['custom_win_gw_workertype']}"
+
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
+                taskcluster_root         => $taskcluster_root,
                 worker_type              => $facts['custom_win_gw_workertype'],
                 client_id                => $client_id,
                 generic_worker_dir       => "${facts['custom_win_systemdrive']}\\\\generic-worker",

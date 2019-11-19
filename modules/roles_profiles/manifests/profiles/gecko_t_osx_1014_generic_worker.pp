@@ -9,6 +9,13 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
     $worker_type  = 'gecko-t-osx-1014'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
+    $meta_data        = {
+        workerType    => $worker_type,
+        workerGroup   => $worker_group,
+        provisionerId => 'releng-hardware',
+        workerId      => $facts['networking']['hostname'],
+    }
+
     case $::operatingsystem {
         'Darwin': {
 
@@ -16,12 +23,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
                 # Note the camelCase key names
-                meta_data         => {
-                    workerType    => $worker_type,
-                    workerGroup   => $worker_group,
-                    provisionerId => 'releng-hardware',
-                    workerId      => $facts['networking']['hostname'],
-                },
+                meta_data         => $meta_data,
             }
 
             class { 'roles_profiles::profiles::logging':
@@ -29,16 +31,21 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 mac_log_level => 'default',
             }
 
+            # class { 'telegraf':
+            #     global_tags => $meta_data,
+            # }
+
             class { 'talos':
                 user => 'cltbld',
             }
 
-            $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
-            $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker.gecko_t_osx_1014.livelog_secret')
-            $quarantine_client_id     = lookup('generic_worker.gecko_t_osx_1014.quarantine_client_id')
-            $quarantine_access_token  = lookup('generic_worker.gecko_t_osx_1014.quarantine_access_token')
-            $bugzilla_api_key         = lookup('generic_worker.gecko_t_osx_1014.bugzilla_api_key')
+            $taskcluster_client_id    = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_client_id')
+            $taskcluster_access_token = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_access_token')
+            $livelog_secret           = lookup('generic_worker.datacenter_gecko_t_osx_1014.livelog_secret')
+            $quarantine_client_id     = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_client_id')
+            $quarantine_access_token  = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_access_token')
+            $bugzilla_api_key         = lookup('generic_worker.datacenter_gecko_t_osx_1014.bugzilla_api_key')
+
 
             class { 'packages::zstandard':
                 version => '1.3.8',
