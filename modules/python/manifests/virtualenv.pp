@@ -33,24 +33,24 @@
 #  }
 #
 define python::virtualenv (
-  $ensure           = present,
-  $version          = 'system',
-  $requirements     = false,
-  $systempkgs       = false,
-  $venv_dir         = $name,
-  $ensure_venv_dir  = true,
-  $index            = false,
-  $owner            = 'root',
-  $group            = 'root',
-  $mode             = '0755',
-  $proxy            = false,
-  $environment      = [],
-  $path             = [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin' ],
-  $cwd              = undef,
-  $timeout          = 1800,
-  $pip_args         = '',
-  $extra_pip_args   = '',
-  $virtualenv       = undef
+  String $ensure                     = present,
+  String $version                    = 'system',
+  String $requirements               = false,
+  Boolean $systempkgs                = false,
+  String $venv_dir                   = $name,
+  Boolean $ensure_venv_dir           = true,
+  Boolean $index                     = false,
+  String $owner                      = 'root',
+  String $group                      = 'root',
+  String $mode                       = '0755',
+  Variant[String, Undef] $proxy      = undef,
+  Array $environment                 = [],
+  Array $path                        = [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin' ],
+  Variant[String, Undef] $cwd        = undef,
+  Integer $timeout                   = 1800,
+  String $pip_args                   = '',
+  String $extra_pip_args             = '',
+  Variant[String, Undef] $virtualenv = undef
 ) {
 
   if $ensure == 'present' {
