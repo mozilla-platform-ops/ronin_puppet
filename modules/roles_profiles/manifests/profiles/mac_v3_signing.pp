@@ -96,14 +96,19 @@ class roles_profiles::profiles::mac_v3_signing {
                 default => 'ff-prod',
             }
 
-            $worker_config = lookup("signingworker_config.${role}", Hash, undef, {})
-            $role_config = lookup("signingworker_roles.${role}", Hash, undef, {})
+            # Distinct names because vault's prefix is different.
+            $worker_common = lookup("scriptworker_config.${role}", Hash, undef, {})
+            $worker_secrets = lookup("scriptworker_secrets.${role}", Hash, undef, {})
+            $worker_config = deep_merge($worker_common, $worker_secrets)
+
+            $role_common = lookup("signingworker_roles.${role}", Hash, undef, {})
+            $role_secrets = lookup("signing_secrets.${role}", Hash, undef, {})
+            $role_config = deep_merge($role_common, $role_secrets)
 
             $scriptworker_users = lookup("scriptworker_users.${role}")
 
             $scriptworker_users.each |String $user, Hash $user_data| {
                 signing_worker { "signing_worker_${user}":
-                    role                => $role,
                     user                => $user,
                     password            => lookup("${user}_user.password"),
                     salt                => lookup("${user}_user.salt"),

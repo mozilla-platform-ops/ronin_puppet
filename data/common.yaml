@@ -105,6 +105,77 @@ scriptworker_users:
         - notary10
 
 
+scriptworker_config:
+    ff-prod:
+        taskcluster_scope_prefix: 'project:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'signing-mac-v1'
+    tb-prod:
+        taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'tb-signing-mac-v1'
+    dep:
+        taskcluster_scope_prefix: 'project:releng:signing:'
+        sign_chain_of_trust: false
+        verify_chain_of_trust: true
+        verify_cot_signature: false
+        worker_type: 'depsigning-mac-v1'
+
+signingworker_roles:
+    ff-prod:
+        nightly:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.firefox-mac-nightly'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.firefox-mac-release'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+    tb-prod:
+        nightly:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.thunderbird-mac-nightly'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.thunderbird-mac-release'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+    dep:
+        dep:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 5
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.firefox-mac-dep'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+
+
 all_users:
   jwatkins:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC4L7XGxmrrQwZ6thiNih0Mmf9vylvZ3nnYpJyRISbjwRVQWcIOyw6xWJoayBIGwHF5/jeoWrQ3XpQv4Ub92u+Ck29JeQYVt8I6Q8auJipsivRMrsdLRwBgPrRUVcgIRq5O7LGuq8dP3MMcnYFGjkPwYJYkole/+d1uB8Zk6W7glpjOWH3m7bMmDUokS72gCjFCUgg/X8WF3RdYrAr4vlSJ0Gbk6Pi9QQJYzxKn7w9ju6W28q19A1iNNMSyJYjQ6ilpge8epRlutse7vxzpGFQaN6BfG5AFf08B3+PODNgmDmy8gnIMWT/EE1fnocxnE9UGggix7OxfVGWu5WbyIoO0pZqHIZy8xeQ0PEBkYVEs31SsCXBJpX7AqGPPxaomIMvCFGNoQgUfXku1SJwdp/2/PMQN5TcBJW8htZJWwDojBwv+i4jr59i+rFUXOJl0HSKvZxAlKk7OIgK+GcJhg2TfTgdE/WVVB63tJlH7QsoVpCjgL8R8j9wLTd2wdrL9V3wabI37s7mTZQ/nfUVqZYghGs1zXn9WzCk2NARHZlc/e4vvj6I1nGohwQdtDuFbrhspx3eTlbfTCe41uqyQiTw8FGZKO4t6BVL4ePx8DLAoq7w38eMufMYK6e1qgegEwfQC6g8VHEk1UQkh48sENVeyFA/LJSf7AqO5xXZIq0M60w== Mozilla_key_for_jwatkins
