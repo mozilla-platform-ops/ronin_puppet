@@ -62,8 +62,11 @@ class generic_worker::multiuser (
             $reboot_command = '/usr/bin/sudo /sbin/reboot'
 
             file {
-                # Ensure old plist file doesn’t exist, and deletes it if necessary.
+
+                # Ensure old plist and config files doesn’t exists, and deletes them, if necessary.
                 '/Library/LaunchAgents/net.generic.worker.plist':
+                    ensure  => absent;
+                '/etc/generic-worker.config':
                     ensure  => absent;
 
                 '/Library/LaunchDaemons/net.generic.worker.plist':

@@ -38,6 +38,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 user => 'cltbld',
             }
 
+
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
             $quarantine_client_id     = lookup('generic_worker.gecko_t_osx_1014.quarantine_client_id')
