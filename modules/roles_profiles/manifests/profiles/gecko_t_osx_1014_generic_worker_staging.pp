@@ -38,7 +38,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 user => 'cltbld',
             }
 
-
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_osx_1014.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_osx_1014.taskcluster_access_token')
             $quarantine_client_id     = lookup('generic_worker.gecko_t_osx_1014.quarantine_client_id')
@@ -54,9 +53,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 taskcluster_access_token  => $taskcluster_access_token,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
-                quarantine_client_id      => $quarantine_client_id,
-                quarantine_access_token   => $quarantine_access_token,
-                bugzilla_api_key          => $bugzilla_api_key,
                 task_dir                  => '/Users',
                 generic_worker_version    => 'v16.5.2',
                 generic_worker_sha256     => '7bd47da57aae65f120d89e8d70fb0a1f66762945994e0909d31eac6d63122046',
