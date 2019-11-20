@@ -7,9 +7,6 @@ class generic_worker::multiuser (
     String $taskcluster_access_token,
     String $worker_group,
     String $worker_type,
-    String $quarantine_client_id,
-    String $quarantine_access_token,
-    String $bugzilla_api_key,
     String $user,
     String $gw_dir,
     String $task_dir,
@@ -35,11 +32,6 @@ class generic_worker::multiuser (
         quarantine_worker_sha256  => $quarantine_worker_sha256,
         livelog_version           => $livelog_version,
         livelog_sha256            => $livelog_sha256
-    }
-
-    class { 'generic_worker::control_bug':
-        user_homedir     => $gw_dir,
-        bugzilla_api_key => $bugzilla_api_key,
     }
 
     $caches_dir          = "${gw_dir}/caches"
