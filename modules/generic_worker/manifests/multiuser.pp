@@ -34,11 +34,6 @@ class generic_worker::multiuser (
         livelog_sha256            => $livelog_sha256
     }
 
-    class { 'generic_worker::control_bug':
-        user_homedir     => $gw_dir,
-        bugzilla_api_key => $bugzilla_api_key,
-    }
-
     $caches_dir          = "${gw_dir}/caches"
     $downloads_dir       = "${gw_dir}/downloads"
     $ed25519_signing_key = "${gw_dir}/generic-worker.ed25519.signing.key"
