@@ -292,6 +292,7 @@ function Bootstrap-Puppet {
     [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
     [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
     [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
+    [string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").restore_needed,
     [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
   )
   begin {
@@ -352,7 +353,14 @@ function Bootstrap-Puppet {
           shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif ($last_exit -ne 0){
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
+          Set-ItemProperty -Path "$ronnin_key" -name last_exit -value $puppet_exit
+          if ( Test-path "$ronnin_key\max_boots") {
+            if ( $restore_needed -like "false) {
+                Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value puppetize_failed
+            } else {
+                Start-Restore
+            }
+          }
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 600
           shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
@@ -415,11 +423,13 @@ Function Start-Restore {
   process {
 	if (($boots -ge $max_boots)  -or ($restore_needed -notlike "false")) {
 		if ($boots -ge $max_boots){
-			Write-Log -message  ('{0} :: System has reach the maxium number of reboots set at HKLM:\SOFTWARE\Mozilla\ronin_puppet\source\max_boots .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+			Write-Log -message  ('{0} :: System has reach the maxium number of reboots set at HKLM:\SOFTWARE\Mozilla\ronin_puppet\source\max_boots. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		}
 		if ($restore_needed -eq "gw_bad_config") {
-			Write-Log -message  ('{0} :: Generic_worker has faild to start multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+			Write-Log -message  ('{0} :: Generic_worker has faild to start multiple times. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		}
+        if ($restore_needed -eq "puppetize_failed") {
+            Write-Log -message  ('{0} :: Node has failed to Puppetize multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Stop-ScheduledTask -TaskName maintain_system
 
 		Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
