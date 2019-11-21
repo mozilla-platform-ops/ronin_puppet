@@ -26,7 +26,7 @@
   "queueBaseURL": "",
   "region": "",
   "requiredDiskSpaceMegabytes": 10240,
-  "rootURL": "https://taskcluster.net",
+  "rootURL": "<%= $win_generic_worker::hw_config::taskcluster_root %>",
   "runAfterUserCreation": "<%= $win_generic_worker::hw_config::task_user_init_cmd %>",
   "runTasksAsCurrentUser": false,
   "secretsBaseURL": "",
