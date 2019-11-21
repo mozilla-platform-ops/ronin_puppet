@@ -385,7 +385,7 @@ Function set-restore_point {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    #vssadmin delete shadows /all /quiet
+    vssadmin delete shadows /all /quiet
     powershell.exe -Command Checkpoint-Computer -Description "default"
 
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
@@ -435,8 +435,8 @@ Function Start-Restore {
         #sc delete ssh-agent
         #Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
 		Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
-		# set-restore_point delets all existing check points to ensure the one needed is "1"
-		Restore-Computer -RestorePoint 1
+        $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
+		Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
 
 	} else {
         Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
