@@ -352,10 +352,9 @@ function Bootstrap-Puppet {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
-          Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           if ( Test-path "$ronnin_key\\max_boots") {
-          write-host if ( Test-path "$ronnin_key\\max_boots") {
+            Write-Log -message  ('{0} Test-path "$ronnin_key\\max_boots"' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             if ( $restore_needed -like "false") {
                 Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
             } else {
