@@ -356,7 +356,7 @@ function Bootstrap-Puppet {
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -value $puppet_exit
           if ( Test-path "$ronnin_key\max_boots") {
             if ( $restore_needed -like "false) {
-                Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value puppetize_failed
+                Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
             } else {
                 Start-Restore
             }
