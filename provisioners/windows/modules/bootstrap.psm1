@@ -355,7 +355,7 @@ function Bootstrap-Puppet {
           shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
-          if ( $restorable -like "true") {
+          if ( $restorable -like "yes") {
             if ( $restore_needed -like "false") {
                 Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
             } else {
@@ -400,7 +400,7 @@ Function set-restore_point {
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
 
-    New-ItemProperty -Path "$ronnin_key" -name "restorable " -PropertyType  string -value true
+    New-ItemProperty -Path "$ronnin_key" -name "restorable " -PropertyType  string -value yes
     New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  Dword -value 0
     New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
     New-ItemProperty -Path "$ronnin_key" -name "restore_needed" -PropertyType  string -value false
