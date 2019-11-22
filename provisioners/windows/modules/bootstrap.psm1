@@ -349,12 +349,12 @@ function Bootstrap-Puppet {
       if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
         if($last_exit -eq 0) {
           Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
+          Set-ItemProperty -Path "$ronnin_key" -name last_exit -value $puppet_exit
           shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif ($last_exit -ne 0){
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -value $puppet_exit
-          if ( Test-path "$ronnin_key\max_boots") {
+          if ( Test-path "$ronnin_key\\max_boots") {
             if ( $restore_needed -like "false") {
                 Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
             } else {
