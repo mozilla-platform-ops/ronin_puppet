@@ -70,21 +70,6 @@ function Setup-Logging {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Test-RegistryValue {
-  param (
-    [parameter(Mandatory=$true)]
-    [ValidateNotNullOrEmpty()]$Path,
-    [parameter(Mandatory=$true)]
-    [ValidateNotNullOrEmpty()]$Value
-  )
-  try {
-    Get-ItemProperty -Path $Path | Select-Object -ExpandProperty $Value -ErrorAction Stop | Out-Null
-    return $true
-  }
-  catch {
-    return $false
-  }
-}
 
 function Install-Prerequ {
   param (
@@ -298,6 +283,7 @@ function Bootstrap-Puppet {
     [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
     [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
     [string] $run_to_success = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").runtosuccess,
+    [string] $restorable = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").restorable,
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
     [string] $puppetfile = "$env:systemdrive\ronin\Puppetfile",
     [string] $logdir = "$env:systemdrive\logs",
@@ -369,7 +355,7 @@ function Bootstrap-Puppet {
           shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
-          if ( Test-RegistryValue -Path  "$ronnin_key" -value "max_boots") {
+          if ( $restorable -like "true") {
             if ( $restore_needed -like "false") {
                 Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
             } else {
@@ -414,6 +400,7 @@ Function set-restore_point {
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
 
+    New-ItemProperty -Path "$ronnin_key" -name "restorable " -PropertyType  string -value true
     New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  Dword -value 0
     New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
     New-ItemProperty -Path "$ronnin_key" -name "restore_needed" -PropertyType  string -value false
