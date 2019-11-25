@@ -400,7 +400,7 @@ Function set-restore_point {
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
 
-    New-ItemProperty -Path "$ronnin_key" -name "restorable " -PropertyType  string -value yes
+    New-ItemProperty -Path "$ronnin_key" -name "restorable" -PropertyType  string -value yes
     New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  Dword -value 0
     New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
     New-ItemProperty -Path "$ronnin_key" -name "restore_needed" -PropertyType  string -value false
