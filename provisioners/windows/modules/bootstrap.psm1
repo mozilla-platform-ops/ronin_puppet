@@ -398,8 +398,10 @@ Function set-restore_point {
     vssadmin delete shadows /all /quiet
     powershell.exe -Command Checkpoint-Computer -Description "default"
 
-    New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
-    New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+    if(!(Test-Path $ronnin_key)) {
+      New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
+      New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+    }
 
     New-ItemProperty -Path "$ronnin_key" -name "restorable" -PropertyType  string -value yes
     New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  Dword -value 0
