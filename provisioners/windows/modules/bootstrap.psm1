@@ -445,6 +445,7 @@ Function Start-Restore {
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
         Remove-Item –Path -Force $env:windir\temp\*
         sc delete "generic-worker"
+        Remove-ItemProperty -path $ronin_key -recurse
         # OpenSSH will need to be addressed it fails after restore
         # For now commented out of the roles manifests
         #sc delete sshd
