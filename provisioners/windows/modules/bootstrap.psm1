@@ -360,6 +360,7 @@ function Bootstrap-Puppet {
                 Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
             } else {
                 Start-Restore
+                pause
             }
           }
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
