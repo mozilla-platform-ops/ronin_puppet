@@ -32,18 +32,22 @@
   report_active = false
 
 [[inputs.disk]]
+  interval = "300s"
   ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
 
 [[inputs.diskio]]
+  interval = "300s"
 
 [[inputs.mem]]
 
 [[inputs.swap]]
+  interval = "300s"
 
 [[inputs.system]]
 
 <% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
 [[inputs.exec]]
+  interval = "300s"
   commands = [
     "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
   ]
@@ -51,6 +55,7 @@
   data_format = "influx"
 
 [[inputs.exec]]
+  interval = "300s"
   commands = [
     "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
   ]
@@ -58,18 +63,11 @@
   data_format = "influx"
 <% else -%>
 [[inputs.temp]]
+  interval = "300s"
 
 [[inputs.hddtemp]]
+  interval = "300s"
 <% end -%>
-
-[[inputs.filecount]]
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
-  directories = ["/Users/task*","/Users/cltbld"]
-<% else -%>
-  directories = ["/home/task*","/home/cltbld"]
-<% end -%>
-  tagexclude = ["directory"]
 
 [[inputs.procstat]]
   exe = "generic-worker"
-
