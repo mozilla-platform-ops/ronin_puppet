@@ -151,6 +151,9 @@ function Set-RoninRegOptions {
   }
   process {
 
+    If(( test-path "$ronnin_key")) {
+        Remove-Item -Path $mozilla_key -Recurse -force
+    }
     If(!( test-path "$ronnin_key")) {
       New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
       New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
