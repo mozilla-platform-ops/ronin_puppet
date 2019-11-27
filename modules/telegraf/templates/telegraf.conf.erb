@@ -49,7 +49,7 @@
 [[inputs.exec]]
   interval = "300s"
   commands = [
-    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
   ]
   timeout = "60s"
   data_format = "influx"
@@ -57,7 +57,7 @@
 [[inputs.exec]]
   interval = "300s"
   commands = [
-    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
   ]
   timeout = "60s"
   data_format = "influx"
