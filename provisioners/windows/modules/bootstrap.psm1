@@ -439,6 +439,10 @@ Function Start-Restore {
         if ($restore_needed -eq "puppetize_failed") {
             Write-Log -message  ('{0} :: Node has failed to Puppetize multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
+        else {
+            Write-Log -message  ('{0} :: darn it something else restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
+            pause
+        }
         Stop-ScheduledTask -TaskName maintain_system
 
         Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
