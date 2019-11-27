@@ -441,7 +441,7 @@ Function Start-Restore {
         }
         else {
             Write-Log -message  ('{0} :: darn it something else restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
-            pause
+
         }
         Stop-ScheduledTask -TaskName maintain_system
 
@@ -451,6 +451,8 @@ Function Start-Restore {
         Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
         Remove-Item –Path -Force $env:windir\temp\*
+        Write-Log -message  ('{0} :: pause check registry.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        pause
         sc delete "generic-worker"
         Remove-ItemProperty -path $ronin_key -recurse -force
         # OpenSSH will need to be addressed it fails after restore
