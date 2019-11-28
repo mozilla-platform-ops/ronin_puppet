@@ -150,10 +150,6 @@ function Set-RoninRegOptions {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-
-    If(( test-path "$ronnin_key")) {
-        Remove-Item -Path $mozilla_key -Recurse -force
-    }
     If(!( test-path "$ronnin_key")) {
       New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
       New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
@@ -219,20 +215,21 @@ Function Clone-Ronin {
 }
 Function Bootstrap-schtasks {
   param (
-    [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
-    [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
-    [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
-    [string] $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage,
-    [string] $image_provisioner = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").image_provisioner
+    [string] $image_provisioner,
+    [string] $workerType,
+    [string] $src_Organisation,
+    [string] $src_Repository,
+    [string] $src_Revision
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
 
+    $role = $workerType -replace '-',''
+
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$image_provisioner/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
+    Invoke-WebRequest https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_Revision/provisioners/windows/$image_provisioner/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
     Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
     Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
   }
@@ -452,7 +449,6 @@ Function Start-Restore {
         Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
         Remove-Item –Path -Force $env:windir\temp\*
         Write-Log -message  ('{0} :: pause check registry.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        pause
         sc delete "generic-worker"
         Remove-ItemProperty -path $ronin_key -recurse -force
         # OpenSSH will need to be addressed it fails after restore
