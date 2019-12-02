@@ -28,5 +28,4 @@ class roles_profiles::roles::geckotwin1064hw {
     include roles_profiles::profiles::windows_datacenter_generic_worker_16_2_0
     include roles_profiles::profiles::microsoft_tools
     include roles_profiles::profiles::google_chrome
-    include roles_profiles::profiles::windows_rotate_secrets
 }
