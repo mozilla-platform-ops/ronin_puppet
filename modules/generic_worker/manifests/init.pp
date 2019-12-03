@@ -89,8 +89,8 @@ class generic_worker (
                     mode    => '0644';
 
                 '/var/log/genericworker':
-                    ensure  => directory,
-                    mode    => '0777';
+                    ensure => directory,
+                    mode   => '0777';
             }
 
             service { 'net.generic.worker':
