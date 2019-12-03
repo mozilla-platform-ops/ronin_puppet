@@ -87,6 +87,10 @@ class generic_worker (
                     ensure  => present,
                     content => template('generic_worker/generic-worker.config.erb'),
                     mode    => '0644';
+
+                '/var/log/genericworker':
+                    ensure  => directory,
+                    mode    => '0777';
             }
 
             service { 'net.generic.worker':
