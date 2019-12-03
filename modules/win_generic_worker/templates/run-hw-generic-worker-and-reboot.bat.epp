@@ -18,7 +18,6 @@ goto CheckForStateFlag
 
 
 :RunWorker
-:RunWorker
 FOR /F "tokens=* USEBACKQ" %%F IN (`powershell -command "(New-TimeSpan -Start (Get-Date "01/01/1970") -End (Get-Date)).TotalSeconds"`) DO (
     SET gw_start=%%F
 )
@@ -45,8 +44,8 @@ for /f "tokens=1,2 delims=." %%a  in ("%task_stop%") do (
     set stop_time=%%a
 )
 setx task_stop_time %stop_time% /m
-=======
-del /Q /F <%= $win_generic_worker::generic_worker_dir %>\tasks-resolved-count.txt
+
+>>>>>>> 521d71946c5653dee007500a2e4251cf7014600a
 
 if %GW_EXIT_CODE% EQU 0 GoTo exit_0
 if %GW_EXIT_CODE% EQU 67 GoTo exit_67
@@ -73,11 +72,13 @@ shutdown /r /t 0 /f /c "Generic worker has reached idle timeout; rebooting" >> <
 exit
 
 :exit_69
+echo "Generic-worker panic! Issue with enviroment or worker bug. (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+echo "Removing possibly corrupted files." >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
+del /Q /F <%= $win_generic_worker::generic_worker_dir %>\tasks-resolved-count.txt
 del /Q /F <%= $win_generic_worker::generic_worker_dir %>\file-caches.json
 del /Q /F <%= $win_generic_worker::generic_worker_dir %>\directory-caches.json
 del /Q /F <%= $win_generic_worker::generic_worker_dir %>\next-task-user.json
 del /Q /F <%= $win_generic_worker::generic_worker_config %> >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
-echo "Generic-worker panic! Issue with enviroment or worker bug. (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 Goto ErrorReboot
 :exit_71
 echo "Generic-worker was terminated via an interrupt signal. (exit code %GW_EXIT_CODE%)" >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log

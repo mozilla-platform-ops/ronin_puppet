@@ -31,9 +31,9 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 mac_log_level => 'default',
             }
 
-            # class { 'telegraf':
-            #     global_tags => $meta_data,
-            # }
+            class { 'telegraf':
+                global_tags => $meta_data,
+            }
 
             class { 'talos':
                 user => 'cltbld',

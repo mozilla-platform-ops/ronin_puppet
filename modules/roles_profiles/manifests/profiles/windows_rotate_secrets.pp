@@ -4,6 +4,10 @@
 
 class roles_profiles::profiles::windows_rotate_secrets {
 
+# WARNING!!! The underlying define type will need to be adjusted to be used again.
+# File comparison will be needed added for the target file.
+# Leaving in place until Vault is in use on Windows hardware
+
     case $::operatingsystem {
         'Windows': {
             class { 'win_shared::gpg_files':
