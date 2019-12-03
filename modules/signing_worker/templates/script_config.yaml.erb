@@ -1,0 +1,45 @@
+work_dir: "<%= @scriptworker_base %>/work"
+artifact_dir: "<%= @scriptworker_base %>/artifacts"
+taskcluster_scope_prefix: "<%= @worker_config['taskcluster_scope_prefix'] %>"
+verbose: true
+<% if @notary_users.empty? -%>
+local_notarization_accounts: []
+<% else -%>
+local_notarization_accounts:
+<% @notary_users.each do |nuser| -%>
+    - <%= nuser %>
+<% end -%><% end -%>
+default_keychains:
+    - "/Users/<%= @user %>/Library/Keychains/login.keychain-db"
+    - "/Library/Keychains/System.keychain"
+dmg_prefix: "<%= @dmg_prefix %>"
+mac_config:
+<% @role_config.each do |role, role_data| -%>
+    <%= role %>:
+        notarize_type: multi_account
+        signing_keychain: "<%= @certs_dir %>/<%= role %>-signing.keychain"
+        supported_behaviors:
+<% @supported_behaviors.each do |behavior| -%>
+            - <%= behavior %>
+<% end -%>
+        sign_with_entitlements: <%= role_data['sign_with_entitlements'] %>
+        verify_mac_signature: <%= role_data['verify_mac_signature'] %>
+        base_bundle_id: "<%= role_data['base_bundle_id'] %>"
+        identity: "<%= role_data['identity'] %>"
+        keychain_password: "<%= role_data['keychain_password'] %>"
+        pkg_cert_id: "<%= role_data['pkg_cert_id'] %>"
+        apple_notarization_account: "<%= role_data['notarization_account'] %>"
+        apple_notarization_password: "<%= role_data['notarization_password'] %>"
+        apple_asc_provider: "<%= role_data['apple_asc_provider'] %>"
+        notarization_poll_timeout: <%= role_data['notarization_poll_timeout'] %>
+        widevine_url: "<%= role_data['widevine_url'] %>"
+        widevine_user: "<%= role_data['widevine_user'] %>"
+        widevine_pass: "<%= role_data['widevine_pass'] %>"
+        widevine_cert: "<%= @widevine_cert_path %>"
+        omnija_url: "<%= role_data['omnija_url'] %>"
+        omnija_user: "<%= role_data['omnija_user'] %>"
+        omnija_pass: "<%= role_data['omnija_pass'] %>"
+        langpack_url: "<%= role_data['langpack_url'] %>"
+        langpack_user: "<%= role_data['langpack_user'] %>"
+        langpack_pass: "<%= role_data['langpack_pass'] %>"
+<% end -%>
