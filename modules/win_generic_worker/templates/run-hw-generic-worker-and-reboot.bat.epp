@@ -45,8 +45,6 @@ for /f "tokens=1,2 delims=." %%a  in ("%task_stop%") do (
 )
 setx task_stop_time %stop_time% /m
 
->>>>>>> 521d71946c5653dee007500a2e4251cf7014600a
-
 if %GW_EXIT_CODE% EQU 0 GoTo exit_0
 if %GW_EXIT_CODE% EQU 67 GoTo exit_67
 if %GW_EXIT_CODE% EQU 68 GoTo exit_68
