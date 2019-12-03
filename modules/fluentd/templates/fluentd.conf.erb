@@ -6,7 +6,6 @@
       --timeout 1d \
     | tail -n +3 \
     "
-    #  --predicate '(process MATCHES \"(logger|sudo|generic-worker)\") || (messageType > 2)' \
     # messageTypes 0:Default 1:Info 2:Debug ?:Error
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
@@ -22,6 +21,7 @@
   tag system
   run_interval 60s  # run command if not still running
 </source>
+
 
 <source>
   @type tail
