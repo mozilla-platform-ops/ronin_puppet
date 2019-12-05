@@ -74,7 +74,13 @@ define signing_worker (
         owner   =>  $user,
         group   =>  $group,
     }
-    vcsrepo { $widevine_clone_dir:
+
+    exec { "widevine_check":
+        command => "/usr/bin/true",
+        unless  => "test -d ${widevine_clone_dir}",
+        path    => ["/bin", "/usr/bin"],
+    }
+    ->vcsrepo { $widevine_clone_dir:
       ensure   => present,
       provider => git,
       source   => "https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine",
@@ -100,10 +106,6 @@ define signing_worker (
         timeout         => 0,
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
     }
-
-
-
-    # TODO CREATE CERTS
 
     # scriptworker config
     file { $script_config_file:
