@@ -75,10 +75,10 @@ define signing_worker (
         group   =>  $group,
     }
 
-    exec { "widevine_check":
-        command => "/usr/bin/true",
+    exec { 'widevine_check':
+        command => '/usr/bin/true',
         unless  => "test -d ${widevine_clone_dir}",
-        path    => ["/bin", "/usr/bin"],
+        path    => ['/bin', '/usr/bin'],
     }
     ->vcsrepo { $widevine_clone_dir:
       ensure   => present,
