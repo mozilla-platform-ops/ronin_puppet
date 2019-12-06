@@ -43,7 +43,7 @@ function Write-Log {
     Write-Host -object $message -ForegroundColor $fc
   }
 }
-
+<#
 $userProfiles = @(Get-ChildItem -path 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\ProfileList' | ? { $_.Name -match 'S-1-5-21-'})
 Write-Log -message ('{0} :: {1} UserProfiles detected' -f $($MyInvocation.MyCommand.Name), $userProfiles.Length) -severity 'DEBUG'
 foreach ($userProfile in $userProfiles) {
@@ -59,3 +59,4 @@ try {
 	Write-Log -message ('{0} :: UserProfile sid: {1} failed to map to a user account and was removed' -f $($MyInvocation.MyCommand.Name), $sid) -severity 'DEBUG'
 	}
 }
+#>
