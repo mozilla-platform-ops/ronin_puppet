@@ -37,6 +37,16 @@ platforms:
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
   # TODO: setup docker driver, get docker image with working systemd, and test on travis.
 suites:
+  - name: linux
+    provisioner:
+      manifests_path:
+        # - manifests-kitchen/bitbar
+    verifier:
+      inspec_tests:
+        # - test/integration/bitbar
+    includes:
+      - ubuntu18-kitchen_template
+    attributes:
   - name: bitbar
     provisioner:
       manifests_path: manifests-kitchen/bitbar
