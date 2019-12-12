@@ -61,7 +61,8 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
             # These are specifically needed for the config file which Puppet only manages for hardware
             # Cloud instances will receive the config file during provisioning
             # Paths in the  config file need to have \\ hence the \\\\ below
-            class{ 'win_generic_worker::hw_config':
+            class{ 'win_generic_worker::custom_config':
+                generic_worker_dir       => generic_worker_dir,
                 taskcluster_access_token => $taskcluster_access_token,
                 taskcluster_root         => $taskcluster_root,
                 wstaudience              => $wstaudience,
