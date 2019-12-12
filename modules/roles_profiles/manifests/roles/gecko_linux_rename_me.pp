@@ -13,7 +13,6 @@ class roles_profiles::roles::gecko_linux_rename_me {
     # include ::roles_profiles::profiles::users
     # include ::roles_profiles::profiles::cltbld_user
     # include ::roles_profiles::profiles::disable_services
-    # include ::roles_profiles::profiles::timezone
     # include ::roles_profiles::profiles::ntp
     # include ::roles_profiles::profiles::network
     # include ::roles_profiles::profiles::disable_services
@@ -29,7 +28,6 @@ class roles_profiles::roles::gecko_linux_rename_me {
     # include ::roles_profiles::profiles::users
     # include ::roles_profiles::profiles::cltbld_user
     # include ::roles_profiles::profiles::homebrew
-    # include ::roles_profiles::profiles::relops_users
     # include ::roles_profiles::profiles::gecko_t_osx_1014_generic_worker
     # include ::fw::roles::osx_taskcluster_worker
 
