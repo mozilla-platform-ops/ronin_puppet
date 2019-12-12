@@ -12,6 +12,9 @@ win_datacenter:
         jump_hosts: '10.49.48.100,10.49.48.101'
     mdc2:
         jump_hosts: '10.51.48.100,10.51.48.101'
+    ports:
+        ssh: 22
+        vnc: 5900
 
 # S3 resources
 win_s3:

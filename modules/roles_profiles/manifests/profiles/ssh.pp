@@ -8,10 +8,11 @@ class roles_profiles::profiles::ssh {
         'Windows': {
 
             $pwrshl_run_script    = lookup('win_pwrshl_run_script')
-            $firewall_allowed_ips = lookup('win_dc_jumphosts')
+            $mdc1_jumphosts       = lookup('win_datacenter.mdc1.jump_hosts')
+            $mdc2_jumphosts        = lookup('win_datacenter.mdc2.jump_hosts')
             $ssh_program_data     = "${facts['custom_win_programdata']}\\ssh"
             $programfiles         = $facts['custom_win_programfiles']
-            $firewall_port        = 22
+            $firewall_port        = lookup('win_datacenter.ports.ssh')
             $firewall_rule_name   = 'SSH'
 
             class { 'win_openssh':
@@ -22,11 +23,17 @@ class roles_profiles::profiles::ssh {
             case $facts['custom_win_mozspace'] {
                 # Restrict SSH access in datacenters to jump hosts.
                 'mdc1', 'mdc2': {
-                    win_firewall::open_local_port { "allow_${firewall_rule_name}":
+                    win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc1_jumphost":
                         port            => $firewall_port,
-                        remote_ip       => $firewall_allowed_ips,
+                        remote_ip       => $mdc1_jumphosts,
                         reciprocal      => true,
-                        fw_display_name => $firewall_rule_name,
+                        fw_display_name => "${firewall_rule_name}_mdc1",
+                    }
+                    win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc2_jumphost":
+                        port            => $firewall_port,
+                        remote_ip       => $mdc2_jumphosts,
+                        reciprocal      => true,
+                        fw_display_name => "${firewall_rule_name}_mdc2",
                     }
                 }
                 default : {

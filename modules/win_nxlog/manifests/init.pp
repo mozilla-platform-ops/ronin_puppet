@@ -5,6 +5,7 @@
 class win_nxlog (
     String $nxlog_dir,
     String $location,
+    String $log_aggregator,
     String $conf_file
 ){
 

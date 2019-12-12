@@ -27,15 +27,19 @@ class roles_profiles::profiles::logging (
             $location        = $facts['custom_win_location']
             $programfilesx86 = $facts['custom_win_programfilesx86']
             if ($facts['custom_win_location'] == 'datacenter') {
+                $log_aggregator  = lookup('win_datacenter.log_aggregator')
                 $conf_file = epp('win_nxlog/nxlog.conf.epp')
             } else {
+                # data will need to be added as could support builds out
+                $log_aggregator  = undef
                 $conf_file = file('win_nxlog/non_datacenter_nxlog.conf')
             }
 
             class { 'win_nxlog':
-                nxlog_dir => "${programfilesx86}\\nxlog",
-                location  => $location,
-                conf_file => $conf_file,
+                nxlog_dir      => "${programfilesx86}\\nxlog",
+                location       => $location,
+                log_aggregator => $log_aggregator,
+                conf_file      => $conf_file,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
