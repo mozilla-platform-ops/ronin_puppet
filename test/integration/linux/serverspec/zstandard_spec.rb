@@ -11,6 +11,6 @@ describe command('pip3 list | grep zstandard') do
 end
 
 describe command('zstd') do
-  its(:exit_status) { should eq 0 }
-  its(:stdout) { should match /Usage/ }
+  its(:exit_status) { should eq 1 }
+  its(:stderr) { should match /Usage/ }
 end

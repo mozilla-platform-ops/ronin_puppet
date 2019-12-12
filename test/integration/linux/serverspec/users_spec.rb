@@ -13,7 +13,7 @@ describe 'users' do
     it { should exist }
   end
 
-  describe user('fubar') do
+  describe user('klibby') do
     it { should exist }
   end
 end
