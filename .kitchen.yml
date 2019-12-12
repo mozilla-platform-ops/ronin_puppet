@@ -40,10 +40,10 @@ suites:
   - name: linux
     provisioner:
       manifests_path:
-        # - manifests-kitchen/bitbar
+        - manifests-kitchen/linux
     verifier:
       inspec_tests:
-        # - test/integration/bitbar
+        - test/integration/linux
     includes:
       - ubuntu18-kitchen_template
     attributes:

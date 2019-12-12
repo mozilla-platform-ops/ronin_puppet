@@ -10,6 +10,12 @@ class roles_profiles::profiles::timezone {
                 timezone => 'GMT',
             }
         }
+        'Ubuntu': {
+            class { 'timezone':
+                timezone   => 'UTC',
+                rtc_is_utc => true,
+            }
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }
