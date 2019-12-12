@@ -10,7 +10,7 @@ define win_packages::win_exe_pkg (
 ){
 
     $pkgdir       = $facts['custom_win_temp_dir']
-    $srcloc       = lookup('win_ext_pkg_src')
+    $srcloc       = lookup('win_s3.ext_pkg_src')
 
     file { "${pkgdir}\\${pkg}" :
         source => "${srcloc}/${pkg}",
