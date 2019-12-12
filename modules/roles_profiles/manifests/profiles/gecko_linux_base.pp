@@ -10,4 +10,6 @@ class roles_profiles::profiles::gecko_linux_base {
   contain packages::python2_zstandard
   contain packages::python3_zstandard
 
+  contain packages::zstd
+
 }
