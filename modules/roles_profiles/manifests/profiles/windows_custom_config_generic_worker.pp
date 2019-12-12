@@ -26,9 +26,9 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
             # From secrets file
             $taskcluster_access_token = lookup('taskcluster_access_token')
             # From Hiera
-            $taskcluster_root         = lookup('taskcluster.root_url')
-            $wstaudience              = lookup('taskcluster.wstaudience')
-            $wstserverurl             = lookup('taskcluster.wstserverurl')
+            $taskcluster_root         = lookup('win_taskcluster.root_url')
+            $wstaudience              = lookup('win_taskcluster.wstaudience')
+            $wstserverurl             = lookup('win_taskcluster.wstserverurl')
             $idle_timeout             = lookup('windows_generic_worker.idle_timeout')
             $client_id                = lookup('windows_generic_worker.client_id')
             $provisioner_id           = lookup('windows_generic_worker.provisioner_id')
