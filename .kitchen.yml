@@ -39,11 +39,9 @@ platforms:
 suites:
   - name: linux
     provisioner:
-      manifests_path:
-        - manifests-kitchen/linux
+      manifests_path: manifests-kitchen/linux
     verifier:
-      inspec_tests:
-        - test/integration/linux
+      # inspec_tests: test/integration/linux
     includes:
       - ubuntu18-kitchen_template
     attributes:
