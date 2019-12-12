@@ -4,8 +4,25 @@
 
 class packages::python3 {
 
-    package { 'python3':
-        ensure   => present,
-        provider => brew,
+    case $::operatingsystem {
+        'Darwin': {
+            package { 'python3':
+                ensure   => present,
+                provider => brew,
+            }
+        }
+        'Ubuntu': {
+            package { 'python3':
+                ensure   => present,
+            }
+            package { 'python3-pip':
+                ensure   => present,
+            }
+        }
+        default: {
+            fail("${module_name} not supported under ${::operatingsystem}")
+        }
     }
+
+
 }

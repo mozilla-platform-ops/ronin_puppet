@@ -7,6 +7,8 @@ class roles_profiles::roles::gecko_linux_rename_me {
     ## copied from osx role
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::relops_users
+    include ::roles_profiles::profiles::gecko_linux_base
+
     # include ::roles_profiles::profiles::ntp
     # include ::roles_profiles::profiles::network
     # include ::roles_profiles::profiles::motd

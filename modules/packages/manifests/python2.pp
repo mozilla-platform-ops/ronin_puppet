@@ -4,8 +4,25 @@
 
 class packages::python2 {
 
-    package { 'python2':
-        ensure   => present,
-        provider => brew,
+    case $::operatingsystem {
+        'Darwin': {
+            package { 'python2':
+                ensure   => present,
+                provider => brew,
+            }
+        }
+        'Ubuntu': {
+            package { 'python':
+                ensure   => present,
+            }
+            package { 'python-pip':
+                ensure => present,
+            }
+        }
+        default: {
+            fail("${module_name} not supported under ${::operatingsystem}")
+        }
     }
+
+
 }
