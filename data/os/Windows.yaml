@@ -16,6 +16,8 @@ win_datacenter:
         ssh: 22
         vnc: 5900
 
+win_dc_log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
+
 # S3 resources
 win_s3:
     ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
