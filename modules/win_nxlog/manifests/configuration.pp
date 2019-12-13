@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_nxlog::configuration {
+class win_nxlog::configuration (
+    String $log_aggregator
+) {
 
     require win_nxlog::install
 
