@@ -17,7 +17,7 @@ class roles_profiles::profiles::ntp {
         # For windowstime resoucre timezone and server needs to be set in the same class
         # Resource from ncorrare-windowstime
             if $facts['custom_win_location'] == 'datacenter' {
-                $ntpserver = lookup('win_datacenter.log_aggregator')
+                $ntpserver = lookup('win_datacenter.ntp')
             } else {
                 $ntpserver = '0.pool.ntp.org'
             }
