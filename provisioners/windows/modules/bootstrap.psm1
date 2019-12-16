@@ -341,24 +341,28 @@ function Bootstrap-Puppet {
         if($last_exit -eq 0) {
           Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
-          shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+           write-host shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+           exit
         } elseif ($last_exit -ne 0){
-          Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          write-host Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 600
-          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          exit
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
+        write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
+        exit
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $last_exit
         Start-sleep -s 600
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        exit
       }
     }
   }
