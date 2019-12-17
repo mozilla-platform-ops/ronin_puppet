@@ -226,13 +226,15 @@ function Puppet-Run {
           Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
           Remove-Item $lock -ErrorAction SilentlyContinue
-          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          exit
         } elseif ($last_exit -ne 0){
           Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
           Remove-Item $lock
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 600
-          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          exit
         }
       } elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -243,7 +245,8 @@ function Puppet-Run {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $last_exit
         Remove-Item -path $lock
-        shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        write-host shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        exit
       }
     }
   }
@@ -254,7 +257,6 @@ function Puppet-Run {
 
 $bootstrap_stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
-    pause
   Run-MaintainSystem
   Puppet-Run
 } else {
