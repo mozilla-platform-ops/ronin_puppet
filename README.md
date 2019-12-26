@@ -38,11 +38,27 @@ kitchen-puppet provides infrastructure to automate running convergence and serve
 Uses [kitchen-puppet](https://github.com/neillturner/kitchen-puppet).
 
 ```
+# install ruby via homebrew or other means
+brew install ruby
+# add gem bin path (may differ on your system) to your PATH
+export PATH=$PATH:/usr/local/lib/ruby/gems/2.6.0/bin
+
+# install testing tools
 gem install bundler
 bundle install --gemfile .gemfile
-kitchen converge
+
+## bitbar
+kitchen converge bitbar
 # run spec tests
-kitchen verify
+kitchen verify bitbar
+
+## linux
+# coverge host
+kitchen converge linux
+# run serverspec tests
+kitchen verify linux
+# login to host
+kitchen login linux
 ```
 
 New test suites can be added in `.kitchen.yaml`.
