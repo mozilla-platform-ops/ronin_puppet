@@ -4,11 +4,16 @@
 
 class roles_profiles::roles::gecko_t_linux_talos {
 
-    ## copied from osx role
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::gecko_linux_base
 
+    # TODO: from build-puppet
+    # xwindows setup
+    # nvidia drivers
+    # linux desktop packages
+
+    ## copied from osx role
     # include ::roles_profiles::profiles::ntp
     # include ::roles_profiles::profiles::network
     # include ::roles_profiles::profiles::motd
