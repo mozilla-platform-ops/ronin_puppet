@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::gecko_linux_rename_me {
+class roles_profiles::roles::gecko_t_linux_talos {
 
     ## copied from osx role
     include ::roles_profiles::profiles::timezone
