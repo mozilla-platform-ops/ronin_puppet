@@ -14,36 +14,12 @@
 [[outputs.influxdb]]
   urls = ["<%= @influxdb_url %>"]
   database = "relops"
-  #skip_database_creation = true
+  skip_database_creation = true
   username = "<%= @influxdb_username %>"
   password = "<%= @influxdb_password %>"
   retention_policy = ""
   write_consistency = "any"
   timeout = "120s"
-
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
-[[inputs.exec]]
-  interval = "300s"
-  commands = [
-    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
-  ]
-  timeout = "60s"
-  data_format = "influx"
-
-[[inputs.exec]]
-  interval = "300s"
-  commands = [
-    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
-  ]
-  timeout = "60s"
-  data_format = "influx"
-<% else -%>
-[[inputs.temp]]
-  interval = "300s"
-
-[[inputs.hddtemp]]
-  interval = "300s"
-<% end -%>
 
 <% if @inputs -%>
 # INPUTS:
@@ -51,7 +27,23 @@
 <%     if options['plugin_type'] -%>
 [[inputs.<%= options['plugin_type'] %>]]
 <%     else -%>
+<%       if input == 'temp' and scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+# MacOS temp: (as sysctl and pmset thermal checks)
+[[inputs.exec]]
+  commands = [
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+  ]
+  timeout = "60s"  # 5s default is too short
+  data_format = "influx"
+[[inputs.exec]]
+  commands = [
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+  ]
+  timeout = "60s"  # 5s default is too short
+  data_format = "influx"
+<%       else -%>
 [[inputs.<%= input %>]]
+<%       end -%>
 <%     end -%>
 <%     unless options == nil -%>
 <%       options.sort.each do | option, value | -%>
