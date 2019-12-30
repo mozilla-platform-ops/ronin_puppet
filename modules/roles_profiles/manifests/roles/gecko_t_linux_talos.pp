@@ -12,6 +12,9 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # xwindows setup
     # nvidia drivers
     # linux desktop packages
+    # google chrome
+    # firewall rules
+    # g-w
 
     ## copied from osx role
     # include ::roles_profiles::profiles::ntp
