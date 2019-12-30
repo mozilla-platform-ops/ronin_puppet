@@ -75,7 +75,11 @@
 <% if @inputs -%>
 # INPUTS:
 <%   @inputs.sort.each do | input, options | -%>
+<%     if options.plugin_type == nil -%>
 [[inputs.<%= input %>]]
+<%     else -%>
+[[inputs.<%= options.plugin_type %>]]
+<%     end -%>
 <%     unless options == nil -%>
 <%       options.sort.each do | option, value | -%>
   <%= option -%> = <% if value.is_a?(String) %>"<%= value %>"<% elsif value.is_a?(Array) %><%= value.inspect %><% else %><%= value %><% end %>

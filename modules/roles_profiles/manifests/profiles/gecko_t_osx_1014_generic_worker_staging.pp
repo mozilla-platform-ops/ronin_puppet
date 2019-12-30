@@ -54,19 +54,20 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 inputs => {
                    swap => {
                        interval => '300s',
-                   }
+                   },
                    system => {
                        interval => '300s',
-                   }
+                   },
                    disk => {
                        interval => '300s',
                        path => '/',
-                   }
+                   },
                    procstat => {
                        interval => '300s',
                        exe => '/builds/scriptworker/bin/scriptworker',
                    },
-                   procstat => {
+                   procstat2 => {
+                       plugin_type => 'procstat',
                        interval => '300s',
                        pattern => 'tools/release/signing/signing-server.py',
                    },
