@@ -37,6 +37,11 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             class { 'telegraf':
                 global_tags => $meta_data,
+                inputs => {
+                   procstat => {
+                       exe => '/builds/scriptworker/bin/scriptworker',
+                   },
+                },
             }
 
             class { 'talos':
