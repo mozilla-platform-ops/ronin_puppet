@@ -21,30 +21,6 @@
   write_consistency = "any"
   timeout = "120s"
 
-[[inputs.cpu]]
-  ## Whether to report per-cpu stats or not
-  percpu = true
-  ## Whether to report total system cpu stats or not
-  totalcpu = true
-  ## If true, collect raw CPU time metrics.
-  collect_cpu_time = false
-  ## If true, compute and report the sum of all non-idle CPU states.
-  report_active = false
-
-[[inputs.disk]]
-  interval = "300s"
-  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
-
-[[inputs.diskio]]
-  interval = "300s"
-
-[[inputs.mem]]
-
-[[inputs.swap]]
-  interval = "300s"
-
-[[inputs.system]]
-
 <% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
 [[inputs.exec]]
   interval = "300s"
@@ -68,9 +44,6 @@
 [[inputs.hddtemp]]
   interval = "300s"
 <% end -%>
-
-[[inputs.procstat]]
-  exe = "generic-worker"
 
 <% if @inputs -%>
 # INPUTS:

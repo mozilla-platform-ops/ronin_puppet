@@ -38,7 +38,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             class { 'telegraf':
                 global_tags => $meta_data,
                 agent_params => {
-                    interval => '60s',
+                    interval => '300s',
                     round_interval => 'true',
                     metric_batch_size => 5000,
                     metric_buffer_limit => 20000,
@@ -52,27 +52,33 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                     omit_hostname => 'false',
                 },
                 inputs => {
-                   swap => {
-                       interval => '300s',
+                   cpu => {
+                       interval => '60s',
+                       percpu => true,
+                       totalcpu => true,
+                       ## If true, collect raw CPU time metrics.
+                       collect_cpu_time => false,
+                       ## If true, compute and report the sum of all non-idle CPU states.
+                       report_active => false,
                    },
-                   system => {
-                       interval => '300s',
-                   },
+                   system,
+                   mem,
+                   swap,
+                   diskio,
                    disk => {
-                       interval => '300s',
                        path => '/',
                    },
                    procstat => {
-                       interval => '300s',
+                       exe => 'generic-worker',
+                   },
+                   procstat1 => {
                        exe => '/builds/scriptworker/bin/scriptworker',
                    },
                    procstat2 => {
                        plugin_type => 'procstat',
-                       interval => '300s',
                        pattern => 'tools/release/signing/signing-server.py',
                    },
                    puppetagent => {
-                       interval => '120s',
                        location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
                    },
                 },
