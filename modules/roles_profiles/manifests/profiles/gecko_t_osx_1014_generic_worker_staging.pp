@@ -39,17 +39,17 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 global_tags => $meta_data,
                 agent_params => {
                     interval => '300s',
-                    round_interval => 'true',
+                    round_interval => true,
                     metric_batch_size => 5000,
                     metric_buffer_limit => 20000,
                     collection_jitter => '0s',
                     flush_interval => '120s',
                     flush_jitter => '60s',
                     precision => 's',
-                    debug => 'true',
-                    quiet => 'false',
+                    debug => true,
+                    quiet => false,
                     logfile => '/tmp/telegraf.log',
-                    omit_hostname => 'false',
+                    omit_hostname => false,
                 },
                 inputs => {
                    temp => {},
@@ -67,12 +67,11 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                    swap => {},
                    diskio => {},
                    disk => {
-                       path => '/',
+                       mount_points => ['/'],
                    },
                    procstat => {
-                       exe => 'generic-worker',
-                   },
-                   procstat1 => {
+                       interval => '60s',
+                       # exe => 'generic-worker',
                        exe => '/builds/scriptworker/bin/scriptworker',
                    },
                    procstat2 => {
