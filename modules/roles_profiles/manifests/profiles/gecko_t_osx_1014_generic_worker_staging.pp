@@ -46,9 +46,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                     flush_interval => '120s',
                     flush_jitter => '60s',
                     precision => 's',
-                    debug => true,
-                    quiet => false,
-                    logfile => '/tmp/telegraf.log',
+                    quiet => true,
                     omit_hostname => false,
                 },
                 inputs => {
@@ -71,12 +69,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                    },
                    procstat => {
                        interval => '60s',
-                       # exe => 'generic-worker',
-                       exe => '/builds/scriptworker/bin/scriptworker',
-                   },
-                   procstat2 => {
-                       plugin_type => 'procstat',
-                       pattern => 'tools/release/signing/signing-server.py',
+                       exe => 'generic-worker',
                    },
                    puppetagent => {
                        location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
