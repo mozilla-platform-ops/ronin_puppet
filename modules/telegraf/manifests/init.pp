@@ -18,6 +18,7 @@ class telegraf (
         'logfile' => '',
         'omit_hostname' => false,
     },
+    Hash $inputs  = {},
 ) {
 
     include shared
