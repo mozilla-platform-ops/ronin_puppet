@@ -100,8 +100,11 @@ function notify_telegraf {
     TELEGRAF_TABLE=$1
     TELEGRAF_VALUE=$2
     META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
-    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
-    curl --silent "${CURL_OPTIONS[@]}" 2>&1
+    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' \
+        "https://telegraf.relops.mozops.net/write?db=relops" \
+        '--data-binary' \
+        "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
+    out=$(curl --silent "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
 }
 
 function update_puppet {
