@@ -4,8 +4,19 @@
 
 class telegraf (
     Hash $global_tags  = {},
-    Hash $agent_params = {
-        'interval' => '60s',
+    Hash $agent_params = {},
+    Hash $inputs       = {},
+) {
+    include shared
+
+    require packages::telegraf
+
+    $influxdb_url      = 'https://telegraf.relops.mozops.net'
+    $influxdb_username = lookup('telegraf.user')
+    $influxdb_password = lookup('telegraf.password')
+
+    $base_agent_params = {
+        'interval' => '300s',
         'round_interval' => true,
         'metric_batch_size' => 5000,
         'metric_buffer_limit' => 20000,
@@ -14,20 +25,35 @@ class telegraf (
         'flush_jitter' => '60s',
         'precision' => 's',
         'debug' => false,
-        'quiet' => false,
+        'quiet' => true,
         'logfile' => '',
         'omit_hostname' => false,
-    },
-    Hash $inputs  = {},
-) {
+    }
+    $agent_params = $base_agent_params + $agent_params
 
-    include shared
-
-    require packages::telegraf
-
-    $influxdb_url      = 'https://telegraf.relops.mozops.net'
-    $influxdb_username = lookup('telegraf.user')
-    $influxdb_password = lookup('telegraf.password')
+    $base_inputs = {
+       temp => {},
+       cpu => {
+           interval => '60s',
+           percpu => true,
+           totalcpu => true,
+           ## If true, collect raw CPU time metrics.
+           collect_cpu_time => false,
+           ## If true, compute and report the sum of all non-idle CPU states.
+           report_active => false,
+       },
+       system => {},
+       mem => {},
+       swap => {},
+       diskio => {},
+       disk => {
+           mount_points => ['/'],
+       },
+       puppetagent => {
+           location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
+       },
+    }
+    $inputs = $base_inputs + $inputs
 
     case $facts['os']['name'] {
         'Darwin': {
