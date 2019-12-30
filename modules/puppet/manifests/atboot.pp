@@ -5,6 +5,7 @@
 class puppet::atboot (
     String $telegraf_user,
     String $telegraf_password,
+    Optional[String] $puppet_env = 'production',
     String $puppet_repo         = 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
     String $puppet_branch       = 'master',
     String $puppet_notify_email = 'puppet-ronin-reports@mozilla.com',
