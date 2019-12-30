@@ -37,9 +37,42 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             class { 'telegraf':
                 global_tags => $meta_data,
+                agent_params => {
+                    interval => '60s',
+                    round_interval => 'true',
+                    metric_batch_size => 5000,
+                    metric_buffer_limit => 20000,
+                    collection_jitter => '0s',
+                    flush_interval => '120s',
+                    flush_jitter => '60s',
+                    precision => 's',
+                    debug => 'true',
+                    quiet => 'false',
+                    logfile => '/tmp/telegraf.log',
+                    omit_hostname => 'false',
+                },
                 inputs => {
+                   swap => {
+                       interval => '300s',
+                   }
+                   system => {
+                       interval => '300s',
+                   }
+                   disk => {
+                       interval => '300s',
+                       path => '/',
+                   }
                    procstat => {
+                       interval => '300s',
                        exe => '/builds/scriptworker/bin/scriptworker',
+                   },
+                   procstat => {
+                       interval => '300s',
+                       pattern => 'tools/release/signing/signing-server.py',
+                   },
+                   puppetagent => {
+                       interval => '120s',
+                       location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
                    },
                 },
             }
