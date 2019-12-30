@@ -104,7 +104,7 @@ function notify_telegraf {
         "https://telegraf.relops.mozops.net/write?db=relops" \
         '--data-binary' \
         "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
-    out=$(curl --silent "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
+    out=$(curl --fail --silent --show-error "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
 }
 
 function update_puppet {
