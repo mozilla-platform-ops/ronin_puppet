@@ -61,10 +61,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                        ## If true, compute and report the sum of all non-idle CPU states.
                        report_active => false,
                    },
-                   system,
-                   mem,
-                   swap,
-                   diskio,
+                   system => {},
+                   mem => {},
+                   swap => {},
+                   diskio => {},
                    disk => {
                        path => '/',
                    },
