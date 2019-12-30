@@ -52,6 +52,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                     omit_hostname => 'false',
                 },
                 inputs => {
+                   temp => {},
                    cpu => {
                        interval => '60s',
                        percpu => true,
