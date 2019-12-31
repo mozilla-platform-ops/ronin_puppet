@@ -10,11 +10,12 @@ class roles_profiles::roles::gecko_t_linux_talos {
 
     # TODO: from build-puppet
     # xwindows setup
-    # nvidia drivers
+    # intel drivers
     # linux desktop packages
     # google chrome
     # firewall rules
     # g-w
+    # nrpe and checks
 
     ## copied from osx role
     # include ::roles_profiles::profiles::ntp
