@@ -39,14 +39,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 agent_params => {
                     interval => '300s',
                     round_interval => true,
-                    metric_batch_size => 5000,
-                    metric_buffer_limit => 20000,
                     collection_jitter => '0s',
                     flush_interval => '120s',
                     flush_jitter => '60s',
                     precision => 's',
-                    quiet => true,
-                    omit_hostname => false,
                 },
                 inputs => {
                    temp => {},
@@ -59,19 +55,11 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                        ## If true, compute and report the sum of all non-idle CPU states.
                        report_active => false,
                    },
-                   system => {},
-                   mem => {},
                    swap => {},
                    diskio => {},
-                   disk => {
-                       mount_points => ['/'],
-                   },
                    procstat => {
                        interval => '60s',
                        exe => 'generic-worker',
-                   },
-                   puppetagent => {
-                       location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
                    },
                 },
             }

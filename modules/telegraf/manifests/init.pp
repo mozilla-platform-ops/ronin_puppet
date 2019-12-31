@@ -15,7 +15,7 @@ class telegraf (
     $influxdb_username = lookup('telegraf.user')
     $influxdb_password = lookup('telegraf.password')
 
-    $base_agent_params = {
+    $_agent_params = {
         'interval' => '300s',
         'round_interval' => true,
         'metric_batch_size' => 5000,
@@ -28,10 +28,9 @@ class telegraf (
         'quiet' => true,
         'logfile' => '',
         'omit_hostname' => false,
-    }
-    $agent_params = $base_agent_params + $agent_params
+    } + $agent_params
 
-    $base_inputs = {
+    $_inputs = {
        temp => {},
        cpu => {
            interval => '60s',
@@ -52,8 +51,7 @@ class telegraf (
        puppetagent => {
            location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
        },
-    }
-    $inputs = $base_inputs + $inputs
+    } + $inputs
 
     case $facts['os']['name'] {
         'Darwin': {
