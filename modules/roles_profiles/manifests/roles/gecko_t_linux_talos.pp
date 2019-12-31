@@ -17,6 +17,10 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # g-w
     # nrpe and checks
 
+    # QUESTIONS:
+    # - where will google deb package come from?
+    #   - currently hosted on puppet master
+
     ## copied from osx role
     # include ::roles_profiles::profiles::ntp
     # include ::roles_profiles::profiles::network
