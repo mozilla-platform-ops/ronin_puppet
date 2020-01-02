@@ -3,7 +3,7 @@
 windows:
 
 # Datacnter resources
-  win_datacenter:
+  datacenter:
     log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
     ntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
 
