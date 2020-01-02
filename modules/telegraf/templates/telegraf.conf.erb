@@ -14,7 +14,7 @@
 [[outputs.influxdb]]
   urls = ["<%= @influxdb_url %>"]
   database = "relops"
-  skip_database_creation = true
+  #skip_database_creation = true
   username = "<%= @influxdb_username %>"
   password = "<%= @influxdb_password %>"
   retention_policy = ""

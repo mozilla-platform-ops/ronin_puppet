@@ -32,15 +32,18 @@ class telegraf (
     } + $agent_params
 
     $_inputs = {
-       system => {},
-       mem => {},
-       swap => {},
-       disk => {
-           mount_points => ['/'],
-       },
-       puppetagent => {
-           location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
-       },
+        system => {},
+        mem => {},
+        swap => {},
+        disk => {
+            mount_points => ['/'],
+        },
+        puppetagent => {
+            location => $facts['os']['name'] ? {
+                'Darwin' => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
+                 default  => '/var/lib/puppet/state/last_run_summary.yaml',
+            },
+        },
     } + $inputs
 
     case $facts['os']['name'] {
