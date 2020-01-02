@@ -1,39 +1,40 @@
 ---
 
+windows:
+
 # Datacnter resources
-win_datacenter:
-  log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
-  ntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
+  win_datacenter:
+    log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
+    ntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
 
-  mdc1:
-    # KMS server ip is needed for cloud authentication
-    kms:
-      ip: "10.48.69.100"
-    jump_hosts: '10.49.48.100,10.49.48.101'
-  mdc2:
-    jump_hosts: '10.51.48.100,10.51.48.101'
-  ports:
-    ssh: 22
-    vnc: 5900
+    mdc1:
+      # KMS server ip is needed for cloud authentication
+      kms:
+        ip: "10.48.69.100"
+      jump_hosts: '10.49.48.100,10.49.48.101'
+    mdc2:
+      jump_hosts: '10.51.48.100,10.51.48.101'
+    ports:
+      ssh: 22
+      vnc: 5900
 
-win_dc_log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
+  # S3 resources
+  s3:
+    ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
+    ext_gpg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/gpg"
 
-# S3 resources
-win_s3:
-  ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
-  ext_gpg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/gpg"
+  # Taskcluster resources
+  win_taskcluster:
+    root_url: "https://firefox-ci-tc.services.mozilla.com"
+    wstaudience: "firefoxcitc"
+    wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
 
-# Taskcluster resources
-win_taskcluster:
-  root_url: "https://firefox-ci-tc.services.mozilla.com"
-  wstaudience: "firefoxcitc"
-  wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
-
-# Windows KMS
-kms:
-  key:
-    microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
+  # Windows KMS
+  kms:
+    key:
+      microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
 
 # this should be changed into a defined type
 # Useful commands
 win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -file"
+# win_dc_log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"

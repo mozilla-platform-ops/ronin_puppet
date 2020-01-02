@@ -9,7 +9,7 @@ define win_packages::win_msi_pkg (
 ){
 
     $pkgdir = $facts['custom_win_temp_dir']
-    $srcloc = lookup('win_s3.ext_pkg_src')
+    $srcloc = lookup('windows.s3.ext_pkg_src')
 
     file { "${pkgdir}\\${pkg}" :
         source => "${srcloc}/${pkg}",

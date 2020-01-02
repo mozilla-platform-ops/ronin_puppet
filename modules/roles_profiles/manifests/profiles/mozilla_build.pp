@@ -28,7 +28,7 @@ class roles_profiles::profiles::mozilla_build {
         $tempdir                   = $facts['custom_win_temp_dir']
         $system32                  = $facts['custom_win_system32']
         $builds_dir                = "${facts['custom_win_systemdrive']}\\builds"
-        $external_source           = lookup('win_s3.ext_pkg_src')
+        $external_source           = lookup('windows.s3.ext_pkg_src')
         $tooltool_tok              = lookup('tooltool_tok')
 
             class { 'win_mozilla_build':

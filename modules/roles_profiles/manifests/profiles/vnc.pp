@@ -12,9 +12,9 @@ class roles_profiles::profiles::vnc {
             $ini_file             = "${facts['custom_win_programfiles']}\\uvnc bvba\\UltraVNC\\ultravnc.ini"
             $package              = 'UltraVnc'
             $msi                  = 'UltraVnc_1223_X64.msi'
-            $mdc1_jumphosts       = lookup('win_datacenter.mdc1.jump_hosts')
-            $mdc2_jumphosts       = lookup('win_datacenter.mdc2.jump_hosts')
-            $firewall_port        = lookup('win_datacenter.ports.vnc')
+            $mdc1_jumphosts       = lookup('windows.datacenter.mdc1.jump_hosts')
+            $mdc2_jumphosts       = lookup('windows.datacenter.mdc2.jump_hosts')
+            $firewall_port        = lookup('windows.datacenter.ports.vnc')
             $firewall_name        = 'UltraVNC'
 
             class { 'win_ultravnc':

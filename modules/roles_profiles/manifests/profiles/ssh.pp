@@ -8,11 +8,11 @@ class roles_profiles::profiles::ssh {
         'Windows': {
 
             $pwrshl_run_script    = lookup('win_pwrshl_run_script')
-            $mdc1_jumphosts       = lookup('win_datacenter.mdc1.jump_hosts')
-            $mdc2_jumphosts        = lookup('win_datacenter.mdc2.jump_hosts')
+            $mdc1_jumphosts       = lookup('windows.datacenter.mdc1.jump_hosts')
+            $mdc2_jumphosts        = lookup('windows.datacenter.mdc2.jump_hosts')
             $ssh_program_data     = "${facts['custom_win_programdata']}\\ssh"
             $programfiles         = $facts['custom_win_programfiles']
-            $firewall_port        = lookup('win_datacenter.ports.ssh')
+            $firewall_port        = lookup('windows.datacenter.ports.ssh')
             $firewall_rule_name   = 'SSH'
 
             class { 'win_openssh':

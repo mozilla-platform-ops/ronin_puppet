@@ -8,10 +8,10 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
         'Windows': {
 
             # Installation data
-            $gw_exe_version           = lookup('windows_generic_worker.exe_version')
-            $tc_proxy_version         = lookup('windows_generic_worker.tc_proxy_version')
-            $livelog_version          = lookup('windows_generic_worker.livelog_version')
-            $livelogputport           = lookup('windows_generic_worker.live_log_put_port')
+            $gw_exe_version           = lookup('win-worker.generic_worker.exe_version')
+            $tc_proxy_version         = lookup('win-worker.generic_worker.tc_proxy_version')
+            $livelog_version          = lookup('win-worker.generic_worker.livelog_version')
+            $livelogputport           = lookup('win-worker.generic_worker.live_log_put_port')
             $ext_pkg_src_loc          = lookup('win_s3.ext_pkg_src')
             $generic_worker_dir       = "${facts['custom_win_systemdrive']}\\generic-worker"
             $generic_worker_exe       = "${generic_worker_dir}\\generic-worker.exe"
@@ -26,12 +26,12 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
             # From secrets file
             $taskcluster_access_token = lookup('taskcluster_access_token')
             # From Hiera
-            $taskcluster_root         = lookup('win_taskcluster.root_url')
-            $wstaudience              = lookup('win_taskcluster.wstaudience')
-            $wstserverurl             = lookup('win_taskcluster.wstserverurl')
-            $idle_timeout             = lookup('windows_generic_worker.idle_timeout')
-            $client_id                = lookup('windows_generic_worker.client_id')
-            $provisioner_id           = lookup('windows_generic_worker.provisioner_id')
+            $taskcluster_root         = lookup('windows.taskcluster.root_url')
+            $wstaudience              = lookup('windows.taskcluster.wstaudience')
+            $wstserverurl             = lookup('windows.taskcluster.wstserverurl')
+            $idle_timeout             = lookup('win-worker.generic_worker.idle_timeout')
+            $client_id                = lookup('win-worker.generic_worker.client_id')
+            $provisioner_id           = lookup('win-worker.generic_worker.provisioner_id')
             $worker_type              = $facts['custom_win_gw_workertype']
 
             class { 'win_generic_worker':
