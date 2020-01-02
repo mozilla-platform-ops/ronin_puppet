@@ -114,17 +114,11 @@ function update_puppet {
         git remote add origin "${PUPPET_REPO}" || return 1
     fi
 
+    # Fetch and checkout production branch
     # Fetch and checkout branch
     git fetch --all --prune || return 1
-    # If it fails (maybe different repo:branch used before),
-    # re-add with the current repo and try again.
-    git checkout --force "origin/${PUPPET_BRANCH}" \
-      || (
-      git remote rm previous
-      git remote rename origin previous
-      git remote add origin "${PUPPET_REPO}"
-      git checkout --force "origin/${PUPPET_BRANCH}"
-    ) || return 1
+    git fetch --all --prune || return 1
+    git checkout --force "origin/${PUPPET_BRANCH}" || return 1
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
