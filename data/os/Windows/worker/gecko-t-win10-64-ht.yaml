@@ -11,4 +11,4 @@ win-worker:
     client_id: "project/releng/generic-worker/datacenter-gecko-t-win10-64-ht"
     idle_timeout: 7200
     live_log_put_port: 60022
-    rovisioner_id: 'releng-hardware'
+    provisioner_id: 'releng-hardware'
