@@ -24,7 +24,7 @@ windows:
     ext_gpg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/gpg"
 
   # Taskcluster resources
-  win_taskcluster:
+  taskcluster:
     root_url: "https://firefox-ci-tc.services.mozilla.com"
     wstaudience: "firefoxcitc"
     wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
