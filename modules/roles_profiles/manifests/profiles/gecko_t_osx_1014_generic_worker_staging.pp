@@ -23,6 +23,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
                 puppet_branch     => 'staging',
+                # Note the camelCase key names
                 meta_data         => $meta_data,
             }
 
@@ -52,7 +53,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                        ## If true, compute and report the sum of all non-idle CPU states.
                        report_active => false,
                    },
-                   swap => {},
                    diskio => {},
                    procstat => {
                        interval => '60s',

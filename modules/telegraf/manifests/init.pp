@@ -4,8 +4,8 @@
 
 class telegraf (
     Hash $global_tags  = {},
-    Hash $agent_params = {},
-    Hash $inputs       = {},
+    Hash $agent_params = {},  # see merged defaults below
+    Hash $inputs       = {},  # see merged defaults below
 ) {
     include shared
 
@@ -15,6 +15,7 @@ class telegraf (
     $influxdb_username = lookup('telegraf.user')
     $influxdb_password = lookup('telegraf.password')
 
+    # Merge full hash of defaults for agent and input plugins.
     $_agent_params = {
         'interval' => '300s',
         'round_interval' => true,
@@ -31,20 +32,9 @@ class telegraf (
     } + $agent_params
 
     $_inputs = {
-       temp => {},
-       cpu => {
-           interval => '60s',
-           percpu => true,
-           totalcpu => true,
-           ## If true, collect raw CPU time metrics.
-           collect_cpu_time => false,
-           ## If true, compute and report the sum of all non-idle CPU states.
-           report_active => false,
-       },
        system => {},
        mem => {},
        swap => {},
-       diskio => {},
        disk => {
            mount_points => ['/'],
        },
