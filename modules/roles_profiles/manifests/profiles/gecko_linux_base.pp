@@ -4,12 +4,17 @@
 
 class roles_profiles::profiles::gecko_linux_base {
 
-  contain packages::python2
-  contain packages::python3
+    case $::operatingsystem {
+        'Ubuntu': {
+            contain linux_packages::python2
+            contain linux_packages::python3
 
-  contain packages::python2_zstandard
-  contain packages::python3_zstandard
+            contain linux_packages::python2_zstandard
+            contain linux_packages::python3_zstandard
 
-  contain packages::zstd
-
+            contain linux_packages::zstd
+        }
+        default: {
+            fail("${::operatingsystem} not supported")
+        }
 }
