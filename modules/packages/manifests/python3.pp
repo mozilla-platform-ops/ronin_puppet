@@ -8,5 +8,4 @@ class packages::python3 {
         ensure   => present,
         provider => brew,
     }
-
 }
