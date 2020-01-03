@@ -12,7 +12,9 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # xwindows setup
     # intel drivers
     # linux desktop packages
+    include ::roles_profiles::profiles::gui
     # google chrome
+    include ::roles_profiles::profiles::google_chrome
     # firewall rules
     # g-w
     # nrpe and checks
