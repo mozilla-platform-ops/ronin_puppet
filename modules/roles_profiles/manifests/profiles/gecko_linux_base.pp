@@ -17,4 +17,5 @@ class roles_profiles::profiles::gecko_linux_base {
         default: {
             fail("${::operatingsystem} not supported")
         }
+    }
 }
