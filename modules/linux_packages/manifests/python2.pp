@@ -2,11 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class packages::python2 {
+class linux_packages::python2 {
 
-    package { 'python2':
+    package { 'python':
         ensure   => present,
-        provider => brew,
+    }
+    package { 'python-pip':
+        ensure => present,
     }
 
 }
