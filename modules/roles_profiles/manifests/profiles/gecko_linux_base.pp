@@ -6,8 +6,8 @@ class roles_profiles::profiles::gecko_linux_base {
 
     case $::operatingsystem {
         'Ubuntu': {
-            contain linux_packages::python2
-            contain linux_packages::python3
+            contain linux_packages::py2
+            contain linux_packages::py3
 
             contain linux_packages::python2_zstandard
             contain linux_packages::python3_zstandard

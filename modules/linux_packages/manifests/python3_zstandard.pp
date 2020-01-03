@@ -3,12 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::python3_zstandard {
-    require packages::python3
+    require linux_packages::py3
 
     package { 'python3-zstandard':
         ensure   => '0.11.1',
         name     => 'zstandard',
         provider => pip3,
-        require  => Class['linux_packages::python3'],
+        require  => Class['linux_packages::py3'],
     }
 }

@@ -8,6 +8,10 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::gecko_linux_base
 
+    # QUESTIONS:
+    # - where will google deb package come from?
+    #   - currently hosted on puppet master
+
     # TODO: from build-puppet
     # xwindows setup
     # intel drivers
@@ -18,10 +22,8 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # firewall rules
     # g-w
     # nrpe and checks
-
-    # QUESTIONS:
-    # - where will google deb package come from?
-    #   - currently hosted on puppet master
+    # TODO: required or are we migrating to influx?
+    include ::fw::roles::osx_taskcluster_worker
 
     ## copied from osx role
     # include ::roles_profiles::profiles::ntp
