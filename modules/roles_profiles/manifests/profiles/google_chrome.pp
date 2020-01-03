@@ -11,7 +11,7 @@ class roles_profiles::profiles::google_chrome {
             include win_packages::chrome
         }
         'Ubuntu': {
-            include packages::google_chrome_linux
+            include linux_packages::google_chrome
         }
         default: {
             fail("${::operatingsystem} not supported")
