@@ -2,13 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class packages::python2_zstandard {
-    require packages::python2
+class linux_packages::python3_zstandard {
+    require packages::python3
 
-    package { 'python2-zstandard':
+    package { 'python3-zstandard':
         ensure   => '0.11.1',
         name     => 'zstandard',
-        provider => pip,
-        require  => Class['packages::python2'],
+        provider => pip3,
+        require  => Class['packages::python3'],
     }
 }
