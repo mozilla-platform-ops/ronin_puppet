@@ -24,7 +24,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # g-w
     # nrpe and checks
     # TODO: required or are we migrating to influx?
-    include ::fw::roles::osx_taskcluster_worker
+    include ::fw::roles::linux_taskcluster_worker
 
     ## copied from osx role
     include ::roles_profiles::profiles::ntp
