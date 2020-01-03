@@ -4,17 +4,9 @@
 
 # This should pull whatever package(s) are appropriate to get a full desktop
 # environment
-class packages::ubuntu_desktop {
-    case $::operatingsystem {
-        Ubuntu: {
-            package {
-                'ubuntu-desktop':
-                    ensure => latest;
-            }
-        }
-
-        default: {
-            fail("Cannot install on ${::operatingsystem}")
-        }
+class linux_packages::ubuntu_desktop {
+    package {
+        'ubuntu-desktop':
+            ensure => latest;
     }
 }

@@ -14,7 +14,7 @@ class roles_profiles::profiles::gui {
             include macos_utils::show_scroll_bars
         }
         'Ubuntu':{
-            include packages::ubuntu_desktop
+            include linux_packages::ubuntu_desktop
         }
         default: {
             fail("${::operatingsystem} not supported")
