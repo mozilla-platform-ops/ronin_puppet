@@ -8,5 +8,4 @@ class packages::python2 {
         ensure   => present,
         provider => brew,
     }
-
 }
