@@ -11,6 +11,12 @@ class roles_profiles::profiles::ntp {
                 ntp_server => lookup('ntp_server'),
             }
         }
+        'Ubuntu': {
+            $ntp_server = lookup('ntp_server', String)
+            class { 'ntp':
+                servers => [$ntp_server]
+            }
+        }
         'Windows': {
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1510754
         # For windowstime resoucre timezone and server needs to be set in the same class

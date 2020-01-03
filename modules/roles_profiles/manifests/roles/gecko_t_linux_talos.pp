@@ -18,6 +18,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # linux desktop packages
     include ::roles_profiles::profiles::gui
     # google chrome
+    # TODO: configure version and source
     include ::roles_profiles::profiles::google_chrome
     # firewall rules
     # g-w
@@ -26,11 +27,13 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::fw::roles::osx_taskcluster_worker
 
     ## copied from osx role
-    # include ::roles_profiles::profiles::ntp
-    # include ::roles_profiles::profiles::network
-    # include ::roles_profiles::profiles::motd
-    # include ::roles_profiles::profiles::users
+    include ::roles_profiles::profiles::ntp
+    include ::roles_profiles::profiles::motd
+    include ::roles_profiles::profiles::users
+    # TODO: write this for ubuntu
     # include ::roles_profiles::profiles::cltbld_user
+
+    # include ::roles_profiles::profiles::network
     # include ::roles_profiles::profiles::disable_services
     # include ::roles_profiles::profiles::ntp
     # include ::roles_profiles::profiles::network
