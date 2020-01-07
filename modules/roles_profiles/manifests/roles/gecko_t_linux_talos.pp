@@ -26,6 +26,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::ntp
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
+    include ::roles_profiles::profiles::sudo
     # TODO: write this for ubuntu
     # include ::roles_profiles::profiles::cltbld_user
 
@@ -37,7 +38,6 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # include ::roles_profiles::profiles::power_management
     # include ::roles_profiles::profiles::screensaver
     # include ::roles_profiles::profiles::gui
-    # include ::roles_profiles::profiles::sudo
     # include ::roles_profiles::profiles::software_updates
     # include ::roles_profiles::profiles::hardware
     # include ::roles_profiles::profiles::homebrew
