@@ -40,9 +40,6 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # include ::roles_profiles::profiles::sudo
     # include ::roles_profiles::profiles::software_updates
     # include ::roles_profiles::profiles::hardware
-    # include ::roles_profiles::profiles::motd
-    # include ::roles_profiles::profiles::users
-    # include ::roles_profiles::profiles::cltbld_user
     # include ::roles_profiles::profiles::homebrew
     # include ::roles_profiles::profiles::gecko_t_osx_1014_generic_worker
     # include ::fw::roles::osx_taskcluster_worker
