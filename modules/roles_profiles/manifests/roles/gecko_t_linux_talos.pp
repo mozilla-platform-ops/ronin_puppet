@@ -8,10 +8,6 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::gecko_linux_base
 
-    # QUESTIONS:
-    # - where will google deb package come from?
-    #   - currently hosted on puppet master
-
     # TODO: from build-puppet
     # xwindows setup
     # intel drivers
