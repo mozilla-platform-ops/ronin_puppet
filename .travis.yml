@@ -2,7 +2,7 @@
 language: ruby
 dist: xenial
 rvm:
-  - 2.4.5
+  - 2.6
 
 # safelist - we only build on this list
 branches:
