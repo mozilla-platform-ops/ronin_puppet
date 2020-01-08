@@ -6,10 +6,9 @@ class roles_profiles::profiles::ntp {
 
     case $::operatingsystem {
         'Darwin': {
-            $ntp_server = 'time.apple.com'
             class { 'macos_ntp':
                 enabled    => true,
-                ntp_server => $ntp_server,
+                # ntp_server => $ntp_server,  # use time.apple.com
             }
         }
         'Windows': {
