@@ -37,11 +37,9 @@ class roles_profiles::profiles::disable_services {
         }
         'Windows': {
             include win_disable_services::disable_wsearch
-            #include win_disable_services::disable_vss
             include win_disable_services::disable_puppet
             include win_disable_services::disable_windows_defender
             include win_disable_services::disable_windows_update
-            #include win_disable_services::disable_system_restore
             if $facts['os']['release']['full'] == '10' {
                 include win_disable_services::disable_onedrive
             }
