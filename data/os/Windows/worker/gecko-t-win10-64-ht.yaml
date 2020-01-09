@@ -12,3 +12,19 @@ win-worker:
     idle_timeout: 7200
     live_log_put_port: 60022
     provisioner_id: 'releng-hardware'
+
+  # Mozilla-build
+  mozilla_build:
+    version: '3.2'
+    hg_version: '4.7.1'
+    py3_pip_version: '19.2.1'
+    py3_zstandard_version: '0.11.1'
+
+  # Mozilla profile
+  mozilla_profile:
+    source: "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/mozprofilerprobe.mof"
+    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
+
+    # Applications
+    vnc_msi:  "UltraVnc_1223_X64.msi"
+    vnc_name:  "UltraVnc"
