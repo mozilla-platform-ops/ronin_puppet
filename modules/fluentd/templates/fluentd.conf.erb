@@ -2,9 +2,11 @@
   @type exec
   command "\
     log stream --color none --level <%= @mac_log_level %> --type log \
+      --predicate '(process MATCHES \"(logger|sudo|kernel|sshd|firefox|plugin-agent)\") || (messageType > 16)' \
       --timeout 1d \
     | tail -n +3 \
     "
+    # messageTypes 0:Default 1:Info 2:Debug ?:Error
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
     #   Timestamp                       Thread     Type        Activity             PID    TTL
@@ -15,51 +17,108 @@
     types pid:integer
     time_key time
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
-    utc true
   </parse>
   tag system
   run_interval 60s  # run command if not still running
 </source>
 
-<match fluent.**>
-  @type null
-</match>
+
+<source>
+  @type tail
+  read_from_head true
+  path /var/log/genericworker/stderr.log
+  pos_file /var/log/genericworker/stderr.log.pos
+  <parse>
+    @type multiline
+    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
+    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /
+    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})( [A-Z]{3})? (?<message>.*)/
+    time_key time
+    time_format "%Y/%m/%d %H:%M:%S"
+    keep_time_key true
+  </parse>
+  tag worker.err
+</source>
+<source>
+  @type tail
+  read_from_head true
+  path /var/log/genericworker/stdout.log
+  pos_file /var/log/genericworker/stdout.log.pos
+  <parse>
+    @type multiline
+    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
+    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /
+    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})( [A-Z]{3})? (?<message>.*)/
+    time_key time
+    time_format "%Y/%m/%d %H:%M:%S"
+    keep_time_key true
+  </parse>
+  tag worker.info
+</source>
+
+<filter worker.**>
+  @type grep
+  <exclude>
+    key message
+    pattern /^Disk available: \d+ bytes$/
+  </exclude>
+</filter>
+
+<filter worker.**>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    program "worker"
+<% if @syslog_host != '' -%>
+    syslog_severity "${tag_parts[1]}"
+    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
+    # No task 5h15m43 1
+    log_message #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+<% end -%>
+<% if @stackdriver_clientid != '' -%>
+    # stackdriver severities: 
+    #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
+    stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
+    message #{record["program"]} #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+<% end -%>
+  </record>
+</filter>
 
 <filter system>
   @type record_transformer
   enable_ruby true
   <record>
-<% if @syslog_host =~ /papertrail/ %>
-    hostname "#{Socket.gethostname}"
-<% end %>
+<% if @syslog_host =~ /papertrail/ -%>
+    hostname "#{Socket.gethostname.split('.')[0]}"
+<% end -%>
     # Logging pid can be enabled:
     # message pid:${record["pid"]} ${record["message"]}
     # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
-<% if @syslog_host != '' %>
+<% if @syslog_host != '' -%>
     # syslog severities:
     #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
     syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
-<% end %>
-<% if @stackdriver_clientid != '' %>
+<% end -%>
+<% if @stackdriver_clientid != '' -%>
     message ${record["program"]}: ${record['log_message']}
     # stackdriver severities: 
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warning', 'Error' => 'error', 'Fault' => 'critical')}
-<% end %>
+<% end -%>
   </record>
 </filter>
 
-<% if @stackdriver_clientid != '' %>
+<% if @stackdriver_clientid != '' -%>
 # Add a unique insertId to each log entry that doesn't already have it.
 # This helps guarantee the order and prevent log duplication.
-<filter system>
+<filter **>
   @type add_insert_ids
 </filter>
 <% end %>
 
 # string/numbers only
 # msgpack cannot encode ruby Time fields
-<filter system>
+<filter **>
   @type record_transformer
   remove_keys ["host"]
   <record>
@@ -80,22 +139,30 @@
   </record>
 <% end %>
 </filter>
+<% end -%>
 
-<match system>
+<match fluent.**>
+  @type null
+</match>
+
+<match **>
   @type copy
-<% if @syslog_host =~ /papertrail/ %>
+
+<% if @syslog_host =~ /papertrail/ -%>
   <store>
     @type papertrail
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
   </store>
-<% elsif @syslog_host != '' %>
+<% elsif @syslog_host != '' -%>
   <store>
     @type remote_syslog
-    hostname "#{Socket.gethostname}"
+    hostname "#{Socket.gethostname.split('.')[0]}"
     host <%= @syslog_host %>
     port <%= @syslog_port %>
     <buffer program,syslog_severity>
+      flush_at_shutdown true
+      overflow_action block
     </buffer>
     program ${program}
     severity ${syslog_severity}
@@ -104,11 +171,11 @@
       message_key log_message
     </format>
   </store>
-<% else %>
+<% else -%>
 # Disabled syslog output. (syslog_host: <%= @syslog_host %>)
-<% end %>
+<% end -%>
 
-<% if @stackdriver_clientid != '' %>
+<% if @stackdriver_clientid != '' -%>
   <store>
     @type google_cloud
     use_metadata_service false
@@ -140,7 +207,7 @@
     # valid ones and drop the invalid ones instead of dropping everything.
     partial_success true
   </store>
-<% else %>
+<% else -%>
 # Disabled stackdriver output. (clientid: <%= @stackdriver_clientid %>)
-<% end %>
+<% end -%>
 </match>
