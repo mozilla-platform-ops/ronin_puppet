@@ -437,7 +437,7 @@ Function Start-Restore {
             Write-Log -message  ('{0} :: Node has failed to Puppetize multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
         else {
-            Write-Log -message  ('{0} :: darn it something else restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
+            Write-Log -message  ('{0} :: Restore attempted for unknown reason. Restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
 
         }
         Stop-ScheduledTask -TaskName maintain_system
@@ -453,9 +453,9 @@ Function Start-Restore {
         Remove-ItemProperty -path $ronin_key -recurse -force
         # OpenSSH will need to be addressed it fails after restore
         # For now commented out of the roles manifests
-        #sc delete sshd
-        #sc delete ssh-agent
-        #Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
+        # sc delete sshd
+        # sc delete ssh-agent
+        # Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
         Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
         $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
         Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
