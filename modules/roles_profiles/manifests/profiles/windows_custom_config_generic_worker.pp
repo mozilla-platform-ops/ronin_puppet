@@ -62,7 +62,7 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
             # Cloud instances will receive the config file during provisioning
             # Paths in the  config file need to have \\ hence the \\\\ below
             class{ 'win_generic_worker::custom_config':
-                generic_worker_dir       => $generic_worker_dir,
+                generic_worker_dir       => "${facts['custom_win_systemdrive']}\\\\generic-worker",
                 taskcluster_access_token => $taskcluster_access_token,
                 taskcluster_root         => $taskcluster_root,
                 wstaudience              => $wstaudience,
