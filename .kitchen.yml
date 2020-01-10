@@ -11,6 +11,12 @@ provisioner:
   hiera_deep_merge: true
   puppet_verbose: false
   puppet_debug: false
+  hiera_writer_files:
+    - secrets/vault.yaml:
+        cltbld_user:
+          password: 'abc123'
+          salt: 'h3hhahchahah'
+          iterations: '3'
   require_chef_for_busser: false
   require_puppet_repo: false
   custom_options: '--show_diff'
