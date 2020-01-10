@@ -20,8 +20,8 @@ class roles_profiles::roles::geckotwin1064ht {
     include win_os_settings::powershell_profile
 
     class { 'win_packages::performance_tool_kit':
-        moz_profile_source => lookup('win_worker.mozilla_profile.source'),
-        moz_profile_file   => lookup('win_worker.mozilla_profile.local'),
+        moz_profile_source => lookup('win-worker.mozilla_profile.source'),
+        moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
     }
 
     ##  Chrome install
