@@ -8,6 +8,12 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::gecko_linux_base
 
+    include ::roles_profiles::profiles::ntp
+    include ::roles_profiles::profiles::motd
+    include ::roles_profiles::profiles::users
+    include ::roles_profiles::profiles::sudo
+    include ::roles_profiles::profiles::cltbld_user
+
     # TODO: from build-puppet
     # xwindows setup
     # intel drivers
@@ -23,13 +29,6 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::fw::roles::linux_taskcluster_worker
 
     ## copied from osx role
-    include ::roles_profiles::profiles::ntp
-    include ::roles_profiles::profiles::motd
-    include ::roles_profiles::profiles::users
-    include ::roles_profiles::profiles::sudo
-    # TODO: write this for ubuntu
-    # include ::roles_profiles::profiles::cltbld_user
-
     # include ::roles_profiles::profiles::network
     # include ::roles_profiles::profiles::disable_services
     # include ::roles_profiles::profiles::ntp
