@@ -22,7 +22,7 @@ class roles_profiles::profiles::mozilla_build {
                 current_py3_pip_ver       => $facts['custom_win_py3_pip_version'],
                 needed_py3_pip_ver        => lookup('win-worker.mozilla_build.py3_pip_version'),
                 current_py3_zstandard_ver => $facts['custom_win_py3_zstandard_version'],
-                needed_py3_zstandard_ver  => lookup('win-worker.mozilla_build.py3_pip_version'),
+                needed_py3_zstandard_ver  => lookup('win-worker.mozilla_build.py3_zstandard_version'),
                 install_path              => "${facts['custom_win_systemdrive']}\\mozilla-build",
                 system_drive              => $facts['custom_win_systemdrive'],
                 cache_drive               => $cache_drive,
