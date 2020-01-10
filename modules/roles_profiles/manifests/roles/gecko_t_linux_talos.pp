@@ -13,20 +13,20 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::sudo
     include ::roles_profiles::profiles::cltbld_user
+    # linux desktop packages
+    include ::roles_profiles::profiles::gui
+    # nrpe and checks
+    # TODO: required or are we migrating to influx?
+    include ::fw::roles::linux_taskcluster_worker
+    # google chrome
+    # TODO: configure version and source
+    include ::roles_profiles::profiles::google_chrome
 
     # TODO: from build-puppet
     # xwindows setup
     # intel drivers
-    # linux desktop packages
-    include ::roles_profiles::profiles::gui
-    # google chrome
-    # TODO: configure version and source
-    include ::roles_profiles::profiles::google_chrome
     # firewall rules
     # g-w
-    # nrpe and checks
-    # TODO: required or are we migrating to influx?
-    include ::fw::roles::linux_taskcluster_worker
 
     ## copied from osx role
     # include ::roles_profiles::profiles::network
