@@ -33,12 +33,7 @@ class roles_profiles::roles::geckotwin1064ht {
         admin_password => lookup('win_adminpw'),
     }
     ## Logging
-    class { 'win_nxlog':
-        nxlog_dir      => "${facts['custom_win_programfilesx86']}\\nxlog\\",
-        location       => $facts['custom_win_location'],
-        log_aggregator => lookup('windows.datacenter.log_aggregator'),
-        conf_file      => epp('win_nxlog/nxlog.conf.epp'),
-    }
+    include roles_profiles::profiles::logging
 
     ## Common tools
     include win_packages::process_debug
