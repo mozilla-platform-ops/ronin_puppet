@@ -68,7 +68,7 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
                 wstaudience              => $wstaudience,
                 wstserverurl             => $wstserverurl,
                 worker_type              => $worker_type,
-                client_id                => client_id,
+                client_id                => $client_id,
                 provisioner_id           => $provisioner_id,
                 idle_timeout             => $idle_timeout,
             }
