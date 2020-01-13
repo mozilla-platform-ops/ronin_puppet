@@ -32,7 +32,33 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             }
 
             class { 'telegraf':
-                global_tags => $meta_data,
+                global_tags  => $meta_data,
+                agent_params => {
+                    interval          => '300s',
+                    round_interval    => true,
+                    collection_jitter => '0s',
+                    flush_interval    => '120s',
+                    flush_jitter      => '60s',
+                    precision         => 's',
+                },
+                inputs       => {
+                    # current default telegraf monitors: system, mem, swap, disk'/', puppetagent
+                    temp     => {},
+                    cpu      => {
+                        interval         => '60s',
+                        percpu           => true,
+                        totalcpu         => true,
+                        ## If true, collect raw CPU time metrics.
+                        collect_cpu_time => false,
+                        ## If true, compute and report the sum of all non-idle CPU states.
+                        report_active    => false,
+                    },
+                    diskio   => {},
+                    procstat => {
+                        interval => '60s',
+                        exe      => 'generic-worker',
+                    },
+                },
             }
 
             class { 'talos':

@@ -105,6 +105,7 @@ $workerType = 'gecko-t-win10-64-hw'
 $src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
 $src_Revision = 'master'
+>>>>>>> 07da8e1ca67b2fd7bb97bf042a181e4693f41839
 $image_provisioner = 'mdt'
 $max_boots = 200
 
