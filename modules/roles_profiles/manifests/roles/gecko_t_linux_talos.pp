@@ -25,7 +25,6 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # TODO: from build-puppet
     # xwindows setup
     # intel drivers
-    # firewall rules
     # g-w
 
     ## copied from osx role
