@@ -74,6 +74,10 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
             }
             # On static workers there are often several open profile registries
             # left after tasks are complete. This will clean up those reg values.
+            # Currently this  does nothing.
+            # It was cleaing profile list but may be the cuase in https://bugzilla.mozilla.org/show_bug.cgi?id=1601282
+            # Leaving in place becuase it is a quicker fix than trying to delete the schedule task
+            # Will remove in the future
             include win_scheduled_tasks::clean_profilelist
         }
 

@@ -104,9 +104,9 @@ function Install-BootstrapModule {
 $workerType = 'gecko-t-win10-64-ht'
 $src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
-$src_Revision = 'cloud_windows'
+$src_Revision = 'master'
 $image_provisioner = 'mdt'
-
+$max_boots = 10
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
@@ -117,10 +117,10 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Setup-Logging
   Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+  Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+  Set-restore_point -max_boots $max_boots
   Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
   Install-Prerequ
-  Bootstrap-schtasks
-#  Set-restore_point -max_boots $max_boots
   shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
@@ -129,6 +129,6 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
-#  Import-Module bootstrap
-#  Start-Restore
+  Import-Module bootstrap
+  Start-Restore
 }
