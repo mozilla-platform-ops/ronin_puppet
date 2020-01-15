@@ -28,6 +28,9 @@ class puppet::setup {
                 # Remove default puppet plist
                 '/Library/LaunchDaemons/com.puppetlabs.puppet.plist':
                     ensure => absent;
+                # pxp-agent is disabled, but let's remove the plist also
+                '/Library/LaunchDaemons/com.puppetlabs.pxp-agent.plist':
+                    ensure => absent;
             }
         }
         default: {
