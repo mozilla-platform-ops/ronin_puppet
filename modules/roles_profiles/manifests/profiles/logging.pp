@@ -31,7 +31,7 @@ class roles_profiles::profiles::logging (
                 $conf_file = epp('win_nxlog/nxlog.conf.epp')
             } else {
                 # data will need to be added as could support builds out
-                $log_aggregator  = lookup('windows.papertrail')
+                $log_aggregator  = lookup('windows.external.papertrail')
                 $conf_file = file('win_nxlog/non_datacenter_nxlog.conf')
             }
 
