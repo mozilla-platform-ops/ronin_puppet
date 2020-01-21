@@ -70,6 +70,7 @@ function Setup-Logging {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+
 function Install-Prerequ {
   param (
     [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
@@ -100,7 +101,40 @@ function Install-Prerequ {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+# As seen with the ACER laptops at bitbar individual prerequ package downloads will fail
+# In this case use Install-ZipPrerequ
+function Install-ZipPrerequ {
+  param (
+    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+    [string] $local_dir = "$env:systemdrive\BootStrap",
+    [string] $work_dir = "$env:systemdrive\scratch",
+    [string] $git = "Git-2.18.0-64-bit.exe",
+    [string] $puppet = "puppet-agent-6.0.0-x64.msi"
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
 
+    remove-item $local_dir   -Recurse  -force
+    New-Item -path $work_dir -ItemType "directory"
+    Set-location -path $work_dir
+    Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
+    Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
+    Read-Host "Enusre c:\bootstrap\secrets\vault.yam is present, and then press eneter to continue"
+    Set-location -path $local_dir
+    remove-item $work_dir   -Recurse  -force
+
+    Start-Process $local_dir\$git /verysilent -wait
+    Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
+    Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
+    Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
+
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Set-RoninRegOptions {
   param (
     [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
@@ -116,10 +150,12 @@ function Set-RoninRegOptions {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
-    New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
-    New-Item -Path $ronnin_key -Name source –Force
+    If(!( test-path "$ronnin_key")) {
+      New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
+      New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+    }
 
+    New-Item -Path $ronnin_key -Name source –Force
     New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String
     New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
     $role = $workerType -replace '-',''
@@ -153,6 +189,9 @@ Function Clone-Ronin {
   }
   process {
 
+    If((test-path $env:systemdrive\ronin)) {
+        Remove-Item -Recurse -Force $env:systemdrive\ronin
+    }
     If(!(test-path $env:systemdrive\ronin)) {
       git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
       $git_exit = $LastExitCode
@@ -163,7 +202,7 @@ Function Clone-Ronin {
       } else {
         Write-Log -message  ('{0} :: Git clone failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
         DO {
-          Start-Sleep -s 60
+          Start-Sleep -s 15
           git clone  --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
           $git_exit = $LastExitCode
         } Until ( $git_exit -eq 0)
@@ -176,20 +215,21 @@ Function Clone-Ronin {
 }
 Function Bootstrap-schtasks {
   param (
-    [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
-    [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
-    [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-    [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
-    [string] $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage,
-    [string] $image_provisioner = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").image_provisioner
+    [string] $image_provisioner,
+    [string] $workerType,
+    [string] $src_Organisation,
+    [string] $src_Repository,
+    [string] $src_Revision
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
 
+    $role = $workerType -replace '-',''
+
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$image_provisioner/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
+    Invoke-WebRequest https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_Revision/provisioners/windows/$image_provisioner/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
     Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
     Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\$role-bootstrap.ps1" /sc onstart /RL HIGHEST /f
   }
@@ -243,6 +283,7 @@ function Bootstrap-Puppet {
     [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
     [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
     [string] $run_to_success = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").runtosuccess,
+    [string] $restorable = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").restorable,
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
     [string] $puppetfile = "$env:systemdrive\ronin\Puppetfile",
     [string] $logdir = "$env:systemdrive\logs",
@@ -253,6 +294,7 @@ function Bootstrap-Puppet {
     [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
     [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
     [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
+    [string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").restore_needed,
     [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
   )
   begin {
@@ -273,11 +315,13 @@ function Bootstrap-Puppet {
         Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
       } else {
         Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-        DO {
-          Start-Sleep -s 60
-          git pull https://github.com/$sourceOrg/$sourceRepo $sourceRev
-          $git_exit = $LastExitCode
-        } Until ( $git_exit -eq 0)
+        Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
+        Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
+        Remove-Item -Recurse -Force $ronin_repo
+        Start-Sleep -s 2
+        git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+        Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
+        Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
       }
     }
     Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
@@ -305,28 +349,118 @@ function Bootstrap-Puppet {
 
     if ($run_to_success -eq 'true') {
       if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
-        if($last_exit -eq 0) {
+        if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
           Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
+          Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-        } elseif ($last_exit -ne 0){
-          Write-Log -message  ('{0} :: Puppet apply failed multiple times. Will attempt again in 600 seconds.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
-          Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          sleep 600
+        } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
+          Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
+          if ( $restorable -like "yes") {
+            if ( $restore_needed -like "false") {
+                Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
+            } else {
+                Start-Restore
+            }
+          }
+          Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          sleep 300
           shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $puppet_exit
+        Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
         shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path "$ronnin_key" -name last_exit -type  dword -value $last_exit
+        Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
         Start-sleep -s 600
         shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
       }
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+Function set-restore_point {
+  param (
+    [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
+    [string] $ronnin_key = "$mozilla_key\ronin_puppet",
+    [string] $date = (Get-Date -Format "yyyy/mm/dd-HH:mm"),
+    [int32] $max_boots
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    vssadmin delete shadows /all /quiet
+    powershell.exe -Command Checkpoint-Computer -Description "default"
+
+    if(!(Test-Path $ronnin_key)) {
+      New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
+      New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+    }
+
+    New-ItemProperty -Path "$ronnin_key" -name "restorable" -PropertyType  string -value yes
+    New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  Dword -value 0
+    New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
+    New-ItemProperty -Path "$ronnin_key" -name "restore_needed" -PropertyType  string -value false
+    New-ItemProperty -Path "$ronnin_key" -name "max_boots" -PropertyType  Dword -value $max_boots
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+Function Start-Restore {
+  param (
+    [string] $ronin_key = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
+    [int32] $boots = (Get-ItemProperty $ronin_key).reboot_count,
+    [int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
+    [string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
+    [string] $checkpoint_date = (Get-ItemProperty $ronin_key).last_restore_point
+
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (($boots -ge $max_boots)  -or ($restore_needed -notlike "false")) {
+        if ($boots -ge $max_boots){
+            Write-Log -message  ('{0} :: System has reach the maxium number of reboots set at HKLM:\SOFTWARE\Mozilla\ronin_puppet\source\max_boots. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+        if ($restore_needed -eq "gw_bad_config") {
+            Write-Log -message  ('{0} :: Generic_worker has faild to start multiple times. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+        if ($restore_needed -eq "puppetize_failed") {
+            Write-Log -message  ('{0} :: Node has failed to Puppetize multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+        else {
+            Write-Log -message  ('{0} :: Restore attempted for unknown reason. Restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
+
+        }
+        Stop-ScheduledTask -TaskName maintain_system
+
+        Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Stop-process -name generic-worker -force
+        Remove-Item -Recurse -Force $env:systemdrive\generic-worker
+        Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
+        Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
+        Remove-Item –Path -Force $env:windir\temp\*
+        Write-Log -message  ('{0} :: pause check registry.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        sc delete "generic-worker"
+        Remove-ItemProperty -path $ronin_key -recurse -force
+        # OpenSSH will need to be addressed it fails after restore
+        # For now commented out of the roles manifests
+        # sc delete sshd
+        # sc delete ssh-agent
+        # Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
+        Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
+        $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
+        Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
+
+    } else {
+        Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     }
   }
   end {
