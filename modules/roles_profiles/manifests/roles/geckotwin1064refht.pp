@@ -48,7 +48,7 @@ class roles_profiles::roles::geckotwin1064refht {
     include win_filesystem::disablelastaccess
 
     ## Ntp
-    $ntpserver = lookup('external.ntp')
+    $ntpserver = lookup('windows.external.ntp')
 
     class { 'windowstime':
         servers  => { "${ntpserver}" => '0x08'},
