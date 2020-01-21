@@ -109,7 +109,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Output papertrail>
   Module om_ssl
-  Host logs.papertrailapp.com
+  Host <%= win_nxlog::log_aggregator %>
   Port 52806
   CAFile %ROOT%\cert\papertrail-bundle.pem
   AllowUntrusted FALSE
