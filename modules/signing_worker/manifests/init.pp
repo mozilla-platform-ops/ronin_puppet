@@ -30,6 +30,18 @@ define signing_worker (
     # Dep workers have a non-deterministic suffix
     $worker_id = "${facts['networking']['hostname']}${worker_id_suffix}"
 
+    # XXX Somehow only set this up and run on prod / tb-prod machines, no dep
+    $poller_worker_id = "poller-${facts['networking']['hostname']}"
+    $poller_dir               = "${scriptworker_base}/poller"
+    $poller_config_file       = "${scriptworker_base}/poller/poller.yaml"
+    $poller_wrapper           = "${scriptworker_base}/poller/poller_wrapper.sh"
+    # XXX create poller user
+    # XXX create poller dir, owned by poller user
+    # XXX install notarization-poller in venv, also from scriptworker-scripts
+    # XXX poller wrapper + launchd
+    # XXX poller secrets (accessToken for prod + tb-prod), but we also share
+    #     the notarization account user+pass secret with script_config.yaml
+
 
     $ed_key_path = $ed_key_filename? {
       undef => '/dev/null',
