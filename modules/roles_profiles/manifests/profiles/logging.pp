@@ -38,10 +38,10 @@ class roles_profiles::profiles::logging (
             }
 
             class { 'win_nxlog':
-                nxlog_dir      => "${programfilesx86}\\nxlog",
-                location       => $location,
-                log_aggregator => $log_aggregator,
-                conf_file      => $conf_file,
+                nxlog_dir => "${programfilesx86}\\nxlog",
+                location  => $location,
+                #log_aggregator => $log_aggregator,
+                conf_file => $conf_file,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
