@@ -28,13 +28,13 @@ class roles_profiles::profiles::logging (
             $programfilesx86 = $facts['custom_win_programfilesx86']
             if ($facts['custom_win_location'] == 'datacenter') {
                 $log_aggregator  = lookup('windows.datacenter.log_aggregator')
-                $conf_file = epp('win_nxlog/nxlog.conf.epp')
+                $conf_file = 'nxlog.conf'
                 #$log_aggregator  = lookup('windows.external.papertrail')
                 #$conf_file = epp('win_nxlog/non_datacenter_nxlog.conf.epp')
             } else {
                 # data will need to be added as could support builds out
                 $log_aggregator  = lookup('windows.external.papertrail')
-                $conf_file = epp('win_nxlog/non_datacenter_nxlog.conf.epp')
+                $conf_file = 'non_datacenter_nxlog.conf'
             }
 
             class { 'win_nxlog':
