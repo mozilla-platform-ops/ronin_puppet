@@ -6,8 +6,8 @@ class roles_profiles::roles::gecko_t_linux_talos {
 
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::relops_users
+    # TODO: move more common stuff into gecko_linux_base
     include ::roles_profiles::profiles::gecko_linux_base
-
     include ::roles_profiles::profiles::ntp
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
