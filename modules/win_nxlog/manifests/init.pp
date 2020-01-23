@@ -8,7 +8,6 @@ class win_nxlog (
     String $log_aggregator,
     String $conf_file
 ){
-    $log_aggregator = 'wth'
     if $::operatingsystem == 'Windows' {
         include win_nxlog::install
         include win_nxlog::fw_exception
