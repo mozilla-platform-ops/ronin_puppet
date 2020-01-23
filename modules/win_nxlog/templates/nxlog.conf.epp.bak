@@ -1,0 +1,148 @@
+define ROOT C:\Program Files (x86)\nxlog
+
+Moduledir %ROOT%\modules
+CacheDir  %ROOT%\data
+Pidfile   %ROOT%\data\nxlog.pid
+SpoolDir  %ROOT%\data
+LogFile   %ROOT%\data\nxlog.log
+
+<Extension syslog>
+  Module xm_syslog
+</Extension>
+
+<Extension multiline-gw-datetime-header>
+  Module xm_multiline
+  HeaderLine /^\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d\s|C:\\Users\\task_\d\d\d\d\d\d\d\d\d\d>/
+</Extension>
+
+<Input eventlog_apps>
+  Module im_msvistalog
+  Query <QueryList>\
+          <Query Id="0">\
+            <Select Path="Application">*[System[Provider[@Name='Bootstrap'] or Provider[@Name='MaintainSystem']]]</Select>\
+          </Query>\
+        </QueryList>
+</Input>
+
+<Input eventlog_basic>
+  Module im_msvistalog
+  Query <QueryList>\
+          <Query Id="0">\
+            <Select Path="Application">*[System[Level=1 or Level=2 or Level=3]]</Select>\
+            <Select Path="Security">*[System[Level=1 or Level=2 or Level=3]]</Select>\
+            <Select Path="System">*[System[Level=1 or Level=2 or Level=3 or EventID=1074]]</Select>\
+            <Select Path="HardwareEvents">*[System[Level=1 or Level=2 or Level=3]]</Select>\
+          </Query>\
+        </QueryList>
+</Input>
+
+<Input eventlog_audit>
+  Module im_msvistalog
+  Query <QueryList>\
+          <Query Id="0">\
+            <Select Path="Microsoft-Windows-TerminalServices-LocalSessionManager/Operational">*</Select>\
+            <Select Path="OpenSSH/Operational">*</Select>\
+          </Query>\
+        </QueryList>
+</Input>
+
+<Input generic_worker_log>
+  Module im_file
+  File 'C:/generic-worker/generic-worker.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType multiline-gw-datetime-header
+  Exec if $raw_event =~ /^(\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d)\s(.*)/s { $EventTime = parsedate($1); $Message = $2; }
+  Exec $SourceName = 'generic-worker';
+</Input>
+
+<Input generic_worker_wrapper_log>
+  Module im_file
+  File 'C:/generic-worker/generic-worker-wrapper.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'generic-worker-wrapper';
+</Input>
+
+<Input generic_worker_service_log>
+  Module im_file
+  File 'C:/generic-worker/generic-worker-service.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType multiline-gw-datetime-header
+  Exec if $raw_event =~ /^(\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d)\s(.*)/s { $EventTime = parsedate($1); $Message = $2; }
+  Exec $SourceName = 'generic-worker';
+</Input>
+
+<Input bootstrap_puppet_log>
+  Module im_file
+  File 'C:\logs\\*-bootstrap-puppet.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'boostrap-puppet';
+</Input>
+
+<Input puppet_run_log>
+  Module im_file
+  File 'C:\logs\\*-puppetrun.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'puppet-run';
+</Input>
+
+<Input nxlog>
+  Module im_file
+  File 'C:/Program Files (x86)/nxlog/data/nxlog.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec if $raw_event =~ /^(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\s(.*)$/ { $EventTime = parsedate($1); $Message = $2; }
+  Exec $SourceName = 'nxlog';
+</Input>
+
+<Output <%= $facts[custom_win_mozspace] %>_aggregator>
+  Module om_tcp
+  Host <%= $win_nxlog::configuration::log_aggregator %>
+  Port 514
+  Exec $Hostname = hostname_fqdn();
+  Exec to_syslog_ietf();
+</Output>
+
+<Route eventlog_apps_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path eventlog_apps => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route eventlog_basic_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path eventlog_basic => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route eventlog_audit_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path eventlog_audit => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route generic_worker_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path generic_worker_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route generic_worker_wrapper_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path generic_worker_wrapper_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route generic_worker_service_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path generic_worker_service_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route bootstrap_puppet_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path bootstrap_puppet_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route puppet_run_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path puppet_run_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route nxlog_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path nxlog => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
