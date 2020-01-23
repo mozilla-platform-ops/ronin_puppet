@@ -9,7 +9,8 @@ class win_nxlog::configuration {
     $log_aggregator = $win_nxlog::log_aggregator
 
     file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.conf":
-        content => $win_nxlog::conf_file,
+#        content => $win_nxlog::conf_file,
+        content => epp('win_nxlog/nxlog.txt.epp'),
     }
     file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.txt":
         content => epp('win_nxlog/nxlog.txt.epp'),
