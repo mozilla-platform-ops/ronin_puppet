@@ -104,3 +104,4 @@ class linux_generic_worker (
     #             content => template('generic_worker/proxy-httpd.conf.erb'),
     #         }
 
+}

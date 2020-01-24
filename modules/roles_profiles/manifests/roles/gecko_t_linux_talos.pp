@@ -21,7 +21,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # TODO: configure version and source
     include ::roles_profiles::profiles::google_chrome
 
-    include ::roles_profiles::profiles::gecko_t_linux_talos
+    include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
     # nrpe and checks
     # TODO: required or are we migrating to influx?
     include ::fw::roles::linux_taskcluster_worker
