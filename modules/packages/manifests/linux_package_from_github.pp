@@ -25,9 +25,9 @@ define packages::linux_package_from_github (
 
     case $type {
         'bin': {
-            wget::fetch { "fetch ${release_url}":
-                    source      => $release_url,
-                    destination => $file_destination
+            archive { "fetch ${release_url}":
+                    source => $release_url,
+                    path   => $file_destination
             }
 
             file {
