@@ -53,18 +53,9 @@ class linux_generic_worker (
     # $task_dir            = "${user_homedir}/tasks"
     # $caches_dir          = "${user_homedir}/caches"
     # $downloads_dir       = "${user_homedir}/downloads"
-    $opengpg_signing_key = "${user_homedir}/generic-worker.openpgp.signing.key"
     $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
 
     exec {
-        'create opengpg signing key':
-            path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
-            user    => $user,
-            cwd     => $user_homedir,
-            command => "generic-worker new-openpgp-keypair --file ${opengpg_signing_key}",
-            unless  => "test -f ${opengpg_signing_key}",
-            require => Class['packages::linux_generic_worker'];
-
         'create ed25519 signing key':
             path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
             user    => $user,
