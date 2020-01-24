@@ -5,6 +5,7 @@
 define packages::linux_package_from_s3 (
     Optional[String] $bucket                     = undef,
     Optional[String] $s3_domain                  = undef,
+    Optional[String] $file_destination           = undef,
     Boolean $private                             = false,
     Boolean $os_version_specific                 = true,
     Enum['deb'] $type    = 'bin',
@@ -31,8 +32,19 @@ define packages::linux_package_from_s3 (
     $source = "https://${_s3_domain}/${_bucket}/linux/${p}/${v}/${title}"
 
     case $type {
+        'bin': {
+            file {
+                default: * => $::shared::file_defaults;
+
+                $file_destination:
+                    ensure         => 'file',
+                    source         => $source,
+                    checksum       => 'sha256',
+                    checksum_value => $checksum,
+                    mode           => '0755';
+            }
+        }
         'deb': {
-            # Install dmg or pkg
             package { $title:
                     ensure   => 'installed',
                     provider => 'apt',
