@@ -13,14 +13,14 @@ class packages::linux_generic_worker (
 
     packages::linux_package_from_github { "generic-worker-linux-x386-${generic_worker_version}":
       github_repo_slug => 'taskcluster/generic-worker',
-      version          => 'taskcluster/generic-worker',
-      filename         => 'generic-worker-simple-linux-368',
+      version          => 'v16.6.1',
+      filename         => 'generic-worker-simple-linux-386',
       file_destination => '/usr/local/bin/generic-worker',
     }
 
     packages::linux_package_from_github { "taskcluster-proxy-linux-amd64-${taskcluster_proxy_version}":
       github_repo_slug => 'taskcluster/taskcluster-proxy',
-      version          => '5.1.0',
+      version          => 'v5.1.0',
       filename         => 'taskcluster-proxy-linux-amd64',
       file_destination => '/usr/local/bin/taskcluster-proxy',
     }
