@@ -15,16 +15,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::cltbld_user
     # linux desktop packages
     include ::roles_profiles::profiles::gui
-    # nrpe and checks
-    # TODO: required or are we migrating to influx?
-    include ::fw::roles::linux_taskcluster_worker
-    # google chrome
-    # TODO: configure version and source
-    include ::roles_profiles::profiles::google_chrome
 
-    # TODO: from build-puppet
-    # xwindows setup
-    # intel drivers
     # g-w
     $worker_type  = 'gecko-t-linux-talos'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
@@ -54,6 +45,17 @@ class roles_profiles::roles::gecko_t_linux_talos {
         user                      => 'cltbld',
         user_homedir              => '/home/cltbld',
     }
+
+    # nrpe and checks
+    # TODO: required or are we migrating to influx?
+    include ::fw::roles::linux_taskcluster_worker
+    # google chrome
+    # TODO: configure version and source
+    include ::roles_profiles::profiles::google_chrome
+
+    # TODO: from build-puppet
+    # xwindows setup
+    # intel drivers
 
     ## copied from osx role
     # include ::roles_profiles::profiles::network
