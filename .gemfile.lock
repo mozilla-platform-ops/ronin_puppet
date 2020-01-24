@@ -9,7 +9,7 @@ GEM
     ed25519 (1.2.4)
     equatable (0.6.1)
     erubi (1.9.0)
-    facter (2.5.6)
+    facter (2.5.7)
     faraday (0.14.0)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.12.2)
