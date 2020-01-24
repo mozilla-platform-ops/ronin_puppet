@@ -65,10 +65,8 @@ class linux_generic_worker (
             require => Class['packages::linux_generic_worker'];
     }
 
-    # case $::operatingsystem {
-    #     'Darwin': {
 
-    #         $reboot_command = '/usr/bin/sudo /sbin/reboot'
+    # TODO: see below
 
     #         file {
     #             default: * => $::shared::file_defaults;
@@ -105,9 +103,4 @@ class linux_generic_worker (
     #         httpd::config { 'proxy.conf':
     #             content => template('generic_worker/proxy-httpd.conf.erb'),
     #         }
-    #     }
-    #     default: {
-    #         fail("${module_name} is not supported on ${::operatingsystem}")
-    #     }
-    # }
-}
+

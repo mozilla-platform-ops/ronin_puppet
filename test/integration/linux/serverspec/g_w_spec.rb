@@ -5,3 +5,5 @@ describe command('generic-worker --version') do
     # TODO: check version
   its(:stdout) { should match /generic-worker/ }
 end
+
+# TODO: check for tc-proxy, tc-w-r, liveproxy, etc
