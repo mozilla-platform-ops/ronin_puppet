@@ -29,12 +29,12 @@ class roles_profiles::roles::gecko_t_linux_talos {
     $worker_type  = 'gecko-t-linux-talos'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-    $taskcluster_client_id    = lookup('generic_worker.gecko_t_linux_talox.taskcluster_client_id')
-    $taskcluster_access_token = lookup('generic_worker.gecko_t_linux_talox.taskcluster_access_token')
-    $livelog_secret           = lookup('generic_worker.gecko_t_linux_talox.livelog_secret')
-    $quarantine_client_id     = lookup('generic_worker.gecko_t_linux_talox.quarantine_client_id')
-    $quarantine_access_token  = lookup('generic_worker.gecko_t_linux_talox.quarantine_access_token')
-    $bugzilla_api_key         = lookup('generic_worker.gecko_t_linux_talox.bugzilla_api_key')
+    $taskcluster_client_id    = lookup('generic_worker.gecko_t_linux_talos.taskcluster_client_id')
+    $taskcluster_access_token = lookup('generic_worker.gecko_t_linux_talos.taskcluster_access_token')
+    $livelog_secret           = lookup('generic_worker.gecko_t_linux_talos.livelog_secret')
+    $quarantine_client_id     = lookup('generic_worker.gecko_t_linux_talos.quarantine_client_id')
+    $quarantine_access_token  = lookup('generic_worker.gecko_t_linux_talos.quarantine_access_token')
+    $bugzilla_api_key         = lookup('generic_worker.gecko_t_linux_talos.bugzilla_api_key')
 
     class { 'linux_generic_worker':
         taskcluster_client_id     => $taskcluster_client_id,
