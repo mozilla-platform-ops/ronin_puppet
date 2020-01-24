@@ -23,3 +23,7 @@ r10k puppetfile install --moduledir=./r10k_modules -v --force
 ```
 
 After updating, commit changes to git and push.
+
+### Github Review Visibility
+
+The '.gitattributes' file sets files in the 'r10k_modules' directory to hidden by default as the folder is/should be managed automatically.
