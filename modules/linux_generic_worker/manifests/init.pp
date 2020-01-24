@@ -31,7 +31,7 @@ class linux_generic_worker (
     # include httpd
     # include shared
 
-    class { 'packages::generic_worker':
+    class { 'packages::linux_generic_worker':
         generic_worker_version    => $generic_worker_version,
         # generic_worker_sha256     => $generic_worker_sha256,
         taskcluster_proxy_version => $taskcluster_proxy_version,

@@ -19,6 +19,10 @@ provisioner:
           gecko_t_linux_talos:
             taskcluster_client_id: '123'
             taskcluster_access_token: 'foo'
+            livelog_secret: 'haha'
+            quarantine_client_id: '3333'
+            quarantine_access_token: 'Q_TOKEN'
+            bugzilla_api_key: 'BZ_KEY'
   puppet_verbose: true
   puppet_debug: true
   require_chef_for_busser: false

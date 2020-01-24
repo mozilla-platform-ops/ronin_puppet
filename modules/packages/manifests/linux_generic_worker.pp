@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class packages::generic_worker (
+class packages::linux_generic_worker (
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
     # String                      $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
@@ -12,24 +12,24 @@ class packages::generic_worker (
 ) {
 
     packages::linux_package_from_github { "generic-worker-linux-x386-${generic_worker_version}":
-      'taskcluster/generic-worker',
-      '16.6.1',
-      'generic-worker-simple-linux-368',
-      file_destination    => '/usr/local/bin/generic-worker',
+      github_repo_slug => 'taskcluster/generic-worker',
+      version          => 'taskcluster/generic-worker',
+      filename         => 'generic-worker-simple-linux-368',
+      file_destination => '/usr/local/bin/generic-worker',
     }
 
     packages::linux_package_from_github { "taskcluster-proxy-linux-amd64-${taskcluster_proxy_version}":
-      'taskcluster/taskcluster-proxy',
-      '5.1.0',
-      'taskcluster-proxy-linux-amd64',
-      file_destination    => '/usr/local/bin/taskcluster-proxy',
+      github_repo_slug => 'taskcluster/taskcluster-proxy',
+      version          => '5.1.0',
+      filename         => 'taskcluster-proxy-linux-amd64',
+      file_destination => '/usr/local/bin/taskcluster-proxy',
     }
 
     packages::linux_package_from_github { "quarantine-worker-linux-amd64-${quarantine_worker_version}":
-      'mozilla-platform-ops/quarantine-worker',
-      'v1.0.0',
-      'quarantine-worker-linux-amd64',
-      file_destination    => '/usr/local/bin/quarantine-worker',
+      github_repo_slug => 'mozilla-platform-ops/quarantine-worker',
+      version          => 'v1.0.0',
+      filename         => 'quarantine-worker-linux-amd64',
+      file_destination => '/usr/local/bin/quarantine-worker',
     }
 
     # TODO: move to installation from s3
