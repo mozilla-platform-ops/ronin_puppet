@@ -15,7 +15,7 @@ define packages::linux_package_from_github (
     String $version,
     String $filename,
     String $file_destination = $title,
-    Enum['bin', 'pkg', 'dmg'] $type = 'bin',
+    Enum['bin', 'deb'] $type = 'bin',
 ) {
 
     include shared
