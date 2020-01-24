@@ -13,21 +13,21 @@ class packages::linux_generic_worker (
 
     packages::linux_package_from_github { "generic-worker-linux-x386-${generic_worker_version}":
       github_repo_slug => 'taskcluster/generic-worker',
-      version          => 'v16.6.1',
+      version          => generic_worker_version,
       filename         => 'generic-worker-simple-linux-386',
       file_destination => '/usr/local/bin/generic-worker',
     }
 
     packages::linux_package_from_github { "taskcluster-proxy-linux-amd64-${taskcluster_proxy_version}":
       github_repo_slug => 'taskcluster/taskcluster-proxy',
-      version          => 'v5.1.0',
+      version          => taskcluster_proxy_version,
       filename         => 'taskcluster-proxy-linux-amd64',
       file_destination => '/usr/local/bin/taskcluster-proxy',
     }
 
     packages::linux_package_from_github { "quarantine-worker-linux-amd64-${quarantine_worker_version}":
       github_repo_slug => 'mozilla-platform-ops/quarantine-worker',
-      version          => 'v1.0.0',
+      version          => quarantine_worker_version,
       filename         => 'quarantine-worker-linux-amd64',
       file_destination => '/usr/local/bin/quarantine-worker',
     }
