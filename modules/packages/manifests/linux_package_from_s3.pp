@@ -6,6 +6,7 @@ define packages::linux_package_from_s3 (
     Optional[String] $bucket                     = undef,
     Optional[String] $s3_domain                  = undef,
     Optional[String] $file_destination           = undef,
+    Optional[String] $checksum                   = undef,
     Boolean $private                             = false,
     Boolean $os_version_specific                 = true,
     Enum['deb'] $type    = 'bin',
