@@ -25,12 +25,17 @@ define packages::linux_package_from_github (
 
     case $type {
         'bin': {
+            wget::fetch { "fetch ${release_url}":
+                    source      => $release_url,
+                    destination => $file_destination
+            }
+
             file {
                 default: * => $::shared::file_defaults;
 
-                $file_destination:
+                "change perms on ${file_destination}":
                     ensure => 'file',
-                    source => $release_url,
+                    path   => $file_destination,
                     mode   => '0755';
             }
         }
