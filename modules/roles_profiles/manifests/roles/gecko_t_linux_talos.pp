@@ -52,7 +52,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
         quarantine_worker_version => 'v1.0.0',
         # quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
         user                      => 'cltbld',
-        user_homedir              => '/Users/cltbld',
+        user_homedir              => '/home/cltbld',
     }
 
     ## copied from osx role

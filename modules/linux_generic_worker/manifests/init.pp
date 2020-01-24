@@ -63,7 +63,7 @@ class linux_generic_worker (
             cwd     => $user_homedir,
             command => "generic-worker new-openpgp-keypair --file ${opengpg_signing_key}",
             unless  => "test -f ${opengpg_signing_key}",
-            require => Class['packages::generic_worker'];
+            require => Class['packages::linux_generic_worker'];
 
         'create ed25519 signing key':
             path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
@@ -71,7 +71,7 @@ class linux_generic_worker (
             cwd     => $user_homedir,
             command => "generic-worker new-ed25519-keypair --file ${ed25519_signing_key}",
             unless  => "test -f ${ed25519_signing_key}",
-            require => Class['packages::generic_worker'];
+            require => Class['packages::linux_generic_worker'];
     }
 
     # case $::operatingsystem {
