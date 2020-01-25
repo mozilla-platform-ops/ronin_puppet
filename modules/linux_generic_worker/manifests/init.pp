@@ -3,9 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # TODO:
-# - generate config
-# - generate runner
-# - gnome autostart config
 # - switch to loading from s3
 # - apache proxy setup?
 # - control bug / bugzilla setup?
@@ -106,11 +103,6 @@ class linux_generic_worker (
     }
 
     # TODO: see below
-
-    #         service { 'net.generic.worker':
-    #             require => File['/Library/LaunchAgents/net.generic.worker.plist'],
-    #             enable  => true,
-    #         }
 
     #         host { $taskcluster_host:
     #             ip => '127.0.0.1'
