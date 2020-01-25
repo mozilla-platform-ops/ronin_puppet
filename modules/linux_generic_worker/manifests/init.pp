@@ -68,19 +68,20 @@ class linux_generic_worker (
     file {
         default: * => $::shared::file_defaults;
 
-        '/Library/LaunchAgents/net.generic.worker.plist':
-            ensure  => present,
-            content => template('generic_worker/generic-worker.plist.erb'),
-            mode    => '0644';
+        ["${user_homedir}/.config",
+        "${user_homedir}/.config/autostart"]:
+            ensure => directory;
+        "${user_homedir}/.config/autostart/gnome-terminal.desktop":
+            content => template('linux_generic_worker/gnome-terminal.desktop.erb');
 
         '/usr/local/bin/run-generic-worker.sh':
             ensure  => present,
-            content => template('generic_worker/run-generic-worker.sh.erb'),
+            content => template('linux_generic_worker/run-generic-worker.sh.erb'),
             mode    => '0755';
 
         '/etc/generic-worker.config':
             ensure  => present,
-            content => template('generic_worker/generic-worker.config.erb'),
+            content => template('linux_generic_worker/generic-worker.config.erb'),
             mode    => '0644';
 
         '/var/log/genericworker':
