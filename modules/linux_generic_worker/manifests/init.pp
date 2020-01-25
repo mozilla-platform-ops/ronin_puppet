@@ -78,7 +78,7 @@ class linux_generic_worker (
     # this results in an immediate shutdown without contacting the system manager.
     # See the description of --force in systemctl(1) for more details.
     #
-    # used in g-w config below
+    # used in run-generic-woker file below
     $reboot_command = '/usr/bin/sudo /sbin/reboot --force'
 
     file {
