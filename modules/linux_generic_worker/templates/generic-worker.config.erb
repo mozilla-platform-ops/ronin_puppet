@@ -1,0 +1,42 @@
+{
+  "accessToken": "<%= @taskcluster_access_token %>",
+  "cachesDir": "<%= @caches_dir %>",
+  "certificate": "",
+  "checkForNewDeploymentEverySecs": 0,
+  "cleanUpTaskDirs": true,
+  "clientId": "<%= @taskcluster_client_id %>",
+  "deploymentId": "",
+  "downloadsDir": "<%= @downloads_dir %>",
+  "idleTimeoutSecs": 345600,
+  "instanceId": "",
+  "instanceType": "",
+  "livelogExecutable": "livelog",
+  "livelogPUTPort": 60022,
+  "numberOfTasksToRun": 1,
+  "privateIP": "",
+  "provisionerId": "releng-hardware",
+  "publicIP": "<%= @ipaddress %>",
+  "region": "",
+  "requiredDiskSpaceMegabytes": 10240,
+  "rootURL": "https://firefox-ci-tc.services.mozilla.com",
+  "runAfterUserCreation": "",
+  "runTasksAsCurrentUser": true,
+  "sentryProject": "generic-worker",
+  "shutdownMachineOnIdle": false,
+  "shutdownMachineOnInternalError": false,
+  "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
+  "taskclusterProxyPort": 8080,
+  "ed25519SigningKeyLocation": "<%= @ed25519_signing_key %>",
+  "tasksDir": "<%= @task_dir %>",
+  "workerGroup": "<%= @worker_group %>",
+  "workerId": "<%= @hostname %>",
+  "workerType": "<%= @worker_type %>",
+  "wstAudience": "taskcluster-net",
+  "wstServerURL": "https://websocktunnel.tasks.build",
+  "workerTypeMetadata": {
+    "machine-setup": {
+      "config": "https://github.com/mozilla-releng/build-puppet/raw/master/modules/generic_worker/templates/generic-worker.config.erb",
+      "docs": "https://wiki.mozilla.org/ReleaseEngineering/PuppetAgain/Modules/generic_worker"
+    }
+  }
+}

@@ -4,8 +4,8 @@
 
 # TODO:
 # - generate config
-# - systemd config?
-# - generate config and runner
+# - generate runner
+# - gnome autostart config
 # - switch to loading from s3
 # - apache proxy setup?
 # - control bug / bugzilla setup?
@@ -65,31 +65,30 @@ class linux_generic_worker (
             require => Class['packages::linux_generic_worker'];
     }
 
+    file {
+        default: * => $::shared::file_defaults;
+
+        '/Library/LaunchAgents/net.generic.worker.plist':
+            ensure  => present,
+            content => template('generic_worker/generic-worker.plist.erb'),
+            mode    => '0644';
+
+        '/usr/local/bin/run-generic-worker.sh':
+            ensure  => present,
+            content => template('generic_worker/run-generic-worker.sh.erb'),
+            mode    => '0755';
+
+        '/etc/generic-worker.config':
+            ensure  => present,
+            content => template('generic_worker/generic-worker.config.erb'),
+            mode    => '0644';
+
+        '/var/log/genericworker':
+            ensure => directory,
+            mode   => '0777';
+    }
 
     # TODO: see below
-
-    #         file {
-    #             default: * => $::shared::file_defaults;
-
-    #             '/Library/LaunchAgents/net.generic.worker.plist':
-    #                 ensure  => present,
-    #                 content => template('generic_worker/generic-worker.plist.erb'),
-    #                 mode    => '0644';
-
-    #             '/usr/local/bin/run-generic-worker.sh':
-    #                 ensure  => present,
-    #                 content => template('generic_worker/run-generic-worker.sh.erb'),
-    #                 mode    => '0755';
-
-    #             '/etc/generic-worker.config':
-    #                 ensure  => present,
-    #                 content => template('generic_worker/generic-worker.config.erb'),
-    #                 mode    => '0644';
-
-    #             '/var/log/genericworker':
-    #                 ensure => directory,
-    #                 mode   => '0777';
-    #         }
 
     #         service { 'net.generic.worker':
     #             require => File['/Library/LaunchAgents/net.generic.worker.plist'],
