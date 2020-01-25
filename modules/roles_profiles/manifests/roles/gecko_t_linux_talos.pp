@@ -14,16 +14,12 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # linux desktop packages
     include ::roles_profiles::profiles::gui
 
-
-
-
     # google chrome
-    # TODO: configure version and source
+    #   TODO: configure version and source
     include ::roles_profiles::profiles::google_chrome
-
     include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
     # nrpe and checks
-    # TODO: required or are we migrating to influx?
+    #   TODO: required or are we migrating to influx?
     include ::fw::roles::linux_taskcluster_worker
 
     # TODO: from build-puppet
