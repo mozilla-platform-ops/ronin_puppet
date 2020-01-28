@@ -14,7 +14,7 @@ win-worker:
     provisioner_id: 'releng-hardware'
 
   # Specify the folder of the S3 logging bucket
-    s3_folder: "%{facts.custom_win_gw_workertype}"
+  s3_folder: "%{facts.custom_win_gw_workertype}"
 
   # Mozilla-build
   mozilla_build:
