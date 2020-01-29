@@ -17,6 +17,7 @@ class win_nxlog (
         include win_nxlog::fw_exception
         include win_nxlog::service
         include win_nxlog::configuration
+        include win_nxlog::log_to_s3
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
