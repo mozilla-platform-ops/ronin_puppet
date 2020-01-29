@@ -33,7 +33,7 @@ class roles_profiles::profiles::logging (
                 $conf_file = 'non_datacenter_nxlog.conf'
             }
             $s3_bucket = lookup('windows.s3.log_bucket')
-            $s3_folder = lookup('win_worker.s3_folder')
+            $s3_folder = lookup('win-worker.s3_folder')
 
             class { 'win_nxlog':
                 nxlog_dir           => "${facts['custom_win_programfilesx86']}\\nxlog",
