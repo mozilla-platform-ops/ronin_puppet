@@ -122,7 +122,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Output s3>
   Module om_python
-  PythonCode s3_write.py
+  PythonCode 'C:\\s3_write.py'
 </Output>
 
 <Route eventlog_apps_<%= $facts[custom_win_mozspace] %>_aggregator>
