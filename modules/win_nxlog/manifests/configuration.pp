@@ -11,6 +11,6 @@ class win_nxlog::configuration {
 
     file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.conf":
         #content => epp("win_nxlog/${conf_file}.epp"),
-        content => epp('datacenter_base_nxlog.conf.epp'),
+        content => epp('win_nxlog/datacenter_base_nxlog.conf.epp'),
     }
 }
