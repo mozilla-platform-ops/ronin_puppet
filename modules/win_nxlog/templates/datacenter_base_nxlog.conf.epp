@@ -121,7 +121,6 @@ LogFile   %ROOT%\data\nxlog.log
 </Output>
 
 <Output s3>
-  Module om_python
   PythonCode 'C:\\s3_write.py'
 </Output>
 
