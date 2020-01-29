@@ -6,7 +6,10 @@ class win_packages::boto3 {
 
     require win_mozilla_build::pip
 
+    $python3_path = "${facts['custom_win_systemdrive']}\\mozilla-build\\python3"
+
     exec { 'boto3':
-        command => "${facts['custom_win_systemdrive']}\\mozilla-build\\python3\\python3.exe -m pip install boto3",
+        command => "${$python3_path}\\python3.exe -m pip install boto3",
+        creates => "${python3_path}\\Lib\\site-packages\\boto3\\__init__.py",
     }
 }
