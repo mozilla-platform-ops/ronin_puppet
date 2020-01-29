@@ -35,6 +35,8 @@ class roles_profiles::profiles::logging (
             $s3_bucket = lookup('windows.s3.log_bucket')
             $s3_folder = lookup('win-worker.s3_folder')
 
+            include win_packages::boto3
+
             class { 'win_nxlog':
                 nxlog_dir           => "${facts['custom_win_programfilesx86']}\\nxlog",
                 location            => $facts['custom_win_location'],
