@@ -5,9 +5,6 @@
 class win_nxlog (
     String $nxlog_dir,
     String $location,
-    String $log_aws_access_key,
-    String $log_aws_secret_key,
-    String $aws_log_destination,
     STring $node_name,
     String $log_aggregator,
     String $conf_file

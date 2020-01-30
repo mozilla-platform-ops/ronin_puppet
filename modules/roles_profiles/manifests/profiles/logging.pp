@@ -32,18 +32,13 @@ class roles_profiles::profiles::logging (
                 $log_aggregator  = lookup('windows.external.papertrail')
                 $conf_file = 'non_datacenter_nxlog.conf'
             }
-            $s3_bucket = lookup('windows.s3.log_bucket')
-            $s3_folder = lookup('win_worker.s3_folder')
 
             class { 'win_nxlog':
-                nxlog_dir           => "${facts['custom_win_programfilesx86']}\\nxlog",
-                location            => $facts['custom_win_location'],
-                log_aws_access_key  => lookup('log_aws_access_key'),
-                log_aws_secret_key  => lookup('log_aws_secret_key'),
-                aws_log_destination => "${s3_bucket}/${s3_folder}",
-                node_name           => $facts['networking']['fqdn'],
-                log_aggregator      => $log_aggregator,
-                conf_file           => $conf_file,
+                nxlog_dir      => "${facts['custom_win_programfilesx86']}\\nxlog",
+                location       => $facts['custom_win_location'],
+                node_name      => $facts['networking']['fqdn'],
+                log_aggregator => $log_aggregator,
+                conf_file      => $conf_file,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
