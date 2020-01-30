@@ -11,7 +11,7 @@ class win_nxlog::log_to_s3 {
     $access_key = $win_nxlog::log_aws_access_key
     $secret_key = $win_nxlog::log_aws_secret_key
     $destination = $win_nxlog::aws_log_destination
-    $node_name        = $win_nxlog::node_name
+    $name        = $win_nxlog::node_name
 
     file { "${win_nxlog::nxlog_dir}\\s3_write.py":
         content => epp('win_nxlog/s3_write.py.epp'),
