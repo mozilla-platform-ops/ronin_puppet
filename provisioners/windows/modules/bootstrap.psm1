@@ -226,6 +226,8 @@ Function Bootstrap-schtasks {
   }
   process {
 
+    # This will not really do anything for the Azure script but shouldn't hurt it
+    # It is needed for hardware workers
     $role = $workerType -replace '-',''
 
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
