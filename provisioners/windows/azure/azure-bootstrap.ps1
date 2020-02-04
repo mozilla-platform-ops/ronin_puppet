@@ -117,7 +117,7 @@ function az_digest_metadata {
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 
-function az_digest_metadata
+az_digest_metadata
 
 If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
   $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
