@@ -148,7 +148,6 @@ function Install-AzPrerequ {
   }
   process {
 
-    remove-item $local_dir   -Recurse  -force
     New-Item -path $work_dir -ItemType "directory"
     Set-location -path $work_dir
     Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
