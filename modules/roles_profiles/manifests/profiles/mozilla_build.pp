@@ -8,10 +8,9 @@ class roles_profiles::profiles::mozilla_build {
         'Windows': {
 
         # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
-            $cache_drive               = $facts['custom_win_location'] ? {
-                'datacenter' => $facts['custom_win_systemdrive'],
-                'bitbar'     => $facts['custom_win_systemdrive'],
-                'aws'        => 'y:',
+            $cache_drive  = $facts['custom_win_location'] ? {
+                'aws'     => 'y:',
+                'default' => $facts['custom_win_systemdrive'],
             }
 
             class { 'win_mozilla_build':
