@@ -59,7 +59,7 @@ class roles_profiles::roles::geckotwin1064azure {
     include win_firewall::allow_ping
 
     ## Ntp
-    $ntpserver = lookup('windows.ntp')
+    $ntpserver = lookup('windows.external.ntp')
 
     class { 'windowstime':
         servers  => { "${ntpserver}" => '0x08'},
