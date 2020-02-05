@@ -9,8 +9,8 @@ class roles_profiles::profiles::mozilla_build {
 
         # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
             $cache_drive  = $facts['custom_win_location'] ? {
-                'aws'     => 'y:',
-                'default' => $facts['custom_win_systemdrive'],
+                'aws'   => 'y:',
+                default => $facts['custom_win_systemdrive'],
             }
 
             class { 'win_mozilla_build':
