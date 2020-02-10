@@ -398,6 +398,7 @@ Function set-restore_point {
     # This is specifically for MDT deployments and waiting on the deployment to finish
     # This may need to be modified for MAAS
     while ((Test-Path "Z:\")) {
+      Write-Log -message  ('{0} ::Detecting deployment drive (Z:). Waiting for it to unmount before setting restore point' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       Start-Sleep 10
     }
     vssadmin delete shadows /all /quiet
