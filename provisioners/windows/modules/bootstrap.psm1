@@ -394,13 +394,6 @@ Function set-restore_point {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    # Wait till Z drive is no longer mounted
-    # This is specifically for MDT deployments and waiting on the deployment to finish
-    # This may need to be modified for MAAS
-    while ((Test-Path "$env:systemdrive:\MININT")) {
-      Write-Log -message  ('{0} ::Detecting deployment drive (Z:). Waiting for it to unmount before setting restore point' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      Start-Sleep 10
-    }
     vssadmin delete shadows /all /quiet
     powershell.exe -Command Checkpoint-Computer -Description "default"
 
@@ -491,4 +484,21 @@ Function Bootstrap-CleanUp {
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
+}
+Function Wait-On-MDT {
+   param (
+   )
+   begin {
+     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+       while ((Test-Path "$env:systemdrive:\MININT")) {
+         Write-Log -message  ('{0} ::Detecting MDT deployment has not completed. Waiting 10 seconds.'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+         Start-Sleep 10
+       }
+       Write-Log -message  ('{0} ::MDT deployment appears complete'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    }
+    end {
+      Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
 }
