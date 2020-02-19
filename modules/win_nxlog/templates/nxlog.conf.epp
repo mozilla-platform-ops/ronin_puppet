@@ -75,6 +75,16 @@ LogFile   %ROOT%\data\nxlog.log
   Exec $SourceName = 'generic-worker';
 </Input>
 
+<Input worker_runner_log>
+  Module im_file
+  File 'C:/worker-runner/*.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType multiline-wr-datetime-header
+  Exec if $raw_event =~ /^(\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d)\s(.*)/s { $EventTime = parsedate($1); $Message = $2; }
+  Exec $SourceName = 'worker-runner';
+</Input>
+
 <Input bootstrap_puppet_log>
   Module im_file
   File 'C:\logs\\*-bootstrap-puppet.log'
@@ -133,6 +143,10 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route generic_worker_service_log_<%= $facts[custom_win_mozspace] %>_aggregator>
   Path generic_worker_service_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
+<Route worker_runner_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path worker_runner_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
 <Route bootstrap_puppet_log_<%= $facts[custom_win_mozspace] %>_aggregator>

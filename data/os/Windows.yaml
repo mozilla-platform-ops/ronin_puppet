@@ -34,11 +34,18 @@ windows:
     root_url: "https://firefox-ci-tc.services.mozilla.com"
     wstaudience: "firefoxcitc"
     wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
+    package_source: "https://github.com/taskcluster/generic-worker/releases/download"
 
   # Windows KMS
   kms:
     key:
       microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
+
+  # Common dirs across all Windows platforms
+  dir:
+    generic_worker: "%{facts.custom_win_systemdrive}\\generic-worker"
+    worker_runner: "%{facts.custom_win_systemdrive}\\worker-runner"
+    nssm: "%{facts.custom_win_systemdrive}\\nssm"
 
 # this should be changed into a defined type
 # Useful commands
