@@ -42,24 +42,24 @@ Uses [kitchen-puppet](https://github.com/neillturner/kitchen-puppet).
 # install ruby via homebrew or other means
 brew install ruby
 # add gem bin path (may differ on your system) to your PATH
-export PATH=$PATH:/usr/local/lib/ruby/gems/2.6.0/bin
+export PATH=$PATH:/usr/local/lib/ruby/gems/2.6.0/bin  # may be 2.7.0
+gem install bundler
 
 # install testing tools
-gem install bundler
-bundle install --gemfile .gemfile
+bundle install
 
-## bitbar
-kitchen converge bitbar
+## testing bitbar workers
+./bin/kitchen converge bitbar
 # run spec tests
-kitchen verify bitbar
+./bin/kitchen verify bitbar
 
-## linux
+## testing linux workers
 # coverge host
-kitchen converge linux
+./bin/kitchen converge linux
 # run serverspec tests
-kitchen verify linux
+./bin/kitchen verify linux
 # login to host
-kitchen login linux
+./bin/kitchen login linux
 ```
 
 New test suites can be added in `.kitchen.yaml`.
