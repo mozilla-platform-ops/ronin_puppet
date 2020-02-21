@@ -64,6 +64,9 @@ scriptworker_users:
         - mac_sign_and_pkg
         - mac_geckodriver
         - mac_notarize
+        - mac_notarize_part_1
+        - mac_notarize_part_3
+      poller: true
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
@@ -87,6 +90,9 @@ scriptworker_users:
         - mac_sign_and_pkg
         - mac_geckodriver
         - mac_notarize
+        - mac_notarize_part_1
+        - mac_notarize_part_3
+      poller: true
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
