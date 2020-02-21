@@ -10,26 +10,7 @@ class roles_profiles::profiles::mac_v3_signing {
             $worker_type  = 'mac-v3-signing'
             $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-            # TODO: mac-v3-signing should run puppet more than just at boot.
-            # This needs a puppet::periodic class for running puppet on a cron schedule
-            class { 'puppet::atboot':
-                telegraf_user     => lookup('telegraf.user'),
-                telegraf_password => lookup('telegraf.password'),
-                # Note the camelCase key names
-                meta_data         => {
-                    workerType    => $worker_type,
-                    workerGroup   => $worker_group,
-                    provisionerId => 'none',
-                    workerId      => $facts['networking']['hostname'],
-                },
-                # "pinning"
-                # for the first setup of a node type, the provisioner script in the image must have a valid node
-                # then, pinning will apply on the next run atboot:
-                #puppet_repo   => 'https://github.com/davehouse/ronin_puppet.git',
-                #puppet_branch => 'notarization',
-            }
-
-            # we can add worker setup here like in gecko_t_osx_1014_generic_worker.pp
+            include puppet::disable_atboot
 
             class { 'roles_profiles::profiles::logging':
                 # The logging module tags the logs with:
@@ -43,48 +24,6 @@ class roles_profiles::profiles::mac_v3_signing {
             include dirs::tools
 
             class { 'scriptworker_prereqs': }
-
-            # Template variables for script_config.yaml
-            #   - taskcluster_scope_prefix
-            #   - config file role name
-            #   - sign_with_entitlements
-            #   - verify_mac_signature
-            #   - base_bundle_id
-            #   - identity
-            #   - keychain_password
-            #   - pkg_cert_id
-            #   - notarization_account
-            #   - notarization_password
-            #   - apple_asc_provider
-            #   - notarization_poll_timeout
-            #   - widevine_url
-            #   - widevine_user
-            #   - widevine_pass
-            #   - omnija_url
-            #   - omnija_user
-            #   - omnija_pass
-            #   - langpack_url
-            #   - langpack_user
-            #   - langpack_pass
-            # Template variables for scriptworker.yaml
-            #   - worker_type
-            #   - taskcluster_access_token
-            #   - taskcluster_client_id
-            #   - sign_chain_of_trust
-            #   - verify_chain_of_trust
-            #   - verify_cot_signature
-
-            # TODO Don't create these if the secrets service is unsatisfatory.
-            # Cert files to create
-            #   - dep:
-            #     - widevine_dep.crt from signing_keys.widevine_dep_crt
-            #     - dep_signing.keychain from signing_keys.dep_signing_keychain
-            #  - default
-            #    - widevine_prod.crt
-            #    - nightly_signing.keychain
-            #    - release-signing.keychain
-            #    - ed25519_privkey
-            #
 
             # For cloning the widevine repository
             $widevine_user = lookup('widevine_config.user')
@@ -126,6 +65,54 @@ class roles_profiles::profiles::mac_v3_signing {
                     notarization_users  => $user_data['notarization_users'],
                     ed_key_filename     => $user_data['ed_key_filename'],
                 }
+            }
+
+            class { 'telegraf':
+                global_tags  => {
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    provisionerId => 'scriptworker-prov-v1',
+                    role          => $role,
+                    workerId      => $facts['networking']['hostname'],
+                },
+                agent_params => {
+                    interval          => '300s',
+                    round_interval    => true,
+                    collection_jitter => '0s',
+                    precision         => 's',
+                },
+                inputs       => {
+                    # current default telegraf monitors: system, mem, swap, disk'/', puppetagent
+                    system      => {},
+                    temp        => {},
+                    cpu         => {
+                        interval         => '60s',
+                        percpu           => true,
+                        totalcpu         => true,
+                        ## If true, collect raw CPU time metrics.
+                        collect_cpu_time => false,
+                        ## If true, compute and report the sum of all non-idle CPU states.
+                        report_active    => false,
+                    },
+                    mem         => {},
+                    swap        => {},
+                    disk        => {
+                        mount_points => ['/'],
+                    },
+                    diskio      => {},
+                    procstat    => {
+                        interval => '60s',
+                        exe      => '/builds/scriptworker/bin/scriptworker',
+                    },
+                    procstat2   => {
+                        plugin_type => 'procstat',
+                        interval    => '60s',
+                        pattern     => 'tools/release/signing/signing-server.py',
+                    },
+                    puppetagent => {
+                        location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
+                    },
+                },
             }
         }
         default: {

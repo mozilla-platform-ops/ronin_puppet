@@ -101,7 +101,8 @@ function notify_telegraf {
     TELEGRAF_VALUE=$2
     META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
     CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
-    curl "${CURL_OPTIONS[@]}" 2>&1
+    # Print the metrics post output only if there is an error.
+    out=$(curl --fail --silent --show-error "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
 }
 
 function update_puppet {

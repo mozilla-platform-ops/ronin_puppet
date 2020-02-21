@@ -6,7 +6,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
     require roles_profiles::profiles::cltbld_user
 
-    $worker_type  = 'gecko-t-osx-1014-beta'
+    $worker_type  = 'gecko-t-osx-1014-staging'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
@@ -22,9 +22,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
-                puppet_repo       => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch     => 'bug1563799_remove-homebrew-testing',
-                puppet_notify_email => 'dhouse@mozilla.com',
+                puppet_branch     => 'staging',
                 # Note the camelCase key names
                 meta_data         => $meta_data,
             }
@@ -35,7 +33,32 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             }
 
             class { 'telegraf':
-                global_tags => $meta_data,
+                global_tags  => $meta_data,
+                agent_params => {
+                    interval          => '300s',
+                    round_interval    => true,
+                    collection_jitter => '0s',
+                    flush_interval    => '120s',
+                    flush_jitter      => '60s',
+                    precision         => 's',
+                },
+                inputs       => {
+                    temp     => {},
+                    cpu      => {
+                        interval         => '60s',
+                        percpu           => true,
+                        totalcpu         => true,
+                        ## If true, collect raw CPU time metrics.
+                        collect_cpu_time => false,
+                        ## If true, compute and report the sum of all non-idle CPU states.
+                        report_active    => false,
+                    },
+                    diskio   => {},
+                    procstat => {
+                        interval => '60s',
+                        exe      => 'generic-worker',
+                    },
+                },
             }
 
             class { 'talos':
@@ -76,9 +99,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
             include dirs::tools
 
-            class { 'packages::google_chrome':
-                version => 'v76.0.3809.132',
-            }
+            include packages::google_chrome
             include roles_profiles::profiles::disable_chrome_updater
 
             contain packages::nodejs

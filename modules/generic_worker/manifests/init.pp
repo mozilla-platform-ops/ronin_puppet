@@ -5,7 +5,7 @@
 class generic_worker (
     String $taskcluster_client_id,
     String $taskcluster_access_token,
-    Optional[String] $livelog_secret = undef,
+    String $livelog_secret,
     String $worker_group,
     String $worker_type,
     String $quarantine_client_id,
@@ -19,8 +19,6 @@ class generic_worker (
     String $taskcluster_proxy_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
     String $quarantine_worker_sha256,
-    Optional[Pattern[/^v\d+\.\d+\.\d+$/]] $livelog_version = undef,
-    Optional[String] $livelog_sha256 = undef,
     String $taskcluster_host = 'taskcluster',
 ) {
 
@@ -33,9 +31,7 @@ class generic_worker (
         taskcluster_proxy_version => $taskcluster_proxy_version,
         taskcluster_proxy_sha256  => $taskcluster_proxy_sha256,
         quarantine_worker_version => $quarantine_worker_version,
-        quarantine_worker_sha256  => $quarantine_worker_sha256,
-        livelog_version           => $livelog_version,
-        livelog_sha256            => $livelog_sha256,
+        quarantine_worker_sha256  => $quarantine_worker_sha256
     }
 
     class { 'generic_worker::control_bug':
@@ -93,8 +89,8 @@ class generic_worker (
                     mode    => '0644';
 
                 '/var/log/genericworker':
-                    ensure  => directory,
-                    mode    => '0777';
+                    ensure => directory,
+                    mode   => '0777';
             }
 
             service { 'net.generic.worker':
