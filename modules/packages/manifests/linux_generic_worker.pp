@@ -10,51 +10,28 @@ class packages::linux_generic_worker (
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
     # String                      $quarantine_worker_sha256,
 ) {
-
-    packages::linux_package_from_github { "generic-worker-linux-x386-${generic_worker_version}":
-      github_repo_slug => 'taskcluster/generic-worker',
-      version          => $generic_worker_version,
-      filename         => 'generic-worker-simple-linux-386',
-      file_destination => '/usr/local/bin/generic-worker',
+    
+    packages::linux_package_from_s3 { "generic-worker-simple-linux-386-${generic_worker_version}":
+        private             => false,
+        os_version_specific => false,
+        type                => 'bin',
+        file_destination    => '/usr/local/bin/generic-worker',
+        checksum            => $generic_worker_sha256,
     }
 
-    packages::linux_package_from_github { "taskcluster-proxy-linux-amd64-${taskcluster_proxy_version}":
-      github_repo_slug => 'taskcluster/taskcluster-proxy',
-      version          => $taskcluster_proxy_version,
-      filename         => 'taskcluster-proxy-linux-amd64',
-      file_destination => '/usr/local/bin/taskcluster-proxy',
+    packages::linux_package_from_s3 { "taskcluster-proxy-linux-amd64-${taskcluster_proxy_version}":
+        private             => false,
+        os_version_specific => false,
+        type                => 'bin',
+        file_destination    => '/usr/local/bin/taskcluster-proxy',
+        checksum            => $taskcluster_proxy_sha256,
     }
 
-    packages::linux_package_from_github { "quarantine-worker-linux-amd64-${quarantine_worker_version}":
-      github_repo_slug => 'mozilla-platform-ops/quarantine-worker',
-      version          => $quarantine_worker_version,
-      filename         => 'quarantine-worker-linux-amd64',
-      file_destination => '/usr/local/bin/quarantine-worker',
+    packages::linux_package_from_s3 { "quarantine-worker-linux-amd64-${quarantine_worker_version}":
+        private             => false,
+        os_version_specific => false,
+        type                => 'bin',
+        file_destination    => '/usr/local/bin/quarantine-worker',
+        checksum            => $quarantine_worker_sha256,
     }
-
-    # TODO: move to installation from s3
-
-    # packages::linux_package_from_s3 { "generic-worker-linux-x386-${generic_worker_version}":
-    #     private             => false,
-    #     os_version_specific => true,
-    #     type                => 'bin',
-    #     file_destination    => '/usr/local/bin/generic-worker',
-    #     checksum            => $generic_worker_sha256,
-    # }
-
-    # packages::linux_package_from_s3 { "taskcluster-proxy-darwin-amd64-${taskcluster_proxy_version}":
-    #     private             => false,
-    #     os_version_specific => true,
-    #     type                => 'bin',
-    #     file_destination    => '/usr/local/bin/taskcluster-proxy',
-    #     checksum            => $taskcluster_proxy_sha256,
-    # }
-
-    # packages::linux_package_from_s3 { "quarantine-worker-darwin-amd64-${quarantine_worker_version}":
-    #     private             => false,
-    #     os_version_specific => true,
-    #     type                => 'bin',
-    #     file_destination    => '/usr/local/bin/quarantine-worker',
-    #     checksum            => $quarantine_worker_sha256,
-    # }
 }
