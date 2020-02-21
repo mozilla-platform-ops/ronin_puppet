@@ -9,7 +9,7 @@ define packages::linux_package_from_s3 (
     Optional[String] $checksum                   = undef,
     Boolean $private                             = false,
     Boolean $os_version_specific                 = true,
-    Enum['deb'] $type    = 'bin',
+    Enum['deb', 'bin'] $type    = 'bin',
 ) {
 
     include shared
