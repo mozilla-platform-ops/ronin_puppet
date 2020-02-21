@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set +e
+
+source <%= @virtualenv_dir %>/bin/activate
+<%= @virtualenv_dir %>/bin/scriptworker <%= @scriptworker_config_file  %>

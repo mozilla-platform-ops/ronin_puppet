@@ -2,13 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_datacenter_generic_worker_15_1_0 {
+class roles_profiles::profiles::windows_datacenter_generic_worker_16_2_0 {
 
     case $::operatingsystem {
         'Windows': {
 
             $taskcluster_access_token = lookup('taskcluster_access_token')
             $ext_pkg_src_loc          = lookup('win_ext_pkg_src')
+            $taskcluster_root         = lookup('taskcluster.root_url')
+            $wstaudience              = lookup('taskcluster.wstaudience')
+            $wstserverurl             = lookup('taskcluster.wstserverurl')
             $tc_pkg_source            = "${ext_pkg_src_loc}/taskcluster"
             # Determined in /modules/win_shared/facts.d/facts_win_application_versions.ps1
             $current_gw_version       = $facts['custom_win_genericworker_version']
@@ -19,7 +22,7 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_15_1_0 {
             # Defining below  as variables because there may be
             # a need to add logic to determine which source or version is needed
             # dependent on OS or architecture.
-            $needed_gw_version         = '15.1.0'
+            $needed_gw_version         = '16.2.0'
             $needed_tc_proxy_version   = '5.1.0'
             $needed_livelog_version    = '1.1.0'
             # Requires win_packages::nssm
@@ -58,12 +61,22 @@ class roles_profiles::profiles::windows_datacenter_generic_worker_15_1_0 {
             # Paths in the  config file need to have \\ hence the \\\\ below
             class{ 'win_generic_worker::hw_config':
                 taskcluster_access_token => $taskcluster_access_token,
+                taskcluster_root         => $taskcluster_root,
+                wstaudience              => $wstaudience,
+                wstserverurl             => $wstserverurl,
                 worker_type              => $facts['custom_win_gw_workertype'],
                 client_id                => "project/releng/generic-worker/datacenter-${facts['custom_win_gw_workertype']}",
                 generic_worker_dir       => "${facts['custom_win_systemdrive']}\\\\generic-worker",
                 provisioner_id           => 'releng-hardware',
                 idle_timeout             => 7200,
             }
+            # On static workers there are often several open profile registries
+            # left after tasks are complete. This will clean up those reg values.
+            # Currently this  does nothing.
+            # It was cleaing profile list but may be the cuase in https://bugzilla.mozilla.org/show_bug.cgi?id=1601282
+            # Leaving in place becuase it is a quicker fix than trying to delete the schedule task
+            # Will remove in the future
+            include win_scheduled_tasks::clean_profilelist
         }
 
         default: {
