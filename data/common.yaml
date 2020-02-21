@@ -1,6 +1,6 @@
 ---
 
-ntp_server: "0.pool.ntp.org"
+ntp_server: "ntp.build.mozilla.org"
 
 smtp_relay_host: "smtp1.mail.mdc1.mozilla.com"
 

@@ -117,6 +117,7 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Setup-Logging
   Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+  Wait-On-MDT
   Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
   Set-restore_point -max_boots $max_boots
   Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
