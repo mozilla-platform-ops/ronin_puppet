@@ -4,13 +4,13 @@
 
 class packages::linux_generic_worker (
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
-    # String                      $generic_worker_sha256,
+    String                      $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
-    # String                      $taskcluster_proxy_sha256,
+    String                      $taskcluster_proxy_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
-    # String                      $quarantine_worker_sha256,
+    String                      $quarantine_worker_sha256,
 ) {
-    
+
     packages::linux_package_from_s3 { "generic-worker-simple-linux-386-${generic_worker_version}":
         private             => false,
         os_version_specific => false,
@@ -35,3 +35,4 @@ class packages::linux_generic_worker (
         checksum            => $quarantine_worker_sha256,
     }
 }
+
