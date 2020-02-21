@@ -22,3 +22,6 @@
 
 # bundler paths
 vendor/
+
+# IDEs
+.idea/
