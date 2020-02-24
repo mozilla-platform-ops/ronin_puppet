@@ -3,9 +3,18 @@
 # This is a wrapper script for calling generic worker, such that when the worker
 # exits, this script will reboot the machine.
 
+<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+exec 1> >(tee /var/log/genericworker/stdout.log >&1)
+exec 2> >(tee /var/log/genericworker/stderr.log >&2)
+<% end %>
+
 # First run the generic-worker, passing through any arguments handed to this
 # wrapper script...
+<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+/usr/local/bin/generic-worker "$@"
+<% else %>
 /usr/local/bin/generic-worker "$@" 2>&1 | logger -t generic-worker -s
+<% end %>
 
 exitstatus="${PIPESTATUS[0]}"
 
