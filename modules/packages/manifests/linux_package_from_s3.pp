@@ -46,10 +46,21 @@ define packages::linux_package_from_s3 (
             }
         }
         'deb': {
+            file {
+                default: * => $::shared::file_defaults;
+
+                "/tmp/$title":
+                  ensure         => 'file',
+                  source         => $source,
+                  checksum       => 'sha256',
+                  checksum_value => $checksum,
+                  mode           => '0644';
+            }
+
             package { $title:
                     ensure   => 'installed',
-                    provider => 'apt',
-                    source   => $source,
+                    provider => 'dpkg',
+                    source   => "/tmp/$title",
             }
         }
         default: {

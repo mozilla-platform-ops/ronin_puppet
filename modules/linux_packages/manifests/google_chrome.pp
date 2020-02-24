@@ -3,12 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::google_chrome (
-    # String $version = 'v76.0.3809.132'
+    String $version = '80.0.3987.122-1'
 ) {
 
-    # packages::macos_package_from_s3 { "googlechrome_${version}.dmg":
-    #     private             => false,
-    #     os_version_specific => true,
-    #     type                => 'appdmg',
-    # }
+   packages::linux_package_from_s3 { "google-chrome-stable_${version}_amd64.deb":
+        private             => false,
+        os_version_specific => false,
+        type                => 'deb',
+    }
 }
