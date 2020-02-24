@@ -49,7 +49,7 @@ define packages::linux_package_from_s3 (
             file {
                 default: * => $::shared::file_defaults;
 
-                "/tmp/$title":
+                "/tmp/${title}":
                   ensure         => 'file',
                   source         => $source,
                   checksum       => 'sha256',
@@ -60,7 +60,7 @@ define packages::linux_package_from_s3 (
             package { $title:
                     ensure   => 'installed',
                     provider => 'dpkg',
-                    source   => "/tmp/$title",
+                    source   => "/tmp/${title}",
             }
         }
         default: {
