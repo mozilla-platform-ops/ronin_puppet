@@ -86,6 +86,11 @@ function Install-BootstrapModule {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+
+    # Delete the existing module to ensure latest is used.
+    if (Test-Path "$modulesPath\\$filename") {
+        Remove-Item "$modulesPath\\$filename"
+    }
     mkdir $bootstrap_module  -ErrorAction SilentlyContinue
     Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$filename" -UseBasicParsing
     Get-Content -Encoding UTF8 "$bootstrap_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
@@ -96,11 +101,12 @@ function Install-BootstrapModule {
   }
 }
 
-$workerType = 'gecko-t-win10-64-ref-ht'
+$workerType = 'gecko-t-win10-64-hb'
 $src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
 $src_Revision = 'master'
-$image_provisioner = 'bitbar'
+$image_provisioner = 'mdt'
+$max_boots = 150
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
@@ -111,9 +117,11 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
   Setup-Logging
   Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-  Install-ZipPrerequ
+  Wait-On-MDT
   Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+  Set-restore_point -max_boots $max_boots
+  Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+  Install-Prerequ
   shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
@@ -122,6 +130,6 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Bootstrap-CleanUp
+  Import-Module bootstrap
+  Start-Restore
 }
