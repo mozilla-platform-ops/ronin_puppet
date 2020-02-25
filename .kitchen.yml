@@ -15,6 +15,7 @@ provisioner:
           password: 'abc123'
           salt: 'h3hhahchahah'
           iterations: '3'
+          vnc_password: 'vnc4free'
         generic_worker:
           gecko_t_linux_talos:
             taskcluster_client_id: '123'

@@ -41,6 +41,9 @@ class roles_profiles::profiles::vnc {
             #
             # TODO Add 32 bit support
         }
+        'Ubuntu': {
+            include linux_vnc
+        }
         'Darwin': {
             include macos_utils::enable_screensharing
         }

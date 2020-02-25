@@ -57,6 +57,10 @@ class roles_profiles::profiles::cltbld_user {
             $salt         = lookup('cltbld_user.salt')
             $iterations   = lookup('cltbld_user.iterations')
 
+            $username     = "cltbld"
+            $group        = "cltbld"
+            $homedir      = "/home/cltbld"
+
             group { 'cltbld':
                 name      => 'cltbld'
             }

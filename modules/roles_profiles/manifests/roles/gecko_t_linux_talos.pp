@@ -10,6 +10,8 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::sudo
+    # TODO: vnc
+    include ::roles_profiles::profiles::vnc
     include ::roles_profiles::profiles::cltbld_user
     # linux desktop packages
     include ::roles_profiles::profiles::gui
