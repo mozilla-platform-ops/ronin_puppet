@@ -5,7 +5,7 @@
 # Define x11vnc service
 
 [Unit]
-Description=Manually start x11vnc server attached to <%= scope.lookupvar('::config::builder_username') %> X session
+Description=Manually start x11vnc server attached to <%= scope.lookupvar('::roles_profiles::profiles::cltbld_user::username') %> X session
 After=Xsession.service
 
 [Service]
@@ -15,9 +15,9 @@ KillMode=process
 GuessMainPID=no
 # this file is stored in /etc, readable only by root.  When starting VNC, it gets copied into
 # the builder user's home dir, then removed immediately (via the 'rm:' prefix below)
-ExecStartPre=/bin/cp -f /etc/vnc_passwdfile /home/<%= scope.lookupvar('::config::builder_username') %>/.vnc/passwdfile
-ExecStartPre=/bin/chown <%= scope.lookupvar('::config::builder_username') %> /home/<%= scope.lookupvar('::config::builder_username') %>/.vnc/passwdfile
-ExecStart=/bin/su - -c "/usr/bin/x11vnc -display WAIT:0 -passwdfile rm:/home/<%= scope.lookupvar('::config::builder_username') %>/.vnc/passwdfile -forever -shared" <%= scope.lookupvar('::config::builder_username') %>
+ExecStartPre=/bin/cp -f /etc/vnc_passwdfile /home/<%= scope.lookupvar('::roles_profiles::profiles::cltbld_user::username') %>/.vnc/passwdfile
+ExecStartPre=/bin/chown <%= scope.lookupvar('::roles_profiles::profiles::cltbld_user::username') %> /home/<%= scope.lookupvar('::roles_profiles::profiles::cltbld_user::username') %>/.vnc/passwdfile
+ExecStart=/bin/su - -c "/usr/bin/x11vnc -display WAIT:0 -passwdfile rm:/home/<%= scope.lookupvar('::roles_profiles::profiles::cltbld_user::username') %>/.vnc/passwdfile -forever -shared" <%= scope.lookupvar('::roles_profiles::profiles::cltbld_user::username') %>
 
 [Install]
 WantedBy=multi-user.target

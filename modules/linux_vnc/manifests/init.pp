@@ -28,25 +28,16 @@ class linux_vnc {
       content   => lookup('cltbld_user.vnc_password'),
       show_diff => false;
   }
-  # case $::operatingsystemrelease {
-  #   12.04,14.04: {
-  #     file {
-  #       '/etc/init/x11vnc.conf':
-  #         content => template("${module_name}/x11vnc.conf.erb");
-  #       '/etc/init.d/x11vnc':
-  #         ensure => link,
-  #         target => '/lib/init/upstart-job';
-  #     }
-  #   }
-  #   16.04: {
-  #     file {
-  #       '/lib/systemd/system/x11vnc.service':
-  #         content => template("${module_name}/x11vnc.service.erb");
-  #     }
-  #   }
-  #   default: {
-  #     fail ("Ubuntu ${::operatingsystemrelease} is not suported")
-  #   }
-  # }
-  # # note that x11vnc isn't started automatically
+  case $::operatingsystemrelease {
+    18.04: {
+      file {
+        '/lib/systemd/system/x11vnc.service':
+          content => template("${module_name}/x11vnc.service.erb");
+      }
+    }
+    default: {
+      fail ("Ubuntu ${::operatingsystemrelease} is not suported")
+    }
+  }
+  # note that x11vnc isn't started automatically
 }
