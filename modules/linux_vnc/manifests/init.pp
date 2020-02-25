@@ -8,17 +8,18 @@ class linux_vnc {
   # include config
   # include users::builder
   include linux_packages::vnc_server
+  include roles_profiles::profiles::cltbld_user
 
   if (lookup('cltbld_user.vnc_password') == '') {
     fail('No VNC password set')
   }
   file {
-    "${::roles_profiles::profiles::cltbld_user::homdir}/.vnc":
+    "${roles_profiles::profiles::cltbld_user::homedir}/.vnc":
       ensure => directory,
       mode   => '0700',
-      owner  => $::roles_profiles::profiles::cltbld_user::username,
-      group  => $::roles_profiles::profiles::cltbld_user::group;
-    "${::roles_profiles::profiles::cltbld_user::homdir}/.vnc/passwd":
+      owner  => $roles_profiles::profiles::cltbld_user::username,
+      group  => $roles_profiles::profiles::cltbld_user::group;
+    "${roles_profiles::profiles::cltbld_user::homedir}/.vnc/passwd":
       ensure => absent;
     '/etc/vnc_passwdfile':
       ensure    => file,
