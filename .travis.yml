@@ -16,7 +16,6 @@ notifications:
     on_success: always
     on_failure: always
     template:
-    - "\x02%{repository_slug}\x0314 #%{build_number}\x03\x02 (%{branch} - %{commit}:
-      %{author}): \x02\x0312%{message}"
-    - "\x02\x03Change view   : \x0314%{compare_url}"
-    - "\x02\x03Build details : \x0314%{build_url}"
+    - "%{repository_slug} #%{build_number} (%{branch} - %{commit} - %{author}): %{message}"
+    - "Change view   : %{compare_url}"
+    - "Build details : %{build_url}"
