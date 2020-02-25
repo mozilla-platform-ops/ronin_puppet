@@ -6,4 +6,8 @@ describe command('generic-worker --version') do
   its(:stdout) { should match /generic-worker/ }
 end
 
+describe file('/etc/generic-worker.config') do
+  it { should exist }
+end
+
 # TODO: check for tc-proxy, tc-w-r, liveproxy, etc
