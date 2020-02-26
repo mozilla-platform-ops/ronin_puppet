@@ -46,6 +46,9 @@ define packages::linux_package_from_s3 (
             }
         }
         'deb': {
+            # package with provider apt won't install from an url or a local file.
+            # we're forced to fetch file, install with dpkg, then fix deps with apt.
+
             file {
                 default: * => $::shared::file_defaults;
 
@@ -61,6 +64,13 @@ define packages::linux_package_from_s3 (
                     ensure   => 'installed',
                     provider => 'dpkg',
                     source   => "/tmp/${title}",
+            }
+
+            # 'apt get install -f' to fix deps
+            # - https://groups.google.com/forum/#!topic/puppet-users/XMJcekKHiMk
+            exec { 'apt-get-fix':
+              command => "/usr/bin/apt-get -f -y install",
+              unless  => "/usr/bin/apt-get check",
             }
         }
         default: {
