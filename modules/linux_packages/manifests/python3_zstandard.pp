@@ -16,7 +16,7 @@ class linux_packages::python3_zstandard {
     # }
 
     exec { 'install python3-zstandard':
-      command => "/usr/bin/pip3 install zstandard==0.11.1",
-      unless  => "/usr/bin/pip3 list --format=columns | grep zstandard | grep 0.11.1",
+      command => '/usr/bin/pip3 install zstandard==0.11.1',
+      unless  => '/usr/bin/pip3 list --format=columns | grep zstandard | grep 0.11.1',
     }
 }
