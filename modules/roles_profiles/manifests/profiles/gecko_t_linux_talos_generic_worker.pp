@@ -14,6 +14,8 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
 
             contain linux_packages::zstd
 
+            contain linux_talos
+
             # g-w
             $worker_type  = 'gecko-t-linux-talos'
             $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
