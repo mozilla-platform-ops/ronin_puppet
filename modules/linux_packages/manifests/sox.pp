@@ -8,7 +8,7 @@ class linux_packages::sox {
       case $::operatingsystemrelease {
         '18.04': {
           package {
-            ['libsox-fmt-alsa', 'libsox-fmt-base', 'libsox2', 'sox']:
+            ['libsox-fmt-alsa', 'libsox-fmt-base', 'libsox3', 'sox']:
               ensure => 'latest';
           }
         }
