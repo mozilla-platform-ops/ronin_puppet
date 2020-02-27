@@ -18,14 +18,14 @@ env:
   - KITCHEN_TARGET=linux
 
 stages:
+  - analysis
   - test
-  - test-kitchen
 
 script: "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
 
 jobs:
   include:
-    - stage: static_analysis
+    - stage: analysis
       env: KITCHEN_TARGET=none
       script: "bundle exec puppet parser validate `find modules -name '*.pp'`"
     - env: KITCHEN_TARGET=none
