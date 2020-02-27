@@ -12,8 +12,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::sudo
     include ::roles_profiles::profiles::vnc
     include ::roles_profiles::profiles::cltbld_user
-    # TEST ONLY: for faster testing
-    # include ::roles_profiles::profiles::gui
+    include ::roles_profiles::profiles::gui
     include ::roles_profiles::profiles::google_chrome
     # TODO: install talos stuff in below
     include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
