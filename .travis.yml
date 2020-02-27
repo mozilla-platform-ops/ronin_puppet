@@ -27,10 +27,13 @@ jobs:
   include:
     - stage: analysis
       env: KITCHEN_TARGET=none
+      name: "puppet parser validate"
       script: "bundle exec puppet parser validate `find modules -name '*.pp'`"
     - env: KITCHEN_TARGET=none
+      name: "puppet lint"
       script: "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
     - env: KITCHEN_TARGET=none
+      name: "r10k puppetfile install"
       script: "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
 
 
