@@ -18,15 +18,6 @@ class linux_talos (
       # # required for the 32-bit reftests per :ahal, bug 837268
       include linux_packages::ia32libs
 
-      # TODO: all below
-      # # Ubuntu specific packages
-      # include packages::llvm
-      # include packages::sox
-      # include packages::libxcb1
-      # include packages::gstreamer
-      # include tweaks::cron
-      # include tweaks::resolvconf
-
       # setup sound
       kernelmodule {
         'snd_aloop':
@@ -35,6 +26,14 @@ class linux_talos (
           packages => ['v4l2loopback-dkms'];
       }
 
+      # TODO: all below
+      # # Ubuntu specific packages
+      # include packages::llvm
+      # include packages::sox
+      # include packages::libxcb1
+      # include packages::gstreamer
+      # include tweaks::cron
+      # include tweaks::resolvconf
       # case $::hardwaremodel {
       #   # We only run Android x86 emulator kvm jobs on
       #   # 64-bit host machines
