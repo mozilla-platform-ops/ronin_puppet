@@ -21,18 +21,16 @@ stages:
   - test
   - test-kitchen
 
+script: "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
+
 jobs:
   include:
-    - stage: test
+    - stage: static_analysis
       env: KITCHEN_TARGET=none
       script: "bundle exec puppet parser validate `find modules -name '*.pp'`"
-    - stage: test
-      env: KITCHEN_TARGET=none
+    - env: KITCHEN_TARGET=none
       script: "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
-    - stage: test
-      env: KITCHEN_TARGET=none
+    - env: KITCHEN_TARGET=none
       script: "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
-    - stage: test-kitchen
-      script: "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
 
 
