@@ -17,9 +17,14 @@ env:
   - KITCHEN_TARGET=bitbar
   - KITCHEN_TARGET=linux
 
-script:
-  - "bundle exec puppet parser validate `find modules -name '*.pp'`"
-  - "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
-  - "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
-  - "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
+jobs:
+  include:
+    - stage: parse
+    - script: "bundle exec puppet parser validate `find modules -name '*.pp'`"
+    - stage: lint
+    - script: "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
+    - stage: install r10k modules
+    - script: "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
+    - stage: test-kitchen
+    - script: "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
 
