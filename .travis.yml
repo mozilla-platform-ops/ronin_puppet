@@ -21,6 +21,8 @@ stages:
   - parse
   - test
 
+script: "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
+
 jobs:
   include:
     - stage: parse
@@ -28,6 +30,4 @@ jobs:
     - script: "bundle exec puppet parser validate `find modules -name '*.pp'`"
     - script: "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
     - script: "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
-    - stage: test
-      script: "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
 
