@@ -13,13 +13,9 @@ class linux_packages::ia32libs {
           # When I tried to install ia32-libs, I received the error:
           # However the following packages replace it:
           # lib32z1 lib32ncurses5
-          case $::hardwaremodel {
-            'x86_64': {
-              package {
-                'lib32ncurses5':
-                  ensure => 'latest';
-              }
-            }
+          package {
+            'lib32ncurses5':
+              ensure => 'latest';
           }
         }
         default: {
