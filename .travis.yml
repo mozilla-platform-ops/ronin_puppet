@@ -4,7 +4,7 @@ dist: xenial
 rvm:
   - 2.6
 
-sudo: required
+os: linux
 services: docker
 
 before_install:
