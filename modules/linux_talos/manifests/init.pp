@@ -2,9 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class linux_talos (
-  String $user,
-) {
+class linux_talos (String $user) {
   case $::operatingsystem {
     'Ubuntu': {
 
@@ -69,10 +67,10 @@ class linux_talos (
       # httpd::config { 'talos.conf':
       #   content => template('talos/talos-httpd.conf.erb'),
 
-      }
     }
     default: {
       fail("${module_name} not supported under ${::operatingsystem}")
     }
   }
 }
+
