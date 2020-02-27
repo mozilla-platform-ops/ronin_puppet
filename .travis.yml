@@ -17,6 +17,12 @@ env:
   - KITCHEN_TARGET=bitbar
   - KITCHEN_TARGET=linux
 
+stages:
+  - parse
+  - lint
+  - install_r10k_modules
+  - test-kitchen
+
 jobs:
   include:
     - stage: parse
@@ -25,7 +31,7 @@ jobs:
     - stage: lint
       env: KITCHEN_TARGET=none
       script: "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
-    - stage: install r10k modules
+    - stage: install_r10k_modules
       env: KITCHEN_TARGET=none
       script: "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
     - stage: test-kitchen
