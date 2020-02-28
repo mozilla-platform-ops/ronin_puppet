@@ -26,8 +26,9 @@ class linux_talos () {
           ensure => latest
       }
       kernelmodule {
-        'snd_aloop':
-          packages => ['libasound2'];
+        # TODO: is libasound2 needed? isn't pulse default now?
+        # 'snd_aloop':
+        #   packages => ['libasound2'];
         'v4l2loopback':
           packages => ['v4l2loopback-dkms'];
       }
