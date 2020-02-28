@@ -12,6 +12,8 @@ class linux_talos () {
       include linux_packages::xvfb
       include linux_packages::llvm
       include linux_packages::sox
+      include linux_packages::libxcb1
+      include linux_packages::gstreamer
 
       # see bug 914627
       include linux_packages::system_git
@@ -32,8 +34,6 @@ class linux_talos () {
 
       # TODO: all below
       # # Ubuntu specific packages
-      # include packages::libxcb1
-      # include packages::gstreamer
       # include tweaks::cron
       # include tweaks::resolvconf
       # case $::hardwaremodel {
