@@ -21,19 +21,21 @@ stages:
   - analysis
   - test
 
-script: "KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET"
+script: 
+  - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge $KITCHEN_TARGET
+  - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET
 
 jobs:
   include:
     - stage: analysis
       env: KITCHEN_TARGET=none
       name: "puppet parser validate"
-      script: "bundle exec puppet parser validate `find modules -name '*.pp'`"
+      script: bundle exec puppet parser validate `find modules -name '*.pp'`
     - env: KITCHEN_TARGET=none
       name: "puppet lint"
-      script: "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
+      script: bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`
     - env: KITCHEN_TARGET=none
       name: "r10k puppetfile install"
-      script: "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
+      script: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
 
 
