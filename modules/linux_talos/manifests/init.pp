@@ -18,7 +18,11 @@ class linux_talos () {
       # # required for the 32-bit reftests per :ahal, bug 837268
       include linux_packages::ia32libs
 
-      # setup sound
+      # setup sound modules
+      # this provides lsmod and modprobe (maybe only missing on VM's?)
+      package { 'kmod' :
+          ensure => latest
+      }
       kernelmodule {
         'snd_aloop':
           packages => ['libasound2'];
