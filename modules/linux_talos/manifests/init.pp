@@ -21,9 +21,14 @@ class linux_talos () {
       include linux_packages::ia32libs
 
       # setup sound modules
+      # TODO: pull these two packages out and contain them in the kernelmodule defined type?
       # this provides lsmod and modprobe (maybe only missing on VM's?)
       package { 'kmod' :
           ensure => latest
+      }
+      # modprobe fails without this
+      package { 'linux-generic' :
+        ensure => latest
       }
       kernelmodule {
         # TODO: is libasound2 needed? isn't pulse default now?
@@ -33,10 +38,8 @@ class linux_talos () {
           packages => ['v4l2loopback-dkms'];
       }
 
-      # TODO: all below
+      # TODO: from build-puppet. needed?
       # # Ubuntu specific packages
-      # include tweaks::cron
-      # include tweaks::resolvconf
       # case $::hardwaremodel {
       #   # We only run Android x86 emulator kvm jobs on
       #   # 64-bit host machines
