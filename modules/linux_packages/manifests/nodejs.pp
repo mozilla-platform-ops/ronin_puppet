@@ -14,11 +14,6 @@ class linux_packages::nodejs {
               ensure => absent,
               before => Package['nodejs'];
           }
-          file {
-            '/usr/bin/node':
-              ensure => link,
-              target => '/usr/bin/nodejs';
-          }
         }
         default: {
           fail("Ubuntu ${::operatingsystemrelease} is not supported")
