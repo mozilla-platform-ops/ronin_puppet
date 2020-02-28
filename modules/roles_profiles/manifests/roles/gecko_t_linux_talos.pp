@@ -14,7 +14,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::gui
     include ::roles_profiles::profiles::google_chrome
-    # TODO: install talos stuff in below
+    # talos is included in below
     include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
 
     # nrpe and checks
