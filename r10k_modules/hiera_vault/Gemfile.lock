@@ -133,7 +133,7 @@ GEM
       rspec-puppet (~> 2.0)
     rainbow (2.2.2)
       rake
-    rake (12.3.2)
+    rake (12.3.3)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
