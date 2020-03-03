@@ -10,7 +10,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             $ext_pkg_src_loc     = lookup('windows.taskcluster.relops_s3')
 
             $generic_worker_dir  = lookup('windows.dir.generic_worker')
-            $gw_name             = lookup('win_worker.generic_worker.name')
+            $gw_name             = lookup('win-worker.generic_worker.name')
             $desired_gw_version  = lookup('win-worker.generic_worker.exe_version')
 
             $worker_runner_dir   = lookup('windows.dir.worker_runner')
