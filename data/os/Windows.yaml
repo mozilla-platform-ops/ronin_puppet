@@ -35,6 +35,7 @@ windows:
     wstaudience: "firefoxcitc"
     wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
     package_source: "https://github.com/taskcluster/generic-worker/releases/download"
+    relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
 
   # Windows KMS
   kms:

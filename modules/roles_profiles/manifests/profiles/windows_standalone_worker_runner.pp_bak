@@ -7,10 +7,56 @@ class roles_profiles::profiles::windows_worker_runner {
     case $::operatingsystem {
         'Windows': {
 
-            class { 'win_taskcluster':
-                $generic_worker_dir => lookup('windows.dir.generic_worker'),
+            $ext_pkg_src_loc     = lookup('windows.taskcluster.relops_s3')
+
+            $generic_worker_dir  = lookup('windows.dir.generic_worker')
+            $gw_name             = lookup('win_worker.generic_worker.name')
+            $desired_gw_version  = lookup('win-worker.generic_worker.exe_version')
+
+            $worker_runner_dir   = lookup('windows.dir.worker_runner')
+            $desired_rnr_version = lookup('win-worker.taskcluster.worker_runner_version')
+
+            class { 'win_taskcluster::generic_worker' :
+                generic_worker_dir => $generic_worker_dir,
+                desired_gw_version => $desired_gw_version,
+                current_gw_version => $facts['custom_win_genericworker_version'],
+                gw_exe_source      => "${ext_pkg_src_loc}/${gw_name}-${desired_gw_version}.exe"
+            }
+
+            class { 'win_taskcluster::worker_runner':
+                worker_runner_dir      = $worker_runner_dir,
+                desired_runner_version = $desired_rnr_version,
+                currnet_runner_version = $facts['custom_win_runner_version'],
+                runner_exe_source      = "${ext_pkg_src_loc}/start-runner-${desired_rnr_version}.exe",
+            }
+
+            class { 'win_worker_runner':
+                # Set standard directories
+                $generic_worker_dir => $generic_worker_dir,
                 $worker_runner_dir  => lookup('windows.dir.worker_runner'),
-                $nssm_dir           => lookup('windows.dir.nssm'),:wq
+                $nssm_dir           => lookup('windows.dir.nssm'),
+                # Needed file versions
+                $gw_version         => lookup('win-worker.generic_worker.exe_version'),
+                $runner_version     => lookup('win-worker.taskcluster.worker_runner_version'),
+                $proxy_version      => lookup('win-worker.taskcluster.proxy_version'),
+                $livelog_version    => lookup('win-worker.taskcluster.livelog_exe'),
+                # Runner yaml contents
+            }
+
+            class { 'win_taskcluster::runner_yaml'
+                access_taken => lookup('taskcluster_access_token'),
+                provider_type => standalone,
+                root_url => lookup('windows.taskcluster.root_url'),
+                clinetID => lookup('win_worker.generic_worker.client_id)
+                worker_pool_id =>
+                worker_group =>
+                worker_id =>
+                implementation => generic-worker,
+                path           => "${generic_worker_dir}\\generic-worker.exe",
+                protocol_pipe  => '\\.\pipe\generic-worker',
+                config_path    => "${generic_worker_dir}\\config.yaml"
+            }
+
 
             # Installation data
             $gw_exe_version           = lookup('win-worker.generic_worker.exe_version')

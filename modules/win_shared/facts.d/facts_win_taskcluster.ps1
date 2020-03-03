@@ -3,6 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 $gw_file     = "$env:systemdrive\generic-worker\generic-worker.exe"
+$scratch_file = "$ENV:WINDIR\temp\ver.txt"
+$runner_file = "$env:systemdrive\worker-runner\start-worker.exe"
 
 # Generic-worker
 
@@ -20,11 +22,22 @@ write-host "custom_win_genericworker_service=$gw_service"
 # There is need to drop what is is writen to stdout and selct the version
 # out of the remaining string.
 if (Test-Path $gw_file) {
-	$gw_version = [regex]::match((& $gw_file --version 2> null), '^generic-worker (\d+\.\d+\.\d+) \[ revision: ([^ ]*) \]$').Groups[1].Value
+    cmd /c $gw_file --version > $scratch_file
+    $gw_version = (select-string -Path $scratch_file -Pattern "\d+\.\d+\.\d+"| % { $_.Matches } | % { $_.Value })
+    Remove-Item -Path $scratch_file -Force
 } else {
     $gw_version = 0.0
 }
 write-host "custom_win_genericworker_version=$gw_version"
+
+if (Test-Path $runner_file) {
+	cmd /c $runner_file --version > $scratch_file
+	$runner_version = (select-string -Path $scratch_file -Pattern "\d+\.\d+\.\d+"| % { $_.Matches } | % { $_.Value })
+	Remove-Item -Path $scratch_file -Force
+} else {
+    $runner_version = 0.0
+}
+write-host "custom_win_runner_version=$runner_version"
 
 # workerType is set during proviosning (This may only be for hardware)
 if (test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet") {
