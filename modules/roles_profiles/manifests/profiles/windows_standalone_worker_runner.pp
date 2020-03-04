@@ -34,6 +34,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             class { 'win_taskcluster::proxy':
                 generic_worker_dir    => $generic_worker_dir,
                 desired_proxy_version => $desired_proxy_version,
+                current_proxy_version => $facts['custom_win_taskcluster_proxy_version'],
                 proxy_exe_source      => "${ext_pkg_src_loc}/${proxy_name}-${desired_proxy_version}.exe",
             }
 
