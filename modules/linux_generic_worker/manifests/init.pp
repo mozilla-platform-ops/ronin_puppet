@@ -45,11 +45,11 @@ class linux_generic_worker (
     # }
 
 
-    # $livelog_certificate = "${user_homedir}/livelog.crt"
-    # $livelog_key         = "${user_homedir}/livelog.key"
-    # $task_dir            = "${user_homedir}/tasks"
-    # $caches_dir          = "${user_homedir}/caches"
-    # $downloads_dir       = "${user_homedir}/downloads"
+    $livelog_certificate = "${user_homedir}/livelog.crt"
+    $livelog_key         = "${user_homedir}/livelog.key"
+    $task_dir            = "${user_homedir}/tasks"
+    $caches_dir          = "${user_homedir}/caches"
+    $downloads_dir       = "${user_homedir}/downloads"
     $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
 
     exec {
