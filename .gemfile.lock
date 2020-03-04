@@ -32,7 +32,7 @@ GEM
     httpclient (2.8.3)
     kitchen-docker (2.9.0)
       test-kitchen (>= 1.0.0)
-    kitchen-puppet (3.5.1)
+    kitchen-puppet (3.5.2)
       librarian-puppet (>= 3.0)
       net-ssh (>= 3)
       test-kitchen (>= 1.4)
