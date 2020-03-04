@@ -10,4 +10,8 @@ describe file('/etc/generic-worker.config') do
   it { should exist }
 end
 
+describe file('/usr/local/share/generic-worker/bugzilla-utils.sh') do
+  it { should exist }
+end
+
 # TODO: check for tc-proxy, tc-w-r, liveproxy, etc
