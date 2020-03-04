@@ -25,8 +25,7 @@ Vagrant mounts this directory at /vagrant.
 
 ```
 gem install bundler
-bundle install --gemfile .gemfile
-# `bundle binstubs GEM` will install a gem's bins into bin/ 
+bundle install  ## .bundle/config sets the gemfile to .gemfile
 vagrant up bionic-bare
 vagrant ssh bionic-bare
 sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
@@ -34,9 +33,16 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 
 ### kitchen-puppet
 
-kitchen-puppet provides infrastructure to automate running convergence and serverspec tests for each role.
+[kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to automate running convergence and serverspec tests for each role.
 
-Uses [kitchen-puppet](https://github.com/neillturner/kitchen-puppet).
+The `.kitchen.yml` config uses Vagrant and virtualBox, while the `.kitchen.docker.yml` config uses Docker.
+- Docker is the only way we can test on Travis.
+- Vagrant and virtualBox are more realistic testing environments. Some tests don't work with Docker.
+- Docker is faster?
+
+[serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
+
+#### converging and running tests
 
 ```
 # install ruby via homebrew or other means
@@ -62,13 +68,9 @@ bundle install
 ./bin/kitchen login linux
 ```
 
-New test suites can be added in `.kitchen.yaml`.
-
-[serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
-
 #### creating a new suite
 
-1. Edit `.kitchen.yml`. Set the appropriate details.
+1. Edit `.kitchen.yml` and `.kitchen.docker.yml`. Set the appropriate details.
 1. Create a new manifest dir for the suite.
 
 	```
