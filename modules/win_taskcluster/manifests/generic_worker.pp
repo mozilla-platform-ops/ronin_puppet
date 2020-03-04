@@ -9,7 +9,7 @@ class win_taskcluster::generic_worker (
     String $gw_exe_source
 ) {
 
-    $gw_exe_path = "${generic_worker_dir}\\generic_worker.exe"
+    $gw_exe_path = "${generic_worker_dir}\\generic-worker.exe"
 
     if ($current_gw_version != $desired_gw_version) {
         exec { 'purge_old_nonservice_gw_exe':
