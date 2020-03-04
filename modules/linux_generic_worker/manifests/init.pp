@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # TODO:
-# - switch to loading from s3
 # - apache proxy setup?
 # - control bug / bugzilla setup?
 
