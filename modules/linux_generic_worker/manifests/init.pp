@@ -39,11 +39,10 @@ class linux_generic_worker (
         quarantine_worker_sha256  => $quarantine_worker_sha256
     }
 
-    # class { 'generic_worker::control_bug':
-    #     user_homedir     => $user_homedir,
-    #     bugzilla_api_key => $bugzilla_api_key,
-    # }
-
+    class { 'generic_worker::control_bug':
+        user_homedir     => $user_homedir,
+        bugzilla_api_key => $bugzilla_api_key,
+    }
 
     $livelog_certificate = "${user_homedir}/livelog.crt"
     $livelog_key         = "${user_homedir}/livelog.key"

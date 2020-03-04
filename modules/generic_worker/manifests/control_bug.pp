@@ -15,7 +15,7 @@ class generic_worker::control_bug (
     $log_file = '/var/log/system.log'
 
     file {
-        default: * => $::shared::file_defaults;
+        # default: * => $::shared::file_defaults;
 
         '/usr/local/share/generic-worker':
             ensure => directory;
