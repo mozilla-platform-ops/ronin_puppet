@@ -4,7 +4,7 @@
 
 # This class provides a utility to the worker,
 # to enable it to raise a Bugzilla bug against itself, if it considers that it is in a bad state.
-class generic_worker::control_bug (
+class linux_generic_worker::control_bug (
     String $user_homedir,
     String $bugzilla_api_key,
     String $bugzilla_url = 'https://bugzilla.mozilla.org'
