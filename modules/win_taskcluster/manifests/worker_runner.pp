@@ -11,7 +11,7 @@ class win_taskcluster::worker_runner (
 
     require win_packages::nssm
 
-    $runner_exe_path = "${worker_runner_dir}\\start-runner.exe"
+    $runner_exe_path = "${worker_runner_dir}\\start-worker.exe"
 
     if ($current_runner_version != $desired_runner_version) {
         exec { 'purge_old_gw_exe':
