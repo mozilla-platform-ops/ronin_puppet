@@ -25,7 +25,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             class { 'win_taskcluster::worker_runner':
                 worker_runner_dir      => $worker_runner_dir,
                 desired_runner_version => $desired_rnr_version,
-                currnet_runner_version => $facts['custom_win_runner_version'],
+                current_runner_version => $facts['custom_win_runner_version'],
                 runner_exe_source      => "${ext_pkg_src_loc}/start-runner-${desired_rnr_version}.exe",
             }
         }
