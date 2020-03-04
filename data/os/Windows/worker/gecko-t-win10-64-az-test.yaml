@@ -14,7 +14,9 @@ win-worker:
 
   taskcluster:
     worker_runner_version: '1.0.2'
-    proxy_version: '5.1.0'
+    proxy:
+        name: 'taskcluster-proxy-windows-amd64'
+        version: '5.1.0'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
     livelog_exe: 'livelog-windows-amd64-1.1.0.exe'
