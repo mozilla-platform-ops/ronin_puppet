@@ -39,7 +39,7 @@ automate running convergence and serverspec tests for each role.
 The `.kitchen.yml` config uses Vagrant and virtualBox, while the `.kitchen.docker.yml` config uses Docker.
 - Docker is the only way we can test on Travis.
 - Some tests don't work with Docker (kernel module tests).
-- Docker is faster?
+- Docker is faster (~1 minute faster on a converge from a new image).
 
 [serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
 
