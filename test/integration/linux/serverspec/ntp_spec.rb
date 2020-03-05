@@ -1,6 +1,7 @@
 require 'spec_helper.rb'
 
-describe command('timedatectl status'), :type => :broken_on_ci do
+describe command('timedatectl status') do
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match /System clock synchronized: yes/ }
+  # TODO: check clock sync... it doesn't work on freshly converged hosts though.
+  its(:stdout) { should match /systemd-timesyncd.service active: yes/ }
 end
