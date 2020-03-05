@@ -19,6 +19,10 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
             $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
 
+            # Livelog does not have a version flag
+            # Locking the version file name
+            $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
+
             class { 'win_taskcluster::generic_worker' :
                 generic_worker_dir => $generic_worker_dir,
                 desired_gw_version => $desired_gw_version,
@@ -37,7 +41,10 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
                 current_proxy_version => $facts['custom_win_taskcluster_proxy_version'],
                 proxy_exe_source      => "${ext_pkg_src_loc}/${proxy_name}-${desired_proxy_version}.exe",
             }
-
+            class { 'win_taskcluster::livelog':
+                generic_worker_dir => $generic_worker_dir,
+                livelog_exe_source => "${ext_pkg_src_loc}/${livelog_file}",
+            }
         }
         default: {
             fail("${::operatingsystem} not supported")
