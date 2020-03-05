@@ -33,11 +33,13 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 
 ### kitchen-puppet
 
-[kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to automate running convergence and serverspec tests for each role.
+[kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to
+automate running convergence and serverspec tests for each role.
 
 The `.kitchen.yml` config uses Vagrant and virtualBox, while the `.kitchen.docker.yml` config uses Docker.
 - Docker is the only way we can test on Travis.
-- Vagrant and virtualBox are more realistic testing environments. Some tests don't work with Docker.
+- Some tests don't work with Docker.
+  - virtualBox hosts are more like hardware Ubuntu hosts (startup services, kernel modules).
 - Docker is faster?
 
 [serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
@@ -91,6 +93,15 @@ bundle install
 	```
 	include roles_profiles::roles::your_favorite_role
 	```
-1. (optional) Write spec tests.
+
+1. (optional) Write spec tests. 
+
+    Convergence is somewhat tolerant of failures. Write tests to ensure that the
+    system is in the desired state. Tests help ensure that refactoring doesn't
+    break things also.
 
 	See `tests/integration`.
+
+1. Add the new suite to Travis.
+
+    See `.travis.yml`.
