@@ -62,7 +62,7 @@ GEM
       little-plugger (~> 1.1)
       multi_json (~> 1.10)
     minitar (0.9)
-    mixlib-install (3.11.26)
+    mixlib-install (3.11.28)
       mixlib-shellout
       mixlib-versioning
       thor
@@ -148,7 +148,7 @@ GEM
       rspec-its
       specinfra (~> 2.72)
     sfl (2.3)
-    specinfra (2.82.10)
+    specinfra (2.82.12)
       net-scp
       net-ssh (>= 2.7)
       net-telnet (= 0.1.1)
