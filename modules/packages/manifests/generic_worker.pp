@@ -9,8 +9,6 @@ class packages::generic_worker (
     String                      $taskcluster_proxy_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
     String                      $quarantine_worker_sha256,
-    Optional[Pattern[/^v\d+\.\d+\.\d+$/]] $livelog_version = undef,
-    Optional[String]                      $livelog_sha256  = undef,
 ) {
 
     packages::macos_package_from_s3 { "generic-worker-darwin-amd64-${generic_worker_version}":
