@@ -10,14 +10,12 @@
   "idleTimeoutSecs": 345600,
   "instanceId": "",
   "instanceType": "",
-<% unless @livelog_secret.nil? -%>
   "livelogCertificate": "<%= @livelog_certificate %>",
   "livelogExecutable": "livelog",
   "livelogGETPort": 60023,
   "livelogKey": "<%= @livelog_key %>",
   "livelogPUTPort": 60022,
   "livelogSecret": "<%= @livelog_secret %>",
-<% end -%>
   "numberOfTasksToRun": 1,
   "privateIP": "",
   "provisionerId": "releng-hardware",
@@ -32,19 +30,13 @@
   "shutdownMachineOnInternalError": false,
   "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
   "taskclusterProxyPort": 8080,
-<% if @generic_worker_version[0,3] == "v13" -%>
   "openpgpSigningKeyLocation": "<%= @opengpg_signing_key %>",
-<% end -%>
   "ed25519SigningKeyLocation": "<%= @ed25519_signing_key %>",
   "subdomain": "taskcluster-worker.net",
   "tasksDir": "<%= @task_dir %>",
   "workerGroup": "<%= @worker_group %>",
   "workerId": "<%= @hostname %>",
   "workerType": "<%= @worker_type %>",
-<% unless @generic_worker_version[0,3] == "v13" -%>
-  "wstAudience": "taskcluster-net",
-  "wstServerURL": "https://websocktunnel.tasks.build",
-<% end -%>
   "workerTypeMetadata": {
     "machine-setup": {
       "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.erb",

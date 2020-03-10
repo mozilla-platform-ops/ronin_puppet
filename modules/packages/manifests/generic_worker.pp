@@ -36,14 +36,4 @@ class packages::generic_worker (
         file_destination    => '/usr/local/bin/quarantine-worker',
         checksum            => $quarantine_worker_sha256,
     }
-
-    if $livelog_version != undef {
-        packages::macos_package_from_s3 { "livelog-darwin-amd64-${livelog_version}":
-            private             => false,
-            os_version_specific => true,
-            type                => 'bin',
-            file_destination    => '/usr/local/bin/livelog',
-            checksum            => $livelog_sha256,
-        }
-    }
 }
