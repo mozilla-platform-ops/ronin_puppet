@@ -12,14 +12,16 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')
             $desired_gw_version    = lookup('win-worker.generic_worker.exe_version')
+            $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
 
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
             $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner_version')
 
+
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
             $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
 
-            # Livelog does not have a version flag
+            # Livelog command does not have a version flag
             # Locking the version file name
             $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
 
@@ -28,12 +30,23 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
                 desired_gw_version => $desired_gw_version,
                 current_gw_version => $facts['custom_win_genericworker_version'],
                 gw_exe_source      => "${ext_pkg_src_loc}/${gw_name}-${desired_gw_version}.exe",
+                gw_exe_path        => $gw_exe_path,
             }
             class { 'win_taskcluster::worker_runner':
                 worker_runner_dir      => $worker_runner_dir,
                 desired_runner_version => $desired_rnr_version,
                 current_runner_version => $facts['custom_win_runner_version'],
                 runner_exe_source      => "${ext_pkg_src_loc}/start-worker-${desired_rnr_version}.exe",
+                # Yaml file data
+                provider               => 'standalone',
+                root_url               => lookup('windows.taskcluster.root_url'),
+                client_id              => lookup('win_worker.taskcluster.client_id'),
+                access_token           => lookup('taskcluster_access_token'),
+                worker_pool_id         => lookup('win_worker.taskcluster.worker_pool_id'),
+                worker_group           => lookup('win_worker.taskcluster.worker_group'),
+                worker_id              => $facts['networking']['hostname'],
+                config_dir             => $generic_worker_dir,
+                gw_exe_path            => $gw_exe_path,
             }
             class { 'win_taskcluster::proxy':
                 generic_worker_dir    => $generic_worker_dir,

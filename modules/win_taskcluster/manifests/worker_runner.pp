@@ -7,6 +7,15 @@ class win_taskcluster::worker_runner (
     String $desired_runner_version,
     String $current_runner_version,
     String $runner_exe_source,
+    String $provider,
+    $root_url = undef,
+    $client_id = undef,
+    $access_token = undef,
+    $worker_pool_id = undef,
+    $worker_group = undef,
+    $worker_id = undef,
+    $gw_exe_path = undef,
+    $config_file = undef
 ) {
 
     require win_packages::nssm
@@ -25,5 +34,13 @@ class win_taskcluster::worker_runner (
     }
     file { $runner_exe_path:
         source  => $runner_exe_source,
+    }
+    if $provider == 'standalone' {
+        file { "${worker_runner_dir}\\runner.yml":
+            content   => epp('win_taskcluster/standalone_runner.yml.epp'),
+        }
+    }
+    else {
+        warning("Unable to provide config file for ${provider} provider")
     }
 }

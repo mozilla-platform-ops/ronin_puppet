@@ -4,22 +4,20 @@ win-worker:
   # generic-worker
   generic_worker:
     # File versions
-    name: 'generic-worker-multiuser-windows-amd64'
+    name: "generic-worker-multiuser-windows-amd64"
     exe_version: '16.6.0'
-    # Gw settings
-    client_id: "azure/gecko-t/win10-64-az-test"
-    idle_timeout: 7200
-    live_log_put_port: 60022
-    provisioner_id: 'releng-hardware'
 
   taskcluster:
     worker_runner_version: '1.0.2'
     proxy:
-        name: 'taskcluster-proxy-windows-amd64'
+        name: "taskcluster-proxy-windows-amd64"
         version: '5.1.0'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
-    livelog_exe: 'livelog-windows-amd64-1.1.0.exe'
+    livelog_exe: "livelog-windows-amd64-1.1.0.exe"
+    client_id: "azure/gecko-t/win10-64-az-test"
+    worker_pool_id: "gecko-t/win10-64-az-test"
+    worker_group: "test"
 
   # Mozilla-build
   mozilla_build:
