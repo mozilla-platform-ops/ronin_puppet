@@ -45,7 +45,6 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
                 worker_pool_id         => lookup('win-worker.taskcluster.worker_pool_id'),
                 worker_group           => lookup('win-worker.taskcluster.worker_group'),
                 worker_id              => $facts['networking']['hostname'],
-                config_dir             => $generic_worker_dir,
                 gw_exe_path            => $gw_exe_path,
             }
             class { 'win_taskcluster::proxy':
