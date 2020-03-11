@@ -8,7 +8,8 @@ win-worker:
     exe_version: '16.6.0'
 
   taskcluster:
-    worker_runner_version: '1.0.2'
+    worker_runner:
+        version: '1.0.2'
     proxy:
         name: "taskcluster-proxy-windows-amd64"
         version: '5.1.0'
@@ -31,6 +32,8 @@ win-worker:
     source: "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/mozprofilerprobe.mof"
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
-    # Applications
-    vnc_msi:  "UltraVnc_1223_X64.msi"
-    vnc_name:  "UltraVnc"
+  # Applications
+  vnc_msi:  "UltraVnc_1223_X64.msi"
+  vnc_name:  "UltraVnc"
+  nssm:
+    version: '2.24'

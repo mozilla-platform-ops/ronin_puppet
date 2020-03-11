@@ -7,6 +7,15 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
     case $::operatingsystem {
         'Windows': {
 
+            $nssm_dir              = lookup('windows.dir.nssm')
+            $nssm_version          = lookup('win-worker.nssm.version')
+            if $facts['os']['architecture'] == 'x86' {
+                $arch = 'win32'
+            } else {
+                $arch = 'win64'
+            }
+            $nssm_exe              =  "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
+
             $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_s3')
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
@@ -15,8 +24,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
 
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
-            $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner_version')
-
+            $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
 
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
             $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
@@ -24,6 +32,12 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             # Livelog command does not have a version flag
             # Locking the version file name
             $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
+
+            class { 'win_packages::custom_nssm':
+                version  => $nssm_version,
+                dir      => $nssm_dir,
+                nssm_exe => $nssm_exe,
+            }
 
             class { 'win_taskcluster::generic_worker' :
                 generic_worker_dir => $generic_worker_dir,
