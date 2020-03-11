@@ -35,7 +35,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
 
             class { 'win_packages::custom_nssm':
                 version  => $nssm_version,
-                dir      => $nssm_dir,
+                nssm_dir => $nssm_dir,
                 nssm_exe => $nssm_exe,
             }
 

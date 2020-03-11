@@ -4,13 +4,13 @@
 
 class win_packages::custom_nssm (
 String $version,
-String $dir,
+String $nssm_dir,
 String $nssm_exe
 ) {
 
     win_packages::win_zip_pkg { "nssm-${version}":
         pkg         => "nssm-${version}.zip",
         creates     => $nssm_exe,
-        destination => $dir,
+        destination => $nssm_dir,
     }
 }
