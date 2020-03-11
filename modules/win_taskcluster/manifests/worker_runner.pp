@@ -18,7 +18,7 @@ class win_taskcluster::worker_runner (
     $config_file = undef
 ) {
 
-    require win_packages::nssm
+    require win_packages::custom_nssm
 
     $runner_exe_path = "${worker_runner_dir}\\start-worker.exe"
 
