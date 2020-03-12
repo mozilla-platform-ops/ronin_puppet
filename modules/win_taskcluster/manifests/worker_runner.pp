@@ -49,4 +49,58 @@ class win_taskcluster::worker_runner (
     else {
         warning("Unable to provide config file for ${provider} provider")
     }
+    exec { 'install_runner_service':
+        command => "${nssm_exe} install worker-runner ${runner_exe_path}",
+    }
+    exec { 'set_runner_app_dir':
+        command => "${nssm_exe} AppDirectory ${worker_runner_dir}",
+    }
+    exec { 'set_runner_app_params':
+        command => "${nssm_exe} AppParameters ${runner_yml}",
+    }
+    exec {'set_runner_display_name':
+        command => "${nssm_exe} DisplayName 'Worker Runner'",
+    }
+    exec {'set_runner_descritption':
+        command => "${nssm_exe} Description 'Interface between workers and Taskcluster services'",
+    }
+    exec {'set_runner_start':
+        command => "${nssm_exe} set worker-runner Start ${runner_service_start}",
+    }
+    exec {'set_runner_type':
+        command => "${nssm_exe} set worker-runner Type ${runner_service_type}",
+    }
+    exec {'set_runner_appnoconsole':
+        command => "${nssm_exe} set worker-runner AppNoConsole 1",
+    }
+    exec {'set_runner_appaffinity':
+        command => "${nssm_exe} set worker-runner AppAffinity All",
+    }
+    exec {'set_runner_appstopmethodskip':
+        command => "${nssm_exe} set worker-runner AppStopMethodSkip 0",
+    }
+    exec {'set_runner_appexit':
+        cammand => "${nssm_exe} set worker-runner AppExit ${runner_app_exit}",
+    }
+    exec {'set_runner_restart_delay':
+        command => "${nssm_exe} set worker-runner AppRestartDelay 0",
+    }
+    exec {'set_runner_stdout':
+        command => "${nssm_exe} set worker-runner AppStdout ${runner_log}",
+    }
+    exec {'set_runner_stderror':
+        command => "${nssm_exe} set worker-runner AppStderr ${runner_log}",
+    }
+    exec {'set_runner_rotate_file':
+        command => "${nssm_exe} set worker-runner AppRotateFiles 1",
+    }
+    exec {'set_runner_rotate_online':
+        command => "${nssm_exe} set worker-runner AppRotateOnline 1",
+    }
+    exec {'set_runner_rotate_seconds':
+        command => "${nssm_exe} set worker-runner AppRotateSeconds 3600",
+    }
+    exec {'set_runner_rotate_bytes':
+        command => "${nssm_exe} set worker-runner AppRotateBytes 0",
+    }
 }
