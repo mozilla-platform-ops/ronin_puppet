@@ -14,7 +14,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             } else {
                 $arch = 'win64'
             }
-            $nssm_exe              =  "${nssm_dir}\\nssm-${nssm_version}\\nssm\\${arch}\\nssm.exe"
+            $nssm_exe              =  "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
 
             $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_s3')
 
