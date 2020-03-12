@@ -27,6 +27,8 @@ class win_taskcluster::worker_runner (
 
     require win_packages::custom_nssm
 
+    $nssm_exe = "${nssm_exe} set worker-runner"
+
     if ($current_runner_version != $desired_runner_version) {
         exec { 'purge_old_gw_exe':
             command  => "remove-Item –path ${runner_exe_path}",
