@@ -21,5 +21,6 @@ class packages::python3 (
             command => "\"/Applications/Python ${version[0,3]}/Install Certificates.command\"",
             path    => ['/usr/bin', '/usr/sbin', '/bin'],
             unless  => "test -L /Library/Frameworks/Python.framework/Versions/${version[0,3]}/etc/openssl/cert.pem",
+            require =>  Packages::Macos_package_from_s3["python-${version}-macosx10.9.pkg"],
     }
 }
