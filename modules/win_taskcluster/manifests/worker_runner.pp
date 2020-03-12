@@ -80,7 +80,7 @@ class win_taskcluster::worker_runner (
         command => "${nssm_exe} set worker-runner AppStopMethodSkip 0",
     }
     exec {'set_runner_appexit':
-        cammand => "${nssm_exe} set worker-runner AppExit ${runner_app_exit}",
+        command => "${nssm_exe} set worker-runner AppExit ${runner_app_exit}",
     }
     exec {'set_runner_restart_delay':
         command => "${nssm_exe} set worker-runner AppRestartDelay 0",
