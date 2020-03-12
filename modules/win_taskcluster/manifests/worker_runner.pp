@@ -67,42 +67,42 @@ class win_taskcluster::worker_runner (
         command => "${nssm_set} Description \"Interface between workers and Taskcluster services\"",
     }
     exec {'set_runner_start':
-        command => "${nssm_set} set worker-runner Start ${runner_service_start}",
+        command => "${nssm_set} Start ${runner_service_start}",
     }
     exec {'set_runner_type':
-        command => "${nssm_set} set worker-runner Type ${runner_service_type}",
+        command => "${nssm_set} Type ${runner_service_type}",
     }
     exec {'set_runner_appnoconsole':
-        command => "${nssm_set} set worker-runner AppNoConsole 1",
+        command => "${nssm_set} AppNoConsole 1",
     }
     exec {'set_runner_appaffinity':
-        command => "${nssm_set} set worker-runner AppAffinity All",
+        command => "${nssm_set} AppAffinity All",
     }
     exec {'set_runner_appstopmethodskip':
-        command => "${nssm_set} set worker-runner AppStopMethodSkip 0",
+        command => "${nssm_set} AppStopMethodSkip 0",
     }
     exec {'set_runner_appexit':
-        command => "${nssm_set} set worker-runner AppExit ${runner_app_exit}",
+        command => "${nssm_set} AppExit ${runner_app_exit}",
     }
     exec {'set_runner_restart_delay':
-        command => "${nssm_set} set worker-runner AppRestartDelay 0",
+        command => "${nssm_set} AppRestartDelay 0",
     }
     exec {'set_runner_stdout':
-        command => "${nssm_set} set worker-runner AppStdout ${runner_log}",
+        command => "${nssm_set} AppStdout ${runner_log}",
     }
     exec {'set_runner_stderror':
-        command => "${nssm_set} set worker-runner AppStderr ${runner_log}",
+        command => "${nssm_set} AppStderr ${runner_log}",
     }
     exec {'set_runner_rotate_file':
-        command => "${nssm_set} set worker-runner AppRotateFiles 1",
+        command => "${nssm_set} AppRotateFiles 1",
     }
     exec {'set_runner_rotate_online':
-        command => "${nssm_set} set worker-runner AppRotateOnline 1",
+        command => "${nssm_set} AppRotateOnline 1",
     }
     exec {'set_runner_rotate_seconds':
-        command => "${nssm_set} set worker-runner AppRotateSeconds 3600",
+        command => "${nssm_set} AppRotateSeconds 3600",
     }
     exec {'set_runner_rotate_bytes':
-        command => "${nssm_set} set worker-runner AppRotateBytes 0",
+        command => "${nssm_set} AppRotateBytes 0",
     }
 }
