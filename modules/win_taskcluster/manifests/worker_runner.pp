@@ -62,7 +62,7 @@ class win_taskcluster::worker_runner (
         command => "${nssm_exe} DisplayName 'Worker Runner'",
     }
     exec {'set_runner_descritption':
-        command => "${nssm_exe} Description 'Interface between workers and Taskcluster services'",
+        command => "${nssm_exe} Description \"Interface between workers and Taskcluster services\"",
     }
     exec {'set_runner_start':
         command => "${nssm_exe} set worker-runner Start ${runner_service_start}",
