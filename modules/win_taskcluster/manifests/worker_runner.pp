@@ -8,6 +8,13 @@ class win_taskcluster::worker_runner (
     String $current_runner_version,
     String $runner_exe_source,
     String $provider,
+    String $runner_exe_path,
+    String $runner_yml,
+    String $runner_log,
+    String $nssm_exe,
+    String $runner_service_start = 'SERVICE_DEMAND_START',
+    String $runner_service_type = 'SERVICE_WIN32_OWN_PROCESS',
+    String $runner_app_exit = 'Default\sExit',
     $root_url = undef,
     $client_id = undef,
     $access_token = undef,
@@ -19,8 +26,6 @@ class win_taskcluster::worker_runner (
 ) {
 
     require win_packages::custom_nssm
-
-    $runner_exe_path = "${worker_runner_dir}\\start-worker.exe"
 
     if ($current_runner_version != $desired_runner_version) {
         exec { 'purge_old_gw_exe':
@@ -36,7 +41,8 @@ class win_taskcluster::worker_runner (
         source  => $runner_exe_source,
     }
     if $provider == 'standalone' {
-        file { "${worker_runner_dir}\\runner.yml":
+        file { $runner_yml:
+        #"${worker_runner_dir}\\runner.yml":
             content   => epp('win_taskcluster/standalone_runner.yml.epp'),
         }
     }

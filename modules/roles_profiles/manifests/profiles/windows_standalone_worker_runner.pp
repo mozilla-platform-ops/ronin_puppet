@@ -25,6 +25,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
 
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
             $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
+            $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
 
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
             $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
@@ -59,7 +60,12 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
                 worker_pool_id         => lookup('win-worker.taskcluster.worker_pool_id'),
                 worker_group           => lookup('win-worker.taskcluster.worker_group'),
                 worker_id              => $facts['networking']['hostname'],
+                # Runner service install data
                 gw_exe_path            => $gw_exe_path,
+                runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
+                runner_yml             => "${worker_runner_dir}\\runner.yml",
+                runner_log             => $runner_log,
+                nssm_exe               => $nssm_exe,
             }
             class { 'win_taskcluster::proxy':
                 generic_worker_dir    => $generic_worker_dir,
