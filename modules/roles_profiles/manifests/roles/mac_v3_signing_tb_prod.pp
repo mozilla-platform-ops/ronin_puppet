@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::gecko_t_osx_1014_multiuser {
+class roles_profiles::roles::mac_v3_signing_tb_prod {
 
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::ntp
@@ -18,9 +18,9 @@ class roles_profiles::roles::gecko_t_osx_1014_multiuser {
     include ::roles_profiles::profiles::hardware
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
-    include ::roles_profiles::profiles::cltbld_user
-    include ::roles_profiles::profiles::homebrew
     include ::roles_profiles::profiles::relops_users
-    include ::roles_profiles::profiles::gecko_t_osx_1014_generic_worker_multiuser
-    include ::fw::roles::osx_taskcluster_worker
+    include ::roles_profiles::profiles::signing_users
+    include ::roles_profiles::profiles::remove_bootstrap_user
+
+    include ::roles_profiles::profiles::mac_v3_signing
 }

@@ -7,7 +7,7 @@
 <% end -%>
 
 [agent]
-<% @agent_params.sort.each do |key, value| -%>
+<% @_agent_params.sort.each do |key, value| -%>
   <%= key -%> = <% if value.is_a?(String) %>"<%= value %>"<% elsif value.is_a?(Array) %><%= value.inspect %><% else %><%= value %><% end %>
 <%   end -%>
 
@@ -21,55 +21,36 @@
   write_consistency = "any"
   timeout = "120s"
 
-[[inputs.cpu]]
-  ## Whether to report per-cpu stats or not
-  percpu = true
-  ## Whether to report total system cpu stats or not
-  totalcpu = true
-  ## If true, collect raw CPU time metrics.
-  collect_cpu_time = false
-  ## If true, compute and report the sum of all non-idle CPU states.
-  report_active = false
-
-[[inputs.disk]]
-  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
-
-[[inputs.diskio]]
-
-[[inputs.mem]]
-
-[[inputs.swap]]
-
-[[inputs.system]]
-
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+<% if @_inputs -%>
+# INPUTS:
+<%   @_inputs.sort.each do | input, options | -%>
+<%     if options['plugin_type'] -%>
+[[inputs.<%= options['plugin_type'] %>]]
+<%     else -%>
+<%       if input == 'temp' and scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+# MacOS temp: (as sysctl and pmset thermal checks)
 [[inputs.exec]]
   commands = [
-    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/bin/pmset -g therm | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
   ]
-  timeout = "60s"
+  timeout = "60s"  # 5s default is too short
   data_format = "influx"
-
 [[inputs.exec]]
   commands = [
-    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)s\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
+    "/bin/bash -c \"printf \\\"thermal %sboottime=$(/usr/sbin/sysctl -n kern.boottime | cut -d' ' -f4 | cut -d',' -f1)i\\\" $(/usr/sbin/sysctl -ie machdep.xcpm.cpu_thermal_level machdep.xcpm.gpu_thermal_level machdep.xcpm.io_thermal_level | awk $'/=/{printf $1$2$3\\\",\\\"}')\""
   ]
-  timeout = "60s"
+  timeout = "60s"  # 5s default is too short
   data_format = "influx"
-<% else -%>
-[[inputs.temp]]
-
-[[inputs.hddtemp]]
+<%       else -%>
+[[inputs.<%= input %>]]
+<%       end -%>
+<%     end -%>
+<%     unless options == nil -%>
+<%       options.sort.each do | option, value | -%>
+<%         unless option == 'plugin_type' -%>
+  <%= option -%> = <% if value.is_a?(String) %>"<%= value %>"<% elsif value.is_a?(Array) %><%= value.inspect %><% else %><%= value %><% end %>
+<%         end -%>
+<%       end -%>
+<%     end -%>
+<%   end -%>
 <% end -%>
-
-[[inputs.filecount]]
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
-  directories = ["/Users/task*","/Users/cltbld"]
-<% else -%>
-  directories = ["/home/task*","/home/cltbld"]
-<% end -%>
-  tagexclude = ["directory"]
-
-[[inputs.procstat]]
-  exe = "generic-worker"
-
