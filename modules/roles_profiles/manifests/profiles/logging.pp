@@ -29,7 +29,7 @@ class roles_profiles::profiles::logging (
                 $conf_file = 'nxlog.conf'
             } elsif ($facts['custom_win_location']) == 'azure' {
                 $log_aggregator  = lookup('windows.external.papertrail')
-                $conf_file = 'azure_nxlog.conf.epp'
+                $conf_file = 'azure_nxlog.conf'
             } else {
                 # data will need to be added as could support builds out
                 $log_aggregator  = lookup('windows.external.papertrail')
