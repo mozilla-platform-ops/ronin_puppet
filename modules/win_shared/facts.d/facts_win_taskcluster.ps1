@@ -50,7 +50,7 @@ write-host "custom_win_runner_version=$runner_version"
 # Taskcluster proxy
 if (Test-Path $taskcluster_proxy_file) {
     cmd /c $taskcluster_proxy_file --version > $scratch_file 2>&1
-    $proxy_version = (select-string -Path $scratch_file -Pattern "\d+\.\d+\.\d+"| % { $_.Matches } | % { $_.Value })
+    $proxy_version = (select-string -Path $scratch_file -Pattern "\d+\.\d+\.\d+"| % { $_.Matches } | % { $_.Value } | sort | get-unique)
     Remove-Item -Path $scratch_file -Force
 } else {
     $proxy_version = 0.0
