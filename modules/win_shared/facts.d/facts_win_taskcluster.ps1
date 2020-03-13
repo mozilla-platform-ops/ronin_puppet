@@ -8,15 +8,13 @@ $runner_file = "$env:systemdrive\worker-runner\start-worker.exe"
 $taskcluster_proxy_file  = "$env:systemdrive\generic-worker\taskcluster-proxy.exe"
 
 # Generic-worker
+$gw_service = 'Generic Worker'
 
-$serviceName = 'Generic Worker'
-
-If (Get-Service $serviceName -ErrorAction SilentlyContinue) {
+If (Get-Service $gw_service -ErrorAction SilentlyContinue) {
 	$gw_service = "present"
 } Else {
 	$gw_service = "missing"
 }
-
 write-host "custom_win_genericworker_service=$gw_service"
 
 # The command will typically write out multiple strings including stdout.
@@ -31,6 +29,15 @@ if (Test-Path $gw_file) {
 }
 write-host "custom_win_genericworker_version=$gw_version"
 
+# worker-runner
+$runner_service = 'worker-runner'
+If (Get-Service $runner_service -ErrorAction SilentlyContinue) {
+     $runner_service = "present"
+} Else {
+$runner_service = "missing"
+}
+write-host "custom_win_runner_service=$runner_service"
+
 if (Test-Path $runner_file) {
 	cmd /c $runner_file --version > $scratch_file
 	$runner_version = (select-string -Path $scratch_file -Pattern "\d+\.\d+\.\d+"| % { $_.Matches } | % { $_.Value })
@@ -40,14 +47,16 @@ if (Test-Path $runner_file) {
 }
 write-host "custom_win_runner_version=$runner_version"
 
-if (Test-Path $runner_file) {
-    cmd /c $taskcluster_proxy_file --version > $scratch_file
+# Taskcluster proxy
+if (Test-Path $taskcluster_proxy_file) {
+    cmd /c $taskcluster_proxy_file --version > $scratch_file 2>&1
     $proxy_version = (select-string -Path $scratch_file -Pattern "\d+\.\d+\.\d+"| % { $_.Matches } | % { $_.Value })
     Remove-Item -Path $scratch_file -Force
 } else {
     $proxy_version = 0.0
 }
 write-host "custom_win_taskcluster_proxy_version=$proxy_version"
+
 # workerType is set during proviosning (This may only be for hardware)
 if (test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet") {
     $gw_workertype = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType

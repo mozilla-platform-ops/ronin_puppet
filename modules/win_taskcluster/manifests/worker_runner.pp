@@ -61,7 +61,7 @@ class win_taskcluster::worker_runner (
         command => "${nssm_set} AppParameters ${runner_yml}",
     }
     exec {'set_runner_display_name':
-        command => "${nssm_set} DisplayName 'Worker Runner'",
+        command => "${nssm_set} DisplayName \"Worker Runner\"",
     }
     exec {'set_runner_descritption':
         command => "${nssm_set} Description \"Interface between workers and Taskcluster services\"",
