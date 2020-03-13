@@ -27,6 +27,9 @@ class roles_profiles::profiles::logging (
             if ($facts['custom_win_location'] == 'datacenter') {
                 $log_aggregator  = lookup('windows.datacenter.log_aggregator')
                 $conf_file = 'nxlog.conf'
+            } elsif ($facts['custom_win_location']) == 'azure' {
+                $log_aggregator  = lookup('windows.external.papertrail')
+                $conf_file = 'azure_nxlog.conf.epp'
             } else {
                 # data will need to be added as could support builds out
                 $log_aggregator  = lookup('windows.external.papertrail')
