@@ -18,4 +18,3 @@ class packages::fluent_plugin_google_cloud {
             require => Class['packages::td_agent'];
     }
 }
-
