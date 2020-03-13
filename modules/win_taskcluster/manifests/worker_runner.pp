@@ -47,6 +47,13 @@ class win_taskcluster::worker_runner (
         #"${worker_runner_dir}\\runner.yml":
             content   => epp('win_taskcluster/standalone_runner.yml.epp'),
         }
+        # Worker-runner/Go need the config file to have UNIX-style line endings
+        # As is the file generated will have CRLF endings
+        exec { 'convert_runner_yml':
+            command     => "(Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
+            subscribe   => File($runner_yml),
+            refreshonly => true,
+        }
     }
     else {
         warning("Unable to provide config file for ${provider} provider")
