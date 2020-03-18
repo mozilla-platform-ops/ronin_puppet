@@ -28,6 +28,7 @@ class win_taskcluster::worker_runner (
     require win_packages::custom_nssm
 
     $nssm_set = "${nssm_exe} set worker-runner"
+    $powershell = "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe"
 
     if ($current_runner_version != $desired_runner_version) {
         exec { 'purge_old_gw_exe':
@@ -50,8 +51,9 @@ class win_taskcluster::worker_runner (
         # Worker-runner/Go need the config file to have UNIX-style line endings
         # As is the file generated will have CRLF endings
         exec { 'convert_runner_yml':
-            command => "(Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
-            require => File[$runner_yml],
+            command  => " (Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
+            require  => File[$runner_yml],
+            provider => powershell,
             #refreshonly => true,
         }
     }
