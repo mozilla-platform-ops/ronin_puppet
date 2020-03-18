@@ -49,11 +49,11 @@ class win_taskcluster::worker_runner (
         }
         # Worker-runner/Go need the config file to have UNIX-style line endings
         # As is the file generated will have CRLF endings
-        # exec { 'convert_runner_yml':
-        #    command => "(Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
-        #    require => File[$runner_yml],
+        exec { 'convert_runner_yml':
+            command => "(Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
+            require => File[$runner_yml],
             #refreshonly => true,
-        #}
+        }
     }
     else {
         warning("Unable to provide config file for ${provider} provider")
