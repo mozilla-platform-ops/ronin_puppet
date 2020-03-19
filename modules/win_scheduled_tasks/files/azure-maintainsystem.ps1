@@ -280,6 +280,7 @@ If ($bootstrap_stage -eq 'complete') {
     Puppet-Run
   }
   StartWorkerRunner
+  Exit-PSSession
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   Exit-PSSession
