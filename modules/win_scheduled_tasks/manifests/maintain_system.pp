@@ -3,14 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_scheduled_tasks::maintain_system (
-    String $script
+    String $startup_script
 ) {
 
     $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
 
     if $::operatingsystem == 'Windows' {
         file { $maintainsystem_ps1:
-            content => file("win_scheduled_tasks/${script}"),
+            content => file("win_scheduled_tasks/${startup_script}"),
         }
         # Resource from puppetlabs-scheduled_task
         scheduled_task { 'maintain_system':
