@@ -7,7 +7,7 @@ class roles_profiles::roles::geckotwin1064azure {
     # Worker
     ## Generic worker
     # include roles_profiles::profiles::windows_custom_config_generic_worker
-    include roles_profiles::profiles::windows_standalone_worker_runner
+    include roles_profiles::profiles::windows_worker_runner
 
     ## Mozilla Build
     include roles_profiles::profiles::mozilla_build
