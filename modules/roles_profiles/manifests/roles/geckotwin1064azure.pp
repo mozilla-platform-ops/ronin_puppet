@@ -7,6 +7,7 @@ class roles_profiles::roles::geckotwin1064azure {
     # Worker
     ## Generic worker
     # include roles_profiles::profiles::windows_custom_config_generic_worker
+    include roles_profiles::profiles::windows_standalone_worker_runner
 
     ## Mozilla Build
     include roles_profiles::profiles::mozilla_build
@@ -72,6 +73,6 @@ class roles_profiles::roles::geckotwin1064azure {
     }
 
     ## Schedule Tasks
-    include win_scheduled_tasks::maintain_system
+    include roles_profiles::profiles::scheduled_tasks
 
 }

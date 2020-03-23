@@ -15,6 +15,7 @@ class win_taskcluster::worker_runner (
     String $runner_service_start = 'SERVICE_DEMAND_START',
     String $runner_service_type = 'SERVICE_WIN32_OWN_PROCESS',
     String $runner_app_exit = 'Default Exit',
+    $implementation = undef,
     $root_url = undef,
     $client_id = undef,
     $access_token = undef,
