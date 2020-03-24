@@ -46,21 +46,23 @@ class win_taskcluster::worker_runner (
     }
     if $provider == 'standalone' {
         file { $runner_yml:
-        #"${worker_runner_dir}\\runner.yml":
             content   => epp('win_taskcluster/standalone_runner.yml.epp'),
-        }
-        # Worker-runner/Go need the config file to have UNIX-style line endings
-        # As is the file generated will have CRLF endings
-        exec { 'convert_runner_yml':
-            command  => " (Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
-            require  => File[$runner_yml],
-            provider => powershell,
-            #refreshonly => true,
         }
     }
     else {
-        warning("Unable to provide config file for ${provider} provider")
+        file { $runner_yml:
+            content   => epp('win_taskcluster/standalone_runner.yml.epp'),
+        }
     }
+    # Worker-runner/Go need the config file to have UNIX-style line endings
+    # As is the file generated will have CRLF endings
+    exec { 'convert_runner_yml':
+        command     => " (Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
+        require     => File[$runner_yml],
+        provider    => powershell,
+        refreshonly => true,
+    }
+
     if $facts['custom_win_runner_service'] != 'present' {
         exec { 'install_runner_service':
             command => "${nssm_exe} install worker-runner ${runner_exe_path}",
