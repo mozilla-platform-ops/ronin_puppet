@@ -58,7 +58,7 @@ class win_taskcluster::worker_runner (
     # As is the file generated will have CRLF endings
     exec { 'convert_runner_yml':
         command     => " (Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
-        require     => File[$runner_yml],
+        subscribe   => File[$runner_yml],
         provider    => powershell,
         refreshonly => true,
     }
