@@ -53,8 +53,8 @@ class roles_profiles::profiles::windows_worker_runner {
                 current_runner_version => $facts['custom_win_runner_version'],
                 runner_exe_source      => "${ext_pkg_src_loc}/start-worker-${desired_rnr_version}.exe",
                 # Yaml file data
-                provider               => lookup('win.worker.worker_runner.provider'),
-                implementation         => lookup('win.worker.worker_runner.implementation'),
+                provider               => lookup('win.worker.taskcluster.worker_runner.provider'),
+                implementation         => lookup('win.worker.taskcluster.worker_runner.implementation'),
                 # Runner service install data
                 gw_exe_path            => $gw_exe_path,
                 runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
