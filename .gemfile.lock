@@ -30,7 +30,7 @@ GEM
     hiera (3.6.0)
     hocon (1.3.0)
     httpclient (2.8.3)
-    kitchen-docker (2.9.0)
+    kitchen-docker (2.10.0)
       test-kitchen (>= 1.0.0)
     kitchen-puppet (3.5.2)
       librarian-puppet (>= 3.0)
