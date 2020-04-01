@@ -4,7 +4,6 @@
 
 # TODO:
 # - apache proxy setup?
-# - control bug / bugzilla setup?
 
 class linux_generic_worker (
     String $taskcluster_client_id,
