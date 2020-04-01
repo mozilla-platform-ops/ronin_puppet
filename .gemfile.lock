@@ -12,7 +12,7 @@ GEM
     facter (2.5.7)
     faraday (0.17.3)
       multipart-post (>= 1.2, < 3)
-    faraday_middleware (0.13.1)
+    faraday_middleware (0.14.0)
       faraday (>= 0.7.4, < 1.0)
     fast_gettext (1.1.2)
     ffi (1.12.2)
@@ -100,9 +100,9 @@ GEM
     puppet-syntax (2.6.1)
       puppet (>= 5)
       rake
-    puppet_forge (2.3.3)
+    puppet_forge (2.3.4)
       faraday (>= 0.9.0, < 0.18.0, != 0.13.1)
-      faraday_middleware (>= 0.9.0, < 0.14.0)
+      faraday_middleware (>= 0.9.0, < 0.15.0)
       gettext-setup (~> 0.11)
       minitar
       semantic_puppet (~> 1.0)
@@ -150,7 +150,7 @@ GEM
       rspec-its
       specinfra (~> 2.72)
     sfl (2.3)
-    specinfra (2.82.12)
+    specinfra (2.82.13)
       net-scp
       net-ssh (>= 2.7)
       net-telnet (= 0.1.1)
