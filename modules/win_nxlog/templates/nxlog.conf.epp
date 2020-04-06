@@ -81,7 +81,7 @@ LogLevel  DEBUG
   File 'C:/worker-runner/*.log'
   SavePos TRUE
   ReadFromLast TRUE
-  InputType multiline-wr-datetime-header
+  InputType multiline-gw-datetime-header
   Exec if $raw_event =~ /^(\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d)\s(.*)/s { $EventTime = parsedate($1); $Message = $2; }
   Exec $SourceName = 'worker-runner';
 </Input>
