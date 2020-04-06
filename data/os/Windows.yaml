@@ -38,6 +38,7 @@ windows:
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
 
   # Windows KMS
+  # KMS keys are public available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
   kms:
     key:
       microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
