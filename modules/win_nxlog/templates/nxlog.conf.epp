@@ -5,7 +5,6 @@ CacheDir  %ROOT%\data
 Pidfile   %ROOT%\data\nxlog.pid
 SpoolDir  %ROOT%\data
 LogFile   %ROOT%\data\nxlog.log
-LogLevel  DEBUG
 
 <Extension syslog>
   Module xm_syslog
