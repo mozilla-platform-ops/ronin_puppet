@@ -146,6 +146,10 @@ LogLevel  DEBUG
   Path generic_worker_service_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
+<Route worker_runner_log_<%= $facts[custom_win_mozspace] %>_aggregator>
+  Path worker_runner_log => <%= $facts[custom_win_mozspace] %>_aggregator
+</Route>
+
 <Route bootstrap_puppet_log_<%= $facts[custom_win_mozspace] %>_aggregator>
   Path bootstrap_puppet_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
