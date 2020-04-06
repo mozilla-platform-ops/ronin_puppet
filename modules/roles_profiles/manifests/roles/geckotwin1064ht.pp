@@ -77,6 +77,6 @@ class roles_profiles::roles::geckotwin1064ht {
     }
 
     ## Schedule Tasks
-    include win_scheduled_tasks::maintain_system
+    include roles_profiles::profiles::scheduled_tasks
 
 }
