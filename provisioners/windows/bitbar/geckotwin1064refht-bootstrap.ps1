@@ -99,7 +99,7 @@ function Install-BootstrapModule {
 $workerType = 'gecko-t-win10-64-ref-ht'
 $src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
-$src_Revision = 'cloud_windows'
+$src_Revision = 'master'
 $image_provisioner = 'bitbar'
 
 # Ensuring scripts can run uninhibited
