@@ -8,7 +8,7 @@ win-worker:
     tc_proxy_version: '5.1.0'
     livelog_version: '1.1.0'
     # Gw settings
-    client_id: "project/releng/generic-worker/datacenter-gecko-t-win10-64-ht"
+    client_id: "project/releng/generic-worker/datacenter-gecko-t-win10-64-hw"
     idle_timeout: 7200
     live_log_put_port: 60022
     provisioner_id: 'releng-hardware'
