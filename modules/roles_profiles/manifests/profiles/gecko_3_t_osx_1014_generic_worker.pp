@@ -6,7 +6,7 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
 
     require roles_profiles::profiles::cltbld_user
 
-    $worker_type  = 'gecko-3-t-osx-1014'
+    $worker_type  = 'gecko-3-t-osx-1014-beta'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
