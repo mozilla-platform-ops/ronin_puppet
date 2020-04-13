@@ -8,7 +8,7 @@ class macos_utils::uninstall_homebrew {
         environment => ['HOME=/tmp'],  # workaround brew uninstaller expecting HOME
         path      => '/usr/bin:/usr/sbin:/bin:/usr/local/bin/',
         command   => '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"',
-        onlyif    => 'test -e /usr/local/Homebrew',
+        onlyif    => 'test -e /usr/local/bin/brew',
         logoutput => true,
     }
 }
