@@ -6,7 +6,7 @@ class macos_utils::uninstall_homebrew {
 
     exec { 'run_homebrew_uninstaller':
         path      => '/usr/bin:/usr/sbin:/bin',
-        command   => 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"',
+        command   => '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"',
         onlyif    => 'test -e /usr/local/Homebrew',
         logoutput => true,
     }
