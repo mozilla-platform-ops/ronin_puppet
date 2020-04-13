@@ -20,10 +20,10 @@ class talos (
                   '/builds/git-shared',
                   '/builds/hg-shared',
                   '/builds/tooltool_cache' ]:
-                    ensure  => directory,
-                    owner   => $user,
-                    group   => 'staff',
-                    mode    => '0755',
+                    ensure => directory,
+                    owner  => $user,
+                    group  => 'staff',
+                    mode   => '0755',
             }
 
             $document_root = '/builds/slave/talos-data/talos'

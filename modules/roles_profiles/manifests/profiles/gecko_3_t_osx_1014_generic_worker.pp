@@ -5,7 +5,7 @@
 class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
 
     class { 'macos_utils::autologin_user':
-        user  => 'cltbld',
+        user   => 'cltbld',
         remove => true,
     }
 
@@ -23,13 +23,13 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
         'Darwin': {
 
             class { 'puppet::atboot':
-                telegraf_user     => lookup('telegraf.user'),
-                telegraf_password => lookup('telegraf.password'),
-                puppet_env        => 'dev',
-                puppet_repo       => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch     => '1561956_generic-worker_15-recover',
+                telegraf_user       => lookup('telegraf.user'),
+                telegraf_password   => lookup('telegraf.password'),
+                puppet_env          => 'dev',
+                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
+                puppet_branch       => '1561956_generic-worker_15-recover',
                 puppet_notify_email => 'dhouse@mozilla.com',
-                meta_data         => $meta_data,
+                meta_data           => $meta_data,
             }
 
             class { 'roles_profiles::profiles::logging':
