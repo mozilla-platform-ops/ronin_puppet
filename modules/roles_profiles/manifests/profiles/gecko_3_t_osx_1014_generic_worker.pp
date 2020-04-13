@@ -92,7 +92,7 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
                 livelog_version           => 'v1.1.0',
-                livelog_sha256            => 'caabc35ec26498e755863d08c4c8b79e8b041a1d11b1fc8be0909718fc81113d',
+                livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
                 user                      => 'root',
                 gw_dir                    => '/var/local/generic-worker',
             }
