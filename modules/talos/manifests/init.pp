@@ -24,7 +24,6 @@ class talos (
                     owner   => $user,
                     group   => 'staff',
                     mode    => '0755',
-                    require => User[$user],
             }
 
             $document_root = '/builds/slave/talos-data/talos'
