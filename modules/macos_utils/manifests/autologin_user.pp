@@ -5,7 +5,7 @@
 class macos_utils::autologin_user (
     String $user,
     String $kcpassword,
-    Optional[Bool] $remove = false,
+    Optional[Boolean] $remove = false,
 ) {
 
     include stdlib
