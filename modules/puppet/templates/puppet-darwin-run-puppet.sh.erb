@@ -114,12 +114,10 @@ function update_puppet {
 
     # Fetch and checkout branch
     git fetch --all --prune || return 1
-    # If it fails (maybe different repo:branch used before),
-    # re-add with the current repo and try again.
     git checkout --force "origin/${PUPPET_BRANCH}" \
       || (
-      git remote rm previous
-      git remote rename origin previous
+      git remote rm upstream
+      git remote rename origin upstream
       git remote add origin "${PUPPET_REPO}"
       git checkout --force "origin/${PUPPET_BRANCH}"
     ) || return 1

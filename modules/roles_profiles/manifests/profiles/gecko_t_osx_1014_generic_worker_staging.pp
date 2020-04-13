@@ -4,6 +4,8 @@
 
 class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
+    require roles_profiles::profiles::cltbld_user
+
     $worker_type  = 'gecko-t-osx-1014-staging'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
@@ -20,10 +22,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
-                puppet_env        => 'dev',
-                puppet_repo       => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch     => '1561956_generic-worker_15-recover',
-                puppet_notify_email => 'dhouse@mozilla.com',
+                puppet_branch     => 'staging',
+                # Note the camelCase key names
                 meta_data         => $meta_data,
             }
 
@@ -65,33 +65,34 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 user => 'cltbld',
             }
 
-            $taskcluster_client_id    = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_client_id')
-            $taskcluster_access_token = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker.datacenter_gecko_t_osx_1014.livelog_secret')
-            $quarantine_client_id     = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_client_id')
-            $quarantine_access_token  = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_access_token')
-            $bugzilla_api_key         = lookup('generic_worker.datacenter_gecko_t_osx_1014.bugzilla_api_key')
+            $taskcluster_client_id    = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.taskcluster_client_id')
+            $taskcluster_access_token = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.taskcluster_access_token')
+            $livelog_secret           = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.livelog_secret')
+            $quarantine_client_id     = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.quarantine_client_id')
+            $quarantine_access_token  = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.quarantine_access_token')
+            $bugzilla_api_key         = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.bugzilla_api_key')
 
             class { 'packages::zstandard':
                 version => '1.3.8',
             }
 
-            class { 'generic_worker::multiuser':
+            class { 'generic_worker':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
+                livelog_secret            => $livelog_secret,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
-                task_dir                  => '/Users',
-                generic_worker_version    => 'v16.5.2',
-                generic_worker_sha256     => '7bd47da57aae65f120d89e8d70fb0a1f66762945994e0909d31eac6d63122046',
+                quarantine_client_id      => $quarantine_client_id,
+                quarantine_access_token   => $quarantine_access_token,
+                bugzilla_api_key          => $bugzilla_api_key,
+                generic_worker_version    => 'v13.0.3',
+                generic_worker_sha256     => '6e5c1543fb3c333ca783d0a5c4e557b2b5438aada4bc23dc02402682ae4e245e',
                 taskcluster_proxy_version => 'v5.1.0',
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
-                livelog_version           => 'v1.1.0',
-                livelog_sha256            => 'caabc35ec26498e755863d08c4c8b79e8b041a1d11b1fc8be0909718fc81113d',
-                user                      => 'root',
-                gw_dir                    => '/var/local/generic-worker',
+                user                      => 'cltbld',
+                user_homedir              => '/Users/cltbld',
             }
 
             include dirs::tools

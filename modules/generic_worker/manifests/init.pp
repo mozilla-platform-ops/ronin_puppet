@@ -39,7 +39,6 @@ class generic_worker (
         bugzilla_api_key => $bugzilla_api_key,
     }
 
-    $kcpassword          = lookup('cltbld_user.kcpassword')
     $livelog_certificate = "${user_homedir}/livelog.crt"
     $livelog_key         = "${user_homedir}/livelog.key"
     $task_dir            = "${user_homedir}/tasks"
@@ -70,12 +69,6 @@ class generic_worker (
         'Darwin': {
 
             $reboot_command = '/usr/bin/sudo /sbin/reboot'
-
-            # Set user to autologin
-            class { 'macos_utils::autologin_user':
-                user       => 'cltbld',
-                kcpassword => $kcpassword,
-            }
 
             file {
                 default: * => $::shared::file_defaults;
