@@ -34,6 +34,8 @@ class roles_profiles::profiles::windows_worker_runner {
             # Locking the version file name
             $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
 
+            $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
+
             class { 'win_packages::custom_nssm':
                 version  => $nssm_version,
                 nssm_exe => $nssm_exe,
@@ -71,6 +73,9 @@ class roles_profiles::profiles::windows_worker_runner {
             class { 'win_taskcluster::livelog':
                 generic_worker_dir => $generic_worker_dir,
                 livelog_exe_source => "${ext_pkg_src_loc}/${livelog_file}",
+            }
+            class {'win_taskcluster::set_taskcluster_root_url':
+                taskcluster_root_url => $taskcluster_root_url
             }
         }
         default: {
