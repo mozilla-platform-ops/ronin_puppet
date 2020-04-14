@@ -9,7 +9,7 @@ win-worker:
 
   taskcluster:
     worker_runner:
-        version: '1.0.2'
+        version: '29.0.1'
         provider: "azure"
         implementation: "generic-worker"
     proxy:
