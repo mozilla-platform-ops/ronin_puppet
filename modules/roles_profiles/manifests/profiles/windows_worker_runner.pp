@@ -74,9 +74,6 @@ class roles_profiles::profiles::windows_worker_runner {
                 generic_worker_dir => $generic_worker_dir,
                 livelog_exe_source => "${ext_pkg_src_loc}/${livelog_file}",
             }
-            class {'win_taskcluster::set_taskcluster_root_url':
-                taskcluster_root_url => $taskcluster_root_url
-            }
         }
         default: {
             fail("${::operatingsystem} not supported")
