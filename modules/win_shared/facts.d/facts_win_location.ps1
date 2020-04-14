@@ -8,7 +8,7 @@ if ($NVDomain -like "*bitbar*") {
 	$location = "aws"
 } elseif ($DhcpDomain -like "*cloudapp.net") {
     $location = "azure"
-} elseif ($NVDomain -like "*microsoft*") {
+} elseif ($DhcpDomain -like "*microsoft*") {
     $location = "azure"
 } else {
 	$location = "datacenter"
