@@ -31,6 +31,7 @@ vagrant ssh bionic-bare
 sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 ```
 
+
 ### kitchen-puppet
 
 [kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to
