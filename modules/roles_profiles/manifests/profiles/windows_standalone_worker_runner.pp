@@ -40,7 +40,7 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
                 nssm_dir => $nssm_dir,
             }
 
-            class { 'win_taskcluster::generic_worker' :
+            class { 'win_taskcluster::generic_worker':
                 generic_worker_dir => $generic_worker_dir,
                 desired_gw_version => $desired_gw_version,
                 current_gw_version => $facts['custom_win_genericworker_version'],

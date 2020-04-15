@@ -5,6 +5,9 @@ defaults:
   datadir: data
 
 hierarchy:
+  - name: "Per Windows workerType data"
+    path: "os/Windows/worker/%{facts.custom_win_gw_workertype}.yaml"
+
   - name: "Per-OS defaults"
     path: "os/%{facts.os.family}.yaml"
 
@@ -13,6 +16,3 @@ hierarchy:
 
   - name: "Common data to all"
     path: "common.yaml"
-
-  - name: "Per Windows workerType data"
-    path: "os/Windows/worker/%{facts.custom_win_gw_workertype}.yaml"

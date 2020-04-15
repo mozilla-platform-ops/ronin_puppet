@@ -5,7 +5,7 @@
 class win_nxlog (
     String $nxlog_dir,
     String $location,
-    STring $node_name,
+    String $node_name,
     String $log_aggregator,
     String $conf_file
 ){

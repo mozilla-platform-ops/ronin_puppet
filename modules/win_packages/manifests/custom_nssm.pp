@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::custom_nssm (
-String $version,
-String $nssm_dir,
-String $nssm_exe
+    String $version,
+    String $nssm_dir,
+    String $nssm_exe
 ) {
 
     win_packages::win_zip_pkg { "nssm-${version}":
