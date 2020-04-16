@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_standalone_worker_runner {
+class roles_profiles::profiles::windows_worker_runner {
 
     case $::operatingsystem {
         'Windows': {
@@ -34,13 +34,15 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
             # Locking the version file name
             $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
 
+            $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
+
             class { 'win_packages::custom_nssm':
                 version  => $nssm_version,
                 nssm_exe => $nssm_exe,
                 nssm_dir => $nssm_dir,
             }
 
-            class { 'win_taskcluster::generic_worker':
+            class { 'win_taskcluster::generic_worker' :
                 generic_worker_dir => $generic_worker_dir,
                 desired_gw_version => $desired_gw_version,
                 current_gw_version => $facts['custom_win_genericworker_version'],
@@ -53,13 +55,8 @@ class roles_profiles::profiles::windows_standalone_worker_runner {
                 current_runner_version => $facts['custom_win_runner_version'],
                 runner_exe_source      => "${ext_pkg_src_loc}/start-worker-${desired_rnr_version}.exe",
                 # Yaml file data
-                provider               => 'standalone',
-                root_url               => lookup('windows.taskcluster.root_url'),
-                client_id              => lookup('win-worker.taskcluster.client_id'),
-                access_token           => lookup('taskcluster_access_token'),
-                worker_pool_id         => lookup('win-worker.taskcluster.worker_pool_id'),
-                worker_group           => lookup('win-worker.taskcluster.worker_group'),
-                worker_id              => $facts['networking']['hostname'],
+                provider               => lookup('win-worker.taskcluster.worker_runner.provider'),
+                implementation         => lookup('win-worker.taskcluster.worker_runner.implementation'),
                 # Runner service install data
                 gw_exe_path            => $gw_exe_path,
                 runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",

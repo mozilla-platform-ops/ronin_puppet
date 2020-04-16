@@ -18,7 +18,7 @@ class roles_profiles::profiles::ntp {
             if $facts['custom_win_location'] == 'datacenter' {
                 $ntpserver = lookup('windows.datacenter.ntp')
             } else {
-                $ntpserver = '0.pool.ntp.org'
+                $ntpserver = lookup('windows.external.ntp')
             }
             class { 'windowstime':
                 servers  => { "${ntpserver}" => '0x08'},

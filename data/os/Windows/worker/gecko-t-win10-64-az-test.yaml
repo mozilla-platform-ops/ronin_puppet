@@ -9,7 +9,9 @@ win-worker:
 
   taskcluster:
     worker_runner:
-        version: '1.0.2'
+        provider: "standalone"
+        version: '29.0.1'
+        implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
         version: '5.1.0'
@@ -29,7 +31,7 @@ win-worker:
 
   # Mozilla profile
   mozilla_profile:
-    source: "https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/mozprofilerprobe.mof"
+    source: "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/Windows/mozilla/mozprofilerprobe.mof"
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
   # Applications

@@ -23,10 +23,6 @@ class roles_profiles::profiles::windows_worker_runner {
             $desired_gw_version    = lookup('win-worker.generic_worker.exe_version')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
 
-            $worker_runner_dir     = lookup('windows.dir.worker_runner')
-            $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
-            $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
-
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
             $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
 
@@ -35,6 +31,30 @@ class roles_profiles::profiles::windows_worker_runner {
             $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
 
             $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
+
+            $worker_runner_dir     = lookup('windows.dir.worker_runner')
+            $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
+            $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
+            $provider              = lookup('win-worker.taskcluster.worker_runner.provider')
+            $implementation        = lookup('win-worker.taskcluster.worker_runner.implementation')
+            case $provider {
+                'standalone': {
+                    $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
+                    $client_id             = lookup('win-worker.taskcluster.client_id')
+                    $access_token          = lookup('taskcluster_access_token')
+                    $worker_pool_id        = lookup('win-worker.taskcluster.worker_pool_id')
+                    $worker_group          = lookup('win-worker.taskcluster.worker_group')
+                    $worker_id             = $facts['networking']['hostname']
+                }
+                default: {
+                    $taskcluster_root_url  = undef
+                    $client_id             = undef
+                    $access_token          = undef
+                    $worker_pool_id        = undef
+                    $worker_group          = undef
+                    $worker_id             = undef
+                }
+            }
 
             class { 'win_packages::custom_nssm':
                 version  => $nssm_version,
@@ -49,21 +69,6 @@ class roles_profiles::profiles::windows_worker_runner {
                 gw_exe_source      => "${ext_pkg_src_loc}/${gw_name}-${desired_gw_version}.exe",
                 gw_exe_path        => $gw_exe_path,
             }
-            class { 'win_taskcluster::worker_runner':
-                worker_runner_dir      => $worker_runner_dir,
-                desired_runner_version => $desired_rnr_version,
-                current_runner_version => $facts['custom_win_runner_version'],
-                runner_exe_source      => "${ext_pkg_src_loc}/start-worker-${desired_rnr_version}.exe",
-                # Yaml file data
-                provider               => lookup('win-worker.taskcluster.worker_runner.provider'),
-                implementation         => lookup('win-worker.taskcluster.worker_runner.implementation'),
-                # Runner service install data
-                gw_exe_path            => $gw_exe_path,
-                runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
-                runner_yml             => "${worker_runner_dir}\\runner.yml",
-                runner_log             => $runner_log,
-                nssm_exe               => $nssm_exe,
-            }
             class { 'win_taskcluster::proxy':
                 generic_worker_dir    => $generic_worker_dir,
                 desired_proxy_version => $desired_proxy_version,
@@ -74,6 +79,27 @@ class roles_profiles::profiles::windows_worker_runner {
                 generic_worker_dir => $generic_worker_dir,
                 livelog_exe_source => "${ext_pkg_src_loc}/${livelog_file}",
             }
+            class { 'win_taskcluster::worker_runner':
+                # Runner EXE
+                worker_runner_dir      => $worker_runner_dir,
+                desired_runner_version => $desired_rnr_version,
+                current_runner_version => $facts['custom_win_runner_version'],
+                runner_exe_source      => "${ext_pkg_src_loc}/start-worker-${desired_rnr_version}.exe",
+                runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
+                # Runner service install
+                gw_exe_path            => $gw_exe_path,
+                runner_log             => $runner_log,
+                nssm_exe               => $nssm_exe,
+                # Runner yaml file
+                provider               => $provider,
+                implementation         => $implementation,
+                taskcluster_root_url   => $taskcluster_root_url,
+                client_id              => $client_id,
+                worker_pool_id         => $worker_pool_id,
+                worker_group           => $worker_group,
+                worker_id              => $worker_id,
+            }
+
         }
         default: {
             fail("${::operatingsystem} not supported")
