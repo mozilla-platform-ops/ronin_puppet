@@ -30,8 +30,6 @@ class roles_profiles::profiles::windows_worker_runner {
             # Locking the version file name
             $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
 
-            $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
-
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
             $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
             $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
