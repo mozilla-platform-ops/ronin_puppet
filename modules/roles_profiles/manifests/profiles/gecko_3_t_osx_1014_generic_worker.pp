@@ -115,7 +115,8 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
             contain mercurial::system_hgrc
 
             contain packages::python2
-            contain python2::system_pip_conf
+            # zstandard for py2 is not in moz pypi??
+            #contain python2::system_pip_conf
 
             file {
                 '/tools/python':
