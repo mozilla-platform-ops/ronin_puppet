@@ -84,6 +84,7 @@ class roles_profiles::profiles::windows_worker_runner {
                 current_runner_version => $facts['custom_win_runner_version'],
                 runner_exe_source      => "${ext_pkg_src_loc}/start-worker-${desired_rnr_version}.exe",
                 runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
+                runner_yml             => "${worker_runner_dir}\\runner.yml",
                 # Runner service install
                 gw_exe_path            => $gw_exe_path,
                 runner_log             => $runner_log,
