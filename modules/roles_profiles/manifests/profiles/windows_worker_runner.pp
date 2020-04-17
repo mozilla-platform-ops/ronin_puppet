@@ -92,7 +92,7 @@ class roles_profiles::profiles::windows_worker_runner {
                 # Runner yaml file
                 provider               => $provider,
                 implementation         => $implementation,
-                taskcluster_root_url   => $taskcluster_root_url,
+                root_url               => $taskcluster_root_url,
                 client_id              => $client_id,
                 worker_pool_id         => $worker_pool_id,
                 worker_group           => $worker_group,
