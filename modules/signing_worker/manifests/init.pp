@@ -96,6 +96,8 @@ define signing_worker (
       ensure   => present,
       provider => git,
       source   => "https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine",
+      # force, or the below .git nuke will break further puppet runs
+      force    => true,
     }
     # This has credentials in it. Clean up.
     ->file { 'Remove widevine directory':
