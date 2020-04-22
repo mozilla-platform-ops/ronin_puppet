@@ -2,8 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::cltbld_user {
-
+class roles_profiles::profiles::cltbld_user (
+    Optional[Boolean] $autologin = true,
+) {
     case $::operatingsystem {
         'Darwin': {
             $password     = lookup('cltbld_user.password')
@@ -31,6 +32,7 @@ class roles_profiles::profiles::cltbld_user {
             class { 'macos_utils::autologin_user':
                 user       => 'cltbld',
                 kcpassword => $kcpassword,
+                remove     => !$autologin,
             }
 
             # Enable DevToolsSecurity
