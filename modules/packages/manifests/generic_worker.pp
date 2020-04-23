@@ -13,7 +13,7 @@ class packages::generic_worker (
     String                      $livelog_sha256,
 ) {
 
-    packages::macos_package_from_s3 { "generic-worker-darwin-amd64-${generic_worker_version}":
+    packages::macos_package_from_s3 { "generic-worker-multiuser-darwin-amd64-${generic_worker_version}":
         private             => false,
         os_version_specific => true,
         type                => 'bin',
