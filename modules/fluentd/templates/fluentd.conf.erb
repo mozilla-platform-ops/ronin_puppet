@@ -76,7 +76,7 @@
     log_message #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
 <% end -%>
 <% if @stackdriver_clientid != '' -%>
-    # stackdriver severities: 
+    # stackdriver severities:
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
     message #{record["program"]} #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
@@ -101,7 +101,7 @@
 <% end -%>
 <% if @stackdriver_clientid != '' -%>
     message ${record["program"]}: ${record['log_message']}
-    # stackdriver severities: 
+    # stackdriver severities:
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warning', 'Error' => 'error', 'Fault' => 'critical')}
 <% end -%>

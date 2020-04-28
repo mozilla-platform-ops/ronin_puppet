@@ -1,7 +1,13 @@
+---
 language: ruby
 dist: xenial
 rvm:
   - 2.4.5
+
+# safelist - we only build on this list
+branches:
+  only:
+    - master
 
 before_install:
   - gem update --system
@@ -10,17 +16,16 @@ before_install:
 gemfile: ".gemfile"
 
 script:
-  - "bundle exec puppet parser validate `find modules -name '*.pp'`"
-  - "bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`"
-  - "bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force"
+  - bundle exec puppet parser validate `find modules -name '*.pp'`
+  - bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`
+  - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
 
 notifications:
-  irc:
-    channels:
-      - secure: "E7i06rS5sm1c5SN1aY39iAjR9PXcEzf1uZCqWusp7roqEnU3wwrpU6KyzG6ujKyH9jCnWOHKU3m10j4NdXUTIgtfbuGcUz1stQGKvtx2XLmZmBJ41zzmaUvbT3oNsZ4S4vaE0EbSm+Q+Dd/C40Z/0i0WHzY9jl4MLe/LPM7zok1kqhXQIe6Yg0ckrh4u5WD1JWteagvwIGN/EefR5X3vd/P3W43m9Yz872aIvNsyMzSLhsdnKZOqX6BIuONmAnk0XcCeD3PWeHHkel+yJ65rtUxdU6Qx8eKhQISjvxm6mMa/hosnBIAjDLiOhHg7jSG9p9hq1FQDi+I6jndx483SbF/FjJr6hJ7qTwaC+8erpEDBnZMcayzLZuFuyAFyLDepwdd/5IrduP2ZUwXDbbkf23A3S2J5T7HinxdVKxq3GxlRBIDKQXiiZZqI5BkdUS2dz8pVhs4HNR/iMgrxvjltbcTJwTyE+ahmpu3Sl7NO1EOn/++u3xw9Is3fhXD5Hn7y4Tf8BGHDoCkRZK1yXA5UztOD4qh15XvsIMWdzqp6KmE6Ckd5OgZ1e6E7bawaRPlPmuEQ/9n/qmbP5Xjm74bTezccJMDvzZrDAzgwuPYgpCHi30XqM9pEzXdEFLuunQ0xSLMXIIDKQqG7Q+f8yKTKgIR5LbhNA4B8sHlR9g3OPhE="
+  slack:
+    secure: MxEzQmvL9AwknZg6/d4ZBCwRi9aHThj5DT3WtVOZYa/mYmwR7Z5ukd1ml4Ckwv7P08d5KzkCmLTyo0zd8E+KR10Q+SCRI+mUMQNHvir+UCxE6IsSgXCTqr+UberoDkDPGV0Q1cddGS3it6BeZr9vO1/GnhmYXH32NQ+rm4eT5JDvYAkBFBBpfHmHc8mIOxsmJ1luRKqsJWd+5cp41jTc/B5GvpHgAK8fE3LKHFsr9qZ43lMGXWe4bnfFBN+nctbl3SoZ91f9ARsvV7P4YNp6cE1b7FHM1KUhwpUkbBn9JbXVFMoDUCuM6Lgxezwt7dTIJ+d52IZsiCmqkETL3ppUgrItk6esvwH7063D5qZxu86d0ktV4DVmar9aT2mM1oEwk5o0WPdYUO7aUjwJ2rJZvuusDqjOvFcNEYQsxeXt9l4PRZ5xuJM8ItcW3OhmYkkKR9717SeW6KU2FcxX/lFLg0bSIExpLXs9TTn89WnHFqcA+fjHUEjgP69nD5Lp+mIaDCT9fjeBbJ1MqrqixZU0iPPTKrR3rPBErGRTKboJ5hiLJzwbXagYt74FjSS5vd+oHRa0Jkj7SstbSY/8zsTbyYs+P0DNkem2YVRG6bJ2XFE+mATCoXLOzrdKp2+u2hNbOm6GHmr+MckeMv/9/Cyehdpv+F3gm7d6UQERyp0UGjk=
     on_success: always
     on_failure: always
     template:
-    - "\x02%{repository_slug}\x0314 #%{build_number}\x03\x02 (%{branch} - %{commit}: %{author}): \x02\x0312%{message}"
-    - "\x02\x03Change view   : \x0314%{compare_url}"
-    - "\x02\x03Build details : \x0314%{build_url}"
+      - "%{repository_slug} #%{build_number} (%{branch} - %{commit} - %{author}): %{message}"
+      - "Change view   : %{compare_url}"
+      - "Build details : %{build_url}"
