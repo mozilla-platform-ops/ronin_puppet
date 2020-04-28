@@ -12,6 +12,14 @@ class roles_profiles::profiles::mozilla_build {
                 'aws'   => 'y:',
                 default => $facts['custom_win_systemdrive'],
             }
+            # tooltool token is not needed with worker-runner
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1624900#c1
+            # As worker-runner support is expanded this conditional will expand as well
+            # Once worker-runner is fully implemented then this support can be removed
+            $tooltool_tok = $facts['custom_win_location'] ? {
+                'azure' => undef,
+                default => lookup('tooltool_tok')
+            }
 
             class { 'win_mozilla_build':
                 current_mozbld_ver        => $facts['custom_win_mozbld_vesion'],
