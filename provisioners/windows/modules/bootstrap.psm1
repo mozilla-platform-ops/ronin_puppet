@@ -143,7 +143,7 @@ function Install-AzPrerequ {
     [string] $git = "Git-2.18.0-64-bit.exe",
     [string] $puppet = "puppet-agent-6.0.0-x64.msi",
     [string] $vault_file = "azure_vault_template.yaml",
-    [string] $tooltool_tok =  (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\tooltool").token
+    #[string] $tooltool_tok =  (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\tooltool").token
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -162,9 +162,10 @@ function Install-AzPrerequ {
     Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
     Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
 
-    Invoke-WebRequest -Uri  $ext_src/$vault_file  -UseBasicParsing -OutFile $local_dir\$vault_file
-    New-Item -ItemType Directory -Force -Path $local_dir\secrets
-    (Get-Content -path $local_dir\$vault_file) -replace 'tooltool_token_string',"$tooltool_tok" | Set-Content -path $local_dir\secrets\vault.yaml | out-null
+    # May not be needed. If not this can be removed in the future
+    #Invoke-WebRequest -Uri  $ext_src/$vault_file  -UseBasicParsing -OutFile $local_dir\$vault_file
+    #New-Item -ItemType Directory -Force -Path $local_dir\secrets
+    #(Get-Content -path $local_dir\$vault_file) -replace 'tooltool_token_string',"$tooltool_tok" | Set-Content -path $local_dir\secrets\vault.yaml | out-null
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
