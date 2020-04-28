@@ -50,7 +50,7 @@ GEM
       rsync
     librarianp (0.6.4)
       thor (~> 0.15)
-    license-acceptance (1.0.18)
+    license-acceptance (1.0.19)
       pastel (~> 0.7)
       tomlrb (~> 1.2)
       tty-box (~> 0.3)
@@ -74,8 +74,8 @@ GEM
     necromancer (0.5.1)
     net-scp (2.0.0)
       net-ssh (>= 2.6.5, < 6.0.0)
-    net-sftp (2.1.2)
-      net-ssh (>= 2.6.5)
+    net-sftp (3.0.0)
+      net-ssh (>= 5.0.0, < 7.0.0)
     net-ssh (5.2.0)
     net-ssh-gateway (2.0.0)
       net-ssh (>= 4.0.0)
@@ -95,7 +95,7 @@ GEM
       puppet-resource_api (~> 1.5)
       semantic_puppet (~> 1.0)
     puppet-lint (2.3.6)
-    puppet-resource_api (1.8.12)
+    puppet-resource_api (1.8.13)
       hocon (>= 1.0)
     puppet-syntax (2.6.1)
       puppet (>= 5)
@@ -150,7 +150,7 @@ GEM
       rspec-its
       specinfra (~> 2.72)
     sfl (2.3)
-    specinfra (2.82.13)
+    specinfra (2.82.15)
       net-scp
       net-ssh (>= 2.7)
       net-telnet (= 0.1.1)
