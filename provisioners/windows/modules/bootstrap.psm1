@@ -142,7 +142,7 @@ function Install-AzPrerequ {
     [string] $work_dir = "$env:systemdrive\scratch",
     [string] $git = "Git-2.18.0-64-bit.exe",
     [string] $puppet = "puppet-agent-6.0.0-x64.msi",
-    [string] $vault_file = "azure_vault_template.yaml",
+    [string] $vault_file = "azure_vault_template.yaml"
     #[string] $tooltool_tok =  (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\tooltool").token
   )
   begin {
