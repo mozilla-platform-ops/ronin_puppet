@@ -39,7 +39,7 @@ class roles_profiles::profiles::mozilla_build {
                 system32                  => $facts['custom_win_system32'],
                 external_source           => lookup('windows.s3.ext_pkg_src'),
                 builds_dir                => "${facts['custom_win_systemdrive']}\\builds",
-                tooltool_tok              => lookup('tooltool_tok'),
+                tooltool_tok              => $tooltool_tok,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
