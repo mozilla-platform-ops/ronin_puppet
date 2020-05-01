@@ -95,26 +95,6 @@ function Install-BootstrapModule {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Rename-AzVM {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
-        if ($instanceName -notlike $env:computername) {
-            Write-Log -message  ('{0} :: LOOK HERE! New name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
-            # This shouldn't reboot teh instacnes but it might be
-            Rename-Computer -NewName $instanceName
-        } else {
-            Write-Log -message  ('{0} :: LOOK HERE! Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
-        }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
@@ -143,7 +123,6 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
   Bootstrap-Puppet
 }
 If ($stage -eq 'complete') {
-  Rename-AzVM
   Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
 #  Bootstrap-CleanUp
 }
