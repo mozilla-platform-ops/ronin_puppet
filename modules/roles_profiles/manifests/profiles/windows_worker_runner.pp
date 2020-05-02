@@ -97,6 +97,7 @@ class roles_profiles::profiles::windows_worker_runner {
                 worker_pool_id         => $worker_pool_id,
                 worker_group           => $worker_group,
                 worker_id              => $worker_id,
+                config_file            => "${generic_worker_dir}\\generic-worker.config",
             }
 
         }
