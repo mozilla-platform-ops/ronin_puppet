@@ -5,5 +5,6 @@
 class roles_profiles::roles::maas_region {
 
     include ::roles_profiles::profiles::linux_base
+    include ::roles_profiles::profiles::maas_region
 
 }
