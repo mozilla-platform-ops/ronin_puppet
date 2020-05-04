@@ -59,7 +59,7 @@ suites:
       inspec_tests:
         - test/integration/bitbar
     attributes:
-  - name: maas
+  - name: maas_region
     provisioner:
       manifests_path: manifests-kitchen/maas-region
     # verifier:
