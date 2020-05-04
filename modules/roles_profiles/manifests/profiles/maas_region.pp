@@ -6,7 +6,7 @@ class roles_profiles::profiles::maas_region {
 
     case $::operatingsystem {
         'Ubuntu':{
-            # include linux_packages::ubuntu_desktop
+            include maas::region
         }
         default: {
             fail("${::operatingsystem} not supported")
