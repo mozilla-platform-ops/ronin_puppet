@@ -70,3 +70,21 @@ suites:
     includes:
       - ubuntu18-kitchen_template
     attributes:
+  - name: maas_region
+    provisioner:
+      manifests_path: manifests-kitchen/maas_region
+    verifier:
+      inspec_tests:
+        - test/integration/maas_region
+    includes:
+      - ubuntu18-kitchen_template
+    attributes:
+  - name: maas_rack
+    provisioner:
+      manifests_path: manifests-kitchen/maas_rack
+    verifier:
+      inspec_tests:
+        - test/integration/maas_rack
+    includes:
+      - ubuntu18-kitchen_template
+    attributes:
