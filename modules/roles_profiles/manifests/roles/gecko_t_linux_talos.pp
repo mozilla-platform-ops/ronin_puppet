@@ -4,18 +4,13 @@
 
 class roles_profiles::roles::gecko_t_linux_talos {
 
-    include ::roles_profiles::profiles::timezone
-    include ::roles_profiles::profiles::relops_users
-    include ::roles_profiles::profiles::ntp
-    include ::roles_profiles::profiles::motd
-    include ::roles_profiles::profiles::users
-    include ::roles_profiles::profiles::sudo
+    include ::roles_profiles::profiles::linux_base
+
+    # linux build/test worker stuff
     include ::roles_profiles::profiles::vnc
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::gui
     include ::roles_profiles::profiles::google_chrome
-    # talos is included in below
-    include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
 
     # nrpe and checks
     #   TODO: required or are we migrating to influx?
@@ -23,6 +18,9 @@ class roles_profiles::roles::gecko_t_linux_talos {
     # TODO: from build-puppet
     # xwindows setup
     # intel drivers
+
+    # talos stuff
+    include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
 
     ## copied from osx role
     # include ::roles_profiles::profiles::network
