@@ -36,6 +36,9 @@ provisioner:
 transport:
   name: sftp
 
+verifier:
+  name: serverspec
+
 busser:
   ruby_bindir: /usr/bin
 
