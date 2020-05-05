@@ -1,4 +1,4 @@
-require 'spec_helper.rb'
+# require 'spec_helper.rb'
 
 describe 'reference-tests' do
   describe command('systemctl status bogus_service_939122') do

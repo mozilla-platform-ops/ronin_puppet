@@ -1,4 +1,4 @@
-require 'spec_helper.rb'
+# require 'spec_helper.rb'
 
 describe 'users' do
   describe user('aerickson') do

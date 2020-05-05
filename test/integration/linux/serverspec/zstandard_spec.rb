@@ -1,4 +1,4 @@
-require 'spec_helper.rb'
+# require 'spec_helper.rb'
 
 describe command('pip list | grep zstandard') do
   its(:exit_status) { should eq 0 }
