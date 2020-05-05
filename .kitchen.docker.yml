@@ -42,7 +42,7 @@ platforms:
   - name: ubuntu-18.04
 
 verifier:
-  name: serverspec
+  name: inspec
 
 busser:
   sudo: true

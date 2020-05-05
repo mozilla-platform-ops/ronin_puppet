@@ -37,7 +37,7 @@ transport:
   name: sftp
 
 verifier:
-  name: serverspec
+  name: inspec
 
 busser:
   ruby_bindir: /usr/bin
