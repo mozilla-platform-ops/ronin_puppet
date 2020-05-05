@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 wget_provider = Puppet::Type.type(:archive).provider(:wget)
 

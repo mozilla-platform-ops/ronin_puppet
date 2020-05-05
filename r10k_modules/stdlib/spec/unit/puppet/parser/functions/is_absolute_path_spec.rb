@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'is_absolute_path' do
   let(:scope) { PuppetlabsSpec::PuppetInternals.scope }

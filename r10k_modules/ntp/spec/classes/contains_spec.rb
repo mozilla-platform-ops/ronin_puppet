@@ -1,6 +1,6 @@
 # To check the correct dependancies are set up for NTP.
 
-require 'spec_helper'
+require_relative 'spec_helper'
 describe 'ntp' do
   let(:facts) { { is_virtual: false } }
   let :pre_condition do

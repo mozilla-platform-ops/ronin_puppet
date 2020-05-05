@@ -1,5 +1,5 @@
 # rubocop:disable RSpec/MultipleExpectations
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'puppet_x/bodeco/archive'
 
 describe PuppetX::Bodeco::Archive do

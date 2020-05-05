@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'archive::go' do
   let(:facts) { { os: { family: 'RedHat' }, puppetversion: '4.4.0' } }

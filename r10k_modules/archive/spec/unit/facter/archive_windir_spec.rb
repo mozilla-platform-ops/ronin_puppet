@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'facter/archive_windir'
 
 describe 'archive_windir fact specs', type: :fact do

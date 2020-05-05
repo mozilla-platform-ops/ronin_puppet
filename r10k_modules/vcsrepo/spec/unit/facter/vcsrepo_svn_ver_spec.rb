@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe Facter::Util::Fact do # rubocop:disable RSpec/FilePath
   before(:each) do

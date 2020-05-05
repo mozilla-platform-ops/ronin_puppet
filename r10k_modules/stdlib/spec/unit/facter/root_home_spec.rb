@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'facter/root_home'
 describe 'Root Home Specs' do
   describe Facter::Util::RootHome do

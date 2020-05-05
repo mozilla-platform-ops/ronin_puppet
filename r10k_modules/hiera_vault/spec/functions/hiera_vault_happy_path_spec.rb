@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'support/vault_server'
 require 'puppet/functions/hiera_vault'
 

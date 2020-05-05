@@ -1,4 +1,4 @@
-# require 'spec_helper.rb'
+require_relative 'spec_helper'
 
 describe command('timedatectl status') do
   its(:exit_status) { should eq 0 }

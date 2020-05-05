@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'validate_x509_rsa_key_pair' do
   let(:valid_cert) do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 ruby_provider = Puppet::Type.type(:archive).provider(:ruby)
 

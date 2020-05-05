@@ -1,5 +1,5 @@
 # rubocop:disable RSpec/MultipleExpectations
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'tmpdir'
 
 RSpec.shared_examples 'an archive provider' do |provider_class|

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe :go_md5 do # rubocop:disable RSpec/DescribeSymbol
   before :all do # rubocop:disable RSpec/BeforeAfterAll

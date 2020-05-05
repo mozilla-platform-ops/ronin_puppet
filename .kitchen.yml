@@ -33,12 +33,10 @@ provisioner:
   resolve_with_librarian_puppet: false
   resolve_with_r10k: true
 
-transport:
-  name: sftp
-
 verifier:
-  name: inspec
-
+  name: serverspec
+  default_pattern: true
+  
 busser:
   ruby_bindir: /usr/bin
 
@@ -58,36 +56,36 @@ suites:
   - name: linux
     provisioner:
       manifests_path: manifests-kitchen/linux
-    verifier:
-      inspec_tests:
-        - test/integration/linux
+    # verifier:
+    #   inspec_tests:
+    #     - test/integration/linux
     includes:
       - ubuntu18-kitchen_template
     attributes:
   - name: bitbar
     provisioner:
       manifests_path: manifests-kitchen/bitbar
-    verifier:
-      inspec_tests:
-        - test/integration/bitbar
+    # verifier:
+    #   inspec_tests:
+    #     - test/integration/bitbar
     includes:
       - ubuntu18-kitchen_template
     attributes:
   - name: maas_region
     provisioner:
       manifests_path: manifests-kitchen/maas_region
-    verifier:
-      inspec_tests:
-        - test/integration/maas_region
+    # verifier:
+      # inspec_tests:
+      #   - test/integration/maas_region
     includes:
       - ubuntu18-kitchen_template
     attributes:
   - name: maas_rack
     provisioner:
       manifests_path: manifests-kitchen/maas_rack
-    verifier:
-      inspec_tests:
-        - test/integration/maas_rack
+    # verifier:
+    #   inspec_tests:
+    #     - test/integration/maas_rack
     includes:
       - ubuntu18-kitchen_template
     attributes:

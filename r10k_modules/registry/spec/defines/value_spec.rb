@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'puppet/type/registry_key'
 require 'puppet/type/registry_value'
 

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'validate_cmd', :unless => Puppet::Util::Platform.windows? do
   let(:touch) { File.exist?('/usr/bin/touch') ? '/usr/bin/touch' : '/bin/touch' }

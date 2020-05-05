@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'archive::nexus' do
   let(:facts) { { os: { family: 'RedHat' }, puppetversion: '4.4.0' } }

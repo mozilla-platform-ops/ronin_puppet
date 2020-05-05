@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'windows_firewall', type: :class do
   ['Windows Server 2003', 'Windows Server 2003 R2', 'Windows XP'].each do |os|
