@@ -16,8 +16,8 @@ gemfile: ".gemfile"
 env:
   - KITCHEN_TARGET=bitbar
   - KITCHEN_TARGET=linux
-  - KITCHEN_TARGET=maas_region
-  - KITCHEN_TARGET=maas_rack
+  - KITCHEN_TARGET=maas-region
+  - KITCHEN_TARGET=maas-rack
 
 stages:
   - analysis
