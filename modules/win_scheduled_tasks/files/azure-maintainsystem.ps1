@@ -277,6 +277,7 @@ function Check-AzVM-Name {
         if ($instanceName -notlike $env:computername) {
             Write-Log -message  ('{0} :: LOOK HERE! New name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
             Rename-Computer -NewName $instanceName -restart
+            exit
         } else {
             Write-Log -message  ('{0} :: LOOK HERE! Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
         }
