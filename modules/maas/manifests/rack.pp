@@ -8,7 +8,7 @@ class maas::rack () {
 
   # see https://maas.io/docs/install-from-packages
 
-  # use ppa for latest (sudo apt-add-repository -yu ppa:maas/2.7)
+  # use ppa for latest builds (recommended in installation docs)
   apt::ppa { 'ppa:maas/2.7':
     notify => Exec['apt_update']
   }
