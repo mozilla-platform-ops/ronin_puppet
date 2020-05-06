@@ -65,14 +65,14 @@ suites:
     attributes:
   - name: maas_region
     provisioner:
-      manifests_path: manifests-kitchen/maas-region
+      manifests_path: manifests-kitchen/maas_region
     # verifier:
     #   inspec_tests:
     #     - test/integration/maas-region
     attributes:
   - name: maas_rack
     provisioner:
-      manifests_path: manifests-kitchen/maas-rack
+      manifests_path: manifests-kitchen/maas_rack
     # verifier:
     #   inspec_tests:
     #     - test/integration/maas-rack
