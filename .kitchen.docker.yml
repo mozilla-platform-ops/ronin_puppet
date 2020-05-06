@@ -52,16 +52,16 @@ suites:
   - name: linux
     provisioner:
       manifests_path: manifests-kitchen/linux
-    verifier:
-      inspec_tests:
-        - test/integration/linux
+    # verifier:
+    #   inspec_tests:
+    #     - test/integration/linux
     attributes:
   - name: bitbar
     provisioner:
       manifests_path: manifests-kitchen/bitbar
-    verifier:
-      inspec_tests:
-        - test/integration/bitbar
+    # verifier:
+    #   inspec_tests:
+    #     - test/integration/bitbar
     attributes:
   - name: maas_region
     provisioner:
