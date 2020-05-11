@@ -6,6 +6,9 @@ class roles_profiles::profiles::gui {
 
     case $::operatingsystem {
         'Darwin': {
+            class { 'macos_mobileconfig_profiles::desktop_background':
+                ensure => 'absent',
+            }
             include macos_utils::set_desktop_background
             include macos_utils::show_full_name
             include macos_utils::show_scroll_bars
