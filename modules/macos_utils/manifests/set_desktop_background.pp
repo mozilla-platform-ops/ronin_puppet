@@ -13,6 +13,7 @@ class macos_utils::set_desktop_background {
         exec { 'execute python script to apply macos desktop background':
             command => '/usr/bin/su - cltbld -c "/usr/bin/python /usr/local/bin/mac_desktop_image.py -v -s /Library/Desktop\ Pictures/Solid\ Colors/Teal.png"',
             require => File["/usr/local/bin/mac_desktop_image.py"],
+            unless  => '/usr/bin/su - cltbld -c "/usr/bin/python /usr/local/bin/mac_desktop_image.py -v -c /Library/Desktop\ Pictures/Solid\ Colors/Teal.png"',
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
