@@ -4,13 +4,15 @@
 
 class macos_utils::set_desktop_background {
 
-    file { "mac_desktop_image.py":
-        content => file('mac_desktop_image.py'),
+    file { "/usr/local/bin/mac_desktop_image.py":
+        content => file('macos_utils/mac_desktop_image.py'),
     }
 
     if $::operatingsystem == 'Darwin' {
+        # su to get user desktop environment. exec's user option cannot do this
         exec { 'execute python script to apply macos desktop background':
-            command => '/usr/bin/python mac_desktop_image.py -s /Library/Desktop\ Pictures/Solid\ Colors/Teal.png',
+            command => '/usr/bin/su - cltbld -c "/usr/bin/python /usr/local/bin/mac_desktop_image.py -v -s /Library/Desktop\ Pictures/Solid\ Colors/Teal.png"',
+            require => File["/usr/local/bin/mac_desktop_image.py"],
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
