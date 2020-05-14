@@ -4,6 +4,7 @@
 
 class maas::region () {
 
+  include ::maas::prereqs
   include apt
 
   # see https://maas.io/docs/install-from-packages

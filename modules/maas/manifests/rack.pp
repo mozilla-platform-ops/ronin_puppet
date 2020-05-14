@@ -4,6 +4,7 @@
 
 class maas::rack () {
 
+  include ::maas::prereqs
   include apt
 
   # see https://maas.io/docs/install-from-packages
