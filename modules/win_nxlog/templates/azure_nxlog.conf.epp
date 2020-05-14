@@ -129,7 +129,6 @@ LogFile   %ROOT%\data\nxlog.log
   File 'C:/WindowsAzure/Logs/MonitoringAgent.log'
   SavePos TRUE
   ReadFromLast TRUE
-  Exec convert_fields("auto", "utf-8");
   Exec $SourceName = 'azure-monitoring-agent';
 </Input>
 
@@ -170,7 +169,6 @@ LogFile   %ROOT%\data\nxlog.log
   File 'C:\WindowsAzure\Logs\WaSecAgent-*.log'
   SavePos TRUE
   ReadFromLast TRUE
-  Exec convert_fields("auto", "utf-8");
   Exec $SourceName = 'azure-sec-agent';
 </Input>
 
