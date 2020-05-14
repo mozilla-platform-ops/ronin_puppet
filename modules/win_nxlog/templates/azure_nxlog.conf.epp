@@ -116,6 +116,64 @@ LogFile   %ROOT%\data\nxlog.log
   Exec $SourceName = 'nxlog';
 </Input>
 
+<Input azure_agent_runtime_log>
+  Module im_file
+  File 'C:/WindowsAzure/Logs/AgentRuntime.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  Exec $SourceName = 'azure-agent-runtime';
+</Input>
+
+<Input azure_monitoring_agent_log>
+  Module im_file
+  File 'C:/WindowsAzure/Logs/MonitoringAgent.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  Exec convert_fields("auto", "utf-8");
+  Exec $SourceName = 'azure-monitoring-agent';
+</Input>
+
+<Input azure_net_agent_log>
+  Module im_file
+  File 'C:\WindowsAzure\Logs\NetAgent-*.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  Exec $SourceName = 'azure-net-agent';
+</Input>
+
+<Input azure_telemetry_log>
+  Module im_file
+  File 'C:/WindowsAzure/Logs/Telemetry.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  Exec $SourceName = 'azure-telemetry';
+</Input>
+
+<Input azure_transparent_installer_log>
+  Module im_file
+  File 'C:/WindowsAzure/Logs/TransparentInstaller.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  Exec $SourceName = 'azure-transparent-installer';
+</Input>
+
+<Input azure_app_agent_log>
+  Module im_file
+  File 'C:/WindowsAzure/Logs/WaAppAgent.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  Exec $SourceName = 'azure-app-agent';
+</Input>
+
+<Input azure_sec_agent_log>
+  Module im_file
+  File 'C:\WindowsAzure\Logs\WaSecAgent-*.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  Exec convert_fields("auto", "utf-8");
+  Exec $SourceName = 'azure-sec-agent';
+</Input>
+
 <Output papertrail>
   Module om_ssl
   Host <%= $win_nxlog::configuration::log_aggregator %>
@@ -167,6 +225,34 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route puppet_run_log_papertrail
   Path puppet_run_log => papertrail
+</Route>
+
+<Route azure_agent_runtime_log_papertrail>
+  Path azure_agent_runtime_log => papertrail
+</Route>
+
+<Route azure_monitoring_agent_log_papertrail>
+  Path azure_monitoring_agent_log => papertrail
+</Route>
+
+<Route azure_net_agent_log_papertrail>
+  Path azure_net_agent_log => papertrail
+</Route>
+
+<Route azure_telemetry_log_papertrail>
+  Path azure_telemetry_log => papertrail
+</Route>
+
+<Route azure_transparent_installer_log_papertrail>
+  Path azure_transparent_installer_log => papertrail
+</Route>
+
+<Route azure_app_agent_log_papertrail>
+  Path azure_app_agent_log => papertrail
+</Route>
+
+<Route azure_sec_agent_log_papertrail>
+  Path azure_sec_agent_log => papertrail
 </Route>
 
 <Route nxlog_papertrail>
