@@ -194,7 +194,9 @@ function Puppet-Run {
   process {
 
     Check-RoninNodeOptions
-    Check-RoninLock
+    # Do not up teh Ronin Repo, so that there are no chnges in configuration
+    # from the time of image creation
+    # Check-RoninLock
     UpdateRonin
 
     # Setting Env variabes for PuppetFile install and Puppet run
