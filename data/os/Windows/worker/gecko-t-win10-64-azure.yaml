@@ -39,3 +39,7 @@ win-worker:
   vnc_name:  "UltraVnc"
   nssm:
     version: '2.24'
+
+  # Logging
+  log:
+    level: "standard"

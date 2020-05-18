@@ -26,14 +26,17 @@ class roles_profiles::profiles::logging (
 
             if ($facts['custom_win_location'] == 'datacenter') {
                 $log_aggregator  = lookup('windows.datacenter.log_aggregator')
-                $conf_file = 'nxlog.conf'
+                $conf_file       = 'nxlog.conf'
             } elsif ($facts['custom_win_location']) == 'azure' {
                 $log_aggregator  = lookup('windows.external.papertrail')
-                $conf_file = 'azure_nxlog.conf'
+                # log-level support is only setup for Azure
+                # it will eventual expand to other Windows locations
+                $log_level       = lookup('win-worker.log.level')
+                $conf_file       = "azure_${log_level}_nxlog.conf"
             } else {
                 # data will need to be added as could support builds out
                 $log_aggregator  = lookup('windows.external.papertrail')
-                $conf_file = 'non_datacenter_nxlog.conf'
+                $conf_file       = 'non_datacenter_nxlog.conf'
             }
 
             class { 'win_nxlog':
