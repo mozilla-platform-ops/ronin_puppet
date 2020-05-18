@@ -23,7 +23,7 @@ stages:
   - analysis
   - test
 
-script: 
+script:
   - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge $KITCHEN_TARGET
   - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET
 
