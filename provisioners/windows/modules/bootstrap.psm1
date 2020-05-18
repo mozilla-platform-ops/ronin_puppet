@@ -453,7 +453,7 @@ function Bootstrap-AzPuppet {
     }
     $git_hash = (git rev-parse --verify HEAD)
     if ($git_hash -ne $deploymentID){
-      If ($stage -eq "inprogress") {
+      If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
         git checkout $deploymentID
         $git_exit = $LastExitCode
         if ($git_exit -eq 0) {
