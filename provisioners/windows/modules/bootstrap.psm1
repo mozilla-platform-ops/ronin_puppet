@@ -452,7 +452,7 @@ function Bootstrap-AzPuppet {
       New-Item -ItemType Directory -Force -Path $logdir\old
     }
     $git_hash = (git rev-parse --verify HEAD)
-    if ($git_hash ne $deploymentID){
+    if ($git_hash -ne $deploymentID){
       If ($stage -eq "inprogress") {
         git checkout $deploymentID
         $git_exit = $LastExitCode
