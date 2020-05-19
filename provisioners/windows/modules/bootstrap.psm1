@@ -451,7 +451,7 @@ function Bootstrap-AzPuppet {
     If(!(test-path $logdir\old))  {
       New-Item -ItemType Directory -Force -Path $logdir\old
     }
-    $git_hash = (git rev-parse --verify HEAD)
+    $git_hash = (git rev-parse --short HEAD)
     if ($git_hash -ne $deploymentID){
       If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
         git checkout $deploymentID
@@ -467,6 +467,12 @@ function Bootstrap-AzPuppet {
           Start-Sleep -s 2
           git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
           git checkout $deploymentID
+          $git_exit = $LastExitCode
+          if ($git_exit -ne 0) {
+            Write-Log -message  ('{0} :: FAILED to set  Ronin Puppet HEAD to {1}! Check if deploymentID is valid. Giving up on bootstrsaping! .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
+            shutdown @('-f', '-t', '0', '-c', 'Shutdown;Bootstrapping failed on possible invalid deploymentID ', '-f', '-d', '4:5')
+            exit
+          }
           Write-Log -message  ('{0} :: Setting Ronin Puppet HEAD to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
           Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
           Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
