@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::google_chrome (
-    String $version = 'v80.0.3987.106',
+    String $version = 'v81.0.4044.129',
 ) {
 
     packages::macos_package_from_s3 { "googlechrome_${version}.dmg":
