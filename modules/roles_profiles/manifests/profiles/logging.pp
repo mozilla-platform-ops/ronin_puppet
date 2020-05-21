@@ -33,7 +33,7 @@ class roles_profiles::profiles::logging (
                 # it will eventual expand to other Windows locations
                 $log_level       = lookup('win-worker.log.level')
                 $conf_file       = "azure_${log_level}_nxlog.conf"
-                if $log_level != 'debug' or 'restricted' or 'verbose'  {
+                if ($log_level != 'debug') or ($log_level != 'restricted') or ($log_level != 'verbose')  {
                     fail("Log level ${log_level} is not supported")
 
                 }
