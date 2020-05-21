@@ -33,6 +33,10 @@ class roles_profiles::profiles::logging (
                 # it will eventual expand to other Windows locations
                 $log_level       = lookup('win-worker.log.level')
                 $conf_file       = "azure_${log_level}_nxlog.conf"
+                if $log_level != 'debug' or 'restricted' or 'verbose'  {
+                    fail("Log level ${log_level} is not supported")
+
+                }
             } else {
                 # data will need to be added as could support builds out
                 $log_aggregator  = lookup('windows.external.papertrail')

@@ -29,28 +29,6 @@ LogFile   %ROOT%\data\nxlog.log
         </QueryList>
 </Input>
 
-<Input eventlog_basic>
-  Module im_msvistalog
-  Query <QueryList>\
-          <Query Id="0">\
-            <Select Path="Application">*[System[Level=1 or Level=2 or Level=3]]</Select>\
-            <Select Path="Security">*[System[Level=1 or Level=2 or Level=3]]</Select>\
-            <Select Path="System">*[System[Level=1 or Level=2 or Level=3 or EventID=1074]]</Select>\
-            <Select Path="HardwareEvents">*[System[Level=1 or Level=2 or Level=3]]</Select>\
-          </Query>\
-        </QueryList>
-</Input>
-
-<Input eventlog_audit>
-  Module im_msvistalog
-  Query <QueryList>\
-          <Query Id="0">\
-            <Select Path="Microsoft-Windows-TerminalServices-LocalSessionManager/Operational">*</Select>\
-            <Select Path="OpenSSH/Operational">*</Select>\
-          </Query>\
-        </QueryList>
-</Input>
-
 <Input generic_worker_log>
   Module im_file
   File 'C:/generic-worker/generic-worker.log'
@@ -59,15 +37,6 @@ LogFile   %ROOT%\data\nxlog.log
   InputType multiline-gw-datetime-header
   Exec if $raw_event =~ /^(\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d)\s(.*)/s { $EventTime = parsedate($1); $Message = $2; }
   Exec $SourceName = 'generic-worker';
-</Input>
-
-<Input generic_worker_wrapper_log>
-  Module im_file
-  File 'C:/generic-worker/generic-worker-wrapper.log'
-  SavePos TRUE
-  ReadFromLast TRUE
-  InputType LineBased
-  Exec $SourceName = 'generic-worker-wrapper';
 </Input>
 
 <Input generic_worker_service_log>
@@ -86,24 +55,6 @@ LogFile   %ROOT%\data\nxlog.log
   ReadFromLast TRUE
   InputType LineBased
   Exec $SourceName = 'worker-runner-service';
-</Input>
-
-<Input bootstrap_puppet_log>
-  Module im_file
-  File 'C:\logs\\*-bootstrap-puppet.log'
-  SavePos TRUE
-  ReadFromLast TRUE
-  InputType LineBased
-  Exec $SourceName = 'boostrap-puppet';
-</Input>
-
-<Input puppet_run_log>
-  Module im_file
-  File 'C:\logs\\*-puppetrun.log'
-  SavePos TRUE
-  ReadFromLast TRUE
-  InputType LineBased
-  Exec $SourceName = 'puppet-run';
 </Input>
 
 <Input nxlog>
@@ -137,20 +88,9 @@ LogFile   %ROOT%\data\nxlog.log
 <Route puppet_run_log_papertrail>
   Path puppet_run_log => papertrail
 </Route>
-<Route eventlog_basic_papertrail>
-  Path eventlog_basic => papertrail
-</Route>
-
-<Route eventlog_audit_papertrail>
-  Path eventlog_audit => papertrail
-</Route>
 
 <Route generic_worker_log_papertrail>
   Path generic_worker_log => papertrail
-</Route>
-
-<Route generic_worker_wrapper_log_papertrail>
-  Path generic_worker_wrapper_log => papertrail
 </Route>
 
 <Route generic_worker_service_log_papertrail>
@@ -159,16 +99,4 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route worker_runner_service_log_papertrail>
   Path worker_runner_service_log => papertrail
-</Route>
-
-<Route bootstrap_puppet_log_papertrail>
-  Path bootstrap_puppet_log => papertrail
-</Route>
-
-<Route puppet_run_log_papertrail
-  Path puppet_run_log => papertrail
-</Route>
-
-<Route nxlog_papertrail>
-  Path nxlog => papertrail
 </Route>
