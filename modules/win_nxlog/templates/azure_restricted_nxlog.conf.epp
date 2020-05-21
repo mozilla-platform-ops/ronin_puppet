@@ -57,16 +57,6 @@ LogFile   %ROOT%\data\nxlog.log
   Exec $SourceName = 'worker-runner-service';
 </Input>
 
-<Input nxlog>
-  Module im_file
-  File 'C:/Program Files (x86)/nxlog/data/nxlog.log'
-  SavePos TRUE
-  ReadFromLast TRUE
-  InputType LineBased
-  Exec if $raw_event =~ /^(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\s(.*)$/ { $EventTime = parsedate($1); $Message = $2; }
-  Exec $SourceName = 'nxlog';
-</Input>
-
 <Output papertrail>
   Module om_ssl
   Host <%= $win_nxlog::configuration::log_aggregator %>
@@ -79,14 +69,6 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route eventlog_apps_papertrail>
   Path eventlog_apps => papertrail
-</Route>
-
-<Route bootstrap_puppet_log_papertrail>
-  Path bootstrap_puppet_log => papertrail
-</Route>
-
-<Route puppet_run_log_papertrail>
-  Path puppet_run_log => papertrail
 </Route>
 
 <Route generic_worker_log_papertrail>
