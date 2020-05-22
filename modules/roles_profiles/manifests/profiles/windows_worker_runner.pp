@@ -20,7 +20,7 @@ class roles_profiles::profiles::windows_worker_runner {
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')
-            $desired_gw_version    = lookup('win-worker.generic_worker.exe_version')
+            $desired_gw_version    = lookup('win-worker.generic_worker.version')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
 
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
@@ -28,13 +28,17 @@ class roles_profiles::profiles::windows_worker_runner {
 
             # Livelog command does not have a version flag
             # Locking the version file name
-            $livelog_file          = lookup('win-worker.taskcluster.livelog_exe')
+            $livelog_name          = lookup('win-worker.livelog.name')
+            $livelog_version       = lookup('win-worker.livelog.version')
 
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
+            $runner_name           = lookup('win-worker.worker_runner.name')
             $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
             $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
             $provider              = lookup('win-worker.taskcluster.worker_runner.provider')
             $implementation        = lookup('win-worker.taskcluster.worker_runner.implementation')
+
+
             case $provider {
                 'standalone': {
                     $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
@@ -64,25 +68,25 @@ class roles_profiles::profiles::windows_worker_runner {
                 generic_worker_dir => $generic_worker_dir,
                 desired_gw_version => $desired_gw_version,
                 current_gw_version => $facts['custom_win_genericworker_version'],
-                gw_exe_source      => "${ext_pkg_src_loc}/${gw_name}-${desired_gw_version}.exe",
+                gw_exe_source      => "${ext_pkg_src_loc}/${desired_gw_version}/${gw_name}",
                 gw_exe_path        => $gw_exe_path,
             }
             class { 'win_taskcluster::proxy':
                 generic_worker_dir    => $generic_worker_dir,
                 desired_proxy_version => $desired_proxy_version,
                 current_proxy_version => $facts['custom_win_taskcluster_proxy_version'],
-                proxy_exe_source      => "${ext_pkg_src_loc}/${proxy_name}-${desired_proxy_version}.exe",
+                proxy_exe_source      => "${ext_pkg_src_loc}/${desired_proxy_version}/${proxy_name}",
             }
             class { 'win_taskcluster::livelog':
                 generic_worker_dir => $generic_worker_dir,
-                livelog_exe_source => "${ext_pkg_src_loc}/${livelog_file}",
+                livelog_exe_source => "${ext_pkg_src_loc}/${livelog_version}/${livelog_name}",
             }
             class { 'win_taskcluster::worker_runner':
                 # Runner EXE
                 worker_runner_dir      => $worker_runner_dir,
                 desired_runner_version => $desired_rnr_version,
                 current_runner_version => $facts['custom_win_runner_version'],
-                runner_exe_source      => "${ext_pkg_src_loc}/start-worker-windows-amd64-${desired_rnr_version}.exe",
+                runner_exe_source      => "${ext_pkg_src_loc}/${desired_rnr_version}/${runner_name}",
                 runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
                 runner_yml             => "${worker_runner_dir}\\runner.yml",
                 # Runner service install
