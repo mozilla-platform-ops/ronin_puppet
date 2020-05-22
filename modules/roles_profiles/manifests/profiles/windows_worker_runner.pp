@@ -32,7 +32,7 @@ class roles_profiles::profiles::windows_worker_runner {
             $livelog_version       = lookup('win-worker.taskcluster.livelog.version')
 
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
-            $runner_name           = lookup('win-worker.worker_runner.name')
+            $runner_name           = lookup('win-worker.taskcluster.worker_runner.name')
             $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
             $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
             $provider              = lookup('win-worker.taskcluster.worker_runner.provider')
