@@ -28,8 +28,8 @@ class roles_profiles::profiles::windows_worker_runner {
 
             # Livelog command does not have a version flag
             # Locking the version file name
-            $livelog_name          = lookup('win-worker.livelog.name')
-            $livelog_version       = lookup('win-worker.livelog.version')
+            $livelog_name          = lookup('win-worker.taskcluster.livelog.name')
+            $livelog_version       = lookup('win-worker.taskcluster.livelog.version')
 
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
             $runner_name           = lookup('win-worker.worker_runner.name')
