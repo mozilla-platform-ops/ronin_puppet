@@ -32,6 +32,7 @@ provisioner:
   puppet_verbose: true
   puppet_debug: true
   require_chef_for_busser: true
+  require_puppet_omnibus: true
   require_puppet_repo: false
   custom_options: '--show_diff'
   verify_host_key: false
