@@ -26,7 +26,7 @@ jobs:
       language: python
       before_install: pip3 install pre-commit
       script:
-        - pre-commit run --all-files
+        - pre-commit run --from-ref origin.HEAD --to-ref HEAD
     - name: "puppet parser validate"
       script:
         - bundle exec puppet parser validate `find modules -name '*.pp'`
