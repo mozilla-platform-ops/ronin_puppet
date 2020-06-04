@@ -30,7 +30,7 @@ jobs:
     - name: "Test Pre-commit hooks"
       langauge: python
       script:
-        - precommit run --all-files
+        - pre-commit run --all-files
 
 notifications:
   slack:
