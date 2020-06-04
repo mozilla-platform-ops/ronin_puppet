@@ -27,12 +27,6 @@ jobs:
       before_install: pip3 install pre-commit
       script:
         - pre-commit run --all-files
-    - name: "puppet parser validate"
-      script:
-        - bundle exec puppet parser validate `find modules -name '*.pp'`
-    - name: "puppet lint"
-      script:
-        - bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`
     - name: "r10k puppetfile install"
       script:
         - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
