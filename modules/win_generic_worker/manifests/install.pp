@@ -10,7 +10,7 @@ class win_generic_worker::install {
     if ($win_generic_worker::current_gw_version != $win_generic_worker::needed_gw_version) and
         ($win_generic_worker::gw_service_status == 'present') {
         exec { 'purge_old_gw_exe':
-            command  => "remove-Item –path ${win_generic_worker::generic_worker_exe}",
+            command  => "remove-Item -path ${win_generic_worker::generic_worker_exe}",
             provider => powershell,
         }
     }

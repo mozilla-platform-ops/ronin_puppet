@@ -15,4 +15,3 @@ class packages::fluent_plugin_papertrail {
             require => Class['packages::td_agent'];
     }
 }
-

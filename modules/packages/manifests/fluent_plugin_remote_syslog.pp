@@ -15,4 +15,3 @@ class packages::fluent_plugin_remote_syslog {
             require => Class['packages::td_agent'];
     }
 }
-

@@ -1,8 +1,13 @@
 ---
 language: ruby
+os: linux
 dist: xenial
 rvm:
   - 2.4.5
+
+cache:
+  directories:
+  - $HOME/.cache/pre-commit
 
 # safelist - we only build on this list
 branches:
@@ -15,10 +20,16 @@ before_install:
 
 gemfile: ".gemfile"
 
-script:
-  - bundle exec puppet parser validate `find modules -name '*.pp'`
-  - bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`
-  - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+jobs:
+  include:
+    - name: "exec pre-commit hooks"
+      language: python
+      before_install: pip3 install pre-commit
+      script:
+        - pre-commit run --all-files
+    - name: "r10k puppetfile install"
+      script:
+        - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
 
 notifications:
   slack:
