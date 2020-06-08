@@ -211,13 +211,21 @@ function Puppet-Run {
     $env:USERNAME = "Administrator"
     $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
+    # This is temporary and should be removed after the cloud_windows branch is merged
+    # Hiera lookups will fail after the merge if this is not in place following the merge
+    if((test-path $env:systemdrive\ronin\win_hiera.yaml)) {
+        $hiera = "win_hiera.yaml"
+    } else {
+        $hiera = "hiera.yaml"
+    }
+
     Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
     R10k puppetfile install --moduledir=r10k_modules
     # Needs to be removed from path or a wrong puppet file will be used
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-puppetrun.log
+    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=$hiera --logdest $logdir\$datetime-puppetrun.log
     [int]$puppet_exit = $LastExitCode
 
     if ($run_to_success -eq 'true') {
