@@ -114,7 +114,13 @@ function update_puppet {
 
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
-    git checkout --force "origin/${PUPPET_BRANCH}" || return 1
+    git checkout --force "origin/${PUPPET_BRANCH}" \
+      || (
+      git remote rm upstream
+      git remote rename origin upstream
+      git remote add origin "${PUPPET_REPO}"
+      git checkout --force "origin/${PUPPET_BRANCH}"
+    ) || return 1
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
