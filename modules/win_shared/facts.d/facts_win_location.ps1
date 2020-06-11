@@ -6,6 +6,10 @@ if ($NVDomain -like "*bitbar*") {
   $mozspace = "bitbar"
 } elseif ($DhcpDomain -like "*ec2*") {
 	$location = "aws"
+} elseif ($DhcpDomain -like "*cloudapp.net") {
+    $location = "azure"
+} elseif ($DhcpDomain -like "*microsoft*") {
+    $location = "azure"
 } else {
 	$location = "datacenter"
 }
