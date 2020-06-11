@@ -1,8 +1,0 @@
-provider:
-    providerType: <%= $win_taskcluster::worker_runner::provider %>
-worker:
-    implementation: <%= $win_taskcluster::worker_runner::implementation %>
-    service: "Generic Worker"
-    path: <%= $win_taskcluster::worker_runner::gw_exe_path %>
-    protocolPipe: \\.\pipe\generic-worker
-    configPath: <%= $win_taskcluster::worker_runner::config_file %>
