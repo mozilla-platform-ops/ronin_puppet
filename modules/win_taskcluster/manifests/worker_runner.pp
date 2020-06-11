@@ -33,7 +33,7 @@ class win_taskcluster::worker_runner (
 
     if ($current_runner_version != $desired_runner_version) {
         exec { 'purge_old_gw_exe':
-            command  => "remove-Item –path ${runner_exe_path}",
+            command  => "remove-Item  -path ${runner_exe_path}",
             unless   => "Test-Path ${runner_exe_path}",
             provider => powershell,
         }
