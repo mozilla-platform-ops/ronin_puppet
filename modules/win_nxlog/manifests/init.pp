@@ -5,14 +5,15 @@
 class win_nxlog (
     String $nxlog_dir,
     String $location,
+    String $node_name,
+    String $log_aggregator,
     String $conf_file
 ){
-
     if $::operatingsystem == 'Windows' {
         include win_nxlog::install
-        include win_nxlog::configuration
         include win_nxlog::fw_exception
         include win_nxlog::service
+        include win_nxlog::configuration
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }

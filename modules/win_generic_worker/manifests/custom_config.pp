@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_generic_worker::hw_config(
+class win_generic_worker::custom_config(
     String $taskcluster_access_token,
     String $taskcluster_root,
     String $wstaudience,

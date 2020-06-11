@@ -3,20 +3,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_generic_worker (
-    String $generic_worker_dir,
-    String $cache_dir,
-    String $downloads_dir,
     Integer $livelogputport,
     String $livelog_exe_source,
     String $taskcluster_proxy_exe_source,
     String $gw_service_status,
     String $generic_worker_exe_source,
-    String $generic_worker_exe,
     String $current_gw_version,
     String $needed_gw_version,
-    STring $generic_worker_config,
-    String $generic_worker_install_command,
-    String $run_generic_worker_command
+    String $downloads_dir="${facts['custom_win_systemdrive']}\\downloads",
+    String $cache_dir="${facts['custom_win_systemdrive']}\\cache",
+    String $generic_worker_dir="${facts['custom_win_systemdrive']}\\generic-worker",
+    String $generic_worker_exe="${generic_worker_dir}\\generic-worker.exe",
+    String $generic_worker_config="${generic_worker_dir}\\generic-worker.config",
+    # Requires win_packages::nssm
+    String $nssm_command="${facts['custom_win_systemdrive']}\\nssm\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe",
+    String $generic_worker_install_command="${generic_worker_exe} install service --nssm ${nssm_command} --config ${generic_worker_config}",
+    String $run_generic_worker_command="${generic_worker_exe} run --config ${generic_worker_config}"
+
 ) {
     $ed25519signingkey         = "${generic_worker_dir}\\ed25519-private.key"
     $livelog_exe               = "${generic_worker_dir}\\livelog.exe"

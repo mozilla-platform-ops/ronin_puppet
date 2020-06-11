@@ -5,7 +5,7 @@
 class win_packages::nircmd {
 
     $system32 = $facts['custom_win_system32']
-    $srcloc   = lookup('win_ext_pkg_src')
+    $srcloc   = lookup('win_s3.ext_pkg_src')
 
     file { "${system32}\\nircmd.exe":
         ensure => present,

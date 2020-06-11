@@ -6,7 +6,10 @@ class win_nxlog::configuration {
 
     require win_nxlog::install
 
+    $log_aggregator = $win_nxlog::log_aggregator
+    $conf_file      = $win_nxlog::conf_file
+
     file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.conf":
-        content => $win_nxlog::conf_file,
+        content => epp("win_nxlog/${conf_file}.epp"),
     }
 }

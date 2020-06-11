@@ -24,18 +24,31 @@ class roles_profiles::profiles::logging (
     case $::operatingsystem {
         'Windows': {
 
-            $location        = $facts['custom_win_location']
-            $programfilesx86 = $facts['custom_win_programfilesx86']
             if ($facts['custom_win_location'] == 'datacenter') {
-                $conf_file = epp('win_nxlog/nxlog.conf.epp')
+                $log_aggregator  = lookup('windows.datacenter.log_aggregator')
+                $conf_file       = 'nxlog.conf'
+            } elsif ($facts['custom_win_location']) == 'azure' {
+                $log_aggregator  = lookup('windows.external.papertrail')
+                # log-level support is only setup for Azure
+                # it will eventual expand to other Windows locations
+                $log_level       = lookup('win-worker.log.level')
+                $conf_file       = "azure_${log_level}_nxlog.conf"
+                if ($log_level != 'debug') and ($log_level != 'restricted') and ($log_level != 'verbose')  {
+                    fail("Log level ${log_level} is not supported")
+
+                }
             } else {
-                $conf_file = file('win_nxlog/non_datacenter_nxlog.conf')
+                # data will need to be added as could support builds out
+                $log_aggregator  = lookup('windows.external.papertrail')
+                $conf_file       = 'non_datacenter_nxlog.conf'
             }
 
             class { 'win_nxlog':
-                nxlog_dir => "${programfilesx86}\\nxlog",
-                location  => $location,
-                conf_file => $conf_file,
+                nxlog_dir      => "${facts['custom_win_programfilesx86']}\\nxlog",
+                location       => $facts['custom_win_location'],
+                node_name      => $facts['networking']['fqdn'],
+                log_aggregator => $log_aggregator,
+                conf_file      => $conf_file,
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947

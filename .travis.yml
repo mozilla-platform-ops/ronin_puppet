@@ -1,21 +1,43 @@
+---
 language: ruby
+os: linux
 dist: xenial
 rvm:
-- 2.4.5
+  - 2.4.5
+
+cache:
+  directories:
+  - $HOME/.cache/pre-commit
+
+# safelist - we only build on this list
+branches:
+  only:
+    - master
+
 before_install:
-- gem update --system
-- gem install bundler
+  - gem update --system
+  - gem install bundler
+
 gemfile: ".gemfile"
-script:
-- bundle exec puppet parser validate `find modules -name '*.pp'`
-- bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`
-- bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+
+jobs:
+  include:
+    - name: "exec pre-commit hooks"
+      language: python
+      before_install: pip3 install pre-commit
+      script:
+        - pre-commit run --all-files
+    - name: "r10k puppetfile install"
+      script:
+        - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+
 notifications:
   slack:
-    secure: MxEzQmvL9AwknZg6/d4ZBCwRi9aHThj5DT3WtVOZYa/mYmwR7Z5ukd1ml4Ckwv7P08d5KzkCmLTyo0zd8E+KR10Q+SCRI+mUMQNHvir+UCxE6IsSgXCTqr+UberoDkDPGV0Q1cddGS3it6BeZr9vO1/GnhmYXH32NQ+rm4eT5JDvYAkBFBBpfHmHc8mIOxsmJ1luRKqsJWd+5cp41jTc/B5GvpHgAK8fE3LKHFsr9qZ43lMGXWe4bnfFBN+nctbl3SoZ91f9ARsvV7P4YNp6cE1b7FHM1KUhwpUkbBn9JbXVFMoDUCuM6Lgxezwt7dTIJ+d52IZsiCmqkETL3ppUgrItk6esvwH7063D5qZxu86d0ktV4DVmar9aT2mM1oEwk5o0WPdYUO7aUjwJ2rJZvuusDqjOvFcNEYQsxeXt9l4PRZ5xuJM8ItcW3OhmYkkKR9717SeW6KU2FcxX/lFLg0bSIExpLXs9TTn89WnHFqcA+fjHUEjgP69nD5Lp+mIaDCT9fjeBbJ1MqrqixZU0iPPTKrR3rPBErGRTKboJ5hiLJzwbXagYt74FjSS5vd+oHRa0Jkj7SstbSY/8zsTbyYs+P0DNkem2YVRG6bJ2XFE+mATCoXLOzrdKp2+u2hNbOm6GHmr+MckeMv/9/Cyehdpv+F3gm7d6UQERyp0UGjk=
+    secure: pqcqAA4sJcvDf6raq5M7yyQENUFuexW5Vd6mgoQSQu9y2tP1CfWB/wfXEUQXPqpj77PVhy3YtU7IJmcigamwdAY1VjmkeSquyRRcAqOtLjVl6Lf7tfiHTUd4tgxtWR9CbM6XjPvrTVadeikyKgpTcG0+CKqTqwD3veBqqFwifoxcvPsQkHiRR9JqB3cU8eBpQaMBCTCWxWUTxPaJKENQGk63FbFf/QYjHwvbXVdVuSqgR3EwPa2XJRBNBxIl/+oTcvjT6Muv+4y7ucvYaIjpi8+oHuC2IWLbK79rNYLBBlWWWgNWN1O1BMs7vuwn8Q/WLxK77n8KB6WkY/S3VsJfLeY7ToK/qnopi/ZGQj8d7lyV6Y4gBpo5dxYQAWX3M240JkEderiGjKPg33dWKyFYt3TXxjq7lvFt4rIhWJFxPJG8xd+xOlZv9ibrnxZ81cV9V3v1lDn0GeMLNkigY3rg9fHQSmojAePjrPa33NvrHdT4k/gBZhowaqKvpOKnvhVZUuNsrKErT8GrflMRnc7Llm+vaLOo+csXJ/Cf9k5bgrMD9hqxPRT6m1TjTmDu3BgLmGAUrXkAd2CFThjB0Y9ceS6DQnmrp5Aral67cxxDXIkVPDJKhT4KUs3L1uqrl9jz99JI/6WKG5VQtyoQjSddI4r2oqXwpWOvQSH1Sa64VW0=
     on_success: always
     on_failure: always
     template:
-    - "%{repository_slug} #%{build_number} (%{branch} - %{commit} - %{author}): %{message}"
-    - "Change view   : %{compare_url}"
-    - "Build details : %{build_url}"
+      - "%{repository_slug} #%{build_number} (%{branch} - %{commit} - %{author})"
+      - "Status: %{message}"
+      - "Change view: %{compare_url}"
+      - "Build details: %{build_url}"
