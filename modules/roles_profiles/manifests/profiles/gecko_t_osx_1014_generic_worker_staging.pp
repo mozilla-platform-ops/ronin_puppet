@@ -20,11 +20,13 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
         'Darwin': {
 
             class { 'puppet::atboot':
-                telegraf_user     => lookup('telegraf.user'),
-                telegraf_password => lookup('telegraf.password'),
-                puppet_branch     => 'staging',
-                # Note the camelCase key names
-                meta_data         => $meta_data,
+                telegraf_user       => lookup('telegraf.user'),
+                telegraf_password   => lookup('telegraf.password'),
+                puppet_env          => 'dev',
+                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
+                puppet_branch       => '1561956_generic-worker_15-recover',
+                puppet_notify_email => 'dhouse@mozilla.com',
+                meta_data           => $meta_data,
             }
 
             class { 'roles_profiles::profiles::logging':
@@ -43,6 +45,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                     precision         => 's',
                 },
                 inputs       => {
+                    # current default telegraf monitors: system, mem, swap, disk'/', puppetagent
                     temp     => {},
                     cpu      => {
                         interval         => '60s',
@@ -91,6 +94,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
+                livelog_version           => 'v1.1.0',
+                livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
                 user                      => 'cltbld',
                 user_homedir              => '/Users/cltbld',
             }
