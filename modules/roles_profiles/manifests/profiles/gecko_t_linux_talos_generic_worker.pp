@@ -4,17 +4,22 @@
 
 class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
 
+    $worker_type  = 'gecko-t-linux-talos'
+    $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
+
     case $::operatingsystem {
         'Ubuntu': {
-            contain linux_packages::py2
-            contain linux_packages::py3
+            require roles_profiles::profiles::cltbld_user
 
-            contain linux_packages::python2_zstandard
-            contain linux_packages::python3_zstandard
+            require linux_packages::py2
+            require linux_packages::py3
 
-            contain linux_packages::zstd
+            require linux_packages::python2_zstandard
+            require linux_packages::python3_zstandard
 
-            contain linux_talos
+            require linux_packages::zstd
+
+            require linux_talos
 
             # g-w
             $worker_type  = 'gecko-t-linux-talos'
