@@ -1,4 +1,4 @@
-## hiera_vault : a vault data provider function (backend) for Hiera 5
+# hiera_vault : a vault data provider function (backend) for Hiera 5
 
 ### Description
 
@@ -29,7 +29,7 @@ On Puppetserver <= 5, you will need to switch Puppetserver to use the new JRuby 
 
 Some example Puppetcode to do so:
 
-```
+```puppet
 ini_setting { "Change jruby to 9k":
   ensure            => present,
   setting           => 'JRUBY_JAR',
@@ -133,22 +133,30 @@ The following mandatory Hiera 5 options must be set for each level of the hierar
 
 The following are optional configuration parameters supported in the `options` hash of the Hiera 5 config
 
-`address`: The address of the Vault server, also read as `ENV["VAULT_ADDR"]`
+`address`: The address of the Vault server or Vault Agent, also read as `ENV["VAULT_ADDR"]`. Note: Not currently compatible with unix domain sockets - you must use `http://` or `https://`
 
 `token`: The token to authenticate with Vault, also read as `ENV["VAULT_TOKEN"]` or a full path to the file with the token (eg. `/etc/vault_token.txt`). When bootstrapping, you can set this token as `IGNORE-VAULT` and the backend will be stubbed, which can be useful when bootstrapping.
 
 `confine_to_keys:`: Only use this backend if the key matches one of the regexes in the array, to avoid constantly reaching out to Vault for every parameter lookup
 
-      confine_to_keys:
-        - "application.*"
-        - "apache::.*"
+```yaml
+confine_to_keys:
+  - "application.*"
+  - "apache::.*"
+```
+
+`strip_from_keys`: Patterns to strip from keys before lookup
+
+```yaml
+strip_from_keys:
+  - "vault:"
+```
 
 `default_field:`: The default field within data to return. If not present, the lookup will be the full contents of the secret data.
 
 `mounts:`: The list of mounts you want to do lookups against. This is treated as the backend hiearchy for lookup. It is recomended you use [Trusted Facts](https://puppet.com/docs/puppet/5.3/lang_facts_and_builtin_vars.html#trusted-facts) within the hierachy to ensure lookups are restricted to the correct hierachy points. See [Mounts](####Mounts)
 
 `:ssl_verify`: Specify whether to verify SSL certificates (default: true)
-
 
 ### Debugging
 

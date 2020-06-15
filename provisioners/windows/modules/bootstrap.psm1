@@ -522,7 +522,7 @@ function Bootstrap-AzPuppet {
         C:\Windows\system32\sysprep\sysprep.exe /generalize /quit /oobe /mode:vm | Tee-Object -Variable cmdOutput
         # C:\Windows\system32\sysprep\sysprep.exe /generalize /quit /oobe | Tee-Object -Variable cmdOutput
         Write-Log -message  ('{0} :: {1}' -f $($MyInvocation.MyCommand.Name), ($cmdOutput)) -severity 'DEBUG'
-        # Write-Log -message  ('{0} :: Sysprep generalize command completeted' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Write-Log -message  ('{0} :: Sysprep generalize command completeted' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
         Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
