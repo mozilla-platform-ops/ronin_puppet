@@ -2,11 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class scriptworker_prereqs {
-    contain packages::python3
+    class { 'packages::python3':
+        version => '3.8.3',
+    }
     file { '/tools/python3':
-            ensure  => 'link',
-            target  => '/usr/local/bin/python3',
-            require => Class['packages::python3'],
+        ensure  => 'link',
+        target  => '/usr/local/bin/python3',
+        require => Class['packages::python3'],
     }
 
     include dirs::builds
