@@ -54,6 +54,8 @@ define python::virtualenv (
 ) {
 
   if $ensure == 'present' {
+    require packages::virtualenv
+
     $python = $version ? {
       'system' => 'python',
       'pypy'   => 'pypy',
