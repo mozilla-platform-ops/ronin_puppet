@@ -94,7 +94,8 @@ define signing_worker (
         force   => true,
     }
 
-    python::virtualenv { "signingworker_${user}" :
+    require packages::virtualenv
+    ->python::virtualenv { "signingworker_${user}" :
         ensure          => present,
         version         => '3',
         requirements    => $tmp_requirements,
@@ -103,7 +104,7 @@ define signing_worker (
         owner           => $user,
         group           => $group,
         timeout         => 0,
-        path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.7/bin'],
+        path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
     }
 
     # scriptworker config
