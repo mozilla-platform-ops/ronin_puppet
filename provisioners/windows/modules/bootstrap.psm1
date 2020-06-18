@@ -460,7 +460,7 @@ function Bootstrap-Puppet {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Generalize_Vm
+function Generalize_Vm {
   param (
     [string] $sourceOrg,
     [string] $sourceRepo,
