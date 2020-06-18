@@ -51,6 +51,24 @@ LogFile   %ROOT%\data\nxlog.log
         </QueryList>
 </Input>
 
+<Input generalize_vm_stderr_log>
+  Module im_file
+  File 'C:\log\sysprep-generalize-shutdown-stderr.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'Generalize-VM-stderr';
+</Input>
+
+<Input generalize_vm_stdout_log>
+   Module im_file
+   File 'C:\log\sysprep-generalize-shutdown-stdout.log'
+   SavePos TRUE
+   ReadFromLast TRUE
+   InputType LineBased
+   Exec $SourceName = 'Generalize-VM-stdout';
+</Input>
+
 <Input generic_worker_log>
   Module im_file
   File 'C:/generic-worker/generic-worker.log'
@@ -143,6 +161,14 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route eventlog_audit_papertrail>
   Path eventlog_audit => papertrail
+</Route>
+
+<Route generalize_vm_stderr_log_papertrail>
+  Path generalize_vm_stderr_log => papertrail
+</Route>
+
+<Route generalize_vm_stdout_log_papertrail>
+   Path generalize_vm_stdout_log => papertrail
 </Route>
 
 <Route generic_worker_log_papertrail>
