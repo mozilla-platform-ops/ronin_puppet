@@ -42,6 +42,45 @@ function Write-Log {
     Write-Host  -object $message -ForegroundColor $fc
   }
 }
+function Start-LoggedProcess {
+  param (
+    [string] $filePath,
+    [string[]] $argumentList,
+    [string] $name = [IO.Path]::GetFileNameWithoutExtension($filePath),
+    [string] $redirectStandardOutput = ('{0}\log\{1}.{2}.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $name),
+    [string] $redirectStandardError = ('{0}\log\{1}.{2}.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $name)
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    try {
+      if (-not (Test-Path -Path $filePath -ErrorAction SilentlyContinue)) {
+        Write-Log -message ('{0} :: {1} does not map to an existing path.' -f $($MyInvocation.MyCommand.Name), $filePath) -severity 'WARN'
+      }
+      $process = (Start-Process -FilePath $filePath -ArgumentList $argumentList -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
+      Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
+      if ($process.ExitCode -and $process.TotalProcessorTime) {
+        Write-Log -message ('{0} :: {1} - command ({2} {3}) exited with code: {4} after a processing time of: {5}.' -f $($MyInvocation.MyCommand.Name), $name, $filePath, ($argumentList -join ' '), $process.ExitCode, $process.TotalProcessorTime) -severity 'INFO'
+      } else {
+        Write-Log -message ('{0} :: {1} - command ({2} {3}) executed.' -f $($MyInvocation.MyCommand.Name), $name, $filePath, ($argumentList -join ' ')) -severity 'INFO'
+      }
+    } catch {
+      Write-Log -message ('{0} :: {1} - error executing command ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $name, $filePath, ($argumentList -join ' '), $_.Exception.Message) -severity 'ERROR'
+    }
+    $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
+    if (($standardErrorFile) -and $standardErrorFile.Length) {
+      Write-Log -message ('{0} :: {1} - {2}' -f $($MyInvocation.MyCommand.Name), $name, (Get-Content -Path $redirectStandardError -Raw)) -severity 'ERROR'
+    }
+    $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
+    if (($standardOutputFile) -and $standardOutputFile.Length) {
+      Write-Log -message ('{0} :: {1} - log: {2}' -f $($MyInvocation.MyCommand.Name), $name, $redirectStandardOutput) -severity 'INFO'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Setup-Logging {
   param (
     [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
@@ -421,6 +460,26 @@ function Bootstrap-Puppet {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Generalize_Vm
+  param (
+    [string] $sourceOrg,
+    [string] $sourceRepo,
+    [string] $sourceRev,
+    [string] $vm_type,
+    [string] $xml_file = generalize.xml,
+    [string] $local_xml_file = "$env:systemdrive\Windows\Temp\generalize.xml"
+    )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$vm_type/$xml_file  -outfile $local_xml_file -UseBasicParsing
+    Start-LoggedProcess -filePath ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) -ArgumentList $(if ($workerType -match 'win7') { @('/generalize', '/quit', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml') } else { @('/generalize', '/quit', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml', '/mode:vm') }) -redirectStandardOutput 'C:\log\sysprep-generalize-shutdown-stdout.log' -redirectStandardError 'C:\log\sysprep-generalize-shutdown-stderr.log' -name 'sysprep-generalize-shutdown' # remove the /mode:vm switch if creating images for different hardware profile
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Bootstrap-AzPuppet {
   param (
     [int] $exit,
@@ -519,11 +578,7 @@ function Bootstrap-AzPuppet {
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        # Start-Process -FilePath C:\Windows\System32\Sysprep\Sysprep.exe -ArgumentList ‘/generalize /quit /oobe /mode:vm’ -Wait
-        #C:\Windows\system32\sysprep\sysprep.exe /generalize /quit /oobe /mode:vm | Tee-Object -Variable cmdOutput
-        # C:\Windows\system32\sysprep\sysprep.exe /generalize /quit /oobe | Tee-Object -Variable cmdOutput
-        & ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) @('/generalize', '/quit', '/oobe', '/mode:vm')
-        Write-Log -message  ('{0} :: {1}' -f $($MyInvocation.MyCommand.Name), ($cmdOutput)) -severity 'DEBUG'
+        Generalize_Vm -sourceOrg  -sourceRepo -sourceRev -vm_type azure
         Write-Log -message  ('{0} :: Sysprep generalize command completeted' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
