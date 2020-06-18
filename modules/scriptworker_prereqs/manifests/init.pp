@@ -2,12 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class scriptworker_prereqs {
-    contain packages::python3_s3
+    class { 'packages::python3':
+        version => '3.8.3',
+    }
     file { '/tools/python3':
         ensure  => 'link',
         target  => '/usr/local/bin/python3',
-        require => Class['packages::python3_s3'],
+        require => Class['packages::python3'],
     }
+
     include dirs::builds
 
     # DeveloperIDCA.cer is only required on dep, but is harmless on prod
@@ -25,14 +28,6 @@ class scriptworker_prereqs {
             # For posterity, the error returned is "SecTrustSettingsSetTrustSettings: The authorization was
             # denied since no user interaction was possible.".
             returns => [1];
-    }
-
-    # Install certifi's set of CAs to override the system set
-    exec {
-        'install_python_certs':
-            command => "'/Applications/Python 3.7/Install Certificates.command'",
-            path    => ['/usr/bin', '/usr/sbin', '/bin'],
-            unless  =>  'test -h /Library/Frameworks/Python.framework/Versions/3.7/etc/openssl/cert.pm'
     }
 
     # Accept the xcode licence
