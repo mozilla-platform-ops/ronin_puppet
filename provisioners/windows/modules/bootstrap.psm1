@@ -466,7 +466,7 @@ function Generalize_Vm {
     [string] $sourceRepo,
     [string] $sourceRev,
     [string] $vm_type,
-    [string] $xml_file = generalize.xml,
+    [string] $xml_file = "generalize.xml",
     [string] $local_xml_file = "$env:systemdrive\Windows\Temp\generalize.xml"
     )
   begin {
