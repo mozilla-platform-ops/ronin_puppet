@@ -240,6 +240,8 @@ all_users:
     - ssh-rsa AAAA invalid@mozilla.com
   notary10:
     - ssh-rsa AAAA invalid@mozilla.com
+  poller:
+    - ssh-rsa AAAA invalid@mozilla.com
   depbld1:
     - ssh-rsa AAAA invalid@mozilla.com
   depbld2:
