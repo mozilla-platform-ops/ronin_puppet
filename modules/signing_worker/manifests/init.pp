@@ -15,10 +15,13 @@ define signing_worker (
     String $widevine_filename,
     Hash $worker_config,
     Hash $role_config,
+    String $scriptworker_version,
+    String $scripts_revision,
     String $worker_id_suffix = '',
     String $group = 'staff',
     String $ed_key_filename = undef,
     Array $notarization_users = undef,
+    String $poller_user = '',
 ) {
     $virtualenv_dir           = "${scriptworker_base}/virtualenv"
     $certs_dir                = "${scriptworker_base}/certs"
@@ -41,18 +44,20 @@ define signing_worker (
         }
     }
 
-    # XXX Somehow only set this up and run on prod / tb-prod machines, no dep
-    $poller_worker_id = "poller-${facts['networking']['hostname']}"
-    $poller_dir               = "${scriptworker_base}/poller"
-    $poller_config_file       = "${scriptworker_base}/poller/poller.yaml"
-    $poller_wrapper           = "${scriptworker_base}/poller/poller_wrapper.sh"
-    # XXX create poller user
-    # XXX create poller dir, owned by poller user
-    # XXX install notarization-poller in venv, also from scriptworker-scripts
-    # XXX poller wrapper + launchd
-    # XXX poller secrets (accessToken for prod + tb-prod), but we also share
-    #     the notarization account user+pass secret with script_config.yaml
-
+    if $poller_user {
+        signing_worker::notarization_user { "create_notary_${poller_user}":
+            user => $user,
+        }
+        $poller_worker_id    = "poller-${facts['networking']['hostname']}"
+        $poller_dir          = "${scriptworker_base}/poller"
+        $poller_config_file  = "${scriptworker_base}/poller/poller.yaml"
+        $poller_wrapper      = "${scriptworker_base}/poller/poller_wrapper.sh"
+        # XXX create poller dir, owned by poller user
+        # XXX install notarization-poller in venv, also from scriptworker-scripts
+        # XXX poller wrapper + launchd
+        # XXX poller secrets (accessToken for prod + tb-prod), but we also share
+        #     the notarization account user+pass secret with script_config.yaml
+    }
 
     $ed_key_path = $ed_key_filename? {
       undef => '/dev/null',

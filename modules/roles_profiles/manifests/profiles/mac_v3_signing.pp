@@ -44,26 +44,31 @@ class roles_profiles::profiles::mac_v3_signing {
             $role_secrets = lookup("signing_secrets.${role}", Hash, undef, {})
             $role_config = deep_merge($role_common, $role_secrets)
 
+            $install_common = lookup('signingworker_install', Hash, undef, {})
+
             $scriptworker_users = lookup("scriptworker_users.${role}")
 
             $scriptworker_users.each |String $user, Hash $user_data| {
                 signing_worker { "signing_worker_${user}":
-                    user                => $user,
-                    password            => lookup("${user}_user.password"),
-                    salt                => lookup("${user}_user.salt"),
-                    iterations          => lookup("${user}_user.iterations"),
-                    scriptworker_base   => $user_data['home'],
-                    dmg_prefix          => $user_data['dmg_prefix'],
-                    worker_id_suffix    => $user_data['worker_id_suffix'],
-                    cot_product         => $user_data['cot_product'],
-                    supported_behaviors => $user_data['supported_behaviors'],
-                    widevine_user       => $widevine_user,
-                    widevine_key        => $widevine_key,
-                    widevine_filename   => $user_data['widevine_filename'],
-                    worker_config       => $worker_config,
-                    role_config         => $role_config,
-                    notarization_users  => $user_data['notarization_users'],
-                    ed_key_filename     => $user_data['ed_key_filename'],
+                    user                 => $user,
+                    password             => lookup("${user}_user.password"),
+                    salt                 => lookup("${user}_user.salt"),
+                    iterations           => lookup("${user}_user.iterations"),
+                    scriptworker_base    => $user_data['home'],
+                    dmg_prefix           => $user_data['dmg_prefix'],
+                    worker_id_suffix     => $user_data['worker_id_suffix'],
+                    cot_product          => $user_data['cot_product'],
+                    supported_behaviors  => $user_data['supported_behaviors'],
+                    widevine_user        => $widevine_user,
+                    widevine_key         => $widevine_key,
+                    widevine_filename    => $user_data['widevine_filename'],
+                    worker_config        => $worker_config,
+                    role_config          => $role_config,
+                    notarization_users   => $user_data['notarization_users'],
+                    ed_key_filename      => $user_data['ed_key_filename'],
+                    poller_user          => $user_data['poller_user'],
+                    scriptworker_version => $install_common['version'],
+                    scripts_revision     => $install_common['scriptworker_scripts_revision'],
                 }
             }
 

@@ -26,6 +26,9 @@ user_groups:
   cia:
     - bclary
 
+scriptworker_install:
+  version: "35.2.0"
+  scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
 
 scriptworker_users:
   dep:
@@ -66,7 +69,7 @@ scriptworker_users:
         - mac_notarize
         - mac_notarize_part_1
         - mac_notarize_part_3
-      poller: true
+      poller_user: poller
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
@@ -92,7 +95,7 @@ scriptworker_users:
         - mac_notarize
         - mac_notarize_part_1
         - mac_notarize_part_3
-      poller: true
+      poller_user: poller
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
