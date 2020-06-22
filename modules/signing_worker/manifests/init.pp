@@ -29,6 +29,17 @@ define signing_worker (
 
     # Dep workers have a non-deterministic suffix
     $worker_id = "${facts['networking']['hostname']}${worker_id_suffix}"
+    case $::fqdn {
+        /.*\.mdc1\.mozilla\.com/: {
+            $worker_group = mdc1
+        }
+        /.*\.mdc2\.mozilla\.com/: {
+            $worker_group = mdc2
+        }
+        default: {
+            $worker_group = unknown
+        }
+    }
 
     # XXX Somehow only set this up and run on prod / tb-prod machines, no dep
     $poller_worker_id = "poller-${facts['networking']['hostname']}"
