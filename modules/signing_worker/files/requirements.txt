@@ -1,6 +1,0 @@
--e git+https://github.com/mozilla-releng/scriptworker-scripts#egg=mozbuild&subdirectory=vendored/mozbuild
--e git+https://github.com/mozilla-releng/scriptworker-scripts#egg=scriptworker_client&subdirectory=scriptworker_client
--e git+https://github.com/mozilla-releng/scriptworker-scripts#egg=iscript&subdirectory=iscript
--e git+https://github.com/mozilla-releng/scriptworker-scripts#egg=notarization_poller&subdirectory=notarization_poller
--e git+https://<%= @widevine_user %>:<%= @widevine_key %>@github.com/mozilla-services/widevine&egg=widevine
-scriptworker
