@@ -44,29 +44,6 @@ define signing_worker (
         }
     }
 
-    if $poller_config {
-        signing_worker::notarization_user { "create_user_${poller_config.user}":
-            user => $poller_config['user'],
-        }
-        $poller_worker_id    = "poller-${facts['networking']['hostname']}"
-        $poller_dir          = "${scriptworker_base}/poller"
-        $poller_config_file  = "${scriptworker_base}/poller/poller.yaml"
-        $poller_wrapper      = "${scriptworker_base}/poller/poller_wrapper.sh"
-
-        $required_directories = [
-          $poller_dir,
-          "${poller_dir}/logs",
-        ]
-        file { $required_directories:
-          ensure => 'directory',
-          owner  =>  $poller_config['user'],
-          group  =>  $group,
-          mode   => '0750',
-        }
-        # XXX poller.yaml
-        # XXX poller wrapper + launchd
-    }
-
     $ed_key_path = $ed_key_filename? {
       undef => '/dev/null',
       default => "${certs_dir}/${ed_key_filename}",
@@ -178,5 +155,56 @@ define signing_worker (
     notify { "launchctl_${user}":
         message   => "Run: /bin/launchctl load ${$launchd_script}",
         subscribe => File[$launchd_script],
+    }
+
+    if $poller_config {
+        signing_worker::notarization_user { "create_user_${poller_config['user']}":
+            user => $poller_config['user'],
+        }
+        $poller_worker_id    = "poller-${facts['networking']['hostname']}"
+        $poller_dir          = "${scriptworker_base}/poller"
+        $poller_config_file  = "${scriptworker_base}/poller/poller.yaml"
+        $poller_wrapper      = "${scriptworker_base}/poller/poller_wrapper.sh"
+
+        $poller_required_directories = [
+          $poller_dir,
+          "${poller_dir}/logs",
+        ]
+        file { $poller_required_directories:
+          ensure => 'directory',
+          owner  =>  $poller_config['user'],
+          group  =>  $group,
+          mode   => '0750',
+        }
+
+        file { $poller_config_file:
+            content => template('signing_worker/poller.yaml.erb'),
+            owner   => $poller_config['user'],
+            group   => $group,
+        }
+
+        file { $poller_wrapper:
+            content => template('signing_worker/poller_wrapper.sh.erb'),
+            mode    => '0700',
+            owner   => $poller_config['user'],
+            group   => $group,
+        }
+
+        $poller_launchd_script = "/Library/LaunchDaemons/org.mozilla.scriptworker.${poller_config['user']}.plist"
+        file { $poller_launchd_script:
+            content => template('signing_worker/org.mozilla.notarization_poller.plist.erb'),
+            mode    => '0644',
+        }
+        # Disabled until full setup is complete.
+        # exec { "${poller_config['user']}_launchctl_load":
+        #    command   => "/bin/launchctl load ${$poller_launchd_script}",
+        #    subscribe => File[$poller_launchd_script],
+        # }
+
+        # Remove this notify when enabling the exec launchctl, above
+        notify { "launchctl_${poller_config['user']}":
+            message   => "Run: /bin/launchctl load ${$poller_launchd_script}",
+            subscribe => File[$poller_launchd_script],
+        }
     }
 }
