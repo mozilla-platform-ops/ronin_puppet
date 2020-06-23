@@ -194,7 +194,7 @@ define signing_worker (
             group   => $group,
         }
 
-        $poller_launchd_script = "/Library/LaunchDaemons/org.mozilla.scriptworker.${poller_config['user']}.plist"
+        $poller_launchd_script = "/Library/LaunchDaemons/org.mozilla.notarization_poller.${poller_config['user']}.plist"
         file { $poller_launchd_script:
             content => template('signing_worker/org.mozilla.notarization_poller.plist.erb'),
             mode    => '0644',
