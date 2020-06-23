@@ -80,6 +80,8 @@ define signing_worker (
     }
 
     $widevine_clone_dir = "${scriptworker_base}/widevine"
+    $scriptworker_version = $worker_config['scriptworker_version']
+    $scriptworker_scripts_revision = $worker_config['scriptworker_scripts_revision']
     file { $tmp_requirements:
         content => template('signing_worker/requirements.txt.erb'),
         owner   =>  $user,
