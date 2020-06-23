@@ -6,7 +6,7 @@ worker_id: <%= @poller_worker_id %>
 
 taskcluster_client_id: "<%= @poller_config['taskcluster_client_id'] %>"
 taskcluster_access_token: "<%= @poller_config['taskcluster_access_token'] %>"
-notarization_username: "<%= @poller_config['notarization_username'] %>"
+notarization_username: "<%= @poller_config['notarization_account'] %>"
 notarization_password: "<%= @poller_config['notarization_password'] %>"
 
 artifact_upload_timeout: 1200
