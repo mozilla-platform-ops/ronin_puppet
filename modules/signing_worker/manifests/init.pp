@@ -16,8 +16,6 @@ define signing_worker (
     Hash $worker_config,
     Hash $role_config,
     Hash $poller_config,
-    String $scriptworker_version,
-    String $scripts_revision,
     String $worker_id_suffix = '',
     String $group = 'staff',
     String $ed_key_filename = undef,

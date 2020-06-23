@@ -47,7 +47,6 @@ class roles_profiles::profiles::mac_v3_signing {
             $poller_common = lookup("poller_config.${role}", Hash, undef, {})
             $poller_secrets = lookup("poller_secrets.${role}", Hash, undef, {})
             $poller_config = deep_merge($poller_common, $poller_secrets)
-            $install_common = lookup('scriptworker_install', Hash, undef, {})
 
             $scriptworker_users = lookup("scriptworker_users.${role}")
 
@@ -70,8 +69,6 @@ class roles_profiles::profiles::mac_v3_signing {
                     notarization_users   => $user_data['notarization_users'],
                     ed_key_filename      => $user_data['ed_key_filename'],
                     poller_config        => $poller_config,
-                    scriptworker_version => $install_common['version'],
-                    scripts_revision     => $install_common['scriptworker_scripts_revision'],
                 }
             }
 
