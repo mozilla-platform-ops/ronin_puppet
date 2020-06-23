@@ -15,13 +15,13 @@ define signing_worker (
     String $widevine_filename,
     Hash $worker_config,
     Hash $role_config,
+    Hash $poller_config,
     String $scriptworker_version,
     String $scripts_revision,
     String $worker_id_suffix = '',
     String $group = 'staff',
     String $ed_key_filename = undef,
     Array $notarization_users = undef,
-    String $poller_user = '',
 ) {
     $virtualenv_dir           = "${scriptworker_base}/virtualenv"
     $certs_dir                = "${scriptworker_base}/certs"
@@ -44,9 +44,9 @@ define signing_worker (
         }
     }
 
-    if $poller_user {
-        signing_worker::notarization_user { "create_notary_${poller_user}":
-            user => $user,
+    if $poller_config {
+        signing_worker::notarization_user { "create_user_${poller_config.user}":
+            user => $poller_config['user'],
         }
         $poller_worker_id    = "poller-${facts['networking']['hostname']}"
         $poller_dir          = "${scriptworker_base}/poller"
@@ -59,12 +59,10 @@ define signing_worker (
         ]
         file { $required_directories:
           ensure => 'directory',
-          owner  =>  $poller_user,
+          owner  =>  $poller_config['user'],
           group  =>  $group,
           mode   => '0750',
         }
-        # XXX poller secrets (accessToken for prod + tb-prod), but we also share
-        #     the notarization account user+pass secret with script_config.yaml
         # XXX poller.yaml
         # XXX poller wrapper + launchd
     }

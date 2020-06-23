@@ -69,7 +69,6 @@ scriptworker_users:
         - mac_notarize
         - mac_notarize_part_1
         - mac_notarize_part_3
-      poller_user: poller
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
@@ -95,7 +94,6 @@ scriptworker_users:
         - mac_notarize
         - mac_notarize_part_1
         - mac_notarize_part_3
-      poller_user: poller
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
@@ -111,7 +109,6 @@ scriptworker_users:
         - notary8
         - notary9
         - notary10
-
 
 scriptworker_config:
     ff-prod:
@@ -132,6 +129,14 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
+
+poller_config:
+    ff-prod:
+        user: poller
+        worker_type: mac-notarization-poller
+    tb-prod:
+        user: poller
+        worker_type: tb-mac-notarization-poller
 
 signingworker_roles:
     ff-prod:
