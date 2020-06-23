@@ -121,8 +121,10 @@ define signing_worker (
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
     }
     # XXX once we:
-    #     - get the virtualenv to re-run pip on requirements.txt change, and
-    #     - get puppet running periodically (without blowing away secrets),
+    #     - get the virtualenv to re-run pip on requirements.txt change,
+    #     - get the scriptworker and poller to restart on config or python
+    #       change, and
+    #     - get puppet running periodically,
     #     we can upgrade scriptworker and python deps without sshing in.
 
     # scriptworker config
