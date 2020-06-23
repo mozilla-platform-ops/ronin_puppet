@@ -52,11 +52,21 @@ define signing_worker (
         $poller_dir          = "${scriptworker_base}/poller"
         $poller_config_file  = "${scriptworker_base}/poller/poller.yaml"
         $poller_wrapper      = "${scriptworker_base}/poller/poller_wrapper.sh"
-        # XXX create poller dir, owned by poller user
-        # XXX install notarization-poller in venv, also from scriptworker-scripts
-        # XXX poller wrapper + launchd
+
+        $required_directories = [
+          $poller_dir,
+          "${poller_dir}/logs",
+        ]
+        file { $required_directories:
+          ensure => 'directory',
+          owner  =>  $poller_user,
+          group  =>  $group,
+          mode   => '0750',
+        }
         # XXX poller secrets (accessToken for prod + tb-prod), but we also share
         #     the notarization account user+pass secret with script_config.yaml
+        # XXX poller.yaml
+        # XXX poller wrapper + launchd
     }
 
     $ed_key_path = $ed_key_filename? {
