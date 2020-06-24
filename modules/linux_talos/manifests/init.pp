@@ -81,4 +81,3 @@ class linux_talos () {
     }
   }
 }
-

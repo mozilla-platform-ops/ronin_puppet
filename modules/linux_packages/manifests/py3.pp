@@ -12,4 +12,3 @@ class linux_packages::py3 {
     }
 
 }
-

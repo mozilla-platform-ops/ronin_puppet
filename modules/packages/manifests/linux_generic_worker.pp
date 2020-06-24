@@ -35,4 +35,3 @@ class packages::linux_generic_worker (
         checksum            => $quarantine_worker_sha256,
     }
 }
-

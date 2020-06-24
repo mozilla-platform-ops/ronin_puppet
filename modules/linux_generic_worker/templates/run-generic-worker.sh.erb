@@ -43,7 +43,7 @@ if [ $exitstatus -eq 69 ]; then
         # create a semaphore file
         echo "quarantined worker" > <%= scope.lookupvar('roles_profiles::profiles::cltbld_user::homedir') %>/quarantined
 
-        # Submit a new bug to Bugzilla that reports that the worker has been quarantined, 
+        # Submit a new bug to Bugzilla that reports that the worker has been quarantined,
         # in order to alert CI Duty to the failure, track status and facilitate resolution.
         create_bug_self_failure
     fi
@@ -56,7 +56,7 @@ elif [ $exitstatus -gt 69 -o $exitstatus -lt 69 ]; then
     fi
     # Self resolve the bug and remove bug_id file if file exist
     if [ -f <%= scope.lookupvar('roles_profiles::profiles::cltbld_user::homedir') %>/bug_id ]; then
-        resolve_bug_self_failure    
+        resolve_bug_self_failure
         /bin/rm -rf <%= scope.lookupvar('roles_profiles::profiles::cltbld_user::homedir') %>/bug_id
     fi
     # Now reboot the machine immediately (time costs money)

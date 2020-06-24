@@ -95,7 +95,7 @@ bundle install
 	include roles_profiles::roles::your_favorite_role
 	```
 
-1. (optional) Write spec tests. 
+1. (optional) Write spec tests.
 
     Convergence is somewhat tolerant of failures. Write tests to ensure that the
     system is in the desired state. Tests help ensure that refactoring doesn't
