@@ -29,7 +29,7 @@ env:
 
 stages:
   - pre-commit
-  - analysis
+  - install
   - test
 
 script:
@@ -44,14 +44,8 @@ jobs:
       language: python
       before_install: pip3 install pre-commit
       script: pre-commit run --all-files
-    - stage: analysis
+    - stage: install
       env: KITCHEN_TARGET=none
-      name: "puppet parser validate"
-      script: bundle exec puppet parser validate `find modules -name '*.pp'`
-    - env: KITCHEN_TARGET=none
-      name: "puppet lint"
-      script: bundle exec puppet-lint --fail-on-warnings `find modules -name '*.pp'`
-    - env: KITCHEN_TARGET=none
       name: "r10k puppetfile install"
       script: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
 
