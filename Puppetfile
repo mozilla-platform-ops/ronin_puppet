@@ -18,6 +18,7 @@ mod 'ipcrm-registry_acl', '0.0.6'
 mod 'puppetlabs-scheduled_task', '1.0.1'
 mod 'puppetlabs-vcsrepo', '2.4.0'
 mod 'jorten-timezone', '0.1.0'
+mod 'puppetlabs-yaml', '0.2.0'
 
 mod 'mac_profiles_handler',
   :git => "https://github.com/keeleysam/puppet-mac_profiles_handler.git",
@@ -26,14 +27,3 @@ mod 'mac_profiles_handler',
 mod 'hiera_vault',
   :git => "https://github.com/petems/petems-hiera_vault.git",
   :commit => 'a99fe47233a6033bbe86f7940e8842be8eaf3254'
-
-# comment
-
-# might be needed
-# mod 'puppetlabs-reboot', '2.1.1'
-# mod 'puppetlabs-docker', '3.1.0'
-# mod 'puppetlabs-accounts', '3.1.0'
-# mod 'puppetlabs-tagmail', '2.5.0'
-# mod 'puppetlabs-cron_core', '1.0.0'
-# mod 'puppetlabs-sshkeys_core', '1.0.1'
-# mod 'puppetlabs-host_core', '1.0.1'
