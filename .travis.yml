@@ -28,6 +28,7 @@ env:
   - KITCHEN_TARGET=maas-rack
 
 stages:
+  - pre-commit
   - analysis
   - test
 
