@@ -25,3 +25,6 @@ vendor/
 
 # IDEs
 .idea/
+
+# ignore bolt rerun state file
+.rerun.json

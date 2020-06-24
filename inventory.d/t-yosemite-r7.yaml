@@ -1,0 +1,25 @@
+---
+name: t-yosemite-r7
+config:
+  ssh:
+    user: root
+groups:
+  - name: t-yosemite-r7-mdc1
+    targets:
+      - t-yosemite-r7-245.test.releng.mdc1.mozilla.com
+      - t-yosemite-r7-246.test.releng.mdc1.mozilla.com
+      - t-yosemite-r7-247.test.releng.mdc1.mozilla.com
+      - t-yosemite-r7-248.test.releng.mdc1.mozilla.com
+      - t-yosemite-r7-249.test.releng.mdc1.mozilla.com
+      - t-yosemite-r7-250.test.releng.mdc1.mozilla.com
+      - t-yosemite-r7-251.test.releng.mdc1.mozilla.com
+  - name: t-yosemite-r7-mdc2
+    targets:
+      - t-yosemite-r7-007.test.releng.mdc2.mozilla.com
+      - t-yosemite-r7-008.test.releng.mdc2.mozilla.com
+      - t-yosemite-r7-009.test.releng.mdc2.mozilla.com
+      - t-yosemite-r7-010.test.releng.mdc2.mozilla.com
+      - t-yosemite-r7-011.test.releng.mdc2.mozilla.com
+      - t-yosemite-r7-012.test.releng.mdc2.mozilla.com
+      - t-yosemite-r7-013.test.releng.mdc2.mozilla.com
+      - t-yosemite-r7-014.test.releng.mdc2.mozilla.com

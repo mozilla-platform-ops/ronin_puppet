@@ -7,13 +7,14 @@ class roles_profiles::profiles::vnc {
     case $::operatingsystem {
         'Windows': {
 
-            $firewall_allowed_ips = lookup('win_dc_jumphosts')
             $pw_hash              = lookup('win_vncpw_hash')
             $read_only_pw_hash    = lookup('win_readonly_vncpw_hash')
             $ini_file             = "${facts['custom_win_programfiles']}\\uvnc bvba\\UltraVNC\\ultravnc.ini"
             $package              = 'UltraVnc'
             $msi                  = 'UltraVnc_1223_X64.msi'
-            $firewall_port        = 5900
+            $mdc1_jumphosts       = lookup('windows.datacenter.mdc1.jump_hosts')
+            $mdc2_jumphosts       = lookup('windows.datacenter.mdc2.jump_hosts')
+            $firewall_port        = lookup('windows.datacenter.ports.vnc')
             $firewall_name        = 'UltraVNC'
 
             class { 'win_ultravnc':
@@ -26,11 +27,17 @@ class roles_profiles::profiles::vnc {
             case $facts['custom_win_mozspace'] {
                 # Restrict VNC access in datacenters to jump hosts.
                 'mdc1', 'mdc2': {
-                    win_firewall::open_local_port { "allow_${name}":
+                    win_firewall::open_local_port { "allow_${firewall_name}_mdc1_jumphost":
                         port            => $firewall_port,
-                        remote_ip       => $firewall_allowed_ips,
-                        reciprocal      => false,
-                        fw_display_name => $firewall_name,
+                        remote_ip       => $mdc1_jumphosts,
+                        reciprocal      => true,
+                        fw_display_name => "${firewall_name}_mdc1",
+                    }
+                    win_firewall::open_local_port { "allow_${firewall_name}_mdc2_jumphost":
+                        port            => $firewall_port,
+                        remote_ip       => $mdc1_jumphosts,
+                        reciprocal      => true,
+                        fw_display_name => "${firewall_name}_mdc2",
                     }
                 }
                 default : {

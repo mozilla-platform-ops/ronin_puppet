@@ -1,0 +1,15 @@
+provider:
+    providerType: standalone
+    rootURL: <%= $win_taskcluster::worker_runner::root_url %>
+    clientID: <%= $win_taskcluster::worker_runner::client_id %>
+    accessToken: <%= $win_taskcluster::worker_runner::access_token %>
+    workerPoolID: <%= $win_taskcluster::worker_runner::worker_pool_id %>
+    workerGroup: <%= $win_taskcluster::worker_runner::worker_group %>
+    workerID: <%= $win_taskcluster::worker_runner::worker_id %>
+    providerMetadata: {}
+    workerLocation: {}
+worker:
+    implementation: generic-worker
+    path: <%= $win_taskcluster::worker_runner::gw_exe_path %>
+    protocolPipe: \\.\pipe\generic-worker
+    configPath: <%= $win_taskcluster::worker_runner::config_file %>

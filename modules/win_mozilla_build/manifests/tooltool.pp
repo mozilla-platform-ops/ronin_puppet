@@ -32,9 +32,11 @@ class win_mozilla_build::tooltool {
                                         },
         inherit_parent_permissions => true,
     }
-    file { "${builds}\\relengapi.tok":
-        content   => $win_mozilla_build::tooltool_tok,
-        show_diff => false,
+    if $win_mozilla_build::tooltool_tok != undef {
+        file { "${builds}\\relengapi.tok":
+            content   => $win_mozilla_build::tooltool_tok,
+            show_diff => false,
+        }
     }
     # This script will get the SSL Server Certificate for https://tooltool.mozilla-releng.net
     # and will add it to the local user store

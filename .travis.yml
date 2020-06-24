@@ -1,11 +1,19 @@
 ---
 language: ruby
+os: linux
 dist: xenial
+services: docker
 rvm:
   - 2.6
 
-os: linux
-services: docker
+cache:
+  directories:
+  - $HOME/.cache/pre-commit
+
+# safelist - we only build on this list
+branches:
+  only:
+    - master
 
 before_install:
   - gem update --system
@@ -29,6 +37,12 @@ script:
 
 jobs:
   include:
+    - stage: pre-commit
+      env: KITCHEN_TARGET=none
+      name: "exec pre-commit hooks"
+      language: python
+      before_install: pip3 install pre-commit
+      script: pre-commit run --all-files
     - stage: analysis
       env: KITCHEN_TARGET=none
       name: "puppet parser validate"
@@ -46,6 +60,7 @@ notifications:
     on_success: always
     on_failure: always
     template:
-      - "%{repository_slug} #%{build_number} (%{branch} - %{commit} - %{author}): %{message}"
-      - "Change view   : %{compare_url}"
-      - "Build details : %{build_url}"
+      - "%{repository_slug} #%{build_number} (%{branch} - %{commit} - %{author})"
+      - "Status: %{message}"
+      - "Change view: %{compare_url}"
+      - "Build details: %{build_url}"

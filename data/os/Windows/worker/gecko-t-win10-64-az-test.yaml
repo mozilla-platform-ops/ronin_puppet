@@ -1,0 +1,41 @@
+---
+
+win-worker:
+  # generic-worker
+  generic_worker:
+    # File versions
+    name: "generic-worker-multiuser-windows-amd64"
+    exe_version: '16.6.0'
+
+  taskcluster:
+    worker_runner:
+        provider: "standalone"
+        version: '29.0.1'
+        implementation: "generic-worker"
+    proxy:
+        name: "taskcluster-proxy-windows-amd64"
+        version: '5.1.0'
+    # Refrencing the file directly with version in it
+    # Since there is no programtic way to check the version of the livelog exe
+    livelog_exe: "livelog-windows-amd64-1.1.0.exe"
+    client_id: "azure/gecko-t/win10-64-az-test"
+    worker_pool_id: "gecko-t/win10-64-az-test"
+    worker_group: "test"
+
+  # Mozilla-build
+  mozilla_build:
+    version: '3.2'
+    hg_version: '4.7.1'
+    py3_pip_version: '19.2.1'
+    py3_zstandard_version: '0.11.1'
+
+  # Mozilla profile
+  mozilla_profile:
+    source: "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/Windows/mozilla/mozprofilerprobe.mof"
+    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
+
+  # Applications
+  vnc_msi:  "UltraVnc_1223_X64.msi"
+  vnc_name:  "UltraVnc"
+  nssm:
+    version: '2.24'

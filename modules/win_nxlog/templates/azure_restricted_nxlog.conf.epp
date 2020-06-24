@@ -1,0 +1,84 @@
+define ROOT C:\Program Files (x86)\nxlog
+
+Moduledir %ROOT%\modules
+CacheDir  %ROOT%\data
+Pidfile   %ROOT%\data\nxlog.pid
+SpoolDir  %ROOT%\data
+LogFile   %ROOT%\data\nxlog.log
+
+<Extension syslog>
+  Module xm_syslog
+</Extension>
+
+<Extension multiline-datetime-header>
+  Module xm_multiline
+  HeaderLine /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ:\s/
+</Extension>
+
+<Extension multiline-gw-datetime-header>
+  Module xm_multiline
+  HeaderLine /^\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d\s|Z:\\task_\d\d\d\d\d\d\d\d\d\d>/
+</Extension>
+
+<Input eventlog_apps>
+  Module im_msvistalog
+  Query <QueryList>\
+          <Query Id="0">\
+            <Select Path="Application">*[System[Provider[@Name='Bootstrap'] or Provider[@Name='MaintainSystem']]]</Select>\
+          </Query>\
+        </QueryList>
+</Input>
+
+<Input generic_worker_log>
+  Module im_file
+  File 'C:/generic-worker/generic-worker.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType multiline-gw-datetime-header
+  Exec if $raw_event =~ /^(\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d)\s(.*)/s { $EventTime = parsedate($1); $Message = $2; }
+  Exec $SourceName = 'generic-worker';
+</Input>
+
+<Input generic_worker_service_log>
+  Module im_file
+  File 'C:/generic-worker/generic-worker-service.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'generic-worker-service';
+</Input>
+
+<Input worker_runner_service_log>
+  Module im_file
+  File 'C:\worker-runner\worker-runner-service.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'worker-runner-service';
+</Input>
+
+<Output papertrail>
+  Module om_ssl
+  Host <%= $win_nxlog::configuration::log_aggregator %>
+  Port 52806
+  CAFile %ROOT%\cert\papertrail-bundle.pem
+  AllowUntrusted FALSE
+  Exec $Hostname = hostname_fqdn();
+  Exec to_syslog_ietf();
+</Output>
+
+<Route eventlog_apps_papertrail>
+  Path eventlog_apps => papertrail
+</Route>
+
+<Route generic_worker_log_papertrail>
+  Path generic_worker_log => papertrail
+</Route>
+
+<Route generic_worker_service_log_papertrail>
+  Path generic_worker_service_log => papertrail
+</Route>
+
+<Route worker_runner_service_log_papertrail>
+  Path worker_runner_service_log => papertrail
+</Route>

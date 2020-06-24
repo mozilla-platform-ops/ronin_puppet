@@ -20,7 +20,7 @@ class win_mozilla_build (
     String $system32,
     String $external_source,
     String $builds_dir,
-    String $tooltool_tok,
+    $tooltool_tok = undef
 ) {
 
     if $::operatingsystem == 'Windows' {

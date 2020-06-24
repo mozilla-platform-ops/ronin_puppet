@@ -1,36 +1,54 @@
 ---
-# servers
-# log aggregators
-win_dc_log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
 
-# jumphosts
-# Windows firewall exceptions uses IP addresses, and must be passed to Windows firewall module as a string.
-win_dc_jumphosts: '10.49.48.100,10.49.48.101,10.51.48.100,10.51.48.101'
+windows:
 
-# ntp servers
-win_datacenterntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
+# Datacnter resources
+  datacenter:
+    log_aggregator: "log-aggregator.srv.releng.%{facts.custom_win_mozspace}.mozilla.com"
+    ntp: "infoblox1.private.%{facts.custom_win_mozspace}.mozilla.com"
 
-# S3 URLs
-win_ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
-win_ext_gpg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/gpg"
+    mdc1:
+      # KMS server ip is needed for cloud authentication
+      kms:
+        ip: "10.48.69.100"
+      jump_hosts: '10.49.48.100,10.49.48.101'
+    mdc2:
+      jump_hosts: '10.51.48.100,10.51.48.101'
+    ports:
+      ssh: 22
+      vnc: 5900
 
+  # External resources
+  external:
+    ntp: "0.pool.ntp.org"
+    papertrail: "logs.papertrailapp.com"
+
+  # S3 resources
+  s3:
+    ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
+    ext_gpg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/gpg"
+    log_bucket: "arn:aws:s3:::ronin-windows-logs"
+
+  # Taskcluster resources
+  taskcluster:
+    root_url: "https://firefox-ci-tc.services.mozilla.com"
+    wstaudience: "firefoxcitc"
+    wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
+    package_source: "https://github.com/taskcluster/generic-worker/releases/download"
+    relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
+
+  # Windows KMS
+  # KMS keys are publicly available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
+  kms:
+    key:
+      microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
+
+  # Common dirs across all Windows platforms
+  dir:
+    generic_worker: "%{facts.custom_win_systemdrive}\\generic-worker"
+    worker_runner: "%{facts.custom_win_systemdrive}\\worker-runner"
+    nssm: "%{facts.custom_win_systemdrive}\\nssm"
+
+# this should be changed into a defined type
 # Useful commands
 win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -file"
-
-# Taskcluster data
-taskcluster:
-  root_url: "https://firefox-ci-tc.services.mozilla.com"
-  wstaudience: "firefoxcitc"
-  wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
-
-# Windows servers
-windows_servers:
-  # Needed for AWS license activation. Using KMS server is MDC1
-  kms_mdc1_ip:  "10.48.69.100"
-
-# Windows KMS
-kms:
-  server:
-    mdc1_ip:  "10.48.69.100"
-  key:
-    microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
