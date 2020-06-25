@@ -21,10 +21,6 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
 
             require linux_talos
 
-            # g-w
-            $worker_type  = 'gecko-t-linux-talos'
-            $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
-
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_linux_talos.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_linux_talos.taskcluster_access_token')
             $livelog_secret           = lookup('generic_worker.gecko_t_linux_talos.livelog_secret')
