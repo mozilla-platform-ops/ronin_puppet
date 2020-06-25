@@ -12,7 +12,10 @@ class roles_profiles::profiles::linux_base {
             include ::roles_profiles::profiles::users
             include ::roles_profiles::profiles::relops_users
             include ::roles_profiles::profiles::sudo
-            # TODO: logging (send to aggregator/relay)
+
+            # TODO:
+            # - add auditd
+            # - add sending of logs to log aggregator/relay
         }
         default: {
             fail("${::operatingsystem} not supported")
