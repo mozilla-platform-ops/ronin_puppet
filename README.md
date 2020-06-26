@@ -106,3 +106,9 @@ bundle install
 1. Add the new suite to Travis.
 
     See `.travis.yml`.
+
+#### test-kitchen TODOS
+
+- refactor kitchen testing
+  - rename linux kitchen env to base
+  - create a talos kitchen env for non-base
