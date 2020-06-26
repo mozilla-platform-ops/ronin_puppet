@@ -8,7 +8,6 @@ class linux_vnc {
   # include config
   # include users::builder
   include linux_packages::vnc_server
-  include roles_profiles::profiles::cltbld_user
 
   if (lookup('cltbld_user.vnc_password') == '') {
     fail('No VNC password set')
