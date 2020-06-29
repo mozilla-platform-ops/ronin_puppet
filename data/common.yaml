@@ -26,7 +26,6 @@ user_groups:
   cia:
     - bclary
 
-
 scriptworker_users:
   dep:
     depbld1:
@@ -64,6 +63,8 @@ scriptworker_users:
         - mac_sign_and_pkg
         - mac_geckodriver
         - mac_notarize
+        - mac_notarize_part_1
+        - mac_notarize_part_3
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
@@ -87,6 +88,8 @@ scriptworker_users:
         - mac_sign_and_pkg
         - mac_geckodriver
         - mac_notarize
+        - mac_notarize_part_1
+        - mac_notarize_part_3
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
@@ -103,7 +106,6 @@ scriptworker_users:
         - notary9
         - notary10
 
-
 scriptworker_config:
     ff-prod:
         taskcluster_scope_prefix: 'project:releng:signing:'
@@ -111,18 +113,32 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'signing-mac-v1'
+        scriptworker_version: "35.2.0"
+        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
     tb-prod:
         taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'tb-signing-mac-v1'
+        scriptworker_version: "35.2.0"
+        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         sign_chain_of_trust: false
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
+        scriptworker_version: "35.2.0"
+        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
+
+poller_config:
+    ff-prod:
+        user: poller
+        worker_type: mac-notarization-poller
+    tb-prod:
+        user: poller
+        worker_type: tb-mac-notarization-poller
 
 signingworker_roles:
     ff-prod:
@@ -233,6 +249,8 @@ all_users:
   notary9:
     - ssh-rsa AAAA invalid@mozilla.com
   notary10:
+    - ssh-rsa AAAA invalid@mozilla.com
+  poller:
     - ssh-rsa AAAA invalid@mozilla.com
   depbld1:
     - ssh-rsa AAAA invalid@mozilla.com

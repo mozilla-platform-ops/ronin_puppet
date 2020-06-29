@@ -1,5 +1,6 @@
--e git+https://github.com/mozilla-releng/scriptworker-scripts#egg=mozbuild&subdirectory=vendored/mozbuild
--e git+https://github.com/mozilla-releng/scriptworker-scripts#egg=scriptworker_client&subdirectory=scriptworker_client
--e git+https://github.com/mozilla-releng/scriptworker-scripts#egg=iscript&subdirectory=iscript
+-e git+https://github.com/mozilla-releng/scriptworker-scripts@<%= @scriptworker_scripts_revision %>#egg=mozbuild&subdirectory=vendored/mozbuild
+-e git+https://github.com/mozilla-releng/scriptworker-scripts@<%= @scriptworker_scripts_revision %>#egg=scriptworker_client&subdirectory=scriptworker_client
+-e git+https://github.com/mozilla-releng/scriptworker-scripts@<%= @scriptworker_scripts_revision %>#egg=iscript&subdirectory=iscript
+-e git+https://github.com/mozilla-releng/scriptworker-scripts@<%= @scriptworker_scripts_revision %>#egg=notarization_poller&subdirectory=notarization_poller
 <%= @widevine_clone_dir %>
-scriptworker
+scriptworker==<%= @scriptworker_version %>

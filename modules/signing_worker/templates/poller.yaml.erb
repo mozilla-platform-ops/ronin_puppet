@@ -1,0 +1,17 @@
+taskcluster_root_url: https://firefox-ci-tc.services.mozilla.com/
+provisioner_id: scriptworker-prov-v1
+worker_group: <%= @worker_group %>
+worker_type: <%= @poller_config['worker_type'] %>
+worker_id: <%= @poller_worker_id %>
+
+taskcluster_client_id: "<%= @poller_config['taskcluster_client_id'] %>"
+taskcluster_access_token: "<%= @poller_config['taskcluster_access_token'] %>"
+notarization_username: "<%= @poller_config['notarization_account'] %>"
+notarization_password: "<%= @poller_config['notarization_password'] %>"
+
+artifact_upload_timeout: 1200
+verbose: true
+
+log_dir: <%= @poller_dir %>/logs
+work_dir: <%= @poller_dir %>/work
+watch_log_file: true
