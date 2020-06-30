@@ -4,28 +4,31 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class linux_vnc {
-  # include config
-  # include users::builder
+class linux_vnc (
+    String $user,
+    String $group,
+    String $user_homedir,
+    String $user_password,
+) {
   include linux_packages::vnc_server
 
   if (lookup('cltbld_user.vnc_password') == '') {
     fail('No VNC password set')
   }
   file {
-    "${roles_profiles::profiles::cltbld_user::homedir}/.vnc":
+    "${user_homedir}/.vnc":
       ensure => directory,
       mode   => '0700',
-      owner  => $roles_profiles::profiles::cltbld_user::username,
-      group  => $roles_profiles::profiles::cltbld_user::group;
-    "${roles_profiles::profiles::cltbld_user::homedir}/.vnc/passwd":
+      owner  => $user,
+      group  => $group;
+    "${user_homedir}/.vnc/passwd":
       ensure => absent;
     '/etc/vnc_passwdfile':
       ensure    => file,
       mode      => '0600',
       owner     => root,
       group     => root,
-      content   => lookup('cltbld_user.vnc_password'),
+      content   => $user_password,
       show_diff => false;
   }
   case $::operatingsystemrelease {
