@@ -6,9 +6,9 @@ create_bug_self_failure() {
     product="Infrastructure & Operations"
     component="RelOps: Hardware"
     # Store the json into the file
-    json_file="<%= scope.lookupvar('roles_profiles::profiles::cltbld_user::homedir') %>/bug.json"
+    json_file="<%= @user_homedir %>/bug.json"
     # Store the id of the bug into the file, for future use
-    bug_id_file="<%= scope.lookupvar('roles_profiles::profiles::cltbld_user::homedir') %>/bug_id"
+    bug_id_file="<%= @user_homedir %>/bug_id"
     # Provide last20 lines from the log, and put this information into the bug
     log=`tail -20 $logfile|grep generic-worker`
     summary="Generic worker on host <%= @fqdn %> returned exit code 69"
@@ -42,9 +42,9 @@ sed -i -e 's/}//g' $bug_id_file
 resolve_bug_self_failure() {
     BUGZILLA_API_KEY="<%= @bugzilla_api_key %>"
     # Store the json into the file
-    json_file="<%= scope.lookupvar('roles_profiles::profiles::cltbld_user::homedir') %>/bug.json"
+    json_file="<%= @user_homedir %>/bug.json"
     # Store the id of the bug into the file
-    bug_id_file="<%= scope.lookupvar('roles_profiles::profiles::cltbld_user::homedir') %>/bug_id"
+    bug_id_file="<%= @user_homedir %>/bug_id"
 
     bug_id=`awk -F: '{print $2}' $bug_id_file`
 
