@@ -12,9 +12,6 @@ class linux_vnc (
 ) {
   include linux_packages::vnc_server
 
-  if (lookup('cltbld_user.vnc_password') == '') {
-    fail('No VNC password set')
-  }
   file {
     "${user_homedir}/.vnc":
       ensure => directory,
