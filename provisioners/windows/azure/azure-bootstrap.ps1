@@ -96,6 +96,25 @@ function Install-BootstrapModule {
   }
 }
 
+function Get-SysprepState {
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    try {
+      $sysprepState = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State' -Name 'ImageState').ImageState
+      Write-Log -message ('{0} :: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State ImageState read as {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
+    } catch {
+      Write-Log -message ('{0} :: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State ImageState read failure. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+      $sysprepState = $null
+    }
+    return $sysprepState
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 
@@ -105,24 +124,38 @@ $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicPa
 $src_Revision = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRevision') })[0].value
 $image_provisioner = 'azure'
 
+$sysprepState = (Get-SysprepState)
+switch -regex ($sysprepState) {
+  'IMAGE_STATE_COMPLETE|IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
+    try {
+      Set-ExecutionPolicy -ExecutionPolicy 'RemoteSigned' -Force -ErrorAction SilentlyContinue
+    } catch {
+      Write-Log -message ('{0} :: failed to set powershell execution policy to remote signed. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
+	}
 
-If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
-  $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-}
-If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-  Setup-Logging
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-  Install-AzPrerequ
-  Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-  shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
-}
-If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Ronin-PreRun
-  Bootstrap-AzPuppet
-}
-If ($stage -eq 'complete') {
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-#  Bootstrap-CleanUp
+    If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
+      $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+    }
+    If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+      Setup-Logging
+      Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+      Install-AzPrerequ
+      Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+      shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
+    }
+    If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
+      Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      Ronin-PreRun
+      Bootstrap-AzPuppet
+    }
+    If ($stage -eq 'complete') {
+      Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      #  Bootstrap-CleanUp
+    }
+  }
+  default {
+    Write-Log -message ('{0} :: no available implementation for sysprep state: {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'WARN'
+    break
+  }
 }
