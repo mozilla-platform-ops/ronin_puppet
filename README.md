@@ -4,15 +4,24 @@
 
 ## structure
 
-```
-modules/roles_profiles/manifests/roles
-modules/roles_profiles/manifests/profiles
-```
+- `modules/`: modules (or component modules)
+	- Usually only support a single operating system.
+- `modules/roles_profiles/manifests/profiles`: profiles
+  - Profiles provide an OS-independent interface to functionality provided by roles.
+  - Where os detection and routing is done.
+- `modules/roles_profiles/manifests/roles`
+  - Roles specify everything a machine type needs to fufill a role.
+	- Calls a single profile, maps to device groups.
 
-Roles and profiles are both types of Puppet modules.
+### structural rules
 
-- Roles specify everything a machine type needs to fufill a role.
-- Profiles provide an OS-independent interface to functionality provided by roles.
+- #1 Profiles can't call other profiles.
+  - Allowed in when creating 'base' OS profiles.
+  - Goal is to have roles be completely transparent (at least at the top level).
+- #2 Profiles can't be called/included inside (component) modules.
+- #3 Hiera lookups should only be done within profiles and then passed as args to the class.
+
+For more information see: https://puppet.com/docs/pe/2018.1/the_roles_and_profiles_method.html
 
 ## testing
 
