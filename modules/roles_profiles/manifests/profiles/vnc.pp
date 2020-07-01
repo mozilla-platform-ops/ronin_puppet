@@ -54,7 +54,6 @@ class roles_profiles::profiles::vnc {
             $group = lookup('linux_vnc_group')
             $password = lookup('linux_vnc_pass')
 
-            # include linux_vnc
             class { 'linux_vnc':
                 user         => $user,
                 group        => $group,
