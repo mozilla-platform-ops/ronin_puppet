@@ -55,10 +55,10 @@ class roles_profiles::profiles::vnc {
             $password = lookup('linux_vnc.password')
 
             class { 'linux_vnc':
-                user         => $user,
-                group        => $group,
-                user_homedir => $user_homedir,
-                password     => $password,
+                user          => $user,
+                group         => $group,
+                user_homedir  => $user_homedir,
+                user_password => $password,
             }
         }
         'Darwin': {
