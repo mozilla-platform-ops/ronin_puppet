@@ -52,7 +52,7 @@ class roles_profiles::profiles::vnc {
             $user = lookup('linux_vnc.user')
             $user_homedir = lookup('linux_vnc.user_homedir')
             $group = lookup('linux_vnc.group')
-            $password = lookup('linux_vnc.pass')
+            $password = lookup('linux_vnc.password')
 
             class { 'linux_vnc':
                 user         => $user,
