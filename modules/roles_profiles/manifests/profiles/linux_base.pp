@@ -16,6 +16,7 @@ class roles_profiles::profiles::linux_base {
             # TODO:
             # - add auditd
             # - add sending of logs to log aggregator/relay
+            # - repo pinning
         }
         default: {
             fail("${::operatingsystem} not supported")
