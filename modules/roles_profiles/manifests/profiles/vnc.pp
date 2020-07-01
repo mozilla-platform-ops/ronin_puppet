@@ -49,10 +49,10 @@ class roles_profiles::profiles::vnc {
             # TODO Add 32 bit support
         }
         'Ubuntu': {
-            $user = lookup('linux_vnc_user')
-            $user_homedir = lookup('linux_vnc_user_homedir')
-            $group = lookup('linux_vnc_group')
-            $password = lookup('linux_vnc_pass')
+            $user = lookup('linux_vnc.user')
+            $user_homedir = lookup('linux_vnc.user_homedir')
+            $group = lookup('linux_vnc.group')
+            $password = lookup('linux_vnc.pass')
 
             class { 'linux_vnc':
                 user         => $user,

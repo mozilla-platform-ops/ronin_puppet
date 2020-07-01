@@ -11,11 +11,15 @@ provisioner:
   hiera_deep_merge: true
   hiera_writer_files:
     - secrets/vault.yaml:
+        linux_vnc:
+          user: cltbld
+          group: cltbld
+          user_homedir: '/home/cltbld'
+          password: 'vnc4free'
         cltbld_user:
           password: 'abc123'
           salt: 'h3hhahchahah'
           iterations: '3'
-          vnc_password: 'vnc4free'
         generic_worker:
           gecko_t_linux_talos:
             taskcluster_client_id: '123'
