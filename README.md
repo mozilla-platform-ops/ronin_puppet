@@ -16,8 +16,8 @@
 ### structural rules
 
 - #1 Profiles can't call other profiles.
-  - Allowed in when creating 'base' OS profiles.
   - Goal is to have roles be completely transparent (at least at the top level).
+  - Exception: Allowed when creating 'base' OS profiles.
 - #2 Profiles can't be called/included inside (component) modules.
 - #3 Hiera lookups should only be done within profiles and then passed as args to the class.
 
