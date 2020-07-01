@@ -49,7 +49,18 @@ class roles_profiles::profiles::vnc {
             # TODO Add 32 bit support
         }
         'Ubuntu': {
-            include linux_vnc
+            $user = lookup('linux_vnc_user')
+            $user_homedir = lookup('linux_vnc_user_homedir')
+            $group = lookup('linux_vnc_group')
+            $password = lookup('linux_vnc_pass')
+
+            # include linux_vnc
+            class { 'linux_vnc':
+                user         => $user,
+                group        => $group,
+                user_homedir => $user_homedir,
+                password     => $password,
+            }
         }
         'Darwin': {
             include macos_utils::enable_screensharing
