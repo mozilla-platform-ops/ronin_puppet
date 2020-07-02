@@ -1,5 +1,5 @@
 #! /usr/bin/env ruby
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'puppet/type'
 require 'puppet_x/puppetlabs/powershell/powershell_version'
 require 'puppet_x/puppetlabs/powershell/compatible_powershell_version'

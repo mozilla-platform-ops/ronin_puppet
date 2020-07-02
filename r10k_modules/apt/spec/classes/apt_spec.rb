@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 sources_list = {  ensure: 'file',
                   path: '/etc/apt/sources.list',

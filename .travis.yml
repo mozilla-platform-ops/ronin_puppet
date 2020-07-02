@@ -2,8 +2,9 @@
 language: ruby
 os: linux
 dist: xenial
+services: docker
 rvm:
-  - 2.4.5
+  - 2.6
 
 cache:
   directories:
@@ -20,16 +21,33 @@ before_install:
 
 gemfile: ".gemfile"
 
+env:
+  - KITCHEN_TARGET=bitbar
+  - KITCHEN_TARGET=linux
+  - KITCHEN_TARGET=maas-region
+  - KITCHEN_TARGET=maas-rack
+
+stages:
+  - pre-commit
+  - install
+  - test
+
+script:
+  - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge $KITCHEN_TARGET
+  - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify $KITCHEN_TARGET
+
 jobs:
   include:
-    - name: "exec pre-commit hooks"
+    - stage: pre-commit
+      env: KITCHEN_TARGET=none
+      name: "exec pre-commit hooks"
       language: python
       before_install: pip3 install pre-commit
-      script:
-        - pre-commit run --all-files
-    - name: "r10k puppetfile install"
-      script:
-        - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+      script: pre-commit run --all-files
+    - stage: install
+      env: KITCHEN_TARGET=none
+      name: "r10k puppetfile install"
+      script: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
 
 notifications:
   slack:

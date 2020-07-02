@@ -1,6 +1,6 @@
 #!/usr/bin/env rspec
 
-require 'spec_helper'
+require_relative 'spec_helper'
 
 firewallchain = Puppet::Type.type(:firewallchain)
 

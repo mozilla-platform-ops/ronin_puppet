@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'rsyslog::client', type: :class do
   context 'Rsyslog version >= 8' do

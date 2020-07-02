@@ -1,5 +1,5 @@
 #! /usr/bin/env ruby
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe Puppet::Type.type(:vcsrepo) do
   before :each do

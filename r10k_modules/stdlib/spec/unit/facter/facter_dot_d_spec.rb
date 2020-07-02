@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'facter/facter_dot_d'
 
 describe Facter::Util::DotD do # rubocop:disable RSpec/FilePath : Spec path is as it should be

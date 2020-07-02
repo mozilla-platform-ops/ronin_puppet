@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'unique' do
   if Puppet.version.to_f < 5.0

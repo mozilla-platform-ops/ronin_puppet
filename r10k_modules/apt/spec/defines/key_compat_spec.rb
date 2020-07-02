@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 def contains_apt_key_example(title)
   { id: title,

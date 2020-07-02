@@ -20,5 +20,11 @@
 /manifests/nodes/*
 !/manifests/nodes/README.md
 
+# bundler paths
+vendor/
+
+# IDEs
+.idea/
+
 # ignore bolt rerun state file
 .rerun.json
