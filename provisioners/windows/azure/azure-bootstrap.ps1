@@ -123,6 +123,7 @@ $src_Organisation = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasic
 $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRepository') })[0].value
 $src_Revision = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRevision') })[0].value
 $image_provisioner = 'azure'
+$audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
 
 $sysprepState = (Get-SysprepState)
 switch -regex ($sysprepState) {
@@ -137,6 +138,7 @@ switch -regex ($sysprepState) {
       $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
     }
     If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Setup-Logging
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
@@ -145,6 +147,7 @@ switch -regex ($sysprepState) {
       shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
     }
     If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
+      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Ronin-PreRun
       Bootstrap-AzPuppet
