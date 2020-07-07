@@ -154,6 +154,7 @@ switch -regex ($sysprepState) {
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
         RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
         Bootstrap-AzPuppet
+        $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
       } until ($stage -like 'complete')
       Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       Generalize_Vm -sourceOrg $src_Organisation -sourceRepo $src_Repository -sourceRev $src_Revision $src_Revision -vm_type azure
