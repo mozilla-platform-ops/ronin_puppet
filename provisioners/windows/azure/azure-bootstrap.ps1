@@ -144,13 +144,21 @@ switch -regex ($sysprepState) {
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-AzPrerequ
       Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-      #shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
-    }
-    If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
+
+      $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+      RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
+
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Ronin-PreRun
-      Bootstrap-AzPuppet
+      do {
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
+        Bootstrap-AzPuppet
+      } until ($stage -eq 'complete')
+      Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      Generalize_Vm -sourceOrg $src_Organisation -sourceRepo $src_Repository -sourceRev $src_Revision $src_Revision -vm_type azure
+      Write-Log -message  ('{0} :: PAUSE TO RUN GEN COMMAND' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      pause
     }
     If ($stage -eq 'complete') {
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
