@@ -129,7 +129,9 @@ $sysprepState = (Get-SysprepState)
 
 If ($hand_off_ready -eq 'yes') {
  start-sleep -s 60
- shutdown @('-p', '-t', '0', '-c', 'Shutdown; Handing off to Cloud-Image_Builder', '-f', '-d', '4:5')
+ Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+ shutdown @('-p', '-f')
+ exit
 }
 
 
