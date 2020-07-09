@@ -129,6 +129,7 @@ $sysprepState = (Get-SysprepState)
 
 If ($hand_off_ready -eq 'yes') {
  start-sleep -s 60
+ Bootstrap-CleanUp
  Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
  shutdown @('-p', '-f')
  exit
