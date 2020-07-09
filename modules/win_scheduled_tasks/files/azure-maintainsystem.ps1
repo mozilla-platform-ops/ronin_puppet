@@ -281,7 +281,7 @@ function Check-AzVM-Name {
             Rename-Computer -NewName $instanceName
             # Don't waste time/money on rebooting to pick up name change
             # shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
-            exit
+            return
         } else {
             Write-Log -message  ('{0} :: LOOK HERE! Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
         }
