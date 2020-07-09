@@ -124,8 +124,15 @@ $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicPa
 $src_Revision = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRevision') })[0].value
 $image_provisioner = 'azure'
 $audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
-
+$hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 $sysprepState = (Get-SysprepState)
+
+If ($hand_off_ready -eq 'yes') {
+ start-sleep -s 60
+ shutdown @('-p', '-t', '0', '-c', 'Shutdown; Handing off to Cloud-Image_Builder', '-f', '-d', '4:5')
+}
+
+
 switch -regex ($sysprepState) {
   'IMAGE_STATE_COMPLETE|IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
     try {
