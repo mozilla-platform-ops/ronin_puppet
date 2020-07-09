@@ -129,7 +129,7 @@ $sysprepState = (Get-SysprepState)
 switch -regex ($sysprepState) {
   'IMAGE_STATE_COMPLETE|IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
     try {
-      Set-ExecutionPolicy -ExecutionPolicy 'RemoteSigned' -Force -ErrorAction SilentlyContinue
+      Set-ExecutionPolicy -ExecutionPolicy 'RemoteSigned' -Force -ErrorAction SilentlyContinue | Out-Null
     } catch {
       Write-Log -message ('{0} :: failed to set powershell execution policy to remote signed. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
 	}
@@ -164,6 +164,7 @@ switch -regex ($sysprepState) {
     }
     If ($stage -eq 'complete') {
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
       #  Bootstrap-CleanUp
     }
   }
