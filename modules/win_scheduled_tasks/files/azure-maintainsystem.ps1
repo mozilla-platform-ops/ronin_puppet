@@ -292,13 +292,15 @@ function Check-AzVM-Name {
 }
 
 $bootstrap_stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+$hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet reboot_count -ErrorAction SilentlyContinue
   If ( $reboot_count_exists -ne $null) {
   $previous_boots = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").reboot_count
   $new_count = $previous_boots + 1
   Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name reboot_count -value $new_count -force
 }
-If ($bootstrap_stage -eq 'complete') {
+#If ($bootstrap_stage -eq 'complete') {
+If ($hand_off_ready -eq 'yes') {
   Check-AzVM-Name
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
