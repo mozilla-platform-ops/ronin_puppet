@@ -174,9 +174,9 @@ switch -regex ($sysprepState) {
     }
     If ($stage -eq 'complete') {
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-      Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
+      # Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
       Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
-      #  Bootstrap-CleanUp
+      Bootstrap-CleanUp
     }
   }
   default {

@@ -45,6 +45,7 @@ win-worker:
   azure:
     vm_agent:
       version: '2.7.41491.949_191001-1418.fre'
+      name: "Windows Azure VM Agent - 2.7.41491.949"
 
   # Logging
   # Logging level options debug, verbose, or restricted.
