@@ -42,6 +42,9 @@ win-worker:
   vnc_name:  "UltraVnc"
   nssm:
     version: '2.24'
+  azure:
+    vm_agent:
+      version: '2.7.41491.949_191001-1418.fre'
 
   # Logging
   # Logging level options debug, verbose, or restricted.
