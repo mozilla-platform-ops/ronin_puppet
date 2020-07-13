@@ -7,7 +7,7 @@ class roles_profiles::profiles::azure_vm_agent {
     case $::operatingsystem {
         'Windows': {
 
-            $agent_version = lookup('azure.vm.version')
+            $agent_version = lookup('azure.vm_agent.version')
             $package       = 'vm_agent'
             $msi           = "WindowsAzureVmAgent.${agent_version}.msi"
 
