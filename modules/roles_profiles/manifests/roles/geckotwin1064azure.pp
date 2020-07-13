@@ -11,6 +11,7 @@ class roles_profiles::roles::geckotwin1064azure {
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
     include roles_profiles::profiles::scheduled_tasks
+    include roles_profiles::profiles::azure_vm_agent
 
     # Adminstration
     include roles_profiles::profiles::logging
