@@ -174,15 +174,15 @@ switch -regex ($sysprepState) {
     }
     If ($stage -eq 'complete') {
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-      do {
-        start-sleep -s 15
-        Write-Log -message  ('{0} :: Waiting on sysprep to complete. Sleep 15 seconds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      } until ($sysprepState -eq 'IMAGE_STATE_COMPLETE')
-      Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
+      #do {
+       # start-sleep -s 15
+        #Write-Log -message  ('{0} :: Waiting on sysprep to complete. Sleep 15 seconds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      #} until ($sysprepState -eq 'IMAGE_STATE_COMPLETE')
+      #Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
       Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Bootstrap-CleanUp
-      Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      shutdown @('-p', '-f')
+      #Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      #shutdown @('-p', '-f')
     }
   }
   default {
