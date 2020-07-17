@@ -474,6 +474,7 @@ function Generalize_Vm {
   }
   process {
     # Testing adding firewall rules. if this helps it should be moved into Puppet
+    Set-NetConnectionProfile -Name "Network" -NetworkCategory Private
     Enable-PSRemoting -Force
     #Set-NetFirewallRule -DisplayName 'Windows Remote Management (HTTP-In)' -Enabled True
     #New-NetFirewallRule -DisplayName AzurePlatform -Direction Inbound -RemoteAddress 168.63.129.16 -Profile Any -Action Allow -EdgeTraversalPolicy Allow
