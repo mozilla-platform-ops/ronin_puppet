@@ -155,7 +155,8 @@ switch -regex ($sysprepState) {
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-AzPrerequ
       Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-
+    }
+    If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
       $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
       RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
 
