@@ -127,13 +127,13 @@ $audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
 $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 $sysprepState = (Get-SysprepState)
 
-If ($hand_off_ready -eq 'yes') {
- start-sleep -s 60
- Bootstrap-CleanUp
- Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
- shutdown @('-p', '-f')
- exit
-}
+#If ($hand_off_ready -eq 'yes') {
+# start-sleep -s 60
+# Bootstrap-CleanUp
+# Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+# shutdown @('-p', '-f')
+# exit
+# }
 
 
 switch -regex ($sysprepState) {
@@ -159,9 +159,9 @@ switch -regex ($sysprepState) {
 
     }
     If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-      $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-      RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
-
+      #$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+      #RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
+      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Ronin-PreRun
       #do {
@@ -176,12 +176,13 @@ switch -regex ($sysprepState) {
       #pause
     }
     If ($stage -eq 'complete') {
+      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       #do {
        # start-sleep -s 15
         #Write-Log -message  ('{0} :: Waiting on sysprep to complete. Sleep 15 seconds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       #} until ($sysprepState -eq 'IMAGE_STATE_COMPLETE')
-      #Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
+      Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
       Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Bootstrap-CleanUp
       Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
