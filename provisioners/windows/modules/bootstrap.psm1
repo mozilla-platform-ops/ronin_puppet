@@ -195,6 +195,7 @@ function Install-AzPrerequ {
     Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
     Set-location -path $local_dir
     remove-item $work_dir   -Recurse  -force
+    Get-AppxPackage *windowsstore* | Remove-AppxPackage
 
     Start-Process $local_dir\$git /verysilent -wait
     Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
