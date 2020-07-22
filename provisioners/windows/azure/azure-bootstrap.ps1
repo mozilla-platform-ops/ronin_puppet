@@ -95,7 +95,35 @@ function Install-BootstrapModule {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Install-RemoveAppsModule {
+  param (
+    [string] $src_Organisation,
+    [string] $src_Repository,
+    [string] $src_Revision,
+    [string] $app_list  = "win10_default_apps.txt",
+    [string] $local_dir = "$env:systemdrive\BootStrap",
+    [string] $filename = "remove_default_apps.psm1",
+    [string] $module_name = ($filename).replace(".pms1",""),
+    [string] $modulesPath = ('{0}\Modules\removeapps' -f $pshome),
+    [string] $removeapps_module = "$modulesPath\removeapps",
+    [string] $moduleUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $filename),
+    [string] $listUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $app_list)
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    mkdir $bootstrap_module  -ErrorAction SilentlyContinue
+    Invoke-WebRequest $moduleUrl -OutFile "$removeapps_module\\$filename" -UseBasicParsing
+    Get-Content -Encoding UTF8 "$removeapps_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
+    Import-Module -Name $module_name
 
+    Invoke-WebRequest $listUrl -OutFile "$local_dir\\$app_list" -UseBasicParsing
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Get-SysprepState {
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -155,7 +183,10 @@ switch -regex ($sysprepState) {
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-AzPrerequ
       Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-       shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
+      Install-RemoveAppsModule
+	  $apps = @((Get-Content "$env:systemdrive\BootStrap\win10_default_apps.txt"))
+      Remove_Apps -apps $apps
+      shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 
     }
     If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
