@@ -162,16 +162,16 @@ switch -regex ($sysprepState) {
 
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Ronin-PreRun
-      do {
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-        RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
+      #do {
+        #$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        #RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
         Bootstrap-AzPuppet
-        $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-      } until ($stage -like 'complete')
-      Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      Generalize_Vm -sourceOrg $src_Organisation -sourceRepo $src_Repository -sourceRev $src_Revision -vm_type azure
+        #$stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+      #} until ($stage -like 'complete')
+      #Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      #Generalize_Vm -sourceOrg $src_Organisation -sourceRepo $src_Repository -sourceRev $src_Revision -vm_type azure
       # Write-Log -message  ('{0} :: PAUSE TO RUN GEN COMMAND' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      pause
+      #pause
     }
     If ($stage -eq 'complete') {
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
@@ -182,6 +182,9 @@ switch -regex ($sysprepState) {
       #Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
       Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Bootstrap-CleanUp
+      Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      Generalize_Vm -sourceOrg $src_Organisation -sourceRepo $src_Repository -sourceRev $src_Revision -vm_type azure
+      pause
       #Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       #shutdown @('-p', '-f')
     }
