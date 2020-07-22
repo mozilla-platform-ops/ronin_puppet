@@ -113,7 +113,7 @@ function Install-RemoveAppsModule {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    mkdir $bootstrap_module  -ErrorAction SilentlyContinue
+    mkdir $removeapps_module  -ErrorAction SilentlyContinue
     Invoke-WebRequest $moduleUrl -OutFile "$removeapps_module\\$filename" -UseBasicParsing
     Get-Content -Encoding UTF8 "$removeapps_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
     Import-Module -Name $module_name
