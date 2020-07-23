@@ -482,7 +482,7 @@ function Generalize_Vm {
     #New-NetFirewallRule -DisplayName AzurePlatform -Direction Outbound -RemoteAddress 168.63.129.16 -Profile Any -Action Allow
 
     Invoke-WebRequest https://raw.githubusercontent.com/$sourceOrg/$sourceRepo/$sourceRev/provisioners/windows/$vm_type/$xml_file  -outfile $local_xml_file -UseBasicParsing
-    Start-LoggedProcess -filePath ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) -ArgumentList $(if ($workerType -match 'win7') { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml') } else { @('/generalize', '/shutdown', '/oobe') }) -redirectStandardOutput 'C:\log\sysprep-generalize-shutdown-stdout.log' -redirectStandardError 'C:\log\sysprep-generalize-shutdown-stderr.log' -name 'sysprep-generalize-shutdown' # remove the /mode:vm switch if creating images for different hardware profile
+    Start-LoggedProcess -filePath ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) -ArgumentList $(if ($workerType -match 'win7') { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml') } else { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml') }) -redirectStandardOutput 'C:\log\sysprep-generalize-shutdown-stdout.log' -redirectStandardError 'C:\log\sysprep-generalize-shutdown-stderr.log' -name 'sysprep-generalize-shutdown' # remove the /mode:vm switch if creating images for different hardware profile
   }
   # '/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml'
   end {
