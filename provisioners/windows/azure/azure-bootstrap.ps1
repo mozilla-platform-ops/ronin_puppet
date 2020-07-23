@@ -104,8 +104,8 @@ function Install-RemoveAppsModule {
     [string] $local_dir = "$env:systemdrive\BootStrap",
     [string] $filename = "remove_default_apps.psm1",
     [string] $module_name = ($filename).replace(".pms1",""),
-    [string] $modulesPath = ('{0}\Modules\removeapps' -f $pshome),
-    [string] $removeapps_module = "$modulesPath\removeapps",
+    [string] $modulesPath = ('{0}\Modules\remove_default_apps' -f $pshome),
+    [string] $removeapps_module = "$modulesPath\remove_default_apps",
     [string] $moduleUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $filename),
     [string] $listUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $app_list)
   )
