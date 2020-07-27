@@ -3,13 +3,13 @@ name: t-mojave-r7-staging
 groups:
   - name: t-mojave-r7-staging-mdc1
     targets:
-      - t-mojave-r7-461.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-462.test.releng.mdc1.mozilla.com
+#     - t-mojave-r7-461.test.releng.mdc1.mozilla.com # decomm 1655534
+#     - t-mojave-r7-462.test.releng.mdc1.mozilla.com # decomm 1655534
       - t-mojave-r7-463.test.releng.mdc1.mozilla.com
       - t-mojave-r7-464.test.releng.mdc1.mozilla.com
       - t-mojave-r7-465.test.releng.mdc1.mozilla.com
       - t-mojave-r7-466.test.releng.mdc1.mozilla.com
       - t-mojave-r7-467.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-468.test.releng.mdc1.mozilla.com
+#     - t-mojave-r7-468.test.releng.mdc1.mozilla.com # decomm 1655534
       - t-mojave-r7-469.test.releng.mdc1.mozilla.com
       - t-mojave-r7-470.test.releng.mdc1.mozilla.com
