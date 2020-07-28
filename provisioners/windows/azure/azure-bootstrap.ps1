@@ -155,71 +155,38 @@ $audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
 $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 $sysprepState = (Get-SysprepState)
 
-#If ($hand_off_ready -eq 'yes') {
-# start-sleep -s 60
-# Bootstrap-CleanUp
-# Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-# shutdown @('-p', '-f')
-# exit
-# }
-
-
-switch -regex ($sysprepState) {
-  'IMAGE_STATE_COMPLETE|IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
-    try {
-      Set-ExecutionPolicy -ExecutionPolicy 'RemoteSigned' -Force -ErrorAction SilentlyContinue | Out-Null
-    } catch {
-      Write-Log -message ('{0} :: failed to set powershell execution policy to remote signed. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
-	}
-
     If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
       $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
     }
     If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Setup-Logging
       Write-Log -message  ('{0} :: current Sysprep state {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-AzPrerequ
-      Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+      # Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-RemoveAppsModule -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
 	  $apps = @((Get-Content "$env:systemdrive\BootStrap\win10_default_apps.txt"))
       Remove_Apps -apps $apps
-      shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
+      exit 2
+      # shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 
     }
     If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-      #$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-      #RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
       Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Ronin-PreRun
-      #do {
-        #$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-        #RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True
-        Bootstrap-AzPuppet
-        #$stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-      #} until ($stage -like 'complete')
-      #Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      #Generalize_Vm -sourceOrg $src_Organisation -sourceRepo $src_Repository -sourceRev $src_Revision -vm_type azure
-      # Write-Log -message  ('{0} :: PAUSE TO RUN GEN COMMAND' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      #pause
+      Bootstrap-AzPuppet
+      break
     }
     If ($stage -eq 'complete') {
-      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-      #do {
-       # start-sleep -s 15
-        #Write-Log -message  ('{0} :: Waiting on sysprep to complete. Sleep 15 seconds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      #} until ($sysprepState -eq 'IMAGE_STATE_COMPLETE')
       Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
       Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Bootstrap-CleanUp
       Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       Generalize_Vm -sourceOrg $src_Organisation -sourceRepo $src_Repository -sourceRev $src_Revision -vm_type azure
-      pause
-      #Write-Log -message  ('{0} :: Shutting down to hand off to Cloud-Image-Builder' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      exit 0
       #shutdown @('-p', '-f')
     }
   }
