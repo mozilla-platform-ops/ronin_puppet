@@ -212,9 +212,6 @@ groups:
       - t-mojave-r7-455.test.releng.mdc1.mozilla.com
 #     - t-mojave-r7-456.test.releng.mdc1.mozilla.com
       - t-mojave-r7-457.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-458.test.releng.mdc1.mozilla.com
-#     - t-mojave-r7-459.test.releng.mdc1.mozilla.com
-#     - t-mojave-r7-460.test.releng.mdc1.mozilla.com
   - name: t-mojave-r7-mdc2
     targets:
       - t-mojave-r7-007.test.releng.mdc2.mozilla.com
