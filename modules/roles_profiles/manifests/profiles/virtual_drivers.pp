@@ -6,9 +6,10 @@ class roles_profiles::profiles::virtual_drivers {
 
     case $::operatingsystem {
         'Windows': {
+            $version = lookup('win-worker.vbcable.version')
             class { 'win_packages::vbcable':
-                directory => "${facts['custom_win_systemdrive']}\\vbcable_driver",
-                version   => lookup('win-worker.vbcable.version') ,
+                directory => "${facts['custom_win_systemdrive']}\\VBCABLE_Driver_Pack${version}",
+                version   => $version,
 
             }
             # Bug List
