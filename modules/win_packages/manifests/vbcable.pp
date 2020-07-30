@@ -10,7 +10,7 @@ class win_packages::vbcable (
     $driver_name = "vbcable_driver_pack${version}"
 
     win_packages::win_zip_pkg { $driver_name:
-            pkg         => $driver_name,
+            pkg         => "${driver_name}.zip",
             creates     => "${directory}\\${driver_name}",
             destination => $directory,
     }
