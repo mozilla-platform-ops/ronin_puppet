@@ -11,7 +11,7 @@ class win_packages::vbcable (
 
     win_packages::win_zip_pkg { $driver_name:
             pkg         => "${driver_name}.zip",
-            creates     => $directory,
+            creates     => "${directory}\\VBCABLE_setup.exe",
             destination => $directory,
     }
 
