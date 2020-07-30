@@ -16,9 +16,9 @@ class win_packages::vbcable (
     }
 
     # Using puppetlabs-powershell
-    exec { "install_${$driver_name}":
-        command     => "${directory}\\VBCABLE_Setup_x64.exe -i -h",
-        subscribe   => Exec["${driver_name}.zip"],
-        refreshonly => true,
-    }
+    #exec { "install_${$driver_name}":
+        #command     => "${directory}\\VBCABLE_Setup_x64.exe -i -h",
+        #subscribe   => Exec["${driver_name}.zip"],
+        #refreshonly => true,
+    #}
 }
