@@ -31,5 +31,5 @@ win-worker:
   # Applications
   vnc_msi:  "UltraVnc_1223_X64.msi"
   vnc_name:  "UltraVnc"
-  vbcable:
-    version: '43'
+  vac:
+    version: '464'

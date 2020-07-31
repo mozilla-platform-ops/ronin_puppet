@@ -6,10 +6,15 @@ class roles_profiles::profiles::virtual_drivers {
 
     case $::operatingsystem {
         'Windows': {
-            $version = lookup('win-worker.vbcable.version')
-            class { 'win_packages::vbcable':
-                directory => "${facts['custom_win_temp_dir']}\\VBCABLE_Driver_Pack${version}",
-                version   => $version,
+
+            $version = lookup('win-worker.vac.version')
+            # Obfuscating command flags because the developer does not intend for the arguments to be public available
+            # For the command contact the developer https://vac.muzychenko.net/en/support.htm
+            $flags = lookup('vac_arguements')
+
+            class { 'win_packages::vac':
+                version => $version,
+                flags   => $flags,
 
             }
             # Bug List
