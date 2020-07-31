@@ -12,6 +12,6 @@ class win_packages::vac (
     win_packages::win_exe_pkg { $driver_name:
         pkg                    => "${driver_name}.exe",
         install_options_string => $flags,
-        creates                => 'C:\VBCABLE_setup.exe',
+        creates                => "${facts['custom_win_system32']}\\vac.exe",
     }
 }
