@@ -7,7 +7,7 @@ class win_packages::vac (
     String $version
 ) {
 
-    $driver_name = 'vac{version}'
+    $driver_name = "vac${version}"
 
     win_packages::win_exe_pkg { $driver_name:
         pkg                    => "${driver_name}.exe",
