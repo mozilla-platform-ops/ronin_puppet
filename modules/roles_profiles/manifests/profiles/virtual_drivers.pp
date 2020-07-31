@@ -10,7 +10,7 @@ class roles_profiles::profiles::virtual_drivers {
             $version = lookup('win-worker.vac.version')
             # Obfuscating command flags because the developer does not intend for the arguments to be public available
             # For the command contact the developer https://vac.muzychenko.net/en/support.htm
-            $flags = lookup('vac_arguements')
+            $flags = lookup('vac_flags')
 
             class { 'win_packages::vac':
                 version => $version,
