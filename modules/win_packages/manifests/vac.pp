@@ -10,7 +10,7 @@ class win_packages::vac (
     $driver_name = 'vac{version}'
 
     win_packages::win_exe_pkg { $driver_name:
-        pkg                    => "${driver_name}.zip",
+        pkg                    => "${driver_name}.exe",
         install_options_string => $flags,
         creates                => 'C:\VBCABLE_setup.exe',
     }
