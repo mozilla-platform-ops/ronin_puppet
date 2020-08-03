@@ -15,17 +15,17 @@ class win_packages::vac (
     $driver_path = "${vac_dir}\\${driver_name}"
     $pkgdir      = $facts['custom_win_temp_dir']
     $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
-    $source      = "\"${pkgdir}\\${zip_name}\""
+    $src_file    = "\"${pkgdir}\\${zip_name}\""
 
 
     file { $vac_dir:
         ensure => directory,
     }
-    file {  $source:
+    file {  $src_file:
         source => "${srcloc}/${zip_name}"
     }
     exec { 'vac_unzip':
-        command => "${seven_zip} x ${source} -o${vac_dir} -y",
+        command => "${seven_zip} x ${src_file} -o${vac_dir} -y",
         creates => $zip_creates,
     }
     exec { 'vac_install':
