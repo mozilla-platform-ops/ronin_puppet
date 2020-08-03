@@ -3,15 +3,24 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::vac (
+    String $creates,
     String $flags,
+    String $srcloc,
+    String $vac_dir,
     String $version
 ) {
 
-    $driver_name = "vac${version}"
+    $driver_name = "vac${version}.exe"
+    $driver_path = "${vac_dir}\\${driver_name}"
 
-    win_packages::win_exe_pkg { $driver_name:
-        pkg                    => "${driver_name}.exe",
-        install_options_string => $flags,
-        creates                => "${facts['custom_win_system32']}\\vac.exe",
+    file { $vac_dir:
+        ensure => directory,
+    }
+    file { $driver_path :
+        source => "${srcloc}/{driver_name}"
+    }
+    exec { $driver_name:
+        command => "${facts['custom_win_system32']}\\cmd.exe /c ${driver_path} ${flags}",
+        creates => $creates,
     }
 }
