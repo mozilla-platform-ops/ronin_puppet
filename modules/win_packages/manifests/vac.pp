@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::vac (
-    String $exe_creates,
     String $flags,
     String $srcloc,
     String $vac_dir,
