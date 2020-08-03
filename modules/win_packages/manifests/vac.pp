@@ -8,11 +8,11 @@ class win_packages::vac (
     String $srcloc,
     String $vac_dir,
     String $version,
-    String $zip_creates
+    String $work_dir
 ) {
 
     $zip_name    = "vac${version}.zip"
-    $driver_path = "${vac_dir}\\${driver_name}"
+    $exe_name    = "${work_dir}\\setup64.exe"
     $pkgdir      = $facts['custom_win_temp_dir']
     $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
     $src_file    = "\"${pkgdir}\\${zip_name}\""
@@ -26,10 +26,11 @@ class win_packages::vac (
     }
     exec { 'vac_unzip':
         command => "${seven_zip} x ${src_file} -o${vac_dir} -y",
-        creates => $zip_creates,
+        creates => $exe_name,
     }
     exec { 'vac_install':
-        command => "${facts['custom_win_system32']}\\cmd.exe /c ${driver_path} ${flags}",
-        creates => $exe_creates,
+        command     => "${facts['custom_win_system32']}\\cmd.exe /c ${exe_name} ${flags}",
+        subscribe   => Exec['vac_unzip'],
+        refreshonly => true,
     }
 }
