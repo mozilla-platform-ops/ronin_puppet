@@ -17,7 +17,7 @@ class win_packages::vac (
         ensure => directory,
     }
     file { $driver_path :
-        source => "${srcloc}/{driver_name}"
+        source => "${srcloc}/${driver_name}"
     }
     exec { $driver_name:
         command => "${facts['custom_win_system32']}\\cmd.exe /c ${driver_path} ${flags}",
