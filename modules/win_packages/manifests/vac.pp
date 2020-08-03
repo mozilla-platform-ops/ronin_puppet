@@ -21,7 +21,7 @@ class win_packages::vac (
     file { $vac_dir:
         ensure => directory,
     }
-    file {  $src_file:
+    file {  "${pkgdir}\\${zip_name}":
         source => "${srcloc}/${zip_name}"
     }
     exec { 'vac_unzip':
