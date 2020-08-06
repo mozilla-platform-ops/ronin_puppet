@@ -4,7 +4,7 @@
 
 class win_mozilla_maintenance_service::install {
 
-    $local_exe = "{facts['custom_win_temp_dir']}\\maintenanceservice.exe"
+    $local_exe = "${facts['custom_win_temp_dir']}\\maintenanceservice.exe"
 
     file { $local_exe:
         source => $win_mozilla_maintenance_service::source_exe,
