@@ -2,9 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_mozilla_maintenance_service {
+class win_mozilla_maintenance_service (
+    String $source_location
+) {
 
-    $maintenance_key     = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4'
+    $source_exe       = "${source_location}/maintenanceservice.exe"
+    $maintenance_key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4'
 
     if $::operatingsystem == 'Windows' {
         include win_mozilla_maintenance_service::install
