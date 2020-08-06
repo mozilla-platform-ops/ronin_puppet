@@ -7,7 +7,9 @@ class roles_profiles::profiles::mozilla_maintenance_service {
     case $::operatingsystem {
         'Windows': {
         # Refrence https://support.mozilla.org/en-US/kb/what-mozilla-maintenance-service
-            include win_mozilla_maintenance_service
+            class { 'win_mozilla_maintenance_service':
+                source_location  => lookup('windows.s3.ext_pkg_src'),
+            }
 
             # Certs will need to be droped into win_mozilla_maintenance_service/files
             # The define type will install cert and create needed registry entries
