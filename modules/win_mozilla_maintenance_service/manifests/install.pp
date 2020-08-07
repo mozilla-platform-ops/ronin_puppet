@@ -12,7 +12,7 @@ class win_mozilla_maintenance_service::install {
     win_packages::win_exe_pkg  { 'mozilla_maintenance_service':
         pkg                    => 'maintenanceservice_installer.exe',
         install_options_string =>  '/S',
-        creates                => "${facts['custom_win_programfilesx86']}\\Mozilla Maintenance Service\\uninstall.exe.BAK",
+        creates                => "${facts['custom_win_programfilesx86']}\\Mozilla Maintenance Service\\uninstall.exe",
         require                => File[$local_exe],
 
     }
