@@ -16,4 +16,14 @@ class win_mozilla_maintenance_service::install {
         require                => File[$local_exe],
 
     }
+    acl { "${facts['custom_win_programfilesx86']}\\Mozilla Maintenance Service":
+        permissions                =>   {
+                                            identity    => 'everyone',
+                                            rights      => ['full'],
+                                            type        => 'allow',
+                                            child_types => 'all',
+                                            affects     => 'all'
+                                        },
+        inherit_parent_permissions => true,
+  }
 }
