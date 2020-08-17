@@ -11,7 +11,7 @@ class roles_profiles::profiles::virtual_drivers {
             # For the command contact the developer https://vac.muzychenko.net/en/support.htm
             $flags    = lookup('vac_flags')
             $vac_dir  = lookup('windows.dir.vac')
-            $version   = lookup('win-worker.vac.version')
+            $version  = lookup('win-worker.vac.version')
             $work_dir = "${vac_dir}\\vac${version}"
 
             class { 'win_packages::vac':
