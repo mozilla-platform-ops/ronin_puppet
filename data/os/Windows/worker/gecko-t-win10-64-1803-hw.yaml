@@ -1,0 +1,33 @@
+---
+
+win-worker:
+  # generic-worker
+  generic_worker:
+    # File versions
+    exe_version: '16.2.0'
+    tc_proxy_version: '5.1.0'
+    livelog_version: '1.1.0'
+    # Gw settings
+    client_id: "mozilla-auth0/ad|Mozilla-LDAP|mcornmesser/releng/generic-worker/datacenter-gecko-t-win-talos/win10-64-1803-hw"
+    idle_timeout: 7200
+    live_log_put_port: 60022
+    provisioner_id: 'releng-hardware'
+
+  # Specify the folder of the S3 logging bucket
+    s3_folder: "%{facts.custom_win_gw_workertype}"
+
+  # Mozilla-build
+  mozilla_build:
+    version: '3.2'
+    hg_version: '4.7.1'
+    py3_pip_version: '19.2.1'
+    py3_zstandard_version: '0.11.1'
+
+  # Mozilla profile
+  mozilla_profile:
+    source: "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/Windows/mozilla/mozprofilerprobe.mof"
+    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
+
+  # Applications
+  vnc_msi:  "UltraVnc_1223_X64.msi"
+  vnc_name:  "UltraVnc"
