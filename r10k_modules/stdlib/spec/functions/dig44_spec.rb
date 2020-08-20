@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'dig44' do
   let(:undef_value) do

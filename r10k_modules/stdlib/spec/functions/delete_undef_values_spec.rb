@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'delete_undef_values' do
   let(:is_puppet_6) { Puppet::Util::Package.versioncmp(Puppet.version, '6.0.0') == 0 }

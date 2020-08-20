@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'the enclose_ipv6 function' do
   let(:scope) { PuppetlabsSpec::PuppetInternals.scope }

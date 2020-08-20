@@ -2,13 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_scheduled_tasks::maintain_system {
+class win_scheduled_tasks::maintain_system (
+    String $startup_script
+) {
 
     $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
 
     if $::operatingsystem == 'Windows' {
         file { $maintainsystem_ps1:
-            content => file('win_scheduled_tasks/maintainsystem.ps1'),
+            content => file("win_scheduled_tasks/${startup_script}"),
         }
         # Resource from puppetlabs-scheduled_task
         scheduled_task { 'maintain_system':

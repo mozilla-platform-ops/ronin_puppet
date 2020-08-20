@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 # The manifest used for testing, is located in spec/fixtures/mixed_default_settings/manifests/init.pp
 

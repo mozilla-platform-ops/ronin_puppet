@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'validate_ipv6_address' do
   describe 'signature validation' do

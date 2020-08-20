@@ -1,0 +1,15 @@
+---
+name: t-mojave-r8
+groups:
+  - name: t-mojave-r8-mdc1
+    targets:
+      - t-mojave-r8-031.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-032.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-033.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-034.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-035.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-036.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-037.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-038.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-039.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-040.test.releng.mdc1.mozilla.com

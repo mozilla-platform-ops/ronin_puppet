@@ -13,7 +13,7 @@ PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 PUPPET_ENV_DIR='/etc/puppetlabs/environments'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
 R10K_BIN='/opt/puppetlabs/puppet/bin/r10k'
-R10K_DIR="/etc/puppetlabs/environments/production/r10k_modules"
+#R10K_DIR="/etc/puppetlabs/environments/production/r10k_modules"
 ROLE_FILE='/etc/puppet_role'
 PUPPET_REPO_PATH="$PUPPET_ENV_DIR/production"
 

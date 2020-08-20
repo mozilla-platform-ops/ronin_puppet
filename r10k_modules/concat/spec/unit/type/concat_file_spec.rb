@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe Puppet::Type.type(:concat_file) do
   let(:resource) { described_class.new(name: '/foo/bar') }

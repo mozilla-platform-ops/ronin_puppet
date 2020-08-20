@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'flatten', :if => Puppet::Util::Package.versioncmp(Puppet.version, '5.5.0') < 0 do
   it { is_expected.not_to eq(nil) }

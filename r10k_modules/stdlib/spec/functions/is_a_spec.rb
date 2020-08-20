@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 if ENV['FUTURE_PARSER'] == 'yes'
   describe 'type_of' do

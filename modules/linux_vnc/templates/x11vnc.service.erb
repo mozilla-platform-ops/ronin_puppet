@@ -1,0 +1,23 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# Define x11vnc service
+
+[Unit]
+Description=Manually start x11vnc server attached to <%= @user %> X session
+After=Xsession.service
+
+[Service]
+TimeoutSec=5min
+IgnoreSIGPIPE=no
+KillMode=process
+GuessMainPID=no
+# this file is stored in /etc, readable only by root.  When starting VNC, it gets copied into
+# the builder user's home dir, then removed immediately (via the 'rm:' prefix below)
+ExecStartPre=/bin/cp -f /etc/vnc_passwdfile /home/<%= @user %>/.vnc/passwdfile
+ExecStartPre=/bin/chown <%= @user %> /home/<%= @user %>/.vnc/passwdfile
+ExecStart=/bin/su - -c "/usr/bin/x11vnc -display WAIT:0 -passwdfile rm:/home/<%= @user %>/.vnc/passwdfile -forever -shared" <%= @user %>
+
+[Install]
+WantedBy=multi-user.target

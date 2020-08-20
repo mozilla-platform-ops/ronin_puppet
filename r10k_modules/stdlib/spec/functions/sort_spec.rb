@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'sort', :if => Puppet::Util::Package.versioncmp(Puppet.version, '6.0.0') < 0 do
   describe 'signature validation' do
