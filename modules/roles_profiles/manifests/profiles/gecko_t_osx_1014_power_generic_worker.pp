@@ -9,6 +9,13 @@ class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
     $worker_type  = 'gecko-t-osx-1014-power'
     $worker_group = 'bitbar' # regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
+    $meta_data        = {
+        workerType    => $worker_type,
+        workerGroup   => $worker_group,
+        provisionerId => 'releng-hardware',
+        workerId      => $facts['networking']['hostname'],
+    }
+
     case $::operatingsystem {
         'Darwin': {
 
@@ -16,12 +23,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
                 # Note the camelCase key names
-                meta_data         => {
-                    workerType    => $worker_type,
-                    workerGroup   => $worker_group,
-                    provisionerId => 'releng-hardware',
-                    workerId      => $facts['networking']['hostname'],
-                },
+                meta_data         => $meta_data,
             }
 
             class { 'roles_profiles::profiles::logging':
@@ -68,7 +70,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
             include dirs::tools
 
             include packages::google_chrome
-            include roles_profiles::profiles::disable_chrome_updater
 
             contain packages::nodejs
             contain packages::wget
