@@ -159,6 +159,7 @@ $sysprepState = (Get-SysprepState)
       $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
     }
     If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+      msg * Start of Ronin script
       Setup-Logging
       Write-Log -message  ('{0} :: current Sysprep state {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
@@ -168,13 +169,15 @@ $sysprepState = (Get-SysprepState)
       Install-RemoveAppsModule -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
 	  $apps = @((Get-Content "$env:systemdrive\BootStrap\win10_default_apps.txt"))
       Remove_Apps -apps $apps
+      msg * First script exit next
       exit 2
       # shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 
     }
     If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-      Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
+      #Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      msg * Prepping and runnin Puppet
       Ronin-PreRun
       Bootstrap-AzPuppet
       break
