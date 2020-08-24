@@ -1,4 +1,4 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
+gecko_t_linux_talo# This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
@@ -14,7 +14,7 @@ class roles_profiles::roles::gecko_t_linux_talos {
 
     # nrpe and checks
     #   TODO: required or are we migrating to influx?
-    include ::fw::roles::linux_taskcluster_worker
+    #include ::fw::roles::linux_taskcluster_worker
     # TODO: from build-puppet
     # xwindows setup
     # intel drivers
