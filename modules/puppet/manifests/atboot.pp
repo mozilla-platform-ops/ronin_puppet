@@ -5,9 +5,10 @@
 class puppet::atboot (
     String $telegraf_user,
     String $telegraf_password,
-    String $puppet_repo         = 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-    String $puppet_branch       = 'master',
-    String $puppet_notify_email = 'puppet-ronin-reports@mozilla.com',
+    String $puppet_env          = 'dev',
+    String $puppet_repo         = 'https://github.com/davehouse/ronin_puppet.git',
+    String $puppet_branch       = 'moonshot_start',
+    String $puppet_notify_email = 'dhouse@mozilla.com',
     String $smtp_relay_host     = 'localhost',
     Hash $meta_data             = {},
 ) {
