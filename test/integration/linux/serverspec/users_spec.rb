@@ -13,3 +13,7 @@ describe 'users' do
     it { should exist }
   end
 end
+
+describe file('/etc/group') do
+  its(:content) { should match /admin:x:[\d]+:jwatkins,dhouse,mcornmesser,aerickson,rthijssen/ }
+end
