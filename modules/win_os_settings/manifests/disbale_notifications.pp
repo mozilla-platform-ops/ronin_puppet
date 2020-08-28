@@ -13,11 +13,6 @@ class win_os_settings::disbale_notifications {
     registry_key { 'HKLM\System\CurrentControlSet\Control\Network\NewNetworkWindowOff':
         ensure => present
     }
-    registry::value { 'DisableNotifications':
-        key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Notifications',
-        type => dword,
-        data => '1',
-    }
 }
 
 # Bug list
