@@ -190,9 +190,4 @@ $sysprepState = (Get-SysprepState)
       exit 0
       #shutdown @('-p', '-f')
     }
-  }
-  default {
-    Write-Log -message ('{0} :: no available implementation for sysprep state: {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'WARN'
-    break
-  }
 }
