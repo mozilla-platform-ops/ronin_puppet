@@ -32,7 +32,6 @@ echo "%tot_time% Minutes (%total_time% seconds) have passed since last generic-w
 echo File <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid found >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 echo Deleting <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid file >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log
 del /Q /F <%= $facts[custom_win_roninsemaphoredir] %>\task-claim-state.valid >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker-wrapper.log 2>&1
-netsh.exe firewall set notifications mode = disable profile = all
 pushd %~dp0
 set errorlevel=
 <%= $win_generic_worker::run_generic_worker_command %> >> <%= $win_generic_worker::generic_worker_dir %>\generic-worker.log 2>&1

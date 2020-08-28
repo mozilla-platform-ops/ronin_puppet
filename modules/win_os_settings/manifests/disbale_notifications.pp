@@ -13,14 +13,10 @@ class win_os_settings::disbale_notifications {
     registry_key { 'HKLM\System\CurrentControlSet\Control\Network\NewNetworkWindowOff':
         ensure => present
     }
-    #registry::value { 'DisableNotifications':
-        #key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Notifications',
-        #type => dword,
-        #data => '1',
-    #}
-    exec { 'disable_fw_notifications':
-        command     =>
-            "${facts[custom_win_system32]}\\netsh.exe firewall set notifications mode = disable profile = all",
+    registry::value { 'DisableNotifications':
+        key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Notifications',
+        type => dword,
+        data => '1',
     }
 }
 
