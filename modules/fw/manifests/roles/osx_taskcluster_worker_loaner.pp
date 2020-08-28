@@ -9,7 +9,6 @@ class fw::roles::osx_taskcluster_worker_loaner {
             include ::fw::profiles::nrpe_from_nagios
             include ::fw::profiles::vnc_from_anywhere_logging
             include ::fw::profiles::ssh_from_anywhere_logging
-            include ::fw::profiles::ssh_from_roller
         }
         default:{
             # Silently skip other DCs
