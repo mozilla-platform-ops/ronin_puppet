@@ -5,13 +5,22 @@
 class win_os_settings::disbale_notifications {
 
   # Using puppetlabs-registry
-  registry::value { 'NoNewAppAlert' :
-    key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer',
-    type => dword,
-    data => '1',
-  }
-    registry_key { 'HKLM\System\CurrentControlSet\Control\Network\NewNetworkWindowOff' :
+    registry::value { 'NoNewAppAlert':
+        key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer',
+        type => dword,
+        data => '1',
+    }
+    registry_key { 'HKLM\System\CurrentControlSet\Control\Network\NewNetworkWindowOff':
         ensure => present
+    }
+    #registry::value { 'DisableNotifications':
+        #key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Notifications',
+        #type => dword,
+        #data => '1',
+    #}
+    exec { 'disable_fw_notifications':
+        command     =>
+            "${facts[custom_win_system32]}\\netsh.exe firewall set notifications mode = disable profile = all",
     }
 }
 
