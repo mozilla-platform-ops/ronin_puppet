@@ -190,4 +190,3 @@ $sysprepState = (Get-SysprepState)
       exit 0
       #shutdown @('-p', '-f')
     }
-}
