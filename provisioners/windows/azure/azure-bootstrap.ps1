@@ -160,7 +160,7 @@ $sysprepState = (Get-SysprepState)
     }
     If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
       # msg * Start of Ronin script
-      # Setup-Logging
+      Setup-Logging
       Write-Log -message  ('{0} :: current Sysprep state {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
