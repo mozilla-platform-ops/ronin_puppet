@@ -166,9 +166,11 @@ $sysprepState = (Get-SysprepState)
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-AzPrerequ
       # Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-      Install-RemoveAppsModule -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-	  $apps = @((Get-Content "$env:systemdrive\BootStrap\win10_default_apps.txt"))
-      Remove_Apps -apps $apps
+
+      #Install-RemoveAppsModule -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+	  #$apps = @((Get-Content "$env:systemdrive\BootStrap\win10_default_apps.txt"))
+      #Remove_Apps -apps $apps
+
       # msg * First script exit next
       exit 2
       # shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
