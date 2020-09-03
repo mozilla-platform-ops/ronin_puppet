@@ -12,8 +12,4 @@ describe 'users' do
   describe user('dhouse') do
     it { should exist }
   end
-
-  describe user('klibby') do
-    it { should exist }
-  end
 end
