@@ -2,7 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::cltbld_user {
+class roles_profiles::profiles::cltbld_user (
+    Array[String] $groups        = ['_developer'],
+    Array[String] $sudo_commands = ['/sbin/reboot'],
+) {
 
     case $::operatingsystem {
         'Darwin': {
@@ -21,10 +24,12 @@ class roles_profiles::profiles::cltbld_user {
 
             # Monkey patching directoryservice.rb in order to create users also breaks group merging
             # So we directly add the user to the group(s)
-            exec { 'cltbld_developer_group':
-                command => '/usr/bin/dscl . -append /Groups/_developer GroupMembership cltbld',
-                unless  => '/usr/bin/groups cltbld | /usr/bin/grep -q -w _developer',
-                require => User['cltbld'],
+            $groups.each |String $group| {
+                exec { "cltbld_group_${group}":
+                    command => "/usr/bin/dscl . -append /Groups/${group} GroupMembership cltbld",
+                    unless  => "/usr/bin/groups cltbld | /usr/bin/grep -q -w ${group}",
+                    require => User['cltbld'],
+                }
             }
 
             # Set user to autologin
@@ -47,9 +52,11 @@ class roles_profiles::profiles::cltbld_user {
                 require => User['cltbld'],
             }
 
-            sudo::custom { 'allow_cltbld_reboot':
-                user    => 'cltbld',
-                command => '/sbin/reboot',
+            $sudo_commands.each |String $command| {
+                sudo::custom { "allow_cltbld_${command}":
+                    user    => 'cltbld',
+                    command => $command,
+                }
             }
         }
         'Ubuntu': {
