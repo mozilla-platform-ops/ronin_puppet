@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::cltbld_user (
-    Array[String] $groups = ['_developer'],
-    Bool $sudo            = False,
+    Array[String] $groups        = ['_developer'],
+    Array[String] $sudo_commands = ['/sbin/reboot'],
 ) {
 
     case $::operatingsystem {
@@ -52,9 +52,11 @@ class roles_profiles::profiles::cltbld_user (
                 require => User['cltbld'],
             }
 
-            sudo::custom { 'allow_cltbld_reboot':
-                user    => 'cltbld',
-                command => '/sbin/reboot',
+            $sudo_commands.each |String $command| {
+                sudo::custom { "allow_cltbld_${command}":
+                    user    => 'cltbld',
+                    command => $command,
+                }
             }
         }
         'Ubuntu': {

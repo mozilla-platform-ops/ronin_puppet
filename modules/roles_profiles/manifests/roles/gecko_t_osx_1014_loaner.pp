@@ -21,7 +21,8 @@ class roles_profiles::roles::gecko_t_osx_1014_loaner {
     include ::roles_profiles::profiles::relops_users
 
     class { '::roles_profiles::profiles::cltbld_user':
-        groups => ['_developer','com.apple.access_screensharing','com.apple.access_ssh'],
+        groups        => ['_developer','com.apple.access_screensharing','com.apple.access_ssh'],
+        sudo_commands => ['/sbin/reboot','/bin/su'],
     }
     $worker_number = split(regsubst($::fqdn, '([^\.]+)\..*', '\1'), '-')[-1]
     class { '::roles_profiles::profiles::gecko_t_osx_1014_generic_worker':
