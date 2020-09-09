@@ -27,7 +27,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
                 meta_data         => $meta_data,
                 puppet_env          => 'dev',
                 puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch       => 'bug1661748_setup-loaner-pool-test',
+                puppet_branch       => 'bug1656963_macos-ffmpeg-imagick',
                 puppet_notify_email => 'dhouse@mozilla.com',
 
             }
