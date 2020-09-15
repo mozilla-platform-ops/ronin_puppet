@@ -182,7 +182,7 @@ $sysprepState = (Get-SysprepState)
       # msg * Prepping and runnin Puppet
       Ronin-PreRun
       Bootstrap-AzPuppet
-      break
+      exit 2
     }
     If ($stage -eq 'complete') {
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
