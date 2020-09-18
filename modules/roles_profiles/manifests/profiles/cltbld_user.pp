@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::cltbld_user (
-    Array[String] $groups        = ['_developer'],
+    Array[String] $groups        = ['_developer','com.apple.access_screensharing','com.apple.access_ssh'],
     Array[String] $sudo_commands = ['/sbin/reboot'],
 ) {
 
