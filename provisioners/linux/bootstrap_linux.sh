@@ -73,9 +73,9 @@ esac
 # Linux and Darwin share some common paths
 if [ $OS == "linux" ] || [ $OS == "darwin" ]; then
     ROLE_FILE='/etc/puppet_role'
-    if which puppet; then
-        PUPPET_BIN=$(which puppet)
-        FACTER_BIN=$(which facter)
+    if command -v puppet; then
+        PUPPET_BIN=$(command -v puppet)
+        FACTER_BIN=$(command -v facter)
     else
         PUPPET_BIN='/opt/puppetlabs/bin/puppet'
         FACTER_BIN='/opt/puppetlabs/bin/facter'
