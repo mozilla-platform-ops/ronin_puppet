@@ -1,0 +1,9 @@
+[Unit]
+After=puppet.service
+
+[Service]
+ExecStart=/usr/local/bin/run-puppet.sh
+
+[Install]
+# TODO: only use default.target? would we want offline runs?
+WantedBy=network.target
