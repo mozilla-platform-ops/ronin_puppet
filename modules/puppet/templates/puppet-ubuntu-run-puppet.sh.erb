@@ -179,8 +179,8 @@ while ! run_puppet; do
 done
 
 # Touch the semaphore to allow launchd to start generic worker (if applicable)
-mkdir -p "/var/tmp/semaphore"
-chmod 0777 "/var/tmp/semaphore"
-touch "/var/tmp/semaphore/run-buildbot"
+# mkdir -p "/var/tmp/semaphore"
+# chmod 0777 "/var/tmp/semaphore"
+# touch "/var/tmp/semaphore/run-buildbot"
 
 exit 0
