@@ -33,7 +33,9 @@ class puppet::atboot (
         }
         'Ubuntu': {
             case $::operatingsystemrelease {
-                18.04: {
+                '18.04': {
+                    include linux_packages::puppet
+
                     # On Ubuntu 18.04 puppet runs by systemd and on successful result
                     # notifies dependent services
                     file {
@@ -43,9 +45,10 @@ class puppet::atboot (
                             source  => 'puppet:///modules/puppet/puppet.service',
                             notify  => Exec['reload systemd'],
                             require => Class['linux_packages::puppet'];
+                            # require => Class['packages::linux_generic_worker'];
                         '/usr/local/bin/run-puppet.sh':
                             owner   => 'root',
-                            group   => 'wheel',
+                            group   => 'root',
                             mode    => '0755',
                             content => template('puppet/puppet-ubuntu-run-puppet.sh.erb');
                     }

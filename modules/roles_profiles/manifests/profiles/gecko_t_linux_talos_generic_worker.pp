@@ -19,6 +19,18 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_packages::python3_zstandard
             require linux_packages::zstd
 
+            class { 'puppet::atboot':
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.password'),
+                # Note the camelCase key names
+                meta_data         => {
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    provisionerId => 'releng-hardware',
+                    workerId      => $facts['networking']['hostname'],
+                },
+            }
+
             require linux_talos
 
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_linux_talos.taskcluster_client_id')
