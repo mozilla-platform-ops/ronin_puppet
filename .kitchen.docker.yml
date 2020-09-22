@@ -15,6 +15,9 @@ provisioner:
   hiera_deep_merge: true
   hiera_writer_files:
     - secrets/vault.yaml:
+        telegraf:
+          user: telegraf
+          password: telegraf4fun
         linux_vnc:
           user: cltbld
           group: cltbld
