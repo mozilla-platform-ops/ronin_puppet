@@ -5,10 +5,6 @@
 class roles_profiles::profiles::gecko_t_osx_1015_generic_worker (
     String $worker_type = 'gecko-t-osx-1015-bug1665379',
 ) {
-    exec { 'writes_in_catalina':
-        command => '/sbin/mount -uw /',
-    }
-
     require roles_profiles::profiles::cltbld_user
 
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
@@ -105,6 +101,10 @@ class roles_profiles::profiles::gecko_t_osx_1015_generic_worker (
                 user_homedir              => '/Users/cltbld',
             }
 
+            exec { 'writes_in_catalina':
+                command => '/sbin/mount -uw /',
+                unless  => '/bin/test -d /builds || /bin/test -d /tools'
+            }
             include dirs::tools
 
             #include packages::google_chrome
