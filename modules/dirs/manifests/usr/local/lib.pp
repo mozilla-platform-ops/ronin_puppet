@@ -8,6 +8,6 @@ class dirs::usr::local::lib {
 
     file { '/usr/local/lib':
         ensure => directory,
-        mode   => '0755',
+        mode   => '0775',
     }
 }
