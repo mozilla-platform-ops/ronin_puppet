@@ -7,25 +7,27 @@ class linux_packages::puppet {
     'Ubuntu': {
       case $::operatingsystemrelease {
         '18.04':  {
-          # TODO: write this
 
-          # package {
-          #   'nodejs':
-          #     ensure => latest;
-          #   'nodejs-legacy':
-          #     ensure => absent,
-          #     before => Package['nodejs'];
-          # }
+          include apt
 
-          # for 1804
-          #wget https://apt.puppetlabs.com/puppet6-release-bionic.deb
-          #sudo dpkg -i puppet6-release-bionic.deb
+          file { 'puppet_repo_deb':
+              ensure => 'file',
+              path   => '/tmp/puppet.deb',
+              mode   => 'a+r',
+              source => 'https://apt.puppetlabs.com/puppet6-release-bionic.deb',
+          }
 
-          #  package { 'yourpackagename':
-          #     ensure => installed|absent,
-          #     provider => dpkg,
-          #     source => '/path/to/file.deb',
-          #   }
+          package { 'puppet repo deb':
+            ensure   => installed,
+            provider => dpkg,
+            source   => '/tmp/puppet.deb',
+            notify   => Exec['apt_update'],
+          }
+
+          package { 'puppet agent':
+            ensure => installed,
+            name   => 'puppet-agent',
+          }
 
         }
         default: {
