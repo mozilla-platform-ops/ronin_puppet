@@ -10,6 +10,8 @@ class linux_packages::puppet {
 
           include apt
 
+          # remove puppet 5 repo and puppet-agent if present
+          # - will conflict later if not removed
           package { 'remove old puppet repo deb':
             ensure => absent,
             name   => 'puppet5-release',
@@ -20,6 +22,7 @@ class linux_packages::puppet {
             name   => 'puppet5-agent',
           }
 
+          # fetch and install the new repo deb
           file { 'puppet_repo_deb':
               ensure => 'file',
               path   => '/tmp/puppet.deb',
@@ -34,6 +37,7 @@ class linux_packages::puppet {
             notify   => Exec['apt_update'],
           }
 
+          # install latest puppet-agent
           package { 'install puppet agent':
             ensure => latest,
             name   => 'puppet-agent',
