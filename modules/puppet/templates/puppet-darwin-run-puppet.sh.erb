@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-PUPPET_ENV="${PUPPET_ENV:-<%= @puppet_env -%>}"
+PUPPET_ENV="${PUPPET_ENV:-production}"
 PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
@@ -114,7 +114,13 @@ function update_puppet {
 
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
-    git checkout --force "origin/${PUPPET_BRANCH}" || return 1
+    git checkout --force "origin/${PUPPET_BRANCH}" \
+      || (
+      git remote rm upstream
+      git remote rename origin upstream
+      git remote add origin "${PUPPET_REPO}"
+      git checkout --force "origin/${PUPPET_BRANCH}"
+    ) || return 1
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
