@@ -6,7 +6,7 @@ class roles_profiles::profiles::gecko_t_osx_1015_generic_worker (
     String $worker_type = 'gecko-t-osx-1015-bug1665379',
 ) {
     exec { 'writes_in_catalina':
-        command => '/usr/bin/mount -uw /',
+        command => '/sbin/mount -uw /',
     }
 
     require roles_profiles::profiles::cltbld_user
