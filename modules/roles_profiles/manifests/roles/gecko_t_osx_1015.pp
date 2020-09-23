@@ -22,7 +22,7 @@ class roles_profiles::roles::gecko_t_osx_1015 {
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::homebrew
 
-    include ::roles_profiles::profiles::gecko_t_osx_1014_generic_worker
+    include ::roles_profiles::profiles::gecko_t_osx_1015_generic_worker
     #include ::fw::roles::osx_taskcluster_worker_loaner
 
     #include ::macos_utils::uninstall_homebrew
