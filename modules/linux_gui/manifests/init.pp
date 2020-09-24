@@ -3,6 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_gui(
+    $builder_user,
+    $builder_group,
+    $builder_home
     # $on_gpu,
     # $screen_width,
     # $screen_height,
@@ -57,15 +60,15 @@ class linux_gui(
 
                 "${users::builder::home}/.xsessionrc":
                     content => "DESKTOP_SESSION=ubuntu\n",
-                    owner   => $::users::builder::username,
-                    group   => $::users::builder::group,
+                    owner   => $builder_user,
+                    group   => $builder_group,
                     mode    => '0644',
                     notify  => Service['x11'];
 
                 # make sure the builder user doesn't have any funny business
-                [ "${users::builder::home}/.xsession",
-                  "${users::builder::home}/.xinitrc",
-                  "${users::builder::home}/.Xsession"]:
+                [ "${builder_home}/.xsession",
+                  "${builder_home}/.xinitrc",
+                  "${builder_home}/.Xsession"]:
                     ensure => absent;
             }
 
