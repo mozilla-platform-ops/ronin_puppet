@@ -6,17 +6,7 @@ class linux_gui(
     $builder_user,
     $builder_group,
     $builder_home
-    # $on_gpu,
-    # $screen_width,
-    # $screen_height,
-    # $screen_depth,
-    # $refresh
 ) {
-    # include config
-    # include users::builder
-    include linux_gui::appearance
-
-    # $nvidia_version = '361.42'
 
     case $::operatingsystem {
         'Ubuntu': {
@@ -29,6 +19,8 @@ class linux_gui(
                 'nvidia-*':
                     ensure => absent;
             }
+
+            include linux_gui::appearance
 
             # install the window manager and its prereqs
             # done in roles_profiles::profiles::gui
@@ -58,7 +50,7 @@ class linux_gui(
                 '/etc/xdg/autostart/deja-dup-monitor.desktop':
                     content => template("${module_name}/deja-dup-monitor.desktop");
 
-                "${users::builder::home}/.xsessionrc":
+                "${builder_home}/.xsessionrc":
                     content => "DESKTOP_SESSION=ubuntu\n",
                     owner   => $builder_user,
                     group   => $builder_group,
