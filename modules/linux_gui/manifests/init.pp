@@ -10,6 +10,12 @@ class linux_gui(
 
     case $::operatingsystem {
         'Ubuntu': {
+            # used in templates
+            $screen_width  = 1600
+            $screen_height = 1200
+            $screen_depth  = 32
+            $refresh       = 60
+
             # The new moonshot hardware GPU workers have an intel gpu.
             $use_nvidia = false
             $on_gpu = true

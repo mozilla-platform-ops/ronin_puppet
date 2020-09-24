@@ -4,8 +4,8 @@
 
 description "start Xvfb server"
 
-export USER=<%= scope.lookupvar('::config::builder_username') %>
-setuid <%= scope.lookupvar('::config::builder_username') %>
+export USER=<%= @builder_user %>
+setuid <%= @builder_user %>
 
 
 # wait until puppet finishes

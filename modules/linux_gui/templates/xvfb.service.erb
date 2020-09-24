@@ -14,8 +14,8 @@ TimeoutSec=5min
 IgnoreSIGPIPE=no
 KillMode=process
 GuessMainPID=no
-Environment=USER=<%= scope.lookupvar('::config::builder_username') %>
-User=<%= scope.lookupvar('::config::builder_username') %>
+Environment=USER=<%= @builder_user %>
+User=<%= @builder_user %>
 ExecStart=/usr/bin/Xvfb :0 -nolisten tcp -screen 0 <%= @screen_width %>x<%= @screen_height %>x<%= if @screen_depth.to_i <= 24 then @screen_depth else 24 end %>
 
 [Install]

@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-description "Start <%= scope.lookupvar('::config::builder_username') %> X session in <%= if @on_gpu then 'x11' else 'xvfb' end %>"
+description "Start <%= @builder_user %> X session in <%= if @on_gpu then 'x11' else 'xvfb' end %>"
 
 start on started <%= if @on_gpu then 'x11' else 'xvfb' end %>
 
@@ -11,5 +11,5 @@ script
   # crashes in compiz)
   # Make sure that X has enough time to start
   sleep 15
-  su - -c "DISPLAY=:0 /etc/X11/Xsession" <%= scope.lookupvar('::config::builder_username') %>
+  su - -c "DISPLAY=:0 /etc/X11/Xsession" <%= @builder_user %>
 end script

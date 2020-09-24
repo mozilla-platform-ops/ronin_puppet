@@ -14,7 +14,7 @@ TimeoutSec=5min
 IgnoreSIGPIPE=no
 KillMode=process
 GuessMainPID=no
-ExecStart=/bin/su - -c "DISPLAY=:0 /etc/X11/Xsession" <%= scope.lookupvar('::config::builder_username') %>
+ExecStart=/bin/su - -c "DISPLAY=:0 /etc/X11/Xsession" <%= @builder_user %>
 
 [Install]
 WantedBy=multi-user.target
