@@ -4,6 +4,7 @@
 
 class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
 
+    # TODO: make these args to this module and use in call in gecko_t_linux_talos?
     $worker_type  = 'gecko-t-linux-talos-dw'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
@@ -32,14 +33,6 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             }
 
             require linux_talos
-
-            class {
-                'linux_gui':
-                    # TODO: use hiera data
-                    builder_user  => 'cltbld',
-                    builder_group => 'cltbld',
-                    builder_home  => '/home/cltbld';
-            }
 
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_linux_talos.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_linux_talos.taskcluster_access_token')

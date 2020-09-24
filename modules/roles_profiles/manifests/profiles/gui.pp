@@ -14,7 +14,13 @@ class roles_profiles::profiles::gui {
         }
         'Ubuntu':{
             include linux_packages::ubuntu_desktop
-            # TODO: move linux_gui invocation here?
+            class {
+                'linux_gui':
+                    # TODO: use hiera data
+                    builder_user  => 'cltbld',
+                    builder_group => 'cltbld',
+                    builder_home  => '/home/cltbld';
+            }
         }
         default: {
             fail("${::operatingsystem} not supported")
