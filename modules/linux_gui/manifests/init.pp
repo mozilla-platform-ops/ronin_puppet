@@ -85,7 +85,7 @@ class linux_gui(
                             content => template("${module_name}/changeresolution.service.erb"),
                             notify  => Service['changeresolution'];
                         '/usr/local/bin/changeresolution.sh':
-                            source => 'puppet:///modules/gui/changeresolution.sh',
+                            source => template("${module_name}/changeresolution.sh"),
                             notify => Service['changeresolution'];
                     }
 
