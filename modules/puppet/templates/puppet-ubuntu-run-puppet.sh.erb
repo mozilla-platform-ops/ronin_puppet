@@ -34,7 +34,7 @@ else
     fail "Failed to find puppet role file ${ROLE_FILE}"
 fi
 
-[ -f '/var/root/vault.yaml' ] || fail "Secrets file not found"
+[ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
 
 # Return true is valid IP and not APIPA address
@@ -118,7 +118,7 @@ function update_puppet {
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
-    cp /var/root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
+    cp /root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
     chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
 
     cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
