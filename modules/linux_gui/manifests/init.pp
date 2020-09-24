@@ -19,7 +19,7 @@ class linux_gui(
     # $nvidia_version = '361.42'
 
     case $::operatingsystem {
-        Ubuntu: {
+        'Ubuntu': {
             # The new moonshot hardware GPU workers have an intel gpu.
             $use_nvidia = false
             $on_gpu = true
@@ -73,7 +73,7 @@ class linux_gui(
             }
 
             case $::operatingsystemrelease {
-                18.04: {
+                '18.04': {
                     $gpu_bus_id = 'PCI:0:02:0'
                     file {
                         '/etc/X11/xorg.conf':
@@ -96,6 +96,7 @@ class linux_gui(
                             source => 'puppet:///modules/gui/changeresolution.sh',
                             notify => Service['changeresolution'];
                     }
+
                     # start x11 *or* xvfb, depending on whether we have a GPU or not
                     $x11_ensure = $on_gpu ? {
                                             true    => undef,
