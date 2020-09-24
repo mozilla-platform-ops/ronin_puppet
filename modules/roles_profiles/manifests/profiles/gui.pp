@@ -14,6 +14,7 @@ class roles_profiles::profiles::gui {
         }
         'Ubuntu':{
             include linux_packages::ubuntu_desktop
+            # TODO: move linux_gui invocation here?
         }
         default: {
             fail("${::operatingsystem} not supported")
