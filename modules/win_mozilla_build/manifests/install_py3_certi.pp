@@ -11,5 +11,6 @@ class win_mozilla_build::install_py3_certi {
 
     exec { 'upgrade-py3_pip':
         command => "${mozbld}\\python3\\python3.exe -m pip install certifi",
+        creates => "${mozbld}\\python3\\Lib\\site-packages\\certifi\cacert.pem",
     }
 }
