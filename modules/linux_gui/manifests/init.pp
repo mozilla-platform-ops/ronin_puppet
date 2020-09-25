@@ -73,7 +73,7 @@ class linux_gui(
 
             exec { 'set systemctl default to multi-user vs graphical':
                 command  => 'systemctl set-default multi-user.target',
-                onlyif   => 'if [[ `systemctl get-default` != `multi-user.target` ]]; then exit 0 ; else exit 1; fi;',
+                onlyif   => 'if [[ `systemctl get-default` == "multi-user.target" ]]; then exit 1 ; else exit 0; fi;',
                 path     => ['/bin'],
                 provider => 'shell',
             }
