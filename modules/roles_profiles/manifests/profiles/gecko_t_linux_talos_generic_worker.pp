@@ -63,7 +63,6 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             # TODO:
             # - disable unnecessary services
             # - set up g-w apache proxy
-            # - x windows config
             # - shared dirs (dirs::builds::hg_shared, dirs::builds::git_shared, dirs::builds::tooltool_cache)
             # - talos: apache installation
         }
