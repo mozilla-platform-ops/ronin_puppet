@@ -71,11 +71,11 @@ class linux_gui(
                     ensure => absent;
             }
 
-            # we don't want gdm running, we run our own X instance
-            service { 'gdm':
-                ensure => stopped,
-                name   => 'gdm',
-                enable => false,
+            exec { 'set systemctl default to multi-user vs graphical':
+                command  => 'systemctl set-default multi-user.target',
+                onlyif   => 'if [[ `systemctl get-default` != `multi-user.target` ]]; then exit 0 ; else exit 1; fi;',
+                path     => ['/bin'],
+                provider => 'shell',
             }
 
             case $::operatingsystemrelease {
