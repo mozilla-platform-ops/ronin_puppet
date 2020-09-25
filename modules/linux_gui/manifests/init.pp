@@ -50,6 +50,7 @@ class linux_gui(
                 '/etc/X11/edid.bin':
                     source => "puppet:///modules/${module_name}/edid.bin";
 
+                # bug 984944: the appearance of these apps in talos tests mess with results
                 '/etc/xdg/autostart/jockey-gtk.desktop':
                     content => template("${module_name}/jockey-gtk.desktop");
 

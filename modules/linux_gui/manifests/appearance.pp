@@ -9,6 +9,7 @@ class linux_gui::appearance {
         'Ubuntu': {
             include linux_packages::libglib20_bin
 
+            # disable screensaver locking
             file {
                 '/usr/share/glib-2.0/schemas/99_gsettings.gschema.override':
                     notify => Exec['update-gsettings'],

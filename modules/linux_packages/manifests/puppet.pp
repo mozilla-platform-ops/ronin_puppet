@@ -10,7 +10,7 @@ class linux_packages::puppet {
 
           include apt
 
-          # remove puppet 5 repo and puppet-agent if present
+          # remove puppet 5 repo, puppet-agent, and puppet if present
           # - will conflict later if not removed
           package { 'remove old puppet repo deb':
             ensure => absent,
