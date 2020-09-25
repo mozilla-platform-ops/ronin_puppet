@@ -6,7 +6,6 @@ class win_mozilla_build::install_py3_certi {
 
     require win_mozilla_build::install
 
-    $needed_py3_pip_ver = $win_mozilla_build::needed_py3_pip_ver
     $mozbld = $win_mozilla_build::install_path
 
     exec { 'install_py3_certi':
