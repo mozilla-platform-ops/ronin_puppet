@@ -14,3 +14,6 @@ class win_mozilla_build::install_py3_certi {
         creates => "${mozbld}\\python3\\Lib\\site-packages\\certifi\cacert.pem",
     }
 }
+
+# This insatllation ensures that Python3 has the proper cacert.pem file
+# see https://bugzilla.mozilla.org/show_bug.cgi?id=1662170
