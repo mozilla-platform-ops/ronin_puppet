@@ -71,6 +71,13 @@ class linux_gui(
                     ensure => absent;
             }
 
+            # we don't want gdm running, we run our own X instance
+            service { 'gdm':
+                ensure => stopped,
+                name   => 'gdm',
+                enable => false,
+            }
+
             case $::operatingsystemrelease {
                 '18.04': {
                     $gpu_bus_id = 'PCI:0:02:0'
