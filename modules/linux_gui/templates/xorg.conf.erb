@@ -37,10 +37,10 @@ Section "Monitor"
 EndSection
 
 Section "Device"
-    Identifier     "Device0"
-    Driver         "nvidia"
-    VendorName     "NVIDIA Corporation"
-    BoardName      "GeForce GT 610"
+    Identifier     "Card0"
+    Driver         "intel"
+    VendorName     "Intel Corporation"
+    BoardName      "193a"
 
     # point the driver to the correct chipset
     BusId          "<%= @gpu_bus_id %>"
@@ -56,11 +56,12 @@ Section "Device"
     # This host doesn't run acpid, so no need to try
     Option "ConnectToAcpid" "FALSE"
 EndSection
-
 Section "Screen"
     Identifier     "Screen0"
-    Device         "Device0"
+    Device         "Card0"
     Monitor        "Monitor0"
-    DefaultDepth    24
-    Option         "metamodes" "nvidia-auto-select @1600x1200 +0+0"
+    SubSection "Display"
+        Modes   "1600x1200"
+        Depth   24
+    EndSubSection
 EndSection
