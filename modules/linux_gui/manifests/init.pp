@@ -71,6 +71,7 @@ class linux_gui(
                     ensure => absent;
             }
 
+            # disbale gdm (we run our own X server)
             exec { 'set systemctl default to multi-user vs graphical':
                 command  => 'systemctl set-default multi-user.target',
                 onlyif   => 'if [[ `systemctl get-default` == "multi-user.target" ]]; then exit 1 ; else exit 0; fi;',
