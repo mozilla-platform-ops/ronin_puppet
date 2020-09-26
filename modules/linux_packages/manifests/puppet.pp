@@ -22,6 +22,12 @@ class linux_packages::puppet {
             name   => 'puppet5-agent',
           }
 
+          # we don't need the full package and it conflicts with puppet-agent
+          package { 'remove puppet deb':
+            ensure => absent,
+            name   => 'puppet',
+          }
+
           # fetch and install the new repo deb
           file { 'puppet_repo_deb':
               ensure => 'file',
