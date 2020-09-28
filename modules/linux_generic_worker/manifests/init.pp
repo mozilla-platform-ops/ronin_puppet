@@ -87,14 +87,21 @@ class linux_generic_worker (
         "${user_homedir}/.config/autostart/gnome-terminal.desktop":
             content => template('linux_generic_worker/gnome-terminal.desktop.erb');
 
+        ["${user_homedir}/tasks", "${user_homedir}/downloads"]:
+            ensure => directory;
+
         '/usr/local/bin/run-generic-worker.sh':
             ensure  => present,
             content => template('linux_generic_worker/run-generic-worker.sh.erb'),
+            owner   => root,
+            group   => root,
             mode    => '0755';
 
         '/etc/generic-worker.config':
             ensure  => present,
             content => template('linux_generic_worker/generic-worker.config.erb'),
+            owner   => root,
+            group   => root,
             mode    => '0644';
 
         '/var/log/genericworker':
