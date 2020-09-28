@@ -59,7 +59,8 @@ class linux_talos () {
       #
 
       file {
-        [ '/builds/slave',
+        [ '/builds',
+          '/builds/slave',
           '/builds/slave/talos-data',
           '/builds/slave/talos-data/talos',
           '/builds/git-shared',
