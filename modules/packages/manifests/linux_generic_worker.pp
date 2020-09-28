@@ -8,11 +8,13 @@ class packages::linux_generic_worker (
     String                      $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
     String                      $taskcluster_proxy_sha256,
+    Pattern[/^v\d+\.\d+\.\d+$/] $livelog_version,
+    String                      $livelog_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
     String                      $quarantine_worker_sha256,
 ) {
 
-    packages::linux_package_from_s3 { "generic-worker-simple-linux-386-${generic_worker_version}":
+    packages::linux_package_from_s3 { "generic-worker-simple-linux-amd64-${generic_worker_version}":
         private             => false,
         os_version_specific => false,
         type                => 'bin',
@@ -28,6 +30,14 @@ class packages::linux_generic_worker (
         checksum            => $taskcluster_proxy_sha256,
     }
 
+    packages::linux_package_from_s3 { "livelog-linux-amd64-${taskcluster_proxy_version}":
+        private             => false,
+        os_version_specific => false,
+        type                => 'bin',
+        file_destination    => '/usr/local/bin/livelog',
+        checksum            => $livelog_sha256,
+    }
+
     packages::linux_package_from_s3 { "quarantine-worker-linux-amd64-${quarantine_worker_version}":
         private             => false,
         os_version_specific => false,
@@ -35,6 +45,4 @@ class packages::linux_generic_worker (
         file_destination    => '/usr/local/bin/quarantine-worker',
         checksum            => $quarantine_worker_sha256,
     }
-
-    # TODO: add livelog and tc-proxy
 }
