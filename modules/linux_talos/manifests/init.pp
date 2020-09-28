@@ -57,19 +57,21 @@ class linux_talos () {
       # include packages::xcode_cmd_line_tools
       # require dirs::builds
       #
-      # file {
-      #   [ '/builds/slave',
-      #     '/builds/slave/talos-data',
-      #     '/builds/slave/talos-data/talos',
-      #     '/builds/git-shared',
-      #     '/builds/hg-shared',
-      #     '/builds/tooltool_cache' ]:
-      #     ensure  => directory,
-      #     owner   => $user,
-      #     group   => 'staff',
-      #     mode    => '0755',
-      #     require => User[$user],
-      # }
+
+      file {
+        [ '/builds/slave',
+          '/builds/slave/talos-data',
+          '/builds/slave/talos-data/talos',
+          '/builds/git-shared',
+          '/builds/hg-shared',
+          '/builds/tooltool_cache' ]:
+          ensure => directory,
+          # TODO: replace with hiera lookup
+          owner  => 'cltbld',
+          group  => 'staff',
+          mode   => '0755',
+      }
+
       #
       # $document_root = '/builds/slave/talos-data/talos'
       # httpd::config { 'talos.conf':
