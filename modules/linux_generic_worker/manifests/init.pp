@@ -76,7 +76,10 @@ class linux_generic_worker (
     $reboot_command = '/usr/bin/sudo /sbin/reboot --force'
 
     file {
-        default: * => $::shared::file_defaults;
+        default:
+            owner => $user,
+            # TODO: take this as an arg, don't assume
+            group => $user;
 
         ["${user_homedir}/.config",
         "${user_homedir}/.config/autostart"]:
