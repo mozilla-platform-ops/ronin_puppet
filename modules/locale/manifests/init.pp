@@ -7,11 +7,12 @@ class locale() {
     case $::operatingsystem {
         'Ubuntu': {
             file {
-                '/var/lib/locales/supported.d/local':
-                    content => "en_US UTF-8\n",
-                    notify  => Exec['generate-locales'];
+                # not used on 18.04 any longer?
+                # '/var/lib/locales/supported.d/local':
+                #     content => "en_US UTF-8\n",
                 '/etc/default/locale':
-                    source  => 'puppet:///modules/locale/locale.ubuntu';
+                    source => 'puppet:///modules/locale/locale.ubuntu',
+                    notify => Exec['generate-locales'];
             }
             exec {
                 'generate-locales':
