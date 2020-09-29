@@ -6,6 +6,8 @@
 class locale() {
     case $::operatingsystem {
         'Ubuntu': {
+            include linux_packages::locales
+
             file {
                 '/etc/default/locale':
                     source => 'puppet:///modules/locale/locale.ubuntu',
