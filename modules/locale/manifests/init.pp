@@ -7,15 +7,17 @@ class locale() {
     case $::operatingsystem {
         'Ubuntu': {
             file {
-                # not used on 18.04 any longer?
-                # '/var/lib/locales/supported.d/local':
-                #     content => "en_US UTF-8\n",
                 '/etc/default/locale':
                     source => 'puppet:///modules/locale/locale.ubuntu',
-                    notify => Exec['generate-locales'];
+                    notify => [Exec['generate-locales'], Exec['reconfigure-locales']];
             }
             exec {
                 'generate-locales':
+                    command     => '/usr/sbin/locale-gen en_US.UTF-8',
+                    refreshonly => true;
+            }
+            exec {
+                'reconfigure-locales':
                     command     => '/usr/sbin/dpkg-reconfigure --frontend=noninteractive locales',
                     refreshonly => true;
             }
