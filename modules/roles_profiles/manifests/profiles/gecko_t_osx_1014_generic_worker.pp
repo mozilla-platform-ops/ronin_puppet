@@ -104,6 +104,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
 
             include dirs::tools
 
+            contain packages::imagemagick
+
             include packages::google_chrome
 
             contain packages::nodejs
