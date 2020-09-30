@@ -202,16 +202,6 @@ groups:
 #     - t-mojave-r7-445.test.releng.mdc1.mozilla.com
 #     - t-mojave-r7-446.test.releng.mdc1.mozilla.com
 #     - t-mojave-r7-447.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-448.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-449.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-450.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-451.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-452.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-453.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-454.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-455.test.releng.mdc1.mozilla.com
-#     - t-mojave-r7-456.test.releng.mdc1.mozilla.com
-      - t-mojave-r7-457.test.releng.mdc1.mozilla.com
   - name: t-mojave-r7-mdc2
     targets:
       - t-mojave-r7-007.test.releng.mdc2.mozilla.com
