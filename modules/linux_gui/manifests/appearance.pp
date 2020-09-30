@@ -21,6 +21,13 @@ class linux_gui::appearance {
                     require     => Class['linux_packages::libglib20_bin'],
                     refreshonly => true;
             }
+
+            # remove gnome-initial-setup as we do all configuration
+            package {
+                'gnome-initial-setup':
+                    ensure => 'absent';
+
+            }
         }
         default: {
             fail("Don't know how to set up GUI appearance on ${::operatingsystem}")
