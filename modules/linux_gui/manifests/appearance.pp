@@ -28,6 +28,12 @@ class linux_gui::appearance {
                     ensure => 'absent';
 
             }
+
+            # avoid auth prompt to create a color managed device
+            file {
+                '/etc/polkit-1/localauthority/50-local.d/45-allow.colord.pkla':
+                    source => 'puppet:///modules/linux_gui/colord.pkla';
+            }
         }
         default: {
             fail("Don't know how to set up GUI appearance on ${::operatingsystem}")
