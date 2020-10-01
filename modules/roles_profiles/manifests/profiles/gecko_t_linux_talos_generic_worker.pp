@@ -12,10 +12,13 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
         'Ubuntu': {
             require roles_profiles::profiles::cltbld_user
 
+            # TODO: move these lines to linux-base?
             require linux_packages::py2
             require linux_packages::py3
             require linux_packages::ffmpeg
             require linux_packages::imagemagick
+            require linux_packages::psutil_py2
+            require linux_packages::psutil_py3
             require linux_packages::python2_zstandard
             require linux_packages::python3_zstandard
             require linux_packages::zstd
