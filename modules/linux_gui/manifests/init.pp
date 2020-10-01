@@ -50,12 +50,14 @@ class linux_gui(
                 '/etc/X11/edid.bin':
                     source => "puppet:///modules/${module_name}/edid.bin";
 
-                # bug 984944: the appearance of these apps in talos tests mess with results
-                '/etc/xdg/autostart/jockey-gtk.desktop':
-                    content => template("${module_name}/jockey-gtk.desktop");
+                # bug 984944: jockey is gone in 18.04
+                # Bug 984944: deja-dup-monitor prevents taking screenshots
+                '/etc/xdg/autostart/org.gnome.DejaDup.Monitor.desktop':
+                    source => "puppet:///modules/${module_name}/org.gnome.DejaDup.Monitor.desktop";
 
-                '/etc/xdg/autostart/deja-dup-monitor.desktop':
-                    content => template("${module_name}/deja-dup-monitor.desktop");
+                # disable update-notifer
+                '/etc/xdg/autostart/update-notifier.desktop':
+                    source => "puppet:///modules/${module_name}/update-notifier.desktop";
 
                 "${builder_home}/.xsessionrc":
                     content => "DESKTOP_SESSION=ubuntu\n",
