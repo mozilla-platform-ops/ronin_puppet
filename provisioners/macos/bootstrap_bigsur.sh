@@ -4,6 +4,8 @@ PUPPET_REPO=${PUPPET_REPO:-"https://github.com/davehouse/ronin_puppet.git"}
 PUPPET_BRANCH=${PUPPET_BRANCH:-"bug1667424_macos-bigsur"}
 PUPPET_ROLE=${PUPPET_ROLE:-"gecko_t_osx_1100"}
 
+export PATH="$PATH:/opt/puppetlabs/bin"
+
 macos_version="11.00.0"
 git_version="2.27.0"  # 2020-07-22
 puppet_version="6.18.0-1"  # 2020-08-25
