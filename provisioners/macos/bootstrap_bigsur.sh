@@ -1,8 +1,8 @@
 #!/bin/bash
 
-PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet.git"}
-PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
-PUPPET_ROLE=${PUPPET_ROLE:-""}
+PUPPET_REPO=${PUPPET_REPO:-"https://github.com/davehouse/ronin_puppet.git"}
+PUPPET_BRANCH=${PUPPET_BRANCH:-"bug1667424_macos-bigsur"}
+PUPPET_ROLE=${PUPPET_ROLE:-"gecko_t_osx_1100"}
 
 macos_version="11.00.0"
 git_version="2.27.0"  # 2020-07-22
