@@ -5,11 +5,21 @@
 class linux_packages::google_chrome {
     include apt
 
+    Exec['apt_update'] -> Package['google-chrome-stable']
+
     # setup chrome source
-    file {
-        '/etc/apt/sources.list.d/google-chrome.list':
-            source => 'puppet:///modules/linux_packages/google-chrome.list',
-            notify => Exec['apt_update']
+    apt::source { 'google_repo':
+        location => '[arch=amd64] https://dl.google.com/linux/chrome/deb/',
+        release  => 'stable',
+        key      => {
+            id     => '4CCA1EAF950CEE4AB83976DCA040830F7FAC5991',
+            source => 'https://dl.google.com/linux/linux_signing_key.pub',
+        },
+        repos    => 'main',
+        include  => {
+            'src' => false
+        },
+        notify   => Exec['apt_update'],
     }
 
     # configure auto-update
