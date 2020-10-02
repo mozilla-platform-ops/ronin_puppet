@@ -53,11 +53,11 @@ sudo systemsetup \
 # Enable ssh
 sudo systemsetup -setremotelogin on
 
-# SIP check
-# ensure ssh and no power-savings before failing on this
-if csrutil status | grep -q "enabled"; then
-   fail "SIP is enabled!"
-fi
+# # SIP check
+# # ensure ssh and no power-savings before failing on this
+# if csrutil status | grep -q "enabled"; then
+#    fail "SIP is enabled!"
+# fi
 
 # Check for find-my-mac
 fmm_computer_name=$(nvram fmm-computer-name 2>/dev/null | cut -d$'\t' -f2)
