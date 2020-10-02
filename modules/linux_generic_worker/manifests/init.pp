@@ -113,7 +113,8 @@ class linux_generic_worker (
             mode   => '0777';
     }
 
-    # TODO: see below
+    # TODO: cleanup
+    # from build-puppet, seems not needed for modern talos/raptor
 
     #         host { $taskcluster_host:
     #             ip => '127.0.0.1'
