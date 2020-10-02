@@ -9,8 +9,10 @@ class disable_services() {
             # Instead, install but disable them.
             case $::operatingsystemrelease {
                 '18.04': {
-                    $install_and_disable = [ 'cups', 'anacron', 'whoopsie',
-                        'modemmanager', 'apport', 'acpid',
+                    # acpi removed because it can't be disabled this way
+                    #   (never worked in build-puppet/16.04)
+                    $install_and_disable = [ 'cups', 'anacron',
+                        'whoopsie', 'modemmanager', 'apport',
                         'avahi-daemon', 'network-manager' ]
                     package {
                         $install_and_disable:

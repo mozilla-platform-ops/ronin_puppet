@@ -2,10 +2,6 @@ require_relative 'spec_helper'
 
 # services
 
-describe service('acpid') do
-  it { should_not be_enabled }
-end
-
 describe service('anacron') do
   it { should_not be_enabled }
 end
