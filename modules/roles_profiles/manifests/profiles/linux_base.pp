@@ -14,6 +14,8 @@ class roles_profiles::profiles::linux_base {
             include ::roles_profiles::profiles::relops_users
             include ::roles_profiles::profiles::sudo
 
+            include disable_services
+
             # TODO:
             # - add auditd
             # - add sending of logs to log aggregator/relay
