@@ -8,7 +8,7 @@ class disable_services() {
             # These packages are required by ubuntu-desktop, so we can't uninstall them.
             # Instead, install but disable them.
             case $::operatingsystemrelease {
-                18.04: {
+                '18.04': {
                     $install_and_disable = [ 'cups', 'anacron', 'whoopsie',
                         'modemmanager', 'apport', 'acpid',
                         'avahi-daemon', 'network-manager' ]
