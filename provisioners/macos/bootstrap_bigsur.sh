@@ -121,7 +121,7 @@ fi
 [[ $git_version == $(git --version | cut -d\  -f3) ]] \
   && git --version \
   || install "https://downloads.sourceforge.net/project/git-osx-installer/git-${git_version}-intel-universal-mavericks.dmg" \
-    7a828be2ea16ad48797157769d29028f2d1c0040c87525467fd5addbb11a2cac \
+    d867bff76ad5cc2e9ceb44563d8b08e0d645d6f4bc1007a6016aadf067761fda \
     || fail "git install failed"
 
 [[ "${puppet_version%%-*}" == $(puppet --version) ]] \
