@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_t_osx_1015_generic_worker (
-    String $worker_type = 'gecko-t-osx-1015-bug1667424',
+class roles_profiles::profiles::gecko_t_osx_1100_generic_worker (
+    String $worker_type = 'gecko-t-osx-1100-bug1667424',
 ) {
     require roles_profiles::profiles::cltbld_user
 
