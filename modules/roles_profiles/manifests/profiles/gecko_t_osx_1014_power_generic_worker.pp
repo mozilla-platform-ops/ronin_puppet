@@ -2,13 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
-    String $worker_type = 'gecko-t-osx-1014-bug1665379',
-) {
+class roles_profiles::profiles::gecko_t_osx_1014_power_generic_worker {
 
     require roles_profiles::profiles::cltbld_user
 
-    $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
+    $worker_type  = 'gecko-t-osx-1014-power'
+    $worker_group = 'bitbar' # regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
         workerType    => $worker_type,
@@ -23,8 +22,13 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
+
                 # Note the camelCase key names
                 meta_data         => $meta_data,
+                puppet_env          => 'dev',
+                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
+                puppet_branch       => 'bug1572190_bitbar-mbp',
+                puppet_notify_email => 'dhouse@mozilla.com',
             }
 
             class { 'roles_profiles::profiles::logging':
@@ -32,47 +36,18 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
                 mac_log_level => 'default',
             }
 
-            class { 'telegraf':
-                global_tags  => $meta_data,
-                agent_params => {
-                    interval          => '300s',
-                    round_interval    => true,
-                    collection_jitter => '0s',
-                    flush_interval    => '120s',
-                    flush_jitter      => '60s',
-                    precision         => 's',
-                },
-                inputs       => {
-                    # current default telegraf monitors: system, mem, swap, disk'/', puppetagent
-                    temp     => {},
-                    cpu      => {
-                        interval         => '60s',
-                        percpu           => true,
-                        totalcpu         => true,
-                        ## If true, collect raw CPU time metrics.
-                        collect_cpu_time => false,
-                        ## If true, compute and report the sum of all non-idle CPU states.
-                        report_active    => false,
-                    },
-                    diskio   => {},
-                    procstat => {
-                        interval => '60s',
-                        exe      => 'generic-worker',
-                    },
-                },
-            }
+            require packages::xcode_cmd_line_tools
 
             class { 'talos':
                 user => 'cltbld',
             }
 
-            $taskcluster_client_id    = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_client_id')
-            $taskcluster_access_token = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker.datacenter_gecko_t_osx_1014.livelog_secret')
-            $quarantine_client_id     = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_client_id')
-            $quarantine_access_token  = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_access_token')
-            $bugzilla_api_key         = lookup('generic_worker.datacenter_gecko_t_osx_1014.bugzilla_api_key')
-
+            $taskcluster_client_id    = lookup('generic_worker.bitbar_gecko_t_osx_1014_power.taskcluster_client_id')
+            $taskcluster_access_token = lookup('generic_worker.bitbar_gecko_t_osx_1014_power.taskcluster_access_token')
+            $livelog_secret           = lookup('generic_worker.bitbar_gecko_t_osx_1014_power.livelog_secret')
+            $quarantine_client_id     = lookup('generic_worker.bitbar_gecko_t_osx_1014_power.quarantine_client_id')
+            $quarantine_access_token  = lookup('generic_worker.bitbar_gecko_t_osx_1014_power.quarantine_access_token')
+            $bugzilla_api_key         = lookup('generic_worker.bitbar_gecko_t_osx_1014_power.bugzilla_api_key')
 
             class { 'packages::zstandard':
                 version => '1.3.8',
@@ -137,6 +112,12 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
                     target  => '/usr/local/bin/python3',
                     require => Class['packages::python3'],
             }
+            # non-talos tests expect this dir link
+            file { '/tools/python37':
+                    ensure  => 'link',
+                    target  => '/usr/local/',
+                    require => Class['packages::python3'],
+            }
 
             contain packages::virtualenv
 
@@ -144,6 +125,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
             contain packages::python3_zstandard
 
             include mercurial::ext::robustcheckout
+
+            contain packages::intel_power_gadget
         }
         default: {
             fail("${::operatingsystem} not supported")
