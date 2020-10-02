@@ -27,7 +27,7 @@ PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet
 PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
 PUPPET_FORK="${PUPPET_REPO%.git}"
 PUPPET_FORK="${PUPPET_FORK#*.com}"
-PUPPET_REPO_BUNDLE="https://github.com/${PUPPET_FORK}/ronin_puppet/archive/${PUPPET_BRANCH}.tar.gz"
+PUPPET_REPO_BUNDLE="https://github.com/${PUPPET_FORK}/archive/${PUPPET_BRANCH}.tar.gz"
 
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {
