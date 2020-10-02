@@ -126,8 +126,8 @@ fi
 
 [[ "${puppet_version%%-*}" == $(puppet --version) ]] \
   && printf "puppet version %s\n" $(puppet --version) \
-  || install "https://downloads.puppetlabs.com/mac/puppet/10.15/x86_64/puppet-agent-${puppet_version}.osx10.14.dmg" \
-    318c1db1c4d0271008a8544d8534c9797a12605a5824bee2745879398cd6ba8f \
+  || install "https://downloads.puppetlabs.com/mac/puppet/10.15/x86_64/puppet-agent-${puppet_version}.osx10.15.dmg" \
+    9bc0aeffac8d6fcf42d5b1e9c49a2d269c096dcb3c8304012bbefe137e9d785d \
     || fail "puppet install failed"
 
 screenshot
