@@ -182,10 +182,12 @@ fi
 # 3.6.1 https://software.intel.com/sites/default/files/managed/16/90/Intel%20Power%20Gadget.dmg
 #   PowerLog 15ac1c8ca6a99bb4856cb9e1a06293c4f088875741b46cc8a3246a453405143d
 #   dmg f88af78566e406a06bf96349a7314a811cedfa698b38252ffc36f4f19ab52b65
+# 3.7.0 https://software.intel.com/content/dam/develop/external/us/en/documents/Intel-Power-Gadget-v3.7.0.dmg
+#   dmg 22ed3fe050c3b965841ccc5590a3a03bb9498f8620e01ba4dea5557dcd24fe43
 checksum "/Applications/Intel Power Gadget/PowerLog" \
   9210e37554afc4449dcd3896aa6c9a884b20f0788e75ed2dcfae79f294b2d151 \
-  || install "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/macos/public/common/Intel_Power_Gadget_3.5.5.dmg" \
-    efd306800c28abda0d5543fbc5bf78eb142a43a96feb56fcf211e3bbc83a78d3 \
+  || install "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/macos/public/common/Intel_Power_Gadget_3.7.0.dmg" \
+    22ed3fe050c3b965841ccc5590a3a03bb9498f8620e01ba4dea5557dcd24fe43 \
   && (
     sudo kextutil /Library/Extensions/EnergyDriver.kext
     sudo kextload /Library/Extensions/EnergyDriver.kext
