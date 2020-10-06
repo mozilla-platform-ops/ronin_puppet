@@ -17,7 +17,7 @@ class win_mozilla_build::install_psutil {
     }
     exec { 'install_py_psutil':
         command => "${mozbld}\\python\\python.exe ${pip_string}",
-        creates => "${mozbld}\\python\\Lib\\${create_path}",
+        creates => "${mozbld}\\python\\${create_path}",
     }
 }
 
