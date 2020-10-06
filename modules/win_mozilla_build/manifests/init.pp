@@ -36,7 +36,7 @@ class win_mozilla_build (
         include win_mozilla_build::pip
         include win_mozilla_build::grant_symlnk_access
         include win_mozilla_build::zstandard
-        include win_mozilla_build::psutil
+        include win_mozilla_build::install_psutil
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
