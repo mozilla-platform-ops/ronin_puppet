@@ -27,7 +27,7 @@ set -e
 
 # local files
 BOOTSTRAP_FILE="bootstrap_linux.sh"
-SECRETS_FILE="vault.yml"
+SECRETS_FILE="vault.yaml"
 
 # remote files
 ROLE_FILE="/etc/puppet_role"
@@ -76,14 +76,15 @@ fi
 
 # place bootsrap
 scp "$BOOTSTRAP_FILE" root@"$THE_HOST":/root/bootstrap.sh
+ssh root@"$THE_HOST" chmod 755 /root/bootstrap.sh
 
 # place secrets
 # TODO: generate vault.yml with vault data
-scp "$SECRETS_FILE" root@"$THE_HOST":/root/vault.yml
+scp "$SECRETS_FILE" root@"$THE_HOST":/root/vault.yaml
 
 # finally, place role
 # shellcheck disable=SC2029
 ssh root@"$THE_HOST" "echo $THE_ROLE > $ROLE_FILE"
 
 echo ""
-echo "success"
+echo "success."
