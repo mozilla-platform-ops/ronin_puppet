@@ -8,17 +8,21 @@
 # provisioned or re-imaged
 
 # Prerequisites:
-#  * curl
-#  * tar w/gzip
-#  * Puppet agent 6.x.x
+#  * wget
 
+set -e
+# set -x
+
+# install puppet 6
+wget https://apt.puppetlabs.com/puppet6-release-bionic.deb -O /tmp/puppet.deb
+dpkg -i /tmp/puppet.deb
+apt update
+apt remove puppet
+apt install puppet-agent
 
 # Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
-
-# TODO:
-# pull and generate vault secrets to yaml (or json).  Block if secrets don't exist, soft fail if cached
 
 PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet.git"}
 PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
