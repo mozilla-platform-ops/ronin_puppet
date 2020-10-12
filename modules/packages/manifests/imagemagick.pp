@@ -6,8 +6,7 @@ class packages::imagemagick (
     Pattern[/^\d+\.\d+.*$/] $version = '6.9.11-33',
 ) {
 
-    #packages::macos_package_from_s3 { "imagemagick-${version}.dmg":
-    packages::macos_package_from_s3 { "imagemagick_${version}.mpkg":
+    packages::macos_package_from_s3 { "imagemagick-${version}.dmg":
         private             => false,
         os_version_specific => false,
         type                => 'pkg',
