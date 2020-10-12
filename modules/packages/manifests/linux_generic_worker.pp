@@ -40,6 +40,14 @@ class packages::linux_generic_worker (
         checksum            => $livelog_sha256,
     }
 
+    packages::linux_package_from_s3 { "start-worker-linux-amd64-${start_worker_version}":
+        private             => false,
+        os_version_specific => false,
+        type                => 'bin',
+        file_destination    => '/usr/local/bin/start-worker',
+        checksum            => $start_worker_sha256,
+    }
+
     packages::linux_package_from_s3 { "quarantine-worker-linux-amd64-${quarantine_worker_version}":
         private             => false,
         os_version_specific => false,
