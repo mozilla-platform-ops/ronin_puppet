@@ -19,3 +19,12 @@
 # Node definitions are generated at time of provisioning and should not be tracked
 /manifests/nodes/*
 !/manifests/nodes/README.md
+
+# bundler paths
+vendor/
+
+# IDEs
+.idea/
+
+# ignore bolt rerun state file
+.rerun.json

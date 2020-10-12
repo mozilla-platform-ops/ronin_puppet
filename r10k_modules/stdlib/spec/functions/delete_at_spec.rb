@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'delete_at' do
   it { is_expected.not_to eq(nil) }

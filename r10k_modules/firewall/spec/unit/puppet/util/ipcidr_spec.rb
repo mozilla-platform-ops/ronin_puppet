@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'puppet/util/ipcidr'
 
 describe 'Puppet::Util::IPCidr' do

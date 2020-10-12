@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'firewall::linux::debian', type: :class do
   context 'with Debian 8' do

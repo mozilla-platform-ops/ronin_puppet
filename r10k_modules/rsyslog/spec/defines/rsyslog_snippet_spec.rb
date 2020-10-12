@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'rsyslog::snippet', type: :define do
   context 'Rsyslog version >= 8' do

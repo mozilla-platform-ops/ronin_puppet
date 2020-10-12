@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'unix2dos' do
   context 'when checking parameter validity' do

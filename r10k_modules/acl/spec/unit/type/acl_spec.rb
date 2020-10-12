@@ -1,5 +1,5 @@
 #! /usr/bin/env ruby
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'puppet/type'
 require 'puppet/type/acl'
 

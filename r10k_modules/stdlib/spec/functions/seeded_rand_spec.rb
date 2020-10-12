@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'seeded_rand' do
   it { is_expected.not_to eq(nil) }

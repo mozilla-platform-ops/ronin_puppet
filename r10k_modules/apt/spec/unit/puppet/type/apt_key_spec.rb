@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'puppet'
 
 describe Puppet::Type.type(:apt_key) do

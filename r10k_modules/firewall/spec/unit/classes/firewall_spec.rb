@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'firewall', type: :class do
   context 'with kernel => Linux' do

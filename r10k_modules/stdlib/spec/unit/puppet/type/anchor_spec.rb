@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 anchor = Puppet::Type.type(:anchor).new(:name => 'ntp::begin')
 

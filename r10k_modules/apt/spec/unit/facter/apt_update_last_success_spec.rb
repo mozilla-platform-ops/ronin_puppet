@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'apt_update_last_success fact' do
   subject { Facter.fact(:apt_update_last_success).value }

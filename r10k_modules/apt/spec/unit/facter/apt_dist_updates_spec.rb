@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'apt_updates fact' do
   subject { Facter.fact(:apt_dist_updates).value }

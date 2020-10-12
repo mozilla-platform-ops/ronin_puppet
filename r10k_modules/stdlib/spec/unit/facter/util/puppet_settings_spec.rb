@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'facter/util/puppet_settings'
 
 describe Facter::Util::PuppetSettings do
