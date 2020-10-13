@@ -81,6 +81,7 @@ ssh root@"$THE_HOST" chmod 755 /root/bootstrap.sh
 # place secrets
 # TODO: generate vault.yml with vault data
 scp "$SECRETS_FILE" root@"$THE_HOST":/root/vault.yaml
+ssh root@"$THE_HOST" chmod 640 /root/vault.yaml
 
 # finally, place role
 # shellcheck disable=SC2029
