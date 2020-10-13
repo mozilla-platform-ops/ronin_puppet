@@ -105,6 +105,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
             include dirs::tools
 
             contain packages::imagemagick
+            contain packages::ffmpeg
 
             include packages::google_chrome
 
