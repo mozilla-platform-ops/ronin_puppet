@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::ffmpeg (
-    Pattern[/^\d+\.\d+.*$/] $version = '99555-g00772ef4f7',
+    Pattern[/^\d+-[0-9a-z]*$/] $version = '99555-g00772ef4f7',
 ) {
 
     packages::macos_package_from_s3 { "ffmpeg-${version}.dmg":
