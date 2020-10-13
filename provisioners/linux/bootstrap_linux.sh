@@ -217,7 +217,9 @@ rm -rf "$TMP_PUPPET_DIR"
 # record the installation date (note that this won't appear anywhere on Darwin)
 echo "System Installed: $(date)" >> /etc/issue
 
+echo "Success. Rebooting..."
+
 # Success! Let's reboot
-/sbin/reboot
+/sbin/reboot --force &>/dev/null &
 
 exit 0
