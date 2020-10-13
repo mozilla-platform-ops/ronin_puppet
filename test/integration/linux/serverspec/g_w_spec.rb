@@ -38,8 +38,13 @@ describe file('/usr/local/share/generic-worker/bugzilla-utils.sh') do
   it { should be_executable }
 end
 
+describe file('/usr/local/bin/run-start-worker.sh') do
+  it { should exist }
+  it { should be_executable }
+end
+
 # config
 
-describe file('/etc/generic-worker.config') do
+describe file('/etc/start-worker.yml') do
   it { should exist }
 end
