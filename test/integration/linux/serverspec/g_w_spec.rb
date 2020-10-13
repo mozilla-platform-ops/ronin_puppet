@@ -23,6 +23,11 @@ describe file('/usr/local/bin/taskcluster-proxy') do
   it { should be_executable }
 end
 
+describe file('/usr/local/bin/start-worker') do
+  it { should exist }
+  it { should be_executable }
+end
+
 describe file('/usr/local/bin/quarantine-worker') do
   it { should exist }
   it { should be_executable }
