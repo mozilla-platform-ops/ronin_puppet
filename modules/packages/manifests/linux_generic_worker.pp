@@ -32,7 +32,7 @@ class packages::linux_generic_worker (
         checksum            => $taskcluster_proxy_sha256,
     }
 
-    packages::linux_package_from_s3 { "livelog-linux-amd64-${taskcluster_proxy_version}":
+    packages::linux_package_from_s3 { "livelog-linux-amd64-${livelog_version}":
         private             => false,
         os_version_specific => false,
         type                => 'bin',
