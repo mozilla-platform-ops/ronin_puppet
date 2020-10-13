@@ -17,7 +17,7 @@ set -e
 wget https://apt.puppetlabs.com/puppet6-release-bionic.deb -O /tmp/puppet.deb
 dpkg -i /tmp/puppet.deb
 apt-get update
-apt-get remove puppet
+apt-get remove -y puppet
 apt-get install -y puppet-agent
 
 # Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
