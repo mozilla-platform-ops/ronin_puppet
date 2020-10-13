@@ -1,0 +1,35 @@
+cacheOverRestarts: true
+getSecrets: false
+provider:
+    providerType: standalone
+    rootURL: "https://firefox-ci-tc.services.mozilla.com"
+    clientID: "<%= @taskcluster_client_id %>"
+    accessToken: "<%= @taskcluster_access_token %>"
+    workerPoolID: "releng-hardware/<%= @worker_type %>"
+    workerGroup: "<%= @worker_group %>"
+    workerID: "<%= @hostname %>"
+worker:
+    implementation: generic-worker
+    path: /usr/local/bin/generic-worker
+    configPath: /home/cltbld/generic-worker.config
+workerConfig:
+    cachesDir:                        "<%= @caches_dir %>"
+    certificate:                      ""
+    checkForNewDeploymentEverySecs:   0
+    cleanUpTaskDirs:                  true
+    ed25519SigningKeyLocation:        "<%= @ed25519_signing_key %>"
+    idleTimeoutSecs:                  5400
+    livelogExecutable:                "/usr/local/bin/livelog"
+    numberOfTasksToRun:               1
+    provisionerId:                    "releng-hardware"
+    publicIP:                         "<%= @ipaddress %>"
+    requiredDiskSpaceMegabytes:       10240
+    sentryProject:                    "generic-worker"
+    shutdownMachineOnIdle:            false
+    shutdownMachineOnInternalError:   false
+    taskclusterProxyExecutable:       "/usr/local/bin/taskcluster-proxy"
+    taskclusterProxyPort:             8080
+    tasksDir:                         "<%= @task_dir %>"
+    workerType:                       "<%= @worker_type %>"
+    wstAudience:                      "firefoxcitc"
+    wstServerURL:                     "https://firefoxci-websocktunnel.services.mozilla.com/"

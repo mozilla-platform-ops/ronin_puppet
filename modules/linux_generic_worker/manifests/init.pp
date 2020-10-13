@@ -98,16 +98,16 @@ class linux_generic_worker (
         ["${user_homedir}/tasks", "${user_homedir}/downloads"]:
             ensure => directory;
 
-        '/usr/local/bin/run-generic-worker.sh':
+        '/usr/local/bin/run-start-worker.sh':
             ensure  => present,
-            content => template('linux_generic_worker/run-generic-worker.sh.erb'),
+            content => template('linux_generic_worker/run-start-worker.sh.erb'),
             owner   => root,
             group   => root,
             mode    => '0755';
 
-        '/etc/generic-worker.config':
+        '/etc/start-worker.yml':
             ensure  => present,
-            content => template('linux_generic_worker/generic-worker.config.erb'),
+            content => template('linux_generic_worker/worker-runner-config.yml.erb'),
             owner   => root,
             group   => root,
             mode    => '0644';
