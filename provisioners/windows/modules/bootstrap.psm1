@@ -181,7 +181,10 @@ function Install-AzPrerequ {
     [string] $work_dir = "$env:systemdrive\scratch",
     [string] $git = "Git-2.18.0-64-bit.exe",
     [string] $puppet = "puppet-agent-6.0.0-x64.msi",
-    [string] $vault_file = "azure_vault_template.yaml"
+    [string] $vault_file = "azure_vault_template.yaml",
+    [string] $rdagent = "rdagent"
+    [string] $azure_guest_agent = "WindowsAzureGuestAgent",
+    [string] $azure_telemetry = "WindowsAzureTelemetryService"
     #[string] $tooltool_tok =  (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\tooltool").token
   )
   begin {
@@ -201,6 +204,14 @@ function Install-AzPrerequ {
     Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
     Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
     Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
+
+    net stop $rdagent
+    net stop $azure_guest_agent
+    net stop $azure_telemetry
+
+    sc delete $rdagent
+    sc delete $azure_guest_agent
+    sc delete $azure_telemetry
 
     # May not be needed. If not this can be removed in the future
     #Invoke-WebRequest -Uri  $ext_src/$vault_file  -UseBasicParsing -OutFile $local_dir\$vault_file
