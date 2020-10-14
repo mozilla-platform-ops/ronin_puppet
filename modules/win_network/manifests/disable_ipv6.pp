@@ -8,6 +8,6 @@ class win_network::disable_ipv6 {
     registry_value { 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters\DisabledComponents':
         ensure => present,
         type   => dword,
-        data   => '0xFF',
+        data   => '255',
     }
 }
