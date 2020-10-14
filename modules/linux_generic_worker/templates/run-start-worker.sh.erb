@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# This is a wrapper script for calling generic worker, such that when the worker
-# exits, this script will reboot the machine. Note, in the worker config
-# (/etc/generic-worker.config) we set numberOfTasksToRun to 1 so that the worker
+# This is a wrapper script for calling worker manager, such that when the g-w
+# exits, this script will reboot the machine. Note, in the worker manager config
+# (/etc/start-worker.yml) we set numberOfTasksToRun to 1 so that the worker
 # will exit after running a single task. This script is then responsible for
 # rebooting the machine.
 
@@ -13,7 +13,7 @@ rm -f tasks-resolved-count.txt
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 source /usr/local/share/generic-worker/bugzilla-utils.sh
 
-# First run the generic-worker, passing through any arguments handed to this
+# First run the start-worker, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/start-worker "$@" 2>&1 | logger -t generic-worker -s
 
@@ -36,12 +36,12 @@ if [ $exitstatus -eq 69 ]; then
     if [ -f <%= @user_homedir %>/quarantined ]; then
         echo "Worker is quarantined"
     else
+        # create a semaphore file
+        echo "quarantined worker" > <%= @user_homedir %>/quarantined
+
         echo "Quarantine worker"
         # quarantine the worker using github.com/mozilla-platform-ops/quarantine-worker CLI
         /usr/local/bin/quarantine-worker releng-hardware "<%= @worker_type %>" "<%= @worker_group %>" "<%= @hostname %>" 720h5s
-
-        # create a semaphore file
-        echo "quarantined worker" > <%= @user_homedir %>/quarantined
 
         # Submit a new bug to Bugzilla that reports that the worker has been quarantined,
         # in order to alert CI Duty to the failure, track status and facilitate resolution.
