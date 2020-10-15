@@ -13,12 +13,32 @@ rm -f tasks-resolved-count.txt
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 source /usr/local/share/generic-worker/bugzilla-utils.sh
 
+# quarantine: don't run any tests
+# - quarantine file is cleared after successful run
+quarantine_semaphore_file='<%= @user_homedir %>/quarantined'
+# hold: don't do anything (tests or reboots)
+# - never cleared automatically
+# - only created manually
+hold_semaphore_file='<%= @user_homedir %>/operator_hold'
+
+# if the  host is in hold mode, don't start
+if [ -f "$hold_semaphore_file" ]; then
+    echo "Worker is in operator hold mode. Not starting."
+fi
+
 # First run the start-worker, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/start-worker "$@" 2>&1 | logger -t generic-worker -s
 
 exitstatus="${PIPESTATUS[0]}"
 
+# if the  host is in hold mode, exit now
+if [ -f "$hold_semaphore_file" ]; then
+    echo "Worker is in operator hold mode. Not starting."
+    exit 0
+fi
+
+# TODO: make it not use these or pass directly
 export TASKCLUSTER_CLIENT_ID="<%= @quarantine_client_id %>"
 export TASKCLUSTER_ACCESS_TOKEN="<%= @quarantine_access_token %>"
 
@@ -33,11 +53,11 @@ if [ $exitstatus -eq 69 ]; then
 # that no further tasks will be provided to the worker until the quarantine expires.
 # This prevents the worker from burning through tasks that it is not able to execute
 # properly.
-    if [ -f <%= @user_homedir %>/quarantined ]; then
+    if [ -f "$quarantine_semaphore_file" ]; then
         echo "Worker is quarantined"
     else
         # create a semaphore file
-        echo "quarantined worker" > <%= @user_homedir %>/quarantined
+        echo "quarantined worker" > "$quarantine_semaphore_file"
 
         echo "Quarantine worker"
         # quarantine the worker using github.com/mozilla-platform-ops/quarantine-worker CLI
@@ -45,14 +65,14 @@ if [ $exitstatus -eq 69 ]; then
 
         # Submit a new bug to Bugzilla that reports that the worker has been quarantined,
         # in order to alert CI Duty to the failure, track status and facilitate resolution.
-        create_bug_self_failure
+        # create_bug_self_failure
     fi
 elif [ $exitstatus -gt 69 -o $exitstatus -lt 69 ]; then
     # If exitstatus is different by 69 (grater than 69 or lower than 69)
     # The worker was removed from the quarantin and run with success a job
     # Remove quarantined file, if file exist
-    if [ -f <%= @user_homedir %>/quarantined ]; then
-        /bin/rm -rf <%= @user_homedir %>/quarantined
+    if [ -f "$quarantine_semaphore_file" ]; then
+        /bin/rm -rf "$quarantine_semaphore_file"
     fi
     # Self resolve the bug and remove bug_id file if file exist
     if [ -f <%= @user_homedir %>/bug_id ]; then
