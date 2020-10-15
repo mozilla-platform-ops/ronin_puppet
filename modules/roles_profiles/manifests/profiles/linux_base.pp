@@ -14,7 +14,6 @@ class roles_profiles::profiles::linux_base {
             include ::roles_profiles::profiles::relops_users
             include ::roles_profiles::profiles::sudo
 
-            include linux_packages::git
             include linux_packages::mercurial
 
             include disable_services

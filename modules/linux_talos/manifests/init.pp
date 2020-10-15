@@ -16,7 +16,7 @@ class linux_talos () {
       include linux_packages::gstreamer
 
       # see bug 914627
-      include linux_packages::system_git
+      include linux_packages::git
       # # required for the 32-bit reftests per :ahal, bug 837268
       include linux_packages::ia32libs
 
