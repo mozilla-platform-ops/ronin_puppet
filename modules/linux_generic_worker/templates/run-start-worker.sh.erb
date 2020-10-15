@@ -34,7 +34,7 @@ exitstatus="${PIPESTATUS[0]}"
 
 # if the  host is in hold mode, exit now
 if [ -f "$hold_semaphore_file" ]; then
-    echo "Worker is in operator hold mode. Not starting."
+    echo "Worker is in operator hold mode. Exiting..."
     exit 0
 fi
 
