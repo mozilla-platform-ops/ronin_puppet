@@ -35,6 +35,7 @@ class roles_profiles::profiles::mozilla_build {
                 cache_drive               => $cache_drive,
                 program_files             => $facts['custom_win_programfiles'],
                 programdata               => $facts['custom_win_programdata'],
+                psutil_ver                => lookup('win-worker.mozilla_build.psutil_version'),
                 tempdir                   => $facts['custom_win_temp_dir'],
                 system32                  => $facts['custom_win_system32'],
                 external_source           => lookup('windows.s3.ext_pkg_src'),
