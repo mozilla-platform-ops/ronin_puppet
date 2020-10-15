@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set +e
+
+source <%= @virtualenv_dir %>/bin/activate
+<%= @virtualenv_dir %>/bin/notarization_poller <%= @poller_config_file  %>

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'apt::update', type: :class do
   context "when apt::update['frequency']='always'" do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'concat' do
   shared_examples 'concat' do |title, params, id|

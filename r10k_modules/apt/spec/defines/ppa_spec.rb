@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 describe 'apt::ppa' do
   let :pre_condition do
     'class { "apt": }'

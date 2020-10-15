@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 on_supported_os.reject { |_, f| f[:os]['family'] == 'Solaris' }.each do |os, f|
   describe 'ntp' do

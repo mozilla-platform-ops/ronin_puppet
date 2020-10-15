@@ -5,7 +5,7 @@
 define python2::user_pip_conf (
     String $user,
     String $group,
-    Array $user_python_repositories = [ 'https://pypi.pub.build.mozilla.org/pub', ],
+    Array $user_python_repositories = [ 'https://pypi.pub.build.mozilla.org/pub/', ],
 ) {
 
     case $::operatingsystem {

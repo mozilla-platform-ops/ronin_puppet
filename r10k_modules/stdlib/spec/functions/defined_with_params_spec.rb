@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'defined_with_params' do
   describe 'when no resource is specified' do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'firewall::linux::gentoo', type: :class do
   let(:facts) do

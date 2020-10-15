@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'fqdn_rand_string' do
   let(:default_charset) { %r{\A[a-zA-Z0-9]{100}\z} }

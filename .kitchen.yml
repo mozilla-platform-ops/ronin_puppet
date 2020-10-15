@@ -9,17 +9,38 @@ provisioner:
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: true
-  puppet_verbose: false
-  puppet_debug: false
+  hiera_writer_files:
+    - secrets/vault.yaml:
+        linux_vnc:
+          user: cltbld
+          group: cltbld
+          user_homedir: '/home/cltbld'
+          password: 'vnc4free'
+        cltbld_user:
+          password: 'abc123'
+          salt: 'h3hhahchahah'
+          iterations: '3'
+        generic_worker:
+          gecko_t_linux_talos:
+            taskcluster_client_id: '123'
+            taskcluster_access_token: 'foo'
+            livelog_secret: 'haha'
+            quarantine_client_id: '3333'
+            quarantine_access_token: 'Q_TOKEN'
+            bugzilla_api_key: 'BZ_KEY'
+  puppet_verbose: true
+  puppet_debug: true
   require_chef_for_busser: false
+  require_puppet_omnibus: true
   require_puppet_repo: false
   custom_options: '--show_diff'
   verify_host_key: false
   resolve_with_librarian_puppet: false
   resolve_with_r10k: true
 
-transport:
-  name: sftp
+verifier:
+  name: serverspec
+  default_pattern: true
 
 busser:
   ruby_bindir: /usr/bin
@@ -37,12 +58,27 @@ platforms:
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
   # TODO: setup docker driver, get docker image with working systemd, and test on travis.
 suites:
+  - name: linux
+    provisioner:
+      manifests_path: manifests-kitchen/linux
+    includes:
+      - ubuntu18-kitchen_template
+    attributes:
   - name: bitbar
     provisioner:
       manifests_path: manifests-kitchen/bitbar
-    verifier:
-      inspec_tests:
-        - test/integration/bitbar
+    includes:
+      - ubuntu18-kitchen_template
+    attributes:
+  - name: maas_region
+    provisioner:
+      manifests_path: manifests-kitchen/maas_region
+    includes:
+      - ubuntu18-kitchen_template
+    attributes:
+  - name: maas_rack
+    provisioner:
+      manifests_path: manifests-kitchen/maas_rack
     includes:
       - ubuntu18-kitchen_template
     attributes:

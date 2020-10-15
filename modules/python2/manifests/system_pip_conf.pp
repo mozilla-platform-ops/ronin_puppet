@@ -4,7 +4,7 @@
 
 class python2::system_pip_conf {
 
-    $user_python_repositories = [ 'https://pypi.pub.build.mozilla.org/pub', ]
+    $user_python_repositories = [ 'https://pypi.pub.build.mozilla.org/pub/', ]
 
     case $::operatingsystem {
         'Darwin':

@@ -52,6 +52,39 @@ class roles_profiles::profiles::cltbld_user {
                 command => '/sbin/reboot',
             }
         }
+        'Ubuntu': {
+            $password     = lookup('cltbld_user.password')
+            $salt         = lookup('cltbld_user.salt')
+            $iterations   = lookup('cltbld_user.iterations')
+
+            $username     = 'cltbld'
+            $group        = 'cltbld'
+            $homedir      = '/home/cltbld'
+
+            group { 'cltbld':
+                name      => 'cltbld'
+            }
+
+            # Create the cltbld user
+            users::single_user { 'cltbld':
+                # Bug 1122875 - cltld needs to be in this group for debug tests
+                password   => $password,
+                salt       => $salt,
+                iterations => $iterations,
+                groups     => ['audio','video']
+            }
+
+            mercurial::hgrc { '/home/cltbld/.hgrc':
+                user    => 'cltbld',
+                group   => 'staff',
+                require => User['cltbld'],
+            }
+
+            sudo::custom { 'allow_cltbld_reboot':
+                user    => 'cltbld',
+                command => '/sbin/reboot',
+            }
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }

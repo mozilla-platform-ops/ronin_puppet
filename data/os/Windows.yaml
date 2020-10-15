@@ -48,6 +48,7 @@ windows:
     generic_worker: "%{facts.custom_win_systemdrive}\\generic-worker"
     worker_runner: "%{facts.custom_win_systemdrive}\\worker-runner"
     nssm: "%{facts.custom_win_systemdrive}\\nssm"
+    vac: "%{facts.custom_win_systemdrive}\\VAC"
 
 # this should be changed into a defined type
 # Useful commands

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'Facter::Util::Fact iptables_persistent_version' do
   context 'when iptables-persistent applicable' do

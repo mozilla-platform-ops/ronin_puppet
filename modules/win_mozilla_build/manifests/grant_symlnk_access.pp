@@ -16,7 +16,7 @@ class win_mozilla_build::grant_symlnk_access {
     # Repackaged into a zip file that can be extracted directly into Powershell module directory
     win_packages::win_zip_pkg { 'carbon':
             pkg         => 'carbon.zip',
-            creates     => "${module_dir}\\Carbon",
+            creates     => "${module_dir}\\Carbon\\Import-Carbon.ps1",
             destination => $module_dir,
     }
 
