@@ -7,9 +7,8 @@ class linux_mercurial {
   include linux_packages::mercurial
 
   $hgext_dir       = '/usr/local/lib/hgext'
-  # TODO: cleanup if not needed
-  # $hgrc            = '/etc/mercurial/hgrc'
-  # $hgrc_parentdirs = ['/etc/mercurial']
+  $hgrc            = '/etc/mercurial/hgrc'
+  $hgrc_parentdirs = ['/etc/mercurial']
 
   # setup ext dir
   file {
@@ -18,6 +17,15 @@ class linux_mercurial {
       $hgext_dir:
           ensure => directory,
           mode   => '0755';
+
+      $hgrc_parentdirs:
+          ensure => directory,
+          mode   => '0755';
+
+      $hgrc:
+          ensure => file,
+          source => 'puppet:///modules/linux_mercurial/hgrc',
+          mode   => '0644';
   }
 
   # robust checkout
