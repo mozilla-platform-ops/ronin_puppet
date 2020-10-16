@@ -5,6 +5,9 @@
 class linux_packages::mercurial {
   case $::operatingsystem {
     'Ubuntu': {
+      include linux_packages::python2_mercurial
+      include linux_packages::python3_mercurial
+
       package {
           'mercurial':
               ensure => present;
