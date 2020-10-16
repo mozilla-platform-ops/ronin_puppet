@@ -26,7 +26,11 @@ class linux_mercurial {
           ensure => file,
           source => 'puppet:///modules/linux_mercurial/hgrc',
           mode   => '0644';
-  }
+
+    '/etc/mercurial/cacert.pem':
+        ensure => file,
+        source => 'puppet:///modules/linux_mercurial/cacert.pem';
+    }
 
   # robust checkout
   file { "${hgext_dir}/robustcheckout.py":
