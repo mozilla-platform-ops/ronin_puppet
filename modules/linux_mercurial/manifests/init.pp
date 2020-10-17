@@ -32,12 +32,6 @@ class linux_mercurial {
         source => 'puppet:///modules/linux_mercurial/cacert.pem';
   }
 
-    # conflicts with /etc/mercurial/hgrc
-    file {
-        '/home/cltbld/.hgrc':
-            ensure => absent;
-    }
-
   # robust checkout
   file { "${hgext_dir}/robustcheckout.py":
       source => 'puppet:///modules/linux_mercurial/robustcheckout.py',
