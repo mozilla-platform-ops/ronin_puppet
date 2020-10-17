@@ -74,11 +74,11 @@ class roles_profiles::profiles::cltbld_user {
                 groups     => ['audio','video']
             }
 
-                # conflicts with /etc/mercurial/hgrc
-                file {
-                    '/home/cltbld/.hgrc':
-                        ensure => absent;
-                }
+            # conflicts with /etc/mercurial/hgrc
+            file {
+                '/home/cltbld/.hgrc':
+                    ensure => absent;
+            }
 
             sudo::custom { 'allow_cltbld_reboot':
                 user    => 'cltbld',
