@@ -30,6 +30,12 @@ class linux_mercurial {
     '/etc/mercurial/cacert.pem':
         ensure => file,
         source => 'puppet:///modules/linux_mercurial/cacert.pem';
+  }
+
+    # conflicts with /etc/mercurial/hgrc
+    file {
+        '/home/cltbld/.hgrc':
+            ensure => absent;
     }
 
   # robust checkout
