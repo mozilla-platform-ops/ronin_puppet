@@ -94,6 +94,12 @@ class linux_gui(
                 # from 1804 docker image
                 # silence pip version warnings
                 # TODO: should be in linux base
+                [ "${builder_home}/.config",
+                  "${builder_home}/.config/pip"]:
+                    ensure => directory,
+                    group  => $builder_group,
+                    mode   => '0755',
+                    owner  => $builder_user;
                 "${builder_home}/.config/pip/pip.conf":
                     owner  => $builder_user,
                     group  => $builder_group,
