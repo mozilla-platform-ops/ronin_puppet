@@ -7,7 +7,7 @@ class linux_mercurial {
   include linux_packages::mercurial
 
   $hgext_dir       = '/usr/local/lib/hgext'
-  $hgrc            = '/etc/mercurial/hgrc'
+  $hgrc            = '/etc/mercurial/hgrc.d/mozilla.rc'
   $hgrc_parentdirs = ['/etc/mercurial']
 
   # setup ext dir
