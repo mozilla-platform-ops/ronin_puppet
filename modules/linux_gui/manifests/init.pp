@@ -65,6 +65,11 @@ class linux_gui(
                 '/etc/xdg/autostart/gnome-software-service.desktop':
                     source => "puppet:///modules/${module_name}/gnome-software-service.desktop";
 
+                # from 1804 docker image
+                # # Bug 1638183 - increase xserver maximum client count
+                '/usr/share/X11/xorg.conf.d/99-serverflags.conf':
+                    source => "puppet:///modules/${module_name}/99-serverflags.conf";
+
                 "${builder_home}/.xsessionrc":
                     content => "DESKTOP_SESSION=ubuntu\n",
                     owner   => $builder_user,
@@ -77,6 +82,14 @@ class linux_gui(
                   "${builder_home}/.xinitrc",
                   "${builder_home}/.Xsession"]:
                     ensure => absent;
+
+                # from 1804 docker image
+                # Disable font antialiasing for now to match releng's setup
+                "${builder_home}/.fonts.conf":
+                    owner  => $builder_user,
+                    group  => $builder_group,
+                    mode   => '0644',
+                    source => "puppet:///modules/${module_name}/fonts.conf";
             }
 
             # disbale gdm (we run our own X server)
