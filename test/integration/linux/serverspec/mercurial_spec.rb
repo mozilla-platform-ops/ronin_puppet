@@ -4,6 +4,10 @@ describe package('mercurial'), :if => os[:family] == 'ubuntu' do
   it { should be_installed }
 end
 
+describe file('/etc/mercurial/hgrc.d/mozilla.rc') do
+  it { should exist }
+end
+
 # check for extensions
 
 describe file('/usr/local/lib/hgext/robustcheckout.py') do
