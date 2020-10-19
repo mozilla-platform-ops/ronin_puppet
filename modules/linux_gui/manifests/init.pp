@@ -90,6 +90,15 @@ class linux_gui(
                     group  => $builder_group,
                     mode   => '0644',
                     source => "puppet:///modules/${module_name}/fonts.conf";
+
+                # from 1804 docker image
+                # silence pip version warnings
+                # TODO: should be in linux base
+                "${builder_home}/.config/pip/pip.conf":
+                    owner  => $builder_user,
+                    group  => $builder_group,
+                    mode   => '0644',
+                    source => "puppet:///modules/${module_name}/pip.conf";
             }
 
             # disbale gdm (we run our own X server)
