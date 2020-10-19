@@ -1,28 +1,33 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-[diff]
-git=True
-showfunc=True
-ignoreblanklines=True
-
-[ui]
-username = Mozilla Release Engineering <release@mozilla.com>
-traceback = True
-
+# By default the progress bar starts after 3s and updates every 0.1s. We
+# change this so it shows and updates every 1.0s.
+# We also tell progress to assume a TTY is present so updates are printed
+# even if there is no known TTY.
+[progress]
+delay = 1.0
+refresh = 1.0
+assume-tty = true
 
 [extensions]
-share=
-rebase=
-mq=
-purge=
+share =
+sparse =
 robustcheckout=/usr/local/lib/hgext/robustcheckout.py
-; Enable sparse checkout only in macOS worker
-
 
 [hostsecurity]
-hg.mozilla.org:fingerprints = sha256:FF:E7:8D:93:E9:56:3C:C0:19:FC:00:4C:18:B9:86:E5:08:E5:10:F5:E2:EA:48:E8:22:D3:A3:3A:CA:99:C3:4C, sha256:17:38:aa:92:0b:84:3e:aa:8e:52:52:e9:4c:2f:98:a9:0e:bf:6c:3e:e9:15:ff:0a:29:80:f7:06:02:5b:e8:48
+# When running a modern Python, Mercurial will default to TLS 1.1+.
+# When running on a legacy Python, Mercurial will default to TLS 1.0+.
+# There is no good reason we shouldn't be running a modern Python
+# capable of speaking TLS 1.2. And the only Mercurial servers we care
+# about should be running TLS 1.2. So make TLS 1.2 the minimum.
+minimumprotocol = tls1.2
 
-[web]
-cacerts = /etc/mercurial/cacert.pem
+# Settings to make 1-click loaners more useful.
+[extensions]
+histedit =
+rebase =
+
+[diff]
+git = 1
+showfunc = 1
+
+[pager]
+pager = LESS=FRSXQ less
