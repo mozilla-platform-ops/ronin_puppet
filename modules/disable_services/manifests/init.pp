@@ -26,6 +26,12 @@ class disable_services() {
                             require  => Package[$install_and_disable];
                     }
 
+                    # disable apport via defaults also
+                    file {
+                        '/etc/default/apport':
+                            source => "puppet:///modules/${module_name}/apport";
+                    }
+
                     # this package and service have different names
                     package {
                         'bluez':
