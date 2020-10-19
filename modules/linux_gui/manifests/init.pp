@@ -59,6 +59,12 @@ class linux_gui(
                 '/etc/xdg/autostart/update-notifier.desktop':
                     source => "puppet:///modules/${module_name}/update-notifier.desktop";
 
+                # from 1804 docker image
+                # see https://searchfox.org/mozilla-central/source/taskcluster/docker/ubuntu1804-test/autostart/gnome-software-service.desktop
+                # Bug 1345105 - Do not run periodical update checks and downloads
+                '/etc/xdg/autostart/gnome-software-service.desktop':
+                    source => "puppet:///modules/${module_name}/gnome-software-service.desktop";
+
                 "${builder_home}/.xsessionrc":
                     content => "DESKTOP_SESSION=ubuntu\n",
                     owner   => $builder_user,
