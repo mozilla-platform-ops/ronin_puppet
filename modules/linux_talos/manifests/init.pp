@@ -5,9 +5,6 @@
 class linux_talos () {
   case $::operatingsystem {
     'Ubuntu': {
-
-      # TODO: httpd
-
       include linux_packages::nodejs
       include linux_packages::xvfb
       include linux_packages::llvm
@@ -30,34 +27,13 @@ class linux_talos () {
       package { 'linux-generic' :
         ensure => latest
       }
+
       kernelmodule {
-        # TODO: is libasound2 needed? isn't pulse default now?
-        # 'snd_aloop':
-        #   packages => ['libasound2'];
         'v4l2loopback':
           packages => ['v4l2loopback-dkms'];
       }
 
-      # TODO: from build-puppet. needed?
-      # # Ubuntu specific packages
-      # case $::hardwaremodel {
-      #   # We only run Android x86 emulator kvm jobs on
-      #   # 64-bit host machines
-      #   'x86_64': {
-      #     include packages::cpu_checker
-      #     include packages::qemu_kvm
-      #     include packages::bridge_utils
-      #   }
-      # }
-      #
-
-      ###### FROM OS X TALOS IN THIS REPO
-      # include httpd
-      # include packages::java_developer_package_for_osx
-      # include packages::xcode_cmd_line_tools
-      # require dirs::builds
-      #
-
+      # directories expected by talos
       file {
         [ '/builds',
           '/builds/slave',
@@ -72,12 +48,6 @@ class linux_talos () {
           group  => 'staff',
           mode   => '0755',
       }
-
-      #
-      # $document_root = '/builds/slave/talos-data/talos'
-      # httpd::config { 'talos.conf':
-      #   content => template('talos/talos-httpd.conf.erb'),
-
     }
     default: {
       fail("${module_name} not supported under ${::operatingsystem}")
