@@ -23,6 +23,8 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_packages::python3_zstandard
             require linux_packages::zstd
 
+            require linux_talos
+
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
@@ -34,8 +36,6 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
                     workerId      => $facts['networking']['hostname'],
                 },
             }
-
-            require linux_talos
 
             $taskcluster_client_id    = lookup('generic_worker.gecko_t_linux_talos.taskcluster_client_id')
             $taskcluster_access_token = lookup('generic_worker.gecko_t_linux_talos.taskcluster_access_token')
@@ -66,10 +66,6 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
                 user                      => 'cltbld',
                 user_homedir              => '/home/cltbld',
             }
-
-            # TODO:
-            # - talos: apache installation
-            #   - set up g-w apache proxy
         }
         default: {
             fail("${::operatingsystem} not supported")
