@@ -26,6 +26,16 @@ class linux_gui(
                     ensure => absent;
             }
 
+            # from 1804 image
+            # remove more packaages (for running services vs disk space)
+            package {
+                ['gnome-calendar',
+                  'ubuntu-release-upgrader*',
+                  'update-manager',
+                  'update-manager-core']:
+                    ensure => absent;
+            }
+
             include linux_gui::appearance
 
             # install the window manager and its prereqs
