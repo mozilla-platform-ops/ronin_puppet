@@ -34,6 +34,30 @@ class linux_gui::appearance {
                 '/etc/polkit-1/localauthority/50-local.d/45-allow.colord.pkla':
                     source => 'puppet:///modules/linux_gui/colord.pkla';
             }
+
+            # from 1804 docker image
+            # remove more packaages (for running services vs disk space)
+            package {
+                ['gnome-calendar',
+                  'ubuntu-release-upgrader*',
+                  'update-manager',
+                  'update-manager-core']:
+                    ensure => absent;
+            }
+
+            # from 1804 docker image
+            # add some font packages
+            package {
+                ['fontconfig',
+                'fonts-kacst',
+                'fonts-kacst-one',
+                'fonts-liberation',
+                'fonts-stix',
+                'fonts-unfonts-core',
+                'fonts-unfonts-extra',
+                'fonts-vlgothic']:
+                ensure => present;
+            }
         }
         default: {
             fail("Don't know how to set up GUI appearance on ${::operatingsystem}")
