@@ -70,7 +70,7 @@ class generic_worker (
             mode      => '0600',
             owner     => $user,
             show_diff => false,
-            target    => "${ed25519_signing_key}";
+            path      => "${ed25519_signing_key}";
     }
 
     case $::operatingsystem {
