@@ -14,10 +14,6 @@ describe file('/usr/local/lib/hgext/robustcheckout.py') do
   it { should exist }
 end
 
-describe file('/usr/local/lib/hgext/bundleclone.py') do
-  it { should exist }
-end
-
 # pips
 
 # TODO: check versions

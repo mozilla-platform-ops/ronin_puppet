@@ -26,21 +26,10 @@ class linux_mercurial {
           ensure => file,
           source => 'puppet:///modules/linux_mercurial/hgrc',
           mode   => '0644';
-
-    '/etc/mercurial/cacert.pem':
-        ensure => file,
-        source => 'puppet:///modules/linux_mercurial/cacert.pem';
   }
 
   # robust checkout
   file { "${hgext_dir}/robustcheckout.py":
       source => 'puppet:///modules/linux_mercurial/robustcheckout.py',
   }
-
-  # bundle clone
-  # - bundleclone: https://hg.mozilla.org/hgcustom/version-control-tools/
-  file { "${hgext_dir}/bundleclone.py":
-      source => 'puppet:///modules/linux_mercurial/bundleclone.py',
-  }
-
 }
