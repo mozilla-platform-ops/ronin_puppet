@@ -1,6 +1,6 @@
 require_relative 'spec_helper'
 
-# services
+# disabled services
 
 describe service('anacron') do
   it { should_not be_enabled }
