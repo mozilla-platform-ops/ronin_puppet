@@ -64,6 +64,14 @@ class generic_worker (
             unless  => "test -f ${ed25519_signing_key}",
             require => Class['packages::generic_worker'];
     }
+    file {
+        "ed25519_signing_key_permissions":
+            ensure    => present,
+            mode      => '0600',
+            owner     => $user,
+            show_diff => false,
+            target    => "${ed25519_signing_key}";
+    }
 
     case $::operatingsystem {
         'Darwin': {
