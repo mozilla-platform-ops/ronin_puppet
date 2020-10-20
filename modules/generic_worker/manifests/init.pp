@@ -65,12 +65,12 @@ class generic_worker (
             require => Class['packages::generic_worker'];
     }
     file {
-        "ed25519_signing_key_permissions":
+        'ed25519_signing_key_permissions':
             ensure    => present,
             mode      => '0600',
             owner     => $user,
             show_diff => false,
-            path      => "${ed25519_signing_key}";
+            path      => $ed25519_signing_key;
     }
 
     case $::operatingsystem {
