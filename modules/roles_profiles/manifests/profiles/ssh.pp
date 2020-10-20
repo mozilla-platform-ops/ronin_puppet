@@ -43,6 +43,12 @@ class roles_profiles::profiles::ssh {
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
         }
+        'Darwin': {
+            # macos "remote login" enables ssh
+            macos_utils::systemsetup { 'remotelogin':
+                setting => 'on'
+            }
+        }
         default: {
             fail("${::operatingsystem} not supported")
         }

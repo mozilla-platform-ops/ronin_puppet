@@ -4,12 +4,10 @@
 
 class macos_utils::wifi_disabled {
     if $::operatingsystem == 'Darwin' {
-        if $::networking['en0'] {
-            exec {
-                'disable-wifi':
-                    command => '/usr/sbin/networksetup -setairportpower en1 off',
-                    unless  => "/usr/sbin/networksetup -getairportpower en1 | egrep 'Off'";
-            }
+        exec {
+            'disable-wifi':
+                command => '/usr/sbin/networksetup -setnetworkserviceenabled Wi-Fi off',
+                unless  => '/usr/sbin/networksetup -getnetworkserviceenabled Wi-Fi | grep Disabled';
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")

@@ -2,12 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
-    String $worker_type = 'gecko-t-osx-1014-bug1665379',
-) {
+class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
 
     require roles_profiles::profiles::cltbld_user
 
+    $worker_type  = 'gecko-t-osx-1014'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
@@ -25,11 +24,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
                 telegraf_password => lookup('telegraf.password'),
                 # Note the camelCase key names
                 meta_data         => $meta_data,
-                puppet_env          => 'dev',
-                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch       => 'bug1665379_mac-loan-glandium',
-                puppet_notify_email => 'dhouse@mozilla.com',
-
             }
 
             class { 'roles_profiles::profiles::logging':
