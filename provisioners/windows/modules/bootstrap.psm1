@@ -206,12 +206,12 @@ function Install-AzPrerequ {
     Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
 
     # net stop $rdagent
-    net stop $azure_guest_agent
-    net stop $azure_telemetry
+    #net stop $azure_guest_agent
+    #net stop $azure_telemetry
 
     # sc delete $rdagent3
-    sc config "$azure_guest_agent" start= disabled
-    sc config "$azure_telemetry" start= disabled
+    #sc config "$azure_guest_agent" start= disabled
+    #sc config "$azure_telemetry" start= disabled
 
     #sc delete $azure_guest_agent
     #sc delete $azure_telemetry
