@@ -42,7 +42,6 @@ describe file('/etc/apt/apt.conf.d/10periodic') do
   it { should contain 'APT::Periodic::Update-Package-Lists "0";' }
   it { should contain 'APT::Periodic::Download-Upgradeable-Packages "0";' }
   it { should contain 'APT::Periodic::AutocleanInterval "0";' }
-
 end
 
 describe file('/etc/apt/apt.conf.d/20auto-upgrades') do
