@@ -94,7 +94,8 @@ class linux_gui(
                 # from 1804 docker image
                 # silence pip version warnings
                 # TODO: should be in linux base
-                "${builder_home}/.config/pip":
+                ["${builder_home}/.config/pip",
+                  "${builder_home}/.config/pulse"  ]:
                     ensure => directory,
                     group  => $builder_group,
                     mode   => '0755',
