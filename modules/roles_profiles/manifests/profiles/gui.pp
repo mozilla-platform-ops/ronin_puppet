@@ -19,7 +19,8 @@ class roles_profiles::profiles::gui {
                     # TODO: use hiera data
                     builder_user  => 'cltbld',
                     builder_group => 'cltbld',
-                    builder_home  => '/home/cltbld';
+                    builder_home  => '/home/cltbld',
+                    require       => Class['linux_packages::ubuntu_desktop'];
             }
         }
         default: {

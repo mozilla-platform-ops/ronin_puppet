@@ -36,14 +36,15 @@ class linux_gui::appearance {
             }
 
             # from 1804 docker image
+            # issue: removing these 'removes' ubuntu-desktop, figure out alternative way to disable
             # remove more packaages (for running services vs disk space)
-            package {
-                ['gnome-calendar',
-                  'ubuntu-release-upgrader*',
-                  'update-manager',
-                  'update-manager-core']:
-                    ensure => absent;
-            }
+            # package {
+            #     ['gnome-calendar',
+            #       'ubuntu-release-upgrader*',
+            #       'update-manager',
+            #       'update-manager-core']:
+            #         ensure => absent;
+            # }
 
             # from 1804 docker image
             # add some font packages

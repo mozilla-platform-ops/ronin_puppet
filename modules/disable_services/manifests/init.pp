@@ -44,6 +44,21 @@ class disable_services() {
                             enable   => false,
                             require  => Package['bluez'];
                     }
+
+                    # disable periodic apt actions
+                    file {
+                        '/etc/apt/apt.conf.d/10periodic':
+                          ensure => file,
+                          owner  => 'root',
+                          group  => 'root',
+                          source => "puppet:///modules/${module_name}/10periodic";
+
+                        '/etc/apt/apt.conf.d/20auto-upgrades':
+                          ensure => file,
+                          owner  => 'root',
+                          group  => 'root',
+                          source => "puppet:///modules/${module_name}/20auto-upgrades";
+                    }
                 }
                 default: {
                     fail("Unrecognized Ubuntu version ${::operatingsystemrelease}")
