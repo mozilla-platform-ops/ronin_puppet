@@ -16,6 +16,7 @@ class win_mozilla_build (
     String $cache_drive,
     String $program_files,
     String $programdata,
+    String $psutil_ver,
     String $tempdir,
     String $system32,
     String $external_source,
@@ -27,6 +28,7 @@ class win_mozilla_build (
         include win_mozilla_build::install
         include win_mozilla_build::hg_install
         include win_mozilla_build::hg_files
+        include win_mozilla_build::install_py3_certi
         include win_mozilla_build::tooltool
         include win_mozilla_build::modifications
         include win_mozilla_build::set_registry_priority
@@ -34,6 +36,7 @@ class win_mozilla_build (
         include win_mozilla_build::pip
         include win_mozilla_build::grant_symlnk_access
         include win_mozilla_build::zstandard
+        include win_mozilla_build::install_psutil
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
