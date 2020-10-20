@@ -17,6 +17,7 @@ class roles_profiles::profiles::linux_base {
             include linux_mercurial
 
             include disable_services
+            include grub
 
             # TODO:
             # - add auditd
