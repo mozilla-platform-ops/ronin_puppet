@@ -22,12 +22,12 @@ end
 
 # TODO: check versions
 
-describe command('pip list | grep zstandard') do
+describe command('pip list | grep mercurial') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /mercurial/ }
 end
 
-describe command('pip3 list | grep zstandard') do
+describe command('pip3 list | grep mercurial') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /mercurial/ }
 end
