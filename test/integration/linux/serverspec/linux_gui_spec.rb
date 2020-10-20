@@ -41,3 +41,9 @@ end
 describe file('/etc/xdg/autostart/gnome-software-service.desktop') do
   it { should exist }
 end
+
+# appearance: check ~cltbld files
+
+describe file('/home/cltbld/.config/gnome-initial-setup-done') do
+  it { should exist }
+end

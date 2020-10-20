@@ -29,6 +29,16 @@ class linux_gui::appearance {
 
             }
 
+            # disable via file also
+            # TODO: do hiera lookups for cltbld info
+            file {
+                '/home/cltbld/.config/gnome-initial-setup-done':
+                    owner  => 'cltbld',
+                    group  => 'cltbld',
+                    mode   => '0644',
+                    source => "puppet:///modules/${module_name}/gnome-initial-setup-done";
+            }
+
             # avoid auth prompt to create a color managed device
             file {
                 '/etc/polkit-1/localauthority/50-local.d/45-allow.colord.pkla':
