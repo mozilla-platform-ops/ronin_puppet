@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class linux_gui::appearance {
-    # include dirs::usr::local::bin
-    # include users::root
-
     case $::operatingsystem {
         'Ubuntu': {
             include linux_packages::libglib20_bin
@@ -45,16 +42,7 @@ class linux_gui::appearance {
                     source => 'puppet:///modules/linux_gui/colord.pkla';
             }
 
-            # from 1804 docker image
-            # issue: removing these 'removes' ubuntu-desktop, figure out alternative way to disable
-            # remove more packaages (for running services vs disk space)
-            # package {
-            #     ['gnome-calendar',
-            #       'ubuntu-release-upgrader*',
-            #       'update-manager',
-            #       'update-manager-core']:
-            #         ensure => absent;
-            # }
+            # the disable_services class handles disabling the update/upgrade notifications
 
             # from 1804 docker image
             # add some font packages
