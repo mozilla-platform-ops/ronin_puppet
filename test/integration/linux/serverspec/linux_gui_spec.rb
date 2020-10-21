@@ -36,6 +36,10 @@ describe file('/etc/X11/edid.bin') do
   it { should exist }
 end
 
+describe file('/usr/local/bin/changeresolution.sh') do
+  it { should exist }
+end
+
 # TODO: check more xdg/autostart files
 
 describe file('/etc/xdg/autostart/gnome-software-service.desktop') do
