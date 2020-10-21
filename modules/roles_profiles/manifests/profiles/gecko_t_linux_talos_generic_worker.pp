@@ -21,6 +21,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_packages::psutil_py3
             require linux_packages::python2_zstandard
             require linux_packages::python3_zstandard
+            include linux_packages::tooltool
             require linux_packages::zstd
 
             require linux_talos
