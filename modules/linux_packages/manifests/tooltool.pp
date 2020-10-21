@@ -4,7 +4,7 @@
 
 class linux_packages::tooltool {
 
-    packages::linux_package_from_s3 { 'generic-worker-simple-linux-amd64-v1':
+    packages::linux_package_from_s3 { 'tooltool.py-v1':
         private             => false,
         os_version_specific => false,
         type                => 'bin',
