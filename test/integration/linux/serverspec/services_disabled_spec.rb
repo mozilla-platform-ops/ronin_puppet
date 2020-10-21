@@ -10,6 +10,10 @@ describe service('apport') do
   it { should_not be_enabled }
 end
 
+describe file('/etc/default/apport') do
+  it { should contain 'enabled=0' }
+end
+
 describe service('avahi-daemon') do
   it { should_not be_enabled }
 end
