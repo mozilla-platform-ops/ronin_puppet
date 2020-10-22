@@ -5,9 +5,10 @@
 class linux_packages::python3_mercurial {
     require linux_packages::py3
 
-    package { 'python3-mercurial':
-        ensure   => '4.7.1',
-        name     => 'mercurial',
-        provider => pip3,
-    }
+    # mercurial below 5 is not compatible with py3
+    # package { 'python3-mercurial':
+    #     ensure   => '4.7.1',
+    #     name     => 'mercurial',
+    #     provider => pip3,
+    # }
 }
