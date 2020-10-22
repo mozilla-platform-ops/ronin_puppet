@@ -101,9 +101,11 @@ class roles_profiles::profiles::gecko_t_osx_1015_generic_worker (
                 user_homedir              => '/Users/cltbld',
             }
 
-            exec { 'writes_in_catalina':
-                command => '/sbin/mount -uw /',
-                unless  => '/bin/test -d /builds || /bin/test -d /tools'
+            file_line { '/etc/synthetic.conf':
+                line    => 'tools\tSystem/Volumes/Data/tools',
+            }
+            file_line { '/etc/synthetic.conf':
+                line    => 'builds\tSystem/Volumes/Data/builds',
             }
             include dirs::tools
 
