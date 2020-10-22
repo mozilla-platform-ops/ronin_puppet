@@ -23,7 +23,8 @@ describe command('pip list | grep mercurial') do
   its(:stdout) { should match /mercurial/ }
 end
 
-describe command('pip3 list | grep mercurial') do
-  its(:exit_status) { should eq 0 }
-  its(:stdout) { should match /mercurial/ }
-end
+# disabled until we're on mercurial 5/py3 compatible version
+# describe command('pip3 list | grep mercurial') do
+#   its(:exit_status) { should eq 0 }
+#   its(:stdout) { should match /mercurial/ }
+# end
