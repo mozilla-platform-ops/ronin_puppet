@@ -19,14 +19,8 @@ class linux_gui::appearance {
                     refreshonly => true;
             }
 
-            # remove gnome-initial-setup as we do all configuration
-            package {
-                'gnome-initial-setup':
-                    ensure => 'absent';
-
-            }
-
-            # disable via file also
+            # disable gnome-initial-setup
+            # - we can't remove as it's part of ubuntu-desktop
             # TODO: do hiera lookups for cltbld info
             file {
                 '/home/cltbld/.config/gnome-initial-setup-done':
