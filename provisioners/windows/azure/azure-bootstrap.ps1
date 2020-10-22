@@ -172,7 +172,8 @@ $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
       #Remove_Apps -apps $apps
 
       # msg * First script exit next
-      exit 2
+      #exit 2
+      exit 0
       # shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 
     }
@@ -182,7 +183,8 @@ $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
       # msg * Prepping and runnin Puppet
       Ronin-PreRun
       Bootstrap-AzPuppet
-      exit 2
+      # exit 2
+      exit 0
     }
     If ($stage -eq 'complete') {
       Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
