@@ -11,6 +11,7 @@ class roles_profiles::profiles::securitize {
             include users::remove_relops_pw
             include users::add_relops_keys_to_relops_user
             include users::remove_root_pw
+            include users::remove_root_keys
 
         }
         default: {

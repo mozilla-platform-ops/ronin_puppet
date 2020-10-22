@@ -21,12 +21,16 @@ end
 # root should have * pw
 describe file('/etc/shadow') do
   its(:content) { should match /^root:\*:/ }
-
 end
 
 # relops should have * pw
 describe file('/etc/shadow') do
   its(:content) { should match /^relops:\*:/ }
+end
+
+# root should have no ssh keys
+describe file('/root/.ssh/authorized_keys') do
+  it { should not exist }
 end
 
 # relops should have a bunch of keys in ~/.ssh/authorized_keys
