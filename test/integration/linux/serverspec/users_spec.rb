@@ -30,7 +30,7 @@ end
 
 # root should have no ssh keys
 describe file('/root/.ssh/authorized_keys') do
-  it { should not exist }
+  it { should_not exist }
 end
 
 # relops should have a bunch of keys in ~/.ssh/authorized_keys
