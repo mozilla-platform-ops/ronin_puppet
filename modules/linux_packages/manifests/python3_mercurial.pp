@@ -6,7 +6,7 @@ class linux_packages::python3_mercurial {
     require linux_packages::py3
 
     package { 'python3-mercurial':
-        ensure   => '5.5.2',
+        ensure   => '4.7.1',
         name     => 'mercurial',
         provider => pip3,
     }

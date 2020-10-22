@@ -6,7 +6,7 @@ class linux_packages::python2_mercurial {
     require linux_packages::py2
 
     package { 'python2-mercurial':
-        ensure   => '5.5.2',
+        ensure   => '4.7.1',
         name     => 'mercurial',
         provider => pip,
     }
