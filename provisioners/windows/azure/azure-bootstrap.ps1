@@ -144,7 +144,7 @@ function Get-SysprepState {
 }
 
 # Ensuring scripts can run uninhibited
-Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
+# Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 
 $workerType = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('workerType') })[0].value
 $src_Organisation = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceOrganisation') })[0].value
@@ -153,7 +153,7 @@ $src_Revision = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicPars
 $image_provisioner = 'azure'
 $audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
 $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
-$sysprepState = (Get-SysprepState)
+# $sysprepState = (Get-SysprepState)
 
     If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
       $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
