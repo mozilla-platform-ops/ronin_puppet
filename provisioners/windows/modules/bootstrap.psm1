@@ -600,7 +600,8 @@ function Bootstrap-AzPuppet {
           sleep 300
           #return
           #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-          exit 2
+          exit 0
+          # exit 2
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -609,14 +610,16 @@ function Bootstrap-AzPuppet {
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
         #Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		#return
-        exit 2
+        exit 0
+        # exit 2
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
         Start-sleep -s 300
         #return
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
-        exit 2
+        exit 0
+        #exit 2
       }
     }
   }
