@@ -8,6 +8,8 @@ class linux_packages::mercurial {
       include linux_packages::python2_mercurial
       include linux_packages::python3_mercurial
 
+      # the binary just calls the installed python module
+
       package {
           'mercurial':
               ensure => present;
