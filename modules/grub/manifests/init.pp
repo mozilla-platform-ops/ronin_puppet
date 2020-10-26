@@ -12,7 +12,7 @@ class grub (
                 '18.04': {
 
                     # 1804/lvm/efi has issues with setting a timeout.
-                    # - we set GRUB_RECORDFAIL_TIMOUT to work around this.
+                    # - we set GRUB_RECORDFAIL_TIMEOUT to work around this.
                     #
                     # more info:
                     # - https://forums.linuxmint.com/viewtopic.php?f=46&t=287026#p1588204
