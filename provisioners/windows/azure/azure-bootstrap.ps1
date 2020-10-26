@@ -75,7 +75,7 @@ function InstallRoninModule {
     [string] $src_Organisation,
     [string] $src_Repository,
     [string] $src_Revision,
-    [string] $moduleName
+    [string] $moduleName,
     [string] $local_dir = "$env:systemdrive\BootStrap",
     [string] $filename = "bootstrap.psm1",
     [string] $module_name = ($moduleName).replace(".pms1",""),
