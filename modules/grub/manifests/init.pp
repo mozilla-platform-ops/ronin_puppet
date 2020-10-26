@@ -10,6 +10,14 @@ class grub (
         'Ubuntu': {
             case $::operatingsystemrelease {
                 '18.04': {
+
+                    # 1804/lvm/efi has issues with setting a timeout.
+                    # - we set GRUB_RECORDFAIL_TIMOUT to work around this.
+                    #
+                    # more info:
+                    # - https://forums.linuxmint.com/viewtopic.php?f=46&t=287026#p1588204
+                    # - https://askubuntu.com/questions/1164407/grub-is-ignoring-settings-in-etc-default-grub-single-boot-system
+
                     package {
                         'grub2-common':
                             ensure => present;
