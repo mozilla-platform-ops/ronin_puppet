@@ -90,7 +90,7 @@ function InstallRoninModule {
     mkdir $bootstrap_module  -ErrorAction SilentlyContinue
     Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$module_name" -UseBasicParsing
     Get-Content -Encoding UTF8 "$bootstrap_module\\$module_name" | Out-File -Encoding Unicode "$modulesPath\\$module_name"
-    Import-Module -Name $module_name
+    Import-Module -Name $moduleName
     }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
