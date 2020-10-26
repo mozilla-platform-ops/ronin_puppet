@@ -780,6 +780,7 @@ function Mount-DiskTwo {
       }
     }
   }
+}
 Function Bootstrap-CleanUp {
   param (
     [string] $bootstrapdir  = "$env:systemdrive\BootStrap\"
