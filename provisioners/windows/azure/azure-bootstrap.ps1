@@ -77,7 +77,7 @@ function InstallRoninModule {
     [string] $src_Revision,
     [string] $moduleName,
     [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $filename = "bootstrap.psm1",
+    [string] $filename = ('{0}.psm1' -f $moduleName),
     [string] $module_name = ($moduleName).replace(".pms1",""),
     [string] $modulesPath = ('{0}\Modules\{1}' -f $pshome, $moduleName),
     [string] $bootstrap_module = "$modulesPath\bootstrap",
@@ -88,8 +88,8 @@ function InstallRoninModule {
   }
   process {
     mkdir $bootstrap_module  -ErrorAction SilentlyContinue
-    Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$module_name" -UseBasicParsing
-    Get-Content -Encoding UTF8 "$bootstrap_module\\$module_name" | Out-File -Encoding Unicode "$modulesPath\\$module_name"
+    Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$filename" -UseBasicParsing
+    Get-Content -Encoding UTF8 "$bootstrap_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
     Import-Module -Name $moduleName
     }
   end {
