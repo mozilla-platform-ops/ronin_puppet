@@ -70,14 +70,15 @@ function Setup-Logging {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Install-BootstrapModule {
+function InstallRoninModule {
   param (
     [string] $src_Organisation,
     [string] $src_Repository,
     [string] $src_Revision,
+    [string] $moduleName
     [string] $local_dir = "$env:systemdrive\BootStrap",
     [string] $filename = "bootstrap.psm1",
-    [string] $module_name = ($filename).replace(".pms1",""),
+    [string] $module_name = ($moduleName).replace(".pms1",""),
     [string] $modulesPath = ('{0}\Modules\bootstrap' -f $pshome),
     [string] $bootstrap_module = "$modulesPath\bootstrap",
     [string] $moduleUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $filename)
@@ -87,8 +88,8 @@ function Install-BootstrapModule {
   }
   process {
     mkdir $bootstrap_module  -ErrorAction SilentlyContinue
-    Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$filename" -UseBasicParsing
-    Get-Content -Encoding UTF8 "$bootstrap_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
+    Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$module_name" -UseBasicParsing
+    Get-Content -Encoding UTF8 "$bootstrap_module\\$module_name" | Out-File -Encoding Unicode "$modulesPath\\$module_name"
     Import-Module -Name $module_name
     }
   end {
@@ -162,7 +163,8 @@ $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
       # msg * Start of Ronin script
       Setup-Logging
       Write-Log -message  ('{0} :: current Sysprep state {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
-      Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-AzPrerequ
       Mount-DiskTwo
@@ -180,7 +182,8 @@ $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
     }
     If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
       #Set-ItemProperty -Path "$audit_state_key" -name ImageState -value IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT
-      Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       # msg * Prepping and runnin Puppet
       Ronin-PreRun
       Bootstrap-AzPuppet
@@ -188,7 +191,8 @@ $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
       exit 0
     }
     If ($stage -eq 'complete') {
-      Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+      InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name hand_off_ready -type  string -value yes
       Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
       Bootstrap-CleanUp
