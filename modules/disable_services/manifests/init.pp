@@ -59,6 +59,13 @@ class disable_services() {
                           group  => 'root',
                           source => "puppet:///modules/${module_name}/20auto-upgrades";
                     }
+
+                    # stop 'unattended-upgrades' processes, disabled in /etc/apt/apt.conf.d/20auto-upgrades
+                    # but still showing up
+                    service { 'unattended-upgrades':
+                        ensure => stopped,
+                        enable => false,
+                    }
                 }
                 default: {
                     fail("Unrecognized Ubuntu version ${::operatingsystemrelease}")
