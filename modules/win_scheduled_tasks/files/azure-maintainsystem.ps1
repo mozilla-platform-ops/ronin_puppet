@@ -351,6 +351,8 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
   Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name reboot_count -value $new_count -force
 }
 #If ($bootstrap_stage -eq 'complete') {
+# Hand_off_ready value is set by the packer manifest
+# TODO: add json manifest location
 If ($hand_off_ready -eq 'yes') {
   Check-AzVM-Name
   Set-DriveLetters
