@@ -254,7 +254,57 @@ function Puppet-Run {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-
+function Set-DriveLetters {
+  param (
+    [hashtable] $driveLetterMap = @{
+      'D:' = 'Y:';
+      'E:' = 'Z:'
+    }
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    $driveLetterMap.Keys | % {
+      $old = $_
+      $new = $driveLetterMap.Item($_)
+      if (Test-VolumeExists -DriveLetter @($old[0])) {
+        $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
+        if ($null -ne $volume) {
+          $volume.DriveLetter = $new
+          $volume.Put()
+          if ((Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$new'") -and (Test-VolumeExists -DriveLetter @($new[0]))) {
+            Write-Log -message ('{0} :: drive {1} assigned new drive letter: {2}.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'INFO'
+          } else {
+            Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using wmi, failed.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'WARN'
+            try {
+              Get-Partition -DriveLetter $old[0] | Set-Partition -NewDriveLetter $new[0]
+            } catch {
+              Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using get/set partition, failed. {3}' -f $($MyInvocation.MyCommand.Name), $old, $new, $_.Exception.Message) -severity 'ERROR'
+            }
+          }
+        }
+      }
+    }
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
+      $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
+      if ($null -ne $volume) {
+        $volume.DriveLetter = 'Z:'
+        $volume.Put()
+        Write-Log -message ('{0} :: drive Y: assigned new drive letter: Z:.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+      }
+    }
+    $volumes = @(Get-WmiObject -Class Win32_Volume | Sort-Object { $_.Name })
+    Write-Log -message ('{0} :: {1} volumes detected.' -f $($MyInvocation.MyCommand.Name), $volumes.length) -severity 'INFO'
+    foreach ($volume in $volumes) {
+      Write-Log -message ('{0} :: {1} {2}gb' -f $($MyInvocation.MyCommand.Name), $volume.Name.Trim('\'), [math]::Round($volume.Capacity/1GB,2)) -severity 'DEBUG'
+    }
+    $partitions = @(Get-WmiObject -Class Win32_DiskPartition | Sort-Object { $_.Name })
+    Write-Log -message ('{0} :: {1} disk partitions detected.' -f $($MyInvocation.MyCommand.Name), $partitions.length) -severity 'INFO'
+    foreach ($partition in $partitions) {
+      Write-Log -message ('{0} :: {1}: {2}gb' -f $($MyInvocation.MyCommand.Name), $partition.Name, [math]::Round($partition.Size/1GB,2)) -severity 'DEBUG'
+    }
+  }
 function StartWorkerRunner {
     param (
     )
@@ -302,6 +352,7 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
 #If ($bootstrap_stage -eq 'complete') {
 If ($hand_off_ready -eq 'yes') {
   Check-AzVM-Name
+  Set-DriveLetters
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
