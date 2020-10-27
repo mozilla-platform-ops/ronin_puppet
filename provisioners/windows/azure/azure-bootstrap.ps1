@@ -167,7 +167,7 @@ $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
       InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
       Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
       Install-AzPrerequ
-      Mount-DiskTwo
+      # Mount-DiskTwo
       Set-DriveLetters
       # Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
 
