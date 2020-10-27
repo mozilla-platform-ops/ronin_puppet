@@ -16,7 +16,7 @@ class win_scheduled_tasks::maintain_system (
         scheduled_task { 'maintain_system':
             ensure    => 'present',
             command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
-            arguments => "-File ${maintainsystem_ps1}",
+            arguments => "-executionpolicy bypass -File ${maintainsystem_ps1}",
             enabled   => true,
             trigger   => [{
                 'schedule'         => 'boot',
