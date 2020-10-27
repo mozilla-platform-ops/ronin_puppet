@@ -257,8 +257,8 @@ function Puppet-Run {
 function Set-DriveLetters {
   param (
     [hashtable] $driveLetterMap = @{
-      'D:' = 'Y:';
-      'E:' = 'Z:'
+      'E:' = 'Y:';
+      'F:' = 'Z:'
     }
   )
   begin {
@@ -305,6 +305,7 @@ function Set-DriveLetters {
       Write-Log -message ('{0} :: {1}: {2}gb' -f $($MyInvocation.MyCommand.Name), $partition.Name, [math]::Round($partition.Size/1GB,2)) -severity 'DEBUG'
     }
   }
+}
 function StartWorkerRunner {
     param (
     )

@@ -717,8 +717,8 @@ function Mount-DiskTwo {
 function Set-DriveLetters {
   param (
     [hashtable] $driveLetterMap = @{
-      'D:' = 'Y:';
-      'E:' = 'Z:'
+      'E:' = 'Y:';
+      'F:' = 'Z:'
     }
   )
   begin {
