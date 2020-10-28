@@ -8,8 +8,8 @@ class roles_profiles::profiles::files_system_managment {
         'Windows': {
             include win_filesystem::disable8dot3
             include win_filesystem::disablelastaccess
-            if $facts['custom_win_location'] == 'aws' {
-                win_filesystem::set_paging_file { 'aws_paging_file':
+            if $facts['custom_win_location'] == 'azure' {
+                win_filesystem::set_paging_file { 'azur_paging_file':
                     location =>  'y:\pagefile.sys',
                     min_size => 8192,
                     max_size => 8192,
