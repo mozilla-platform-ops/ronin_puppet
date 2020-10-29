@@ -33,10 +33,10 @@ fi
 # - created by run-puppet.sh
 if [ ! -f "$puppet_run_done_file" ]; then
     echo -n "Waiting for puppet to finish... "
-    while [ ! -f "$puppet_run_done_file" ]; then
+    while [ ! -f "$puppet_run_done_file" ]; do
         sleep 5
         echo -n '.'
-    fi
+    done
     echo " done."
 fi
 
