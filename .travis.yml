@@ -42,7 +42,7 @@ jobs:
       env: KITCHEN_TARGET=none
       name: "exec pre-commit hooks"
       language: python
-      before_install: pip3 install pre-commit
+      before_install: pip3 install pre-commit==2.7.1
       script: pre-commit run --all-files
     - stage: install
       env: KITCHEN_TARGET=none
