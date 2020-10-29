@@ -16,6 +16,8 @@ branches:
     - master
 
 before_install:
+  - which ruby
+  - which gem
   - gem update --system
   - gem install bundler
 
