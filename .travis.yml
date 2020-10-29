@@ -16,8 +16,6 @@ branches:
     - master
 
 before_install:
-  - which ruby
-  - which gem
   - gem update --system
   - gem install bundler
 
@@ -30,6 +28,7 @@ env:
   - KITCHEN_TARGET=maas-rack
 
 stages:
+  - debug
   - pre-commit
   - install
   - test
@@ -40,6 +39,8 @@ script:
 
 jobs:
   include:
+    - stage: debug
+      script: "which ruby; which gem"
     - stage: pre-commit
       env: KITCHEN_TARGET=none
       name: "exec pre-commit hooks"
