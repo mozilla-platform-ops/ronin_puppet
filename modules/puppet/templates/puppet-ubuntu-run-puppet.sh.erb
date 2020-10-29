@@ -189,4 +189,7 @@ done
 # chmod 0777 "/var/tmp/semaphore"
 # touch "/var/tmp/semaphore/run-buildbot"
 
+# touch the semaphore to let run-start-worker know it can start start-worker
+touch "/tmp/puppet_run_done"
+
 exit 0

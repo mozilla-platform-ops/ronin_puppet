@@ -20,11 +20,24 @@ quarantine_semaphore_file='<%= @user_homedir %>/quarantined'
 # - never cleared automatically
 # - only created manually
 hold_semaphore_file='<%= @user_homedir %>/operator_hold'
+puppet_run_done_file='/tmp/puppet_run_done'
 
 # if the  host is in hold mode, don't start
 if [ -f "$hold_semaphore_file" ]; then
     echo "Worker is in operator hold mode. Not starting."
     exit 0
+fi
+
+# wait for puppet to finish before starting
+# - we want a quiet system for perf tests
+# - created by run-puppet.sh
+if [ ! -f "$puppet_run_done_file" ]; then
+    echo -n "Waiting for puppet to finish... "
+    while [ ! -f "$puppet_run_done_file" ]; then
+        sleep 5
+        echo -n '.'
+    fi
+    echo " done."
 fi
 
 # First run the start-worker, passing through any arguments handed to this
