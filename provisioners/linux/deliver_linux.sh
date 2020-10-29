@@ -92,10 +92,7 @@ echo ""
 echo "success."
 echo "now run one of the following:"
 echo
-# shellcheck disable=SC2086
-echo   ssh root@$THE_HOST "/root/bootstrap.sh"
+echo "  ssh root@$THE_HOST /root/bootstrap.sh"
 echo
-# shellcheck disable=SC2086
-echo   ssh root@$THE_HOST \"PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' PUPPET_BRANCH='YOUR_BRANCH' /root/bootstrap.sh\"
-# shellcheck disable=SC2086
-echo     e.g. ssh root@$THE_HOST \"PUPPET_REPO='https://github.com/aerickson/ronin_puppet.git' PUPPET_BRANCH='moonshot_1804' /root/bootstrap.sh\"
+echo "  ssh root@$THE_HOST \"PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' PUPPET_BRANCH='YOUR_BRANCH' /root/bootstrap.sh\""
+echo "   e.g. ssh root@$THE_HOST \"PUPPET_REPO='https://github.com/aerickson/ronin_puppet.git' PUPPET_BRANCH='moonshot_1804' /root/bootstrap.sh\""
