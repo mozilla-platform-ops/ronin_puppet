@@ -24,6 +24,7 @@ hold_semaphore_file='<%= @user_homedir %>/operator_hold'
 # if the  host is in hold mode, don't start
 if [ -f "$hold_semaphore_file" ]; then
     echo "Worker is in operator hold mode. Not starting."
+    exit 0
 fi
 
 # First run the start-worker, passing through any arguments handed to this
