@@ -40,7 +40,7 @@ script:
 jobs:
   include:
     - stage: debug
-      script: "which ruby; which gem; head `which ruby`; exit 1"
+      script: "which ruby; which gem; file `which ruby`; ls -lah `which ruby` ; exit 1"
     - stage: pre-commit
       env: KITCHEN_TARGET=none
       name: "exec pre-commit hooks"
