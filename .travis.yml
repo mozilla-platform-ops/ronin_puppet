@@ -28,7 +28,6 @@ env:
   - KITCHEN_TARGET=maas-rack
 
 stages:
-  - debug
   - pre-commit
   - install
   - test
@@ -39,15 +38,12 @@ script:
 
 jobs:
   include:
-    - stage: debug
-      script: "which ruby; which gem; file `which ruby`"
     - stage: pre-commit
       env: KITCHEN_TARGET=none
       name: "exec pre-commit hooks"
       language: python
-      before_install: pip3 install git+https://github.com/pre-commit/pre-commit.git@e05ac1e91fcfa695405df1c18d4432c12e5d7142
-      # git+git://github.com/aladagemre/django-notification.git@2927346f4c513a217ac8ad076e494dd1adbf70e1
-      # before_install: pip3 install pre-commit==2.7.1
+      # can unpin once 2.8.2 is released
+      before_install: pip3 install pre-commit==2.7.1
       script: pre-commit run --all-files
     - stage: install
       env: KITCHEN_TARGET=none
