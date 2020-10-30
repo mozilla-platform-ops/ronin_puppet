@@ -355,7 +355,7 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
 # TODO: add json manifest location
 If ($hand_off_ready -eq 'yes') {
   Check-AzVM-Name
-  if (!(Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
+  if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
     Set-DriveLetters
   }
   Run-MaintainSystem
