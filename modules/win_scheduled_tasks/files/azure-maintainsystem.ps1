@@ -354,7 +354,8 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
 If ($hand_off_ready -eq 'yes') {
-  Check-AzVM-Name
+  # Check-AzVM-Name
+  Write-Log -message  ('{0} :: LOOK HERE! Name should be {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
   if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
     Set-DriveLetters
   }
