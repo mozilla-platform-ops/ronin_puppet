@@ -10,6 +10,6 @@ class win_nxlog::configuration {
     $conf_file      = $win_nxlog::conf_file
 
     file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.conf":
-        content => file('win_nxlog/nxlog.conf'),
+        content => epp("win_nxlog/${conf_file}.epp"),
     }
 }
