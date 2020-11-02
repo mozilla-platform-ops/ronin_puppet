@@ -212,6 +212,7 @@ function Bootstrap-AzPuppet {
           #shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
           #return
           #exit 2
+          Move-StrapPuppetLogs
           exit 0
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
@@ -219,6 +220,7 @@ function Bootstrap-AzPuppet {
           sleep 300
           #return
           #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          Move-StrapPuppetLogs
           exit 0
           # exit 2
         }
@@ -229,6 +231,7 @@ function Bootstrap-AzPuppet {
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
         #Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		#return
+        Move-StrapPuppetLogs
         exit 0
         # exit 2
       } else {
@@ -237,6 +240,7 @@ function Bootstrap-AzPuppet {
         Start-sleep -s 300
         #return
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        Move-StrapPuppetLogs
         exit 0
         #exit 2
       }
@@ -246,6 +250,15 @@ function Bootstrap-AzPuppet {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Move-StrapPuppetLogs {
+  param (
+    [string] $logdir = "$env:systemdrive\logs",
+    [string] $bootstraplogdir = "$logdir\bootstrap"
+  )
+  New-Item -ItemType Directory -Force -Path $bootstraplogdir
+  Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $bootstraplogdir -ErrorAction SilentlyContinue
+}
+
 function Test-VolumeExists {
   param (
     [char[]] $driveLetter
