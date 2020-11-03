@@ -364,7 +364,10 @@ If ($hand_off_ready -eq 'yes') {
     Puppet-Run
   }
   StartWorkerRunner
-  # shutdown @('-r', '-t', '0', '-c', 'Reboot; Worker runner has exited', '-f', '-d', '4:5')
+  # REMOVE THIS
+  # For testing. Gives a windows to jump on the node.
+  start-sleep -s 180
+  shutdown @('-r', '-t', '0', '-c', 'Reboot; Worker runner has exited', '-f', '-d', '4:5')
   Exit-PSSession
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
