@@ -10,6 +10,8 @@ class win_taskcluster::generic_worker (
     String $gw_exe_path
 ) {
 
+    $ed25519private = "${generic_worker_dir}\\ed25519-private.key"
+
     if ($current_gw_version != $desired_gw_version) {
         exec { 'purge_old_nonservice_gw_exe':
             command  => "Remove-Item -path ${gw_exe_path}",
@@ -22,5 +24,9 @@ class win_taskcluster::generic_worker (
     }
     file { $gw_exe_path:
         source  => $gw_exe_source,
+    }
+    exec { 'generate_ed25519_keypair':
+        command => "${gw_exe_path} new-ed25519-keypair --file ${ed25519private}",
+        creates => $ed25519private,
     }
 }
