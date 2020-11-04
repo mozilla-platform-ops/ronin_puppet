@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::gecko_t_osx_1015_generic_worker (
-    String $worker_type = 'gecko-t-osx-1015-bug1665379',
+    String $worker_type = 'gecko-t-osx-1015',
 ) {
     require roles_profiles::profiles::cltbld_user
 
