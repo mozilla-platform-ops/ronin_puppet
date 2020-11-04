@@ -5,3 +5,6 @@ worker:
     path: <%= $win_taskcluster::worker_runner::gw_exe_path %>
     protocolPipe: \\.\pipe\generic-worker
     configPath: <%= $win_taskcluster::worker_runner::config_file %>
+workerConfig:
+    disableReboots: true
+cacheOverRestarts: true
