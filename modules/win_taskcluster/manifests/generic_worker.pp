@@ -29,4 +29,9 @@ class win_taskcluster::generic_worker (
         command => "${gw_exe_path} new-ed25519-keypair --file ${ed25519private}",
         creates => $ed25519private,
     }
+    # TODO: Add conditional language to profile based on OS version
+    # To pass the correct source file name instead of hard code
+    file { "${generic_worker_dir}\\task-user-init.cmd":
+        content   => file('win_taskcluster/task-user-init-win10.cmd'),
+    }
 }
