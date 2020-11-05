@@ -10,7 +10,7 @@ class roles_profiles::roles::gecko_t_osx_1100 {
     include ::roles_profiles::profiles::disable_services
     include ::roles_profiles::profiles::ssh
     include ::roles_profiles::profiles::vnc
-    include ::roles_profiles::profiles::suppress_dialog_boxes
+    #include ::roles_profiles::profiles::suppress_dialog_boxes
     include ::roles_profiles::profiles::power_management
     include ::roles_profiles::profiles::screensaver
     include ::roles_profiles::profiles::gui
