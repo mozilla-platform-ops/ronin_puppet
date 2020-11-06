@@ -156,6 +156,8 @@ $audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
 $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 # $sysprepState = (Get-SysprepState)
 
+Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
+
     If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
       $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
     }
