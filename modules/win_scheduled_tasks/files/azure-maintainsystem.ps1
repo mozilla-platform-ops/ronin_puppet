@@ -350,12 +350,12 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
   $new_count = $previous_boots + 1
   Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name reboot_count -value $new_count -force
 }
+Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 #If ($bootstrap_stage -eq 'complete') {
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
 If ($hand_off_ready -eq 'yes') {
   # Check-AzVM-Name
-  net start WindowsAzureGuestAgent
   Write-Log -message  ('{0} :: LOOK HERE! Name should be {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
   if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
     Set-DriveLetters
