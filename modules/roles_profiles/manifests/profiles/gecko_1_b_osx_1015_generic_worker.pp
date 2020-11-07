@@ -110,7 +110,7 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
             #include packages::google_chrome
 
             contain packages::nodejs
-            contain packages::wget
+            #contain packages::wget
             contain packages::tooltool
             file { '/tools/tooltool.py':
                 ensure  => 'link',
