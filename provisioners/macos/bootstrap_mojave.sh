@@ -22,7 +22,12 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
 # URL of puppet repo to download
 # TODO: change this url to track master on the moz platform ops org relop
-PUPPET_REPO='https://github.com/mozilla-platform-ops/ronin_puppet/archive/master.tar.gz'
+
+PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet.git"}
+PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
+PUPPET_FORK="${PUPPET_REPO%.git}"
+PUPPET_FORK="${PUPPET_FORK#*.com}"
+PUPPET_REPO_BUNDLE="https://github.com/${PUPPET_FORK}/archive/${PUPPET_BRANCH}.tar.gz"
 
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {
@@ -123,8 +128,8 @@ function get_puppet_repo {
     # In the future, we may publish master branch to s3 or some other highly available service since
     # Github has rate limits on downloads.
     while true; do
-        echo "Downloading puppet repo: ${PUPPET_REPO}"
-        if HTTP_RES_CODE=$(curl -sL $PUPPET_REPO -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ $HTTP_RES_CODE = "200" ]]; then
+        echo "Downloading puppet repo: ${PUPPET_REPO_BUNDLE}"
+        if HTTP_RES_CODE=$(curl -sL $PUPPET_REPO_BUNDLE -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ $HTTP_RES_CODE = "200" ]]; then
             break
         else
             echo "Failed to download puppet repo.  Sleep for 30 seconds before trying again"
