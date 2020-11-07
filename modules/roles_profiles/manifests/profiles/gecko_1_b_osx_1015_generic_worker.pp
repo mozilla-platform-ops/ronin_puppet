@@ -105,7 +105,7 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
                 command => '/sbin/mount -uw /',
                 unless  => '/bin/test -d /builds || /bin/test -d /tools'
             }
-            include dirs::tools
+            #include dirs::tools
 
             #include packages::google_chrome
 
