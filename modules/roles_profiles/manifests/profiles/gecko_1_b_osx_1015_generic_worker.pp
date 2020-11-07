@@ -101,10 +101,10 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
                 user_homedir              => '/Users/cltbld',
             }
 
-            exec { 'writes_in_catalina':
-                command => '/sbin/mount -uw /',
-                unless  => '/bin/test -d /builds || /bin/test -d /tools'
-            }
+            # exec { 'writes_in_catalina':
+            #     command => '/sbin/mount -uw /',
+            #     unless  => '/bin/test -d /builds || /bin/test -d /tools'
+            # }
             #include dirs::tools
 
             #include packages::google_chrome
