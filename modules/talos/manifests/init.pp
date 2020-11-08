@@ -11,7 +11,7 @@ class talos (
             include httpd
             include packages::java_developer_package_for_osx
             include packages::xcode_cmd_line_tools
-            require dirs::builds
+            #require dirs::builds
 
             file {
                 [ '/builds/slave',
