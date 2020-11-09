@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby -S rspec
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'puppet/resource'
 require 'puppet/resource/catalog'
 require 'puppet/type/registry_key'

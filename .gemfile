@@ -4,6 +4,7 @@ gem 'puppet', '6.2.0', :require => false
 gem 'puppet-lint', '2.3.6'
 
 gem 'kitchen-verifier-serverspec'
+gem 'kitchen-inspec'
 gem 'kitchen-docker'
 gem 'kitchen-puppet'
 gem 'kitchen-sync'

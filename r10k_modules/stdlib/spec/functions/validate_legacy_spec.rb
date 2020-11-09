@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 if Puppet::Util::Package.versioncmp(Puppet.version, '4.4.0') >= 0
   describe 'validate_legacy' do

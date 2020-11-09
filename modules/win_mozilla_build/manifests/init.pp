@@ -20,13 +20,14 @@ class win_mozilla_build (
     String $system32,
     String $external_source,
     String $builds_dir,
-    String $tooltool_tok,
+    $tooltool_tok = undef
 ) {
 
     if $::operatingsystem == 'Windows' {
         include win_mozilla_build::install
         include win_mozilla_build::hg_install
         include win_mozilla_build::hg_files
+        include win_mozilla_build::install_py3_certi
         include win_mozilla_build::tooltool
         include win_mozilla_build::modifications
         include win_mozilla_build::set_registry_priority

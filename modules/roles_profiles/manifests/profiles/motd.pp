@@ -5,7 +5,7 @@
 class roles_profiles::profiles::motd {
 
     case $::operatingsystem {
-        'Darwin': {
+        'Darwin', 'Ubuntu': {
             include motd::base
         }
         default: {

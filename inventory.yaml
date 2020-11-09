@@ -1,0 +1,11 @@
+---
+version: 2
+groups:
+  - _plugin: yaml
+    filepath: inventory.d/t-mojave-r7.yaml
+  - _plugin: yaml
+    filepath: inventory.d/t-mojave-r7-staging.yaml
+  - _plugin: yaml
+    filepath: inventory.d/t-mojave-r8.yaml
+  - _plugin: yaml
+    filepath: inventory.d/t-mojave-r8-staging.yaml

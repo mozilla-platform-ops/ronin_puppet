@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 if Puppet::Util::Package.versioncmp(Puppet.version, '4.5.0') >= 0
   describe 'Stdlib::IP::Address::V6::Nosubnet::Full' do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'firewall::linux', type: :class do
   ['RedHat', 'CentOS'].each do |os|

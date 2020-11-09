@@ -1,6 +1,6 @@
 #!/usr/bin/env rspec
 
-require 'spec_helper'
+require_relative 'spec_helper'
 if Puppet::Util::Package.versioncmp(Puppet.version, '3.4.0') < 0
   require 'puppet/provider/confine/exists'
 else

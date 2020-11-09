@@ -8,6 +8,7 @@ class roles_profiles::roles::geckotwin1064hb {
     include roles_profiles::profiles::disable_services
     include roles_profiles::profiles::files_system_managment
     include roles_profiles::profiles::firewall
+    include roles_profiles::profiles::network
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
     include roles_profiles::profiles::scheduled_tasks
@@ -25,7 +26,7 @@ class roles_profiles::roles::geckotwin1064hb {
     # Worker
     include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
-    include roles_profiles::profiles::windows_datacenter_generic_worker_16_2_0
+    include roles_profiles::profiles::windows_custom_config_generic_worker
     include roles_profiles::profiles::microsoft_tools
     include roles_profiles::profiles::google_chrome
 }

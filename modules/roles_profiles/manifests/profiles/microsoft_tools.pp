@@ -13,16 +13,14 @@ class roles_profiles::profiles::microsoft_tools {
             # When pulling from a HG repo Puppet see it the file as a new file one ach run
             # In this case triggers the exec and adds to the local WMI repo each time
             # For now pulling from S3
-            $moz_profile_source = 'https://s3.amazonaws.com/windows-opencloudconfig-packages/RoninPackages/mozprofilerprobe.mof'
-            $moz_profile_file   = "${facts['custom_win_roninprogramdata']}\\mozprofilerprobe.mof"
 
             include win_packages::vc_redist_x86
             include win_packages::vc_redist_x64
             include win_os_settings::powershell_profile
 
             class { 'win_packages::performance_tool_kit':
-                moz_profile_source => $moz_profile_source,
-                moz_profile_file   => $moz_profile_file,
+                moz_profile_source => lookup('win-worker.mozilla_profile.source'),
+                moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837

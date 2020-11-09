@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe Puppet::Type.type(:vcsrepo).provider(:p4) do
   let(:resource) do

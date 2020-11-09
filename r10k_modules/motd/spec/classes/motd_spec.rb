@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'motd', type: :class do
   describe 'On a non-linux system' do

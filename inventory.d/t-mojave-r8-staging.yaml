@@ -1,0 +1,11 @@
+---
+name: t-mojave-r8-staging
+groups:
+  - name: t-mojave-r8-staging-mdc1
+    targets:
+      - t-mojave-r8-195.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-196.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-197.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-198.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-199.test.releng.mdc1.mozilla.com
+      - t-mojave-r8-200.test.releng.mdc1.mozilla.com

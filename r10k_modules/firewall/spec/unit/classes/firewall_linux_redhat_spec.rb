@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 RSpec.shared_examples 'ensures iptables service' do
   context 'with default' do

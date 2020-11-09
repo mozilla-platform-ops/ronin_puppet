@@ -1,0 +1,12 @@
+{
+  "description": "Read YAML data from a file",
+  "input_method": "stdin",
+  "parameters": {
+    "filepath": {
+      "type": "String",
+      "description": "The path to the YAML file"
+    }
+  },
+  "files": ["ruby_task_helper/files/task_helper.rb"],
+  "private": true
+}

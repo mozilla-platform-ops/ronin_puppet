@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'apt_reboot_required fact' do
   subject { Facter.fact(:apt_reboot_required).value }

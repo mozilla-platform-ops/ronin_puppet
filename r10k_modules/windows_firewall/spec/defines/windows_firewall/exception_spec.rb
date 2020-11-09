@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'windows_firewall::exception', type: :define do
   ['Windows Server 2003', 'Windows Server 2003 R2', 'Windows XP'].each do |os|

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'fqdn_uuid' do
   context 'with invalid parameters' do
