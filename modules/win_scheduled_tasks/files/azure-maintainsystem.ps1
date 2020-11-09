@@ -364,6 +364,7 @@ If ($hand_off_ready -eq 'yes') {
   If ($markcovar -ne 'empty_var') {
   New-LocalUser -name "markco"  -password (ConvertTo-SecureString -AsPlainText $markcovar -Force)
   Add-LocalGroupMember -Group "Administrators" -Member "markco" /y
+  Add-LocalGroupMember -Group "Remote Desktop Users" -Member "markco" /y
   }
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
