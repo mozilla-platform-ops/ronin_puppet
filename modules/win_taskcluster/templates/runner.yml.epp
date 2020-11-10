@@ -8,6 +8,4 @@ worker:
 workerConfig:
     disableReboots: false
     idleTimeoutSecs: 600
-    numberOfTasksToRun: 0
-    runTasksAsCurrentUser: false
 cacheOverRestarts: true
