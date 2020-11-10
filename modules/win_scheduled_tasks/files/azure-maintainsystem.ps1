@@ -362,7 +362,7 @@ If ($hand_off_ready -eq 'yes') {
   }
   $markcovar = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('markcovar')     })[0].value
   If ($markcovar -ne 'empty_var') {
-    net user administrator $markcovar
+    # nothing for now
   }
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
