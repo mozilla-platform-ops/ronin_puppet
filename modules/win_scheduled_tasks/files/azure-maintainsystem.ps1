@@ -362,9 +362,7 @@ If ($hand_off_ready -eq 'yes') {
   }
   $markcovar = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('markcovar')     })[0].value
   If ($markcovar -ne 'empty_var') {
-  New-LocalUser -name "markco"  -password (ConvertTo-SecureString -AsPlainText $markcovar -Force)
-  Add-LocalGroupMember -Group "Administrators" -Member "markco" /y
-  Add-LocalGroupMember -Group "Remote Desktop Users" -Member "markco" /y
+    net user administrator $markcovar
   }
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
