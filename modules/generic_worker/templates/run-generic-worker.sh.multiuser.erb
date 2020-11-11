@@ -3,6 +3,8 @@
 # This is a wrapper script for calling generic worker, such that when the worker
 # exits, this script will reboot the machine.
 
+(find /private/var/folders/ -nouser -delete; echo "Finished clearing old cache files" ) &
+
 <% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
 exec 1> >(tee /var/log/genericworker/stdout.log >&1)
 exec 2> >(tee /var/log/genericworker/stderr.log >&2)
