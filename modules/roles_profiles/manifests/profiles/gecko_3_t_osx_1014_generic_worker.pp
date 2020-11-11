@@ -8,7 +8,7 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
         autologin => false,
     }
 
-    $worker_type  = 'gecko-3-t-osx-1014-beta'
+    $worker_type  = 'gecko-3-t-osx-1014'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
@@ -26,7 +26,7 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
                 telegraf_password   => lookup('telegraf.password'),
                 puppet_env          => 'dev',
                 puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch       => '1561956_generic-worker_15-recover-test',
+                puppet_branch       => '1561956_generic-worker_15-recover',
                 puppet_notify_email => 'dhouse@mozilla.com',
                 meta_data           => $meta_data,
             }
