@@ -112,7 +112,7 @@ function update_puppet {
         git remote add origin "${PUPPET_REPO}" || return 1
     fi
 
-    # Fetch and checkout production branch
+    # Fetch and checkout branch
     git fetch --all --prune || return 1
     git checkout --force "origin/${PUPPET_BRANCH}" \
       || (
