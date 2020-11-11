@@ -178,8 +178,8 @@ Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
       #Remove_Apps -apps $apps
 
       # msg * First script exit next
-      exit 1
-      #exit 0
+      #exit 1
+      exit 0
       # shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 
     }
@@ -190,8 +190,8 @@ Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
       # msg * Prepping and runnin Puppet
       Ronin-PreRun
       Bootstrap-AzPuppet
-      exit 1
-      # exit 0
+      #exit 1
+      exit 0
     }
     If ($stage -eq 'complete') {
       InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
