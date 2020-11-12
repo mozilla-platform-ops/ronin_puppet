@@ -128,6 +128,12 @@ class generic_worker::multiuser (
                 #    mode   => '0600',
                 #    owner  => $::root_user,
                 #    group  => $::root_group;
+
+                $data_dir:
+                    ensure => directory,
+                    mode   => '0777',
+                    owner  => $::root_user,
+                    group  => $::root_group;
             }
 
             service { 'com.mozilla.genericworker':
