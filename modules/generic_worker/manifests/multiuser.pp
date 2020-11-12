@@ -88,7 +88,7 @@ class generic_worker::multiuser (
 
                 '/etc/generic-worker/config':
                     ensure  => present,
-                    content => template('generic_worker/generic-worker.multiuser.config.erb'),
+                    content => template('generic_worker/generic-worker.config.multiuser.erb'),
                     mode    => '0600',
                     owner   => $::root_user,
                     group   => $::root_group,
