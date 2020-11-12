@@ -110,12 +110,9 @@ class generic_worker::multiuser (
                     owner  => $::root_user,
                     group  => $::root_group;
 
-                '/var/opt/generic-worker':
+                '/var/opt':
                     ensure => directory,
-                    mode   => '0777',
-                    owner  => $user,
-                    group  => $::root_group,
-                    path   => $data_path;
+                    mode   => '0777';
 
                 #'/var/local':
                 #    ensure => directory,
