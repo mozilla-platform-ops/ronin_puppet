@@ -5,8 +5,6 @@
 class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
     String $worker_type = 'gecko-1-b-osx-1015-test',
 ) {
-    require roles_profiles::profiles::cltbld_user
-
     class { 'roles_profiles::profiles::cltbld_user':
         autologin => false,
     }
