@@ -86,14 +86,23 @@ class generic_worker::multiuser (
                     owner  => $::root_user,
                     group  => $::root_group;
 
-                '/etc/generic-worker/runner.yml':
+                '/etc/generic-worker/config':
                     ensure  => present,
-                    content => template('generic_worker/generic-worker.multiuser.yml.erb'),
+                    content => template('generic_worker/generic-worker.multiuser.config.erb'),
                     mode    => '0600',
                     owner   => $::root_user,
                     group   => $::root_group,
                     #show_diff => false,
                     require => File['/etc/generic-worker'];
+
+                #'/etc/generic-worker/runner.yml':
+                #    ensure  => present,
+                #    content => template('generic_worker/generic-worker.multiuser.yml.erb'),
+                #    mode    => '0600',
+                #    owner   => $::root_user,
+                #    group   => $::root_group,
+                #    #show_diff => false,
+                #    require => File['/etc/generic-worker'];
 
                 '/var/log/generic-worker':
                     ensure => directory,
