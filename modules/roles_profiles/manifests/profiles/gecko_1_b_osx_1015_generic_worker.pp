@@ -83,22 +83,20 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
                 version => '1.3.8',
             }
 
-            class { 'generic_worker':
+            class { 'generic_worker::multiuser':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
-                task_dir                  => '/Users',
-                generic_worker_version    => 'v16.5.2',
-                generic_worker_sha256     => '7bd47da57aae65f120d89e8d70fb0a1f66762945994e0909d31eac6d63122046',
-                taskcluster_proxy_version => 'v5.1.0',
-                taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
-                quarantine_worker_version => 'v1.0.0',
-                quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
-                livelog_version           => 'v1.1.0',
-                livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
+                data_dir                  => '/var/opt/generic-worker',
+                generic_worker_version    => 'v38.0.4',
+                generic_worker_sha256     => '1c65cff69ae68426c977e7bafcbc271a1bd4dbccbac338e197e8274b94f8d6e6',
+                taskcluster_proxy_version => 'v38.0.4',
+                taskcluster_proxy_sha256  => '80d6d169b22274cd0c43ede4a2e741be8e6804a942d7d10e45db4c2850b66245',
+                livelog_version           => 'v38.0.4',
+                livelog_sha256            => 'ec3140dc047708ab6379066fa46da49b0a7691cdf1c72ad0cacdf6a52dec32b8',
                 user                      => 'root',
-                gw_dir                    => '/var/local/generic-worker',
+                #gw_dir                    => '/etc/generic-worker',
             }
 
             # exec { 'writes_in_catalina':
@@ -108,6 +106,10 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
             #include dirs::tools
 
             #include packages::google_chrome
+            #file { '/var/opt/generic-worker':
+            #    ensure => 'directory',
+            #    mode   => '0755',
+            #}
 
             contain packages::nodejs
             #contain packages::wget

@@ -8,14 +8,12 @@ class generic_worker::multiuser (
     String $worker_group,
     String $worker_type,
     String $user,
-    String $gw_dir,
-    String $task_dir,
+    #String $gw_dir   = '/etc/generic-worker',
+    String $data_dir = '/var/opt/generic-worker',
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
     String $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
     String $taskcluster_proxy_sha256,
-    Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
-    String $quarantine_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $livelog_version,
     String $livelog_sha256,
     String $taskcluster_host = 'taskcluster',
@@ -28,21 +26,20 @@ class generic_worker::multiuser (
         generic_worker_sha256     => $generic_worker_sha256,
         taskcluster_proxy_version => $taskcluster_proxy_version,
         taskcluster_proxy_sha256  => $taskcluster_proxy_sha256,
-        quarantine_worker_version => $quarantine_worker_version,
-        quarantine_worker_sha256  => $quarantine_worker_sha256,
         livelog_version           => $livelog_version,
         livelog_sha256            => $livelog_sha256
     }
 
-    $caches_dir          = "${gw_dir}/caches"
-    $downloads_dir       = "${gw_dir}/downloads"
-    $ed25519_signing_key = "${gw_dir}/generic-worker.ed25519.signing.key"
+    $task_dir            = "${data_dir}/tasks"
+    $caches_dir          = "${data_dir}/caches"
+    $downloads_dir       = "${data_dir}/downloads"
+    $ed25519_signing_key = '/etc/generic-worker/generic-worker.ed25519.signing.key'
 
     exec {
         'create ed25519 signing key':
             path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
             user    => $user,
-            cwd     => $gw_dir,
+            cwd     => '/etc/generic-worker',
             command => "generic-worker new-ed25519-keypair --file ${ed25519_signing_key}",
             unless  => "test -f ${ed25519_signing_key}",
             require => Class['packages::generic_worker'];
@@ -69,7 +66,7 @@ class generic_worker::multiuser (
                 '/etc/generic-worker.config':
                     ensure  => absent;
 
-                '/Library/LaunchDaemons/net.generic.worker.plist':
+                '/Library/LaunchDaemons/com.mozilla.genericworker.plist':
                     ensure  => present,
                     content => template('generic_worker/generic-worker.plist.multiuser.erb'),
                     mode    => '0644',
@@ -85,33 +82,47 @@ class generic_worker::multiuser (
 
                 '/etc/generic-worker':
                     ensure => directory,
-                    mode   => '0644',
+                    mode   => '0600',
                     owner  => $::root_user,
                     group  => $::root_group;
 
-                '/etc/generic-worker/config':
+                '/etc/generic-worker/runner.yml':
                     ensure  => present,
-                    content => template('generic_worker/generic-worker.config.multiuser.erb'),
-                    mode    => '0644',
+                    content => template('generic_worker/generic-worker.multiuser.yml.erb'),
+                    mode    => '0600',
                     owner   => $::root_user,
                     group   => $::root_group,
+                    #show_diff => false,
                     require => File['/etc/generic-worker'];
 
-                '/var/local':
+                '/var/log/generic-worker':
                     ensure => directory,
-                    mode   => '0644',
+                    mode   => '0777',
                     owner  => $::root_user,
                     group  => $::root_group;
 
-                $gw_dir:
+                '/var/opt/generic-worker':
                     ensure => directory,
-                    mode   => '0644',
-                    owner  => $::root_user,
-                    group  => $::root_group;
+                    mode   => '0777',
+                    owner  => $user,
+                    group  => $::root_group,
+                    path   => $data_path;
+
+                #'/var/local':
+                #    ensure => directory,
+                #    mode   => '0644',
+                #    owner  => $::root_user,
+                #    group  => $::root_group;
+
+                #$gw_dir:
+                #    ensure => directory,
+                #    mode   => '0600',
+                #    owner  => $::root_user,
+                #    group  => $::root_group;
             }
 
-            service { 'net.generic.worker':
-                require => File['/Library/LaunchDaemons/net.generic.worker.plist'],
+            service { 'com.mozilla.genericworker':
+                require => File['/Library/LaunchDaemons/con.mozilla.genericworker.plist'],
                 enable  => true,
             }
 

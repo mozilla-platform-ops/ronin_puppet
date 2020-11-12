@@ -106,8 +106,8 @@ function install() {
 
 xcode_sdk_version=11
 xcode_version=12.2_Release_Candidate
-
-if [ ! -d $(xcode-select -p)/SDKs/MacOSX${xcode_sdk_version}*sdk/ ]; then
+#if [ ! -d $(xcode-select -p)/SDKs/MacOSX${xcode_sdk_version}*sdk/ ]; then
+if [ ! -d /Library/Developer/CommandLineTools/SDKs/MacOSX${xcode_sdk_version}*sdk/ ]; then
     clt_dmg=Command_Line_Tools_for_Xcode_${xcode_version}.dmg
     curl -L -O https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/macos/common/${clt_dmg}
     hdiutil mount ${clt_dmg}
