@@ -131,7 +131,7 @@ class generic_worker::multiuser (
             }
 
             service { 'com.mozilla.genericworker':
-                require => File['/Library/LaunchDaemons/con.mozilla.genericworker.plist'],
+                require => File['/Library/LaunchDaemons/com.mozilla.genericworker.plist'],
                 enable  => true,
             }
 
