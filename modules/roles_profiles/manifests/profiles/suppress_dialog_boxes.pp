@@ -23,7 +23,10 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         }
         'Windows': {
 
-      include win_os_settings::disbale_notifications
+            include win_os_settings::disbale_notifications
+            if ($facts['custom_win_location'] == 'azure') {
+                include win_scheduled_tasks::disable_network_warnings
+            }
 
       # Bug list
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
