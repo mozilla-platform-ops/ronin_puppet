@@ -18,6 +18,8 @@ powershell -command "&{$p='HKCU:SOFTWARE\Microsoft\Windows\CurrentVersion\Explor
 echo Setting visual effects
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" /v "VisualFXSetting" /t REG_DWORD /d 1 /f
 
+netsh firewall set notifications mode = disable profile = all
+
 :: Holding off including this here for now, as we will likely be doing this in preflight
 :: scripts in future. See: https://bugzilla.mozilla.org/show_bug.cgi?id=1396168#c13
 ::
