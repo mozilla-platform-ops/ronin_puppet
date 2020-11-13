@@ -7,7 +7,7 @@ class win_scheduled_tasks::disable_network_warnings {
     # Resource from puppetlabs-scheduled_task
     scheduled_task { 'disable_firewall notifications':
         ensure    => 'present',
-        command   => 'netsh',
+        command   => "${facts['custom_win_system32']}\\netsh.exe",
         arguments => 'firewall set notifications mode = disable profile = all',
         enabled   => true,
         trigger   => [{
