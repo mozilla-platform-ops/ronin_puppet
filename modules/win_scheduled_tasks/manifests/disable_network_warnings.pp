@@ -14,6 +14,5 @@ class win_scheduled_tasks::disable_network_warnings {
             'schedule' => 'logon',
             'user_id'  => 'undef'
         }],
-        user      => 'system',
     }
 }
