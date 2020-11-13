@@ -12,7 +12,7 @@ class win_scheduled_tasks::disable_network_warnings {
         enabled   => true,
         trigger   => [{
             'schedule' => 'logon',
-            'user_id'  => undef
+            'user_id'  => ''
         }],
     }
 }
