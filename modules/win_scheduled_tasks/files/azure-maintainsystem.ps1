@@ -368,6 +368,8 @@ If ($hand_off_ready -eq 'yes') {
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
+  Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
+  Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
   netsh firewall set notifications mode = disable profile = all
   StartWorkerRunner
   # let worker runner perform reboots
