@@ -368,6 +368,7 @@ If ($hand_off_ready -eq 'yes') {
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
+  netsh firewall set notifications mode = disable profile = all
   StartWorkerRunner
   # let worker runner perform reboots
   Exit-PSSession
