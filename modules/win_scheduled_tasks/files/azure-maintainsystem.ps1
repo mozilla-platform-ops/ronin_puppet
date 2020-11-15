@@ -355,6 +355,12 @@ Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
 If ($hand_off_ready -eq 'yes') {
+  $adminAccount = Get-WmiObject Win32_UserAccount -filter "LocalAccount=True" | ? {$_.SID -Like "S-1-5-21-*-500"}
+  if($adminAccount.Disabled)
+  {
+    $adminAccount.Disabled = $false
+    $adminAccount.Put()
+  }
   # Check-AzVM-Name
   Write-Log -message  ('{0} :: LOOK HERE! Name should be {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
   if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
@@ -368,8 +374,6 @@ If ($hand_off_ready -eq 'yes') {
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
-  Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
-  Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
   netsh firewall set notifications mode = disable profile = all
   StartWorkerRunner
   # let worker runner perform reboots
