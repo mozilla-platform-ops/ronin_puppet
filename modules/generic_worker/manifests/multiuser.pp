@@ -133,10 +133,10 @@ class generic_worker::multiuser (
                     group  => $::root_group;
             }
 
-            service { 'com.mozilla.genericworker':
-                require => File['/Library/LaunchDaemons/com.mozilla.genericworker.plist'],
-                enable  => true,
-            }
+            # service { 'com.mozilla.genericworker':
+            #     require => File['/Library/LaunchDaemons/com.mozilla.genericworker.plist'],
+            #     enable  => true,
+            # }
 
             host { $taskcluster_host:
                 ip => '127.0.0.1'
