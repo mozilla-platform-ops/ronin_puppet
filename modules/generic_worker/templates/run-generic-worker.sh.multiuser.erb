@@ -1,5 +1,5 @@
 #!/bin/bash
-last_premature_end=<%= @user_homedir %>/worker_running_semaphore
+last_premature_end=/var/opt/generic-worker/worker_running_semaphore
 if [ -f $last_premature_end ]; then
     echo "Last run-generic-worker.sh execution did not complete or completed in less than 120s."
     sleep 120
@@ -31,7 +31,7 @@ exitstatus="${PIPESTATUS[0]}"
 #
 # More information about generic-worker exit codes can be seen here:
 # https://docs.taskcluster.net/docs/reference/workers/generic-worker#set-up-your-env
-last_failed_semaphore=<%= @user_homedir %>/worker_exit_69
+last_failed_semaphore=/var/opt/generic-worker/worker_exit_69
 if [ $exitstatus -eq 69 ]; then
     if [ -f $last_failed_semaphore ]; then
         if [[ $(find "$last_failed_semaphore" -mmin +15 -print) ]]; then
