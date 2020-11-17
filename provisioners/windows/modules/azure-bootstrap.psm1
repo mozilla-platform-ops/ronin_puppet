@@ -218,12 +218,12 @@ function Bootstrap-AzPuppet {
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          sleep 300
+          # sleep 300
           #return
           #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
           Move-StrapPuppetLogs
-          exit 0
-          #exit 1
+          # exit 0
+          exit 2
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -233,8 +233,8 @@ function Bootstrap-AzPuppet {
         #Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		#return
         Move-StrapPuppetLogs
-        exit 0
-        #exit 2
+        # exit 0
+        exit 2
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
@@ -243,7 +243,7 @@ function Bootstrap-AzPuppet {
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
         Move-StrapPuppetLogs
         # exit 0
-        exit 1
+        exit 2
       }
     }
   }
@@ -297,7 +297,8 @@ function Mount-DiskTwo {
       }
       if (Get-Command -Name 'Clear-Disk' -errorAction SilentlyContinue) {
         try {
-          Clear-Disk -Number 2 -RemoveData -Confirm:$false
+          # Clear-Disk -Number 2 -RemoveData -Confirm:$false
+          Clear-Disk -Number 1 -RemoveData -Confirm:$false
           Write-Log -message ('{0} :: disk 1 partition table cleared.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
         catch {
@@ -308,7 +309,8 @@ function Mount-DiskTwo {
       }
       if (Get-Command -Name 'Initialize-Disk' -errorAction SilentlyContinue) {
         try {
-          Initialize-Disk -Number 2 -PartitionStyle MBR
+          # Initialize-Disk -Number 2 -PartitionStyle MBR
+          Initialize-Disk -Number 1 -PartitionStyle MBR
           Write-Log -message ('{0} :: disk 1 initialized.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
         catch {
@@ -319,7 +321,8 @@ function Mount-DiskTwo {
       }
       if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
         try {
-          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
+          # New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
+          New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
           Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
           Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
@@ -327,7 +330,8 @@ function Mount-DiskTwo {
           Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
         }
         try {
-          New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
+          # New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
+          New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
           Format-Volume -FileSystem NTFS -NewFileSystemLabel task -DriveLetter Z -Confirm:$false
           Write-Log -message ('{0} :: task drive Z: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
