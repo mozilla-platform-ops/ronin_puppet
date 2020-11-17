@@ -1,7 +1,7 @@
 #!/bin/bash
 last_premature_end=/var/opt/generic-worker/worker_running_semaphore
-if [ -f $last_premature_end ]; then
-    echo "Last run-generic-worker.sh execution did not complete or completed in less than 120s."
+if test $(find $last_premature_end -mmin -2); then
+    echo "Last run-generic-worker.sh execution started less than 120s ago."
     sleep 120
 fi
 date > $last_premature_end
