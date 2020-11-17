@@ -35,8 +35,7 @@
     "workerId": "<%= @hostname %>",
     "workerGroup": "<%= @worker_group %>",
     "ip": "<%= @ipaddress %>",
-    <% require 'json' %>
-    "system":<%= @facts['system_profiler'].to_json %>,
+    "system":<% require 'json' -%><%= @facts['system_profiler'].to_json %>,
     "machine-setup": {
       "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.multiuser.erb",
       "docs": "https://wiki.mozilla.org/ReleaseEngineering/PuppetAgain/Modules/generic_worker"
