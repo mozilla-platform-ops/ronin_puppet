@@ -34,7 +34,8 @@
   "workerTypeMetadata": {
     "workerId": "<%= @hostname %>",
     "workerGroup": "<%= @worker_group %>",
-    "system_profiler": <%= @facts['system_profiler'] %>,
+    "ip": "<%= @ipaddress %>",
+    "system": <%= @facts['system_profiler'] %>,
     "machine-setup": {
       "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.multiuser.erb",
       "docs": "https://wiki.mozilla.org/ReleaseEngineering/PuppetAgain/Modules/generic_worker"
