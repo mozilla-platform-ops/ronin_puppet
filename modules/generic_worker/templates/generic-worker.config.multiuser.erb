@@ -15,7 +15,7 @@
   "privateIP": "",
   "provisionerId": "releng-hardware",
   "region": "",
-  "requiredDiskSpaceMegabytes": 10240,
+  "requiredDiskSpaceMegabytes": 20480,
   "rootURL": "https://firefox-ci-tc.services.mozilla.com",
   "runAfterUserCreation": "",
   "runTasksAsCurrentUser": false,
@@ -32,6 +32,8 @@
   "wstAudience": "firefoxcitc",
   "wstServerURL": "https://firefoxci-websocktunnel.services.mozilla.com/",
   "workerTypeMetadata": {
+    "workerId": "<%= @hostname %>",
+    "workerGroup": "<%= @worker_group %>",
     "machine-setup": {
       "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.multiuser.erb",
       "docs": "https://wiki.mozilla.org/ReleaseEngineering/PuppetAgain/Modules/generic_worker"
