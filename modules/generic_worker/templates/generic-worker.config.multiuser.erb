@@ -3,7 +3,7 @@
   "cachesDir": "<%= @caches_dir %>",
   "certificate": "",
   "checkForNewDeploymentEverySecs": 0,
-  "cleanUpTaskDirs": false,
+  "cleanUpTaskDirs": true,
   "clientId": "<%= @taskcluster_client_id %>",
   "deploymentId": "",
   "downloadsDir": "<%= @downloads_dir %>",
@@ -35,7 +35,13 @@
     "workerId": "<%= @hostname %>",
     "workerGroup": "<%= @worker_group %>",
     "ip": "<%= @ipaddress %>",
+    "arch": "<%= @facts['os']['architecture'] %>",
     "system":<% require 'json' -%><%= @facts['system_profiler'].to_json %>,
+    "disk": {
+      "used": "<%= @facts['mountpoints']['/']['available'] %>",
+      "available": "<%= @facts['mountpoints']['/']['available'] %>",
+      "capacity": "<%= @facts['mountpoints']['/']['available'] %>"
+    },
     "machine-setup": {
       "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.multiuser.erb",
       "docs": "https://wiki.mozilla.org/ReleaseEngineering/PuppetAgain/Modules/generic_worker"
