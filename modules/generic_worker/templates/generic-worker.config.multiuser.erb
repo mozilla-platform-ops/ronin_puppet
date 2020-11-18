@@ -38,9 +38,9 @@
     "arch": "<%= @facts['os']['architecture'] %>",
     "system":<% require 'json' -%><%= @facts['system_profiler'].to_json %>,
     "disk": {
-      "used": "<%= @facts['mountpoints']['/']['available'] %>",
+      "used": "<%= @facts['mountpoints']['/']['used'] %>",
       "available": "<%= @facts['mountpoints']['/']['available'] %>",
-      "capacity": "<%= @facts['mountpoints']['/']['available'] %>"
+      "capacity": "<%= @facts['mountpoints']['/']['capacity'] %>"
     },
     "machine-setup": {
       "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.multiuser.erb",
