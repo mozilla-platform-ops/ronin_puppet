@@ -1,8 +1,8 @@
 #!/bin/bash
 
 PUPPET_REPO=${PUPPET_REPO:-"https://github.com/davehouse/ronin_puppet.git"}
-PUPPET_BRANCH=${PUPPET_BRANCH:-"bug1665379_mac-builders"}
-PUPPET_ROLE=${PUPPET_ROLE:-"gecko_1_b_osx_1015"}
+PUPPET_BRANCH=${PUPPET_BRANCH:-"bug1665379_mac-builders-test"}
+PUPPET_ROLE=${PUPPET_ROLE:-"gecko_1_b_osx_1015-beta"}
 
 export PATH="$PATH:/opt/puppetlabs/bin"
 
@@ -103,6 +103,16 @@ function install() {
     hdiutil unmount -force -whole -notimeout $mnt
   done < <(hdiutil mount -plist -nobrowse -readonly -noidme -mountrandom /tmp "$dmg" | grep '\(\/dev\/disk.s\|\/private\/tmp\)' | sed -e 's/.*>\([^<]*\)<.*/\1/' | tr $'\n' ' '; echo); 
 }
+
+xcode_sdk_version=11
+xcode_version=12.2_Release_Candidate
+#if [ ! -d $(xcode-select -p)/SDKs/MacOSX${xcode_sdk_version}*sdk/ ]; then
+if [ ! -d /Library/Developer/CommandLineTools/SDKs/MacOSX${xcode_sdk_version}*sdk/ ]; then
+    clt_dmg=Command_Line_Tools_for_Xcode_${xcode_version}.dmg
+    curl -L -O https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/macos/common/${clt_dmg}
+    hdiutil mount ${clt_dmg}
+    sudo installer -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools.pkg -target /
+fi
 
 # See http://apple.stackexchange.com/questions/107307/how-can-i-install-the-command-line-tools-completely-from-the-command-line
 xcode-select -p &> /dev/null

@@ -10,7 +10,7 @@ class roles_profiles::profiles::homebrew (
     } else {
         require packages::xcode_cmd_line_tools
         require packages::coreutils
-        require roles_profiles::profiles::cltbld_user
+        #require roles_profiles::profiles::cltbld_user
 
         class { 'homebrew':
             user      => 'cltbld',

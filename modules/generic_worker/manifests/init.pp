@@ -19,6 +19,8 @@ class generic_worker (
     String $taskcluster_proxy_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
     String $quarantine_worker_sha256,
+    Pattern[/^v\d+\.\d+\.\d+$/] $livelog_version,
+    String $livelog_sha256,
     String $taskcluster_host = 'taskcluster',
 ) {
 
@@ -31,7 +33,9 @@ class generic_worker (
         taskcluster_proxy_version => $taskcluster_proxy_version,
         taskcluster_proxy_sha256  => $taskcluster_proxy_sha256,
         quarantine_worker_version => $quarantine_worker_version,
-        quarantine_worker_sha256  => $quarantine_worker_sha256
+        quarantine_worker_sha256  => $quarantine_worker_sha256,
+        livelog_version           => $livelog_version,
+        livelog_sha256            => $livelog_sha256
     }
 
     class { 'generic_worker::control_bug':
@@ -63,6 +67,14 @@ class generic_worker (
             command => "generic-worker new-ed25519-keypair --file ${ed25519_signing_key}",
             unless  => "test -f ${ed25519_signing_key}",
             require => Class['packages::generic_worker'];
+    }
+    file {
+        'ed25519_signing_key_permissions':
+            ensure    => present,
+            mode      => '0600',
+            owner     => $user,
+            show_diff => false,
+            path      => $ed25519_signing_key;
     }
 
     case $::operatingsystem {

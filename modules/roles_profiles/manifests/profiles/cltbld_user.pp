@@ -5,8 +5,8 @@
 class roles_profiles::profiles::cltbld_user (
     Array[String] $groups        = ['_developer','com.apple.access_screensharing','com.apple.access_ssh'],
     Array[String] $sudo_commands = ['/sbin/reboot'],
+    Optional[Boolean] $autologin = true,
 ) {
-
     case $::operatingsystem {
         'Darwin': {
             $password     = lookup('cltbld_user.password')
@@ -36,6 +36,7 @@ class roles_profiles::profiles::cltbld_user (
             class { 'macos_utils::autologin_user':
                 user       => 'cltbld',
                 kcpassword => $kcpassword,
+                remove     => !$autologin,
             }
 
             # Enable DevToolsSecurity

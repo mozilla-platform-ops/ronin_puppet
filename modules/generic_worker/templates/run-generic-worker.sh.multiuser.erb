@@ -1,0 +1,73 @@
+#!/bin/bash
+last_premature_end=/var/opt/generic-worker/worker_running_semaphore
+if test $(find $last_premature_end -mmin -2); then
+    echo "Last run-generic-worker.sh execution started less than 120s ago. Sleeping 30s ..."
+    sleep 30
+fi
+date > $last_premature_end
+
+# This is a wrapper script for calling generic worker, such that when the worker
+# exits, this script will reboot the machine.
+
+(find /private/var/folders/ -nouser -delete; echo "Finished clearing old cache files" ) &
+
+<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+exec 1> >(tee /var/opt/generic-worker/stdout.log >&1)
+exec 2> >(tee /var/opt/generic-worker/stderr.log >&2)
+<% end %>
+
+# First run the generic-worker, passing through any arguments handed to this
+# wrapper script...
+<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+/usr/local/bin/generic-worker "$@"
+<% else %>
+/usr/local/bin/generic-worker "$@" 2>&1 | logger -t generic-worker -s
+<% end %>
+
+exitstatus="${PIPESTATUS[0]}"
+
+# Remove semaphore file to ensure generic worker does not start before puppet
+rm -f "/var/tmp/semaphore/run-buildbot"
+
+# If generic-worker considers that the host environment is in an invalid/corrupted
+# state (for example, it cannot write to disk), it will return the exit code 69.
+#
+# More information about generic-worker exit codes can be seen here:
+# https://docs.taskcluster.net/docs/reference/workers/generic-worker#set-up-your-env
+last_failed_semaphore=/var/opt/generic-worker/worker_exit_69
+if [ $exitstatus -eq 69 ]; then
+    if [ -f $last_failed_semaphore ]; then
+        if [[ $(find "$last_failed_semaphore" -mmin +15 -print) ]]; then
+            echo "Problem repeated for 15m. Sleep 10m ..."
+            sleep 600
+        else
+            echo "Worker repeat exit code 69. Sleep 120s ..."
+            sleep 120
+        fi
+    else
+        echo "Exit code 69. Sleep 60s ..."
+        printf "$(date) ${exitstatus}" > $last_failed_semaphore
+        sleep 60
+    fi
+elif [ $exitstatus -gt 69 -o $exitstatus -lt 69 ]; then
+    if [ -f $last_failed_semaphore ]; then
+        echo "Worker recovered from previous exit code 69."
+        cat $last_failed_semaphore 
+        rm -f $last_failed_semaphore 
+    fi
+fi
+
+if test $(find $last_premature_end -mmin +1); then
+    rm -f $last_premature_end
+else
+    echo "Started less than 60s ago. Sleeping 30s"
+    sleep 30
+fi
+
+echo "REBOOT $(date)"
+<%= @reboot_command %>
+# Sleep to prevent this script from terminating naturally, and launchd restarting
+# it. Instead, the shutdown should cause this script to terminate (so it won't
+# really sleep for 2 mins). If shutdown doesn't kick in within 2 mins, it is sane
+# for this script to exit, and allow launchd to fire up the worker again.
+sleep 120

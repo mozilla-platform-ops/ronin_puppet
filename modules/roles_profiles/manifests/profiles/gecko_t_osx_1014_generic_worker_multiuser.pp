@@ -2,13 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
+class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_multiuser {
 
-    class { 'roles_profiles::profiles::cltbld_user':
-        autologin => false,
-    }
-
-    $worker_type  = 'gecko-t-osx-1014-staging'
+    $worker_type  = 'gecko-t-osx-1014-multiuser'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
@@ -22,13 +18,11 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
         'Darwin': {
 
             class { 'puppet::atboot':
-                telegraf_user       => lookup('telegraf.user'),
-                telegraf_password   => lookup('telegraf.password'),
-                puppet_env          => 'dev',
-                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch       => '1561956_generic-worker_15-recover',
-                puppet_notify_email => 'dhouse@mozilla.com',
-                meta_data           => $meta_data,
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.password'),
+                puppet_branch     => 'master',
+                # Note the camelCase key names
+                meta_data         => $meta_data,
             }
 
             class { 'roles_profiles::profiles::logging':
@@ -70,12 +64,13 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 user => 'cltbld',
             }
 
-            $taskcluster_client_id    = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.taskcluster_client_id')
-            $taskcluster_access_token = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.livelog_secret')
-            $quarantine_client_id     = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.quarantine_client_id')
-            $quarantine_access_token  = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.quarantine_access_token')
-            $bugzilla_api_key         = lookup('generic_worker.datacenter_gecko_t_osx_1014_staging.bugzilla_api_key')
+            $taskcluster_client_id    = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_client_id')
+            $taskcluster_access_token = lookup('generic_worker.datacenter_gecko_t_osx_1014.taskcluster_access_token')
+            $livelog_secret           = lookup('generic_worker.datacenter_gecko_t_osx_1014.livelog_secret')
+            $quarantine_client_id     = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_client_id')
+            $quarantine_access_token  = lookup('generic_worker.datacenter_gecko_t_osx_1014.quarantine_access_token')
+            $bugzilla_api_key         = lookup('generic_worker.datacenter_gecko_t_osx_1014.bugzilla_api_key')
+
 
             class { 'packages::zstandard':
                 version => '1.3.8',
@@ -94,7 +89,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
                 livelog_version           => 'v1.1.0',
-                livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
+                livelog_sha256            => 'caabc35ec26498e755863d08c4c8b79e8b041a1d11b1fc8be0909718fc81113d',
                 user                      => 'root',
                 gw_dir                    => '/var/local/generic-worker',
             }
@@ -117,8 +112,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             contain mercurial::system_hgrc
 
             contain packages::python2
-            # zstandard for py2 is not in moz pypi??
-            #contain python2::system_pip_conf
+            python2::user_pip_conf { 'cltbld_user_pip_conf':
+                user  => 'cltbld',
+                group => 'staff',
+            }
 
             file {
                 '/tools/python':

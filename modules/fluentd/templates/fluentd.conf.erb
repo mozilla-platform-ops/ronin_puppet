@@ -69,17 +69,21 @@
   enable_ruby true
   <record>
     program "worker"
+    # single user:
+    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
+    # No task 5h15m43 90h44m16 1
+    # multi-user:
+    # No task claimed. Idle for 45h41m6.936831744s (will exit if no task claimed in 50h18m53.063168256s).
+    # No task 45h41m6 50h18m53
 <% if @syslog_host != '' -%>
     syslog_severity "${tag_parts[1]}"
-    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
-    # No task 5h15m43 1
-    log_message #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+    log_message #{record["message"].match(/^No task/) ? "No task " + record["message"].gsub(/([^0-9]*( [0-9]+ )[^0-9]*|[^0-9]* (([0-9]+h)?([0-9]+m)?([0-9]+))\.[^ ]*)/, '\2\3 ') : record["message"]}
 <% end -%>
 <% if @stackdriver_clientid != '' -%>
     # stackdriver severities:
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
-    message #{record["program"]} #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+    message #{record["program"]} #{record["message"].match(/^No task/) ? "No task " + record["message"].gsub(/([^0-9]*( [0-9]+ )[^0-9]*|[^0-9]* (([0-9]+h)?([0-9]+m)?([0-9]+))\.[^ ]*)/, '\2\3 ') : record["message"]}
 <% end -%>
   </record>
 </filter>
