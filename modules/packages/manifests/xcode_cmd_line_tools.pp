@@ -4,7 +4,7 @@
 
 class packages::xcode_cmd_line_tools {
 
-    packages::macos_package_from_s3 { 'Command_Line_Tools_for_Xcode_12.2_Release_Candidate.dmg':
+    packages::macos_package_from_s3 { 'Command_Line_Tools_for_Xcode_12.2.dmg':
         private             => true,
         os_version_specific => true,
         type                => 'dmg',

@@ -1,16 +1,13 @@
 #!/bin/bash
-last_premature_end=<%= @user_homedir %>/worker_running_semaphore
-if [ -f $last_premature_end ]; then
-    echo "Last run-generic-worker.sh execution did not complete or completed in less than 120s."
-    sleep 120
+last_premature_end=/var/tmp/semaphore/worker_running_semaphore
+if test $(find $last_premature_end -mmin -2); then
+    echo "Last run-generic-worker.sh execution started less than 120s ago. Sleeping 30s ..."
+    sleep 30
 fi
 date > $last_premature_end
 
 # This is a wrapper script for calling generic worker, such that when the worker
-# exits, this script will reboot the machine. Note, in the worker config
-# (/etc/generic-worker.config) we set numberOfTasksToRun to 1 so that the worker
-# will exit after running a single task. This script is then responsible for
-# rebooting the machine.
+# exits, this script will reboot the machine.
 
 # If this file exists when the worker starts up, and its content is equal
 # to numberOfTasksToRun, the worker won't exit and machine won't reboot.
@@ -20,8 +17,6 @@ rm -f tasks-resolved-count.txt
 exec 1> >(tee /var/log/genericworker/stdout.log >&1)
 exec 2> >(tee /var/log/genericworker/stderr.log >&2)
 <% end %>
-
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 
 # First run the generic-worker, passing through any arguments handed to this
 # wrapper script...
@@ -33,12 +28,15 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 
 exitstatus="${PIPESTATUS[0]}"
 
+# Remove semaphore file to ensure generic worker does not start before puppet
+rm -f "/var/tmp/semaphore/run-buildbot"
+
 # If generic-worker considers that the host environment is in an invalid/corrupted
 # state (for example, it cannot write to disk), it will return the exit code 69.
 #
 # More information about generic-worker exit codes can be seen here:
 # https://docs.taskcluster.net/docs/reference/workers/generic-worker#set-up-your-env
-last_failed_semaphore=<%= @user_homedir %>/worker_exit_69
+last_failed_semaphore=/var/tmp/semaphore/worker_exit_69
 if [ $exitstatus -eq 69 ]; then
     if [ -f $last_failed_semaphore ]; then
         if [[ $(find "$last_failed_semaphore" -mmin +15 -print) ]]; then
@@ -61,15 +59,14 @@ elif [ $exitstatus -gt 69 -o $exitstatus -lt 69 ]; then
     fi
 fi
 
-# Remove semaphore file to ensure generic worker does not start before puppet
-rm -f "/var/tmp/semaphore/run-buildbot"
-if test $(find $last_premature_end -mmin +2); then
+if test $(find $last_premature_end -mmin +1); then
     rm -f $last_premature_end
 else
-    echo "Leaving so soon! What happened?!"
-    sleep 300
+    echo "Started less than 60s ago. Sleeping 30s"
+    sleep 30
 fi
 
+echo "REBOOT $(date)"
 <%= @reboot_command %>
 # Sleep to prevent this script from terminating naturally, and launchd restarting
 # it. Instead, the shutdown should cause this script to terminate (so it won't
