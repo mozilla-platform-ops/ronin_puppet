@@ -7,22 +7,13 @@ set -e
 
 # recommended ssh config entries
 #
-# Host *.mdc2.mozilla.com
+# Host *.mdc1.mozilla.com *.mdc2.mozilla.com
 #   ForwardAgent yes
 #   ControlMaster auto
-#   ControlPath ~/.ssh/sockets/%r@%h-%p
+#   ControlPath ~/.ssh/sockets/%h-%r
 #   ControlPersist 600
 #
-# Host *.mdc1.mozilla.com
-#   ForwardAgent yes
-#   ControlMaster auto
-#   ControlPath ~/.ssh/sockets/%r@%h-%p
-#   ControlPersist 600
-#
-# Host *.test.releng.mdc1.mozilla.com
-#   ProxyJump rejh1.srv.releng.mdc1.mozilla.com
-#
-# Host *.test.releng.mdc2.mozilla.com
+# Host *.test.releng.mdc1.mozilla.com *.test.releng.mdc2.mozilla.com
 #   ProxyJump rejh1.srv.releng.mdc1.mozilla.com
 
 
