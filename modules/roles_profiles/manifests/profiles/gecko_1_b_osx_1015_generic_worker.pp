@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
-    String $worker_type = 'gecko-1-b-osx-1015-test',
+    String $worker_type = 'gecko-1-b-osx-1015',
 ) {
     class { 'roles_profiles::profiles::cltbld_user':
         autologin => false,
@@ -26,7 +26,7 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker (
                 telegraf_password   => lookup('telegraf.password'),
                 puppet_env          => 'dev',
                 puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch       => 'bug1665379_mac-builders-test',
+                puppet_branch       => 'bug1665379_mac-builders-test-multi',
                 puppet_notify_email => 'dhouse@mozilla.com',
                 meta_data           => $meta_data,
             }
