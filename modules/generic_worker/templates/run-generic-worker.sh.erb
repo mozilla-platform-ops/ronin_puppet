@@ -1,8 +1,8 @@
 #!/bin/bash
 last_premature_end=/var/tmp/semaphore/worker_running_semaphore
 if test $(find $last_premature_end -mmin -2); then
-    echo "Last run-generic-worker.sh execution started less than 120s ago."
-    sleep 120
+    echo "Last run-generic-worker.sh execution started less than 120s ago. Sleeping 30s ..."
+    sleep 30
 fi
 date > $last_premature_end
 
@@ -59,11 +59,11 @@ elif [ $exitstatus -gt 69 -o $exitstatus -lt 69 ]; then
     fi
 fi
 
-if test $(find $last_premature_end -mmin +2); then
+if test $(find $last_premature_end -mmin +1); then
     rm -f $last_premature_end
 else
-    echo "Leaving so soon! What happened?!"
-    sleep 300
+    echo "Started less than 60s ago. Sleeping 30s"
+    sleep 30
 fi
 
 echo "REBOOT $(date)"
