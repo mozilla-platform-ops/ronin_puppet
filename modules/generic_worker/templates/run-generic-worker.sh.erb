@@ -66,6 +66,7 @@ else
     sleep 300
 fi
 
+echo "REBOOT"
 <%= @reboot_command %>
 # Sleep to prevent this script from terminating naturally, and launchd restarting
 # it. Instead, the shutdown should cause this script to terminate (so it won't
