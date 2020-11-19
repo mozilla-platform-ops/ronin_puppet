@@ -39,7 +39,7 @@ class linux_packages::puppet {
               ensure => 'file',
               path   => '/tmp/puppet.deb',
               mode   => 'a+r',
-              source => 'https://apt.puppetlabs.com/puppet6-release-bionic.deb',
+              source => 'https://apt.puppetlabs.com/puppet-release-bionic.deb',
           }
 
           package { 'puppet repo deb':
