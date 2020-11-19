@@ -25,7 +25,7 @@ puppet_run_done_file='/tmp/puppet_run_done'
 # if the  host is in hold mode, don't start until cleared
 if [ -f "$hold_semaphore_file" ]; then
     echo "Worker is in operator hold mode. Waiting to start..."
-    while [ -f "$hold_semaphore_file" ]; then
+    while [ -f "$hold_semaphore_file" ]; do
         sleep 15
     done
     echo "Operator hold mode cleared. Starting..."
