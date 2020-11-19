@@ -17,6 +17,12 @@ class linux_packages::puppet {
             name   => 'puppet5-release',
           }
 
+          # puppet 7 is out, this explodes now
+          package { 'remove old puppet repo deb, 2':
+            ensure => absent,
+            name   => 'puppet6-release',
+          }
+
           package { 'remove old puppet-agent deb':
             ensure => absent,
             name   => 'puppet5-agent',
