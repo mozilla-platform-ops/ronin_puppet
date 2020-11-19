@@ -22,10 +22,13 @@ quarantine_semaphore_file='<%= @user_homedir %>/quarantined'
 hold_semaphore_file='<%= @user_homedir %>/operator_hold'
 puppet_run_done_file='/tmp/puppet_run_done'
 
-# if the  host is in hold mode, don't start
+# if the  host is in hold mode, don't start until cleared
 if [ -f "$hold_semaphore_file" ]; then
-    echo "Worker is in operator hold mode. Not starting."
-    exit 0
+    echo "Worker is in operator hold mode. Waiting to start..."
+    while [ -f "$hold_semaphore_file" ]; then
+        sleep 15
+    done
+    echo "Operator hold mode cleared. Starting..."
 fi
 
 # wait for puppet to finish before starting
