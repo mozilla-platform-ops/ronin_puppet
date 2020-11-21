@@ -6,7 +6,7 @@ class packages::python3_zstandard {
     require packages::python3
 
     package { 'python3-zstandard':
-        ensure   => '0.11.1',
+        ensure   => '0.14.0',
         name     => 'zstandard',
         provider => pip3,
         require  => Class['packages::python3'],
