@@ -6,7 +6,7 @@ describe package('puppet-agent'), :if => os[:family] == 'ubuntu' do
   # - available with inspec (https://docs.chef.io/inspec/resources/package/#version-1)
 end
 
-describe package('puppet6-release'), :if => os[:family] == 'ubuntu' do
+describe package('puppet-release'), :if => os[:family] == 'ubuntu' do
   it { should be_installed }
 end
 
