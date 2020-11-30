@@ -354,8 +354,8 @@ Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 #If ($bootstrap_stage -eq 'complete') {
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
-#If ($hand_off_ready -eq 'yes') {
-If ($bootstrap_stage -eq 'complete') {
+If ($hand_off_ready -eq 'yes') {
+#If ($bootstrap_stage -eq 'complete') {
   $adminAccount = Get-WmiObject Win32_UserAccount -filter "LocalAccount=True" | ? {$_.SID -Like "S-1-5-21-*-500"}
   if($adminAccount.Disabled)
   {
