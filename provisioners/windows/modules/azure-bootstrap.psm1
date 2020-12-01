@@ -297,8 +297,8 @@ function Mount-DiskTwo {
       }
       if (Get-Command -Name 'Clear-Disk' -errorAction SilentlyContinue) {
         try {
-          # Clear-Disk -Number 2 -RemoveData -Confirm:$false
-          Clear-Disk -Number 1 -RemoveData -Confirm:$false
+          Clear-Disk -Number 2 -RemoveData -Confirm:$false
+          # Clear-Disk -Number 1 -RemoveData -Confirm:$false
           Write-Log -message ('{0} :: disk 1 partition table cleared.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
         catch {
@@ -309,8 +309,8 @@ function Mount-DiskTwo {
       }
       if (Get-Command -Name 'Initialize-Disk' -errorAction SilentlyContinue) {
         try {
-          # Initialize-Disk -Number 2 -PartitionStyle MBR
-          Initialize-Disk -Number 1 -PartitionStyle MBR
+          Initialize-Disk -Number 2 -PartitionStyle MBR
+          # Initialize-Disk -Number 1 -PartitionStyle MBR
           Write-Log -message ('{0} :: disk 1 initialized.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
         catch {
@@ -321,8 +321,8 @@ function Mount-DiskTwo {
       }
       if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
         try {
-          # New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
-          New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
+          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
+          # New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
           Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
           Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
@@ -330,8 +330,8 @@ function Mount-DiskTwo {
           Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
         }
         try {
-          # New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
-          New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
+          New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
+          # New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
           Format-Volume -FileSystem NTFS -NewFileSystemLabel task -DriveLetter Z -Confirm:$false
           Write-Log -message ('{0} :: task drive Z: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
