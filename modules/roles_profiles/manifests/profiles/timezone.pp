@@ -7,7 +7,7 @@ class roles_profiles::profiles::timezone {
     case $::operatingsystem {
         'Darwin': {
             class { 'macos_timezone':
-                timezone => 'GMT',
+                timezone => 'UTC',
             }
         }
         'Ubuntu': {
