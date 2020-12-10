@@ -13,7 +13,7 @@ class win_scheduled_tasks::at_task_user_logon {
         # Resource from puppetlabs-scheduled_task
         scheduled_task { 'at_task_user_logon':
             ensure    => 'present',
-            command   => 'cmd.exe',
+            command   => "${facts['custom_win_system32']}\\cmd.exe",
             arguments => "/c ${at_task_user_logon_bat}",
             enabled   => true,
             trigger   => [{
