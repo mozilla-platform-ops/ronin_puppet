@@ -32,7 +32,8 @@ workflows:
       - r10k_install
       - kitchen_converge_and_verify:
         pre-steps:
-          - run: echo "ugh 123 456"
+          - run:
+              command: echo "test 456"
           # - setup_remote_docker:
           #   version: 19.03.13
         matrix:
