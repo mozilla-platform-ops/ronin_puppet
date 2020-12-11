@@ -6,13 +6,13 @@ jobs:
       - image: circleci/python:3.9.1
     steps:
       - checkout
-      - pip3 install pre-commit
-      - pre-commit run --all-files
+      - run: pip3 install pre-commit
+      - run: pre-commit run --all-files
   r10k_install:
     docker:
       - image: circleci/python:3.9.1
     steps:
-      - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+      - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   kitchen_converge_and_verify:
     docker:
       - image: circleci/ruby:2.7.2
@@ -22,8 +22,8 @@ jobs:
     steps:
       - setup_remote_docker:
         version: 19.03.13
-      - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
-      - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
+      - run: KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+      - run: KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
 
 workflows:
   ci_test:
