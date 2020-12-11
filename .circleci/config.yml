@@ -1,0 +1,38 @@
+version: 2.1
+
+# Define the jobs we want to run for this project
+jobs:
+  pre_commit:
+    docker:
+      - image: circleci/python:3.9.1
+    steps:
+      - checkout
+      - pip3 install pre-commit
+      - pre-commit run --all-files
+  r10k_install:
+    docker:
+      - image: circleci/python:3.9.1
+    steps:
+      - bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+  kitchen_converge_and_verify:
+    docker:
+      - image: circleci/ruby:2.7.2
+    parameters:
+      kitchen_target:
+        type: string
+    steps:
+      - setup_remote_docker:
+        version: 19.03.13
+      - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+      - KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
+
+# Orchestrate our job run sequence
+workflows:
+  ci_test:
+    jobs:
+      - pre_commit
+      - r10k_install
+      - kitchen_converge_and_verify:
+        matrix:
+          parameters:
+            kitchen_target: ["bitbar", "linux", "maas-region", "maas-rack"]
