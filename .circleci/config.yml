@@ -32,8 +32,9 @@ workflows:
       - r10k_install
       - kitchen_converge_and_verify:
         pre-steps:
-          - setup_remote_docker:
-            version: 19.03.13
+          - run: echo "ugh 123 456"
+          # - setup_remote_docker:
+          #   version: 19.03.13
         matrix:
           parameters:
             kitchen_target: ["bitbar", "linux", "maas-region", "maas-rack"]
