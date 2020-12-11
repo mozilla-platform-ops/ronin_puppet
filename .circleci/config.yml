@@ -10,10 +10,10 @@ jobs:
       - run: pre-commit run --all-files
   r10k_install:
     docker:
-      - image: circleci/python:3.9.1
+      - image: circleci/ruby:2.7.2
     steps:
       - checkout
-      - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+      - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   kitchen_converge_and_verify:
     docker:
       - image: circleci/ruby:2.7.2
