@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::psutil_py2 {
-    require linux_packages::py3
+    require linux_packages::py2
 
     package { 'psutil_py2':
         ensure   => '5.7.0',
