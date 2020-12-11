@@ -31,11 +31,11 @@ workflows:
       - pre_commit
       - r10k_install
       - kitchen_converge_and_verify:
-        pre-steps:
-          - run:
-              command: echo "test 456"
-          # - setup_remote_docker:
-          #   version: 19.03.13
+          pre-steps:
+            - run:
+                command: echo "test 456"
+            # - setup_remote_docker:
+            #   version: 19.03.13
         matrix:
           parameters:
             kitchen_target: ["bitbar", "linux", "maas-region", "maas-rack"]
