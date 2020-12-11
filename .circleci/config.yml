@@ -13,6 +13,7 @@ jobs:
       - image: circleci/ruby:2.7.2
     steps:
       - checkout
+      - run: BUNDLE_GEMFILE=.gemfile install
       - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   kitchen_converge_and_verify:
     docker:
