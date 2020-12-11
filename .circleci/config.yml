@@ -12,42 +12,27 @@ jobs:
     docker:
       - image: circleci/python:3.9.1
     steps:
+      - checkout
       - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
-  # matrix_test:
-  #   docker:
-  #     - image: circleci/python:3.9.1
-  #   parameters:
-  #     a:
-  #       type: string
-  #   steps:
-  #     - run: echo "123 << parameters.a >>"
   kitchen_converge_and_verify:
     docker:
       - image: circleci/ruby:2.7.2
     parameters:
-      a:
+      kitchen_target:
         type: string
     steps:
+      - checkout
       - setup_remote_docker:
           version: 19.03.13
-      - run: KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.a >>
-      - run: KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.a >>
+      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
 
 workflows:
   ci_test:
     jobs:
-      # - pre_commit
-      # - r10k_install
-      # - matrix_test:
-      #     matrix:
-      #       parameters:
-      #         a: ['a']
+      - pre_commit
+      - r10k_install
       - kitchen_converge_and_verify:
-          # pre-steps:
-          #   - run:
-          #       command: echo "test 456"
-          #   - setup_remote_docker:
-          #     version: 19.03.13
           matrix:
             parameters:
-              a: ["bitbar", "linux", "maas-region", "maas-rack"]
+              kitchen_target: ["bitbar", "linux", "maas-region", "maas-rack"]
