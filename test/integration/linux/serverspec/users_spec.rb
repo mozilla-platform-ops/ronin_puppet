@@ -37,13 +37,6 @@ end
 describe file('/home/relops/.ssh/authorized_keys') do
   it { should exist }
 
-  # check that we're going through relops users
-  its(:content) { should match /keys for dhouse/ }
-  # check that there's some key content in dhouse's entry
-  its(:content) { should match /ssh-rsa [\w\+\/\=]+ dhouse.house/ }
-
-  # relops is a special user that should always be present
-  its(:content) { should match /keys for relops/ }
-  # check that there's some key content in the relops entry
-  its(:content) { should match /ssh-ed25519 [\w\+]+ Relops ed25519 Key/ }
+  # ensure common relops key is present
+  it { should contain 'AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j+zRPprLFeTgRwkgI6mcjQCeEoaqOY2 Relops ed25519 Key' }
 end
