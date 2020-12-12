@@ -7,7 +7,6 @@ jobs:
   pre_commit:
     docker:
       - image: circleci/python:3.9.1
-    executor: python/default
     steps:
       - checkout
       - ruby/install:
