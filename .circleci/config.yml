@@ -25,6 +25,7 @@ jobs:
   kitchen_converge_and_verify:
     docker:
       - image: circleci/ruby:2.7.2
+        name: test-host-1
     parameters:
       kitchen_target:
         type: string
