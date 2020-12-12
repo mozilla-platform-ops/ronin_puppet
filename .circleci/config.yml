@@ -10,7 +10,9 @@ jobs:
     executor: python/default
     steps:
       - checkout
-      - run: pip3 install pre-commit
+      - python/install-packages:
+          pip-dependency-file: .dev-requirements.txt
+          pkg-manager: pip
       - run: pre-commit run --all-files
   r10k_install:
     docker:
