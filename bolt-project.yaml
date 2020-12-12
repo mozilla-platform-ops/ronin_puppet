@@ -1,0 +1,6 @@
+---
+name: ronin_puppet
+modulepath:
+- "./modules"
+- "./r10k_modules"
+concurrency: 8
