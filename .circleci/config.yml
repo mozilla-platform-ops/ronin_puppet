@@ -30,6 +30,7 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
+      - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
       - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
 
