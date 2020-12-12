@@ -9,6 +9,8 @@ jobs:
       - image: circleci/python:3.9.1
     steps:
       - checkout
+      - run: sudo apt-get update
+      - run: sudo apt-get install shellcheck
       - ruby/install:
           version: '2.7'
       - run: pip3 install pre-commit
