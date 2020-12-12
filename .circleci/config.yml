@@ -1,31 +1,25 @@
 version: 2.1
 
-orbs:
-  ruby: circleci/ruby@1.1.2
-
 jobs:
   pre_commit:
-    docker:
-      - image: circleci/python:3.9.1
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
       - checkout
       - run: sudo apt-get update
       - run: sudo apt-get install shellcheck
-      - ruby/install:
-          version: '2.7'
       - run: pip3 install pre-commit
       - run: pre-commit run --all-files
   r10k_install:
-    docker:
-      - image: circleci/ruby:2.7.2
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
       - checkout
       - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   kitchen_converge_and_verify:
-    docker:
-      - image: circleci/ruby:2.7.2
-        name: test-host-1
+    machine:
+      image: ubuntu-2004:202010-01
     parameters:
       kitchen_target:
         type: string
