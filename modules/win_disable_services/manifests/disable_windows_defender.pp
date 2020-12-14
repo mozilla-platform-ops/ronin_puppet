@@ -50,6 +50,11 @@ class win_disable_services::disable_windows_defender {
                 type => dword,
                 data => '1',
             }
+            registry::value { 'DisableAntivirus' :
+                key  => $win_defend_key,
+                type => dword,
+                data => '1',
+            }
             registry::value { 'DisableBehaviorMonitoring' :
                 key  => $real_time_key,
                 type => dword,
