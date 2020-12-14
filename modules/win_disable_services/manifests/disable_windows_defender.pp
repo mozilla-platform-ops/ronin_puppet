@@ -7,6 +7,7 @@ class win_disable_services::disable_windows_defender {
     if $::operatingsystem == 'Windows' {
 
         $win_defend_key       = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender"
+        $real_time_key        = "${win_defend_key}\\Real-Time Protection"
         $services_key         = "HKLM\\SYSTEM\\CurrentControlSet\\Services"
         $acl_services_key     = "hklm:SYSTEM\\CurrentControlSet\\Services"
         $diabled_start_value  = [
@@ -43,7 +44,28 @@ class win_disable_services::disable_windows_defender {
             type => dword,
             data => '1',
         }
-
+        if $facts['custom_win_release_id'] == '1903' {
+            registry::value { 'DisableRealtimeMonitoring' :
+                key  => $win_defend_key,
+                type => dword,
+                data => '1',
+            }
+            registry::value { 'DisableBehaviorMonitoring' :
+                key  => $real_time_key,
+                type => dword,
+                data => '1',
+            }
+      registry::value { 'DisableOnAccessProtection' :
+        key  => $real_time_key,
+        type => dword,
+        data => '1',
+      }
+      registry::value { 'DisableOnAccessProtection' :
+        key  => $real_time_key,
+        type => dword,
+        data => '1',
+      }
+    }
         # Windows defender supporting services
         # This will fail on first run and will need a reboot
         # SecurityHealthService and sense actively watch the registry values of the other services,
