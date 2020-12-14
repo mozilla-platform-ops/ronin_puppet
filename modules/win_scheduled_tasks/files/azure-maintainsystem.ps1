@@ -194,10 +194,8 @@ function Puppet-Run {
   process {
 
     Check-RoninNodeOptions
-    # Do not up teh Ronin Repo, so that there are no chnges in configuration
+    # Do not update Ronin Repo, so that there are no chnges in configuration
     # from the time of image creation
-    # Check-RoninLock
-    UpdateRonin
 
     # Setting Env variabes for PuppetFile install and Puppet run
     # The ssl variables are needed for R10k
