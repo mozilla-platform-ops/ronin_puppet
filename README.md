@@ -1,6 +1,7 @@
 # Ronin Puppet: the masterless puppet collection
 
-[![Build Status](https://travis-ci.com/mozilla-platform-ops/ronin_puppet.svg?branch=master)](https://travis-ci.com/mozilla-platform-ops/ronin_puppet)
+[![TravisCI Status](https://travis-ci.com/mozilla-platform-ops/ronin_puppet.svg?branch=master)](https://travis-ci.com/mozilla-platform-ops/ronin_puppet)
+[![CircleCI Status](https://circleci.com/gh/mozilla-platform-ops/ronin_puppet.svg?style=svg)](https://app.circleci.com/pipelines/github/mozilla-platform-ops/ronin_puppet)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 ## structure
