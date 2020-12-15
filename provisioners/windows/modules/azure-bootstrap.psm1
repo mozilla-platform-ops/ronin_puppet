@@ -222,8 +222,8 @@ function Bootstrap-AzPuppet {
           #return
           #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
           Move-StrapPuppetLogs
-          exit 0
-          # exit 2
+          #exit 0
+          exit 1
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -243,7 +243,7 @@ function Bootstrap-AzPuppet {
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
         Move-StrapPuppetLogs
         # exit 0
-        exit 2
+        exit 1
       }
     }
   }

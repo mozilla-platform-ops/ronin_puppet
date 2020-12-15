@@ -74,7 +74,7 @@ class win_disable_services::disable_windows_defender {
         # Windows defender supporting services
         # This will fail on first run and will need a reboot
         # SecurityHealthService and sense actively watch the registry values of the other services,
-        # and there start registry value needs to be changed and then the node needs rebooted
+        # and their start registry value needs to be changed and then the node needs rebooted
         # Also note this will fail on Windows 7
         registry_value { $diabled_start_value:
             ensure => present,
