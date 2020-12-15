@@ -5,9 +5,6 @@
 class linux_talos () {
   case $::operatingsystem {
     'Ubuntu': {
-
-      # TODO: httpd
-
       include linux_packages::nodejs
       include linux_packages::xvfb
       include linux_packages::llvm
@@ -16,7 +13,7 @@ class linux_talos () {
       include linux_packages::gstreamer
 
       # see bug 914627
-      include linux_packages::system_git
+      include linux_packages::git
       # # required for the 32-bit reftests per :ahal, bug 837268
       include linux_packages::ia32libs
 
@@ -30,51 +27,27 @@ class linux_talos () {
       package { 'linux-generic' :
         ensure => latest
       }
+
       kernelmodule {
-        # TODO: is libasound2 needed? isn't pulse default now?
-        # 'snd_aloop':
-        #   packages => ['libasound2'];
         'v4l2loopback':
           packages => ['v4l2loopback-dkms'];
       }
 
-      # TODO: from build-puppet. needed?
-      # # Ubuntu specific packages
-      # case $::hardwaremodel {
-      #   # We only run Android x86 emulator kvm jobs on
-      #   # 64-bit host machines
-      #   'x86_64': {
-      #     include packages::cpu_checker
-      #     include packages::qemu_kvm
-      #     include packages::bridge_utils
-      #   }
-      # }
-      #
-
-      ###### FROM OS X TALOS IN THIS REPO
-      # include httpd
-      # include packages::java_developer_package_for_osx
-      # include packages::xcode_cmd_line_tools
-      # require dirs::builds
-      #
-      # file {
-      #   [ '/builds/slave',
-      #     '/builds/slave/talos-data',
-      #     '/builds/slave/talos-data/talos',
-      #     '/builds/git-shared',
-      #     '/builds/hg-shared',
-      #     '/builds/tooltool_cache' ]:
-      #     ensure  => directory,
-      #     owner   => $user,
-      #     group   => 'staff',
-      #     mode    => '0755',
-      #     require => User[$user],
-      # }
-      #
-      # $document_root = '/builds/slave/talos-data/talos'
-      # httpd::config { 'talos.conf':
-      #   content => template('talos/talos-httpd.conf.erb'),
-
+      # directories expected by talos
+      file {
+        [ '/builds',
+          '/builds/slave',
+          '/builds/slave/talos-data',
+          '/builds/slave/talos-data/talos',
+          '/builds/git-shared',
+          '/builds/hg-shared',
+          '/builds/tooltool_cache' ]:
+          ensure => directory,
+          # TODO: replace with hiera lookup
+          owner  => 'cltbld',
+          group  => 'staff',
+          mode   => '0755',
+      }
     }
     default: {
       fail("${module_name} not supported under ${::operatingsystem}")

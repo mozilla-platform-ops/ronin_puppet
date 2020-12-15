@@ -1,0 +1,20 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# Init script for X11 service
+
+[Unit]
+Description=X11 service
+After=puppet.service
+
+[Service]
+Restart=no
+TimeoutSec=5min
+IgnoreSIGPIPE=no
+KillMode=process
+GuessMainPID=no
+ExecStart=/usr/bin/X :0 -nolisten tcp vt7 -config /etc/X11/xorg.conf
+
+[Install]
+WantedBy=multi-user.target
