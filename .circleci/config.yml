@@ -1,0 +1,40 @@
+version: 2.1
+
+jobs:
+  pre_commit:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run: sudo apt-get update
+      - run: sudo apt-get install shellcheck
+      - run: pip3 install pre-commit
+      - run: pre-commit run --all-files
+  r10k_install:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run: BUNDLE_GEMFILE=.gemfile bundle install
+      - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+  kitchen_converge_and_verify:
+    machine:
+      image: ubuntu-2004:202010-01
+    parameters:
+      kitchen_target:
+        type: string
+    steps:
+      - checkout
+      - run: BUNDLE_GEMFILE=.gemfile bundle install
+      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
+
+workflows:
+  ci_test:
+    jobs:
+      - pre_commit
+      - r10k_install
+      - kitchen_converge_and_verify:
+          matrix:
+            parameters:
+              kitchen_target: ["bitbar", "linux", "maas-region", "maas-rack"]

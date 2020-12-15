@@ -1,0 +1,21 @@
+---
+name: macmini-r8
+groups:
+  - name: macmini-r8-mdc1
+    targets:
+      - macmini-r8-129.test.releng.mdc1.mozilla.com
+      - macmini-r8-130.test.releng.mdc1.mozilla.com
+      - macmini-r8-131.test.releng.mdc1.mozilla.com
+      - macmini-r8-132.test.releng.mdc1.mozilla.com
+      - macmini-r8-133.test.releng.mdc1.mozilla.com
+      - macmini-r8-134.test.releng.mdc1.mozilla.com
+      - macmini-r8-135.test.releng.mdc1.mozilla.com
+      - macmini-r8-136.test.releng.mdc1.mozilla.com
+      - macmini-r8-137.test.releng.mdc1.mozilla.com
+      - macmini-r8-138.test.releng.mdc1.mozilla.com
+      - macmini-r8-139.test.releng.mdc1.mozilla.com
+      - macmini-r8-140.test.releng.mdc1.mozilla.com
+      - macmini-r8-141.test.releng.mdc1.mozilla.com
+      - macmini-r8-142.test.releng.mdc1.mozilla.com
+      - macmini-r8-143.test.releng.mdc1.mozilla.com
+      - macmini-r8-144.test.releng.mdc1.mozilla.com
