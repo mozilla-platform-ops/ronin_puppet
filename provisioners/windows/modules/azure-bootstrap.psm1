@@ -81,7 +81,6 @@ function Install-AzPrerequ {
     [string] $rdagent = "rdagent",
     [string] $azure_guest_agent = "WindowsAzureGuestAgent",
     [string] $azure_telemetry = "WindowsAzureTelemetryService"
-    #[string] $tooltool_tok =  (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\tooltool").token
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -94,28 +93,12 @@ function Install-AzPrerequ {
     Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
     Set-location -path $local_dir
     remove-item $work_dir   -Recurse  -force
-    # Get-AppxPackage *windowsstore* | Remove-AppxPackage
 
     Start-Process $local_dir\$git /verysilent -wait
     Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
     Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
     Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
 
-    # net stop $rdagent
-    #net stop $azure_guest_agent
-    #net stop $azure_telemetry
-
-    # sc delete $rdagent3
-    #sc config "$azure_guest_agent" start= disabled
-    #sc config "$azure_telemetry" start= disabled
-
-    #sc delete $azure_guest_agent
-    #sc delete $azure_telemetry
-
-    # May not be needed. If not this can be removed in the future
-    #Invoke-WebRequest -Uri  $ext_src/$vault_file  -UseBasicParsing -OutFile $local_dir\$vault_file
-    #New-Item -ItemType Directory -Force -Path $local_dir\secrets
-    #(Get-Content -path $local_dir\$vault_file) -replace 'tooltool_token_string',"$tooltool_tok" | Set-Content -path $local_dir\secrets\vault.yaml | out-null
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -207,13 +190,13 @@ function Bootstrap-AzPuppet {
     if ($run_to_success -eq 'true') {
       if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
         if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
-          Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          Write-Log -message  ('{0} :: Puppet apply failed 1st run.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           #shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
           #return
           #exit 2
           Move-StrapPuppetLogs
-          # exit 0
+          exit 0
           # exit 1
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
@@ -230,7 +213,7 @@ function Bootstrap-AzPuppet {
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
-        #Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 		#return
         Move-StrapPuppetLogs
         exit 0
