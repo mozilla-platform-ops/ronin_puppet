@@ -76,16 +76,16 @@ class win_disable_services::disable_windows_defender {
         # SecurityHealthService and sense actively watch the registry values of the other services,
         # and their start registry value needs to be changed and then the node needs rebooted
         # Also note this will fail on Windows 7
-        reg_acl { $acl_reg_values:
-            owner       => $facts['custom_win_admin_sid'],
-            permissions =>
-                [
-                    {'RegistryRights' => 'FullControl', 'IdentityReference' => 'BUILTIN\Administrators' },
-                    {'RegistryRights' => 'FullControl', 'IdentityReference' => $facts['custom_win_admin_sid']},
-                    {'InheritanceFlags' => 'ContainerInherit'},
-                    {'AccessControlType' => 'Allow'},
-                ]
-        }
+        #reg_acl { $acl_reg_values:
+            #owner       => $facts['custom_win_admin_sid'],
+            #permissions =>
+                #[
+                    #{'RegistryRights' => 'FullControl', 'IdentityReference' => 'BUILTIN\Administrators' },
+                    #{'RegistryRights' => 'FullControl', 'IdentityReference' => $facts['custom_win_admin_sid']},
+                    #{'InheritanceFlags' => 'ContainerInherit'},
+                    #{'AccessControlType' => 'Allow'},
+                #]
+        #}
         registry_value { $diabled_start_value:
             ensure => present,
             type   => dword,
