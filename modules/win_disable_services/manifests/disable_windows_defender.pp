@@ -82,6 +82,8 @@ class win_disable_services::disable_windows_defender {
                 [
                     {'RegistryRights' => 'FullControl', 'IdentityReference' => 'BUILTIN\Administrators' },
                     {'RegistryRights' => 'FullControl', 'IdentityReference' => $facts['custom_win_admin_sid']},
+                    {'InheritanceFlags' => 'ContainerInherit'},
+                    {'AccessControlType' => 'Allow'},
                 ]
         }
         registry_value { $diabled_start_value:
