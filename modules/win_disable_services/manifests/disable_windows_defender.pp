@@ -86,6 +86,8 @@ class win_disable_services::disable_windows_defender {
                     #{'AccessControlType' => 'Allow'},
                 #]
         #}
+        win_shared::take_own_reg_key { $diabled_start_value:
+        }
         registry_value { $diabled_start_value:
             ensure => present,
             type   => dword,
