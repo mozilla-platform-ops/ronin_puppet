@@ -86,28 +86,28 @@ class win_disable_services::disable_windows_defender {
                     #{'AccessControlType' => 'Allow'},
                 #]
         #}
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'windefend_service':
             regkey => "${services_key}\\WinDefend\\start",
         }
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'wscsvc_service':
             regkey => "${services_key}\\wscsvc",
         }
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'securityhealthservice_service':
             regkey => "${services_key}\\SecurityHealthService",
         }
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'sense_service':
             regkey => "${services_key}\\Sense",
         }
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'wdboot_service':
             regkey => "${services_key}\\WdBoot",
         }
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'wdfilter_service':
             regkey => "${services_key}\\WdFilter",
         }
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'wdnisdrv_service':
             regkey => "${services_key}\\WdNisDrv",
         }
-        class { 'win_shared::take_own_reg_key':
+        win_shared::take_own_reg_key { 'wdnissvc_service':
             regkey => "${services_key}\\WdNisSvc",
         }
         registry_value { $diabled_start_value:
