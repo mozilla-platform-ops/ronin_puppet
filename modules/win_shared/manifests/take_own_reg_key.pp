@@ -6,7 +6,7 @@ define win_shared::take_own_reg_key (
     String $regkey
 ){
 
-    $regkey = $regkey
+    $regvalue = $regkey
 
     exec { "take_${regkey}":
         command  => epp('win_shared/take_own_reg_key.ps1.epp'),
