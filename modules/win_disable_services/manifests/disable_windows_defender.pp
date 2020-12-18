@@ -89,8 +89,29 @@ class win_disable_services::disable_windows_defender {
         class { 'win_shared::take_own_reg_key':
             regkey => "${services_key}\\WinDefend\\start",
         }
-        #registry_value { $diabled_start_value:
-        registry_value { "${services_key}\\WinDefend\\start":
+        class { 'win_shared::take_own_reg_key':
+            regkey => "${services_key}\\wscsvc",
+        }
+        class { 'win_shared::take_own_reg_key':
+            regkey => "${services_key}\\SecurityHealthService",
+        }
+        class { 'win_shared::take_own_reg_key':
+            regkey => "${services_key}\\Sense",
+        }
+        class { 'win_shared::take_own_reg_key':
+            regkey => "${services_key}\\WdBoot",
+        }
+        class { 'win_shared::take_own_reg_key':
+            regkey => "${services_key}\\WdFilter",
+        }
+        class { 'win_shared::take_own_reg_key':
+            regkey => "${services_key}\\WdNisDrv",
+        }
+        class { 'win_shared::take_own_reg_key':
+            regkey => "${services_key}\\WdNisSvc",
+        }
+        registry_value { $diabled_start_value:
+        #registry_value { "${services_key}\\WinDefend\\start":
             ensure => present,
             type   => dword,
             data   => '4',
