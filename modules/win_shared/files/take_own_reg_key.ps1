@@ -247,4 +247,4 @@ function ownRegistryKeys {
 }
 
 requestPrivileges
-ownRegistryKey -keyName "$env:regkey"
+ownRegistryKey -keyName $env:regkey
