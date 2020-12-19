@@ -7,7 +7,8 @@ define win_shared::take_own_reg_key (
 ){
 
     exec { "take_${regkey}":
-        command  => epp('win_shared/take_own_reg_key.ps1.epp'),
-        provider => powershell,
+        command     => file('win_shared/take_own_reg_key.ps1'),
+        environment => "regkey=${regkey}",
+        provider    => powershell,
     }
 }
