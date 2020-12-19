@@ -247,4 +247,4 @@ function ownRegistryKeys {
 }
 
 requestPrivileges
-ownRegistryKey -keyName "<%= $win_shared::take_own_reg_key::regkey %>"
+ownRegistryKey -keyName "<%= $win_shared::take_own_reg_key::key_name %>"
