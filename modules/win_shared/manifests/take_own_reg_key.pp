@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_shared::take_own_reg_key (
-    $keyname=$regkey,
+    $keyname=$reg_key,
     $rname=$title
 ){
 
