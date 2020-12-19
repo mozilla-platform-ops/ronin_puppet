@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_shared::take_own_reg_key (
-    String $keyname=$regkey,
-    String $rname=$title
+    $keyname=$regkey,
+    $rname=$title
 ){
 
     #exec { "take_${regkey}":

@@ -87,7 +87,7 @@ class win_disable_services::disable_windows_defender {
                 #]
         #}
         win_shared::take_own_reg_key { 'windefend_service':
-            regkey => "${services_key}\\WinDefend\\start",
+            regkey => "${services_key}\\WinDefend",
         }
         win_shared::take_own_reg_key { 'wscsvc_service':
             regkey => "${services_key}\\wscsvc",
