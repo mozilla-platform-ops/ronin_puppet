@@ -6,11 +6,11 @@ define win_shared::take_own_reg_key (
     String $regkey
 ){
 
-    exec { "take_${regkey}":
-        command  => epp('win_shared/take_own_reg_key.ps1.epp'),
-        provider => powershell,
-    }
-    file { "${facts['custom_win_roninprogramdata']}\\take_${regkey}":
+    #exec { "take_${regkey}":
+        #command  => epp('win_shared/take_own_reg_key.ps1.epp'),
+        #provider => powershell,
+    #}
+    file { "${facts['custom_win_roninprogramdata']}\\take_${regkey}.ps1":
         content => epp('win_shared/take_own_reg_key.ps1.epp'),
     }
 }
