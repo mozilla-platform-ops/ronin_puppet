@@ -3,14 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_shared::take_own_reg_key (
-    String $regkey
+    String $regkey,
+    String $rname=$title
 ){
 
     #exec { "take_${regkey}":
         #command  => epp('win_shared/take_own_reg_key.ps1.epp'),
         #provider => powershell,
     #}
-    file { "${facts['custom_win_roninprogramdata']}\\take_${regkey}.ps1":
+    file { "${facts['custom_win_roninprogramdata']}\\take_${$rname}.ps1":
         content => epp('win_shared/take_own_reg_key.ps1.epp'),
     }
 }
