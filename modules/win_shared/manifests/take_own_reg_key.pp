@@ -9,13 +9,11 @@ define win_shared::take_own_reg_key (
 
     $key_name = $reg_key
 
+    file { "${facts['custom_win_roninprogramdata']}\\take_${$rname}.ps1":
+        content => template('win_shared/take_own_reg_key.ps1.erb'),
+    }
     exec { "take_${rname}":
-        #command  => epp('win_shared/take_own_reg_key.ps1.epp'),
-        command  => template('win_shared/take_own_reg_key.ps1.erb'),
+        command  => "${facts['custom_win_roninprogramdata']}\\take_${$rname}.ps1",
         provider => powershell,
     }
-    #file { "${facts['custom_win_roninprogramdata']}\\take_${$rname}.ps1":
-        #content => template('win_shared/take_own_reg_key.ps1.erb'),
-        #content => epp('win_shared/take_own_reg_key.ps1.epp'),
-    #}
 }
