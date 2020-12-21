@@ -3,9 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_shared::take_own_reg_key (
-    $keyname=$reg_key,
+    $reg_key,
     $rname=$title
 ){
+
+    $key_name = $reg_key
 
     #exec { "take_${regkey}":
         #command  => epp('win_shared/take_own_reg_key.ps1.epp'),
