@@ -5,6 +5,7 @@
 class win_disable_services::disable_windows_defender {
 
     $script_dir = "${facts['custom_win_roninprogramdata']}\\disable_win_defend"
+    $main_bat = "${script_dir}\\DisableWindowsDefender.bat"
 
     file { $script_dir:
         ensure => directory,
@@ -17,7 +18,7 @@ class win_disable_services::disable_windows_defender {
         ensure  => present,
         content => file('win_disable_services/windows_defender/OwnRegistryKeys.ps1'),
     }
-    file { "${script_dir}\\DisableWindowsDefender.bat":
+    file { $main_bat:
         ensure  => present,
         content => file('win_disable_services/windows_defender/DisableWindowsDefender.bat'),
     }
@@ -35,7 +36,7 @@ class win_disable_services::disable_windows_defender {
     }
     scheduled_task { 'disable_windows_defender':
         ensure      => 'present',
-        command     => "${script_dir}\\OwnRegistryKeys.bat",
+        command     => $main_bat,
         working_dir => $script_dir,
         enabled     => true,
         trigger     => [{
@@ -46,9 +47,9 @@ class win_disable_services::disable_windows_defender {
         user        => 'system',
     }
     exec {'disable_windows_defender_1st_run':
-        command     => "${facts['custom_win_system32']}\\cmd.exe /c ${script_dir}\\OwnRegistryKeys.bat ",
+        command     => "${facts['custom_win_system32']}\\cmd.exe /c ${$main_bat}",
         cwd         => $script_dir,
         refreshonly => true,
-        subscribe   => File["${script_dir}\\OwnRegistryKeys.bat"],
+        subscribe   => File[$main_bat],
     }
 }
