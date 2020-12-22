@@ -145,7 +145,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker (
             contain packages::virtualenv
 
             contain packages::python2_zstandard
+            contain packages::python2_psutil
+
             contain packages::python3_zstandard
+            contain packages::python3_psutil
 
             include mercurial::ext::robustcheckout
         }

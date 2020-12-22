@@ -31,6 +31,44 @@ class puppet::atboot (
                     content => template('puppet/puppet-darwin-run-puppet.sh.erb');
             }
         }
+        'Ubuntu': {
+            case $::operatingsystemrelease {
+                '18.04': {
+                    include linux_packages::puppet
+
+                    # On Ubuntu 18.04 puppet runs by systemd and on successful result
+                    # notifies dependent services
+                    file {
+                        '/lib/systemd/system/puppet.service':
+                            owner   => 'root',
+                            group   => 'root',
+                            source  => 'puppet:///modules/puppet/puppet.service',
+                            notify  => Exec['reload systemd'],
+                            require => Class['linux_packages::puppet'];
+                        '/usr/local/bin/run-puppet.sh':
+                            owner   => 'root',
+                            group   => 'root',
+                            mode    => '0755',
+                            content => template('puppet/puppet-ubuntu-run-puppet.sh.erb');
+                    }
+                    # reload systemd daemon
+                    exec {
+                        'reload systemd':
+                            command => '/bin/systemctl daemon-reload';
+                    }
+                    # enable the service but not start it
+                    service {
+                        'puppet':
+                            enable   => true,
+                            provider => 'systemd',
+                            require  => File['/lib/systemd/system/puppet.service'];
+                    }
+                }
+                default: {
+                    fail("puppet::atboot support missing for ${::operatingsystemrelease}")
+                }
+            }
+        }
         default: {
             fail("${module_name} does not support ${::operatingsystem}")
         }

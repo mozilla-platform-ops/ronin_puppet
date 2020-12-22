@@ -2,16 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# This installs the system git, which is basically whatever version that
-# OS provides.
-
-class linux_packages::system_git {
-
+class linux_packages::git {
   case $::operatingsystem {
     'Ubuntu': {
       package {
-        'git':
-          ensure => latest;
+          'git':
+              ensure => present;
       }
     }
     default: {
