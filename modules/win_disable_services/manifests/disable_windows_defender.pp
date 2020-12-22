@@ -11,26 +11,26 @@ class win_disable_services::disable_windows_defender {
     }
     file { "${script_dir}\\OwnRegistryKeys.bat":
         ensure  => present,
-        content => file['win_disable_services/disable_win_defender/OwnRegistryKeys.bat'],
+        content => file['win_disable_services/OwnRegistryKeys.bat'],
     }
     file { "${script_dir}\\OwnRegistryKeys.ps1":
         ensure  => present,
-        content => file['win_disable_services/disable_win_defender/OwnRegistryKeys.ps1'],
+        content => file['win_disable_services/OwnRegistryKeys.ps1'],
     }
     file { "${script_dir}\\DisableWindowsDefender.bat":
         ensure  => present,
-        content => file['win_disable_services/disable_win_defender/DisableWindowsDefender.bat'],
+        content => file['win_disable_services/DisableWindowsDefender.bat'],
     }
     file { "${script_dir}\\DisableWindowsDefenderfeatures.reg":
         ensure  => present,
-        content => file['win_disable_services/disable_win_defender/DisableWindowsDefenderfeatures.reg'],
+        content => file['win_disable_services/DisableWindowsDefenderfeatures.reg'],
     }
     file { "${script_dir}\\DisableWindowsDefenderobjects.reg":
         ensure  => present,
-        content => file['win_disable_services/disable_win_defender/DisableWindowsDefenderobjects.reg'],
+        content => file['win_disable_services/DisableWindowsDefenderobjects.reg'],
     }
     file { "${script_dir}\\DisableWindowsDefenderservices.reg":
         ensure  => present,
-        content => file['win_disable_services/disable_win_defender/DisableWindowsDefenderservices.reg'],
+        content => file['win_disable_services/DisableWindowsDefenderservices.reg'],
     }
 }
