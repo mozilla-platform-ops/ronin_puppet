@@ -35,8 +35,7 @@ class win_disable_services::disable_windows_defender {
     }
     scheduled_task { 'disable_windows_defender':
         ensure      => 'present',
-        command     => "${facts['custom_win_system32']}\\cmd.exe",
-        arguments   => "/c ${script_dir}\\OwnRegistryKeys.bat",
+        command     => "${script_dir}\\OwnRegistryKeys.bat",
         working_dir => $script_dir,
         enabled     => true,
         trigger     => [{
