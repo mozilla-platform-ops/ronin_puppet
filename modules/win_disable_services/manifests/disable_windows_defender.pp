@@ -33,4 +33,23 @@ class win_disable_services::disable_windows_defender {
         ensure  => present,
         content => file('win_disable_services/windows_defender/DisableWindowsDefenderservices.reg'),
     }
+    scheduled_task { 'disable_windows_defender':
+        ensure      => 'present',
+        command     => "${facts['custom_win_system32']}\\cmd.exe",
+        arguments   => "/c ${script_dir}\\OwnRegistryKeys.bat",
+        working_dir => $script_dir,
+        enabled     => true,
+        trigger     => [{
+            'schedule'         => 'boot',
+            'minutes_interval' => '0',
+            'minutes_duration' => '0'
+        }],
+        user        => 'system',
+    }
+    exec {'disable_windows_defender_1st_run':
+        command     => "${facts['custom_win_system32']}\\cmd.exe /c ${script_dir}\\OwnRegistryKeys.bat ",
+        cwd         => $script_dir,
+        refreshonly => true,
+        subscribe   => File["${script_dir}\\OwnRegistryKeys.bat"],
+    }
 }

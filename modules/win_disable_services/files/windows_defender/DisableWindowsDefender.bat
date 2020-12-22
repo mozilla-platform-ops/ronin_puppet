@@ -29,7 +29,7 @@ goto :eof
 
         rem Disable Windows Defender objects.
         echo Disabling Windows Defender objects...
-        call :importRegistry "Disable Windows Defender objects.reg"
+        call :importRegistry "DisableWindowsDefenderobjects.reg"
 
         rem Require restart to unload Windows Defender drivers and objects.
         echo.
@@ -41,10 +41,10 @@ goto :eof
         rem Performable operations while Windows Defender is not running.
         rem Disable Windows Defender features.
         echo Disabling Windows Defender features...
-        call :importRegistry "Disable Windows Defender features.reg"
+        call :importRegistry "DisableWindowsDefenderfeatures.reg"
         rem Disable Windows Defender services.
         echo Disabling Windows Defender services...
-        call :importRegistry "Disable Windows Defender services.reg"
+        call :importRegistry "DisableWindowsDefenderservices.reg"
 
         rem Disable Windows Defender files.
         echo Disabling Windows Defender files...
