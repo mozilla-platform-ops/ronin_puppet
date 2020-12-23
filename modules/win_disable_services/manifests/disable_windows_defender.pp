@@ -4,52 +4,60 @@
 
 class win_disable_services::disable_windows_defender {
 
-    $script_dir = "${facts['custom_win_roninprogramdata']}\\disable_win_defend"
-    $main_bat = "${script_dir}\\DisableWindowsDefender.bat"
+    if $::operatingsystem == 'Windows' {
 
-    file { $script_dir:
-        ensure => directory,
-    }
-    file { "${script_dir}\\OwnRegistryKeys.bat":
-        ensure  => present,
-        content => file('win_disable_services/windows_defender/OwnRegistryKeys.bat'),
-    }
-    file { "${script_dir}\\OwnRegistryKeys.ps1":
-        ensure  => present,
-        content => file('win_disable_services/windows_defender/OwnRegistryKeys.ps1'),
-    }
-    file { $main_bat:
-        ensure  => present,
-        content => file('win_disable_services/windows_defender/DisableWindowsDefender.bat'),
-    }
-    file { "${script_dir}\\DisableWindowsDefenderfeatures.reg":
-        ensure  => present,
-        content => file('win_disable_services/windows_defender/DisableWindowsDefenderfeatures.reg'),
-    }
-    file { "${script_dir}\\DisableWindowsDefenderobjects.reg":
-        ensure  => present,
-        content => file('win_disable_services/windows_defender/DisableWindowsDefenderobjects.reg'),
-    }
-    file { "${script_dir}\\DisableWindowsDefenderservices.reg":
-        ensure  => present,
-        content => file('win_disable_services/windows_defender/DisableWindowsDefenderservices.reg'),
-    }
-    scheduled_task { 'disable_windows_defender':
-        ensure      => 'present',
-        command     => $main_bat,
-        working_dir => $script_dir,
-        enabled     => true,
-        trigger     => [{
-            'schedule'         => 'boot',
-            'minutes_interval' => '0',
-            'minutes_duration' => '0'
-        }],
-        user        => 'system',
-    }
-    exec {'disable_windows_defender_1st_run':
-        command     => "${facts['custom_win_system32']}\\cmd.exe /c ${$main_bat}",
-        cwd         => $script_dir,
-        refreshonly => true,
-        subscribe   => File[$main_bat],
+        $win_defend_key       = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender"
+        $services_key         = "HKLM\\SYSTEM\\CurrentControlSet\\Services"
+        $acl_services_key     = "hklm:SYSTEM\\CurrentControlSet\\Services"
+        $diabled_start_value  = [
+                                "${services_key}\\wscsvc\\start",
+                                "${services_key}\\SecurityHealthService\\start",
+                                "${services_key}\\Sense\\start",
+                                "${services_key}\\WdBoot\\start",
+                                "${services_key}\\WdFilter\\start",
+                                "${services_key}\\WdNisDrv\\start",
+                                "${services_key}\\WdNisSvc\\start",
+                                "${services_key}\\WinDefend\\start"
+                                ]
+        $acl_reg_values       = [
+                                "${acl_services_key}\\wscsvc\\start",
+                                "${acl_services_key}\\SecurityHealthService\\start",
+                                "${acl_services_key}\\Sense\\start",
+                                "${acl_services_key}\\WdBoot\\start",
+                                "${acl_services_key}\\WdFilter\\start",
+                                "${acl_services_key}\\WdNisDrv\\start",
+                                "${acl_services_key}\\WdNisSvc\\start",
+                                "${acl_services_key}\\WinDefend\\start"
+                                ]
+
+        # This will prevent the service from starting on next boot.
+        # see below bug
+        # Using puppetlabs-registry
+        registry::value { 'DisableConfig' :
+            key  => $win_defend_key,
+            type => dword,
+            data => '1',
+        }
+        registry::value { 'DisableAntiSpyware' :
+            key  => $win_defend_key,
+            type => dword,
+            data => '1',
+        }
+
+        # Windows defender supporting services
+        # This will fail on first run and will need a reboot
+        # SecurityHealthService and sense actively watch the registry values of the other services,
+        # and there start registry value needs to be changed and then the node needs rebooted
+        # Also note this will fail on Windows 7
+        registry_value { $diabled_start_value:
+            ensure => present,
+            type   => dword,
+            data   => '4',
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }
+# Bug List
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1512435
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1509722
