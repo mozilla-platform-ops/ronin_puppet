@@ -24,6 +24,10 @@ class vault_agent (
             notify  => Service['vault-agent'];
     }
 
+    shellprofile::file { 'vault_agent':
+            ensure  => 'present',
+            content => template("${module_name}/vault_env.sh.erb");
+    }
 
     case $facts['os']['name'] {
         'Darwin': {
