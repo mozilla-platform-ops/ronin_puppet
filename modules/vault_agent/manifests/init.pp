@@ -12,13 +12,16 @@ class vault_agent (
         # Make sure these secret files have the correct permissions and ownership
         [ '/etc/vault_approle_id', '/etc/vault_approle_secret' ]:
             ensure => present,
-            mode   => '0600';
+            mode   => '0600',
+            notify => Service['vault-agent'];
+
 
         # Create vault agent config
         '/etc/vault-agent-config.hcl':
             ensure  => file,
             mode    => '0600',
-            content => template('provision_ronin/vault-agent-config.hcl.epp');
+            content => template('vault_agent/vault-agent-config.hcl.erb'),
+            notify  => Service['vault-agent'];
     }
 
 
