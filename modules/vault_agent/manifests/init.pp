@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class vault_agent (
-    String $vault_addr_url,
+    String $vault_addr_url = 'https://vault.relops.mozops.net:8200',
 ) {
 
     include packages::vault
