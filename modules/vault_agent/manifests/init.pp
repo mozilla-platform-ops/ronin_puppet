@@ -6,7 +6,22 @@ class vault_agent (
     String $vault_addr_url = 'https://vault.relops.mozops.net:8200',
 ) {
 
+    # Install the vault binary
     include packages::vault
+
+    # These gems are install in puppet's Ruby lib
+    # and are required by hiera-vault
+    package { 'vault-puppetpath-gem':
+        ensure   => 'present',
+        name     => 'vault',
+        provider => 'puppet_gem',
+    }
+
+    package { 'debouncer-puppetpath-gem':
+        ensure   => 'present',
+        name     => 'debouncer',
+        provider => 'puppet_gem',
+    }
 
     file {
         # Make sure these secret files have the correct permissions and ownership
@@ -24,6 +39,7 @@ class vault_agent (
             notify  => Service['vault-agent'];
     }
 
+    # Add VAULT_ADDR env system-wide which points at the local vault agent
     shellprofile::file { 'vault_agent':
             ensure  => 'present',
             content => template("${module_name}/vault_env.sh.erb");
