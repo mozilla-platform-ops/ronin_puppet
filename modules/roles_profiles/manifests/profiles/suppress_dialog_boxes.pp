@@ -24,9 +24,6 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         'Windows': {
 
             include win_os_settings::disbale_notifications
-            if $facts['custom_win_release_id'] == '1903' {
-                include win_os_settings::allow_nonstore_apps
-            }
 
         # Bug list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
