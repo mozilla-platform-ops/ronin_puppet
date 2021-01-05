@@ -1,6 +1,7 @@
 # Ronin Puppet: the masterless puppet collection
 
-[![Build Status](https://travis-ci.com/mozilla-platform-ops/ronin_puppet.svg?branch=master)](https://travis-ci.com/mozilla-platform-ops/ronin_puppet)
+[![TravisCI Status](https://travis-ci.com/mozilla-platform-ops/ronin_puppet.svg?branch=master)](https://travis-ci.com/mozilla-platform-ops/ronin_puppet)
+[![CircleCI Status](https://circleci.com/gh/mozilla-platform-ops/ronin_puppet.svg?style=svg)](https://app.circleci.com/pipelines/github/mozilla-platform-ops/ronin_puppet)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 ## structure
@@ -22,7 +23,9 @@
 - #2 Profiles can't be called/included inside (component) modules.
 - #3 Hiera lookups should only be done within profiles and then passed as args to the class.
 
-For more information see: https://puppet.com/docs/pe/2018.1/the_roles_and_profiles_method.html
+More information:
+- https://puppet.com/docs/pe/2018.1/the_roles_and_profiles_method.html
+- https://puppet.com/docs/pe/2017.2/r_n_p_intro.html
 
 ## testing
 

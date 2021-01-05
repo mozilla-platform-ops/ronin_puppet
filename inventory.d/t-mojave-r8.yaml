@@ -3,13 +3,13 @@ name: t-mojave-r8
 groups:
   - name: t-mojave-r8-mdc1
     targets:
-      - t-mojave-r8-031.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-032.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-033.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-034.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-035.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-036.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-037.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-038.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-039.test.releng.mdc1.mozilla.com
-      - t-mojave-r8-040.test.releng.mdc1.mozilla.com
+      - macmini-r8-31.test.releng.mdc1.mozilla.com
+      - macmini-r8-32.test.releng.mdc1.mozilla.com
+      - macmini-r8-33.test.releng.mdc1.mozilla.com
+      - macmini-r8-34.test.releng.mdc1.mozilla.com
+      - macmini-r8-35.test.releng.mdc1.mozilla.com
+      - macmini-r8-36.test.releng.mdc1.mozilla.com
+      - macmini-r8-37.test.releng.mdc1.mozilla.com
+      - macmini-r8-38.test.releng.mdc1.mozilla.com
+      - macmini-r8-39.test.releng.mdc1.mozilla.com
+      - macmini-r8-40.test.releng.mdc1.mozilla.com

@@ -1,0 +1,10 @@
+[Unit]
+Description=masterless puppet run
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/run-puppet.sh
+
+[Install]
+WantedBy=default.target

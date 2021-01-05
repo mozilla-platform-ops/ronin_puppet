@@ -6,12 +6,18 @@ class roles_profiles::profiles::linux_base {
 
     case $::operatingsystem {
         'Ubuntu': {
+            include ::roles_profiles::profiles::locale
             include ::roles_profiles::profiles::timezone
             include ::roles_profiles::profiles::ntp
             include ::roles_profiles::profiles::motd
             include ::roles_profiles::profiles::users
             include ::roles_profiles::profiles::relops_users
             include ::roles_profiles::profiles::sudo
+            include ::roles_profiles::profiles::securitize
+
+            include linux_mercurial
+            include disable_services
+            include grub
 
             # TODO:
             # - add auditd
