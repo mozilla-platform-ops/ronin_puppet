@@ -185,7 +185,7 @@ function Bootstrap-AzPuppet {
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Running Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
-    start-sleep -seconds 3000
+    start-sleep -seconds 6000
     [int]$puppet_exit = $LastExitCode
 
     if ($run_to_success -eq 'true') {
@@ -215,7 +215,7 @@ function Bootstrap-AzPuppet {
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
         Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        start-sleep
+        start-sleep -s 3000
 		#return
         Move-StrapPuppetLogs
         exit 0
