@@ -87,6 +87,9 @@ function Install-AzPrerequ {
   }
   process {
 
+    # testing only
+    Invoke-WebRequest -Uri  $ext_src/391.81_grid_win10_server2016_64bit_international.zip  -UseBasicParsing -OutFile $work_dir\391.81_grid_win10_server2016_64bit_international.zip
+
     New-Item -path $work_dir -ItemType "directory"
     Set-location -path $work_dir
     Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
