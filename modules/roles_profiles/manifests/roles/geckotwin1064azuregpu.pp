@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-class roles_profiles::roles::geckotwin1064azure {
+class roles_profiles::roles::geckotwin1064azuregpu {
 
     # System
     include roles_profiles::profiles::disable_services
@@ -15,6 +15,7 @@ class roles_profiles::roles::geckotwin1064azure {
     include roles_profiles::profiles::scheduled_tasks
     include roles_profiles::profiles::azure_vm_agent
     include roles_profiles::profiles::virtual_drivers
+    include roles_profiles::profiles::gpu_drivers
 
     # Adminstration
     include roles_profiles::profiles::logging
