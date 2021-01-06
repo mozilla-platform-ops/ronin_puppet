@@ -4,21 +4,32 @@
 
 class win_packages::drivers::nvidia_grid (
     String $driver_name,
+    String $srcloc
 ) {
+
+    require win_packages::sevenzip
 
     $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
     $working_dir = "${facts['custom_win_systemdrive']}\\${driver_name}"
+    $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
+    $zip_name    = "${driver_name}.zip"
+    $pkgdir      = $facts['custom_win_temp_dir']
+    $src_file    = "\"${pkgdir}\\${zip_name}\""
 
-    win_packages::win_zip_pkg { $driver_name:
-        pkg         => "${driver_name}.zip",
-        creates     => $setup_exe,
-        destination => $working_dir,
+
+    file { $working_dir:
+        ensure => directory,
     }
-    exec { "${driver_name}_install":
-        # command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
-        command     => "${setup_exe} -s -noreboot",
-        cwd         => $working_dir,
-        subscribe   => File[$working_dir],
+    file { "${pkgdir}\\${zip_name}":
+        source => "${srcloc}/${zip_name}"
+    }
+    exec { 'grid_unzip':
+        command => "${seven_zip} x ${src_file} -o${working_dir} -y",
+        creates => $setup_exe,
+    }
+    exec { 'grid_install':
+        command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
+        subscribe   => Exec['grid_unzip'],
         refreshonly => true,
     }
 }
