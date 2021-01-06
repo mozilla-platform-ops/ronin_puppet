@@ -18,5 +18,6 @@ class win_packages::drivers::nvidia_grid (
         command     => "${setup_exe} -s -noreboot",
         subscribe   => File[$working_dir],
         refreshonly => true,
+        provider    => powershell,
     }
 }
