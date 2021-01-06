@@ -15,7 +15,9 @@ class win_packages::drivers::nvidia_grid (
         destination => $working_dir,
     }
     exec { "${driver_name}_install":
-        command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
+        # command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
+        command     => "${setup_exe} -s -noreboot",
+        cwd         => $working_dir,
         subscribe   => File[$working_dir],
         refreshonly => true,
     }
