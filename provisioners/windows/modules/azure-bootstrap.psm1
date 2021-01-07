@@ -219,7 +219,7 @@ function Bootstrap-AzPuppet {
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
         Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        start-sleep -s 3000
+        # start-sleep -s 3000
 		#return
         Move-StrapPuppetLogs
         exit 0
