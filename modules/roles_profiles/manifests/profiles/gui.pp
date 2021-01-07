@@ -14,6 +14,14 @@ class roles_profiles::profiles::gui {
         }
         'Ubuntu':{
             include linux_packages::ubuntu_desktop
+            class {
+                'linux_gui':
+                    # TODO: use hiera data
+                    builder_user  => 'cltbld',
+                    builder_group => 'cltbld',
+                    builder_home  => '/home/cltbld',
+                    require       => Class['linux_packages::ubuntu_desktop'];
+            }
         }
         default: {
             fail("${::operatingsystem} not supported")

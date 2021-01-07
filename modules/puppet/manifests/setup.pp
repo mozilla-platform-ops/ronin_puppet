@@ -5,6 +5,9 @@
 class puppet::setup {
 
     case $::operatingsystem {
+        'Ubuntu': {
+            # pass
+        }
         'Darwin': {
             file {
                 '/etc/puppet':
