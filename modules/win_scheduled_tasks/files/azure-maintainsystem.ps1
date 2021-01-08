@@ -212,15 +212,17 @@ function Puppet-Run {
     $env:USERNAME = "Administrator"
     $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
-    Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
-    R10k puppetfile install --moduledir=r10k_modules
+    Set-Location "$env:systemdrive\ronin"
+
+    # r10k not currently in use. leaving in place because it may change in the future
+    # Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
+    # R10k puppetfile install --moduledir=r10k_modules
     # Needs to be removed from path or a wrong puppet file will be used
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-puppetrun.log
     [int]$puppet_exit = $LastExitCode
-    start-sleep -s 6000
 
     if ($run_to_success -eq 'true') {
       if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
