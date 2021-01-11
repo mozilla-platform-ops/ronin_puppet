@@ -88,7 +88,7 @@ define signing_worker (
         group   =>  $group,
     }
 
-    exec { "widevine_check_${scriptworker_base}":
+    exec { "widevine_check ${scriptworker_base}":
         command => '/usr/bin/true',
         unless  => "test -d ${widevine_clone_dir}",
         path    => ['/bin', '/usr/bin'],
@@ -101,7 +101,7 @@ define signing_worker (
       force    => true,
     }
     # This has credentials in it. Clean up.
-    ->file { 'Remove widevine directory':
+    ->file { 'Remove widevine directory ${scriptworker_base}':
         ensure  => absent,
         path    => "${widevine_clone_dir}/.git",
         recurse => true,
