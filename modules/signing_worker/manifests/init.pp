@@ -101,6 +101,7 @@ define signing_worker (
       force    => true,
       user     => $user,
       group    => $group,
+      require  => File[$scriptworker_base],
     }
     # This has credentials in it. Clean up.
     ->file { "Remove widevine directory ${scriptworker_base}":
