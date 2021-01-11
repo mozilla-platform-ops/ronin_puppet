@@ -18,8 +18,8 @@ define signing_worker (
     Hash $poller_config,
     String $worker_id_suffix = '',
     String $group = 'staff',
-    String $ed_key_filename = undef,
-    Array $notarization_users = undef,
+    Variant[String, Undef] $ed_key_filename = undef,
+    Variant[Array, Undef] $notarization_users = undef,
 ) {
     $virtualenv_dir           = "${scriptworker_base}/virtualenv"
     $certs_dir                = "${scriptworker_base}/certs"
