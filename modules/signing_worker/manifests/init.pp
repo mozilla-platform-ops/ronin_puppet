@@ -164,7 +164,7 @@ define signing_worker (
     }
 
     if $poller_config {
-        signing_worker::notarization_user { "create_user_${poller_config['user']}":
+        signing_worker::notarization_user { "create_user_${poller_config['user']}_${scriptworker_base}":
             user => $poller_config['user'],
         }
         $poller_worker_id    = "poller-${facts['networking']['hostname']}"
