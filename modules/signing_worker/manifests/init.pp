@@ -88,7 +88,7 @@ define signing_worker (
         group   =>  $group,
     }
 
-    exec { 'widevine_check':
+    exec { "widevine_check_${scriptworker_base}":
         command => '/usr/bin/true',
         unless  => "test -d ${widevine_clone_dir}",
         path    => ['/bin', '/usr/bin'],
