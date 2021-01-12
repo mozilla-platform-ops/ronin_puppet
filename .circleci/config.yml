@@ -37,4 +37,5 @@ workflows:
       - kitchen_converge_and_verify:
           matrix:
             parameters:
-              kitchen_target: ["bitbar", "linux", "maas-region", "maas-rack"]
+              # "maas-region" and "maas-rack" removed as we're not using them currently
+              kitchen_target: ["bitbar", "linux"]
