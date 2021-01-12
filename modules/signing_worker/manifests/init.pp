@@ -121,6 +121,11 @@ define signing_worker (
         owner           => $user,
         group           => $group,
         timeout         => 0,
+        # This is not strictly necessary, but if Puppet ever runs
+        # from a cwd that the signing worker user can't access,
+        # we end up hitting this pip bug:
+        # https://github.com/pypa/pip/issues/9445
+        cwd             => $scriptworker_base
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
     }
     # XXX once we:
