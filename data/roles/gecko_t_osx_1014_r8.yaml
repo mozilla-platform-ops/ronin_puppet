@@ -1,0 +1,78 @@
+---
+gw:
+  worker_id: "%{facts.networking.hostname}"
+  worker_group: "%{facts.location}"
+  worker_type: gecko-t-osx-1014-r8
+  provisioner_id: releng-hardware
+  generic_worker_mode: single
+  generic_worker_version: v13.0.3
+  generic_worker_sha256: 6e5c1543fb3c333ca783d0a5c4e557b2b5438aada4bc23dc02402682ae4e245e
+  taskcluster_proxy_version: v5.1.0
+  taskcluster_proxy_sha256: 3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae
+  quarantine_worker_version: v1.0.0
+  quarantine_worker_sha256: 60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627
+  user: cltbld
+  user_homedir: '/Users/cltbld'
+
+# Common worker metadata conveniently aliased to generic worker data from above
+worker_metadata:
+  workerId: "%{lookup('gw.worker_id')}"
+  workerGroup: "%{lookup('gw.worker_group')}"
+  workerType: "%{lookup('gw.worker_type')}"
+  provisionerId: "%{lookup('gw.provisioner_id')}"
+
+packages_classes:
+  - nodejs
+  - python2
+  - python3
+  - wget
+  - google_chrome
+  - mercurial
+  - virtualenv
+  - python2_zstandard
+  - python3_zstandard
+  - zstandard
+  - java_developer_package_for_osx
+  - xcode_cmd_line_tools
+  - tooltool
+
+# Package class parameters
+packages::nodejs::version: 12.11.1
+packages::python2::version: 2.7.16
+packages::python3::version: 3.7.4
+packages::wget::version: 1.20.3_1
+packages::google_chrome::version: v80.0.3987.106
+packages::mercurial::version: '5.1'
+packages::virtualenv::version: 16.4.3
+packages::zstandard::version: 1.3.8
+packages::python2_zstandard::version: 0.11.1
+packages::python3_zstandard::version: 0.11.1
+
+# Talos class parameters
+talos::user: cltbld
+
+# Determines how puppet should be executed
+# ( atboot, cron, never )
+puppet_run_strategy: never
+
+# Firewall role to include
+#firewall_role: osx_taskcluster_worker
+
+# Override secrets with vault secrets
+telegraf:
+    user: "%{lookup('vault_secrets::telegraf.data.user')}"
+    password: "%{lookup('vault_secrets::telegraf.data.password')}"
+
+cltbld_user:
+    password: "%{lookup('vault_secrets::cltbld_user.data.password')}"
+    salt: "%{lookup('vault_secrets::cltbld_user.data.salt')}"
+    iterations: "%{lookup('vault_secrets::cltbld_user.data.iterations')}"
+    kcpassword: "%{lookup('vault_secrets::cltbld_user.data.kcpassword')}"
+
+generic_worker_secrets:
+    taskcluster_client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
+    taskcluster_access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
+    livelog_secret: "%{lookup('vault_secrets::generic_worker.data.livelog_secret')}"
+    quarantine_client_id: "%{lookup('vault_secrets::generic_worker.data.quarantine_client_id')}"
+    quarantine_access_token: "%{lookup('vault_secrets::generic_worker.data.quarantine_access_token')}"
+    bugzilla_api_key: "%{lookup('vault_secrets::generic_worker.data.bugzilla_api_key')}"
