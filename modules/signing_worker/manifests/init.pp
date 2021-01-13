@@ -18,8 +18,8 @@ define signing_worker (
     Hash $poller_config,
     String $worker_id_suffix = '',
     String $group = 'staff',
-    String $ed_key_filename = undef,
-    Array $notarization_users = undef,
+    Variant[String, Undef] $ed_key_filename = undef,
+    Variant[Array, Undef] $notarization_users = undef,
 ) {
     $virtualenv_dir           = "${scriptworker_base}/virtualenv"
     $certs_dir                = "${scriptworker_base}/certs"
@@ -88,20 +88,23 @@ define signing_worker (
         group   =>  $group,
     }
 
-    exec { 'widevine_check':
-        command => '/usr/bin/true',
+    # We only clone this once for three reasons:
+    # 1) It is almost never updated
+    # 2) We don't support general code deployments through puppet (yet)
+    # 3) The clone url contains a github token, which we don't want sitting around on disk
+    #
+    # In an ideal world we'd still use `vcsrepo` for this, but it breaks after we
+    # clean up the token, so we're stuck with this for now.
+    exec { "clone widevine ${scriptworker_base}":
+        command  => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine $widevine_clone_dir",
+        user     => $user,
+        group    => $group,
         unless  => "test -d ${widevine_clone_dir}",
         path    => ['/bin', '/usr/bin'],
-    }
-    ->vcsrepo { $widevine_clone_dir:
-      ensure   => present,
-      provider => git,
-      source   => "https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine",
-      # force, or the below .git nuke will break further puppet runs
-      force    => true,
+        require  => File[$scriptworker_base],
     }
     # This has credentials in it. Clean up.
-    ->file { 'Remove widevine directory':
+    ->file { "Remove widevine directory ${scriptworker_base}":
         ensure  => absent,
         path    => "${widevine_clone_dir}/.git",
         recurse => true,
@@ -118,6 +121,11 @@ define signing_worker (
         owner           => $user,
         group           => $group,
         timeout         => 0,
+        # This is not strictly necessary, but if Puppet ever runs
+        # from a cwd that the signing worker user can't access,
+        # we end up hitting this pip bug:
+        # https://github.com/pypa/pip/issues/9445
+        cwd             => $scriptworker_base,
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
     }
     # XXX once we:
@@ -163,7 +171,7 @@ define signing_worker (
         subscribe => File[$launchd_script],
     }
 
-    if $poller_config {
+    if !empty($poller_config) {
         signing_worker::notarization_user { "create_user_${poller_config['user']}":
             user => $poller_config['user'],
         }
