@@ -54,6 +54,12 @@ class vault_agent (
                     source => 'puppet:///modules/vault_agent/vault-agent.plist',
                     notify => Service['vault-agent'],
             }
+
+            # Rotate /var/log/vault-agent.log
+            macos_utils::logrotate { 'vault-agent':
+                path     => '/var/log/vault-agent.log',
+                pid_file => '/var/run/vault-agent.pid',
+            }
         }
         'Ubuntu': {
             # Setup systemd vault-agent service
@@ -67,6 +73,9 @@ class vault_agent (
                     ensure  => file,
                     content => 'export VAULT_ADDR=http://127.0.0.1:8200\n';
             }
+
+            # TODO: Log rotate vault agent for linux
+            # Probably using the logrotate module from the forge
         }
         default: { fail("${facts['os']['name']} is not supported") }
     }
