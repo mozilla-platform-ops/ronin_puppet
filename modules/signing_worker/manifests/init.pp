@@ -96,12 +96,12 @@ define signing_worker (
     # In an ideal world we'd still use `vcsrepo` for this, but it breaks after we
     # clean up the token, so we're stuck with this for now.
     exec { "clone widevine ${scriptworker_base}":
-        command  => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine $widevine_clone_dir",
-        user     => $user,
-        group    => $group,
+        command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
+        user    => $user,
+        group   => $group,
         unless  => "test -d ${widevine_clone_dir}",
         path    => ['/bin', '/usr/bin'],
-        require  => File[$scriptworker_base],
+        require => File[$scriptworker_base],
     }
     # This has credentials in it. Clean up.
     ->file { "Remove widevine directory ${scriptworker_base}":
