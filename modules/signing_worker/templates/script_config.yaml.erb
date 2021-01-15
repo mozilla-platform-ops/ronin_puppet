@@ -24,7 +24,11 @@ mac_config:
 <% end -%>
         sign_with_entitlements: <%= role_data['sign_with_entitlements'] %>
         verify_mac_signature: <%= role_data['verify_mac_signature'] %>
+<% if @cot_product == "firefox" -%>
         base_bundle_id: "<%= role_data['base_bundle_id'] %>"
+<% else -%>
+        base_bundle_id: "<%= role_data['tb_base_bundle_id'] %>"
+<% end -%>
         identity: "<%= role_data['identity'] %>"
         keychain_password: "<%= role_data['keychain_password'] %>"
         pkg_cert_id: "<%= role_data['pkg_cert_id'] %>"

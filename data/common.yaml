@@ -182,6 +182,7 @@ signingworker_roles:
             sign_with_entitlements: false
             verify_mac_signature: true
             base_bundle_id: 'org.mozilla.firefox-mac-dep'
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-dep'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
