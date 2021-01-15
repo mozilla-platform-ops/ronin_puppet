@@ -247,12 +247,6 @@ all_users:
     - ssh-rsa AAAA invalid@mozilla.com
   poller:
     - ssh-rsa AAAA invalid@mozilla.com
-  depbld1:
-    - ssh-rsa AAAA invalid@mozilla.com
-  depbld2:
-    - ssh-rsa AAAA invalid@mozilla.com
-  tbbld:
-    - ssh-rsa AAAA invalid@mozilla.com
 
 
 # Class parameter defaults: most data lookups should take place in profiles
