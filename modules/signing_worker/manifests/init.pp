@@ -16,6 +16,7 @@ define signing_worker (
     Hash $worker_config,
     Hash $role_config,
     Hash $poller_config,
+    String $worker_type_prefix = '',
     String $worker_id_suffix = '',
     String $group = 'staff',
     Variant[String, Undef] $ed_key_filename = undef,
@@ -30,6 +31,7 @@ define signing_worker (
 
     # Dep workers have a non-deterministic suffix
     $worker_id = "${facts['networking']['hostname']}${worker_id_suffix}"
+    $worker_type = "${worker_type_prefix}${worker_config['worker_type']}"
     case $::fqdn {
         /.*\.mdc1\.mozilla\.com/: {
             $worker_group = mdc1
@@ -82,6 +84,11 @@ define signing_worker (
     $widevine_clone_dir = "${scriptworker_base}/widevine"
     $scriptworker_version = $worker_config['scriptworker_version']
     $scriptworker_scripts_revision = $worker_config['scriptworker_scripts_revision']
+    $tc_scope_prefix = $cot_product ? {
+        'firefox' => $worker_config['taskcluster_scope_prefix'],
+        'thunderbird' => $worker_config['tb_taskcluster_scope_prefix'],
+    }
+
     file { $tmp_requirements:
         content => template('signing_worker/requirements.txt.erb'),
         owner   =>  $user,

@@ -50,6 +50,7 @@ scriptworker_users:
         - mac_sign
         - mac_sign_and_pkg
       dmg_prefix: "tb"
+      worker_type_prefix: "tb-"
       worker_id_suffix: "tb"
       cot_product: "thunderbird"
       widevine_filename: "widevine_dep.crt"
@@ -107,22 +108,16 @@ scriptworker_users:
 scriptworker_config:
     ff-prod:
         taskcluster_scope_prefix: 'project:releng:signing:'
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'signing-mac-v1'
         scriptworker_version: "35.2.0"
         scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
-    tb-prod:
-        taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
-        sign_chain_of_trust: true
-        verify_chain_of_trust: true
-        verify_cot_signature: true
-        worker_type: 'tb-signing-mac-v1'
-        scriptworker_version: "35.2.0"
-        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: false
         verify_chain_of_trust: true
         verify_cot_signature: false

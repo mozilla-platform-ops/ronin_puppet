@@ -1,6 +1,6 @@
 work_dir: "<%= @scriptworker_base %>/work"
 artifact_dir: "<%= @scriptworker_base %>/artifacts"
-taskcluster_scope_prefix: "<%= @worker_config['taskcluster_scope_prefix'] %>"
+taskcluster_scope_prefix: "<%= @tc_scope_prefix %>"
 verbose: true
 <% if @notary_users.empty? -%>
 local_notarization_accounts: []
