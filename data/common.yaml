@@ -31,6 +31,7 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_geckodriver
       dmg_prefix: "dep1"
       worker_id_suffix: "a"
       cot_product: "firefox"
@@ -40,6 +41,7 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_geckodriver
       dmg_prefix: "dep1"
       worker_id_suffix: "b"
       cot_product: "firefox"
@@ -49,6 +51,7 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_geckodriver
       dmg_prefix: "tb"
       worker_type_prefix: "tb-"
       worker_id_suffix: "tb"
@@ -176,7 +179,7 @@ signingworker_roles:
         dep:
             apple_asc_provider: 'MozillaCorporation'
             notarization_poll_timeout: 5
-            sign_with_entitlements: true
+            sign_with_entitlements: false
             verify_mac_signature: true
             base_bundle_id: 'org.mozilla.firefox-mac-dep'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
