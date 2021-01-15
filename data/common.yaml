@@ -123,7 +123,7 @@ scriptworker_config:
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
         scriptworker_version: "35.2.0"
-        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
+        scriptworker_scripts_revision: "d4bfcfbd02b88c9d9b8eda98e2d20224a3f63093"
 
 poller_config:
     ff-prod:
