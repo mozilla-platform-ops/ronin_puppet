@@ -20,10 +20,10 @@ class roles_profiles::profiles::gecko_t_osx_1015_generic_worker (
         'Darwin': {
 
             class { 'puppet::atboot':
-                telegraf_user     => lookup('telegraf.user'),
-                telegraf_password => lookup('telegraf.password'),
+                telegraf_user       => lookup('telegraf.user'),
+                telegraf_password   => lookup('telegraf.password'),
                 # Note the camelCase key names
-                meta_data         => $meta_data,
+                meta_data           => $meta_data,
                 puppet_env          => 'dev',
                 puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
                 puppet_branch       => 'bug1665379_mac-loan-glandium',

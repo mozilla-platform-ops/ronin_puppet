@@ -9,7 +9,6 @@ class generic_worker::multiuser (
     String $worker_type,
     String $user,
     #String $gw_dir   = '/etc/generic-worker',
-    String $data_dir = '/var/opt/generic-worker',
     Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
     String $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
@@ -17,6 +16,7 @@ class generic_worker::multiuser (
     Pattern[/^v\d+\.\d+\.\d+$/] $livelog_version,
     String $livelog_sha256,
     String $taskcluster_host = 'taskcluster',
+    String $data_dir = '/var/opt/generic-worker',
 ) {
 
     include httpd

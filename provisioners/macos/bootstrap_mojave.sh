@@ -129,7 +129,7 @@ function get_puppet_repo {
     # Github has rate limits on downloads.
     while true; do
         echo "Downloading puppet repo: ${PUPPET_REPO_BUNDLE}"
-        if HTTP_RES_CODE=$(curl -sL $PUPPET_REPO_BUNDLE -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ $HTTP_RES_CODE = "200" ]]; then
+        if HTTP_RES_CODE=$(curl -sL "$PUPPET_REPO_BUNDLE" -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ $HTTP_RES_CODE = "200" ]]; then
             break
         else
             echo "Failed to download puppet repo.  Sleep for 30 seconds before trying again"

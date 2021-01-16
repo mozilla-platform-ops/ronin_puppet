@@ -52,8 +52,8 @@ if [ $exitstatus -eq 69 ]; then
 elif [ $exitstatus -gt 69 -o $exitstatus -lt 69 ]; then
     if [ -f $last_failed_semaphore ]; then
         echo "Worker recovered from previous exit code 69."
-        cat $last_failed_semaphore 
-        rm -f $last_failed_semaphore 
+        cat $last_failed_semaphore
+        rm -f $last_failed_semaphore
     fi
 fi
 

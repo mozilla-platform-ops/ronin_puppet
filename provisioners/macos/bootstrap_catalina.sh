@@ -15,8 +15,8 @@ declare -i screenshotcounter=0
 screenshot_filename_base=/tmp/screenshot_bootstrap_$(date +"%Y-%m-%d-%H:%M:%S")
 function screenshot() {
   filename="${screenshot_filename_base}_${screenshotcounter}_$(date +"%H:%M:%S").jpg"
-  screencapture -x $filename
-  chmod ugo+r $filename
+  screencapture -x "$filename"
+  chmod ugo+r "$filename"
   screenshotcounter+=1
 }
 
@@ -32,7 +32,7 @@ function fail {
 
 # Check base system state
 host=$(scutil --get ComputerName)
-echo $host
+echo "$host"
 
 ioreg -l | grep IOPlatformSerialNumber
 
@@ -43,7 +43,7 @@ sw_vers
 /usr/sbin/nvram -p
 
 # Print config
-sudo systemsetup $(sudo systemsetup -help | grep -o '\-get[^ ]*')
+sudo systemsetup "$(sudo systemsetup -help | grep -o '\-get[^ ]*')"
 # Turn off power savings/etc
 sudo systemsetup \
     -setsleep Never \
@@ -73,10 +73,14 @@ fi
 # Ensure no fingerprints are stored for login
 fingerprints=$(declare -i count=0;\
   while read -r line; do count+=$line; done \
-  <<<$(bioutil -c | grep -o '[0-9]\+ fingerprint' | cut -d\  -f1); echo $count)
-[[ $fingerprints == 0 ]] \
-  && echo "No fingerprints." \
-  || fail "Fingerprints stored!"
+  <<<"$(bioutil -c | grep -o '[0-9]\+ fingerprint' | cut -d\  -f1)"; echo "$count")
+
+if [[ $fingerprints == 0 ]]
+then
+    echo "No fingerprints."
+else
+    fail "Fingerprints stored!"
+fi
 
 screenshot
 
@@ -92,22 +96,22 @@ function install() {
   dmg_url=$1
   md5=$2
   dmg="${dmg_url##*\/}"
-  checksum $dmg $md5 \
-    || curl -L -O $dmg_url
-  if ! checksum $dmg $md5; then
+  checksum "$dmg" "$md5" \
+    || curl -L -O "$dmg_url"
+  if ! checksum "$dmg" "$md5"; then
     echo "${dmg} checksum does not match ${md5}"
     return 1
   fi
   while IFS=' ' read -r mnt path; do
-    sudo installer -target / -pkg ${path}/*pkg
-    hdiutil unmount -force -whole -notimeout $mnt
-  done < <(hdiutil mount -plist -nobrowse -readonly -noidme -mountrandom /tmp "$dmg" | grep '\(\/dev\/disk.s\|\/private\/tmp\)' | sed -e 's/.*>\([^<]*\)<.*/\1/' | tr $'\n' ' '; echo); 
+    sudo installer -target / -pkg "${path}"/*pkg
+    hdiutil unmount -force -whole -notimeout "$mnt"
+  done < <(hdiutil mount -plist -nobrowse -readonly -noidme -mountrandom /tmp "$dmg" | grep '\(\/dev\/disk.s\|\/private\/tmp\)' | sed -e 's/.*>\([^<]*\)<.*/\1/' | tr $'\n' ' '; echo);
 }
 
 xcode_sdk_version=11
 xcode_version=12.2_Release_Candidate
 #if [ ! -d $(xcode-select -p)/SDKs/MacOSX${xcode_sdk_version}*sdk/ ]; then
-if [ ! -d /Library/Developer/CommandLineTools/SDKs/MacOSX${xcode_sdk_version}*sdk/ ]; then
+if [ ! -d /Library/Developer/CommandLineTools/SDKs/MacOSX${xcode_sdk_version}.sdk/ ]; then
     clt_dmg=Command_Line_Tools_for_Xcode_${xcode_version}.dmg
     curl -L -O https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/macos/common/${clt_dmg}
     hdiutil mount ${clt_dmg}
@@ -115,8 +119,7 @@ if [ ! -d /Library/Developer/CommandLineTools/SDKs/MacOSX${xcode_sdk_version}*sd
 fi
 
 # See http://apple.stackexchange.com/questions/107307/how-can-i-install-the-command-line-tools-completely-from-the-command-line
-xcode-select -p &> /dev/null
-if [ $? -ne 0 ]; then
+if xcode-select -p &> /dev/null; then
   echo "Xcode CLI tools not found. Installing them..."
   touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
   PROD=$(softwareupdate -l |
@@ -137,7 +140,7 @@ fi
     || fail "git install failed"
 
 [[ "${puppet_version%%-*}" == $(puppet --version) ]] \
-  && printf "puppet version %s\n" $(puppet --version) \
+  && printf "puppet version %s\n" "$(puppet --version)" \
   || install "https://downloads.puppetlabs.com/mac/puppet/10.15/x86_64/puppet-agent-${puppet_version}.osx10.15.dmg" \
     9bc0aeffac8d6fcf42d5b1e9c49a2d269c096dcb3c8304012bbefe137e9d785d \
     || fail "puppet install failed"
@@ -152,16 +155,19 @@ PUPPET_FORK="${PUPPET_FORK#*.com}"
 PUPPET_REPO_BUNDLE="https://raw.githubusercontent.com${PUPPET_FORK}/${PUPPET_BRANCH}/provisioners/macos/bootstrap_mojave.sh"
 curl --silent -L -O "${PUPPET_REPO_BUNDLE}"
 
-echo $PUPPET_ROLE > /etc/puppet_role
+echo "$PUPPET_ROLE" > /etc/puppet_role
 cat /etc/puppet_role
 
 export PUPPET_REPO
 export PUPPET_BRANCH
 sed -i.bak '/reboot/d' ./bootstrap_mojave.sh
-bash bootstrap_mojave.sh \
-  && echo Success \
-  || fail "Puppet failed!?"
 
+if bash bootstrap_mojave.sh
+then
+    echo "Success"
+else
+    fail "Puppet failed!?"
+fi
 
 # Review setup/prompts for test-runner user
 sudo -u cltbld defaults read com.apple.SetupAssistant
@@ -196,17 +202,19 @@ fi
 #   dmg f88af78566e406a06bf96349a7314a811cedfa698b38252ffc36f4f19ab52b65
 # 3.7.0 https://software.intel.com/content/dam/develop/external/us/en/documents/Intel-Power-Gadget-v3.7.0.dmg
 #   dmg 22ed3fe050c3b965841ccc5590a3a03bb9498f8620e01ba4dea5557dcd24fe43
-checksum "/Applications/Intel Power Gadget/PowerLog" \
+
+if checksum "/Applications/Intel Power Gadget/PowerLog" \
   9210e37554afc4449dcd3896aa6c9a884b20f0788e75ed2dcfae79f294b2d151 \
   || install "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/macos/public/common/Intel_Power_Gadget_3.7.0.dmg" \
-    22ed3fe050c3b965841ccc5590a3a03bb9498f8620e01ba4dea5557dcd24fe43 \
-  && (
+    22ed3fe050c3b965841ccc5590a3a03bb9498f8620e01ba4dea5557dcd24fe43
+ then
     sudo kextutil /Library/Extensions/EnergyDriver.kext
     sudo kextload /Library/Extensions/EnergyDriver.kext
     sudo spctl kext-consent status
     /Applications/Intel\ Power\ Gadget/PowerLog -resolution 1000 -file /dev/stdout -cmd "for I in {1..3}; do sleep 1; done"
-  ) \
-    || fail "intel power gadget install failed"
+else
+    fail "intel power gadget install failed"
+fi
 
 screenshot
 
