@@ -162,7 +162,7 @@ signingworker_roles:
             notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
-            base_bundle_id: 'org.mozilla.thunderbird-mac-nightly'
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-nightly'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
@@ -171,7 +171,7 @@ signingworker_roles:
             notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
-            base_bundle_id: 'org.mozilla.thunderbird-mac-release'
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-release'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'

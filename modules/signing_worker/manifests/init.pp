@@ -88,6 +88,14 @@ define signing_worker (
         'firefox' => $worker_config['taskcluster_scope_prefix'],
         'thunderbird' => $worker_config['tb_taskcluster_scope_prefix'],
     }
+    $tc_client_id = $cot_product ? {
+        'firefox' => $worker_config['taskcluster_client_id'],
+        'thunderbird' => $worker_config['tb_taskcluster_client_id'],
+    }
+    $tc_access_token = $cot_product ? {
+        'firefox' => $worker_config['taskcluster_access_token'],
+        'thunderbird' => $worker_config['tb_taskcluster_access_token'],
+    }
 
     file { $tmp_requirements:
         content => template('signing_worker/requirements.txt.erb'),
