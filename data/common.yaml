@@ -118,6 +118,14 @@ scriptworker_config:
         worker_type: 'signing-mac-v1'
         scriptworker_version: "35.2.0"
         scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
+    tb-prod:
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'tb-signing-mac-v1'
+        scriptworker_version: "35.2.0"
+        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
