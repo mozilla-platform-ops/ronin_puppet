@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 define signing_worker (
+    String $role,
     String $user,
     String $password,
     String $salt,
@@ -24,7 +25,7 @@ define signing_worker (
 ) {
     $virtualenv_dir           = "${scriptworker_base}/virtualenv"
     $certs_dir                = "${scriptworker_base}/certs"
-    $tmp_requirements         = "${scriptworker_base}/requirements.txt"
+    $requirements             = "${scriptworker_base}/requirements.txt"
     $scriptworker_config_file = "${scriptworker_base}/scriptworker.yaml"
     $script_config_file       = "${scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
@@ -82,8 +83,6 @@ define signing_worker (
     }
 
     $widevine_clone_dir = "${scriptworker_base}/widevine"
-    $scriptworker_version = $worker_config['scriptworker_version']
-    $scriptworker_scripts_revision = $worker_config['scriptworker_scripts_revision']
     $tc_scope_prefix = $cot_product ? {
         'firefox' => $worker_config['taskcluster_scope_prefix'],
         'thunderbird' => $worker_config['tb_taskcluster_scope_prefix'],
@@ -97,10 +96,10 @@ define signing_worker (
         'thunderbird' => $worker_config['tb_taskcluster_access_token'],
     }
 
-    file { $tmp_requirements:
-        content => template('signing_worker/requirements.txt.erb'),
-        owner   =>  $user,
-        group   =>  $group,
+    file { $requirements:
+        source => "puppet:///modules/${module_name}/requirements.${role}.txt",
+        owner  => $user,
+        group  => $group,
     }
 
     # We only clone this once for three reasons:
@@ -127,10 +126,16 @@ define signing_worker (
         force   => true,
     }
 
+    # Setting up the virtualenv happens in 3 stages:
+    # 1) Create it
+    # 2) Install indirect dependencies (which have their own requirements file)
+    # 3) Install direct dependencies
+    # We cannot combine these into one requirements file because the indirect
+    # dependencies use hash pinning, while the direct ones cannot, because they're
+    # installed in editable mode.
     python::virtualenv { "signingworker_${user}" :
         ensure          => present,
         version         => '3',
-        requirements    => $tmp_requirements,
         venv_dir        => $virtualenv_dir,
         ensure_venv_dir => true,
         owner           => $user,
@@ -143,6 +148,15 @@ define signing_worker (
         cwd             => $scriptworker_base,
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
     }
+    exec { "install ${scriptworker_base} requirements":
+        command   => "${virtualenv_dir}/bin/pip install -r ${requirements}",
+        user      => $user,
+        group     => $group,
+        # Make sure these are updated when they change
+        subscribe => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
+        require   => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
+    }
+
     # XXX once we:
     #     - get the virtualenv to re-run pip on requirements.txt change,
     #     - get the scriptworker and poller to restart on config or python

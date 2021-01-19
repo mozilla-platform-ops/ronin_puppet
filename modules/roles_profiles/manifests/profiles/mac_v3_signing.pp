@@ -52,6 +52,7 @@ class roles_profiles::profiles::mac_v3_signing {
 
             $scriptworker_users.each |String $user, Hash $user_data| {
                 signing_worker { "signing_worker_${user}":
+                    role                => $role,
                     user                => $user,
                     password            => lookup("${user}_user.password"),
                     salt                => lookup("${user}_user.salt"),
