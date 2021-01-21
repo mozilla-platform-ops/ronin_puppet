@@ -83,6 +83,7 @@ define signing_worker (
     }
 
     $scriptworker_clone_dir = "${scriptworker_base}/scriptworker"
+    $scriptworker_scripts_clone_dir = "${scriptworker_base}/scriptworker-scripts"
     $widevine_clone_dir = "${scriptworker_base}/widevine"
     $tc_scope_prefix = $cot_product ? {
         'firefox' => $worker_config['taskcluster_scope_prefix'],
@@ -151,6 +152,51 @@ define signing_worker (
         refreshonly => true,
         subscribe   => [Vcsrepo[$scriptworker_clone_dir], Python::Virtualenv["signingworker_${user}"]],
         require     => [Vcsrepo[$scriptworker_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+    }
+
+    vcsrepo { $scriptworker_scripts_clone_dir:
+        ensure   => present,
+        provider => git,
+        source   => "https://github.com/mozilla-releng/scriptworker-scripts",
+        revision => $worker_config['scriptworker_scripts_revision'],
+        user     => $user,
+        group    => $group,
+    }
+    exec { "install ${scriptworker_base} mozbuild":
+        command     => "${virtualenv_dir}/bin/python setup.py install",
+        cwd         => "${scriptworker_scripts_clone_dir}/vendored/mozbuild",
+        user        => $user,
+        group       => $group,
+        refreshonly => true,
+        subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+        require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+    }
+    exec { "install ${scriptworker_base} scriptworker_client":
+        command     => "${virtualenv_dir}/bin/python setup.py install",
+        cwd         => "${scriptworker_scripts_clone_dir}/scriptworker_client",
+        user        => $user,
+        group       => $group,
+        refreshonly => true,
+        subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+        require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+    }
+    exec { "install ${scriptworker_base} iscript":
+        command     => "${virtualenv_dir}/bin/python setup.py install",
+        cwd         => "${scriptworker_scripts_clone_dir}/iscript",
+        user        => $user,
+        group       => $group,
+        refreshonly => true,
+        subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+        require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+    }
+    exec { "install ${scriptworker_base} notarization_poller":
+        command     => "${virtualenv_dir}/bin/python setup.py install",
+        cwd         => "${scriptworker_scripts_clone_dir}/notarization_poller",
+        user        => $user,
+        group       => $group,
+        refreshonly => true,
+        subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+        require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
     }
 
     # We only clone this once for three reasons:
