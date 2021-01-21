@@ -82,6 +82,7 @@ define signing_worker (
       mode   => '0750',
     }
 
+    $scriptworker_clone_dir = "${scriptworker_base}/scriptworker"
     $widevine_clone_dir = "${scriptworker_base}/widevine"
     $tc_scope_prefix = $cot_product ? {
         'firefox' => $worker_config['taskcluster_scope_prefix'],
@@ -134,12 +135,24 @@ define signing_worker (
         require     => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
     }
 
-    #vcsrepo { "${scriptworker_base} scriptworker repo":
-    #    ensure   => present,
-    #    provider => git,
-    #    source   => "https://github.com/mozilla-releng/scriptworker",
-    #    revision => $worker_config['scriptworker_revision'],
-    #}
+    vcsrepo { $scriptworker_clone_dir:
+        ensure   => present,
+        provider => git,
+        source   => "https://github.com/bhearsum/scriptworker",
+        revision => $worker_config['scriptworker_revision'],
+        user     => $user,
+        group    => $group,
+    }
+    exec { "install ${scriptworker_base} scriptworker":
+        command     => "${virtualenv_dir}/bin/python setup.py install",
+        cwd         => $scriptworker_clone_dir,
+        user        => $user,
+        group       => $group,
+        refreshonly => true,
+        subscribe   => [Vcsrepo[$scriptworker_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+        require     => [Vcsrepo[$scriptworker_clone_dir], Python::Virtualenv["signingworker_${user}"]],
+    }
+
     # We only clone this once for three reasons:
     # 1) It is almost never updated
     # 2) We don't support general code deployments through puppet (yet)
