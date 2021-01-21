@@ -102,30 +102,6 @@ define signing_worker (
         group  => $group,
     }
 
-    # We only clone this once for three reasons:
-    # 1) It is almost never updated
-    # 2) We don't support general code deployments through puppet (yet)
-    # 3) The clone url contains a github token, which we don't want sitting around on disk
-    #
-    # In an ideal world we'd still use `vcsrepo` for this, but it breaks after we
-    # clean up the token, so we're stuck with this for now.
-    exec { "clone widevine ${scriptworker_base}":
-        command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
-        user    => $user,
-        group   => $group,
-        unless  => "test -d ${widevine_clone_dir}",
-        path    => ['/bin', '/usr/bin'],
-        require => File[$scriptworker_base],
-    }
-    # This has credentials in it. Clean up.
-    ->file { "Remove widevine directory ${scriptworker_base}":
-        ensure  => absent,
-        path    => "${widevine_clone_dir}/.git",
-        recurse => true,
-        purge   => true,
-        force   => true,
-    }
-
     # Setting up the virtualenv happens in 3 stages:
     # 1) Create it
     # 2) Install indirect dependencies (which have their own requirements file)
@@ -155,6 +131,45 @@ define signing_worker (
         # Make sure these are updated when they change
         subscribe => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
         require   => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
+    }
+
+    #vcsrepo { "${scriptworker_base} scriptworker repo":
+    #    ensure   => present,
+    #    provider => git,
+    #    source   => "https://github.com/mozilla-releng/scriptworker",
+    #    revision => $worker_config['scriptworker_revision'],
+    #}
+    # We only clone this once for three reasons:
+    # 1) It is almost never updated
+    # 2) We don't support general code deployments through puppet (yet)
+    # 3) The clone url contains a github token, which we don't want sitting around on disk
+    #
+    # In an ideal world we'd still use `vcsrepo` for this, but it breaks after we
+    # clean up the token, so we're stuck with this for now.
+    exec { "clone widevine ${scriptworker_base}":
+        command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
+        user    => $user,
+        group   => $group,
+        unless  => "test -d ${widevine_clone_dir}",
+        path    => ['/bin', '/usr/bin'],
+        require => File[$scriptworker_base],
+    }
+    # This has credentials in it. Clean up.
+    ->file { "Remove widevine directory ${scriptworker_base}":
+        ensure  => absent,
+        path    => "${widevine_clone_dir}/.git",
+        recurse => true,
+        purge   => true,
+        force   => true,
+    }
+    exec { "install ${scriptworker_base} widevine":
+        command     => "${virtualenv_dir}/bin/python setup.py install",
+        cwd         => $widevine_clone_dir,
+        user        => $user,
+        group       => $group,
+        refreshonly => true,
+        subscribe   => [Exec["clone widevine ${scriptworker_base}"], Python::Virtualenv["signingworker_${user}"]],
+        require     => [Exec["clone widevine ${scriptworker_base}"], Python::Virtualenv["signingworker_${user}"]],
     }
 
     # XXX once we:
