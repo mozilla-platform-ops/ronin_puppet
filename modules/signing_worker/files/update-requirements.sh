@@ -8,26 +8,26 @@ if [ -z "$1" ]; then
 fi
 
 # Note that MY_DIR is the location of the script...
-pushd `dirname $0` &>/dev/null
+pushd "$(dirname "$0")" &>/dev/null || exit
 MY_DIR=$(pwd)
-popd &>/dev/null
+popd &>/dev/null || exit
 # While this is the current working directory, which may
 # be different
 cwd=$(pwd)
 
-trap "cd $cwd" EXIT
+trap 'cd $cwd' EXIT
 
 worker_type=$1
 common_yaml="${MY_DIR}/../../../data/common.yaml"
 workdir=$(mktemp -d)
 
 # Extract the revisions we need to find the right dependencies.
-scriptworker_config="$(cat $common_yaml | sed -n '/scriptworker_config/,/^$/p')"
-worker_config=$(echo "$scriptworker_config" | sed -n "/${worker_type}/,/scriptworker_scripts_revision/p")
-scriptworker_revision=$(echo "$worker_config" | grep scriptworker_revision | cut -f2 -d\")
-scriptworker_scripts_revision=$(echo "$worker_config" | grep scriptworker_scripts_revision | cut -f2 -d\")
+scriptworker_config="$(sed -n '/scriptworker_config/,/^$/p' "$common_yaml")"
+worker_config="$(echo "$scriptworker_config" | sed -n "/${worker_type}/,/scriptworker_scripts_revision/p")"
+scriptworker_revision="$(echo "$worker_config" | grep scriptworker_revision | cut -f2 -d\")"
+scriptworker_scripts_revision="$(echo "$worker_config" | grep scriptworker_scripts_revision | cut -f2 -d\")"
 
-cd $workdir
+cd "$workdir" || exit
 # Our input requirements are all of the dependencies from:
 # - scriptworker_client
 # - iscript
