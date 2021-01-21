@@ -125,12 +125,13 @@ define signing_worker (
         path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
     }
     exec { "install ${scriptworker_base} requirements":
-        command   => "${virtualenv_dir}/bin/pip install -r ${requirements}",
-        user      => $user,
-        group     => $group,
+        command     => "${virtualenv_dir}/bin/pip install -r ${requirements}",
+        user        => $user,
+        group       => $group,
+        refreshonly => true,
         # Make sure these are updated when they change
-        subscribe => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
-        require   => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
+        subscribe   => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
+        require     => [File[$requirements], Python::Virtualenv["signingworker_${user}"]],
     }
 
     #vcsrepo { "${scriptworker_base} scriptworker repo":
