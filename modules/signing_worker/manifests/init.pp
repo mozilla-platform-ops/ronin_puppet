@@ -143,6 +143,7 @@ define signing_worker (
         revision => $worker_config['scriptworker_revision'],
         user     => $user,
         group    => $group,
+        require  => File[$scriptworker_base],
     }
     exec { "install ${scriptworker_base} scriptworker":
         command     => "${virtualenv_dir}/bin/python setup.py install",
@@ -161,6 +162,7 @@ define signing_worker (
         revision => $worker_config['scriptworker_scripts_revision'],
         user     => $user,
         group    => $group,
+        require  => File[$scriptworker_base],
     }
     exec { "install ${scriptworker_base} mozbuild":
         command     => "${virtualenv_dir}/bin/python setup.py install",
