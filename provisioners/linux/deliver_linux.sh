@@ -87,7 +87,12 @@ ssh root@"$THE_HOST" chmod 640 /root/vault.yaml
 ssh root@"$THE_HOST" "echo $THE_ROLE > $ROLE_FILE"
 
 echo ""
-echo "success."
+echo "    ____       ___                          ____"
+echo "   / __ \___  / (_)   _____  ________  ____/ / /"
+echo "  / / / / _ \/ / / | / / _ \/ ___/ _ \/ __  / /"
+echo " / /_/ /  __/ / /| |/ /  __/ /  /  __/ /_/ /_/"
+echo "/_____/\___/_/_/ |___/\___/_/   \___/\__,_(_)"
+echo ""
 echo "now run one of the following:"
 echo ""
 echo "  master:"
