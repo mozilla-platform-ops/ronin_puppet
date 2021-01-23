@@ -13,18 +13,18 @@
 set -e
 # set -x
 
-# get clock synced. if clock is way off, ssl certs will fail to vaildate
-# and puppet won't work.
-/etc/init.d/ntp stop
-ntpd -q -g  # runs once and force allows huge skews
-/etc/init.d/ntp start
-
 # install puppet 6
 wget https://apt.puppetlabs.com/puppet6-release-bionic.deb -O /tmp/puppet.deb
 dpkg -i /tmp/puppet.deb
 apt-get update
 apt-get remove -y puppet
-apt-get install -y puppet-agent
+apt-get install -y puppet-agent ntp
+
+# get clock synced. if clock is way off, ssl certs will fail to vaildate
+# and puppet won't work.
+/etc/init.d/ntp stop
+ntpd -q -g  # runs once and force allows huge skews
+/etc/init.d/ntp start
 
 # Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
 export LANG=en_US.UTF-8
