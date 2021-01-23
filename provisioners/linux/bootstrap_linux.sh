@@ -20,8 +20,8 @@ apt-get update
 apt-get remove -y puppet
 apt-get install -y puppet-agent ntp
 
-# get clock synced. if clock is way off, ssl certs will fail to vaildate
-# and puppet won't work.
+# get clock synced. if clock is way off, run-puppet.sh will fail because
+# git clone will fail as SSL certs aren't valid.
 /etc/init.d/ntp stop
 ntpd -q -g  # runs once and force allows huge skews
 /etc/init.d/ntp start
