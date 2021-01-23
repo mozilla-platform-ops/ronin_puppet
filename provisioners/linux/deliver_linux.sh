@@ -56,6 +56,9 @@ fi
 
 # check host
 
+# cleanup ssh key, it will be new after kickstarting
+ssh-keygen -r "${THE_HOST}"
+
 # ensure we're not bootstrapping a host that's already been done
 # shellcheck disable=SC2029
 if ssh root@"$THE_HOST" "test -e $ROLE_FILE"; then
