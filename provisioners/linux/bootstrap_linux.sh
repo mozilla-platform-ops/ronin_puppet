@@ -229,4 +229,11 @@ echo "Success. Rebooting..."
 # Success! Let's reboot
 /sbin/reboot --force &>/dev/null &
 
+echo "   _____                                __"
+echo "  / ___/__  _______________  __________/ /"
+echo "  \__ \/ / / / ___/ ___/ _ \/ ___/ ___/ /"
+echo " ___/ / /_/ / /__/ /__/  __(__  |__  )_/"
+echo "/____/\__,_/\___/\___/\___/____/____(_)"
+echo ""
+
 exit 0
