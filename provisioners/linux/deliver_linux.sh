@@ -58,6 +58,8 @@ fi
 
 # cleanup ssh key, it will be new after kickstarting
 ssh-keygen -R "${THE_HOST}"
+# readd to avoid prompts
+ssh-keyscan -H "${THE_HOST}" >> ~/.ssh/known_hosts
 
 # ensure we're not bootstrapping a host that's already been done
 # shellcheck disable=SC2029
