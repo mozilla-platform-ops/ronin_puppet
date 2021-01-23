@@ -68,6 +68,8 @@ if ssh root@"$THE_HOST" "test -e $ROLE_FILE"; then
   exit 1
 fi
 
+# TODO: check that we're on 1804 also
+
 
 # send stuff out
 
