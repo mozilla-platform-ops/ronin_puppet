@@ -23,6 +23,7 @@ apt-get install -y puppet-agent ntp
 # get clock synced. if clock is way off, run-puppet.sh will fail because
 # git clone will fail as SSL certs aren't valid.
 /etc/init.d/ntp stop
+echo "server ntp.build.mozilla.org iburst" > /etc/ntp.conf  # place barebones config
 ntpd -q -g  # runs once and force allows huge skews
 /etc/init.d/ntp start
 
