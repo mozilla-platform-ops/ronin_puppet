@@ -65,6 +65,9 @@ else
 fi
 
 echo "REBOOT $(date)"
+# launchd does not limit the service log file size. truncate it
+> /var/opt/generic-worker/service.stdout.log
+> /var/opt/generic-worker/service.stderr.log
 <%= @reboot_command %>
 # Sleep to prevent this script from terminating naturally, and launchd restarting
 # it. Instead, the shutdown should cause this script to terminate (so it won't

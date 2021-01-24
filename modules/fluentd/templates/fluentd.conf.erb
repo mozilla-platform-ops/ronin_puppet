@@ -26,8 +26,8 @@
 <source>
   @type tail
   read_from_head true
-  path /var/log/genericworker/stderr.log
-  pos_file /var/log/genericworker/stderr.log.pos
+  path /var/opt/generic-worker/service.stderr.log
+  pos_file /var/opt/generic-worker/service.stderr.log.pos
   <parse>
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
@@ -42,8 +42,8 @@
 <source>
   @type tail
   read_from_head true
-  path /var/log/genericworker/stdout.log
-  pos_file /var/log/genericworker/stdout.log.pos
+  path /var/opt/generic-worker/service.stdout.log
+  pos_file /var/opt/generic-worker/service.stdout.log.pos
   <parse>
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
