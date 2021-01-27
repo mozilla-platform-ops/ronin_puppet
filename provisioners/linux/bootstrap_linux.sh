@@ -18,7 +18,14 @@ wget https://apt.puppetlabs.com/puppet6-release-bionic.deb -O /tmp/puppet.deb
 dpkg -i /tmp/puppet.deb
 apt-get update
 apt-get remove -y puppet
-apt-get install -y puppet-agent
+apt-get install -y puppet-agent ntp
+
+# get clock synced. if clock is way off, run-puppet.sh will never finish
+# it's git clone because the SSL cert will appear invalid.
+/etc/init.d/ntp stop
+echo "server ntp.build.mozilla.org iburst" > /etc/ntp.conf  # place barebones config
+ntpd -q -g  # runs once and force allows huge skews
+/etc/init.d/ntp start
 
 # Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
 export LANG=en_US.UTF-8
@@ -221,5 +228,12 @@ echo "Success. Rebooting..."
 
 # Success! Let's reboot
 /sbin/reboot --force &>/dev/null &
+
+echo "   _____                                __"
+echo "  / ___/__  _______________  __________/ /"
+echo "  \__ \/ / / / ___/ ___/ _ \/ ___/ ___/ /"
+echo " ___/ / /_/ / /__/ /__/  __(__  |__  )_/"
+echo "/____/\__,_/\___/\___/\___/____/____(_)"
+echo ""
 
 exit 0
