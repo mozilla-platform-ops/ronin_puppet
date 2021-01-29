@@ -27,7 +27,7 @@ describe 'groups' do
     it { should belong_to_group 'wheel' }
   end
 
-  describe user('bclary') do
+  describe user('dhouse') do
     it { should belong_to_group 'wheel' }
   end
 
@@ -67,4 +67,10 @@ end
 describe command('/home/bitbar/android-tools/devicepool_last_started_alert/venv/bin/python --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3/ }
+end
+
+# departed users
+
+describe file('/etc/passwd') do
+  its(:content) { should match /bclary\:.*\:\/usr\/sbin\/nologin/ }
 end

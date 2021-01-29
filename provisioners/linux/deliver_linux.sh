@@ -56,12 +56,19 @@ fi
 
 # check host
 
+# cleanup ssh key, it will be new after kickstarting
+ssh-keygen -R "${THE_HOST}"
+# readd to avoid prompts
+ssh-keyscan -H "${THE_HOST}" >> ~/.ssh/known_hosts
+
 # ensure we're not bootstrapping a host that's already been done
 # shellcheck disable=SC2029
 if ssh root@"$THE_HOST" "test -e $ROLE_FILE"; then
   echo "ERROR: Host already has a puppet role set... Exiting!"
   exit 1
 fi
+
+# TODO: check that we're on 1804 also
 
 
 # send stuff out
@@ -80,10 +87,18 @@ ssh root@"$THE_HOST" chmod 640 /root/vault.yaml
 ssh root@"$THE_HOST" "echo $THE_ROLE > $ROLE_FILE"
 
 echo ""
-echo "success."
+echo "    ____       ___                          ____"
+echo "   / __ \___  / (_)   _____  ________  ____/ / /"
+echo "  / / / / _ \/ / / | / / _ \/ ___/ _ \/ __  / /"
+echo " / /_/ /  __/ / /| |/ /  __/ /  /  __/ /_/ /_/"
+echo "/_____/\___/_/_/ |___/\___/_/   \___/\__,_(_)"
+echo ""
 echo "now run one of the following:"
-echo
-echo "  ssh root@$THE_HOST /root/bootstrap.sh"
-echo
-echo "  ssh root@$THE_HOST \"PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' PUPPET_BRANCH='YOUR_BRANCH' /root/bootstrap.sh\""
-echo "   e.g. ssh root@$THE_HOST \"PUPPET_REPO='https://github.com/aerickson/ronin_puppet.git' PUPPET_BRANCH='moonshot_1804' /root/bootstrap.sh\""
+echo ""
+echo "  master:"
+echo "    ssh root@$THE_HOST /root/bootstrap.sh"
+echo ""
+echo "  branch:"
+echo "    ssh root@$THE_HOST \\"
+echo "      PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' \\"
+echo "      PUPPET_BRANCH='YOUR_BRANCH' /root/bootstrap.sh"
