@@ -48,6 +48,7 @@ define macos_utils::clean_appstate (
             key      => 'NSQuitAlwaysKeepsWindows',
             value    => '0',
             val_type => 'int',
+            user     => $user,
             require  => File["/Users/${user}/Library/Preferences/.GlobalPreferences.plist"];
     }
 }
