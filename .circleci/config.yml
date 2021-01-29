@@ -10,7 +10,6 @@ jobs:
       - run: sudo apt-get install shellcheck
       - run: pip3 install pre-commit
       - run: shellcheck --version
-      - run: shellcheck -e SC1091 modules/**/*.sh provisioners/**/*.sh
       - run: pre-commit run --all-files --verbose
   r10k_install:
     machine:
@@ -35,9 +34,3 @@ workflows:
   ci_test:
     jobs:
       - pre_commit
-      - r10k_install
-      - kitchen_converge_and_verify:
-          matrix:
-            parameters:
-              # "maas-region" and "maas-rack" removed as we're not using them currently
-              kitchen_target: ["bitbar", "linux"]
