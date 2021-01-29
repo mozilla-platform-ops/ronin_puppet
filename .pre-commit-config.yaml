@@ -22,7 +22,7 @@ repos:
     - --fix
     - --fail-on-warnings
 
-- repo: https://github.com/aerickson/pre-commit-hooks
+- repo: https://github.com/mozilla-platform-ops/pre-commit-hooks
   rev: f5ccc6f
   hooks:
     - id: shellcheck
