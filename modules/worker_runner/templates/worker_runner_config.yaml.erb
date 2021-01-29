@@ -1,0 +1,34 @@
+getSecrets: false
+provider:
+  providerType: <%= @provider_type %>
+  rootURL: "<%= @root_url %>"
+  clientID: <%= @client_id %>
+  accessToken: <%= @access_token %>
+  workerPoolID: "<%= @worker_pool_id %>"
+  workerGroup: "<%= @worker_group %>"
+  workerID: "<%= @worker_id %>"
+  workerLocation:
+    host: "<%= @worker_group %>"
+worker:
+  implementation: generic-worker
+  path: /usr/local/bin/generic-worker-<%= @generic_worker_engine %>
+  configPath: <%= @data_dir %>/generic-worker.conf.yaml
+workerConfig:
+  cachesDir: "<%= @data_dir %>/cache"
+  cleanUpTaskDirs: true
+  downloadsDir: "<%= @data_dir %>/downloads"
+  ed25519SigningKeyLocation: "<%= @ed25519_signing_key %>"
+  livelogExecutable: "/usr/local/bin/livelog"
+  publicIP: "<%= @facts['networking']['ip'] %>"
+  requiredDiskSpaceMegabytes: 10240
+  sentryProject: "generic-worker"
+  shutdownMachineOnIdle: false
+  shutdownMachineOnInternalError: false
+  taskclusterProxyExecutable: "/usr/local/bin/taskcluster-proxy"
+  taskclusterProxyPort: 8080
+  wstAudience: "firefoxcitc"
+  wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
+  numberOfTasksToRun: 1
+  disableReboots: true
+  idleTimeoutSecs: 0
+  tasksDir: "<%= @task_dir %>"

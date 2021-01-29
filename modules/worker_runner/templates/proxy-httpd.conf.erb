@@ -1,0 +1,25 @@
+<%# This Source Code Form is subject to the terms of the Mozilla Public
+<%# License, v. 2.0. If a copy of the MPL was not distributed with this
+<%# file, You can obtain one at http://mozilla.org/MPL/2.0/. -%>
+
+LoadModule proxy_module libexec/apache2/mod_proxy.so
+LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
+
+#LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
+#LoadModule proxy_ftp_module libexec/apache2/mod_proxy_ftp.so
+#LoadModule proxy_fcgi_module libexec/apache2/mod_proxy_fcgi.so
+#LoadModule proxy_scgi_module libexec/apache2/mod_proxy_scgi.so
+#LoadModule proxy_uwsgi_module libexec/apache2/mod_proxy_uwsgi.so
+#LoadModule proxy_fdpass_module libexec/apache2/mod_proxy_fdpass.so
+#LoadModule proxy_wstunnel_module libexec/apache2/mod_proxy_wstunnel.so
+#LoadModule proxy_ajp_module libexec/apache2/mod_proxy_ajp.so
+#LoadModule proxy_balancer_module libexec/apache2/mod_proxy_balancer.so
+#LoadModule proxy_express_module libexec/apache2/mod_proxy_express.so
+#LoadModule proxy_hcheck_module libexec/apache2/mod_proxy_hcheck.so
+
+<VirtualHost <%= @taskcluster_host %>:80>
+    ProxyPreserveHost On
+    ProxyPass / http://<%= @taskcluster_host %>:8080/
+    ProxyPassReverse / http://<%= @taskcluster_host %>:8080/
+    ServerName <%= @taskcluster_host %>
+</VirtualHost>
