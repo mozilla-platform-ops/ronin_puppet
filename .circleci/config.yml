@@ -10,6 +10,7 @@ jobs:
       - run: sudo apt-get install shellcheck
       - run: pip3 install pre-commit
       - run: shellcheck --version
+      - run: ls -la
       - run: pre-commit run --all-files --verbose
   r10k_install:
     machine:
