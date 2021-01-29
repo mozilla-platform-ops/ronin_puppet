@@ -12,7 +12,7 @@ jobs:
       #- run: pre-commit run --all-files --verbose
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
       - run: git fetch --all
-      - run: pre-commit run --from-ref original/HEAD --to-ref HEAD --verbose
+      - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     machine:
       image: ubuntu-2004:202010-01
