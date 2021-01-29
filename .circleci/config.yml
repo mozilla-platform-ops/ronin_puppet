@@ -10,7 +10,7 @@ jobs:
       - run: sudo apt-get install shellcheck
       - run: pip3 install pre-commit
       #- run: pre-commit run --all-files --verbose
-      - run: pre-commit run --files `git diff --name-only HEAD HEAD~1`
+      - run: pre-commit run --files `git diff --name-only HEAD master`
   r10k_install:
     machine:
       image: ubuntu-2004:202010-01
