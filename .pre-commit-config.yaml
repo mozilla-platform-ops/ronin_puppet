@@ -22,7 +22,7 @@ repos:
     - --fix
     - --fail-on-warnings
 
-- repo: https://github.com/gruntwork-io/pre-commit
-  rev: v0.1.12 # Get the latest from: https://github.com/gruntwork-io/pre-commit/releases
+- repo: https://github.com/aerickson/pre-commit-hooks
+  rev: f5ccc6f
   hooks:
     - id: shellcheck
