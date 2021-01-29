@@ -9,9 +9,8 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install shellcheck
       - run: pip3 install pre-commit
-      - run: shellcheck --version
-      - run: ls -la
-      - run: pre-commit run --all-files --verbose
+      #- run: pre-commit run --all-files --verbose
+      - run: pre-commit run --files `git diff --name-only HEAD HEAD~1`
   r10k_install:
     machine:
       image: ubuntu-2004:202010-01
