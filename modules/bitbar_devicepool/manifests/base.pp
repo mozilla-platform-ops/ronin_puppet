@@ -38,11 +38,16 @@ class bitbar_devicepool::base {
     ensure => 'present',
   }
 
+  # disable login for departed users
+  User<| title == bclary |> {
+    shell => '/usr/sbin/nologin',
+    groups => 'bclary',
+  }
+
   # add users to groups:
   # - wheel: sudo without password
   # - bitbar: to access devicepool stuff
   # - adm: to view all systemd logs
-  User<| title == bclary |> { groups +> ['wheel', 'bitbar', 'adm'] }
   $relops = lookup('user_groups.relops', Array, undef, undef)
   $relops.each |String $user| {
       User<| title == $user |> { groups +> ['wheel', 'bitbar', 'adm']}
