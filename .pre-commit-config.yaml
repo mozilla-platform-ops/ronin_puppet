@@ -22,7 +22,7 @@ repos:
     - --fix
     - --fail-on-warnings
 
-- repo: https://github.com/jumanjihouse/pre-commit-hooks
-  rev: 2.1.4
+- repo: https://github.com/gruntwork-io/pre-commit
+  rev: v0.1.12 # Get the latest from: https://github.com/gruntwork-io/pre-commit/releases
   hooks:
     - id: shellcheck
