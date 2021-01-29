@@ -9,6 +9,8 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install shellcheck
       - run: pip3 install pre-commit
+      - run: shellcheck --version
+      - run: shellcheck -e SC1091 modules/**/*.sh provisioners/**/*.sh
       - run: pre-commit run --all-files --verbose
   r10k_install:
     machine:
