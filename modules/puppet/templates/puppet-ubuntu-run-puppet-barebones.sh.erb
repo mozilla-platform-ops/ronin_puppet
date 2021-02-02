@@ -6,7 +6,6 @@
 PUPPET_ENV="${PUPPET_ENV:-<%= @puppet_env -%>}"
 PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
-PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
 WORKING_DIR="/etc/puppet/environments/${PUPPET_ENV}/code"
 ROLE_FILE='/etc/puppet_role'
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
