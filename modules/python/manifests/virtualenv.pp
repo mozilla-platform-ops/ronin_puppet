@@ -35,7 +35,7 @@
 define python::virtualenv (
   String $ensure                     = present,
   String $version                    = 'system',
-  String $requirements               = false,
+  String $requirements               = '',
   Boolean $systempkgs                = false,
   String $venv_dir                   = $name,
   Boolean $ensure_venv_dir           = true,
@@ -118,7 +118,7 @@ define python::virtualenv (
       require     => File[$venv_dir],
     }
 
-    if $requirements {
+    if $requirements != '' {
       exec { "python_requirements_initial_install_${requirements}_${venv_dir}":
         command     => @("COMMAND"/L),
           ${pip_cmd} --log ${venv_dir}/pip.log install ${pypi_index} \
