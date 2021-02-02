@@ -10,9 +10,9 @@ class puppet::run_script (
 ) {
 
     # intended for hosts that don't run puppet regularly/at boot
-    # - barebones: no email / telemetry
-
-    # puppet is assumed present, include setup or other module if installation is desired
+    # - the barebones run-puppet script has no email or telegraf telemetry
+    # puppet is assumed present
+    # - caller should include setup or other module if installation is desired
 
     case $::operatingsystem {
         'Ubuntu': {
