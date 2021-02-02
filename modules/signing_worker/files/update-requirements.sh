@@ -44,7 +44,7 @@ cat <<EOF > requirements.in
 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/$scriptworker_scripts_revision/scriptworker_client/requirements/base.in
 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/$scriptworker_scripts_revision/iscript/requirements/base.in
 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/$scriptworker_scripts_revision/notarization_poller/requirements/base.in
--r https://raw.githubusercontent.com/mozilla-releng/scriptworker/$scriptworker_revision/requirements.in
+-r https://raw.githubusercontent.com/mozilla-releng/scriptworker/$scriptworker_revision/requirements.txt
 
 # mozbuild dependencies
 jsmin
