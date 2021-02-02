@@ -10,6 +10,9 @@ class puppet::run_script (
     String $smtp_relay_host     = 'localhost',
 ) {
 
+    # intended for hosts that don't run puppet regularly/at boot
+    # - barebones: no email / telemetry
+
     # puppet is assumed present, include setup or other module if installation is desired
 
     case $::operatingsystem {
@@ -21,7 +24,7 @@ class puppet::run_script (
                             owner   => 'root',
                             group   => 'root',
                             mode    => '0755',
-                            content => template('puppet/puppet-ubuntu-run-puppet.sh.erb');
+                            content => template('puppet/puppet-ubuntu-run-puppet-barebones.sh.erb');
                     }
                 }
                 default: {
