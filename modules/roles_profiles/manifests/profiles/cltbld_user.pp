@@ -2,11 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::cltbld_user (
-    Array[String] $groups        = ['_developer','com.apple.access_screensharing','com.apple.access_ssh'],
-    Array[String] $sudo_commands = ['/sbin/reboot'],
-    Optional[Boolean] $autologin = true,
-) {
+class roles_profiles::profiles::cltbld_user {
     case $::operatingsystem {
         'Darwin': {
             $password     = lookup('cltbld_user.password')
@@ -24,6 +20,7 @@ class roles_profiles::profiles::cltbld_user (
 
             # Monkey patching directoryservice.rb in order to create users also breaks group merging
             # So we directly add the user to the group(s)
+            $groups = ['_developer','com.apple.access_screensharing','com.apple.access_ssh']
             $groups.each |String $group| {
                 exec { "cltbld_group_${group}":
                     command => "/usr/bin/dscl . -append /Groups/${group} GroupMembership cltbld",
@@ -36,7 +33,6 @@ class roles_profiles::profiles::cltbld_user (
             class { 'macos_utils::autologin_user':
                 user       => 'cltbld',
                 kcpassword => $kcpassword,
-                remove     => !$autologin,
             }
 
             # Enable DevToolsSecurity
@@ -53,6 +49,7 @@ class roles_profiles::profiles::cltbld_user (
                 require => User['cltbld'],
             }
 
+            $sudo_commands = ['/sbin/reboot']
             $sudo_commands.each |String $command| {
                 sudo::custom { "allow_cltbld_${command}":
                     user    => 'cltbld',
