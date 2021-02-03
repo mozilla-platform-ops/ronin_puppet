@@ -2,12 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker (
-    String $worker_type = 'gecko-3-b-osx-1015',
-) {
-    class { 'roles_profiles::profiles::cltbld_user':
-        autologin => false,
-    }
+class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
+    $worker_type = 'gecko-3-b-osx-1015'
 
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
