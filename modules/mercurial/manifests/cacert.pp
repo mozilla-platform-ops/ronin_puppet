@@ -4,7 +4,7 @@
 
 class mercurial::cacert {
 
-    #include dirs::builds
+    include dirs::builds
 
     file {
         '/builds/mercurial-certs':
