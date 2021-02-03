@@ -17,6 +17,7 @@ worker:
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
   generic_worker_engine: simple
+  idle_timeout_secs: 3600
 
 packages_classes:
     #  - google_chrome

@@ -17,6 +17,7 @@ class roles_profiles::profiles::worker {
                 worker_group          => lookup('worker.worker_group'),
                 worker_id             => lookup('worker.worker_id'),
                 generic_worker_engine => lookup('worker.generic_worker_engine'),
+                idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
             }
         }
         default: {

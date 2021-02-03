@@ -21,6 +21,7 @@ class worker_runner (
     Optional[String] $worker_id                        = undef,
     Optional[Hash] $provider_metadata                  = undef,
     Optional[Hash] $worker_location                    = undef,
+    Optional[Integer] $idle_timeout_secs               = undef,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -31,7 +32,6 @@ class worker_runner (
     # Optional[String] $deploymentId                     = undef,
     # Optional[String] $disableReboots                   = undef,
     # Optional[String] $downloadsDir                     = undef,
-    # Optional[String] $idleTimeoutSecs                  = undef,
     # Optional[String] $instanceID                       = undef,
     # Optional[String] $instanceType                     = undef,
     # Optional[String] $livelogExecutable                = undef,

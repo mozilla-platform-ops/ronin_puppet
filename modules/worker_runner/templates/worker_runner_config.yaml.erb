@@ -16,9 +16,12 @@ worker:
 workerConfig:
   cachesDir: "<%= @data_dir %>/cache"
   cleanUpTaskDirs: true
+  disableReboots: true
   downloadsDir: "<%= @data_dir %>/downloads"
   ed25519SigningKeyLocation: "<%= @ed25519_signing_key %>"
+  idleTimeoutSecs: <%= @idle_timeout_secs %>
   livelogExecutable: "/usr/local/bin/livelog"
+  numberOfTasksToRun: 1
   publicIP: "<%= @facts['networking']['ip'] %>"
   requiredDiskSpaceMegabytes: 10240
   sentryProject: "generic-worker"
@@ -26,9 +29,6 @@ workerConfig:
   shutdownMachineOnInternalError: false
   taskclusterProxyExecutable: "/usr/local/bin/taskcluster-proxy"
   taskclusterProxyPort: 8080
+  tasksDir: "<%= @task_dir %>"
   wstAudience: "firefoxcitc"
   wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
-  numberOfTasksToRun: 1
-  disableReboots: true
-  idleTimeoutSecs: 0
-  tasksDir: "<%= @task_dir %>"
