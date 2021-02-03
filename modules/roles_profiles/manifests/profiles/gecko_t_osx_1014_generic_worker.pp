@@ -92,6 +92,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
+                livelog_version           => 'v1.1.0',
+                livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
                 user                      => 'cltbld',
                 user_homedir              => '/Users/cltbld',
             }
