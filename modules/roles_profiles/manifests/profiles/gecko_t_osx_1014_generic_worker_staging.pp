@@ -4,9 +4,7 @@
 
 class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
 
-    class { 'roles_profiles::profiles::cltbld_user':
-        autologin => false,
-    }
+    require roles_profiles::profiles::cltbld_user
 
     $worker_type  = 'gecko-t-osx-1014-staging'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
@@ -22,13 +20,11 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
         'Darwin': {
 
             class { 'puppet::atboot':
-                telegraf_user       => lookup('telegraf.user'),
-                telegraf_password   => lookup('telegraf.password'),
-                puppet_env          => 'dev',
-                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
-                puppet_branch       => '1561956_generic-worker_15-recover',
-                puppet_notify_email => 'dhouse@mozilla.com',
-                meta_data           => $meta_data,
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.password'),
+                puppet_branch     => 'staging',
+                # Note the camelCase key names
+                meta_data         => $meta_data,
             }
 
             class { 'roles_profiles::profiles::logging':
@@ -47,7 +43,6 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                     precision         => 's',
                 },
                 inputs       => {
-                    # current default telegraf monitors: system, mem, swap, disk'/', puppetagent
                     temp     => {},
                     cpu      => {
                         interval         => '60s',
@@ -81,22 +76,25 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
                 version => '1.3.8',
             }
 
-            class { 'generic_worker::multiuser':
+            class { 'generic_worker':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
+                livelog_secret            => $livelog_secret,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
-                task_dir                  => '/Users',
-                generic_worker_version    => 'v16.5.2',
-                generic_worker_sha256     => '7bd47da57aae65f120d89e8d70fb0a1f66762945994e0909d31eac6d63122046',
+                quarantine_client_id      => $quarantine_client_id,
+                quarantine_access_token   => $quarantine_access_token,
+                bugzilla_api_key          => $bugzilla_api_key,
+                generic_worker_version    => 'v13.0.3',
+                generic_worker_sha256     => '6e5c1543fb3c333ca783d0a5c4e557b2b5438aada4bc23dc02402682ae4e245e',
                 taskcluster_proxy_version => 'v5.1.0',
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
                 livelog_version           => 'v1.1.0',
                 livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
-                user                      => 'root',
-                gw_dir                    => '/var/local/generic-worker',
+                user                      => 'cltbld',
+                user_homedir              => '/Users/cltbld',
             }
 
             include dirs::tools
@@ -117,8 +115,10 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_staging {
             contain mercurial::system_hgrc
 
             contain packages::python2
-            # zstandard for py2 is not in moz pypi??
-            #contain python2::system_pip_conf
+            python2::user_pip_conf { 'cltbld_user_pip_conf':
+                user  => 'cltbld',
+                group => 'staff',
+            }
 
             file {
                 '/tools/python':

@@ -4,10 +4,6 @@
 
 class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
 
-    class { 'roles_profiles::profiles::cltbld_user':
-        autologin => false,
-    }
-
     $worker_type  = 'gecko-3-t-osx-1014'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 

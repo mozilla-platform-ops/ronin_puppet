@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::xcode_cmd_line_tools (
-    Pattern[/^\d+\.\d+_?\d*$/] $version = '12.2',
+    Pattern[/^\d+\.\d+_?\d*$/] $version = '10.1',
 ) {
 
     packages::macos_package_from_s3 { "Command_Line_Tools_for_Xcode_${version}.dmg":
