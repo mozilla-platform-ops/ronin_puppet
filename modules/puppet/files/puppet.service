@@ -6,9 +6,8 @@ After=network-online.target
 [Service]
 ExecStart=/usr/local/bin/run-puppet.sh
 Type=oneshot
-# we're using systemd just as a way to start a script, please no process
-# control. by default systemd can kill puppet during a dpkg command (and other
-# horrible things).
+# we're using systemd only to start the script. disable process control.
+# - we don't want puppet killed mid-run.
 KillMode=none
 
 [Install]
