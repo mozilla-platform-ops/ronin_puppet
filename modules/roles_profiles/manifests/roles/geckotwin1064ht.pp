@@ -29,4 +29,6 @@ class roles_profiles::roles::geckotwin1064ht {
     include roles_profiles::profiles::windows_custom_config_generic_worker
     include roles_profiles::profiles::microsoft_tools
     include roles_profiles::profiles::google_chrome
+
+    include roles_profiles::profiles::audit_and_recovery
 }
