@@ -42,6 +42,7 @@ function Write-Log {
     Write-Host  -object $message -ForegroundColor $fc
   }
 }
+
 function Setup-Logging {
   param (
     [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
@@ -70,66 +71,39 @@ function Setup-Logging {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Install-BootstrapModule {
+
+Function Start-Restore {
   param (
-    [string] $src_Organisation,
-    [string] $src_Repository,
-    [string] $src_Revision,
-    [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $filename = "bootstrap.psm1",
-    [string] $module_name = ($filename).replace(".pms1",""),
-    [string] $modulesPath = ('{0}\Modules\bootstrap' -f $pshome),
-    [string] $bootstrap_module = "$modulesPath\bootstrap",
-    [string] $moduleUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $filename)
+    [string] $ronin_key = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
+    [int32] $boots = (Get-ItemProperty $ronin_key).reboot_count,
+    [int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
+    [string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
+    [string] $checkpoint_date = (Get-ItemProperty $ronin_key).last_restore_point
+
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
 
-    # Delete the existing module to ensure latest is used.
-    if (Test-Path "$modulesPath\\$filename") {
-        Remove-Item "$modulesPath\\$filename"
+	Write-Log -message  ('{0} ::  Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+	Stop-ScheduledTask -TaskName maintain_system
+
+	Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+	Stop-process -name generic-worker -force
+	Remove-Item -Recurse -Force $env:systemdrive\generic-worker
+	Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
+	Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
+	Remove-Item –Path -Force $env:windir\temp\*
+	sc delete "generic-worker"
+	Remove-ItemProperty -path $ronin_key -recurse -force
+	Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
+	$RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
+	Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
+
     }
-    mkdir $bootstrap_module  -ErrorAction SilentlyContinue
-    Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$filename" -UseBasicParsing
-    Get-Content -Encoding UTF8 "$bootstrap_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
-    Import-Module -Name $module_name
-    }
+  }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
-}
-
-$workerType = 'gecko-t-win10-64-ht'
-$src_Organisation = 'markcor'
-$src_Repository = 'ronin_puppet'
-$src_Revision = 'bug1692508'
-$image_provisioner = 'mdt'
-$max_boots = 10
-
-# Ensuring scripts can run uninhibited
-Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-
-If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
-  $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-}
-If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-  Setup-Logging
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Wait-On-MDT
-  Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-#  Set-restore_point -max_boots $max_boots
-  Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-  Install-Prerequ
-  shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
-}
-If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Ronin-PreRun
-  Bootstrap-Puppet
-}
-If ($stage -eq 'complete') {
-  Import-Module bootstrap
- # Start-Restore
 }
