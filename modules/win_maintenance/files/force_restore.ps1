@@ -107,3 +107,5 @@ Function Start-Restore {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+
+Write-host testing but I am $env:computername
