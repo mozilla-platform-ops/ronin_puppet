@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_users::administrator::authorized_keys (
-    String $win_audit
+    String $relops_key
 ) {
     $auth_keys_dir = "${facts['custom_win_systemdrive']}\\Users\\Administrator\\.ssh"
 
@@ -11,6 +11,6 @@ class win_users::administrator::authorized_keys (
         ensure => directory,
     }
     file { "${auth_keys_dir}\\authorized_keys":
-        content => epp('win_users::authorized_keys.epp'),
+        content => $relops_key,
     }
 }

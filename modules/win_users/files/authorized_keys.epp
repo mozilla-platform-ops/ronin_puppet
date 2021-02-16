@@ -1,1 +1,0 @@
-<%= $win_users::administrator::authorized_keys::win_audit %>
