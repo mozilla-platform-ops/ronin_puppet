@@ -11,6 +11,6 @@ class win_users::administrator::authorized_keys (
         ensure => directory,
     }
     file { "${auth_keys_dir}\\authorized_keys":
-        content => win_audit,
+        content => epp('win_users::authorized_keys.epp'),
     }
 }
