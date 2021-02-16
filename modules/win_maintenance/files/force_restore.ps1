@@ -108,4 +108,4 @@ Function Start-Restore {
   }
 }
 
-Write-host testing but I am $env:computername
+Start-Restore

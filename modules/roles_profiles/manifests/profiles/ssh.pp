@@ -15,29 +15,30 @@ class roles_profiles::profiles::ssh {
             $firewall_port        = lookup('windows.datacenter.ports.ssh')
             $firewall_rule_name   = 'SSH'
 
-            class { 'win_openssh':
-                programfiles      => $programfiles,
-                pwrshl_run_script => $pwrshl_run_script,
-                ssh_program_data  => $ssh_program_data,
+            # Needs to be reworked for non datacenter windows workers workers
+            # if $facts['custom_win_location'] == 'azure' :
+                # class { 'win_openssh':
+                    # programfiles      => $programfiles,
+                    # pwrshl_run_script => $pwrshl_run_script,
+                    # ssh_program_data  => $ssh_program_data,
+                # }
+            # }
+
+            class { 'win_users::administrator::authorized_keys':
+                win_audit => lookup('all_users.win_audit'),
             }
-            case $facts['custom_win_mozspace'] {
-                # Restrict SSH access in datacenters to jump hosts.
-                'mdc1', 'mdc2': {
-                    win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc1_jumphost":
-                        port            => $firewall_port,
-                        remote_ip       => $mdc1_jumphosts,
-                        reciprocal      => true,
-                        fw_display_name => "${firewall_rule_name}_mdc1",
-                    }
-                    win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc2_jumphost":
-                        port            => $firewall_port,
-                        remote_ip       => $mdc2_jumphosts,
-                        reciprocal      => true,
-                        fw_display_name => "${firewall_rule_name}_mdc2",
-                    }
+
+            # For datacenter workers OpenSSH is enabled during deployment
+            if $facts['custom_win_location'] == 'datacenter' {
+                if $facts['custom_win_sshd'] == 'installed' {
+                    include win_openssh::service
                 }
-                default : {
-                    # TODO: Add an exception to open up the port if needed to nodes outside of the datacenter.
+                # Restrict SSH access in datacenters to jump hosts.
+                win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc1_jumphost":
+                    port            => $firewall_port,
+                    remote_ip       => $mdc1_jumphosts,
+                    reciprocal      => true,
+                    fw_display_name => "${firewall_rule_name}_mdc1",
                 }
             }
             # Bug List
