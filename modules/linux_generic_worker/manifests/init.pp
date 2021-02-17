@@ -106,11 +106,11 @@ class linux_generic_worker (
             mode    => '0755';
 
         '/usr/local/bin/run-start-worker-wrapper.sh':
-            ensure  => present,
-            content => 'linux_generic_worker/run-start-worker-wrapper.sh',
-            owner   => root,
-            group   => root,
-            mode    => '0755';
+            ensure => present,
+            source => "puppet:///modules/${module_name}/run-start-worker-wrapper.sh",
+            owner  => root,
+            group  => root,
+            mode   => '0755';
 
         '/etc/start-worker.yml':
             ensure  => present,
