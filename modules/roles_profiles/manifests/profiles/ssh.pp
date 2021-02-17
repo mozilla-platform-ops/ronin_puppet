@@ -24,7 +24,7 @@ class roles_profiles::profiles::ssh {
                 # }
             # }
 
-            $relops_key = lookup('all_users.relops.[1]')
+            $relops_key = lookup('all_users.relops')
             #$relops_key = $key[1]
 
 
