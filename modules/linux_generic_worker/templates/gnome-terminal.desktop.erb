@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 [Desktop Entry]
 Type=Application
-Exec=gnome-terminal -x /usr/local/bin/run-start-worker.sh /etc/start-worker.yml
+Exec=gnome-terminal -x '/usr/local/bin/run-start-worker.sh /etc/start-worker.yml 2>&1 | logger -t run-start-worker -s'
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name=Generic-Worker

@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
+set -x
 
 # This is a wrapper script for calling worker manager, such that when the g-w
 # exits, this script will reboot the machine. Note, in the worker manager config
