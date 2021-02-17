@@ -24,7 +24,7 @@ class roles_profiles::profiles::ssh {
                 # }
             # }
 
-            $relops_key = lookup('windows.relops_ssh')
+            $relops_key = lookup('windows.winaudit_ssh')
 
             class { 'win_users::administrator::authorized_keys':
                 relops_key => $relops_key,
