@@ -107,7 +107,7 @@ class linux_generic_worker (
 
         '/usr/local/bin/run-start-worker-wrapper.sh':
             ensure  => present,
-            content => template('linux_generic_worker/run-start-worker-wrapper.sh'),
+            content => 'linux_generic_worker/run-start-worker-wrapper.sh',
             owner   => root,
             group   => root,
             mode    => '0755';
