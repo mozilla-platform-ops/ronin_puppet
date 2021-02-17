@@ -105,6 +105,13 @@ class linux_generic_worker (
             group   => root,
             mode    => '0755';
 
+        '/usr/local/bin/run-start-worker-wrapper.sh':
+            ensure  => present,
+            content => template('linux_generic_worker/run-start-worker-wrapper.sh'),
+            owner   => root,
+            group   => root,
+            mode    => '0755';
+
         '/etc/start-worker.yml':
             ensure  => present,
             content => template('linux_generic_worker/worker-runner-config.yml.erb'),
