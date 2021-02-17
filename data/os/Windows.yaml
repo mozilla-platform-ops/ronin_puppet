@@ -50,6 +50,8 @@ windows:
     nssm: "%{facts.custom_win_systemdrive}\\nssm"
     vac: "%{facts.custom_win_systemdrive}\\VAC"
 
+  relops_ssh: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j+zRPprLFeTgRwkgI6mcjQCeEoaqOY2 Relops ed25519 Key"
+
 # this should be changed into a defined type
 # Useful commands
 win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -file"

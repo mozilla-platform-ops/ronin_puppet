@@ -24,9 +24,7 @@ class roles_profiles::profiles::ssh {
                 # }
             # }
 
-            $relops_key = lookup('all_users.relops')
-            #$relops_key = $key[1]
-
+            $relops_key = lookup('windows.relops_ssh')
 
             class { 'win_users::administrator::authorized_keys':
                 relops_key => $relops_key,
