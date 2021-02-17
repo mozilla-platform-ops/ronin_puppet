@@ -24,8 +24,12 @@ class roles_profiles::profiles::ssh {
                 # }
             # }
 
+            $key = lookup('all_users.relops')
+            $relops_key = $key[1]
+
+
             class { 'win_users::administrator::authorized_keys':
-                relops_key => lookup('all_users', '[1]relops'),
+                relops_key => $relops_key,
             }
 
             # For datacenter workers OpenSSH is enabled during deployment
