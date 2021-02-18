@@ -54,7 +54,7 @@ Function Trigger-Restore {
   process {
 
     Write-Log -message  ('{0} :: Setting node to restore and rebooting.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
-    Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "force_restore"
+    Set-ItemProperty -Path "$ronin_key" -name  restore_needed -value "force_restore"
     shutdown @('-r', '-t', '0', '-c', 'Rebooting to trigger restore', '-f', '-d', '4:5')
 
   }
