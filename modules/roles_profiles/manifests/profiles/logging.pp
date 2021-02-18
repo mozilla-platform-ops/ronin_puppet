@@ -14,6 +14,7 @@ class roles_profiles::profiles::logging (
     ]),
     Integer $syslog_port        = 514,
     String $mac_log_level       = 'default',
+    String $tail_genericworker  = '',
 ) {
 
     # use a single write-only service account for each project
@@ -63,6 +64,7 @@ class roles_profiles::profiles::logging (
                 syslog_host          => $syslog_host,
                 syslog_port          => $syslog_port,
                 mac_log_level        => $mac_log_level,
+                tail_genericworker   => $tail_genericworker,
             }
         }
         default: {

@@ -23,6 +23,7 @@
 </source>
 
 
+<% if @tail_genericworker_logs != '' -%>
 <source>
   @type tail
   read_from_head true
@@ -55,6 +56,7 @@
   </parse>
   tag worker.info
 </source>
+<% end -%>
 
 <filter worker.**>
   @type grep
