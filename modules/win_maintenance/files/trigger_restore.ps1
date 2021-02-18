@@ -49,7 +49,7 @@ Function Start-Restore {
     [int32] $boots = (Get-ItemProperty $ronin_key).reboot_count,
     [int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
     [string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
-    [string] $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
+    [string] $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"}),
     [string] $checkpoint_date = (Get-ItemProperty $ronin_key).last_restore_point
 
   )
