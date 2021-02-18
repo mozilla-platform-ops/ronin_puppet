@@ -57,7 +57,6 @@ Function Start-Restore {
   }
   process {
 
-	Write-Log -message  ('{0} ::  Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 	Stop-ScheduledTask -TaskName maintain_system
 
 	Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -67,7 +66,6 @@ Function Start-Restore {
 	Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
 	Remove-Item –Path -Force $env:windir\temp\*
 	sc delete "generic-worker"
-	Remove-ItemProperty -path $ronin_key -recurse -force
 	Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
 	$RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
 	Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
