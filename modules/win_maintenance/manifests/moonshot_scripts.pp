@@ -11,9 +11,9 @@ class win_maintenance::moonshot_scripts {
     }
 
     file { "${audit_dir}\\worker_status.ps1":
-        content => file('win_maintenance/worker_status.ps1'),
+        source => file('win_maintenance/worker_status.ps1'),
     }
     file { "${audit_dir}\\force_restore.ps1":
-        content => file('win_maintenance/trigger_restore.ps1'),
+        source => file('win_maintenance/trigger_restore.ps1'),
     }
 }
