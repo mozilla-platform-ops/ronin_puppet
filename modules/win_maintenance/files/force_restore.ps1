@@ -4,7 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
-function Write-Log {
+<# function Write-Log {
   param (
     [string] $message,
     [string] $severity = 'INFO',
@@ -41,7 +41,7 @@ function Write-Log {
     $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
     Write-Host  -object $message -ForegroundColor $fc
   }
-}
+} #>
 
 
 Function Start-Restore {
