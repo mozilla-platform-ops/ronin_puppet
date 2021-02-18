@@ -55,18 +55,20 @@ Function Start-Restore {
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
-  Stop-ScheduledTask -TaskName maintain_system
-  Stop-process -name generic-worker -force
-  Remove-Item -Recurse -Force $env:systemdrive\generic-worker
-  Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
-  Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
-  Remove-Item –Path -Force $env:windir\temp\*
-  sc delete "generic-worker"
-  Remove-ItemProperty -path $ronin_key -recurse -force
+  process {
+    Stop-ScheduledTask -TaskName maintain_system
+    Stop-process -name generic-worker -force
+    Remove-Item -Recurse -Force $env:systemdrive\generic-worker
+    Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
+    Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
+    Remove-Item –Path -Force $env:windir\temp\*
+    sc delete "generic-worker"
+    Remove-ItemProperty -path $ronin_key -recurse -force
 
-  Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
-  $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
-  Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
+    Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
+    $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
+    Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
+  }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
