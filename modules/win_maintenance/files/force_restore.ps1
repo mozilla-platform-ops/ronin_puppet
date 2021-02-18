@@ -72,8 +72,6 @@ Function Start-Restore {
 	Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
 	$RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
 	Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
-
-    }
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
