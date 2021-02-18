@@ -43,37 +43,24 @@ function Write-Log {
   }
 }
 
-Function Start-Restore {
+Function Trigger-Restore {
   param (
     [string] $ronin_key = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
-    [int32] $boots = (Get-ItemProperty $ronin_key).reboot_count,
-    [int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
-    [string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
-    [string] $checkpoint_date = (Get-ItemProperty $ronin_key).last_restore_point
-
+    [string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    Stop-ScheduledTask -TaskName maintain_system
-    Stop-process -name generic-worker -force
-    Remove-Item -Recurse -Force $env:systemdrive\generic-worker
-    Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
-    Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
-    Remove-Item –Path -Force $env:windir\temp\*
-    sc delete "generic-worker"
-    Remove-ItemProperty -path $ronin_key -recurse -force
 
-    Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
-    $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
-    Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
+    Write-Log -message  ('{0} :: Setting node to restore and rebooting.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
+    Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "force_restore"
+    shutdown @('-r', '-t', '0', '-c', 'Rebooting to trigger restore', '-f', '-d', '4:5'
+
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
 
-Start-Restore
-
-# empty comment
+Trigger-Restore
