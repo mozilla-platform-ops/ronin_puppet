@@ -121,7 +121,7 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'signing-mac-v1'
-        scriptworker_revision: "e5422970f06e983e85365470a6694ab0173ebd14"
+        scriptworker_revision: "15f47ca82a0dc0dbe2a27ab1d844ab48824f5c68"
         scriptworker_scripts_revision: "00d85b2574c693b5eccd00b9095314662a5560d3"
     tb-prod:
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
@@ -129,7 +129,7 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'tb-signing-mac-v1'
-        scriptworker_revision: "e5422970f06e983e85365470a6694ab0173ebd14"
+        scriptworker_revision: "15f47ca82a0dc0dbe2a27ab1d844ab48824f5c68"
         scriptworker_scripts_revision: "00d85b2574c693b5eccd00b9095314662a5560d3"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
@@ -138,7 +138,7 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
-        scriptworker_revision: "e5422970f06e983e85365470a6694ab0173ebd14"
+        scriptworker_revision: "15f47ca82a0dc0dbe2a27ab1d844ab48824f5c68"
         scriptworker_scripts_revision: "00d85b2574c693b5eccd00b9095314662a5560d3"
 
 poller_config:
