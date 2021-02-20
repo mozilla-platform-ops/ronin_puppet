@@ -47,7 +47,13 @@ describe file('/etc/xdg/autostart/gnome-software-service.desktop') do
 end
 
 # appearance: check ~cltbld files
-
 describe file('/home/cltbld/.config/gnome-initial-setup-done') do
   it { should exist }
+end
+
+# verify the colord fix is in place
+describe file('/etc/systemd/system/graphical.target') do
+  it { should exist }
+  it { should contain 'After=multi-user.target rescue.service rescue.target display-manager.service colord.service' }
+  it { should contain 'Wants=display-manager.service colord.service' }
 end

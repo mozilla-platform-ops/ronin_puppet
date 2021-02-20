@@ -122,6 +122,15 @@ class linux_generic_worker (
         '/var/log/genericworker':
             ensure => directory,
             mode   => '0777';
+
+        # fix for https://bugs.launchpad.net/ubuntu/+source/gnome-settings-daemon/+bug/1764417
+        # - happens occasionally. causes autostart scripts to not run.
+        '/etc/systemd/system/graphical.target':
+            ensure => present,
+            source => "puppet:///modules/${module_name}/graphical.target",
+            owner  => root,
+            group  => root,
+            mode   => '0644';
     }
 
     # TODO: cleanup
