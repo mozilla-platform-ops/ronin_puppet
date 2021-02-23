@@ -5,7 +5,7 @@
 class packages::fluent_plugin_papertrail {
     require packages::td_agent
 
-    $version = '0.2.7'
+    $version = '0.2.8'
 
     exec {
         'install papertrail plugin with agent ruby':

@@ -96,6 +96,7 @@
     # Logging pid can be enabled:
     # message pid:${record["pid"]} ${record["message"]}
     # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
+    # error="'Default' is not a designated severity"
 <% if @syslog_host != '' -%>
     # syslog severities:
     #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
@@ -152,6 +153,9 @@
     @type papertrail
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
+    program ${program}
+    severity ${syslog_severity}
+    message ${log_message}
   </store>
 <% elsif @syslog_host != '' -%>
   <store>
