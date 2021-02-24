@@ -32,3 +32,21 @@ workerConfig:
   tasksDir: "<%= @task_dir %>"
   wstAudience: "firefoxcitc"
   wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
+  workerTypeMetadata:
+    workerId: "<%= @worker_id %>"
+    workerGroup: "<%= @worker_group %>"
+    ip: "<%= @ipaddress %>"
+    arch: "<%= @facts['os']['architecture'] %>"
+    processor_name: "<%= @facts['system_profiler']['processor_name'] %>"
+    processor_speed: "<%= @facts['system_profiler']['processor_speed'] %>"
+    processor_count: "<%= @facts['system_profiler']['processors'] %>"
+    processor_cores: "<%= @facts['system_profiler']['cores'] %>"
+    disk:
+      used: "<%= @facts['mountpoints']['/']['used'] %>"
+      available: "<%= @facts['mountpoints']['/']['available'] %>"
+      capacity: "<%= @facts['mountpoints']['/']['capacity'] %>"
+    memory: "<%= @facts['system_profiler']['memory'] %>"
+    model_identifier: "<%= @facts['system_profiler']['model_identifier'] %>"
+    system_version: "<%= @facts['system_profiler']['system_version'] %>"
+    machine-setup:
+      config: "https://github.com/mozilla-platform-ops/ronin_puppet"
