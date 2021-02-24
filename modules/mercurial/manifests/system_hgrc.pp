@@ -11,7 +11,7 @@ class mercurial::system_hgrc {
     file {
         default: * => $::shared::file_defaults;
 
-        $::mercurial::settings::hgrc_parentdirs:
+        $::mercurial::settings::hgrc_parentdir:
             ensure => directory;
     }
 
