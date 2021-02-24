@@ -105,6 +105,13 @@ class linux_generic_worker (
             group   => root,
             mode    => '0755';
 
+        '/usr/local/bin/run-start-worker-wrapper.sh':
+            ensure => present,
+            source => "puppet:///modules/${module_name}/run-start-worker-wrapper.sh",
+            owner  => root,
+            group  => root,
+            mode   => '0755';
+
         '/etc/start-worker.yml':
             ensure  => present,
             content => template('linux_generic_worker/worker-runner-config.yml.erb'),
@@ -115,6 +122,15 @@ class linux_generic_worker (
         '/var/log/genericworker':
             ensure => directory,
             mode   => '0777';
+
+        # workaround for https://bugs.launchpad.net/ubuntu/+source/gnome-settings-daemon/+bug/1764417
+        # - happens occasionally. causes autostart scripts to not run.
+        '/etc/systemd/system/graphical.target':
+            ensure => present,
+            source => "puppet:///modules/${module_name}/graphical.target",
+            owner  => root,
+            group  => root,
+            mode   => '0644';
     }
 
     # TODO: cleanup
