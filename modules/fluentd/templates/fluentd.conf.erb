@@ -70,7 +70,9 @@
   enable_ruby true
   <record>
     program "worker"
-<% if @syslog_host != '' -%>
+<% if @syslog_host =~ /papertrail/ -%>
+    severity "${tag_parts[1]}"
+<% elsif @syslog_host != '' -%>
     syslog_severity "${tag_parts[1]}"
     # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
     # No task 5h15m43 1
@@ -92,14 +94,17 @@
   <record>
 <% if @syslog_host =~ /papertrail/ -%>
     hostname "#{Socket.gethostname.split('.')[0]}"
+    message #{record["log_message"]}
 <% end -%>
     # Logging pid can be enabled:
     # message pid:${record["pid"]} ${record["message"]}
     # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
     # error="'Default' is not a designated severity"
-<% if @syslog_host != '' -%>
     # syslog severities:
     #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
+<% if @syslog_host =~ /papertrail/ -%>
+    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
+<% elsif @syslog_host != '' -%>
     syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
 <% end -%>
 <% if @stackdriver_clientid != '' -%>
@@ -153,9 +158,6 @@
     @type papertrail
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
-    program ${program}
-    severity ${syslog_severity}
-    message ${log_message}
   </store>
 <% elsif @syslog_host != '' -%>
   <store>
