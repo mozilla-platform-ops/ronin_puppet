@@ -137,7 +137,7 @@ class worker_runner (
             file { $worker_runner_conf:
                 ensure  => file,
                 content => template("${module_name}/worker_runner_config.yaml.erb"),
-                mode    => '0644',
+                mode    => '0600',
                 owner   => $owner,
                 group   => $group,
             }
