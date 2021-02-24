@@ -19,6 +19,9 @@ class roles_profiles::profiles::worker {
                 generic_worker_engine => lookup('worker.generic_worker_engine'),
                 idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
             }
+            # TODO: don't assume these are need with all workers. break out into another profile?
+            include mercurial::system_hgrc
+            include mercurial::ext::robustcheckout
         }
         default: {
             fail("${::operatingsystem} not supported")
