@@ -236,8 +236,6 @@ all_users:
   # from relops_common_keys_2020-09-08.yml
   relops:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j+zRPprLFeTgRwkgI6mcjQCeEoaqOY2 Relops ed25519 Key
-  win_audit:
-    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/htVXFyRg4wDhIIl8rCUBwI2QhkzNkUDgfT+uBy5Ni8PZGu/5KfVTBQyFIAv5hbe9O+koakGElcQxwNhYOm6YbYwbht+rJt7GTh9PKGRhcRBIrOb1v1x032ZXkMoBkHpQPnD7pBky5hVRkrEaXDGrg/NxhFMr2HgbfOvWPX7NGaQ0WJky7oMvEKB7kTnCYZkogzuvu4rtUDF2FzINn91IaXfi9LDPLZnlGSZ1h03yiezbuY+NePNJOuRj4QoVuCsdj6nZ5X9JeDMClOZpn2RCtzsEPPYnBgH0m6cYFUvcRV9AkRp4Q1wA+HIcBprTw1eWbknmt4qFH7vkXQCNUozl mcornmesser@rejh1.srv.releng.mdc1.mozilla.com
 
   notary1:
     - ssh-rsa AAAA invalid@mozilla.com
