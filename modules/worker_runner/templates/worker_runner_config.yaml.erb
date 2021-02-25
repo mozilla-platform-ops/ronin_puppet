@@ -41,10 +41,7 @@ workerConfig:
     processor_speed: "<%= @facts['system_profiler']['processor_speed'] %>"
     processor_count: "<%= @facts['system_profiler']['processors'] %>"
     processor_cores: "<%= @facts['system_profiler']['cores'] %>"
-    disk:
-      used: "<%= @facts['mountpoints']['/']['used'] %>"
-      available: "<%= @facts['mountpoints']['/']['available'] %>"
-      capacity: "<%= @facts['mountpoints']['/']['capacity'] %>"
+    disk_size: "<%= @facts['mountpoints']['/']['size'] %>"
     memory: "<%= @facts['system_profiler']['memory'] %>"
     model_identifier: "<%= @facts['system_profiler']['model_identifier'] %>"
     system_version: "<%= @facts['system_profiler']['system_version'] %>"
