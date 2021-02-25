@@ -3,13 +3,6 @@ name: macmini-r8
 groups:
   - name: macmini-r8-mdc1
     targets:
-      - macmini-r8-73.test.releng.mdc1.mozilla.com
-      - macmini-r8-74.test.releng.mdc1.mozilla.com
-      - macmini-r8-75.test.releng.mdc1.mozilla.com
-      - macmini-r8-76.test.releng.mdc1.mozilla.com
-      - macmini-r8-77.test.releng.mdc1.mozilla.com
-      - macmini-r8-78.test.releng.mdc1.mozilla.com
-      - macmini-r8-79.test.releng.mdc1.mozilla.com
 #     - macmini-r8-129.test.releng.mdc1.mozilla.com
 #     - macmini-r8-133.test.releng.mdc1.mozilla.com
 #     - macmini-r8-134.test.releng.mdc1.mozilla.com
@@ -22,6 +15,13 @@ groups:
 
   - name: gecko-t-osx-1015-r8-qa
     targets:
+      - macmini-r8-73.test.releng.mdc1.mozilla.com
+      - macmini-r8-74.test.releng.mdc1.mozilla.com
+      - macmini-r8-75.test.releng.mdc1.mozilla.com
+      - macmini-r8-76.test.releng.mdc1.mozilla.com
+      - macmini-r8-77.test.releng.mdc1.mozilla.com
+      - macmini-r8-78.test.releng.mdc1.mozilla.com
+      - macmini-r8-79.test.releng.mdc1.mozilla.com
       - macmini-r8-80.test.releng.mdc1.mozilla.com
       - macmini-r8-81.test.releng.mdc1.mozilla.com
       - macmini-r8-82.test.releng.mdc1.mozilla.com
