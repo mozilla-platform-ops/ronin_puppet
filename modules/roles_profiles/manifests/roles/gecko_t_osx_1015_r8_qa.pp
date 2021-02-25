@@ -21,5 +21,6 @@ class roles_profiles::roles::gecko_t_osx_1015_r8_qa {
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::packages_installed
+    include ::roles_profiles::profiles::metrics
     include ::roles_profiles::profiles::worker
 }
