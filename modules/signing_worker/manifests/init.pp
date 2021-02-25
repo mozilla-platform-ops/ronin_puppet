@@ -73,7 +73,6 @@ define signing_worker (
       $scriptworker_base,
       "${scriptworker_base}/certs",
       "${scriptworker_base}/logs",
-      "${scriptworker_base}/artifact",
     ]
     file { $required_directories:
       ensure => 'directory',
