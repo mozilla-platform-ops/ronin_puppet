@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set +e
+
+if [ ! -e <%= @scriptworker_base %>/.enabled ]; then
+    echo "<%= @scriptworker_base %>/.enabled doesn't exist! sleeping 300 and exiting"
+    sleep 300
+    exit 1
+else
+    set -e
+    /bin/launchctl list | grep -wq "<%= @launchd_script_name %>"
+    status=$i
+    set +e
+    if [ $status -eq 0 ] ; then
+        /bin/launchctl unload "<%= @launchd_script %>"
+    fi
+    /bin/launchctl load "<%= @launchd_script %>"
+fi

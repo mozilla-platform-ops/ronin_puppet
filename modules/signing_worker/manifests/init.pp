@@ -29,6 +29,7 @@ define signing_worker (
     $scriptworker_config_file = "${scriptworker_base}/scriptworker.yaml"
     $script_config_file       = "${scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
+    $launchctl_wrapper        = "${scriptworker_base}/launchctl_wrapper.sh"
 
     # Dep workers have a non-deterministic suffix
     $worker_id = "${facts['networking']['hostname']}${worker_id_suffix}"
@@ -259,21 +260,19 @@ define signing_worker (
         group   => $group,
     }
 
-    $launchd_script = "/Library/LaunchDaemons/org.mozilla.scriptworker.${user}.plist"
+    $launchd_script_name = "org.mozilla.scriptworker.${user}"
+    $launchd_script = "/Library/LaunchDaemons/${launchd_script_name}.plist"
     file { $launchd_script:
         content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
         mode    => '0644',
     }
-    # Disabled until full setup is complete.
-    # exec { "${user}_launchctl_load":
-    #    command   => "/bin/launchctl load ${$launchd_script}",
-    #    subscribe => File[$launchd_script],
-    # }
-
-    # Remove this notify when enabling the exec launchctl, above
-    notify { "launchctl_${user}":
-        message   => "Run: /bin/launchctl load ${$launchd_script}",
-        subscribe => File[$launchd_script],
+    file { $launchctl_wrapper:
+        content => template('signing_worker/launchctl_wrapper.sh.erb'),
+        mode    => '0644',
+    }
+    exec { "${user}_launchctl_load":
+        command   => "/bin/bash ${$launchctl_wrapper}",
+        subscribe => [File[$launchd_script], File[$launchctl_wrapper]],
     }
 
     if !empty($poller_config) {
@@ -314,15 +313,8 @@ define signing_worker (
             content => template('signing_worker/org.mozilla.notarization_poller.plist.erb'),
             mode    => '0644',
         }
-        # Disabled until full setup is complete.
-        # exec { "${poller_config['user']}_launchctl_load":
-        #    command   => "/bin/launchctl load ${$poller_launchd_script}",
-        #    subscribe => File[$poller_launchd_script],
-        # }
-
-        # Remove this notify when enabling the exec launchctl, above
-        notify { "launchctl_${poller_config['user']}":
-            message   => "Run: /bin/launchctl load ${$poller_launchd_script}",
+        exec { "${poller_config['user']}_launchctl_load":
+            command   => "/bin/launchctl load ${$poller_launchd_script}",
             subscribe => File[$poller_launchd_script],
         }
     }
