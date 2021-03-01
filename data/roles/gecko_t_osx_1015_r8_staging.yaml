@@ -19,8 +19,7 @@ worker:
   idle_timeout_secs: 21600 # 6 hours
 
 packages_classes:
-    #  - google_chrome
-    #  - java_developer_package_for_osx
+  - google_chrome
   - mercurial
   - nodejs
   - python2
@@ -37,7 +36,7 @@ packages_classes:
   - zstandard
 
 # Package class parameters
-packages::google_chrome::version: v80.0.3987.106
+packages::google_chrome::version: v88.0.4324.192
 packages::mercurial::version: 5.5.2
 packages::nodejs::version: 12.11.1
 packages::python2::version: 2.7.18
