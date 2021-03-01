@@ -23,6 +23,36 @@
 </source>
 
 
+<source>
+  @type tail
+  read_from_head true
+  path /var/log/system.log
+  pos_file /var/log/system.log.pos
+  <parse>
+    @type syslog
+    with_priority false
+    parser_type string
+    # we could parse multiline, but for now we do not care about non-conforming syslog entries
+    #  @type multiline
+    #  format_firstline /^[A-Za-z]{3} \d+ \d{2}:\d{2}:\d{2} /
+    #  format1 /^(?<time>[A-Za-z]{3} \d+ \d{2}:\d{2}:\d{2}) [^ ]+ (?<ident>[^\[ :]*)(?<message>[\[\]A-Za-z: ]*(\[(?<pid>\d+)\]:?)? .*)/
+    #  time_key time
+    #  time_format "%b %d %H:%M:%S"
+    #  keep_time_key true
+  </parse>
+  tag syslog
+</source>
+<filter syslog>
+  @type record_transformer
+  <record>
+    hostname ${record["host"]}
+    severity "info"
+    program ${record["ident"]}
+    facility local0
+  </record>
+</filter>
+
+
 <% if @tail_worker_logs -%>
 <source>
   @type tail
