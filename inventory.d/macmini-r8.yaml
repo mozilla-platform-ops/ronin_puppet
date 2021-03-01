@@ -13,7 +13,7 @@ groups:
 #     - macmini-r8-140.test.releng.mdc1.mozilla.com
 #     - macmini-r8-144.test.releng.mdc1.mozilla.com
 
-  - name: gecko-t-osx-1015-r8-qa
+  - name: gecko-t-osx-1015-r8
     targets:
       - macmini-r8-73.test.releng.mdc1.mozilla.com
       - macmini-r8-74.test.releng.mdc1.mozilla.com
@@ -69,13 +69,19 @@ groups:
       - macmini-r8-124.test.releng.mdc1.mozilla.com
       - macmini-r8-125.test.releng.mdc1.mozilla.com
       - macmini-r8-126.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1015_r8
+
+  - name: gecko-t-osx-1015-r8-staging
+    targets:
       - macmini-r8-127.test.releng.mdc1.mozilla.com
       - macmini-r8-128.test.releng.mdc1.mozilla.com
 #     - macmini-r8-141.test.releng.mdc1.mozilla.com
 #     - macmini-r8-142.test.releng.mdc1.mozilla.com
 #     - macmini-r8-143.test.releng.mdc1.mozilla.com
     facts:
-      puppet_role: gecko_t_osx_1015_r8_qa
+      puppet_role: gecko_t_osx_1015_r8_staging
+
 
   - name: gecko-1-b-osx-1015
     targets:

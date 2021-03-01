@@ -10,7 +10,7 @@ worker_metadata:
 worker:
   taskcluster_version: 40.0.3
   provider_type: standalone
-  worker_pool_id: releng-hardware/gecko-t-osx-1015-r8-qa
+  worker_pool_id: releng-hardware/gecko-t-osx-1015-r8
   worker_group: mdc1
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
