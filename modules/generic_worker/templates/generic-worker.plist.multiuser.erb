@@ -17,12 +17,18 @@
         <string>/usr/local/bin/run-generic-worker.sh</string>
         <string>run</string>
         <string>--config</string>
-        <string>/etc/generic-worker.config</string>
+        <string>/etc/generic-worker/config</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>/Users/cltbld</string>
+    <string>/etc/generic-worker</string>
+    <key>StandardOutPath</key>
+    <string>/var/opt/generic-worker/service.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/opt/generic-worker/service.stderr.log</string>
     <key>RunAtLoad</key>
     <false/>
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
     <key>KeepAlive</key>
     <dict>
         <key>PathState</key>
@@ -32,9 +38,7 @@
             <true/>
         </dict>
     </dict>
-    <key>StandardErrorPath</key>
-    <string>/var/log/genericworker/service.err</string>
-    <key>StandardOutPath</key>
-    <string>/var/log/genericworker/service.out</string>
+    <key>UserName</key>
+    <string>root</string>
 </dict>
 </plist>
