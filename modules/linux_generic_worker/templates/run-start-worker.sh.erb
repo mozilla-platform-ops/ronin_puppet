@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
+set -x
 
 # This is a wrapper script for calling worker manager, such that when the g-w
 # exits, this script will reboot the machine. Note, in the worker manager config
@@ -45,7 +48,7 @@ fi
 
 # First run the start-worker, passing through any arguments handed to this
 # wrapper script...
-/usr/local/bin/start-worker "$@" 2>&1 | logger -t generic-worker -s
+/usr/local/bin/start-worker "$@" 2>&1 | logger -t generic-worker
 
 exitstatus="${PIPESTATUS[0]}"
 
