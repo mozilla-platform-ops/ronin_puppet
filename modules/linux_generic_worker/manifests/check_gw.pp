@@ -11,14 +11,14 @@
 
 class linux_generic_worker::check_gw () {
 
-    require packages::python3
+    require linux_packages::py3
     require linux_packages::psutil_py3
 
-    $pips = [ 'pendulum' ];
+    $pips = [ 'pendulum' ]
     package { $pips:
         ensure   => installed,
         provider => pip3,
-        require  => Class['packages::python3'],
+        require  => Class['linux_packages::py3'],
     }
 
     file {
