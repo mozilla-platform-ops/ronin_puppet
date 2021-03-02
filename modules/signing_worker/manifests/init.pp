@@ -80,7 +80,7 @@ define signing_worker (
       group  =>  $group,
       mode   => '0750',
     }
-    file { "${scriptworker_base}/certs"
+    file { "${scriptworker_base}/certs":
       ensure => 'directory',
       owner  =>  $user,
       group  =>  $group,
