@@ -13,7 +13,8 @@ class linux_generic_worker::check_gw () {
 
     require packages::python3
 
-    $pips = [ 'pendulum', 'psutil' ]
+    # psutil is already installed
+    $pips = [ 'pendulum' ];
     package { $pips:
         ensure   => installed,
         provider => pip3,
@@ -37,7 +38,7 @@ class linux_generic_worker::check_gw () {
         source => "puppet:///modules/${module_name}/check_gw.service",
         notify => Exec['reload systemd'];
 
-      '/lib/systemd/system/check_gw.service':
+      '/lib/systemd/system/check_gw.timer':
         source => "puppet:///modules/${module_name}/check_gw.timer",
         notify => Exec['reload systemd'];
     }
