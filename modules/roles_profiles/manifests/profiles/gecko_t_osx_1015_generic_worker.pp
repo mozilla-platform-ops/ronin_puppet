@@ -2,11 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
-
+class roles_profiles::profiles::gecko_t_osx_1015_generic_worker {
+    $worker_type = 'gecko-t-osx-1015'
     require roles_profiles::profiles::cltbld_user
 
-    $worker_type  = 'gecko-t-osx-1014'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
@@ -20,16 +19,20 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
         'Darwin': {
 
             class { 'puppet::atboot':
-                telegraf_user     => lookup('telegraf.user'),
-                telegraf_password => lookup('telegraf.password'),
+                telegraf_user       => lookup('telegraf.user'),
+                telegraf_password   => lookup('telegraf.password'),
                 # Note the camelCase key names
-                meta_data         => $meta_data,
+                meta_data           => $meta_data,
+                puppet_env          => 'dev',
+                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
+                puppet_branch       => 'bug1665379_mac-loan-glandium',
+                puppet_notify_email => 'dhouse@mozilla.com',
+
             }
 
             class { 'roles_profiles::profiles::logging':
-                worker_type      => $worker_type,
-                mac_log_level    => 'default',
-                tail_worker_logs => true,
+                worker_type   => $worker_type,
+                mac_log_level => 'default',
             }
 
             class { 'telegraf':
@@ -93,15 +96,17 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
-                livelog_version           => 'v1.1.0',
-                livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
                 user                      => 'cltbld',
                 user_homedir              => '/Users/cltbld',
             }
 
+            exec { 'writes_in_catalina':
+                command => '/sbin/mount -uw /',
+                unless  => '/bin/test -d /builds || /bin/test -d /tools'
+            }
             include dirs::tools
 
-            include packages::google_chrome
+            #include packages::google_chrome
 
             contain packages::nodejs
             contain packages::wget
@@ -143,10 +148,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             contain packages::virtualenv
 
             contain packages::python2_zstandard
-            contain packages::python2_psutil
-
             contain packages::python3_zstandard
-            contain packages::python3_psutil
 
             include mercurial::ext::robustcheckout
         }

@@ -2,11 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
+class roles_profiles::profiles::gecko_t_osx_1014_generic_worker_multiuser {
 
-    require roles_profiles::profiles::cltbld_user
-
-    $worker_type  = 'gecko-t-osx-1014'
+    $worker_type  = 'gecko-t-osx-1014-multiuser'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     $meta_data        = {
@@ -22,14 +20,14 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
+                puppet_branch     => 'master',
                 # Note the camelCase key names
                 meta_data         => $meta_data,
             }
 
             class { 'roles_profiles::profiles::logging':
-                worker_type      => $worker_type,
-                mac_log_level    => 'default',
-                tail_worker_logs => true,
+                worker_type   => $worker_type,
+                mac_log_level => 'default',
             }
 
             class { 'telegraf':
@@ -78,30 +76,28 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 version => '1.3.8',
             }
 
-            class { 'generic_worker':
+            class { 'generic_worker::multiuser':
                 taskcluster_client_id     => $taskcluster_client_id,
                 taskcluster_access_token  => $taskcluster_access_token,
-                livelog_secret            => $livelog_secret,
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
-                quarantine_client_id      => $quarantine_client_id,
-                quarantine_access_token   => $quarantine_access_token,
-                bugzilla_api_key          => $bugzilla_api_key,
-                generic_worker_version    => 'v13.0.3',
-                generic_worker_sha256     => '6e5c1543fb3c333ca783d0a5c4e557b2b5438aada4bc23dc02402682ae4e245e',
+                task_dir                  => '/Users',
+                generic_worker_version    => 'v16.5.2',
+                generic_worker_sha256     => '7bd47da57aae65f120d89e8d70fb0a1f66762945994e0909d31eac6d63122046',
                 taskcluster_proxy_version => 'v5.1.0',
                 taskcluster_proxy_sha256  => '3faf524b9c6b9611339510797bf1013d4274e9f03e7c4bd47e9ab5ec8813d3ae',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '60bb15fa912589fd8d94dbbff2e27c2718eadaf2533fc4bbefb887f469e22627',
                 livelog_version           => 'v1.1.0',
-                livelog_sha256            => 'be5d4b998b208afd802ac6ce6c4d4bbf0fb3816bb039a300626abbc999dfe163',
-                user                      => 'cltbld',
-                user_homedir              => '/Users/cltbld',
+                livelog_sha256            => 'caabc35ec26498e755863d08c4c8b79e8b041a1d11b1fc8be0909718fc81113d',
+                user                      => 'root',
+                gw_dir                    => '/var/local/generic-worker',
             }
 
             include dirs::tools
 
             include packages::google_chrome
+            include roles_profiles::profiles::disable_chrome_updater
 
             contain packages::nodejs
             contain packages::wget
@@ -143,10 +139,7 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
             contain packages::virtualenv
 
             contain packages::python2_zstandard
-            contain packages::python2_psutil
-
             contain packages::python3_zstandard
-            contain packages::python3_psutil
 
             include mercurial::ext::robustcheckout
         }
