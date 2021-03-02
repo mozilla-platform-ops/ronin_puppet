@@ -279,10 +279,11 @@ define signing_worker (
         signing_worker::notarization_user { "create_user_${poller_config['user']}":
             user => $poller_config['user'],
         }
-        $poller_worker_id    = "poller-${facts['networking']['hostname']}"
-        $poller_dir          = "${scriptworker_base}/poller"
-        $poller_config_file  = "${scriptworker_base}/poller/poller.yaml"
-        $poller_wrapper      = "${scriptworker_base}/poller/poller_wrapper.sh"
+        $poller_worker_id         = "poller-${facts['networking']['hostname']}"
+        $poller_dir               = "${scriptworker_base}/poller"
+        $poller_config_file       = "${scriptworker_base}/poller/poller.yaml"
+        $poller_wrapper           = "${scriptworker_base}/poller/poller_wrapper.sh"
+        $poller_launchctl_wrapper = "${scriptworker_base}/poller/poller_launchctl_wrapper.sh"
 
         $poller_required_directories = [
           $poller_dir,
@@ -308,14 +309,19 @@ define signing_worker (
             group   => $group,
         }
 
-        $poller_launchd_script = "/Library/LaunchDaemons/org.mozilla.notarization_poller.${poller_config['user']}.plist"
+        $poller_launchd_script_name = "org.mozilla.notarization_poller.${poller_config['user']}"
+        $poller_launchd_script = "/Library/LaunchDaemons/${poller_launchd_script_name}.plist"
         file { $poller_launchd_script:
             content => template('signing_worker/org.mozilla.notarization_poller.plist.erb'),
             mode    => '0644',
         }
+        file { $poller_launchctl_wrapper:
+            content => template('signing_worker/poller_launchctl_wrapper.sh.erb'),
+            mode    => '0644',
+        }
         exec { "${poller_config['user']}_launchctl_load":
-            command   => "/bin/launchctl load ${$poller_launchd_script}",
-            subscribe => File[$poller_launchd_script],
+            command   => "/bin/bash ${$poller_launchctl_wrapper}",
+            subscribe => [File[$poller_launchd_script], File[$poller_launchctl_wrapper]],
         }
     }
 }
