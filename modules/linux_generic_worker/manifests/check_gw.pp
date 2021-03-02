@@ -12,8 +12,8 @@
 class linux_generic_worker::check_gw () {
 
     require packages::python3
+    require linux_packages::psutil_py3
 
-    # psutil is already installed
     $pips = [ 'pendulum' ];
     package { $pips:
         ensure   => installed,
