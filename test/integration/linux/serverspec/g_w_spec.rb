@@ -48,3 +48,10 @@ end
 describe file('/etc/start-worker.yml') do
   it { should exist }
 end
+
+# check_gw
+
+describe file('/opt/relops-check_gw/check_gw.py') do
+  it { should exist }
+  it { should be_executable }
+end
