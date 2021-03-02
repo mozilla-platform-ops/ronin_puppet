@@ -21,6 +21,14 @@ import psutil
 #                   0: everything ok
 #                   others: error
 
+# problematic scenarios currently:
+#   - operator hold
+#       - TODO: check for operator_hold... if present, don't do anything
+#   - test kitchen testing
+#       - meh... 15 minutes is fine for testing...?
+#           - if not, use operator hold
+
+# TODO: telegraf event logging (if clock fixed, if rebooted).
 
 def is_sys_date_ok():
     n = pendulum.now()
