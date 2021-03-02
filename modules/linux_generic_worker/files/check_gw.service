@@ -4,5 +4,3 @@ Description=Check that generic_worker is running
 [Service]
 Type=oneshot
 ExecStart=/opt/relops-check_gw/venv/bin/ run /opt/relops-check_gw/check_gw.py
-RemainAfterExit=true
-StandardOutput=journal
