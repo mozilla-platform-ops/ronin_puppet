@@ -72,7 +72,6 @@ define signing_worker (
 
     $required_directories = [
       $scriptworker_base,
-      "${scriptworker_base}/certs",
       "${scriptworker_base}/logs",
     ]
     file { $required_directories:
@@ -80,6 +79,12 @@ define signing_worker (
       owner  =>  $user,
       group  =>  $group,
       mode   => '0750',
+    }
+    file { "${scriptworker_base}/certs"
+      ensure => 'directory',
+      owner  =>  $user,
+      group  =>  $group,
+      mode   => '0700',
     }
 
     $scriptworker_clone_dir = "${scriptworker_base}/scriptworker"
@@ -246,11 +251,13 @@ define signing_worker (
         content => template('signing_worker/script_config.yaml.erb'),
         owner   => $user,
         group   => $group,
+        mode    => '0400',
     }
     file { $scriptworker_config_file:
         content => template('signing_worker/scriptworker.yaml.erb'),
         owner   => $user,
         group   => $group,
+        mode    => '0400',
     }
 
     file { $scriptworker_wrapper:
@@ -312,6 +319,7 @@ define signing_worker (
             content => template('signing_worker/poller.yaml.erb'),
             owner   => $poller_config['user'],
             group   => $group,
+            mode    => '0400',
         }
 
         file { $poller_wrapper:
