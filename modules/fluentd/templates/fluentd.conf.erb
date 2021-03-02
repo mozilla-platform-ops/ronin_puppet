@@ -91,9 +91,21 @@
   @type grep
   <exclude>
     key message
+    # monitored separately on hardware
+    # repeats noisily when no tasks
     pattern /^Disk available: \d+ bytes$/
   </exclude>
 </filter>
+<filter syslog>
+  @type grep
+  <exclude>
+    key message
+    # asl is deprecated.
+    # logged every 10m
+    patterm /^ASL Sender Statistics$/
+  </exclude>
+</filter>
+
 
 <filter worker.**>
   @type record_transformer
@@ -123,8 +135,8 @@
   @type record_transformer
   enable_ruby true
   <record>
-<% if @syslog_host =~ /papertrail/ -%>
     hostname "#{Socket.gethostname.split('.')[0]}"
+<% if @syslog_host =~ /papertrail/ -%>
     message #{record["log_message"]}
 <% end -%>
     # Logging pid can be enabled:
