@@ -272,7 +272,19 @@ define signing_worker (
     }
     exec { "${user}_launchctl_load":
         command   => "/bin/bash ${$launchctl_wrapper}",
-        subscribe => [File[$launchd_script], File[$launchctl_wrapper]],
+        subscribe => [
+            Exec["install ${scriptworker_base} iscript"],
+            # Requirements could include scriptworker dependencies, so restart
+            # the long-running daemon on requirements changes. Don't restart on
+            # iscript or scriptworker_client changes, because we'll pick those
+            # up during the next task run.
+            Exec["install ${scriptworker_base} requirements"],
+            Exec["install ${scriptworker_base} scriptworker"],
+            File[$launchd_script],
+            File[$launchctl_wrapper],
+            File[$scriptworker_config_file],
+            File[$scriptworker_wrapper],
+        ],
     }
 
     if !empty($poller_config) {
@@ -321,7 +333,15 @@ define signing_worker (
         }
         exec { "${poller_config['user']}_launchctl_load":
             command   => "/bin/bash ${$poller_launchctl_wrapper}",
-            subscribe => [File[$poller_launchd_script], File[$poller_launchctl_wrapper]],
+            subscribe => [
+                Exec["install ${scriptworker_base} notarization_poller"],
+                Exec["install ${scriptworker_base} requirements"],
+                Exec["install ${scriptworker_base} scriptworker_client"],
+                File[$poller_config_file],
+                File[$poller_launchd_script],
+                File[$poller_launchctl_wrapper],
+                File[$poller_wrapper],
+            ],
         }
     }
 }
