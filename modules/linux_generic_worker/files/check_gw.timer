@@ -12,6 +12,5 @@ OnBootSec=17min
 # - leave disabled for now (monitor and see if needed)
 # OnUnitActiveSec=10min
 
-
 [Install]
 WantedBy=timers.target
