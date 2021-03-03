@@ -145,8 +145,7 @@ if __name__ == "__main__":
         print("Host in operator_hold mode. Exiting...")
         sys.exit(rc)
 
-    # rsw_procs = find_procs_by_cmdline("run-start-worker.sh")
-    # print("rsw process: %s" % rsw_procs)
+    #
     gw_procs = find_procs_by_name("generic-worker")
     print("gw process: %s" % gw_procs)
     if len(gw_procs) == 1:
@@ -173,11 +172,6 @@ if __name__ == "__main__":
         if args.reboot:
             seconds_before_reboot = 10
             this_script = os.path.basename(__file__)
-            # wall fails with: 'wall: cannot get tty name: Inappropriate ioctl for device'
-            # os.system(
-            #     "wall '%s: Failure to launch generic-worker detected. Rebooting in %s seconds...'"
-            #     % (this_script, seconds_before_reboot)
-            # )
 
             # write to syslog
             # the argument to openlog() is the topic
