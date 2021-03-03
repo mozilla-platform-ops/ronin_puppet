@@ -11,6 +11,10 @@ import psutil
 # pseudocode for check_gw
 # - colord xsession workaround didn't seem to work
 #
+# if operator_hold (/home/cltbld/operator_hold)
+#   exit
+# if no puppet role (kitchen testing and new node setup)
+#   exit
 # if date bad
 #   fix date
 # if load_zero and no_generic_worker and uptime_15min:
@@ -21,15 +25,8 @@ import psutil
 #                   0: everything ok
 #                   others: error
 
-# problematic scenarios currently:
-#   - operator hold
-#       - TODO: check for operator_hold... if present, don't do anything
-#   - test kitchen testing
-#       - check to see if puppet role set in /etc/puppet_role
-#       - meh... 15 minutes is fine for testing...?
-#           - if not, use operator hold
-
 # TODO: telegraf event logging (if clock fixed, if rebooted).
+
 
 def is_sys_date_ok():
     n = pendulum.now()
@@ -40,14 +37,14 @@ def is_sys_date_ok():
 
 def is_in_operator_hold():
     # TODO: template the operator hold path in
-    if os.path.exists('/home/cltbld/operator_hold'):
+    if os.path.exists("/home/cltbld/operator_hold"):
         return True
     return False
 
 
 def is_puppet_role_set():
     # TODO: template the puppet role path in
-    if os.path.exists('/etc/puppet_role'):
+    if os.path.exists("/etc/puppet_role"):
         return True
     return False
 
