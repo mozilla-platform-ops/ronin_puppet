@@ -55,3 +55,7 @@ describe file('/opt/relops-check_gw/check_gw.py') do
   it { should exist }
   it { should be_executable }
 end
+
+describe service('check_gw.timer') do
+  it { should be_enabled }
+end
