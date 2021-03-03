@@ -1,8 +1,17 @@
 [Unit]
 Description=Run check_gw every 10m
+After=default.target
 
 [Timer]
-OnUnitActiveSec=10m
+# record last run on disk
+Persistent=true
+# first run X minutes after boot
+# - check_gw won't act until 15m of uptime
+OnBootSec=17min
+# after first run, run every...
+# - leave disabled for now (monitor and see if needed)
+# OnUnitActiveSec=10min
+
 
 [Install]
 WantedBy=timers.target
