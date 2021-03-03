@@ -47,7 +47,7 @@ def is_in_operator_hold():
 
 def is_puppet_role_set():
     # TODO: template the puppet role path in
-    if os.path.existsz('/etc/puppet_role'):
+    if os.path.exists('/etc/puppet_role'):
         return True
     return False
 
