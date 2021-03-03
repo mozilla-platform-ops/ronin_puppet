@@ -12,7 +12,7 @@ import psutil
 # - colord xsession workaround didn't seem to work
 #
 # if date bad
-#   fix date and reboot
+#   fix date
 # if load_zero and no_generic_worker and uptime_15min:
 #   reboot
 #
@@ -25,6 +25,7 @@ import psutil
 #   - operator hold
 #       - TODO: check for operator_hold... if present, don't do anything
 #   - test kitchen testing
+#       - check to see if puppet role set in /etc/puppet_role
 #       - meh... 15 minutes is fine for testing...?
 #           - if not, use operator hold
 
@@ -33,6 +34,20 @@ import psutil
 def is_sys_date_ok():
     n = pendulum.now()
     if n.year >= 2020:
+        return True
+    return False
+
+
+def is_in_operator_hold():
+    # TODO: template the operator hold path in
+    if os.path.exists('/home/cltbld/operator_hold'):
+        return True
+    return False
+
+
+def is_puppet_role_set():
+    # TODO: template the puppet role path in
+    if os.path.existsz('/etc/puppet_role'):
         return True
     return False
 
@@ -119,12 +134,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not is_sys_date_ok():
+        print("Host clock is bad. Fixing...")
         rc = fix_sys_date()
 
-    #
+    if not is_puppet_role_set():
+        print("No puppet role set. Exiting...")
+        sys.exit(rc)
+
+    if is_in_operator_hold():
+        print("Host in operator_hold mode. Exiting...")
+        sys.exit(rc)
+
     # rsw_procs = find_procs_by_cmdline("run-start-worker.sh")
-    gw_procs = find_procs_by_name("generic-worker")
     # print("rsw process: %s" % rsw_procs)
+    gw_procs = find_procs_by_name("generic-worker")
     print("gw process: %s" % gw_procs)
     if len(gw_procs) == 1:
         proc_present = True
