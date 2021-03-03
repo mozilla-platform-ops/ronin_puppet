@@ -1,5 +1,5 @@
 [Unit]
-Description=Check that generic_worker is running
+Description=check_gw
 
 [Service]
 Type=oneshot
