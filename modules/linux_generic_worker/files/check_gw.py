@@ -9,13 +9,12 @@ import pendulum
 import psutil
 
 # pseudocode for check_gw
-# - colord xsession workaround didn't seem to work
 #
-# if operator_hold (/home/cltbld/operator_hold)
+# if operator_hold (/home/cltbld/operator_hold):
 #   exit
-# if no puppet role (kitchen testing and new node setup)
+# if no puppet role (kitchen testing and new node setup):
 #   exit
-# if date bad
+# if date bad:
 #   fix date
 # if load_zero and no_generic_worker and uptime_15min:
 #   reboot
