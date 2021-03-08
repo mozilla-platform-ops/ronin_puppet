@@ -55,19 +55,12 @@ def fix_sys_date():
     os.system("ntpd -q -g")  # runs once and force allows huge skews
     os.system("/etc/init.d/ntp start > /dev/null 2>&1")
 
-    # now check that it's ok or raise
+    # now check that it's ok
     if not is_sys_date_ok():
         print("couldn't get system datetime synced to reality!")
         sys.exit(1)
 
-    # should we reboot here?
-    # print("system clock fixed. rebooting...")
-    # reboot_system()
-
-    # exit non-zero, we'll get the host next pass
-    # sys.exit(3)
-
-    # delay exit
+    # return the exit code to use
     return 3
 
 
@@ -104,11 +97,9 @@ def find_procs_by_cmdline(name):
     return ls
 
 
-def reboot_system():
-    cmd = "sleep %s && reboot" % seconds_before_reboot
-    # orig
-    # os.system(cmd)
-    # try to have script return before the reboot occurs
+def reboot_system(secs_before_reboot=10):
+    # nohup and sleep to let the script return before the reboot occurs
+    cmd = "sleep %s && reboot" % secs_before_reboot
     os.system("nohup bash -c '%s' &" % cmd)
 
 
@@ -117,6 +108,7 @@ if __name__ == "__main__":
     load_low = False
     proc_present = False
     uptime_high = False
+    seconds_before_reboot = 10
 
     parser = argparse.ArgumentParser(
         description="check talos worker health and reboot if needed."
@@ -166,7 +158,6 @@ if __name__ == "__main__":
     print("--")
     if uptime_high and load_low and not gw_procs:
         if args.reboot:
-            seconds_before_reboot = 10
             this_script = os.path.basename(__file__)
 
             # write to syslog
@@ -179,7 +170,7 @@ if __name__ == "__main__":
             syslog.syslog(msg)
 
             print("BAD HOST: rebooting in %s seconds..." % seconds_before_reboot)
-            reboot_system()
+            reboot_system(secs_before_reboot=seconds_before_reboot)
         else:
             print("BAD HOST: recommend rebooting")
         sys.exit(5)
