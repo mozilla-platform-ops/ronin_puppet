@@ -26,7 +26,7 @@ groups:
       - macmini-r8-81.test.releng.mdc1.mozilla.com
       - macmini-r8-82.test.releng.mdc1.mozilla.com
       - macmini-r8-83.test.releng.mdc1.mozilla.com
-#     - macmini-r8-84.test.releng.mdc1.mozilla.com
+      - macmini-r8-84.test.releng.mdc1.mozilla.com
 #     - macmini-r8-85.test.releng.mdc1.mozilla.com
       - macmini-r8-86.test.releng.mdc1.mozilla.com
       - macmini-r8-87.test.releng.mdc1.mozilla.com
