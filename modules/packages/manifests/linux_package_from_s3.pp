@@ -33,6 +33,18 @@ define packages::linux_package_from_s3 (
     $source = "https://${_s3_domain}/${_bucket}/linux/${p}/${v}/${title}"
 
     case $type {
+        'fetch_only': {
+            file {
+                default: * => $::shared::file_defaults;
+
+                $file_destination:
+                    ensure         => 'file',
+                    source         => $source,
+                    checksum       => 'sha256',
+                    checksum_value => $checksum,
+                    mode           => '0644';
+            }
+        }
         'bin': {
             file {
                 default: * => $::shared::file_defaults;
