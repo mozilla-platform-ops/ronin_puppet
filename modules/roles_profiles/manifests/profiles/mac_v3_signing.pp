@@ -11,6 +11,9 @@ class roles_profiles::profiles::mac_v3_signing {
             $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
             include puppet::disable_atboot
+            # class { 'puppet::periodic:
+            #     ...
+            # }
 
             class { 'roles_profiles::profiles::logging':
                 # The logging module tags the logs with:

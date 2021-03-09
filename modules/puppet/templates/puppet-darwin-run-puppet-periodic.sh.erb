@@ -1,0 +1,192 @@
+#!/bin/bash
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+PUPPET_ENV="${PUPPET_ENV:-production}"
+PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
+PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
+PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
+WORKING_DIR="/etc/puppet/environments/${PUPPET_ENV}/code"
+ROLE_FILE='/etc/puppet_role'
+PUPPET_BIN='/opt/puppetlabs/bin/puppet'
+FACTER_BIN='/opt/puppetlabs/bin/facter'
+FQDN=$(${FACTER_BIN} networking.fqdn)
+
+export LANG=en_US.UTF-8
+
+function fail {
+    # TODO: report failure to ext service
+    echo "${@}"
+    exit 1
+}
+
+mkdir -p "${WORKING_DIR}" || fail
+cd "${WORKING_DIR}" || fail
+
+# Make dir world writable for puppet homebrew bug workaround
+chmod 777 .
+
+# Set role or fail if file not found
+if [ -f "${ROLE_FILE}" ]; then
+    ROLE=$(<${ROLE_FILE})
+else
+    fail "Failed to find puppet role file ${ROLE_FILE}"
+fi
+
+[ -f '/var/root/vault.yaml' ] || fail "Secrets file not found"
+
+
+# Return true is valid IP and not APIPA address
+function valid_ip {
+    local IP=$1
+    local STAT=1
+    if [[ $IP =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        IP=($IP)
+        IFS=$OIFS
+        ( ! [[ ${IP[0]} -eq 169 && ${IP[1]} -eq 254 ]]) && \
+        (   [[ ${IP[0]} -le 255 && ${IP[1]} -le 255 && \
+               ${IP[2]} -le 255 && ${IP[3]} -le 255 ]])
+        STAT=$?
+    fi
+    return $STAT
+}
+
+function block_on_network {
+    local delay=1
+    while true; do
+        interface=$(route get 1.1.1.1 | grep interface | cut -d\: -f2)
+        ifconfig $interface 2>&1 >/dev/null || interface="en0"
+        IP=$(ipconfig getifaddr $interface)
+        if valid_ip $IP; then
+            echo "Network connectivity check passed $IP"
+            break
+        else
+            echo "Network connectivity failed; retry in ${delay}s"
+            sleep $delay
+            (( delay *= delay<60?2:1 ))
+        fi
+    done
+}
+
+function email_report {
+    ERR_SUBJECT=$1
+    ERR_MSG=$2
+
+    SENDER="root@${FQDN}"
+    RECEIVER="${PUPPET_MAIL}"
+    python <<EOF
+import smtplib
+
+msg = """From: ${SENDER}
+To: ${RECEIVER}
+Subject: ${ERR_SUBJECT}
+
+${ERR_MSG}
+"""
+
+try:
+   smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
+   smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
+   print "Successfully sent email"
+except SMTPException:
+   print "Error: unable to send email"
+EOF
+}
+
+function notify_telegraf {
+    TELEGRAF_TABLE=$1
+    TELEGRAF_VALUE=$2
+    META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
+    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
+    # Print the metrics post output only if there is an error.
+    out=$(curl --fail --silent --show-error "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
+}
+
+function update_puppet {
+    # Initialize working dir if dir is empty
+    if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
+        git init || return 1
+        git remote add origin "${PUPPET_REPO}" || return 1
+    fi
+
+    # Fetch and checkout production branch
+    git fetch --all --prune || return 1
+    git checkout --force "origin/${PUPPET_BRANCH}" \
+      || (
+      git remote rm upstream
+      git remote rename origin upstream
+      git remote add origin "${PUPPET_REPO}"
+      git checkout --force "origin/${PUPPET_BRANCH}"
+    ) || return 1
+
+    # Copy secrets
+    mkdir -p "${WORKING_DIR}/data/secrets"
+    cp /var/root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
+    chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
+
+    cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
+node '${FQDN}' {
+    include ::roles_profiles::roles::${ROLE}
+}
+EOF
+
+    return 0
+}
+
+function run_puppet {
+
+    # Always bring the puppet git up-to-sync before executing puppet
+    if ! update_puppet; then
+        echo "Failed to update puppet"
+        return 1
+    fi
+
+    TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
+    [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
+
+    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    SECONDS=0
+    $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
+    PUPPET_RUN_DURATION=$SECONDS
+    retval=$?
+    # just in case, if there were any errors logged, flag it as an error run
+    if grep -q "^Error:" "${TMP_LOG}"
+    then
+        retval=1
+    fi
+
+    LOG_OUT=$(cat "${TMP_LOG}")
+    rm "${TMP_LOG}"
+    case $retval in
+        0|2)
+            notify_telegraf "puppet_ronin_apply_success" "1"
+            # If puppet run is successful, report puppet run duration metric
+            notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
+            return 0
+            ;;
+        *)
+            notify_telegraf "puppet_ronin_apply_failure" "1"
+            email_report "Puppet apply failed on ${FQDN}" "${LOG_OUT}"
+            return 1
+            ;;
+    esac
+}
+
+
+block_on_network
+
+# Call the run_puppet function in a endless loop
+while ! run_puppet; do
+    echo "Puppet run failed; re-trying after 10m"
+    sleep 600
+done
+
+# Touch the semaphore to allow launchd to start generic worker (if applicable)
+mkdir -p "/var/tmp/semaphore"
+chmod 0777 "/var/tmp/semaphore"
+touch "/var/tmp/semaphore/run-buildbot"
+
+exit 0
