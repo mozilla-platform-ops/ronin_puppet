@@ -275,7 +275,9 @@ define signing_worker (
     }
     file { $launchctl_wrapper:
         content => template('signing_worker/launchctl_wrapper.sh.erb'),
-        mode    => '0644',
+        mode    => '0755',
+        owner   => $user,
+        group   => $group,
     }
     exec { "${user}_launchctl_load":
         command   => "/bin/bash ${$launchctl_wrapper}",
@@ -324,7 +326,7 @@ define signing_worker (
 
         file { $poller_wrapper:
             content => template('signing_worker/poller_wrapper.sh.erb'),
-            mode    => '0700',
+            mode    => '0755',
             owner   => $poller_config['user'],
             group   => $group,
         }
