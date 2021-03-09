@@ -11,6 +11,17 @@ describe file('/usr/bin/python3.6') do
   it { should be_executable }
 end
 
+# py3.8
+
+describe package('python3.8-minimal'), :if => os[:family] == 'ubuntu' do
+  it { should be_installed }
+end
+
+describe file('/usr/bin/python3.8') do
+  it { should exist }
+  it { should be_executable }
+end
+
 # py3.9
 
 describe package('python3.9-minimal'), :if => os[:family] == 'ubuntu' do
