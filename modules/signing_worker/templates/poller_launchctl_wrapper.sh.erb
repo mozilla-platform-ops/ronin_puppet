@@ -9,7 +9,7 @@ if [ ! -e <%= @scriptworker_base %>/.enabled ]; then
 else
     set -e
     /bin/launchctl list | grep -wq "<%= @poller_launchd_script_name %>"
-    status=$i
+    status=$?
     set +e
     if [ $status -eq 0 ] ; then
         /bin/launchctl unload "<%= @poller_launchd_script %>"
