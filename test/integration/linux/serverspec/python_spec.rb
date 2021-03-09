@@ -22,6 +22,10 @@ describe file('/usr/bin/python3.8') do
   it { should be_executable }
 end
 
+describe command('/usr/bin/python3.8 -m "from distutils import dir_util"') do
+  its(:exit_status) { should eq 0 }
+end
+
 # py3.9
 
 describe package('python3.9-minimal'), :if => os[:family] == 'ubuntu' do
@@ -31,4 +35,8 @@ end
 describe file('/usr/bin/python3.9') do
   it { should exist }
   it { should be_executable }
+end
+
+describe command('/usr/bin/python3.9 -m "from distutils import dir_util"') do
+  its(:exit_status) { should eq 0 }
 end

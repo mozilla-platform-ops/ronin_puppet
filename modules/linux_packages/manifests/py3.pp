@@ -41,7 +41,7 @@ class linux_packages::py3 {
         path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
         cwd      => '/opt/relops_py38/',
         provider => shell,
-        unless   => '/usr/bin/dpkg --list | /bin/grep python3.8',
+        unless   => '/usr/bin/python3.8 -m "from distutils import dir_util"',
     }
 
     # py3.9, from deadsnakes ppa
@@ -56,10 +56,11 @@ class linux_packages::py3 {
     $py39_urls = {
         '/opt/relops_py39/libpython3.9-minimal_3.9.2-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-minimal_3.9.2-1%2Bbionic2_amd64.deb' },
         '/opt/relops_py39/libpython3.9-stdlib_3.9.2-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-stdlib_3.9.2-1%2Bbionic2_amd64.deb' },
-        '/opt/relops_py39/python3-distutils_3.6.9-1~18.04_all.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3-distutils_3.6.9-1~18.04_all.deb' },
-        '/opt/relops_py39/python3-lib2to3_3.6.9-1~18.04_all.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3-lib2to3_3.6.9-1~18.04_all.deb' },
         '/opt/relops_py39/python3.9-minimal_3.9.2-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-minimal_3.9.2-1%2Bbionic2_amd64.deb' },
+        '/opt/relops_py39/python3.9-distutils_3.9.2-1+bionic2_all.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-distutils_3.9.2-1%2Bbionic2_all.deb' },
+        '/opt/relops_py39/python3.9-lib2to3_3.9.2-1+bionic2_all.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-lib2to3_3.9.2-1%2Bbionic2_all.deb' },
     }
+
     create_resources(file, $py39_urls, {
         owner => 'root',
         group => 'root',
@@ -71,7 +72,7 @@ class linux_packages::py3 {
         path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
         cwd      => '/opt/relops_py39/',
         provider => shell,
-        unless   => '/usr/bin/dpkg --list | /bin/grep python3.9',
+        unless   => '/usr/bin/python3.9 -m "from distutils import dir_util"',
     }
 
     # remove old /opt/py3
