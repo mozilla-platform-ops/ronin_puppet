@@ -36,7 +36,8 @@ class linux_packages::py3 {
         mode  => '0644',
     })
 
-    exec { '/usr/bin/dpkg -i *.deb':
+    exec { 'install py38':
+        command  => '/usr/bin/dpkg -i *.deb',
         path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
         cwd      => '/opt/relops_py38/',
         provider => shell,
@@ -66,7 +67,8 @@ class linux_packages::py3 {
         mode  => '0644',
     })
 
-    exec { '/usr/bin/dpkg -i *.deb':
+    exec { 'install py39':
+        command  => '/usr/bin/dpkg -i *.deb',
         path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
         cwd      => '/opt/relops_py3/',
         provider => shell,
