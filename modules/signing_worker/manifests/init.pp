@@ -280,8 +280,9 @@ define signing_worker (
         group   => $group,
     }
     exec { "${user}_launchctl_load":
-        command   => "/bin/bash ${$launchctl_wrapper}",
-        subscribe => [
+        command     => "/bin/bash ${$launchctl_wrapper}",
+        refreshonly => true,
+        subscribe   => [
             Exec["install ${scriptworker_base} iscript"],
             # Requirements could include scriptworker dependencies, so restart
             # the long-running daemon on requirements changes. Don't restart on
@@ -344,8 +345,9 @@ define signing_worker (
             group   => $group,
         }
         exec { "${poller_config['user']}_launchctl_load":
-            command   => "/bin/bash ${$poller_launchctl_wrapper}",
-            subscribe => [
+            command     => "/bin/bash ${$poller_launchctl_wrapper}",
+            refreshonly => true,
+            subscribe   => [
                 Exec["install ${scriptworker_base} notarization_poller"],
                 Exec["install ${scriptworker_base} requirements"],
                 Exec["install ${scriptworker_base} scriptworker_client"],
