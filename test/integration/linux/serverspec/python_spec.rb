@@ -22,7 +22,7 @@ describe file('/usr/bin/python3.8') do
   it { should be_executable }
 end
 
-describe command('/usr/bin/python3.8 -m "from distutils import dir_util"') do
+describe command('/usr/bin/python3.8 -c "import distutils"') do
   its(:exit_status) { should eq 0 }
 end
 
@@ -37,6 +37,6 @@ describe file('/usr/bin/python3.9') do
   it { should be_executable }
 end
 
-describe command('/usr/bin/python3.9 -m "from distutils import dir_util"') do
+describe command('/usr/bin/python3.9 -c "import distutils"') do
   its(:exit_status) { should eq 0 }
 end

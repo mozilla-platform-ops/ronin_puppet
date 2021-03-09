@@ -41,7 +41,7 @@ class linux_packages::py3 {
         path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
         cwd      => '/opt/relops_py38/',
         provider => shell,
-        unless   => '/usr/bin/python3.8 -m "from distutils import dir_util"',
+        unless   => '/usr/bin/dpkg --list | /bin/grep python3.8 && /usr/bin/python3.8 -c "import distutils"',
     }
 
     # py3.9, from deadsnakes ppa
@@ -72,7 +72,7 @@ class linux_packages::py3 {
         path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
         cwd      => '/opt/relops_py39/',
         provider => shell,
-        unless   => '/usr/bin/python3.9 -m "from distutils import dir_util"',
+        unless   => '/usr/bin/dpkg --list | /bin/grep python3.9 && /usr/bin/python3.9 -c "import disutils"',
     }
 
     # remove old /opt/py3
