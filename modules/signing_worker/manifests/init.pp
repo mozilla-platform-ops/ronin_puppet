@@ -30,6 +30,7 @@ define signing_worker (
     $script_config_file       = "${scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
     $launchctl_wrapper        = "${scriptworker_base}/launchctl_wrapper.sh"
+    $enable_scriptworker      = "${scriptworker_base}/enable_scriptworker.sh"
 
     # Dep workers have a non-deterministic suffix
     $worker_id = "${facts['networking']['hostname']}${worker_id_suffix}"
@@ -275,6 +276,12 @@ define signing_worker (
     }
     file { $launchctl_wrapper:
         content => template('signing_worker/launchctl_wrapper.sh.erb'),
+        mode    => '0755',
+        owner   => $user,
+        group   => $group,
+    }
+    file { $enable_scriptworker:
+        content => template('signing_worker/enable_scriptworker.sh.erb'),
         mode    => '0755',
         owner   => $user,
         group   => $group,
