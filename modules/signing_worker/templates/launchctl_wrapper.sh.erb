@@ -3,8 +3,8 @@
 set +e
 
 if [ ! -e <%= @scriptworker_base %>/.enabled ]; then
-    echo "<%= @scriptworker_base %>/.enabled doesn't exist! sleeping 300 and exiting"
-    sleep 300
+    echo "<%= @scriptworker_base %>/.enabled doesn't exist! sleeping 60 and exiting"
+    sleep 60
     exit 1
 else
     set -e
