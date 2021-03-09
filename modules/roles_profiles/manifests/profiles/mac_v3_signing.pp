@@ -10,10 +10,26 @@ class roles_profiles::profiles::mac_v3_signing {
             $worker_type  = 'mac-v3-signing'
             $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
+            $role = $facts['networking']['hostname']? {
+                /^dep-mac-v3-signing\d+/ => 'dep',
+                /^tb-mac-v3-signing\d+/ => 'tb-prod',
+                default => 'ff-prod',
+            }
+
             include puppet::disable_atboot
-            # class { 'puppet::periodic:
-            #     ...
-            # }
+            class { 'puppet::periodic:
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.user'),
+                puppet_repo       =>
+                puppet_branch     =>
+                meta_data         => {
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    # provisionerId => 'releng-hardware',
+                    # workerId      => $facts['networking']['hostname'],
+                    role          => $role,
+                },
+            }
 
             class { 'roles_profiles::profiles::logging':
                 # The logging module tags the logs with:
@@ -31,12 +47,6 @@ class roles_profiles::profiles::mac_v3_signing {
             # For cloning the widevine repository
             $widevine_user = lookup('widevine_config.user')
             $widevine_key = lookup('widevine_config.key')
-
-            $role = $facts['networking']['hostname']? {
-                /^dep-mac-v3-signing\d+/ => 'dep',
-                /^tb-mac-v3-signing\d+/ => 'tb-prod',
-                default => 'ff-prod',
-            }
 
             # Distinct names because vault's prefix is different.
             $worker_common = lookup("scriptworker_config.${role}", Hash, undef, {})

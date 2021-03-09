@@ -123,6 +123,11 @@ scriptworker_config:
         worker_type: 'signing-mac-v1'
         scriptworker_revision: "15f47ca82a0dc0dbe2a27ab1d844ab48824f5c68"
         scriptworker_scripts_revision: "00d85b2574c693b5eccd00b9095314662a5560d3"
+        # XXX DO NOT MERGE
+        puppet_repo: https://github.com/escapewindow/ronin_puppet.git
+        puppet_branch: periodic-wip
+        # puppet_repo: https://github.com/mozilla-platform-ops/ronin_puppet.git
+        # puppet_branch: production-mac-signing
     tb-prod:
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
@@ -131,6 +136,8 @@ scriptworker_config:
         worker_type: 'tb-signing-mac-v1'
         scriptworker_revision: "15f47ca82a0dc0dbe2a27ab1d844ab48824f5c68"
         scriptworker_scripts_revision: "00d85b2574c693b5eccd00b9095314662a5560d3"
+        puppet_repo: https://github.com/mozilla-platform-ops/ronin_puppet.git
+        puppet_branch: production-mac-signing
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
@@ -140,6 +147,8 @@ scriptworker_config:
         worker_type: 'depsigning-mac-v1'
         scriptworker_revision: "15f47ca82a0dc0dbe2a27ab1d844ab48824f5c68"
         scriptworker_scripts_revision: "00d85b2574c693b5eccd00b9095314662a5560d3"
+        puppet_repo: https://github.com/mozilla-platform-ops/ronin_puppet.git
+        puppet_branch: production-mac-signing
 
 poller_config:
     ff-prod:
