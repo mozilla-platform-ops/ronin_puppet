@@ -13,14 +13,14 @@ class linux_packages::py3 {
         ensure   => present,
     }
 
+    # py3.9, from deadsnakes ppa
+
     file {'/opt/relops_py3/':
         ensure => directory,
         group  => 'root',
         mode   => '0755',
         owner  => 'root',
     }
-
-    # py3.9, from deadsnakes ppa
 
     $urls = {
         '/opt/relops_py3/libpython3.9-minimal_3.9.2-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-minimal_3.9.2-1%2Bbionic2_amd64.deb' },
