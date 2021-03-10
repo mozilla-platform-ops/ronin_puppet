@@ -21,10 +21,6 @@ class puppet::periodic (
                 '/Library/LaunchDaemons/com.mozilla.atboot_puppet.plist':
                     ensure => absent;
 
-                # pxp-agent is disabled, but let's remove the plist also
-                '/Library/LaunchDaemons/com.puppetlabs.pxp-agent.plist':
-                    ensure => absent;
-
                 '/usr/local/bin/run-puppet.sh':
                     owner   => 'root',
                     group   => 'wheel',
