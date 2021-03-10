@@ -1,8 +1,5 @@
 #!/bin/bash
-
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
-
-last_premature_end=/var/tmp/semaphore/worker_running_semaphore
+last_premature_end=/var/opt/generic-worker/worker_running_semaphore
 if test $(find $last_premature_end -mmin -2); then
     echo "Last run-generic-worker.sh execution started less than 120s ago. Sleeping 30s ..."
     sleep 30
@@ -12,13 +9,11 @@ date > $last_premature_end
 # This is a wrapper script for calling generic worker, such that when the worker
 # exits, this script will reboot the machine.
 
-# If this file exists when the worker starts up, and its content is equal
-# to numberOfTasksToRun, the worker won't exit and machine won't reboot.
-rm -f tasks-resolved-count.txt
+(find /private/var/folders/ -nouser -delete; echo "Finished clearing old cache files" ) &
 
 <% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
-exec 1> >(tee /var/log/genericworker/stdout.log >&1)
-exec 2> >(tee /var/log/genericworker/stderr.log >&2)
+exec 1> >(tee /var/opt/generic-worker/stdout.log >&1)
+exec 2> >(tee /var/opt/generic-worker/stderr.log >&2)
 <% end %>
 
 # First run the generic-worker, passing through any arguments handed to this
@@ -39,7 +34,7 @@ rm -f "/var/tmp/semaphore/run-buildbot"
 #
 # More information about generic-worker exit codes can be seen here:
 # https://docs.taskcluster.net/docs/reference/workers/generic-worker#set-up-your-env
-last_failed_semaphore=/var/tmp/semaphore/worker_exit_69
+last_failed_semaphore=/var/opt/generic-worker/worker_exit_69
 if [ $exitstatus -eq 69 ]; then
     if [ -f $last_failed_semaphore ]; then
         if [[ $(find "$last_failed_semaphore" -mmin +15 -print) ]]; then
