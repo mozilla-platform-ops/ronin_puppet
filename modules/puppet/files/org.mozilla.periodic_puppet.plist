@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+
+    <!-- This Source Code Form is subject to the terms of the Mozilla Public
+       - License, v. 2.0. If a copy of the MPL was not distributed with this
+       - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<dict>
+        <key>EnvironmentVariables</key>
+        <dict>
+                <key>LANG</key>
+                <string>en_US.UTF-8</string>
+                <key>PATH</key>
+                <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin</string>
+        </dict>
+        <key>Label</key>
+        <string>org.mozilla.periodic_puppet</string>
+        <key>StartInterval</key>
+        <integer>1800</integer>
+        <key>RunAtLoad</key>
+        <false/>
+        <key>ProgramArguments</key>
+        <array>
+                <string>/bin/bash</string>
+                <string>/usr/local/bin/periodic-puppet.sh</string>
+        </array>
+        <key>ServiceIPC</key>
+        <false/>
+        <key>StandardErrorPath</key>
+        <string>/var/log/puppet/puppet.err</string>
+        <key>StandardOutPath</key>
+        <string>/var/log/puppet/puppet.out</string>
+</dict>
+</plist>

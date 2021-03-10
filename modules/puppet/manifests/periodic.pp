@@ -26,6 +26,12 @@ class puppet::periodic (
                     group   => 'wheel',
                     mode    => '0755',
                     content => template('puppet/puppet-darwin-run-puppet.sh.erb');
+
+                '/usr/local/bin/periodic-puppet.sh':
+                    owner   => 'root',
+                    group   => 'wheel',
+                    mode    => '0755',
+                    content => template('puppet/puppet-darwin-periodic-puppet.sh.erb');
             }
             # XXX cron
             # maybe https://alvinalexander.com/mac-os-x/mac-osx-startup-crontab-launchd-jobs/
