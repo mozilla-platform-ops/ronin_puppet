@@ -125,7 +125,7 @@ class roles_profiles::profiles::mac_v3_signing {
                 telegraf_password => lookup('telegraf.user'),
                 # XXX DO NOT MERGE
                 puppet_repo       => 'https://github.com/escapewindow/ronin_puppet.git',
-                puppet_branch     => 'periodic-wip',
+                puppet_branch     => 'periodic-mac-signer-puppet',
                 # puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git'
                 # puppet_branch     => 'production-mac-signing',
                 meta_data         => {
