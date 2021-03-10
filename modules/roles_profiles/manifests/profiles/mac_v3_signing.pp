@@ -73,7 +73,6 @@ class roles_profiles::profiles::mac_v3_signing {
                     poller_config       => $poller_config,
                 }
             }
-            # XXX create /etc/puppet_role
 
             class { 'telegraf':
                 global_tags  => {
