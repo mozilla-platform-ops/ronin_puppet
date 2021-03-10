@@ -1,0 +1,14 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Update Notifier
+Comment=Check for available updates automatically
+Icon=update-notifier
+# disabled to avoid appearing in screenshots
+#Exec=update-notifier
+Terminal=false
+Type=Application
+Categories=
+NotShowIn=KDE;
+NoDisplay=true
+X-GNOME-Autostart-Delay=60
+X-Ubuntu-Gettext-Domain=update-notifier

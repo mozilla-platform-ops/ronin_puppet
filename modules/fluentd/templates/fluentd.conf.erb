@@ -26,6 +26,37 @@
 <source>
   @type tail
   read_from_head true
+  path /var/log/system.log
+  pos_file /var/log/system.log.pos
+  <parse>
+    # standard syslog parsing often fails because the macos system.log has inconsistent multi-line, space delimiters, and ident/pid formatting
+    # @type syslog
+    # with_priority false
+    # parser_type string
+    @type multiline
+    format_firstline /^[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2} /
+    # ugly regex that handles the varieties of macos syslog lines I've tested
+    format1 /^(?<time>[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2}) [^ ]+ (?<ident>[^\[ :]*)(?<message>[\[\]A-Za-z: ]*(\[(?<pid>\d+)\]:?)? .*)/
+    time_key time
+    time_format "%b %d %H:%M:%S"
+    keep_time_key true
+  </parse>
+  tag syslog
+</source>
+<filter syslog>
+  @type record_transformer
+  <record>
+    severity info
+    program ${record["ident"]}
+    facility local0
+  </record>
+</filter>
+
+
+<% if @tail_worker_logs -%>
+<source>
+  @type tail
+  read_from_head true
   path /var/opt/generic-worker/service.stderr.log
   pos_file /var/opt/generic-worker/service.stderr.log.pos
   <parse>
@@ -60,9 +91,21 @@
   @type grep
   <exclude>
     key message
+    # monitored separately on hardware
+    # repeats noisily when no tasks
     pattern /^Disk available: \d+ bytes$/
   </exclude>
 </filter>
+<filter syslog>
+  @type grep
+  <exclude>
+    key message
+    # asl is deprecated.
+    # logged every 10m
+    patterm /^ASL Sender Statistics$/
+  </exclude>
+</filter>
+
 
 <filter worker.**>
   @type record_transformer
@@ -75,32 +118,41 @@
     # multi-user:
     # No task claimed. Idle for 45h41m6.936831744s (will exit if no task claimed in 50h18m53.063168256s).
     # No task 45h41m6 50h18m53
-<% if @syslog_host != '' -%>
+<% if @syslog_host =~ /papertrail/ -%>
+    severity "${tag_parts[1]}"
+<% elsif @syslog_host != '' -%>
     syslog_severity "${tag_parts[1]}"
-    log_message #{record["message"].match(/^No task/) ? "No task " + record["message"].gsub(/([^0-9]*( [0-9]+ )[^0-9]*|[^0-9]* (([0-9]+h)?([0-9]+m)?([0-9]+))\.[^ ]*)/, '\2\3 ') : record["message"]}
 <% end -%>
 <% if @stackdriver_clientid != '' -%>
     # stackdriver severities:
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
-    message #{record["program"]} #{record["message"].match(/^No task/) ? "No task " + record["message"].gsub(/([^0-9]*( [0-9]+ )[^0-9]*|[^0-9]* (([0-9]+h)?([0-9]+m)?([0-9]+))\.[^ ]*)/, '\2\3 ') : record["message"]}
+    log_message #{record["program"]} #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+<% else -%>
+    log_message #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
 <% end -%>
+    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
+    # No task 5h15m43 1
   </record>
 </filter>
+<% end -%>
 
 <filter system>
   @type record_transformer
   enable_ruby true
   <record>
 <% if @syslog_host =~ /papertrail/ -%>
-    hostname "#{Socket.gethostname.split('.')[0]}"
+    message #{record["log_message"]}
 <% end -%>
     # Logging pid can be enabled:
     # message pid:${record["pid"]} ${record["message"]}
     # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
-<% if @syslog_host != '' -%>
+    # error="'Default' is not a designated severity"
     # syslog severities:
     #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
+<% if @syslog_host =~ /papertrail/ -%>
+    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
+<% elsif @syslog_host != '' -%>
     syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
 <% end -%>
 <% if @stackdriver_clientid != '' -%>
@@ -145,6 +197,14 @@
 <match fluent.**>
   @type null
 </match>
+
+<filter **>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    hostname "#{Socket.gethostname.split('.')[0]}"
+  </record>
+</filter>
 
 <match **>
   @type copy

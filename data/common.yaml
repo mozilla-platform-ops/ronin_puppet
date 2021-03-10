@@ -31,6 +31,8 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
       dmg_prefix: "dep1"
       worker_id_suffix: "a"
       cot_product: "firefox"
@@ -40,6 +42,8 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
       dmg_prefix: "dep1"
       worker_id_suffix: "b"
       cot_product: "firefox"
@@ -49,7 +53,10 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
       dmg_prefix: "tb"
+      worker_type_prefix: "tb-"
       worker_id_suffix: "tb"
       cot_product: "thunderbird"
       widevine_filename: "widevine_dep.crt"
@@ -60,6 +67,7 @@ scriptworker_users:
         - mac_sign
         - mac_sign_and_pkg
         - mac_geckodriver
+        - mac_single_file
         - mac_notarize
         - mac_notarize_part_1
         - mac_notarize_part_3
@@ -85,6 +93,7 @@ scriptworker_users:
         - mac_sign
         - mac_sign_and_pkg
         - mac_geckodriver
+        - mac_single_file
         - mac_notarize
         - mac_notarize_part_1
         - mac_notarize_part_3
@@ -107,28 +116,30 @@ scriptworker_users:
 scriptworker_config:
     ff-prod:
         taskcluster_scope_prefix: 'project:releng:signing:'
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'signing-mac-v1'
-        scriptworker_version: "35.2.0"
-        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
+        scriptworker_revision: "643104a416e8ccc0851866f7a1e193022efd5ad0"
+        scriptworker_scripts_revision: "afbab6f4af56c31fa0dc1a1568e44798d75d9800"
     tb-prod:
-        taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'tb-signing-mac-v1'
-        scriptworker_version: "35.2.0"
-        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
+        scriptworker_revision: "643104a416e8ccc0851866f7a1e193022efd5ad0"
+        scriptworker_scripts_revision: "afbab6f4af56c31fa0dc1a1568e44798d75d9800"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: false
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
-        scriptworker_version: "35.2.0"
-        scriptworker_scripts_revision: "78f66cbffa2d91663058004484f7527b8f2efab8"
+        scriptworker_revision: "643104a416e8ccc0851866f7a1e193022efd5ad0"
+        scriptworker_scripts_revision: "afbab6f4af56c31fa0dc1a1568e44798d75d9800"
 
 poller_config:
     ff-prod:
@@ -164,7 +175,7 @@ signingworker_roles:
             notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
-            base_bundle_id: 'org.mozilla.thunderbird-mac-nightly'
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-nightly'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
@@ -173,7 +184,7 @@ signingworker_roles:
             notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
-            base_bundle_id: 'org.mozilla.thunderbird-mac-release'
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-release'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
@@ -182,8 +193,9 @@ signingworker_roles:
             apple_asc_provider: 'MozillaCorporation'
             notarization_poll_timeout: 5
             sign_with_entitlements: true
-            verify_mac_signature: true
+            verify_mac_signature: false
             base_bundle_id: 'org.mozilla.firefox-mac-dep'
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-dep'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
@@ -220,6 +232,11 @@ all_users:
 
   bclary:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCjEqpf1njrTlmvBMhfKJiQFP92uuS2EFIoL/f2u/39Q83Opk7T3mFOEvmnBNy83J7/k7j21VMzovdylsLk169x6NqPMZZ7sdtNW/WAiImUyWAVkuszkl7rbh8XdgF/UzTi8uHUAVZI/8gsh8g3wQ9h61BOWX7GEag99pho+ECpEGDjb3HXOD4B4vr/qZO5eMIssHzCKDXWchOpwlNPYk5Yij61+Hm/eTobSFLk7Rk1RGjuwcKpJUG8D3MmfTPY7I4YFA+i6TaQJJj/OdWguH599R/SIU6cVoqsQee9GDD2sSxsuDeop7ckM27kfklL2APeG2UBZ8Ugsnw7niJx9LJxk9PUY4ohs2LrNlwrEiB8Uq5yw9PF6Ik3aD4y8mHXSV/xajMA6s67XwdCZd51DwEZ9Q7h8ULsq1kpDvXx7+9OZ/xwucTuiH9sbvf438gx0/E+GAg24qhvQPQdA7+W2T2CJJPEhoe3OlJRibOgFHm1CmV3h6F34e5g8qz2kPGcNEu/toB9+14YyQfP7nZrz4UnHw3bJcNEHvl1JaSDcm2GiE3Nu0MYeAtnmWOA3AFs6IhkEvwFeY3lE1n6oyKB7XGeNxdrRTCMckM/ojoo9Hi3NbZ0giorM5vKcSeOE/iLtSDdaE1cUFdgrBqv6mBGxuGHukWmZNh+Z2o16RhQWZK1NQ== bclary@mozilla.com
+
+  # from relops_common_keys_2020-09-08.yml
+  relops:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j+zRPprLFeTgRwkgI6mcjQCeEoaqOY2 Relops ed25519 Key
+
   notary1:
     - ssh-rsa AAAA invalid@mozilla.com
   notary2:
@@ -241,12 +258,6 @@ all_users:
   notary10:
     - ssh-rsa AAAA invalid@mozilla.com
   poller:
-    - ssh-rsa AAAA invalid@mozilla.com
-  depbld1:
-    - ssh-rsa AAAA invalid@mozilla.com
-  depbld2:
-    - ssh-rsa AAAA invalid@mozilla.com
-  tbbld:
     - ssh-rsa AAAA invalid@mozilla.com
 
 

@@ -20,6 +20,10 @@ class linux_generic_worker (
     String $generic_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
     String $taskcluster_proxy_sha256,
+    Pattern[/^v\d+\.\d+\.\d+$/] $livelog_version,
+    String                      $livelog_sha256,
+    Pattern[/^v\d+\.\d+\.\d+$/] $start_worker_version,
+    String                      $start_worker_sha256,
     Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
     String $quarantine_worker_sha256,
     String $taskcluster_host = 'taskcluster',
@@ -33,6 +37,10 @@ class linux_generic_worker (
         generic_worker_sha256     => $generic_worker_sha256,
         taskcluster_proxy_version => $taskcluster_proxy_version,
         taskcluster_proxy_sha256  => $taskcluster_proxy_sha256,
+        livelog_version           => $livelog_version,
+        livelog_sha256            => $livelog_sha256,
+        start_worker_version      => $start_worker_version,
+        start_worker_sha256       => $start_worker_sha256,
         quarantine_worker_version => $quarantine_worker_version,
         quarantine_worker_sha256  => $quarantine_worker_sha256
     }
@@ -76,7 +84,10 @@ class linux_generic_worker (
     $reboot_command = '/usr/bin/sudo /sbin/reboot --force'
 
     file {
-        default: * => $::shared::file_defaults;
+        default:
+            owner => $user,
+            # TODO: take this as an arg, don't assume
+            group => $user;
 
         ["${user_homedir}/.config",
         "${user_homedir}/.config/autostart"]:
@@ -84,14 +95,21 @@ class linux_generic_worker (
         "${user_homedir}/.config/autostart/gnome-terminal.desktop":
             content => template('linux_generic_worker/gnome-terminal.desktop.erb');
 
-        '/usr/local/bin/run-generic-worker.sh':
+        ["${user_homedir}/tasks", "${user_homedir}/downloads"]:
+            ensure => directory;
+
+        '/usr/local/bin/run-start-worker.sh':
             ensure  => present,
-            content => template('linux_generic_worker/run-generic-worker.sh.erb'),
+            content => template('linux_generic_worker/run-start-worker.sh.erb'),
+            owner   => root,
+            group   => root,
             mode    => '0755';
 
-        '/etc/generic-worker.config':
+        '/etc/start-worker.yml':
             ensure  => present,
-            content => template('linux_generic_worker/generic-worker.config.erb'),
+            content => template('linux_generic_worker/worker-runner-config.yml.erb'),
+            owner   => root,
+            group   => root,
             mode    => '0644';
 
         '/var/log/genericworker':
@@ -99,7 +117,8 @@ class linux_generic_worker (
             mode   => '0777';
     }
 
-    # TODO: see below
+    # TODO: cleanup
+    # from build-puppet, seems not needed for modern talos/raptor
 
     #         host { $taskcluster_host:
     #             ip => '127.0.0.1'

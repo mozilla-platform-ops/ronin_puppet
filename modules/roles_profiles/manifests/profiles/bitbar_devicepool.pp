@@ -6,6 +6,11 @@ class roles_profiles::profiles::bitbar_devicepool {
 
     case $::operatingsystem {
         'Ubuntu': {
+            class { 'puppet::run_script':
+                puppet_repo   => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
+                puppet_branch => 'master',
+            }
+
             include bitbar_devicepool
         }
         default: {

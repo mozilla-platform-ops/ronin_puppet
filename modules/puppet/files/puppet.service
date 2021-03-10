@@ -1,0 +1,14 @@
+[Unit]
+Description=masterless puppet run
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/run-puppet.sh
+Type=oneshot
+# we're using systemd only to start the script. disable process control.
+# - we don't want puppet killed mid-run.
+KillMode=none
+
+[Install]
+WantedBy=default.target

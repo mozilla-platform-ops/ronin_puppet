@@ -31,10 +31,23 @@ class roles_profiles::profiles::relops_users {
             $relops = lookup('user_groups.relops', Array, undef, undef)
             realize(Users::Single_user[$relops])
 
+            group { 'create admin group':
+                ensure => 'present',
+                name   => 'admin',
+            }
+
             # add groups
             $relops.each |String $user| {
                 group { $user:
                         ensure => 'present',
+                }
+
+                # is there a way to do with virtual resources?
+                # see https://serverfault.com/questions/416254/adding-an-existing-user-to-a-group-with-puppet
+                exec { "${user} admin membership":
+                    unless  => "/bin/grep -q 'admin\\S*${user}' /etc/group",
+                    command => "/usr/sbin/usermod -aG admin ${user}",
+                    require => User[$user],
                 }
             }
         }

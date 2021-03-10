@@ -14,6 +14,7 @@ class roles_profiles::profiles::logging (
     ]),
     Integer $syslog_port        = 514,
     String $mac_log_level       = 'default',
+    Boolean $tail_worker_logs   = false,
 ) {
 
     # use a single write-only service account for each project
@@ -60,9 +61,10 @@ class roles_profiles::profiles::logging (
                 stackdriver_keyid    => $stackdriver_keyid,
                 stackdriver_key      => $stackdriver_key,
                 stackdriver_clientid => $stackdriver_clientid,
-                syslog_host          => $syslog_host,
-                syslog_port          => $syslog_port,
+                syslog_host          => lookup('papertrail.host', {'default_value' => $syslog_host}),
+                syslog_port          => lookup('papertrail.port', {'default_value' => $syslog_port}),
                 mac_log_level        => $mac_log_level,
+                tail_worker_logs     => $tail_worker_logs,
             }
         }
         default: {

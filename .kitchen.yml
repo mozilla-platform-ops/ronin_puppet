@@ -11,6 +11,9 @@ provisioner:
   hiera_deep_merge: true
   hiera_writer_files:
     - secrets/vault.yaml:
+        telegraf:
+          user: telegraf
+          password: telegraf4fun
         linux_vnc:
           user: cltbld
           group: cltbld
@@ -29,9 +32,10 @@ provisioner:
             quarantine_access_token: 'Q_TOKEN'
             bugzilla_api_key: 'BZ_KEY'
   puppet_verbose: true
+  #puppet_version: 7
   puppet_debug: true
   require_chef_for_busser: false
-  require_puppet_omnibus: true
+  require_puppet_omnibus: false
   require_puppet_repo: false
   custom_options: '--show_diff'
   verify_host_key: false
