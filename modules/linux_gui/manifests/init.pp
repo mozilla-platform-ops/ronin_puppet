@@ -110,6 +110,12 @@ class linux_gui(
                     group  => $builder_group,
                     mode   => '0644',
                     source => "puppet:///modules/${module_name}/pip.conf";
+                # place pip.conf in /etc too
+                '/etc/pip.conf':
+                    owner  => 'root',
+                    group  => 'root',
+                    mode   => '0644',
+                    source => "puppet:///modules/${module_name}/pip.conf";
             }
 
             # disbale gdm (we run our own X server)
