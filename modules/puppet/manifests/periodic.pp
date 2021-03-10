@@ -18,11 +18,11 @@ class puppet::periodic (
     case $::operatingsystem {
         'Darwin': {
             file {
-                '/usr/local/bin/run-puppet-periodic.sh':
+                '/usr/local/bin/run-puppet.sh':
                     owner   => 'root',
                     group   => 'wheel',
                     mode    => '0755',
-                    content => template('puppet/puppet-darwin-run-puppet-periodic.sh.erb');
+                    content => template('puppet/puppet-darwin-run-puppet.sh.erb');
             }
             # XXX cron
         }
