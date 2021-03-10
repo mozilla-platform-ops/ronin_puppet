@@ -28,4 +28,6 @@ class roles_profiles::roles::geckotwin1064hwtestpool {
     include roles_profiles::profiles::microsoft_tools
     include roles_profiles::profiles::google_chrome
     #include roles_profiles::profiles::virtual_drivers
+
+    include roles_profiles::profiles::audit_and_recovery
 }
