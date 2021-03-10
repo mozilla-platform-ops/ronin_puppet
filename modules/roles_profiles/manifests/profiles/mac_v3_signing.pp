@@ -122,7 +122,7 @@ class roles_profiles::profiles::mac_v3_signing {
                 },
             }
 
-            class { 'puppet::periodic:
+            class { 'puppet::periodic':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.user'),
                 # XXX DO NOT MERGE
