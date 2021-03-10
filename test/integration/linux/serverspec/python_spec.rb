@@ -43,10 +43,6 @@ end
 
 # config files
 
-describe file('/etc/pip.conf') do
-  it { should exist }
-end
-
 describe file('/home/cltbld/.pip/pip.conf') do
   it { should exist }
 end
