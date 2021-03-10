@@ -40,3 +40,9 @@ end
 describe command('/usr/bin/python3.9 -c "import distutils"') do
   its(:exit_status) { should eq 0 }
 end
+
+# config files
+
+describe file('/home/cltbld/.pip/pip.conf') do
+  it { should exist }
+end
