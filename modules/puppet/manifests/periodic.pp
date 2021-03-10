@@ -25,6 +25,7 @@ class puppet::periodic (
                     content => template('puppet/puppet-darwin-run-puppet.sh.erb');
             }
             # XXX cron
+            # maybe https://alvinalexander.com/mac-os-x/mac-osx-startup-crontab-launchd-jobs/
         }
         default: {
             fail("${module_name} does not support ${::operatingsystem}")
