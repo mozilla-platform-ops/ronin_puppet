@@ -15,7 +15,7 @@
                 <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin</string>
         </dict>
         <key>Label</key>
-        <string>org.mozilla.periodic_puppet</string>
+        <string>com.mozilla.periodic_puppet</string>
         <key>StartInterval</key>
         <integer>1800</integer>
         <key>RunAtLoad</key>

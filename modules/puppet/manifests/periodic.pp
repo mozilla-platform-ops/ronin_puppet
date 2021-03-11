@@ -43,7 +43,7 @@ class puppet::periodic (
                     owner   => 'root',
                     group   => 'wheel',
                     mode    => '0755',
-                    source  => 'puppet:///modules/puppet/org.mozilla.periodic_puppet.plist';
+                    source  => 'puppet:///modules/puppet/com.mozilla.periodic_puppet.plist';
             }
 
             exec { 'periodic_puppet_launchctl_load':
