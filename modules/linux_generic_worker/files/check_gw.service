@@ -3,4 +3,4 @@ Description=check_gw
 
 [Service]
 Type=oneshot
-ExecStart=/opt/relops-check_gw/check_gw.py
+ExecStart=/opt/relops-check_gw/check_gw.py --reboot
