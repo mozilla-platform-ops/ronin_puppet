@@ -1,5 +1,5 @@
 [Unit]
-Description=Run check_gw every 10m
+Description=Run check_gw
 After=default.target
 
 [Timer]
