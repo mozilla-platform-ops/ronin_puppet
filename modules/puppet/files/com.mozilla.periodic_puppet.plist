@@ -17,7 +17,7 @@
         <key>Label</key>
         <string>com.mozilla.periodic_puppet</string>
         <key>StartInterval</key>
-        <integer>1800</integer>
+        <integer>900</integer>
         <key>RunAtLoad</key>
         <false/>
         <key>ProgramArguments</key>
