@@ -32,6 +32,11 @@ class puppet::periodic (
                     group   => 'wheel',
                     mode    => '0755',
                     content => template('puppet/puppet-darwin-periodic-puppet.sh.erb');
+                '/Library/LaunchDaemons/com.mozilla.periodic.plist':
+                    owner   => 'root',
+                    group   => 'wheel',
+                    mode    => '0755',
+                    source  => 'puppet:///modules/puppet/org.mozilla.periodic_puppet.plist';
             }
             # XXX cron
             # maybe https://alvinalexander.com/mac-os-x/mac-osx-startup-crontab-launchd-jobs/
