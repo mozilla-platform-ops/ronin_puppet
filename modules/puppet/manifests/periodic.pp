@@ -32,14 +32,28 @@ class puppet::periodic (
                     group   => 'wheel',
                     mode    => '0755',
                     content => template('puppet/puppet-darwin-periodic-puppet.sh.erb');
+
+                '/usr/local/bin/periodic_launchctl_wrapper.sh':
+                    owner   => 'root',
+                    group   => 'wheel',
+                    mode    => '0755',
+                    source  => 'puppet:///modules/puppet/periodic_launchctl_wrapper.sh';
+
                 '/Library/LaunchDaemons/com.mozilla.periodic.plist':
                     owner   => 'root',
                     group   => 'wheel',
                     mode    => '0755',
                     source  => 'puppet:///modules/puppet/org.mozilla.periodic_puppet.plist';
             }
-            # XXX cron
-            # maybe https://alvinalexander.com/mac-os-x/mac-osx-startup-crontab-launchd-jobs/
+
+            exec { 'periodic_puppet_launchctl_load':
+                command     => '/bin/bash /usr/local/bin/periodic_launchctl_wrapper.sh',
+                refreshonly => true,
+                subscribe   => [
+                    File['/usr/local/bin/periodic_launchctl_wrapper.sh'],
+                    File['/Library/LaunchDaemons/com.mozilla.periodic.plist'],
+                ],
+            }
         }
         default: {
             fail("${module_name} does not support ${::operatingsystem}")
