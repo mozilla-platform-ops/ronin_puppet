@@ -34,16 +34,16 @@ class puppet::periodic (
                     content => template('puppet/puppet-darwin-periodic-puppet.sh.erb');
 
                 '/usr/local/bin/periodic_launchctl_wrapper.sh':
-                    owner   => 'root',
-                    group   => 'wheel',
-                    mode    => '0755',
-                    source  => 'puppet:///modules/puppet/periodic_launchctl_wrapper.sh';
+                    owner  => 'root',
+                    group  => 'wheel',
+                    mode   => '0755',
+                    source => 'puppet:///modules/puppet/periodic_launchctl_wrapper.sh';
 
                 '/Library/LaunchDaemons/com.mozilla.periodic.plist':
-                    owner   => 'root',
-                    group   => 'wheel',
-                    mode    => '0755',
-                    source  => 'puppet:///modules/puppet/com.mozilla.periodic_puppet.plist';
+                    owner  => 'root',
+                    group  => 'wheel',
+                    mode   => '0755',
+                    source => 'puppet:///modules/puppet/com.mozilla.periodic_puppet.plist';
             }
 
             exec { 'periodic_puppet_launchctl_load':
