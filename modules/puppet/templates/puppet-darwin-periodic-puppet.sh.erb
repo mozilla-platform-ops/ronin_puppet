@@ -6,6 +6,7 @@
 # in the absence of `lockfile`, use a locking dir
 # https://unix.stackexchange.com/a/274
 LOCK_DIR="/tmp/.periodic-puppet"
+LOG_FILE="/tmp/.periodic-puppet.log"
 PUPPET="/usr/local/bin/run-puppet.sh"
 
 function fail {
@@ -20,4 +21,4 @@ function finish {
 
 mkdir "${LOCK_DIR}" || fail
 trap finish EXIT
-$PUPPET
+$PUPPET 2>&1 > $LOG_FILE
