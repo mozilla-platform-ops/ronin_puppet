@@ -1,10 +1,9 @@
 #!/bin/bash
 # Wrapper to [re]start the periodic puppet service
 
-set -e
 /bin/launchctl list | grep -wq "com.mozilla.periodic"
 status=$?
-set +e
+set -e
 if [ $status -eq 0 ] ; then
     /bin/launchctl unload "/Library/LaunchDaemons/com.mozilla.periodic.plist"
 fi

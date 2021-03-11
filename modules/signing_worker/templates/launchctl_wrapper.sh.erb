@@ -1,17 +1,17 @@
 #!/bin/bash
 # Wrapper to [re]start a scriptworker
 
-set +e
+set -e
 
 if [ ! -e <%= @scriptworker_base %>/.enabled ]; then
     echo "<%= @scriptworker_base %>/.enabled doesn't exist! sleeping 60 and exiting"
     sleep 60
     exit 1
 else
-    set -e
+    set +e
     /bin/launchctl list | grep -wq "<%= @launchd_script_name %>"
     status=$?
-    set +e
+    set -e
     if [ $status -eq 0 ] ; then
         /bin/launchctl unload "<%= @launchd_script %>"
     fi
