@@ -1,0 +1,24 @@
+#!/bin/bash
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# in the absence of `lockfile`, use a locking dir
+# https://unix.stackexchange.com/a/274
+LOCK_DIR="/tmp/.periodic-puppet"
+LOG_FILE="/tmp/.periodic-puppet.log"
+PUPPET="/usr/local/bin/run-puppet.sh"
+
+function fail {
+    # TODO: report failure to ext service
+    echo "${@}"
+    exit 1
+}
+
+function finish {
+    rm -rf $LOCK_DIR
+}
+
+mkdir "${LOCK_DIR}" || fail
+trap finish EXIT
+$PUPPET 2>&1 > $LOG_FILE
