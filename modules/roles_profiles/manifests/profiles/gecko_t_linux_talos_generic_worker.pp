@@ -69,6 +69,9 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
                 user                      => 'cltbld',
                 user_homedir              => '/home/cltbld',
             }
+
+            require linux_generic_worker::check_gw
+
         }
         default: {
             fail("${::operatingsystem} not supported")
