@@ -72,7 +72,7 @@ class linux_packages::py3 {
         path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
         cwd      => '/opt/relops_py39/',
         provider => shell,
-        unless   => '/usr/bin/dpkg --list | /bin/grep python3.9 && /usr/bin/python3.9 -c "import disutils"',
+        unless   => '/usr/bin/dpkg --list | /bin/grep python3.9 && /usr/bin/python3.9 -c "import distutils"',
     }
 
     # remove old /opt/py3
