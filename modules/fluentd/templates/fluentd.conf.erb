@@ -51,6 +51,15 @@
     facility local0
   </record>
 </filter>
+<filter syslog>
+  @type grep
+  <exclude>
+    key message
+    # asl is deprecated.
+    # logged every 10m
+    pattern /ASL Sender Statistics$/
+  </exclude>
+</filter>
 
 
 <% if @tail_worker_logs -%>
@@ -63,7 +72,7 @@
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
     format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z? /
-    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? (?<message>.*)/
+    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? (?<log_message>.*)/
     time_key time
     time_format "%Y/%m/%d %H:%M:%S"
     keep_time_key true
@@ -79,7 +88,7 @@
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
     format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z? /
-    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? (?<message>.*)/
+    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? (?<log_message>.*)/
     time_key time
     time_format "%Y/%m/%d %H:%M:%S"
     keep_time_key true
@@ -90,22 +99,12 @@
 <filter worker.**>
   @type grep
   <exclude>
-    key message
+    key log_message
     # monitored separately on hardware
     # repeats noisily when no tasks
-    pattern /^Disk available: \d+ bytes$/
+    pattern /Disk available: \d+ bytes$/
   </exclude>
 </filter>
-<filter syslog>
-  @type grep
-  <exclude>
-    key message
-    # asl is deprecated.
-    # logged every 10m
-    pattern /ASL Sender Statistics$/
-  </exclude>
-</filter>
-
 
 <filter worker.**>
   @type record_transformer
@@ -127,9 +126,9 @@
     # stackdriver severities:
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
     stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
-    message #{record["program"]} #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+    message #{record["program"]} #{record["log_message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
 <% else -%>
-    message #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+    message #{record["log_message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
 <% end -%>
     # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
     # No task 5h15m43 1
