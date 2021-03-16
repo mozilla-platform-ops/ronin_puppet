@@ -39,7 +39,7 @@ class puppet::atboot (
                     # On Ubuntu 18.04 puppet runs by systemd and on successful result
                     # notifies dependent services
                     file {
-                        '/lib/systemd/system/puppet.service':
+                        '/lib/systemd/system/run-puppet.service':
                             owner   => 'root',
                             group   => 'root',
                             source  => 'puppet:///modules/puppet/puppet.service',
@@ -58,10 +58,16 @@ class puppet::atboot (
                     }
                     # enable the service but not start it
                     service {
-                        'puppet':
+                        'run-puppet':
                             enable   => true,
                             provider => 'systemd',
-                            require  => File['/lib/systemd/system/puppet.service'];
+                            require  => File['/lib/systemd/system/run-puppet.service'];
+                    }
+                    # disable the deb provided service
+                    service {
+                        'puppet':
+                            enable   => false,
+                            provider => 'systemd';
                     }
                 }
                 default: {
