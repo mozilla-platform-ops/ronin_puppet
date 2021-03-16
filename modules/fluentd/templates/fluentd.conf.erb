@@ -206,6 +206,20 @@
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
   </store>
+  # debug:
+  # <store>
+  #   @type "file"
+  #   path "/var/log/td-agent/debuglog"
+  #   <inject>
+  #     time_format "%Y%m%dT%H%M%S%z"
+  #     time_key "time"
+  #     localtime false
+  #   </inject>
+  #   <buffer time>
+  #     path "/var/log/td-agent/debuglog"
+  #   </buffer>
+  # </store>
+
 <% elsif @syslog_host != '' -%>
   <store>
     @type remote_syslog
