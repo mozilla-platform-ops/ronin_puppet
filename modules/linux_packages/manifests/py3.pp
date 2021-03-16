@@ -79,6 +79,7 @@ class linux_packages::py3 {
 
     file {'/opt/relops_py3/':
         ensure => absent,
+        force  => true,
     }
 
 }
