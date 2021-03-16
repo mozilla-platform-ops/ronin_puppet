@@ -69,8 +69,8 @@
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
     format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z? /
-    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? (?<log_message>.*)/
-    time_key time
+    format1 /^(?<log_time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? +(?<log_message>.*)/
+    time_key log_time
     time_format "%Y/%m/%d %H:%M:%S"
     keep_time_key true
   </parse>
@@ -85,8 +85,8 @@
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
     format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z? /
-    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? (?<log_message>.*)/
-    time_key time
+    format1 /^(?<log_time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? +(?<log_message>.*)/
+    time_key log_time
     time_format "%Y/%m/%d %H:%M:%S"
     keep_time_key true
   </parse>
@@ -120,7 +120,7 @@
     stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
     message #{record["program"]} #{record["log_message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
 <% else -%>
-    message #{record["log_message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+    message #{record["log_message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..*$/, '\1 \2')}
 <% end -%>
     # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
     # No task 5h15m43 1
