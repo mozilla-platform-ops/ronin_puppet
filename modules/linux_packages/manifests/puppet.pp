@@ -46,7 +46,6 @@ class linux_packages::puppet {
             ensure   => installed,
             provider => dpkg,
             source   => '/tmp/puppet.deb',
-            notify   => Exec['apt_update'],
           }
 
           # install latest puppet-agent
