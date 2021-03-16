@@ -1,4 +1,5 @@
 <source>
+  tag system
   @type exec
   command "\
     log stream --color none --level <%= @mac_log_level %> --type log \
@@ -18,12 +19,39 @@
     time_key time
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
   </parse>
-  tag system
   run_interval 60s  # run command if not still running
 </source>
 
+<filter system>
+  @type record_transformer
+  enable_ruby true
+  <record>
+<% if @syslog_host =~ /papertrail/ -%>
+    # message #{record["message"]}
+<% end -%>
+    # Logging pid can be enabled:
+    # message pid:${record["pid"]} ${record["message"]}
+    # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
+    # error="'Default' is not a designated severity"
+    # syslog severities:
+    #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
+<% if @syslog_host =~ /papertrail/ -%>
+    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
+<% elsif @syslog_host != '' -%>
+    syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
+<% end -%>
+<% if @stackdriver_clientid != '' -%>
+    message ${record["program"]}: ${record['log_message']}
+    # stackdriver severities:
+    #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
+    stackdriver_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warning', 'Error' => 'error', 'Fault' => 'critical')}
+<% end -%>
+  </record>
+</filter>
+
 
 <source>
+  tag syslog
   @type tail
   read_from_head true
   path /var/log/system.log
@@ -41,7 +69,6 @@
     time_format "%b %d %H:%M:%S"
     keep_time_key true
   </parse>
-  tag syslog
 </source>
 <filter syslog>
   @type record_transformer
@@ -61,6 +88,7 @@
 
 <% if @tail_worker_logs -%>
 <source>
+  tag worker.err
   @type tail
   read_from_head true
   path /var/opt/generic-worker/service.stderr.log
@@ -74,9 +102,9 @@
     time_format "%Y/%m/%d %H:%M:%S"
     keep_time_key true
   </parse>
-  tag worker.err
 </source>
 <source>
+  tag worker.info
   @type tail
   read_from_head true
   path /var/opt/generic-worker/service.stdout.log
@@ -90,7 +118,6 @@
     time_format "%Y/%m/%d %H:%M:%S"
     keep_time_key true
   </parse>
-  tag worker.info
 </source>
 
 <filter worker.**>
@@ -128,32 +155,6 @@
 </filter>
 <% end -%>
 
-<filter system>
-  @type record_transformer
-  enable_ruby true
-  <record>
-<% if @syslog_host =~ /papertrail/ -%>
-    # message #{record["message"]}
-<% end -%>
-    # Logging pid can be enabled:
-    # message pid:${record["pid"]} ${record["message"]}
-    # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
-    # error="'Default' is not a designated severity"
-    # syslog severities:
-    #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
-<% if @syslog_host =~ /papertrail/ -%>
-    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
-<% elsif @syslog_host != '' -%>
-    syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
-<% end -%>
-<% if @stackdriver_clientid != '' -%>
-    message ${record["program"]}: ${record['log_message']}
-    # stackdriver severities:
-    #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
-    stackdriver_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warning', 'Error' => 'error', 'Fault' => 'critical')}
-<% end -%>
-  </record>
-</filter>
 
 <% if @stackdriver_clientid != '' -%>
 # Add a unique insertId to each log entry that doesn't already have it.
