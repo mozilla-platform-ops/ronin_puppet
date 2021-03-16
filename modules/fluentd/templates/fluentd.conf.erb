@@ -102,7 +102,7 @@
     key log_message
     # monitored separately on hardware
     # repeats noisily when no tasks
-    pattern /Disk available: \d+ bytes$/
+    pattern /(^Disk available: \d+ bytes$|^No change to deploymentId - )/
   </exclude>
 </filter>
 
