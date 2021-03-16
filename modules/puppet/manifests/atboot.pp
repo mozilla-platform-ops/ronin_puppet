@@ -56,7 +56,7 @@ class puppet::atboot (
                         'reload systemd':
                             command => '/bin/systemctl daemon-reload';
                     }
-                    # enable the service but not start it
+                    # enable the run-puppet service
                     service {
                         'run-puppet':
                             enable   => true,
