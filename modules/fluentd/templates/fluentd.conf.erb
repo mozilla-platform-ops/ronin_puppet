@@ -53,12 +53,9 @@
 </filter>
 <filter syslog>
   @type grep
-  <exclude>
-    key message
-    # asl is deprecated.
-    # logged every 10m
-    pattern /ASL Sender Statistics$/
-  </exclude>
+  # asl is deprecated.
+  # logged every 10m
+  exclude1 message ASL\ Sender\ Statistics$
 </filter>
 
 
@@ -98,12 +95,7 @@
 
 <filter worker.**>
   @type grep
-  <exclude>
-    key log_message
-    # monitored separately on hardware
-    # repeats noisily when no tasks
-    pattern /(^Disk available: \d+ bytes$|^No change to deploymentId - )/
-  </exclude>
+  exclude1 log_message ^Disk\ available:\ \d+\ bytes$|^No\ change\ to\ deploymentId\ -\ $
 </filter>
 
 <filter worker.**>
