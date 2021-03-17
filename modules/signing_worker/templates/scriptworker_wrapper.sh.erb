@@ -1,6 +1,11 @@
 #!/bin/bash
 
-set +e
+set -e
+if [ ! -e <%= @scriptworker_base %>/.enabled ]; then
+    echo "<%= @scriptworker_base %>/.enabled doesn't exist! sleeping 60 and exiting"
+    sleep 60
+    exit 1
+fi
 
 source <%= @virtualenv_dir %>/bin/activate
 <%= @virtualenv_dir %>/bin/scriptworker <%= @scriptworker_config_file  %>
