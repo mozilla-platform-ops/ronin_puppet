@@ -190,6 +190,14 @@
   @type null
 </match>
 
+<filter **>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    hostname "#{Socket.gethostname.split('.')[0]}"
+  </record>
+</filter>
+
 <match **>
   @type copy
 
