@@ -1,9 +1,13 @@
 ---
 name: macmini-m1
 groups:
-  - name: macmini-m1-macstadium
+  - name: gecko-t-osx-1100-m1-qa
     targets:
       - 10.155.0.11
+    facts:
+      puppet_role: gecko_t_osx_1100_m1_qa
+  - name: gecko-t-osx-1100-m1
+    targets:
       - 10.155.0.12
       - 10.155.0.13
       - 10.155.0.14
@@ -16,4 +20,4 @@ groups:
       - 10.155.0.21
       - 10.155.0.22
     facts:
-      puppet_role: gecko_t_osx_1100_m1_qa
+      puppet_role: gecko_t_osx_1100_m1
