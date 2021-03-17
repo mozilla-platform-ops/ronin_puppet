@@ -5,3 +5,7 @@ describe command('timedatectl status') do
   # TODO: check clock sync... it doesn't work on freshly converged hosts though.
   its(:stdout) { should match /systemd-timesyncd.service active: yes/ }
 end
+
+describe service('ntp') do
+  it { should be_enabled }
+end
