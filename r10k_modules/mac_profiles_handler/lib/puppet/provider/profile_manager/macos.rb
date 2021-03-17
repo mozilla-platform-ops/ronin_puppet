@@ -41,7 +41,7 @@ Puppet::Type.type(:profile_manager).provide :macos do
 
   def getreceipts
     begin
-      receipts = Puppet::Util::Plist.read_plist_file(Puppet[:vardir] + '/mobileconfigs/receipts.plist')
+      receipts = Puppet::Util::Plist.read_plist_file('/var/db/mobileconfigs/receipts.plist')
     rescue IOError, Errno::ENOENT
       receipts = {}
     end
@@ -56,7 +56,7 @@ Puppet::Type.type(:profile_manager).provide :macos do
 
     receipts[resource[:name]] = { 'install_date' => getinstalledstate['install_date'] }
 
-    Puppet::Util::Plist.write_plist_file(receipts, Puppet[:vardir] + '/mobileconfigs/receipts.plist')
+    Puppet::Util::Plist.write_plist_file(receipts, '/var/db/mobileconfigs/receipts.plist')
   end
 
   def getinstalledstate

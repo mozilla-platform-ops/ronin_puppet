@@ -46,13 +46,13 @@ class linux_packages::puppet {
             ensure   => installed,
             provider => dpkg,
             source   => '/tmp/puppet.deb',
-            notify   => Exec['apt_update'],
           }
 
           # install latest puppet-agent
           package { 'install puppet agent':
-            ensure => latest,
-            name   => 'puppet-agent',
+            ensure  => '7.5.0-1bionic',
+            name    => 'puppet-agent',
+            require => Exec['apt_update'],
           }
 
         }

@@ -10,8 +10,6 @@ class roles_profiles::profiles::mac_v3_signing {
             $worker_type  = 'mac-v3-signing'
             $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-            include puppet::disable_atboot
-
             class { 'roles_profiles::profiles::logging':
                 # The logging module tags the logs with:
                 # hostname: hostname
@@ -119,6 +117,19 @@ class roles_profiles::profiles::mac_v3_signing {
                     puppetagent => {
                         location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
                     },
+                },
+            }
+
+            class { 'puppet::periodic':
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.user'),
+                puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
+                puppet_branch     => 'production-mac-signing',
+                meta_data         => {
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    provisionerId => 'scriptworker-prov-v1',
+                    workerId      => $facts['networking']['hostname'],
                 },
             }
         }

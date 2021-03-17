@@ -4,8 +4,6 @@
 
 class win_openssh::service {
 
-    require win_openssh::install
-
     service { 'sshd':
         ensure    => running,
         subscribe => File["${win_openssh::ssh_program_data}\\sshd_config"],

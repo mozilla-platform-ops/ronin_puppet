@@ -591,6 +591,9 @@ Function Start-Restore {
         if ($restore_needed -eq "puppetize_failed") {
             Write-Log -message  ('{0} :: Node has failed to Puppetize multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
+        if ($restore_needed -eq "force_restore") {
+            Write-Log -message  ('{0} :: Restore requested by audit scripts. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
         else {
             Write-Log -message  ('{0} :: Restore attempted for unknown reason. Restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
 

@@ -50,6 +50,8 @@ windows:
     nssm: "%{facts.custom_win_systemdrive}\\nssm"
     vac: "%{facts.custom_win_systemdrive}\\VAC"
 
+  winaudit_ssh: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/htVXFyRg4wDhIIl8rCUBwI2QhkzNkUDgfT+uBy5Ni8PZGu/5KfVTBQyFIAv5hbe9O+koakGElcQxwNhYOm6YbYwbht+rJt7GTh9PKGRhcRBIrOb1v1x032ZXkMoBkHpQPnD7pBky5hVRkrEaXDGrg/NxhFMr2HgbfOvWPX7NGaQ0WJky7oMvEKB7kTnCYZkogzuvu4rtUDF2FzINn91IaXfi9LDPLZnlGSZ1h03yiezbuY+NePNJOuRj4QoVuCsdj6nZ5X9JeDMClOZpn2RCtzsEPPYnBgH0m6cYFUvcRV9AkRp4Q1wA+HIcBprTw1eWbknmt4qFH7vkXQCNUozl win_audit'
+
 # this should be changed into a defined type
 # Useful commands
 win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -file"
