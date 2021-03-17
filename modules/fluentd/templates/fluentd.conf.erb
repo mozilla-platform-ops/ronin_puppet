@@ -1,8 +1,9 @@
 <source>
+  tag system
   @type exec
   command "\
     log stream --color none --level <%= @mac_log_level %> --type log \
-      --predicate '(process MATCHES \"(logger|sudo|kernel|sshd|firefox|plugin-agent)\") || (messageType > 16)' \
+      --predicate '(process MATCHES \"(logger|sudo|sshd|firefox|plugin-agent)\") || (messageType > 16)' \
       --timeout 1d \
     | tail -n +3 \
     "
@@ -18,125 +19,15 @@
     time_key time
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
   </parse>
-  tag system
   run_interval 60s  # run command if not still running
 </source>
-
-
-<source>
-  @type tail
-  read_from_head true
-  path /var/log/system.log
-  pos_file /var/log/system.log.pos
-  <parse>
-    # standard syslog parsing often fails because the macos system.log has inconsistent multi-line, space delimiters, and ident/pid formatting
-    # @type syslog
-    # with_priority false
-    # parser_type string
-    @type multiline
-    format_firstline /^[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2} /
-    # ugly regex that handles the varieties of macos syslog lines I've tested
-    format1 /^(?<time>[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2}) [^ ]+ (?<ident>[^\[ :]*)(?<message>[\[\]A-Za-z: ]*(\[(?<pid>\d+)\]:?)? .*)/
-    time_key time
-    time_format "%b %d %H:%M:%S"
-    keep_time_key true
-  </parse>
-  tag syslog
-</source>
-<filter syslog>
-  @type record_transformer
-  <record>
-    severity info
-    program ${record["ident"]}
-    facility local0
-  </record>
-</filter>
-
-
-<% if @tail_worker_logs -%>
-<source>
-  @type tail
-  read_from_head true
-  path /var/log/genericworker/stderr.log
-  pos_file /var/log/genericworker/stderr.log.pos
-  <parse>
-    @type multiline
-    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
-    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /
-    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})( [A-Z]{3})? (?<message>.*)/
-    time_key time
-    time_format "%Y/%m/%d %H:%M:%S"
-    keep_time_key true
-  </parse>
-  tag worker.err
-</source>
-<source>
-  @type tail
-  read_from_head true
-  path /var/log/genericworker/stdout.log
-  pos_file /var/log/genericworker/stdout.log.pos
-  <parse>
-    @type multiline
-    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
-    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /
-    format1 /^(?<time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})( [A-Z]{3})? (?<message>.*)/
-    time_key time
-    time_format "%Y/%m/%d %H:%M:%S"
-    keep_time_key true
-  </parse>
-  tag worker.info
-</source>
-
-<filter worker.**>
-  @type grep
-  <exclude>
-    key message
-    # monitored separately on hardware
-    # repeats noisily when no tasks
-    pattern /^Disk available: \d+ bytes$/
-  </exclude>
-</filter>
-<filter syslog>
-  @type grep
-  <exclude>
-    key message
-    # asl is deprecated.
-    # logged every 10m
-    patterm /^ASL Sender Statistics$/
-  </exclude>
-</filter>
-
-
-<filter worker.**>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    program "worker"
-<% if @syslog_host =~ /papertrail/ -%>
-    severity "${tag_parts[1]}"
-<% elsif @syslog_host != '' -%>
-    syslog_severity "${tag_parts[1]}"
-<% end -%>
-<% if @stackdriver_clientid != '' -%>
-    # stackdriver severities:
-    #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
-    stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
-    log_message #{record["program"]} #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
-<% else -%>
-    log_message #{record["message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
-<% end -%>
-    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
-    # No task 5h15m43 1
-  </record>
-</filter>
-<% end -%>
 
 <filter system>
   @type record_transformer
   enable_ruby true
   <record>
 <% if @syslog_host =~ /papertrail/ -%>
-    message #{record["log_message"]}
+    # message #{record["message"]}
 <% end -%>
     # Logging pid can be enabled:
     # message pid:${record["pid"]} ${record["message"]}
@@ -157,6 +48,113 @@
 <% end -%>
   </record>
 </filter>
+
+
+<source>
+  tag syslog
+  @type tail
+  read_from_head true
+  path /var/log/system.log
+  pos_file /var/log/system.log.pos
+  <parse>
+    # standard syslog parsing often fails because the macos system.log has inconsistent multi-line, space delimiters, and ident/pid formatting
+    # @type syslog
+    # with_priority false
+    # parser_type string
+    @type multiline
+    format_firstline /^[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2} /
+    # ugly regex that handles the varieties of macos syslog lines I've tested
+    format1 /^(?<time>[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2}) [^ ]+ (?<ident>[^\[ :]*)(?<message>[\[\]A-Za-z: ]*(\[(?<pid>\d+)\]:?)? .*)/
+    time_key time
+    time_format "%b %d %H:%M:%S"
+    keep_time_key true
+  </parse>
+</source>
+<filter syslog>
+  @type record_transformer
+  <record>
+    severity info
+    program ${record["ident"]}
+    facility local0
+  </record>
+</filter>
+<filter syslog>
+  @type grep
+  # asl is deprecated.
+  # logged every 10m
+  exclude1 message ASL\ Sender\ Statistics$
+</filter>
+
+
+<% if @tail_worker_logs -%>
+<source>
+  tag worker.err
+  @type tail
+  read_from_head true
+  path /var/opt/generic-worker/service.stderr.log
+  pos_file /var/opt/generic-worker/service.stderr.log.pos
+  <parse>
+    @type multiline
+    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
+    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z? /
+    format1 /^(?<log_time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? +(?<log_message>.*)/
+    time_key log_time
+    time_format "%Y/%m/%d %H:%M:%S"
+    keep_time_key true
+  </parse>
+</source>
+<source>
+  tag worker.info
+  @type tail
+  read_from_head true
+  path /var/opt/generic-worker/service.stdout.log
+  pos_file /var/opt/generic-worker/service.stdout.log.pos
+  <parse>
+    @type multiline
+    # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
+    format_firstline /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z? /
+    format1 /^(?<log_time>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2})Z?( [A-Z]{3})? +(?<log_message>.*)/
+    time_key log_time
+    time_format "%Y/%m/%d %H:%M:%S"
+    keep_time_key true
+  </parse>
+</source>
+
+<filter worker.**>
+  @type grep
+  exclude1 log_message ^Disk\ available:\ \d+\ bytes$|^No\ change\ to\ deploymentId\ -\ $
+</filter>
+
+<filter worker.**>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    program "worker"
+    # single user:
+    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
+    # No task 5h15m43 90h44m16 1
+    # multi-user:
+    # No task claimed. Idle for 45h41m6.936831744s (will exit if no task claimed in 50h18m53.063168256s).
+    # No task 45h41m6 50h18m53
+<% if @syslog_host =~ /papertrail/ -%>
+    severity "${tag_parts[1]}"
+<% elsif @syslog_host != '' -%>
+    syslog_severity "${tag_parts[1]}"
+<% end -%>
+<% if @stackdriver_clientid != '' -%>
+    # stackdriver severities:
+    #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
+    stackdriver_severity "${tag_parts[1].gsub(/^(err|info)/i, 'info' => 'info', 'err' => 'error')}"
+    message #{record["program"]} #{record["log_message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..* (\d+) more tasks to run before exiting\.$/, '\1 \2 \3')}
+<% else -%>
+    message #{record["log_message"].sub(/^(No task) claimed. Idle for ([^\.]+)\..*$/, '\1 \2')}
+<% end -%>
+    # No task claimed. Idle for 5h15m43.362805902s (will exit if no task claimed in 90h44m16.637194098s). 1 more tasks to run before exiting.
+    # No task 5h15m43 1
+  </record>
+</filter>
+<% end -%>
+
 
 <% if @stackdriver_clientid != '' -%>
 # Add a unique insertId to each log entry that doesn't already have it.
@@ -209,6 +207,20 @@
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
   </store>
+  # debug:
+  # <store>
+  #   @type "file"
+  #   path "/var/log/td-agent/debuglog"
+  #   <inject>
+  #     time_format "%Y%m%dT%H%M%S%z"
+  #     time_key "time"
+  #     localtime false
+  #   </inject>
+  #   <buffer time>
+  #     path "/var/log/td-agent/debuglog"
+  #   </buffer>
+  # </store>
+
 <% elsif @syslog_host != '' -%>
   <store>
     @type remote_syslog
@@ -223,7 +235,7 @@
     severity ${syslog_severity}
     <format>
       @type single_value
-      message_key log_message
+      message_key message
     </format>
   </store>
 <% else -%>
