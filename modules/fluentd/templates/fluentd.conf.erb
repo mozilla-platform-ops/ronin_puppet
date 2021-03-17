@@ -91,8 +91,8 @@
   tag worker.err
   @type tail
   read_from_head true
-  path "<%= @worker_stderr %>"
-  pos_file "<%= @worker_stderr %>".pos
+  path <%= @worker_stderr %>
+  pos_file <%= @worker_stderr %>.pos
   #path /var/opt/generic-worker/service.stderr.log
   #pos_file /var/opt/generic-worker/service.stderr.log.pos
   <parse>
@@ -109,8 +109,8 @@
   tag worker.info
   @type tail
   read_from_head true
-  path "<%= @worker_stdout %>"
-  pos_file "<%= @worker_stdout %>".pos
+  path <%= @worker_stdout %>
+  pos_file <%= @worker_stdout %>.pos
   #path /var/opt/generic-worker/service.stdout.log
   #pos_file /var/opt/generic-worker/service.stdout.log.pos
   <parse>
