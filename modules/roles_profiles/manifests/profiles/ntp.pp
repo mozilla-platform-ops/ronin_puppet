@@ -12,7 +12,6 @@ class roles_profiles::profiles::ntp {
             }
         }
         'Ubuntu': {
-            include ntp
             $ntp_server = lookup('ntp_server', String)
             class { 'ntp':
                 servers => [$ntp_server]
