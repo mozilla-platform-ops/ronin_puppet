@@ -6,7 +6,8 @@ set -e
 if [ ! -e <%= @scriptworker_base %>/.enabled ]; then
     echo "<%= @scriptworker_base %>/.enabled doesn't exist! sleeping 60 and exiting"
     sleep 60
-    exit 1
+    # Exit 0 to avoid killing the puppet run
+    exit 0
 else
     set +e
     /bin/launchctl list | grep -wq "<%= @launchd_script_name %>"
