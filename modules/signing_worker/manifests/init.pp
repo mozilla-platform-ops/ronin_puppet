@@ -29,6 +29,8 @@ define signing_worker (
     $scriptworker_config_file = "${scriptworker_base}/scriptworker.yaml"
     $script_config_file       = "${scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
+    $launchctl_wrapper        = "${scriptworker_base}/launchctl_wrapper.sh"
+    $enable_scriptworker      = "${scriptworker_base}/enable_scriptworker.sh"
 
     # Dep workers have a non-deterministic suffix
     $worker_id = "${facts['networking']['hostname']}${worker_id_suffix}"
@@ -71,15 +73,19 @@ define signing_worker (
 
     $required_directories = [
       $scriptworker_base,
-      "${scriptworker_base}/certs",
       "${scriptworker_base}/logs",
-      "${scriptworker_base}/artifact",
     ]
     file { $required_directories:
       ensure => 'directory',
       owner  =>  $user,
       group  =>  $group,
       mode   => '0750',
+    }
+    file { "${scriptworker_base}/certs":
+      ensure => 'directory',
+      owner  =>  $user,
+      group  =>  $group,
+      mode   => '0700',
     }
 
     $scriptworker_clone_dir = "${scriptworker_base}/scriptworker"
@@ -246,11 +252,13 @@ define signing_worker (
         content => template('signing_worker/script_config.yaml.erb'),
         owner   => $user,
         group   => $group,
+        mode    => '0400',
     }
     file { $scriptworker_config_file:
         content => template('signing_worker/scriptworker.yaml.erb'),
         owner   => $user,
         group   => $group,
+        mode    => '0400',
     }
 
     file { $scriptworker_wrapper:
@@ -260,31 +268,51 @@ define signing_worker (
         group   => $group,
     }
 
-    $launchd_script = "/Library/LaunchDaemons/org.mozilla.scriptworker.${user}.plist"
+    $launchd_script_name = "org.mozilla.scriptworker.${user}"
+    $launchd_script = "/Library/LaunchDaemons/${launchd_script_name}.plist"
     file { $launchd_script:
         content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
         mode    => '0644',
     }
-    # Disabled until full setup is complete.
-    # exec { "${user}_launchctl_load":
-    #    command   => "/bin/launchctl load ${$launchd_script}",
-    #    subscribe => File[$launchd_script],
-    # }
-
-    # Remove this notify when enabling the exec launchctl, above
-    notify { "launchctl_${user}":
-        message   => "Run: /bin/launchctl load ${$launchd_script}",
-        subscribe => File[$launchd_script],
+    file { $launchctl_wrapper:
+        content => template('signing_worker/launchctl_wrapper.sh.erb'),
+        mode    => '0755',
+        owner   => $user,
+        group   => $group,
+    }
+    file { $enable_scriptworker:
+        content => template('signing_worker/enable_scriptworker.sh.erb'),
+        mode    => '0755',
+        owner   => $user,
+        group   => $group,
+    }
+    exec { "${user}_launchctl_load":
+        command     => "/bin/bash ${$launchctl_wrapper}",
+        refreshonly => true,
+        subscribe   => [
+            Exec["install ${scriptworker_base} iscript"],
+            # Requirements could include scriptworker dependencies, so restart
+            # the long-running daemon on requirements changes. Don't restart on
+            # iscript or scriptworker_client changes, because we'll pick those
+            # up during the next task run.
+            Exec["install ${scriptworker_base} requirements"],
+            Exec["install ${scriptworker_base} scriptworker"],
+            File[$launchd_script],
+            File[$launchctl_wrapper],
+            File[$scriptworker_config_file],
+            File[$scriptworker_wrapper],
+        ],
     }
 
     if !empty($poller_config) {
         signing_worker::notarization_user { "create_user_${poller_config['user']}":
             user => $poller_config['user'],
         }
-        $poller_worker_id    = "poller-${facts['networking']['hostname']}"
-        $poller_dir          = "${scriptworker_base}/poller"
-        $poller_config_file  = "${scriptworker_base}/poller/poller.yaml"
-        $poller_wrapper      = "${scriptworker_base}/poller/poller_wrapper.sh"
+        $poller_worker_id         = "poller-${facts['networking']['hostname']}"
+        $poller_dir               = "${scriptworker_base}/poller"
+        $poller_config_file       = "${scriptworker_base}/poller/poller.yaml"
+        $poller_wrapper           = "${scriptworker_base}/poller/poller_wrapper.sh"
+        $poller_launchctl_wrapper = "${scriptworker_base}/poller/poller_launchctl_wrapper.sh"
 
         $poller_required_directories = [
           $poller_dir,
@@ -301,30 +329,40 @@ define signing_worker (
             content => template('signing_worker/poller.yaml.erb'),
             owner   => $poller_config['user'],
             group   => $group,
+            mode    => '0400',
         }
 
         file { $poller_wrapper:
             content => template('signing_worker/poller_wrapper.sh.erb'),
-            mode    => '0700',
+            mode    => '0755',
             owner   => $poller_config['user'],
             group   => $group,
         }
 
-        $poller_launchd_script = "/Library/LaunchDaemons/org.mozilla.notarization_poller.${poller_config['user']}.plist"
+        $poller_launchd_script_name = 'org.mozilla.notarization_poller'
+        $poller_launchd_script = "/Library/LaunchDaemons/${poller_launchd_script_name}.${poller_config['user']}.plist"
         file { $poller_launchd_script:
             content => template('signing_worker/org.mozilla.notarization_poller.plist.erb'),
             mode    => '0644',
         }
-        # Disabled until full setup is complete.
-        # exec { "${poller_config['user']}_launchctl_load":
-        #    command   => "/bin/launchctl load ${$poller_launchd_script}",
-        #    subscribe => File[$poller_launchd_script],
-        # }
-
-        # Remove this notify when enabling the exec launchctl, above
-        notify { "launchctl_${poller_config['user']}":
-            message   => "Run: /bin/launchctl load ${$poller_launchd_script}",
-            subscribe => File[$poller_launchd_script],
+        file { $poller_launchctl_wrapper:
+            content => template('signing_worker/poller_launchctl_wrapper.sh.erb'),
+            mode    => '0755',
+            owner   => $poller_config['user'],
+            group   => $group,
+        }
+        exec { "${poller_config['user']}_launchctl_load":
+            command     => "/bin/bash ${$poller_launchctl_wrapper}",
+            refreshonly => true,
+            subscribe   => [
+                Exec["install ${scriptworker_base} notarization_poller"],
+                Exec["install ${scriptworker_base} requirements"],
+                Exec["install ${scriptworker_base} scriptworker_client"],
+                File[$poller_config_file],
+                File[$poller_launchd_script],
+                File[$poller_launchctl_wrapper],
+                File[$poller_wrapper],
+            ],
         }
     }
 }
