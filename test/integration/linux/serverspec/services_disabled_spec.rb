@@ -34,6 +34,16 @@ describe service('whoopsie') do
   it { should_not be_enabled }
 end
 
+# services that require disabled services (also need to be stopped)
+
+describe service('NetworkManager-wait-online') do
+  it { should_not be_enabled }
+end
+
+describe service('cups-browsed') do
+  it { should_not be_enabled }
+end
+
 # bluez packages, but bluetooth service
 describe service('bluetooth') do
   it { should_not be_enabled }

@@ -26,6 +26,18 @@ class disable_services() {
                             require  => Package[$install_and_disable];
                     }
 
+                    # services we need to disable that depend of the above services
+                    # NetworkManager-wait-online.service depends on network-manager.service
+                    # avahi-daemon.service depends on cups-browsed.service
+                    # cups-browsed.service depends on cups.service
+                    $disable = ['cups-browsed', 'NetworkManager-wait-online']
+                    service {
+                        $disable:
+                            ensure   => stopped,
+                            provider => 'systemd',
+                            enable   => false
+                    }
+
                     # disable apport via defaults also
                     file {
                         '/etc/default/apport':
