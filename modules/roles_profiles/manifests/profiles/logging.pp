@@ -15,8 +15,8 @@ class roles_profiles::profiles::logging (
     Integer $syslog_port        = 514,
     String $mac_log_level       = 'default',
     Boolean $tail_worker_logs   = false,
-    String worker_stdout        = '',
-    String worker_stderr        = '',
+    String $worker_stdout       = '',
+    String $worker_stderr       = '',
 ) {
 
     # use a single write-only service account for each project
