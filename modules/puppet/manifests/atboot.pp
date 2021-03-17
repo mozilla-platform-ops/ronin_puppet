@@ -39,7 +39,7 @@ class puppet::atboot (
                     # On Ubuntu 18.04 puppet runs by systemd and on successful result
                     # notifies dependent services
                     file {
-                        '/lib/systemd/system/puppet.service':
+                        '/lib/systemd/system/run-puppet.service':
                             owner   => 'root',
                             group   => 'root',
                             source  => 'puppet:///modules/puppet/puppet.service',
@@ -56,12 +56,18 @@ class puppet::atboot (
                         'reload systemd':
                             command => '/bin/systemctl daemon-reload';
                     }
-                    # enable the service but not start it
+                    # enable the run-puppet service
                     service {
-                        'puppet':
+                        'run-puppet':
                             enable   => true,
                             provider => 'systemd',
-                            require  => File['/lib/systemd/system/puppet.service'];
+                            require  => File['/lib/systemd/system/run-puppet.service'];
+                    }
+                    # disable the deb provided service
+                    service {
+                        'puppet':
+                            enable   => false,
+                            provider => 'systemd';
                     }
                 }
                 default: {
