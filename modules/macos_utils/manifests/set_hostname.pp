@@ -6,8 +6,8 @@ class macos_utils::set_hostname {
 
     if $::operatingsystem == 'Darwin' {
         exec { 'SetLocalHostName':
-            command => '/usr/sbin/scutil --set LocalHostName $(hostname|cut -d\. -f2)',
-            onlyif  => '/bin/test $(/usr/sbin/scutil --get LocalHostName) != "$(hostname|cut -d\. -f2)"',
+            command => '/usr/sbin/scutil --set LocalHostName $(hostname|cut -d\. -f1)',
+            onlyif  => '/bin/test $(/usr/sbin/scutil --get LocalHostName) != "$(hostname|cut -d\. -f1)"',
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
