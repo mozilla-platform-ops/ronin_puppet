@@ -30,6 +30,8 @@ class roles_profiles::profiles::gecko_t_osx_1014_generic_worker {
                 worker_type      => $worker_type,
                 mac_log_level    => 'default',
                 tail_worker_logs => true,
+                worker_stdout    => '/var/log/genericworker/service.out',
+                worker_stderr    => '/var/log/genericworker/service.err',
             }
 
             class { 'telegraf':

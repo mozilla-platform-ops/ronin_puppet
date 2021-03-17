@@ -91,8 +91,10 @@
   tag worker.err
   @type tail
   read_from_head true
-  path /var/opt/generic-worker/service.stderr.log
-  pos_file /var/opt/generic-worker/service.stderr.log.pos
+  path "<%= @worker_stderr %>"
+  pos_file "<%= @worker_stderr %>".pos
+  #path /var/opt/generic-worker/service.stderr.log
+  #pos_file /var/opt/generic-worker/service.stderr.log.pos
   <parse>
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n
@@ -107,8 +109,10 @@
   tag worker.info
   @type tail
   read_from_head true
-  path /var/opt/generic-worker/service.stdout.log
-  pos_file /var/opt/generic-worker/service.stdout.log.pos
+  path "<%= @worker_stdout %>"
+  pos_file "<%= @worker_stdout %>".pos
+  #path /var/opt/generic-worker/service.stdout.log
+  #pos_file /var/opt/generic-worker/service.stdout.log.pos
   <parse>
     @type multiline
     # 2019/11/07 18:41:43 Disk available: 225110376448 bytes\n

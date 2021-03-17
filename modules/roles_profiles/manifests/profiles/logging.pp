@@ -15,6 +15,8 @@ class roles_profiles::profiles::logging (
     Integer $syslog_port        = 514,
     String $mac_log_level       = 'default',
     Boolean $tail_worker_logs   = false,
+    String worker_stdout        = '',
+    String worker_stderr        = '',
 ) {
 
     # use a single write-only service account for each project
@@ -66,6 +68,8 @@ class roles_profiles::profiles::logging (
                 syslog_port          => lookup('papertrail.port', {'default_value' => $syslog_port}),
                 mac_log_level        => $mac_log_level,
                 tail_worker_logs     => $tail_worker_logs,
+                worker_stdout        => $worker_stdout,
+                worker_stderr        => $worker_stderr,
             }
         }
         default: {
