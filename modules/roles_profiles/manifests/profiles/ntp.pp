@@ -12,9 +12,16 @@ class roles_profiles::profiles::ntp {
             }
         }
         'Ubuntu': {
-            $ntp_server = lookup('ntp_server', String)
-            class { 'ntp':
-                servers => [$ntp_server]
+            case $::operatingsystemrelease {
+                '18.04': {
+                    $ntp_server = lookup('ntp_server', String)
+                    class { 'linux_time':
+                        servers => [$ntp_server]
+                    }
+                }
+                default: {
+                    fail("Ubuntu ${::operatingsystemrelease} is not supported")
+                }
             }
         }
         'Windows': {
