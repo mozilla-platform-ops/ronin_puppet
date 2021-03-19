@@ -13,7 +13,7 @@ class linux_time (
           file {
               '/etc/systemd/timesyncd.conf':
                   owner   => 'root',
-                  group   => 'wheel',
+                  group   => 'root',
                   mode    => '0644',
                   content => template("${module_name}/timesyncd.conf.erb");
           }
