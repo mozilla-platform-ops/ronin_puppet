@@ -30,6 +30,7 @@ define signing_worker (
     $script_config_file       = "${scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
     $launchctl_wrapper        = "${scriptworker_base}/launchctl_wrapper.sh"
+    $poller_launchctl_wrapper = "${scriptworker_base}/poller/poller_launchctl_wrapper.sh"
     $enable_scriptworker      = "${scriptworker_base}/enable_scriptworker.sh"
 
     # Dep workers have a non-deterministic suffix
@@ -312,7 +313,6 @@ define signing_worker (
         $poller_dir               = "${scriptworker_base}/poller"
         $poller_config_file       = "${scriptworker_base}/poller/poller.yaml"
         $poller_wrapper           = "${scriptworker_base}/poller/poller_wrapper.sh"
-        $poller_launchctl_wrapper = "${scriptworker_base}/poller/poller_launchctl_wrapper.sh"
 
         $poller_required_directories = [
           $poller_dir,
