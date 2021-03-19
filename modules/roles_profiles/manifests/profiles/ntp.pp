@@ -16,7 +16,7 @@ class roles_profiles::profiles::ntp {
                 '18.04': {
                     $ntp_server = lookup('ntp_server', String)
                     class { 'linux_time':
-                        servers => [$ntp_server]
+                        servers => $ntp_server
                     }
                 }
                 default: {
