@@ -36,10 +36,6 @@ end
 
 # services that require disabled services (also need to be stopped)
 
-describe service('NetworkManager-wait-online') do
-  it { should_not be_enabled }
-end
-
 describe service('cups-browsed') do
   it { should_not be_enabled }
 end
