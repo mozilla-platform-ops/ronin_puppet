@@ -51,4 +51,14 @@ define macos_utils::clean_appstate (
             user     => $user,
             require  => File["/Users/${user}/Library/Preferences/.GlobalPreferences.plist"];
     }
+
+    # Set user preference to always show scrollbar
+    macos_utils::defaults { "${user}-AppleShowScrollBars":
+            domain   => "/Users/${user}/Library/Preferences/.GlobalPreferences.plist",
+            key      => 'AppleShowScrollBars',
+            value    => 'Always',
+            val_type => 'string',
+            user     => $user,
+            require  => File["/Users/${user}/Library/Preferences/.GlobalPreferences.plist"];
+    }
 }

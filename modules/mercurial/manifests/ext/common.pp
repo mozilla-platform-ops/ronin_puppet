@@ -5,7 +5,6 @@
 class mercurial::ext::common {
 
     include mercurial::settings
-    include packages::python2
     include shared
     include dirs::usr::local::lib
 

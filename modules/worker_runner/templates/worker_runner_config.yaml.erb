@@ -1,0 +1,49 @@
+getSecrets: false
+provider:
+  providerType: <%= @provider_type %>
+  rootURL: "<%= @root_url %>"
+  clientID: <%= @client_id %>
+  accessToken: <%= @access_token %>
+  workerPoolID: "<%= @worker_pool_id %>"
+  workerGroup: "<%= @worker_group %>"
+  workerID: "<%= @worker_id %>"
+  workerLocation:
+    host: "<%= @worker_group %>"
+worker:
+  implementation: generic-worker
+  path: /usr/local/bin/generic-worker-<%= @generic_worker_engine %>
+  configPath: <%= @data_dir %>/generic-worker.conf.yaml
+workerConfig:
+  cachesDir: "<%= @data_dir %>/cache"
+  cleanUpTaskDirs: true
+  disableReboots: true
+  downloadsDir: "<%= @data_dir %>/downloads"
+  ed25519SigningKeyLocation: "<%= @ed25519_signing_key %>"
+  idleTimeoutSecs: <%= @idle_timeout_secs %>
+  livelogExecutable: "/usr/local/bin/livelog"
+  numberOfTasksToRun: 1
+  publicIP: "<%= @facts['networking']['ip'] %>"
+  requiredDiskSpaceMegabytes: 10240
+  sentryProject: "generic-worker"
+  shutdownMachineOnIdle: false
+  shutdownMachineOnInternalError: false
+  taskclusterProxyExecutable: "/usr/local/bin/taskcluster-proxy"
+  taskclusterProxyPort: 8080
+  tasksDir: "<%= @task_dir %>"
+  wstAudience: "firefoxcitc"
+  wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
+  workerTypeMetadata:
+    workerId: "<%= @worker_id %>"
+    workerGroup: "<%= @worker_group %>"
+    ip: "<%= @ipaddress %>"
+    arch: "<%= @facts['os']['architecture'] %>"
+    processor_name: "<%= @facts['system_profiler']['processor_name'] %>"
+    processor_speed: "<%= @facts['system_profiler']['processor_speed'] %>"
+    processor_count: "<%= @facts['system_profiler']['processors'] %>"
+    processor_cores: "<%= @facts['system_profiler']['cores'] %>"
+    disk_size: "<%= @facts['mountpoints']['/']['size'] %>"
+    memory: "<%= @facts['system_profiler']['memory'] %>"
+    model_identifier: "<%= @facts['system_profiler']['model_identifier'] %>"
+    system_version: "<%= @facts['system_profiler']['system_version'] %>"
+    machine-setup:
+      config: "https://github.com/mozilla-platform-ops/ronin_puppet"
