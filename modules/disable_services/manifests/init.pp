@@ -30,7 +30,7 @@ class disable_services() {
                     # NetworkManager-wait-online.service depends on network-manager.service
                     # avahi-daemon.service depends on cups-browsed.service
                     # cups-browsed.service depends on cups.service
-                    $disable = ['cups-browsed', 'NetworkManager-wait-online']
+                    $disable = ['cups-browsed']
                     service {
                         $disable:
                             ensure   => stopped,
