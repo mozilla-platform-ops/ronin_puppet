@@ -14,7 +14,7 @@
     #   2019-05-17 22:49:59.070398+0000 0x195      Info        0x0                  0      0    kernel: (IOHIDFamily) HID Activity Tickle (type:0 sender:100007033)
   <parse>
     @type regexp
-    expression /^(?<time>.{31}) (?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<log_message>.*)$/
+    expression /^(?<time>.{31})\s+(?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<log_message>.*)$/
     types pid:integer
     time_key time
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
@@ -122,7 +122,10 @@
 
 <filter worker.**>
   @type grep
-  exclude1 log_message ^Disk\ available:\ \d+\ bytes$|^No\ change\ to\ deploymentId\ -\ $
+  <exclude>
+    key log_message
+    pattern /^Disk available: \d+ bytes$/
+  </exclude>
 </filter>
 
 <filter worker.**>
@@ -155,6 +158,16 @@
 </filter>
 <% end -%>
 
+<filter fluent.error>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    severity "${tag_parts[1]}"
+  </record>
+</filter>
+<match fluent.{debug,info,warn}>
+  @type null
+</match>
 
 <% if @stackdriver_clientid != '' -%>
 # Add a unique insertId to each log entry that doesn't already have it.
@@ -186,17 +199,6 @@
 </filter>
 <% end -%>
 
-<match fluent.**>
-  @type null
-</match>
-
-<filter **>
-  @type record_transformer
-  enable_ruby true
-  <record>
-    hostname "#{Socket.gethostname.split('.')[0]}"
-  </record>
-</filter>
 
 <match **>
   @type copy
@@ -206,6 +208,9 @@
     @type papertrail
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
+    default_hostname "#{Socket.gethostname.split('.')[0]}"
+    flush_interval 1
+    flush_at_shutdown true
   </store>
   # debug:
   # <store>
