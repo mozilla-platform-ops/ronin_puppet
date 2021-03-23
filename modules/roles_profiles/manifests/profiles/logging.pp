@@ -57,7 +57,6 @@ class roles_profiles::profiles::logging (
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
         }
         'Darwin': {
-            include macos_utils::set_hostname
             class { 'fluentd':
                 worker_type          => $worker_type,
                 stackdriver_project  => $stackdriver_project,
