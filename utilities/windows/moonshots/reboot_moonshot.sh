@@ -1,9 +1,9 @@
 #!/bin/bash
 
 timestamp=$(date +%s)
-mkdir ${timestamp}reboot_dir >/dev/null 2>&1
-cd ${timestamp}reboot_dir
-starting_cwd=`pwd`
+mkdir "${timestamp}reboot_dir" >/dev/null 2>&1
+cd "${timestamp}"reboot_dir || return
+starting_cwd=$(pwd)
 
 Help()
 {
@@ -24,7 +24,7 @@ Help()
    echo
    echo "-h | --help             Print this Help."
    echo
-   echo *EXAMPLES*
+   echo "*EXAMPLES*"
    echo "./reboot_moonshot.sh -c 1"
    echo "./reboot_moonshot.sh -c all"
    echo "./reboot_moonshot.sh -s 2 -e 33"
@@ -80,66 +80,66 @@ function predeploy() {
       echo Must be either range or an ip address. Not both.
     elif [ ! -z "$S" ] && [ ! -z "$E" ] && [ -z "$O" ];
     then
-      if [ $S -le 1 ] || [ $S -ge 216 ];
+      if [ "$S" -le 1 ] || [ "$S" -ge 216 ];
       then
         echo Starting IP is invalid. Needs to be within range of 2 to 216.
         exit
       fi
-      if [ $E -le 2 ] || [ $E -ge 217 ];
+      if [ "$E" -le 2 ] || [ "$E" -ge 217 ];
       then
         echo Ending IP is invalid. Needs to be within range of 3 to 216.
         exit
       fi
     fi
-    for i in $(seq $S $E); do
+    for i in $(seq "$S" "$E"); do
       ip=10.49.40.$i
-      name=`dig @10.48.75.120 +short -x $ip`
-      echo $name >> $node_list
+      name=$(dig @10.48.75.120 +short -x "$ip")
+      echo "$name" >> "$node_list"
     done
   elif [ ! -z "$C" ];
   then
-    if [ $C -le 0 ] >/dev/null 2>&1  || [ $C -ge 8 ] >/dev/null 2>&1;
+    if [ "$C" -le 0 ] >/dev/null 2>&1  || [ "$C" -ge 8 ] >/dev/null 2>&1;
     then
       echo Valid Chassis numbers are 1 through 7
       exit 3
     fi
-    if [ $C == 1 ];
+    if [ "$C" == 1 ];
     then
       S=2
       E=31
-    elif [ $C == 2 ];
+    elif [ "$C" == 2 ];
     then
       S=32
       E=61
-    elif [ $C == 3 ];
+    elif [ "$C" == 3 ];
     then
       S=62
       E=91
-    elif [ $C == 4 ];
+    elif [ "$C" == 4 ];
     then
       S=92
       E=121
-    elif [ $C == 5 ];
+    elif [ "$C" == 5 ];
     then
       S=122
       E=151
-    elif [ $C == 6 ];
+    elif [ "$C" == 6 ];
     then
       S=152
       E=181
-    elif [ $C == 7 ];
+    elif [ "$C" == 7 ];
     then
       S=182
       E=216
-    elif [ $C == all ];
+    elif [ "$C" == all ];
     then
       S=2
       E=6
     fi
-    for i in $(seq $S $E); do
-      ip=10.49.40.$i
-      name=`dig @10.48.75.120 +short -x $ip`
-      echo $name >> $node_list
+    for i in $(seq "$S" "$E"); do
+      ip=10.49.40."$i"
+      name=$(dig @10.48.75.120 +short -x "$ip")
+      echo "$name" >> "$node_list"
     done
   fi
 }
@@ -155,12 +155,12 @@ function map_carts() {
   readarray -t  nodes <  $node_list
 
   for name in "${nodes[@]}"; do
-    echo $name | sed -e "s/^$type//" -e "s/$domain//" >> $num_list
+    echo "$name" | sed -e "s/^$type//" -e "s/$domain//" >> $num_list
   done
   readarray -t num < $num_list
-  for n in ${num[@]}; do
-    get_cart $n
-    echo ${n}>>${C}-${cart_list}
+  for n in "${num[@]}"; do
+    get_cart "$n"
+    echo "${n}">>"${C}"-"${cart_list}"
   done
 }
 function reboot() {
@@ -170,48 +170,48 @@ function reboot() {
   reboot_delay=5m
 
   for c in $(seq 1  7); do
-    if [ -f ${c}-${cart_list} ]
+    if [ -f "${c}"-"${cart_list}" ]
     then
-      readarray -t  carts <  ${c}-${cart_list}
+      readarray -t  carts <  "${c}"-"${cart_list}"
       for C in "${carts[@]}"; do
-        if [ $C -le 30 ];
+        if [ "$C" -le 30 ];
         then
           C1+=("${C}n1,")
-          echo ${C} >> ${c}-deploy1.txt
+          echo "${C}" >> "${c}"-deploy1.txt
         else
           C2+=("${C}n1,")
-          echo ${C} >> ${c}-deploy2.txt
+          echo "${C}" >> "${c}"-deploy2.txt
         fi
       done
-      if [ -f ${c}-deploy1.txt ];
+      if [ -f "${c}"-deploy1.txt ];
       then
-        tr '\n' ',' < ${c}-deploy1.txt > ${c}-1deploy1.txt
+        tr '\n' ',' < "${c}"-deploy1.txt > "${c}"-1deploy1.txt
       fi
-      if [ -f ${c}-deploy2.txt ];
+      if [ -f "${c}"-deploy2.txt ];
       then
-        tr '\n' ',' < ${c}-deploy2.txt > ${c}-1deploy2.txt
+        tr '\n' ',' < "${c}"-deploy2.txt > "${c}"-1deploy2.txt
       fi
-      if [ -f ${c}-1deploy1.txt ];
+      if [ -f "${c}"-1deploy1.txt ];
       then
-        echo Rebooting nodes 16 - 30 Chassis $c
-        deploy1=$(cat ${c}-1deploy1.txt)
+        echo Rebooting nodes 16 - 30 Chassis "$c"
+        deploy1=$(cat "${c}"-1deploy1.txt)
         deploya=${deploy1%?}
-        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-${c}.inband.releng.mdc1.mozilla.com  set node power off force  c"${deploya}n1"
-        sleep $reset_delay
-        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-${c}.inband.releng.mdc1.mozilla.com  set node power on  c"${deploya}n1"
-        echo Waiting $reboot_delay before initiating more reboots
-        sleep $reboot_delay
+        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-"${c}".inband.releng.mdc1.mozilla.com  set node power off force  c"${deploya}n1"
+        sleep "$reset_delay"
+        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-"${c}".inband.releng.mdc1.mozilla.com  set node power on  c"${deploya}n1"
+        echo "Waiting $reboot_delay before initiating more reboots"
+        sleep "$reboot_delay"
       fi
-      if [ -f ${c}-1deploy2.txt ];
+      if [ -f "${c}"-1deploy2.txt ];
       then
-        echo Rebooting nodes 31 - 45 Chassis $c
-        deploy2=$(cat ${c}-1deploy2.txt)
+        echo Rebooting nodes 31 - 45 Chassis "$c"
+        deploy2=$(cat "${c}"-1deploy2.txt)
         deployb=${deploy2%?}
-        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-${c}.inband.releng.mdc1.mozilla.com  set node power off force c"${deployb}n1"
-        sleep $reset_delay
-        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-${c}.inband.releng.mdc1.mozilla.com  set node power on  c"${deployb}n1"
-        echo Waiting $reboot_delay before initiating more reboots
-        sleep $reboot_delay
+        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-"${c}".inband.releng.mdc1.mozilla.com  set node power off force c"${deployb}n1"
+        sleep "$reset_delay"
+        ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-"${c}".inband.releng.mdc1.mozilla.com  set node power on  c"${deployb}n1"
+        echo "Waiting $reboot_delay before initiating more reboots"
+        sleep "$reboot_delay"
       fi
     fi
   done
@@ -220,12 +220,11 @@ function reboot() {
 predeploy
 map_carts
 reboot
-cd ../
 rm -fr deploy_dir
-ending_cwd=`pwd`
-if [ $ending_cwd = $starting_cwd ];
+ending_cwd=$(pwd)
+if [ "$ending_cwd" = "$starting_cwd" ];
 then
   echo cleaning up
   cd ..
-  rm -fr $ending_cwd
+  rm -fr "$ending_cwd"
 fi
