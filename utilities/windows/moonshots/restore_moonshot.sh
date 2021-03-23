@@ -2,12 +2,11 @@
 
 remote_script_dir=c:\\programdata\\puppetlabs\\ronin\\audit
 remote_restore_script=$remote_script_dir\\force_restore.ps1
-iplist=$arg1
 
 timestamp=$(date +%s)
-mkdir ${timestamp}work_dir >/dev/null 2>&1
-cd ${timestamp}work_dir
-starting_cwd=`pwd
+mkdir "${timestamp}"work_dir >/dev/null 2>&1
+cd "${timestamp}"work_dir || return
+starting_cwd=$(pwd)
 
 Help() {
   echo "Trigger restore for Windows Moonshot workers"
@@ -49,32 +48,32 @@ function restore_remote() {
     exit 3
   elif [[ ! -z "$file" ]] && [ -z "$one_ip" ];
   then
-    echo this is my file $file
-    readarray -t  restore < $file
+    readarray -t  restore < "$file"
     for ip in "${restore[@]}"; do
-      name=`dig +short -x $ip`
-      echo Attempting a remote restore of $name at $ip
-      timeout 15 ssh -o ConnectTimeout=5  -o StrictHostKeyChecking=no  administrator@$ip powershell -executionpolicy bypass -file $remote_restore_script  2>/dev/null
+      name=$(dig +short -x "$ip")
+      echo "Attempting a remote restore of $name at $ip"
+      timeout 15 ssh -o ConnectTimeout=5  -o StrictHostKeyChecking=no  administrator@"$ip" powershell -executionpolicy bypass -file "$remote_restore_script"  2>/dev/null
       result=$?
       if [ $result == 124 ];
       then
-        echo WARNING $ip is in a bad state. Needs to be redeployed
+        echo "WARNING $ip is in a bad state. Needs to be redeployed."
       fi
     done
   elif [ -z "$file" ] && [[ ! -z "$one_ip" ]];
   then
-    name=`dig +short -x $one_ip`
-    echo Attempting a remote restore of $name at $one_ip
-    timeout 15 ssh -o ConnectTimeout=5  -o StrictHostKeyChecking=no  administrator@$one_ip powershell -executionpolicy bypass -file $remote_restore_script  2>/dev/null
+    name=$(dig +short -x "$one_ip")
+    echo "Attempting a remote restore of $name at $one_ip"
+    timeout 15 ssh -o ConnectTimeout=5  -o StrictHostKeyChecking=no  administrator@"$one_ip" powershell -executionpolicy bypass -file "$remote_restore_script"  2>/dev/null
   fi
 }
 
 
 restore_remote
 
-if [ $ending_cwd = $starting_cwd ];
+ending_cwd=$(pwd)
+if [ "$ending_cwd" = "$starting_cwd" ];
 then
   echo cleaning up
   cd ..
-  rm -fr $ending_cwd
+  rm -fr "$ending_cwd"
 fi
