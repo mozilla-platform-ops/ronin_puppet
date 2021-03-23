@@ -363,7 +363,7 @@ function redeploy() {
     readarray -t  unrecovered2 < unrecovered2.txt
     n=0
     for ip in "${unrecovered2[@]}"; do
-      n=$($n + 1)
+      n=$((n+1))
       ../moonshot_deploy.sh -1 "$ip"
       if [ "$n" -gt 15 ];
       then
