@@ -50,42 +50,6 @@
 </filter>
 
 
-<source>
-  tag syslog
-  @type tail
-  read_from_head true
-  path /var/log/system.log
-  pos_file /var/log/system.log.pos
-  <parse>
-    # standard syslog parsing often fails because the macos system.log has inconsistent multi-line, space delimiters, and ident/pid formatting
-    # @type syslog
-    # with_priority false
-    # parser_type string
-    @type multiline
-    format_firstline /^[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2} /
-    # ugly regex that handles the varieties of macos syslog lines I've tested
-    format1 /^(?<time>[A-Za-z]{3} +\d+ \d{2}:\d{2}:\d{2}) [^ ]+ (?<ident>[^\[ :]*)(?<message>[\[\]A-Za-z: ]*(\[(?<pid>\d+)\]:?)? .*)/
-    time_key time
-    time_format "%b %d %H:%M:%S"
-    keep_time_key true
-  </parse>
-</source>
-<filter syslog>
-  @type record_transformer
-  <record>
-    severity info
-    program ${record["ident"]}
-    facility local0
-  </record>
-</filter>
-<filter syslog>
-  @type grep
-  # asl is deprecated.
-  # logged every 10m
-  exclude1 message ASL\ Sender\ Statistics$
-</filter>
-
-
 <% if @tail_worker_logs -%>
 <source>
   tag worker.err
