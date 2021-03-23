@@ -28,8 +28,8 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
             }
 
             class { 'roles_profiles::profiles::logging':
-                worker_type   => $worker_type,
-                mac_log_level => 'default',
+                worker_type      => $worker_type,
+                tail_worker_logs => true,
             }
 
             class { 'telegraf':
