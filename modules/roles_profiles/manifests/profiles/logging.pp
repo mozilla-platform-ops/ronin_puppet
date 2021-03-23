@@ -13,7 +13,7 @@ class roles_profiles::profiles::logging (
       '.mozilla.com'
     ]),
     Integer $syslog_port        = 514,
-    String $mac_log_level       = 'default',
+    String $mac_log_level       = 'info',
     Boolean $tail_worker_logs   = false,
     Optional[String] $worker_stdout = undef,
     Optional[String] $worker_stderr = undef,
