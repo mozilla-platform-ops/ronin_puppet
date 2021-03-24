@@ -19,32 +19,28 @@
     time_key time
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
   </parse>
-  run_interval 60s  # run command if not still running
 </source>
 
 <filter system>
   @type record_transformer
   enable_ruby true
   <record>
-<% if @syslog_host =~ /papertrail/ -%>
-    # message #{record["message"]}
-<% end -%>
-    # Logging pid can be enabled:
-    # message pid:${record["pid"]} ${record["message"]}
     # MacOS Unified logging levels: Fault, Error, Default, Info, Debug
     # error="'Default' is not a designated severity"
     # syslog severities:
     #   https://github.com/eric/syslog_protocol/blob/master/lib/syslog_protocol/common.rb#L58
 <% if @syslog_host =~ /papertrail/ -%>
-    severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
+    severity #{(record["severity"]||"Error").gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
 <% elsif @syslog_host != '' -%>
-    syslog_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
+    syslog_severity #{(record["severity"]||"Error").gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warn', 'Error' => 'err', 'Fault' => 'crit')}
 <% end -%>
-<% if @stackdriver_clientid != '' -%>
-    message ${record["program"]}: ${record['log_message']}
+<% if @stackdriver_clientid == '' -%>
+    message \[${record["pid"]}\]: ${record["log_message"]}
+<% else -%>
+    message ${record["program"]}\[${record["pid"]}\]: ${record["log_message"]}
     # stackdriver severities:
     #   https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
-    stackdriver_severity #{record["severity"].gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warning', 'Error' => 'error', 'Fault' => 'critical')}
+    stackdriver_severity #{(record["severity"]||"Error").gsub(/^(Info|Default|Error|Fault)/i, 'Info' => 'info', 'Default' => 'warning', 'Error' => 'error', 'Fault' => 'critical')}
 <% end -%>
   </record>
 </filter>
@@ -129,7 +125,7 @@
     severity "${tag_parts[1]}"
   </record>
 </filter>
-<match fluent.{debug,info,warn}>
+<match fluent.{trace,debug,info,warn}>
   @type null
 </match>
 
@@ -173,7 +169,7 @@
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
     default_hostname "#{Socket.gethostname.split('.')[0]}"
-    flush_interval 1
+    flush_interval 1s
     flush_at_shutdown true
   </store>
   # debug:
