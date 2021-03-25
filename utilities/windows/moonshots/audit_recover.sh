@@ -57,8 +57,7 @@ function get_status() {
   downnodes_2nd=down_node2.txt
   gwdown=gw_down.txt
   nonproductiongw=not_in_production.txt
-  #delay=60m
-  delay=5m
+  delay=30m
   [ -e $downnodes ] && rm $downnodes
   [ -e $downnodes_2nd ] && rm $downnodes_2nd
   [ -e $gwdown ] && rm $gwdown
