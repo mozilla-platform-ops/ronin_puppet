@@ -379,8 +379,7 @@ function redeploy() {
 get_status
 reset_cart
 echo "cartridge(s) have been reset. Waiting then will recheck"
-#sleep 5m
-sleep 3m
+sleep 5m
 recheck_status
 restore
 worker_summary
