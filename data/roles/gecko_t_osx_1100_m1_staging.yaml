@@ -11,7 +11,7 @@ worker_metadata:
 worker:
   taskcluster_version: 40.0.3
   provider_type: standalone
-  worker_pool_id: releng-hardware/gecko-t-osx-1100-m1-qa
+  worker_pool_id: releng-hardware/gecko-t-osx-1100-m1-staging
   worker_group: macstadium-vegas
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
