@@ -1,25 +1,46 @@
+<system>
+  root_dir /var/log/td-agent         # For handling unrecoverable chunks
+</system>
+
 <source>
   tag system
   @type exec
+  # log show entries since boot, log stream from now
   command "\
-    log stream --color none --level <%= @mac_log_level %> --type log \
-      --predicate '(process MATCHES \"(logger|sudo|sshd)\") || (messageType > 16)' \
+    log show --last boot --info --color none --style default \
+      --predicate 'eventType == \"logEvent\" && (process MATCHES \"(logger|sudo|sshd)\" || messageType >= 17)' \
+    | sed -l -e '1d' & \
+    log stream --type log --level info --color none --style default \
+      --predicate '(process MATCHES \"(logger|sudo|sshd)\" || messageType >=17)' \
       --timeout 1d \
-    | tail -n +3 \
+    | sed -l -e '2d' \
     "
-    # messageTypes 0:Default 1:Info 2:Debug ?:Error
+    # messageType integers:
+    #   0 debug
+    #   1 info
+    #   2 warn
+    #   16 error
+    #   17 crit
     # tail to omit first 2 lines that cause parsing to fail:
     #   Filtering the log data using "type == 1024"
     #   Timestamp                       Thread     Type        Activity             PID    TTL
     #   2019-05-17 22:49:59.070398+0000 0x195      Info        0x0                  0      0    kernel: (IOHIDFamily) HID Activity Tickle (type:0 sender:100007033)
+    # tail with bsd sed `-l` (line-buffers instead of stdbuf)
   <parse>
     @type regexp
+    # getting tsv or csv requires reformatting in the command pipeline
+    # log can output json, but 
+    # 1. it is a streamed array (req. cuts+matches in pipe)
+    # 2. json plugin in mac fluentd has bugs dropping entries and buffering
     expression /^(?<time>.{31})\s+(?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<log_message>.*)$/
     types pid:integer
     time_key time
     time_format "%Y-%m-%d %H:%M:%S.%N%z"
   </parse>
-  run_interval 60s  # run command if not still running
+  # callback will error or warn if it stopped
+  # Do not use run_interval:
+  # 1. run_interval delays first execution to end of first interval
+  # 2. run_interval buffers output
 </source>
 
 <filter system>
@@ -207,8 +228,16 @@
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
     default_hostname "#{Socket.gethostname.split('.')[0]}"
-    flush_interval 1s
-    flush_at_shutdown true
+    <buffer>
+      @type file
+      path /var/log/td-agent/papertrail_buffer
+      flush_mode interval
+      retry_type exponential_backoff
+      retry_max_interval 97s
+      retry_forever true
+      flush_interval 1s
+      flush_at_shutdown true
+    </buffer>
   </store>
   # debug:
   # <store>
