@@ -29,7 +29,7 @@
   <parse>
     @type regexp
     # getting tsv or csv requires reformatting in the command pipeline
-    # log can output json, but 
+    # log can output json, but
     # 1. it is a streamed array (req. cuts+matches in pipe)
     # 2. json plugin in mac fluentd has bugs dropping entries and buffering
     expression /^(?<time>.{31})\s+(?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<log_message>.*)$/
