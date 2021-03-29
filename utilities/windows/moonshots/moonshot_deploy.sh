@@ -77,10 +77,10 @@ function predeploy() {
     then
       echo Must specify range or single ip address!
       exit
-    elif [ ! -z "$S" ] && [ ! -z "$E" ] && [ ! -z "$O" ];
+    elif [ -n "$S" ] && [ -n "$E" ] && [ -n "$O" ];
     then
       echo Must be either range or an ip address. Not both.
-    elif [ ! -z "$S" ] && [ ! -z "$E" ] && [ -z "$O" ];
+    elif [ -n "$S" ] && [ -n "$E" ] && [ -z "$O" ];
     then
       if [ "$S" -le 1 ] || [ "$S" -ge 216 ];
       then
@@ -98,12 +98,12 @@ function predeploy() {
       name=$(dig @10.48.75.120 +short -x "$ip")
       echo "$name >> $node_list"
     done
-  elif [ ! -z "$O" ];
+  elif [ -n "$O" ];
   then
     ip=10.49.40."$O"
     name=$(dig @10.48.75.120 +short -x "$ip")
     echo "$name >> $node_list"
-  elif [ ! -z "$C" ] && [ -z "$O" ];
+  elif [ -n "$C" ] && [ -z "$O" ];
   then
     if [ "$C" -le 0 ] >/dev/null 2>&1  || [ "$C" -ge 8 ] >/dev/null 2>&1;
     then
@@ -159,7 +159,7 @@ function map_carts() {
   type='t-w1064-ms-'
   domain='.wintest.releng.mdc1.mozilla.com.'
 
-  if [ ! -z "$O" ];
+  if [ -n "$O" ];
   then
     N=$(echo "$name" | sed -e "s/^$type//" -e "s/$domain//")
     get_cart "$N"
@@ -182,7 +182,7 @@ function deploy() {
   setpxe_delay=15s
   deploy_delay=15m
 
-  if [ ! -z "$O" ];
+  if [ -n "$O" ];
   then
     echo "Deploying $name"
     ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no winaudit@moon-chassis-"${C}".inband.releng.mdc1.mozilla.com set node bootonce pxe c"${n}n1"

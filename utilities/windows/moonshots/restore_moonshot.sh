@@ -42,11 +42,11 @@ function restore_remote() {
   then
     echo Must specify file or single ip address!
     exit 3
-  elif [[ ! -z "$file" ]] && [[ ! -z "$one_ip" ]];
+  elif [[ -n "$file" ]] && [[ -n "$one_ip" ]];
   then
     echo Must be either file or an ip address!
     exit 3
-  elif [[ ! -z "$file" ]] && [ -z "$one_ip" ];
+  elif [[ -n "$file" ]] && [ -z "$one_ip" ];
   then
     readarray -t  restore < "$file"
     for ip in "${restore[@]}"; do
@@ -59,7 +59,7 @@ function restore_remote() {
         echo "WARNING $ip is in a bad state. Needs to be redeployed."
       fi
     done
-  elif [ -z "$file" ] && [[ ! -z "$one_ip" ]];
+  elif [ -z "$file" ] && [[ -n "$one_ip" ]];
   then
     name=$(dig +short -x "$one_ip")
     echo "Attempting a remote restore of $name at $one_ip"

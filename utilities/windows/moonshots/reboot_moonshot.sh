@@ -75,10 +75,10 @@ function predeploy() {
     then
       echo Must specify range or single ip address!
       exit
-    elif [ ! -z "$S" ] && [ ! -z "$E" ] && [ ! -z "$O" ];
+    elif [ -n "$S" ] && [ -n "$E" ] && [ -n "$O" ];
     then
       echo Must be either range or an ip address. Not both.
-    elif [ ! -z "$S" ] && [ ! -z "$E" ] && [ -z "$O" ];
+    elif [ -n "$S" ] && [ -n "$E" ] && [ -z "$O" ];
     then
       if [ "$S" -le 1 ] || [ "$S" -ge 216 ];
       then
@@ -96,7 +96,7 @@ function predeploy() {
       name=$(dig @10.48.75.120 +short -x "$ip")
       echo "$name" >> "$node_list"
     done
-  elif [ ! -z "$C" ];
+  elif [ -n "$C" ];
   then
     if [ "$C" -le 0 ] >/dev/null 2>&1  || [ "$C" -ge 8 ] >/dev/null 2>&1;
     then

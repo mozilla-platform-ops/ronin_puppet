@@ -67,7 +67,7 @@ function get_status() {
     if [ -z "$S" ] && [ -z "$E" ]
     then
       echo Must specify range or chassis.
-    elif [ ! -z "$S" ] && [ ! -z "$E" ];
+    elif [ -n "$S" ] && [ -n "$E" ];
     then
       if [ "$S" -le 1 ] || [ "$S" -ge 216 ];
       then
@@ -82,7 +82,7 @@ function get_status() {
     fi
     s=$S
     e=$E
-  elif [ ! -z "$C" ];
+  elif [ -n "$C" ];
   then
     if [ "$C" -le 0 ] >/dev/null 2>&1 || [ "$C" -ge 8 ] >/dev/null 2>&1;
     then
