@@ -8,7 +8,7 @@
   # log show entries since boot
   command "\
     log show --last boot --info --color none --style default \
-      --predicate 'eventType == \"logEvent\" && (process MATCHES \"(logger|sudo|sshd)\" || messageType >= <%= @mac_log_level %>)' \
+      --predicate 'eventType == \"logEvent\" && (process MATCHES \"(logger|sudo|su|sshd)\" || messageType >= <%= @mac_log_level %>)' \
     | sed -l -e '1d' \
     "
   <parse>
@@ -26,7 +26,7 @@
   # log stream from now
   command "\
     log stream --type log --level info --color none \
-      --predicate '(process MATCHES \"(logger|sudo|sshd)\" || messageType >= <%= @mac_log_level %>)' \
+      --predicate '(process MATCHES \"(logger|sudo|su|sshd)\" || messageType >= <%= @mac_log_level %>)' \
       --timeout 1d \
     | sed -l -e '2d' \
     "
