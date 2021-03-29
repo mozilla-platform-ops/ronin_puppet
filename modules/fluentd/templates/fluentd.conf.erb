@@ -5,12 +5,27 @@
 <source>
   tag system
   @type exec
-  # log show entries since boot, log stream from now
+  # log show entries since boot
   command "\
     log show --last boot --info --color none --style default \
       --predicate 'eventType == \"logEvent\" && (process MATCHES \"(logger|sudo|sshd)\" || messageType >= <%= @mac_log_level %>)' \
-    | sed -l -e '1d' & \
-    log stream --type log --level info --color none --style default \
+    | sed -l -e '1d' \
+    "
+  <parse>
+    @type regexp
+    expression /^(?<time>.{31})\s+(?<thread>\S+)\s+(?<severity>\S+)\s+(?<activity>\S+)\s+(?<pid>\S+)\s+(?<ttl>\S+)\s+((?<program>\S+):\s+)?(?<log_message>.*)$/
+    types pid:integer
+    time_key time
+    time_format "%Y-%m-%d %H:%M:%S.%N%z"
+  </parse>
+</source>
+
+<source>
+  tag system
+  @type exec
+  # log stream from now
+  command "\
+    log stream --type log --level info --color none \
       --predicate '(process MATCHES \"(logger|sudo|sshd)\" || messageType >= <%= @mac_log_level %>)' \
       --timeout 1d \
     | sed -l -e '2d' \
