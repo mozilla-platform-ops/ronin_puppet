@@ -13,24 +13,24 @@ class linux_packages::puppet {
           # remove puppet 5 repo, puppet-agent, and puppet if present
           # - will conflict later if not removed
           package { 'remove old puppet repo deb':
-            ensure => absent,
+            ensure => purged,
             name   => 'puppet5-release',
           }
 
           # puppet 7 is out, this explodes now
           package { 'remove old puppet repo deb, 2':
-            ensure => absent,
+            ensure => purged,
             name   => 'puppet6-release',
           }
 
           package { 'remove old puppet-agent deb':
-            ensure => absent,
+            ensure => purged,
             name   => 'puppet5-agent',
           }
 
           # we don't need the full package and it conflicts with puppet-agent
           package { 'remove puppet deb':
-            ensure => absent,
+            ensure => purged,
             name   => 'puppet',
           }
 
@@ -46,13 +46,13 @@ class linux_packages::puppet {
             ensure   => installed,
             provider => dpkg,
             source   => '/tmp/puppet.deb',
-            notify   => Exec['apt_update'],
           }
 
           # install latest puppet-agent
           package { 'install puppet agent':
-            ensure => latest,
-            name   => 'puppet-agent',
+            ensure  => '7.5.0-1bionic',
+            name    => 'puppet-agent',
+            require => Exec['apt_update'],
           }
 
         }

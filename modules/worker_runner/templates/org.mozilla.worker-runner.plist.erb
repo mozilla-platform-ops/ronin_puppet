@@ -1,0 +1,42 @@
+<%# This Source Code Form is subject to the terms of the Mozilla Public
+<%# License, v. 2.0. If a copy of the MPL was not distributed with this
+<%# file, You can obtain one at http://mozilla.org/MPL/2.0/. -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>SHELL</key>
+        <string>/bin/bash</string>
+    </dict>
+    <key>Label</key>
+    <string>org.mozilla.worker-runner</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/worker-runner.sh</string>
+        <string><%= @worker_runner_conf %></string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string><%= @data_dir %></string>
+    <key>StandardOutPath</key>
+    <string><%= @log_dir %>/stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string><%= @log_dir %>/stderr.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
+    <key>KeepAlive</key>
+    <dict>
+        <key>PathState</key>
+        <dict>
+            <!-- start if this file exists (the name is a legacy from buildbot days) -->
+            <key>/var/tmp/semaphore/run-buildbot</key>
+            <true/>
+        </dict>
+    </dict>
+    <key>UserName</key>
+    <string><%= @owner %></string>
+</dict>
+</plist>

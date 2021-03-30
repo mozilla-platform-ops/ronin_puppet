@@ -1,0 +1,50 @@
+{
+  "accessToken": "<%= @taskcluster_access_token %>",
+  "cachesDir": "<%= @caches_dir %>",
+  "certificate": "",
+  "checkForNewDeploymentEverySecs": 0,
+  "cleanUpTaskDirs": true,
+  "clientId": "<%= @taskcluster_client_id %>",
+  "deploymentId": "",
+  "downloadsDir": "<%= @downloads_dir %>",
+  "idleTimeoutSecs": 345600,
+  "instanceId": "",
+  "instanceType": "",
+  "livelogExecutable": "/usr/local/bin/livelog",
+  "numberOfTasksToRun": 0,
+  "privateIP": "",
+  "provisionerId": "releng-hardware",
+  "region": "",
+  "requiredDiskSpaceMegabytes": 20480,
+  "rootURL": "https://firefox-ci-tc.services.mozilla.com",
+  "runAfterUserCreation": "",
+  "runTasksAsCurrentUser": false,
+  "sentryProject": "generic-worker",
+  "shutdownMachineOnIdle": false,
+  "shutdownMachineOnInternalError": false,
+  "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
+  "taskclusterProxyPort": 8080,
+  "ed25519SigningKeyLocation": "<%= @ed25519_signing_key %>",
+  "tasksDir": "<%= @task_dir %>",
+  "workerGroup": "<%= @worker_group %>",
+  "workerId": "<%= @hostname %>",
+  "workerType": "<%= @worker_type %>",
+  "wstAudience": "firefoxcitc",
+  "wstServerURL": "https://firefoxci-websocktunnel.services.mozilla.com/",
+  "workerTypeMetadata": {
+    "workerId": "<%= @hostname %>",
+    "workerGroup": "<%= @worker_group %>",
+    "ip": "<%= @ipaddress %>",
+    "arch": "<%= @facts['os']['architecture'] %>",
+    "system":<% require 'json' -%><%= @facts['system_profiler'].to_json %>,
+    "disk": {
+      "used": "<%= @facts['mountpoints']['/']['used'] %>",
+      "available": "<%= @facts['mountpoints']['/']['available'] %>",
+      "capacity": "<%= @facts['mountpoints']['/']['capacity'] %>"
+    },
+    "machine-setup": {
+      "config": "https://github.com/mozilla-platform-ops/ronin_puppet/raw/master/modules/generic_worker/templates/generic-worker.config.multiuser.erb",
+      "docs": "https://wiki.mozilla.org/ReleaseEngineering/PuppetAgain/Modules/generic_worker"
+    }
+  }
+}

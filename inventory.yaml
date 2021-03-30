@@ -1,5 +1,4 @@
 ---
-version: 2
 groups:
 - _plugin: yaml
   filepath: inventory.d/t-mojave-r7.yaml
@@ -11,3 +10,5 @@ groups:
   filepath: inventory.d/t-mojave-r8-staging.yaml
 - _plugin: yaml
   filepath: inventory.d/macmini-r8.yaml
+- _plugin: yaml
+  filepath: inventory.d/macmini-m1.yaml

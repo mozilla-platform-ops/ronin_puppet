@@ -10,4 +10,12 @@ describe package('puppet-release'), :if => os[:family] == 'ubuntu' do
   it { should be_installed }
 end
 
-# TODO: verify atboot service and script
+# verify run-puppet service and script
+describe service('run-puppet') do
+  it { should be_enabled }
+end
+
+# ensure puppet-agent isn't set to run
+describe service('puppet') do
+  it { should_not be_enabled }
+end

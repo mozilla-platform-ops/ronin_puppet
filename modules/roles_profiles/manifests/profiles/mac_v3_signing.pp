@@ -10,8 +10,6 @@ class roles_profiles::profiles::mac_v3_signing {
             $worker_type  = 'mac-v3-signing'
             $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-            include puppet::disable_atboot
-
             class { 'roles_profiles::profiles::logging':
                 # The logging module tags the logs with:
                 # hostname: hostname
@@ -52,12 +50,14 @@ class roles_profiles::profiles::mac_v3_signing {
 
             $scriptworker_users.each |String $user, Hash $user_data| {
                 signing_worker { "signing_worker_${user}":
+                    role                => $role,
                     user                => $user,
                     password            => lookup("${user}_user.password"),
                     salt                => lookup("${user}_user.salt"),
                     iterations          => lookup("${user}_user.iterations"),
                     scriptworker_base   => $user_data['home'],
                     dmg_prefix          => $user_data['dmg_prefix'],
+                    worker_type_prefix  => $user_data['worker_type_prefix'],
                     worker_id_suffix    => $user_data['worker_id_suffix'],
                     cot_product         => $user_data['cot_product'],
                     supported_behaviors => $user_data['supported_behaviors'],
@@ -117,6 +117,19 @@ class roles_profiles::profiles::mac_v3_signing {
                     puppetagent => {
                         location => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
                     },
+                },
+            }
+
+            class { 'puppet::periodic':
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.user'),
+                puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
+                puppet_branch     => 'production-mac-signing',
+                meta_data         => {
+                    workerType    => $worker_type,
+                    workerGroup   => $worker_group,
+                    provisionerId => 'scriptworker-prov-v1',
+                    workerId      => $facts['networking']['hostname'],
                 },
             }
         }

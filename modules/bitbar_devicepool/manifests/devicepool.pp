@@ -8,7 +8,7 @@ class bitbar_devicepool::devicepool {
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
     provider => git,
-    source   => 'https://github.com/bclary/mozilla-bitbar-devicepool.git',
+    source   => 'https://github.com/mozilla-platform-ops/mozilla-bitbar-devicepool.git',
     user     => 'bitbar',
   }
 

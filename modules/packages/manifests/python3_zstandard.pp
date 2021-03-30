@@ -11,6 +11,6 @@ class packages::python3_zstandard (
         ensure   => $version,
         name     => 'zstandard',
         provider => pip3,
-        require  => Class['packages::python3'],
+        require  => Class['packages::python3', 'packages::xcode_cmd_line_tools'],
     }
 }

@@ -1,12 +1,12 @@
 provisioner_id: scriptworker-prov-v1
 worker_group: <%= @worker_group %>
-worker_type: <%= @worker_config['worker_type'] %>
+worker_type: <%= @worker_type %>
 worker_id: <%= @worker_id %>
 taskcluster_root_url: https://firefox-ci-tc.services.mozilla.com/
 
 credentials:
-    clientId: "<%= @worker_config['taskcluster_client_id'] %>"
-    accessToken: "<%= @worker_config['taskcluster_access_token'] %>"
+    clientId: "<%= @tc_client_id %>"
+    accessToken: "<%= @tc_access_token %>"
 
 artifact_upload_timeout: 1200
 task_max_timeout: 7200

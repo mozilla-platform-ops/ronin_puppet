@@ -6,6 +6,6 @@ class mercurial::settings {
 
     $hgext_dir       = '/usr/local/lib/hgext'
     $hgrc            = '/etc/mercurial/hgrc'
-    $hgrc_parentdirs = ['/etc/mercurial']
+    $hgrc_parentdir  = '/etc/mercurial'
 
 }

@@ -10,6 +10,6 @@ class packages::virtualenv (
     package { 'virtualenv':
         ensure   => $version,
         provider => pip3,
-        require  => Class['packages::python3'],
+        require  => Class['packages::python3', 'packages::xcode_cmd_line_tools'],
     }
 }
