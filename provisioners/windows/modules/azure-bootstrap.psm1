@@ -4,72 +4,6 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
-function Write-Log {
-  param (
-    [string] $message,
-    [string] $severity = 'INFO',
-    [string] $source = 'BootStrap',
-    [string] $logName = 'Application'
-  )
-  if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
-    New-EventLog -LogName $logName -Source $source
-  }
-  switch ($severity) {
-    'DEBUG' {
-      $entryType = 'SuccessAudit'
-      $eventId = 2
-      break
-    }
-    'WARN' {
-      $entryType = 'Warning'
-      $eventId = 3
-      break
-    }
-    'ERROR' {
-      $entryType = 'Error'
-      $eventId = 4
-      break
-    }
-    default {
-      $entryType = 'Information'
-      $eventId = 1
-      break
-    }
-  }
-  Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
-  if ([Environment]::UserInteractive) {
-    $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
-    Write-Host  -object $message -ForegroundColor $fc
-  }
-}
-function Setup-Logging {
-  param (
-    [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
-    [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
-    [string] $nxlog_conf = "nxlog.conf",
-    [string] $nxlog_pem  = "papertrail-bundle.pem",
-    [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
-
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    New-Item -ItemType Directory -Force -Path $local_dir
-
-    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
-    msiexec /i $local_dir\$nxlog_msi /passive
-    while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
-    while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
-    Restart-Service -Name nxlog -force
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
 function Install-AzPrerequ {
   param (
     [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
@@ -88,7 +22,7 @@ function Install-AzPrerequ {
   process {
 
     # testing only
-    Invoke-WebRequest -Uri  $ext_src/391.81_grid_win10_server2016_64bit_international.zip  -UseBasicParsing -OutFile $work_dir\391.81_grid_win10_server2016_64bit_international.zip
+    # Invoke-WebRequest -Uri  $ext_src/391.81_grid_win10_server2016_64bit_international.zip  -UseBasicParsing -OutFile $work_dir\391.81_grid_win10_server2016_64bit_international.zip
 
     New-Item -path $work_dir -ItemType "directory"
     Set-location -path $work_dir
@@ -188,7 +122,6 @@ function Bootstrap-AzPuppet {
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Running Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
-    # start-sleep -seconds 6000
     [int]$puppet_exit = $LastExitCode
 
     if ($run_to_success -eq 'true') {
@@ -196,42 +129,26 @@ function Bootstrap-AzPuppet {
         if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
           Write-Log -message  ('{0} :: Puppet apply failed 1st run.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
-          #shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-          #return
-          #exit 2
           Move-StrapPuppetLogs
           exit 0
-          # exit 1
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          # start-sleep -seconds 6000
-          # sleep 300
-          #return
-          #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
           Move-StrapPuppetLogs
           exit 0
-          #exit 1
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
-        #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
         Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        # start-sleep -s 3000
-		#return
         Move-StrapPuppetLogs
         exit 0
-        #exit 2
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
         Start-sleep -s 300
-        #return
-        #shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
         Move-StrapPuppetLogs
-        #exit 0
         exit 1
       }
     }

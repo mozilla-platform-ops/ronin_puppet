@@ -158,7 +158,7 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging
-    Write-Log -message  ('{0} :: current Sysprep state {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
+    Write-Log -message  ('{0} :: LOOK HERE PACKER START BOOTSTRAP!!!' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
     InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
@@ -168,6 +168,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
+    Write-Log -message  ('{0} :: LOOK HERE PACKER  PUPPET RUN!!!' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
     InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     Ronin-PreRun
@@ -175,6 +176,7 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
     exit 0
 }
 If ($stage -eq 'complete') {
+    Write-Log -message  ('{0} :: LOOK HERE PACKER ALMOST DONE!!!' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
     InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
