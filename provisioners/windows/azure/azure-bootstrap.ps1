@@ -154,8 +154,6 @@ $image_provisioner = 'azure'
 $audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
 $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 
-Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-
 If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
@@ -168,9 +166,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Install-AzPrerequ
     Mount-DiskTwo
     Set-DriveLetters
-
     exit 0
-
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
     InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
