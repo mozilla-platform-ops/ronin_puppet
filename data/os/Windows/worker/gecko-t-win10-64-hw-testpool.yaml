@@ -9,7 +9,7 @@ win-worker:
     livelog_version: '1.1.0'
     # Gw settings
     client_id: "mozilla-auth0/ad|Mozilla-LDAP|mcornmesser/releng/generic-worker/datacenter-gecko-t-win-talos/win10-64-hw-testpool"
-    idle_timeout: 7200
+    idle_timeout: 43200
     live_log_put_port: 60022
     provisioner_id: 'releng-hardware'
 
