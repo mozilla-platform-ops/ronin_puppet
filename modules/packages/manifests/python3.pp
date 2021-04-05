@@ -6,14 +6,15 @@ class packages::python3 (
     Pattern[/^\d+\.\d+\.\d+_?\d*$/] $version = '3.7.4',
 ) {
 
-    # As of puppet 7.0.0, facts.os.architecture still reports the M1 arm64 hardware as x86_64
-    # therfore, we check the mac model instead
-    if $facts['system_profiler']['model_identifier'] == 'Macmini9,1' {
-        $pkg_name = "python-${version}-macos11.0.pkg"
-    } else {
-        $pkg_name = "python-${version}-macosx10.9.pkg"
-    }
+#    # As of puppet 7.0.0, facts.os.architecture still reports the M1 arm64 hardware as x86_64
+#    # therfore, we check the mac model instead
+#    if $facts['system_profiler']['model_identifier'] == 'Macmini9,1' {
+#        $pkg_name = "python-${version}-macos11.0.pkg"
+#    } else {
+#        $pkg_name = "python-${version}-macosx10.9.pkg"
+#    }
 
+    $pkg_name = "python-${version}-macosx10.9.pkg"
     packages::macos_package_from_s3 { $pkg_name:
         private             => false,
         os_version_specific => false,
