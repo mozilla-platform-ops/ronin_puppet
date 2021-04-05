@@ -24,9 +24,21 @@ define packages::macos_package_from_s3 (
         false => 'public'
     }
 
+    # Starting with MacOS Bigsur 11.0.0, the OS versioning scheme changed to where the first int now changes with
+    # each MacOS major version release.  This means that minor version changes in the increment the second and third
+    # int.  eg. in Catalina, minor versions would increment 10.15.0 -> 10.15.1 -> 10.15.2
+    # With Bigsur it now increments 11.0.0 -> 11.1.0 -> 11.2.4.  This seems to indicate the next major MacOS release
+    # will be 12.0.0.
+    $real_major_version = split($facts['os']['macosx']['version']['major'], '[.]')[0]
+    $os_ver = $real_major_version ? {
+        '10'    => $facts['os']['macosx']['version']['major'],
+        '11'    => '11.0',
+        default => $real_major_version
+    }
+
     # Set path os specific version or common
     $v = $os_version_specific ? {
-        true  => $facts['os']['macosx']['version']['major'],
+        true  => $os_ver,
         false => 'common'
     }
 
