@@ -10,8 +10,10 @@ class fluentd (
     String $stackdriver_clientid = '',
     String $syslog_host          = lookup('papertrail.host', {'default_value' => ''}),
     Integer $syslog_port         = lookup('papertrail.port', {'default_value' => 514}),
-    String $mac_log_level        = 'default',
+    String $mac_log_level        = '17',
     Boolean $tail_worker_logs    = false,
+    String $worker_stdout        = '/var/opt/generic-worker/service.stdout.log',
+    String $worker_stderr        = '/var/opt/generic-worker/service.stderr.log',
 ) {
 
     include shared
