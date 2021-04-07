@@ -25,7 +25,7 @@ class linux_papertrail (
                     # puppet 6.1+ will reload systemd automatically
                     service {
                         'papertrail':
-                            ensure   => started,
+                            ensure   => running,
                             provider => 'systemd',
                             enable   => true,
                             require  => Package['nmap'];
