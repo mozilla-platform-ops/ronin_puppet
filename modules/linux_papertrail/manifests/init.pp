@@ -15,11 +15,6 @@ class linux_papertrail (
                     # nmap provides ncat
                     include linux_packages::nmap
 
-                    exec {
-                        'reload systemd':
-                            command => '/bin/systemctl daemon-reload';
-                    }
-
                     file { '/etc/systemd/system/papertrail.service':
                         mode    => '0644',
                         owner   => 'root',
