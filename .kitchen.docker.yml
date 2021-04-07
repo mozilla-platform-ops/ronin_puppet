@@ -18,6 +18,9 @@ provisioner:
         telegraf:
           user: telegraf
           password: telegraf4fun
+        papertrail:
+          host: localhost
+          port: 1111
         linux_vnc:
           user: cltbld
           group: cltbld
