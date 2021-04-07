@@ -15,6 +15,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             class { 'roles_profiles::profiles::logging_papertrail':
                 papertrail_host => lookup('papertrail.host'),
                 papertrail_port => lookup('papertrail.port'),
+                systemd_units   => ['check_gw', 'generic-worker', 'run-puppet', 'run-start-worker', 'sudo', 'ssh'],
             }
 
             # TODO: move these lines to linux-base?

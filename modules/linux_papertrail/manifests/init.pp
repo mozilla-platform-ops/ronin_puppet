@@ -5,6 +5,7 @@
 class linux_papertrail (
     String $papertrail_host,  # e.g. logs5.papertrailapp.com
     Integer $papertrail_port,  # e.g. 11111
+    Array   $systemd_units = [],  # optional, only show these units
 ) {
 
 
