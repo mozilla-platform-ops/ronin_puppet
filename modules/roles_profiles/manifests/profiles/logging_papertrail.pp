@@ -10,7 +10,6 @@ class roles_profiles::profiles::logging_papertrail (
         'Ubuntu': {
             # TODO: check release/version
 
-
             class { 'linux_papertrail':
                 papertrail_host => $papertrail_host,
                 papertrail_port => $papertrail_port,

@@ -1,7 +1,16 @@
 require_relative 'spec_helper'
 
-# TODO: test that systemd config is in place
+# test that systemd config is in place
+describe file('/etc/systemd/system/papertrail.service') do
+  it { should exist }
+end
 
-# TODO: service is enabled
+# service is enabled
+describe service('papertrail') do
+  it { should be_enabled }
+end
 
-# TODO: nmap/ncat is installed
+# nmap/ncat is installed
+describe package('nmap') do
+  it { should be_installed }
+end
