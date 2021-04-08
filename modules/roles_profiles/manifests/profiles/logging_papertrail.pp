@@ -6,15 +6,17 @@ class roles_profiles::profiles::logging_papertrail (
     String $papertrail_host,
     Integer $papertrail_port,
     Array   $systemd_units = [],  # optional, only show these units
+    Array   $syslog_identifiers = [],  # optional, display these syslog identifiers also
 ) {
     case $::operatingsystem {
         'Ubuntu': {
             # TODO: check release/version
 
             class { 'linux_papertrail':
-                papertrail_host => $papertrail_host,
-                papertrail_port => $papertrail_port,
-                systemd_units   => $systemd_units,  # optional, only show these units
+                papertrail_host    => $papertrail_host,
+                papertrail_port    => $papertrail_port,
+                systemd_units      => $systemd_units,  # optional, only show these units
+                syslog_identifiers => $syslog_identifiers,  # optional, display these syslog identifiers also
             }
         }
         default: {
