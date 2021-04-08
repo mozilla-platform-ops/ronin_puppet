@@ -21,6 +21,7 @@ class linux_papertrail (
                         owner   => 'root',
                         group   => 'root',
                         content => template('linux_papertrail/papertrail.service.erb'),
+                        notify  => Service['papertrail'],
                     }
 
                     # puppet 6.1+ will reload systemd automatically
