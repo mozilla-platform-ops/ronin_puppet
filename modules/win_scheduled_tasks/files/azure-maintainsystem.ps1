@@ -346,33 +346,15 @@ function Check-AzVM-Name {
 $bootstrap_stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
-$reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet reboot_count -ErrorAction SilentlyContinue
-  If ( $reboot_count_exists -ne $null) {
-  $previous_boots = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").reboot_count
-  $new_count = $previous_boots + 1
-  Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name reboot_count -value $new_count -force
-}
-Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-#If ($bootstrap_stage -eq 'complete') {
+
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
-#If ($bootstrap_stage -eq 'complete') {
-  $adminAccount = Get-WmiObject Win32_UserAccount -filter "LocalAccount=True" | ? {$_.SID -Like "S-1-5-21-*-500"}
-  if($adminAccount.Disabled)
-  {
-    $adminAccount.Disabled = $false
-    $adminAccount.Put()
-  }
   # Check-AzVM-Name
   $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
   Write-Log -message  ('{0} :: LOOK HERE! Name should be {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
   if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
     Set-DriveLetters
-  }
-  $markcovar = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('markcovar')     })[0].value
-  If ($markcovar -ne 'empty_var') {
-    # nothing for now
   }
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {

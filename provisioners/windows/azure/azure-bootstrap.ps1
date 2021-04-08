@@ -96,90 +96,36 @@ function InstallRoninModule {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Install-RemoveAppsModule {
-  param (
-    [string] $src_Organisation,
-    [string] $src_Repository,
-    [string] $src_Revision,
-    [string] $app_list  = "win10_default_apps.txt",
-    [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $filename = "remove_default_apps.psm1",
-    [string] $module_name = ($filename).replace(".pms1",""),
-    [string] $modulesPath = ('{0}\Modules\remove_default_apps' -f $pshome),
-    [string] $removeapps_module = "$modulesPath\remove_default_apps",
-    [string] $moduleUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $filename),
-    [string] $listUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $app_list)
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    mkdir $removeapps_module  -ErrorAction SilentlyContinue
-    Invoke-WebRequest $moduleUrl -OutFile "$removeapps_module\\$filename" -UseBasicParsing
-    Get-Content -Encoding UTF8 "$removeapps_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
-    Import-Module -Name $module_name
-
-    Invoke-WebRequest $listUrl -OutFile "$local_dir\\$app_list" -UseBasicParsing
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-function Get-SysprepState {
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    try {
-      $sysprepState = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State' -Name 'ImageState').ImageState
-      Write-Log -message ('{0} :: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State ImageState read as {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
-    } catch {
-      Write-Log -message ('{0} :: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State ImageState read failure. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
-      $sysprepState = $null
-    }
-    return $sysprepState
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-
 
 $workerType = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('workerType') })[0].value
 $src_Organisation = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceOrganisation') })[0].value
 $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRepository') })[0].value
 $src_Revision = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRevision') })[0].value
 $image_provisioner = 'azure'
-$audit_state_key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State"
-#$hand_off_ready = ((Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready -ErrorAction SilentlyContinue)
 
 If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging
-    Write-Log -message  ('{0} :: LOOK HERE PACKER START BOOTSTRAP!!!' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
     InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-    Install-AzPrerequ
-    Mount-DiskTwo
-    Set-DriveLetters
+    AzInstall-Prerequ
+    AzMount-DiskTwo
+    AzSet-DriveLetters
     exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-    Write-Log -message  ('{0} :: LOOK HERE PACKER  PUPPET RUN!!!' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
     InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     Ronin-PreRun
-    Bootstrap-AzPuppet
+    AzBootstrap-Puppet
     exit 0
 }
 If ($stage -eq 'complete') {
-    Write-Log -message  ('{0} :: LOOK HERE PACKER ALMOST DONE!!!' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
     InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-    Write-Log -message  ('{0} :: BOOTSTRAP COMPLETE {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
     Bootstrap-CleanUp
     exit 0
 }

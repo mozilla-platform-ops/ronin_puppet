@@ -4,7 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
-function Install-AzPrerequ {
+function AzInstall-Prerequ {
   param (
     [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
     [string] $local_dir = "$env:systemdrive\BootStrap",
@@ -41,7 +41,7 @@ function Install-AzPrerequ {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Bootstrap-AzPuppet {
+function AzBootstrap-Puppet {
   param (
     [int] $exit,
     [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
@@ -176,7 +176,7 @@ function Test-VolumeExists {
   # volume commandlets are unavailable on windows 7, so we use wmi to access volumes here.
   return (@($driveLetter | % { Get-WmiObject -Class Win32_Volume -Filter ('DriveLetter=''{0}:''' -f $_) -ErrorAction 'SilentlyContinue' }).Length -eq $driveLetter.Length)
 }
-function Mount-DiskTwo {
+function AzMount-DiskTwo {
 # Starting with disk 2 for now
 # Azure packer images does have a disk 1 labled ad temp storage
 # Maybe use that in the future
@@ -250,7 +250,7 @@ function Mount-DiskTwo {
     }
   }
 }
-function Set-DriveLetters {
+function AzSet-DriveLetters {
   param (
     [hashtable] $driveLetterMap = @{
       'E:' = 'Y:';
