@@ -11,7 +11,7 @@ class packages::mercurial (
 
     packages::macos_package_from_s3 { "Mercurial-${version}-macosx10.14.pkg":
         private             => false,
-        os_version_specific => false,
+        os_version_specific => true,
         type                => 'pkg',
     }
 
