@@ -12,10 +12,11 @@ class linux_papertrail (
         'Ubuntu': {
             case $::operatingsystemrelease {
                 '18.04': {
-                    # nmap provides ncat
-                    include linux_packages::nmap
-
+                    # only configure if required variables are set
                     if (! $papertrail_host.empty) and (! $papertrail_port.empty) {
+
+                        # nmap provides ncat
+                        include linux_packages::nmap
 
                         # NOTE: puppet 6.1+ will reload systemd automatically
 
