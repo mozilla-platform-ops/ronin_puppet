@@ -13,7 +13,7 @@ class linux_papertrail (
             case $::operatingsystemrelease {
                 '18.04': {
                     # only configure if required variables are set
-                    if (! $papertrail_host.empty) and (! $papertrail_port == undef) {
+                    if (! $papertrail_host.empty) and ($papertrail_port != -1) {
 
                         # nmap provides ncat
                         include linux_packages::nmap
@@ -63,7 +63,7 @@ class linux_papertrail (
                         # TODO: handle else (remove unit file and stop service)
                     }
                     else {
-                        warning ( 'linux_papertrail: host and port not set, not configuring' )
+                        warning ( 'host and port not set, not configuring' )
                     }
                 }
                 default: {
