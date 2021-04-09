@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_papertrail (
-    String $papertrail_host,  # e.g. logs5.papertrailapp.com
+    String  $papertrail_host,  # e.g. logs5.papertrailapp.com
     Integer $papertrail_port,  # e.g. 11111
     Array   $systemd_units = [],  # optional, only show these units
     Array   $syslog_identifiers = [],  # optional, display these syslog identifiers also
@@ -13,7 +13,7 @@ class linux_papertrail (
             case $::operatingsystemrelease {
                 '18.04': {
                     # only configure if required variables are set
-                    if (! $papertrail_host.empty) and (! $papertrail_port.empty) {
+                    if (! $papertrail_host.empty) and (! $papertrail_port == undef) {
 
                         # nmap provides ncat
                         include linux_packages::nmap
