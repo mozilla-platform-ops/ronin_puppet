@@ -13,8 +13,8 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require roles_profiles::profiles::cltbld_user
 
             class { 'roles_profiles::profiles::logging_papertrail':
-                papertrail_host    => lookup('papertrail.host'),
-                papertrail_port    => lookup('papertrail.port'),
+                papertrail_host    => lookup( { 'name' => 'papertrail.host', 'default_value' => '' } ),
+                papertrail_port    => lookup( { 'name' => 'papertrail.port', 'default_value' => '' } ),
                 systemd_units      => ['check_gw', 'run-puppet', 'ssh'],
                 syslog_identifiers => ['generic-worker', 'run-start-worker', 'sudo'],
             }

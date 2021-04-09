@@ -15,49 +15,55 @@ class linux_papertrail (
                     # nmap provides ncat
                     include linux_packages::nmap
 
-                    # NOTE: puppet 6.1+ will reload systemd automatically
+                    if (! $papertrail_host.empty) and (! $papertrail_port.empty) {
 
-                    # two papertrail systemd units:
-                    # - one to tail journalctl (and optionally specific units)
-                    # - an optional second to follow specific syslog topic/identifiers
+                        # NOTE: puppet 6.1+ will reload systemd automatically
 
-                    # if systemd_units is empty, all journalctl logs will be sent
-                    file { '/etc/systemd/system/papertrail.service':
-                        mode    => '0644',
-                        owner   => 'root',
-                        group   => 'root',
-                        content => template('linux_papertrail/papertrail.service.erb'),
-                        notify  => Service['papertrail'],
-                    }
+                        # two papertrail systemd units:
+                        # - one to tail journalctl (and optionally specific units)
+                        # - an optional second to follow specific syslog topic/identifiers
 
-                    service {
-                        'papertrail':
-                            ensure   => running,
-                            provider => 'systemd',
-                            enable   => true,
-                            require  => Package['nmap'];
-                    }
-
-                    # if syslog_identifiers are empty, we don't need a second instance
-                    if ! $syslog_identifiers.empty {
-
-                        file { '/etc/systemd/system/papertrail-syslog.service':
+                        # if systemd_units is empty, all journalctl logs will be sent
+                        file { '/etc/systemd/system/papertrail.service':
                             mode    => '0644',
                             owner   => 'root',
                             group   => 'root',
-                            content => template('linux_papertrail/papertrail-syslog.service.erb'),
-                            notify  => Service['papertrail-syslog'],
+                            content => template('linux_papertrail/papertrail.service.erb'),
+                            notify  => Service['papertrail'],
                         }
 
                         service {
-                            'papertrail-syslog':
+                            'papertrail':
                                 ensure   => running,
                                 provider => 'systemd',
                                 enable   => true,
                                 require  => Package['nmap'];
                         }
+
+                        # if syslog_identifiers are empty, we don't need a second instance
+                        if ! $syslog_identifiers.empty {
+
+                            file { '/etc/systemd/system/papertrail-syslog.service':
+                                mode    => '0644',
+                                owner   => 'root',
+                                group   => 'root',
+                                content => template('linux_papertrail/papertrail-syslog.service.erb'),
+                                notify  => Service['papertrail-syslog'],
+                            }
+
+                            service {
+                                'papertrail-syslog':
+                                    ensure   => running,
+                                    provider => 'systemd',
+                                    enable   => true,
+                                    require  => Package['nmap'];
+                            }
+                        }
+                        # TODO: handle else (remove unit file and stop service)
                     }
-                    # TODO: handle else (remove unit file and stop service)
+                    else {
+                        warning ( 'linux_papertrail: host and port not set, not configuring' )
+                    }
                 }
                 default: {
                     fail ("Cannot install on Ubuntu version ${::operatingsystemrelease}")
