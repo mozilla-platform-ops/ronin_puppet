@@ -135,7 +135,7 @@ function AzBootstrap-Puppet {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Move-StrapPuppetLogs
-          exit 0
+          exit 1
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
