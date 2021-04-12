@@ -332,6 +332,7 @@ function Check-AzVM-Name {
             Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
             [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
             $env:COMPUTERNAME = $instanceName
+            Rename-Computer -NewName $instanceName -force
             # Don't waste time/money on rebooting to pick up name change
             # shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
             return
@@ -352,8 +353,6 @@ $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsin
 # TODO: add json manifest location
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Check-AzVM-Name
-  $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
-  Write-Log -message  ('{0} :: LOOK HERE! Name should be {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
   if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
     Set-DriveLetters
   }
