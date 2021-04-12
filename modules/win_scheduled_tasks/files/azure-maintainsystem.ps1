@@ -330,7 +330,6 @@ function Check-AzVM-Name {
         $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
         if ($instanceName -notlike $env:computername) {
             Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
-            Rename-Computer -NewName $instanceName
             [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
             $env:COMPUTERNAME = $instanceName
             # Don't waste time/money on rebooting to pick up name change
