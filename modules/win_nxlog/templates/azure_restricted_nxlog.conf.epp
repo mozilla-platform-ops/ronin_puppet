@@ -57,6 +57,15 @@ LogFile   %ROOT%\data\nxlog.log
   Exec $SourceName = 'worker-runner-service';
 </Input>
 
+<Input puppet_fail_log>
+  Module im_file
+  File 'C:\fail_logs\\*-puppetrun.log'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'puppet-fail';
+</Input>
+
 <Output papertrail>
   Module om_ssl
   Host <%= $win_nxlog::configuration::log_aggregator %>
@@ -81,4 +90,8 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route worker_runner_service_log_papertrail>
   Path worker_runner_service_log => papertrail
+</Route>
+
+<Route puppet_fail_log_papertrail>
+  Path puppet_fail_log => papertrail
 </Route>

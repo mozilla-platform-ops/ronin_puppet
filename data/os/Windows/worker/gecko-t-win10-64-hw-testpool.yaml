@@ -34,3 +34,8 @@ win-worker:
   vnc_name:  "UltraVnc"
   vac:
     version: '464'
+
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "restricted"

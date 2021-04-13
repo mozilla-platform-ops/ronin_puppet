@@ -52,4 +52,4 @@ win-worker:
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
-    level: "verbose"
+    level: "restricted"
