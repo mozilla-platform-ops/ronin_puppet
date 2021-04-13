@@ -4,5 +4,5 @@
 
 if (test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet") {
 	$bootstrap_stage = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-	write-host "custom_win_bootstrap_stage=$bootstrap_stage
+	write-host "custom_win_bootstrap_stage=$bootstrap_stage"
 }
