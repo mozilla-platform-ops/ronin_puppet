@@ -9,8 +9,13 @@ class roles_profiles::profiles::relops_users {
             # Make sure the users profile is required
             # That is where the user virtual resources are generated
             require roles_profiles::profiles::users
+
+            # Lookup additional users
+            $additional_users = keys(lookup('additional_users', Hash, 'first', {}))
+
             # Lookup the relops group array and realize their user resource
-            $relops = lookup('user_groups.relops', Array, undef, undef)
+            $relops = lookup('user_groups.relops', Array, undef, undef) + $additional_users
+
             realize(Users::Single_user[$relops])
 
             # Monkey patching directoryservice.rb in order to create users also breaks group merging
