@@ -34,7 +34,7 @@ class roles_profiles::profiles::logging (
             }
             if ($facts['custom_win_location'] == 'datacenter') or ($facts['custom_win_location'] == 'azure') {
                 if ($facts['custom_win_bootstrap_stage'] != 'complete') {
-                    $log_level = 'debug'
+                    $log_level = 'verbose'
                 } else {
                     $log_level = lookup('win-worker.log.level')
                 }

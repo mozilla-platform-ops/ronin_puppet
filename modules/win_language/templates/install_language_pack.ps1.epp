@@ -1,0 +1,5 @@
+$languageList = Get-WinUserLanguageList
+if (@($languageList | ? { $_.LanguageTag -eq '<%= $win_language::language_pack::pack %>' }).Length -lt 1) {
+  $languageList.Add('<%= $win_language::language_pack::pack %>')
+  Set-WinUserLanguageList -LanguageList $languageList -Force
+}

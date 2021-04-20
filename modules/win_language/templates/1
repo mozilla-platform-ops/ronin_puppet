@@ -1,0 +1,5 @@
+$languageList = Get-WinUserLanguageList
+if (@($languageList | ? { $_.LanguageTag -eq 'ja' }).Length -lt 1) {
+  $languageList.Add('ja')
+  Set-WinUserLanguageList -LanguageList $languageList -Force
+}
