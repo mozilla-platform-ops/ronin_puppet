@@ -8,6 +8,6 @@ define win_language::pack (
 
   exec { 'install_pack':
     provider => powershell,
-    command  => epp('win_language::install_language_pack.ps1.epp'),
+    command  => epp('win_language/install_language_pack.ps1.epp'),
     }
 }
