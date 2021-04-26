@@ -30,6 +30,7 @@ class win_disable_services::disable_windows_update {
             data => '1',
         }
 
+        # if $facts['custom_win_release_id'] == '1803' or '1903' {
         if $facts['custom_win_release_id'] == '1803' {
             registry_value { "${win_update_au_key}\\NoAutoUpdate":
                 type => dword,
