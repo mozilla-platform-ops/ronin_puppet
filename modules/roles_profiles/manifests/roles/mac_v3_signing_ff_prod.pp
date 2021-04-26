@@ -21,6 +21,7 @@ class roles_profiles::roles::mac_v3_signing_ff_prod {
     include ::roles_profiles::profiles::relops_users
     include ::roles_profiles::profiles::signing_users
     include ::roles_profiles::profiles::remove_bootstrap_user
+    include ::roles_profiles::profiles::duo
 
     include ::roles_profiles::profiles::mac_v3_signing
 }
