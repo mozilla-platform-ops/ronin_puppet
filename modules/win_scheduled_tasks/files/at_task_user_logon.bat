@@ -1,3 +1,5 @@
+@echo off
+
 :CheckForStuckRects3
 echo Wait for registry setting to exist before changing it...
 reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\ /ve
