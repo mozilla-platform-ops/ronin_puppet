@@ -100,10 +100,6 @@ LogFile   %ROOT%\data\nxlog.log
   Path worker_runner_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route puppet_run_log_<%= $facts[custom_win_mozspace] %>_aggregator>
-  Path puppet_run_log => <%= $facts[custom_win_mozspace] %>_aggregator
-</Route>
-
 <Route puppet_fail_log_<%= $facts[custom_win_mozspace] %>_aggregator>
   Path puppet_fail_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
