@@ -84,14 +84,6 @@ LogFile   %ROOT%\data\nxlog.log
   Path eventlog_apps => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
-<Route eventlog_basic_<%= $facts[custom_win_mozspace] %>_aggregator>
-  Path eventlog_basic => <%= $facts[custom_win_mozspace] %>_aggregator
-</Route>
-
-<Route eventlog_audit_<%= $facts[custom_win_mozspace] %>_aggregator>
-  Path eventlog_audit => <%= $facts[custom_win_mozspace] %>_aggregator
-</Route>
-
 <Route generic_worker_log_<%= $facts[custom_win_mozspace] %>_aggregator>
   Path generic_worker_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
@@ -114,10 +106,6 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route puppet_run_log_<%= $facts[custom_win_mozspace] %>_aggregator>
   Path puppet_run_log => <%= $facts[custom_win_mozspace] %>_aggregator
-</Route>
-
-<Route nxlog_<%= $facts[custom_win_mozspace] %>_aggregator>
-  Path nxlog => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
 <Route puppet_fail_log_<%= $facts[custom_win_mozspace] %>_aggregator>
