@@ -25,15 +25,13 @@ class linux_generic_worker::check_gw () {
       default:
           owner => 'root',
           group => 'root',
-          mode  => '0644';
+          mode  => '0755';
 
       ['/opt/relops-check_gw']:
-        ensure => directory,
-        mode   => '0755';
+        ensure => directory;
 
       '/opt/relops-check_gw/check_gw.py':
         ensure => present,
-        mode   => '0755',
         source => "puppet:///modules/${module_name}/check_gw.py";
 
       '/lib/systemd/system/check_gw.service':

@@ -10,18 +10,10 @@ class roles_profiles::profiles::users {
             # Then instant the all_users class which generates
             # virtual resources for all users to be realized in
             # other profiles based on group association
-            $base_users = lookup('all_users', Hash, undef, undef)
-
-            # Additional users such as temporary access to loaner hosts
-            $additional_users = lookup('additional_users', Hash, 'first', {})
-
-            # Merge base and additional users
-            $all_users = $base_users + $additional_users
-
+            $all_users = lookup('all_users', Hash, undef, undef)
             class { 'users::all_users':
                 all_users => $all_users
             }
-
         }
         default: {
             fail("${::operatingsystem} not supported")
