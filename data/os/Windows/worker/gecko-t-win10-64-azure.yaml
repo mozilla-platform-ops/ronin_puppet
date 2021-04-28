@@ -11,7 +11,7 @@ win-worker:
     worker_runner:
         name: 'start-worker-windows-amd64'
         version: '38.0.1'
-        provider: "azure2"
+        provider: "azure"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
