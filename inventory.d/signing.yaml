@@ -1,0 +1,20 @@
+---
+name: mac-v3-signing
+groups:
+  - name: mac-v3
+    targets:
+      - mac-v3-signing1.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing2.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing3.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing7.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing8.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing9.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing14.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing15.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing16.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing17.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing18.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing19.srv.releng.mdc1.mozilla.com
+      - mac-v3-signing20.srv.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: role

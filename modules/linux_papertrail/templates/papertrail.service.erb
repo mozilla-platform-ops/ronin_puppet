@@ -1,0 +1,11 @@
+[Unit]
+Description=Papertrail
+After=systemd-journald.service
+Requires=systemd-journald.service
+[Service]
+ExecStart=/bin/sh -c "journalctl <% @systemd_units.each do |unit| %>-u <%= unit %> <% end %> -f | ncat --ssl <%= @papertrail_host %> <%= @papertrail_port %>"
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=5s
+[Install]
+WantedBy=multi-user.target
