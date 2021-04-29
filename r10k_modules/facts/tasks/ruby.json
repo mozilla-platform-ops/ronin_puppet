@@ -1,0 +1,7 @@
+{
+  "description": "Gather system facts using ruby and facter",
+  "files": ["ruby_task_helper/files/task_helper.rb"],
+  "private": true,
+  "input_method": "stdin",
+  "parameters": {}
+}
