@@ -1,0 +1,14 @@
+HOSTS:
+  windows10ent:
+    roles:
+      - agent
+      - default
+    platform: windows-10ent-32
+    ruby_arch: x86
+    template: win-10-ent-i386
+    hypervisor: vmpooler
+CONFIG:
+  nfs_server: none
+  consoleport: 443
+  pooling_api: http://vmpooler.delivery.puppetlabs.net/
+  type: foss
