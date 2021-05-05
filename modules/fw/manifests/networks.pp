@@ -177,6 +177,9 @@ class fw::networks {
     $infra_corp_jumphost = [  '10.48.72.100/32',  # ssh1.corpdmz.mdc1.mozilla.com
                               '10.50.72.100/32' ] # ssh1.corpdmz.mdc2.mozilla.com
 
+    # Moz vpn + moz jumphosts
+    $moz_vpn = [ $infra_vpn_users, $infra_corp_jumphost ]
+
     # mtv2 qa network
     $mtv2_qa = [ '10.252.73.0/24' ] # *.qa.mtv2.mozilla.com
 }
