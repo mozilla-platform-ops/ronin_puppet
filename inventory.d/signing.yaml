@@ -1,7 +1,7 @@
 ---
 name: mac-v3-signing
 groups:
-  - name: mac-v3
+  - name: mac-v3-signing-ff-prod
     targets:
       - mac-v3-signing1.srv.releng.mdc1.mozilla.com
       - mac-v3-signing2.srv.releng.mdc1.mozilla.com
@@ -17,4 +17,16 @@ groups:
       - mac-v3-signing19.srv.releng.mdc1.mozilla.com
       - mac-v3-signing20.srv.releng.mdc1.mozilla.com
     facts:
-      puppet_role: role
+      puppet_role: mac_v3_signing_ff_prod
+  - name: mac-v3-signing-tb-prod
+    targets:
+      - tb-mac-v3-signing1.srv.releng.mdc1.mozilla.com
+      - tb-mac-v3-signing3.srv.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mac_v3_signing_tb_prod
+  - name: mac-v3-signing-dep
+    targets:
+      - dep-mac-v3-signing1.srv.releng.mdc1.mozilla.com
+      - dep-mac-v3-signing3.srv.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mac_v3_signing_dep
