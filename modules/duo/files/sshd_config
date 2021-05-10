@@ -1,0 +1,14 @@
+AuthorizedKeysFile .ssh/authorized_keys
+PubkeyAuthentication yes
+PasswordAuthentication no
+AuthenticationMethods publickey,keyboard-interactive:pam
+
+UsePAM yes
+ChallengeResponseAuthentication yes
+UseDNS no
+
+# pass locale information
+AcceptEnv LANG LC_*
+
+# override default of no subsystems
+Subsystem       sftp    /usr/libexec/sftp-server

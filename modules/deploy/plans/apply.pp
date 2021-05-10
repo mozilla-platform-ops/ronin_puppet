@@ -2,12 +2,12 @@ plan deploy::apply (
   TargetSpec $targets,
   Boolean    $noop = false,
 ) {
+    out::message('This plan will apply puppet to these hosts if noop is false:')
     get_targets($targets).each |$target| {
         out::message("${target.name} => ${target.facts['puppet_role']}")
         # TODO: ensure all targets have puppet roles otherwise fail
     }
-    out::message('Executing this plan will puppetize the targets')
-    out::message("Puppet noop is ${noop}")
+    out::message("=== Puppet noop is ${noop}! ===")
 
 
     $response = prompt('Continue executing plan? [Yes\No]')

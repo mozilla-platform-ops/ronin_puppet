@@ -1,0 +1,129 @@
+{
+  "name": "puppetlabs-puppet_agent",
+  "version": "4.6.1",
+  "author": "puppetlabs",
+  "summary": "Upgrades All-In-One Puppet Agents",
+  "license": "Apache-2.0",
+  "source": "https://github.com/puppetlabs/puppetlabs-puppet_agent",
+  "project_page": "https://github.com/puppetlabs/puppetlabs-puppet_agent",
+  "issues_url": "http://tickets.puppetlabs.com/browse/MODULES",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "SLES",
+      "operatingsystemrelease": [
+        "11",
+        "12",
+        "15"
+      ]
+    },
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "14.04",
+        "16.04",
+        "18.04",
+        "20.04"
+      ]
+    },
+    {
+      "operatingsystem": "Fedora",
+      "operatingsystemrelease": [
+        "28",
+        "29",
+        "30",
+        "31",
+        "32"
+      ]
+    },
+    {
+      "operatingsystem": "Solaris",
+      "operatingsystemrelease": [
+        "10",
+        "11"
+      ]
+    },
+    {
+      "operatingsystem": "Windows",
+      "operatingsystemrelease": [
+        "Server 2008",
+        "Server 2008 R2",
+        "Server 2012",
+        "Server 2012 R2",
+        "Server 2016",
+        "Server 2019",
+        "7",
+        "8",
+        "8.1",
+        "10"
+      ]
+    },
+    {
+      "operatingsystem": "AIX",
+      "operatingsystemrelease": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    {
+      "operatingsystem": "OSX",
+      "operatingsystemrelease": [
+        "10.14",
+        "10.15"
+       ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 5.0.0 < 8.0.0"
+    }
+  ],
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 5.1.0 < 8.0.0"},
+    {"name":"puppetlabs-inifile","version_requirement":">= 2.4.0 < 6.0.0"},
+    {"name":"puppetlabs-apt","version_requirement":">= 7.0.1 < 9.0.0"},
+    {"name":"puppetlabs-facts","version_requirement":">= 0.5.0 < 2.0.0"}
+  ]
+}

@@ -32,3 +32,6 @@ vendor/
 
 # ignore bolt rerun state file
 .rerun.json
+
+# ignore direnv
+.envrc

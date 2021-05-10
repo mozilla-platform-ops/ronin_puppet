@@ -1,0 +1,59 @@
+{
+  "name": "puppetlabs-facts",
+  "version": "1.4.0",
+  "author": "puppet",
+  "summary": "Tasks that inspect the value of system facts",
+  "license": "Apache-2.0",
+  "source": "https://github.com/puppetlabs/puppetlabs-facts",
+  "dependencies": [
+
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "16.04",
+        "18.04"
+      ]
+    },
+    {
+      "operatingsystem": "windows",
+      "operatingsystemrelease": [
+        "Server 2012 R2",
+        "Server 2016",
+        "10"
+      ]
+    },
+    {
+      "operatingsystem": "OSX",
+      "operatingsystemrelease": [
+        "10.12",
+        "10.13"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 5.1.0 < 8.0.0"
+    }
+  ],
+  "description": "Tasks that inspect the value of system facts",
+  "pdk-version": "1.8.0",
+  "template-url": "https://github.com/puppetlabs/pdk-templates",
+  "template-ref": "heads/master-0-g3978a9c"
+}
