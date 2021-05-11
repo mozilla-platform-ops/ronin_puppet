@@ -77,6 +77,14 @@ class win_disable_services::disable_windows_update {
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
     }
+    # disable windows insider program
+    if $facts['custom_win_release_id'] == '2004'{
+      registry::value { 'AllowBuildPreview':
+          key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds',
+          type => dword,
+          data => '0',
+    }
+    }
     # Bug List
     # https://bugzilla.mozilla.org/show_bug.cgi?id=>1510756
     # https://bugzilla.mozilla.org/show_bug.cgi?id=>1485628
