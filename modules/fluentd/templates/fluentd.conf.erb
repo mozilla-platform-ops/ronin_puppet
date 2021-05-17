@@ -242,7 +242,7 @@
     @type papertrail
     papertrail_host <%= @syslog_host %>
     papertrail_port <%= @syslog_port %>
-    default_hostname "#{Socket.gethostname.split('.')[0]}"
+    default_hostname "#{Socket.gethostname}"
     <buffer>
       @type file
       path /var/log/td-agent/papertrail_buffer
@@ -271,7 +271,7 @@
 <% elsif @syslog_host != '' -%>
   <store>
     @type remote_syslog
-    hostname "#{Socket.gethostname.split('.')[0]}"
+    hostname "#{Socket.gethostname}"
     host <%= @syslog_host %>
     port <%= @syslog_port %>
     <buffer program,syslog_severity>
