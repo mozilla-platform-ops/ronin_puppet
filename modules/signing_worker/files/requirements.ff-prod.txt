@@ -4,82 +4,68 @@
 #
 #    pip-compile --allow-unsafe --generate-hashes requirements.in
 #
-aiohttp==3.7.3 \
-    --hash=sha256:0b795072bb1bf87b8620120a6373a3c61bfcb8da7e5c2377f4bb23ff4f0b62c9 \
-    --hash=sha256:0d438c8ca703b1b714e82ed5b7a4412c82577040dadff479c08405e2a715564f \
-    --hash=sha256:16a3cb5df5c56f696234ea9e65e227d1ebe9c18aa774d36ff42f532139066a5f \
-    --hash=sha256:1edfd82a98c5161497bbb111b2b70c0813102ad7e0aa81cbeb34e64c93863005 \
-    --hash=sha256:2406dc1dda01c7f6060ab586e4601f18affb7a6b965c50a8c90ff07569cf782a \
-    --hash=sha256:2858b2504c8697beb9357be01dc47ef86438cc1cb36ecb6991796d19475faa3e \
-    --hash=sha256:2a7b7640167ab536c3cb90cfc3977c7094f1c5890d7eeede8b273c175c3910fd \
-    --hash=sha256:3228b7a51e3ed533f5472f54f70fd0b0a64c48dc1649a0f0e809bec312934d7a \
-    --hash=sha256:328b552513d4f95b0a2eea4c8573e112866107227661834652a8984766aa7656 \
-    --hash=sha256:39f4b0a6ae22a1c567cb0630c30dd082481f95c13ca528dc501a7766b9c718c0 \
-    --hash=sha256:3b0036c978cbcc4a4512278e98e3e6d9e6b834dc973206162eddf98b586ef1c6 \
-    --hash=sha256:3ea8c252d8df5e9166bcf3d9edced2af132f4ead8ac422eac723c5781063709a \
-    --hash=sha256:41608c0acbe0899c852281978492f9ce2c6fbfaf60aff0cefc54a7c4516b822c \
-    --hash=sha256:59d11674964b74a81b149d4ceaff2b674b3b0e4d0f10f0be1533e49c4a28408b \
-    --hash=sha256:5e479df4b2d0f8f02133b7e4430098699450e1b2a826438af6bec9a400530957 \
-    --hash=sha256:684850fb1e3e55c9220aad007f8386d8e3e477c4ec9211ae54d968ecdca8c6f9 \
-    --hash=sha256:6ccc43d68b81c424e46192a778f97da94ee0630337c9bbe5b2ecc9b0c1c59001 \
-    --hash=sha256:6d42debaf55450643146fabe4b6817bb2a55b23698b0434107e892a43117285e \
-    --hash=sha256:710376bf67d8ff4500a31d0c207b8941ff4fba5de6890a701d71680474fe2a60 \
-    --hash=sha256:756ae7efddd68d4ea7d89c636b703e14a0c686688d42f588b90778a3c2fc0564 \
-    --hash=sha256:77149002d9386fae303a4a162e6bce75cc2161347ad2ba06c2f0182561875d45 \
-    --hash=sha256:78e2f18a82b88cbc37d22365cf8d2b879a492faedb3f2975adb4ed8dfe994d3a \
-    --hash=sha256:7d9b42127a6c0bdcc25c3dcf252bb3ddc70454fac593b1b6933ae091396deb13 \
-    --hash=sha256:8389d6044ee4e2037dca83e3f6994738550f6ee8cfb746762283fad9b932868f \
-    --hash=sha256:9c1a81af067e72261c9cbe33ea792893e83bc6aa987bfbd6fdc1e5e7b22777c4 \
-    --hash=sha256:c1e0920909d916d3375c7a1fdb0b1c78e46170e8bb42792312b6eb6676b2f87f \
-    --hash=sha256:c68fdf21c6f3573ae19c7ee65f9ff185649a060c9a06535e9c3a0ee0bbac9235 \
-    --hash=sha256:c733ef3bdcfe52a1a75564389bad4064352274036e7e234730526d155f04d914 \
-    --hash=sha256:c9c58b0b84055d8bc27b7df5a9d141df4ee6ff59821f922dd73155861282f6a3 \
-    --hash=sha256:d03abec50df423b026a5aa09656bd9d37f1e6a49271f123f31f9b8aed5dc3ea3 \
-    --hash=sha256:d2cfac21e31e841d60dc28c0ec7d4ec47a35c608cb8906435d47ef83ffb22150 \
-    --hash=sha256:dcc119db14757b0c7bce64042158307b9b1c76471e655751a61b57f5a0e4d78e \
-    --hash=sha256:df3a7b258cc230a65245167a202dd07320a5af05f3d41da1488ba0fa05bc9347 \
-    --hash=sha256:df48a623c58180874d7407b4d9ec06a19b84ed47f60a3884345b1a5099c1818b \
-    --hash=sha256:e1b95972a0ae3f248a899cdbac92ba2e01d731225f566569311043ce2226f5e7 \
-    --hash=sha256:f326b3c1bbfda5b9308252ee0dcb30b612ee92b0e105d4abec70335fab5b1245 \
-    --hash=sha256:f411cb22115cb15452d099fec0ee636b06cf81bfb40ed9c02d30c8dc2bc2e3d1
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/iscript/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
-    #   taskcluster
+aiohttp==3.7.4.post0 \
+    --hash=sha256:02f46fc0e3c5ac58b80d4d56eb0a7c7d97fcef69ace9326289fb9f1955e65cfe \
+    --hash=sha256:0563c1b3826945eecd62186f3f5c7d31abb7391fedc893b7e2b26303b5a9f3fe \
+    --hash=sha256:114b281e4d68302a324dd33abb04778e8557d88947875cbf4e842c2c01a030c5 \
+    --hash=sha256:14762875b22d0055f05d12abc7f7d61d5fd4fe4642ce1a249abdf8c700bf1fd8 \
+    --hash=sha256:15492a6368d985b76a2a5fdd2166cddfea5d24e69eefed4630cbaae5c81d89bd \
+    --hash=sha256:17c073de315745a1510393a96e680d20af8e67e324f70b42accbd4cb3315c9fb \
+    --hash=sha256:209b4a8ee987eccc91e2bd3ac36adee0e53a5970b8ac52c273f7f8fd4872c94c \
+    --hash=sha256:230a8f7e24298dea47659251abc0fd8b3c4e38a664c59d4b89cca7f6c09c9e87 \
+    --hash=sha256:2e19413bf84934d651344783c9f5e22dee452e251cfd220ebadbed2d9931dbf0 \
+    --hash=sha256:393f389841e8f2dfc86f774ad22f00923fdee66d238af89b70ea314c4aefd290 \
+    --hash=sha256:3cf75f7cdc2397ed4442594b935a11ed5569961333d49b7539ea741be2cc79d5 \
+    --hash=sha256:3d78619672183be860b96ed96f533046ec97ca067fd46ac1f6a09cd9b7484287 \
+    --hash=sha256:40eced07f07a9e60e825554a31f923e8d3997cfc7fb31dbc1328c70826e04cde \
+    --hash=sha256:493d3299ebe5f5a7c66b9819eacdcfbbaaf1a8e84911ddffcdc48888497afecf \
+    --hash=sha256:4b302b45040890cea949ad092479e01ba25911a15e648429c7c5aae9650c67a8 \
+    --hash=sha256:515dfef7f869a0feb2afee66b957cc7bbe9ad0cdee45aec7fdc623f4ecd4fb16 \
+    --hash=sha256:547da6cacac20666422d4882cfcd51298d45f7ccb60a04ec27424d2f36ba3eaf \
+    --hash=sha256:5df68496d19f849921f05f14f31bd6ef53ad4b00245da3195048c69934521809 \
+    --hash=sha256:64322071e046020e8797117b3658b9c2f80e3267daec409b350b6a7a05041213 \
+    --hash=sha256:7615dab56bb07bff74bc865307aeb89a8bfd9941d2ef9d817b9436da3a0ea54f \
+    --hash=sha256:79ebfc238612123a713a457d92afb4096e2148be17df6c50fb9bf7a81c2f8013 \
+    --hash=sha256:7b18b97cf8ee5452fa5f4e3af95d01d84d86d32c5e2bfa260cf041749d66360b \
+    --hash=sha256:932bb1ea39a54e9ea27fc9232163059a0b8855256f4052e776357ad9add6f1c9 \
+    --hash=sha256:a00bb73540af068ca7390e636c01cbc4f644961896fa9363154ff43fd37af2f5 \
+    --hash=sha256:a5ca29ee66f8343ed336816c553e82d6cade48a3ad702b9ffa6125d187e2dedb \
+    --hash=sha256:af9aa9ef5ba1fd5b8c948bb11f44891968ab30356d65fd0cc6707d989cd521df \
+    --hash=sha256:bb437315738aa441251214dad17428cafda9cdc9729499f1d6001748e1d432f4 \
+    --hash=sha256:bdb230b4943891321e06fc7def63c7aace16095be7d9cf3b1e01be2f10fba439 \
+    --hash=sha256:c6e9dcb4cb338d91a73f178d866d051efe7c62a7166653a91e7d9fb18274058f \
+    --hash=sha256:cffe3ab27871bc3ea47df5d8f7013945712c46a3cc5a95b6bee15887f1675c22 \
+    --hash=sha256:d012ad7911653a906425d8473a1465caa9f8dea7fcf07b6d870397b774ea7c0f \
+    --hash=sha256:d9e13b33afd39ddeb377eff2c1c4f00544e191e1d1dee5b6c51ddee8ea6f0cf5 \
+    --hash=sha256:e4b2b334e68b18ac9817d828ba44d8fcb391f6acb398bcc5062b14b2cbeac970 \
+    --hash=sha256:e54962802d4b8b18b6207d4a927032826af39395a3bd9196a5af43fc4e60b009 \
+    --hash=sha256:f705e12750171c0ab4ef2a3c76b9a4024a62c4103e3a55dd6f99265b9bc6fcfc \
+    --hash=sha256:f881853d2643a29e643609da57b96d5f9c9b93f62429dcc1cbb413c7d07f0e1a \
+    --hash=sha256:fe60131d21b31fd1a14bd43e6bb88256f69dfc3188b3a89d736d6c71ed43ec95 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/iscript/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/notarization_poller/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/scriptworker_client/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt, taskcluster
 aiomemoizettl==0.0.3 \
     --hash=sha256:07a6becac60f6cd2604b9f2b73bcd9a50079a0b7b55e2a4e45b1eec5a3ea9659 \
-    --hash=sha256:0a80d2dc765e545263f515363b6700ec8cf86fa3968b529f56390b28e34f743d
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
+    --hash=sha256:0a80d2dc765e545263f515363b6700ec8cf86fa3968b529f56390b28e34f743d \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
 altgraph==0.17 \
     --hash=sha256:1f05a47122542f97028caf78775a095fbe6a2699b5089de8477eb583167d69aa \
-    --hash=sha256:c623e5f3408ca61d4016f23a681b9adb100802ca3e3da5e718915a9e4052cebe
+    --hash=sha256:c623e5f3408ca61d4016f23a681b9adb100802ca3e3da5e718915a9e4052cebe \
     # via macholib
-arrow==0.17.0 \
-    --hash=sha256:e098abbd9af3665aea81bdd6c869e93af4feb078e98468dd351c383af187aac5 \
-    --hash=sha256:ff08d10cda1d36c68657d6ad20d74fbea493d980f8b2d45344e00d6ed2bf6ed4
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/iscript/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
+arrow==1.1.0 \
+    --hash=sha256:8cbe6a629b1c54ae11b52d6d9e70890089241958f63bc59467e277e34b7a5378 \
+    --hash=sha256:b8fe13abf3517abab315e09350c903902d1447bd311afbc17547ba1cb3ff5bd8 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/iscript/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/notarization_poller/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
 async-timeout==3.0.1 \
     --hash=sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f \
-    --hash=sha256:4291ca197d287d274d0b6cb5d6f8f8f82d434ed288f962539ff18cc9012f9ea3
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/notarization_poller/requirements/base.in
-    #   aiohttp
-    #   taskcluster
-attrs==20.3.0 \
-    --hash=sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6 \
-    --hash=sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/iscript/requirements/base.in
-    #   aiohttp
-    #   jsonschema
+    --hash=sha256:4291ca197d287d274d0b6cb5d6f8f8f82d434ed288f962539ff18cc9012f9ea3 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/notarization_poller/requirements/base.in, aiohttp, taskcluster
+attrs==21.2.0 \
+    --hash=sha256:149e90d6d8ac20db7a955ad60cf0e6881a3f20d37096140088356da6c716b0b1 \
+    --hash=sha256:ef6aaac3ca6cd92904cdd0d83f629a15f18053ec84e6432106f7a4d04ae4f5fb \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/iscript/requirements/base.in, aiohttp, jsonschema
 certifi==2020.12.5 \
     --hash=sha256:1a4995114262bffbc2413b159f2a1a480c969de6e6eb13ee966d470af86af59c \
-    --hash=sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830
+    --hash=sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830 \
     # via requests
 cffi==1.14.5 \
     --hash=sha256:005a36f41773e148deac64b08f233873a4d0c18b053d37da83f6af4d9087b813 \
@@ -118,77 +104,66 @@ cffi==1.14.5 \
     --hash=sha256:cd2868886d547469123fadc46eac7ea5253ea7fcb139f12e1dfc2bbd406427d1 \
     --hash=sha256:d42b11d692e11b6634f7613ad8df5d6d5f8875f5d48939520d351007b3c13406 \
     --hash=sha256:f2d45f97ab6bb54753eab54fffe75aaf3de4ff2341c9daee1987ee1837636f1d \
-    --hash=sha256:fd78e5fee591709f32ef6edb9a015b4aa1a5022598e36227500c8f4e02328d9c
+    --hash=sha256:fd78e5fee591709f32ef6edb9a015b4aa1a5022598e36227500c8f4e02328d9c \
     # via cryptography
-chardet==3.0.4 \
-    --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
-    --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691
-    # via
-    #   aiohttp
-    #   requests
-cryptography==3.4.6 \
-    --hash=sha256:2d32223e5b0ee02943f32b19245b61a62db83a882f0e76cc564e1cec60d48f87 \
-    --hash=sha256:57ad77d32917bc55299b16d3b996ffa42a1c73c6cfa829b14043c561288d2799 \
-    --hash=sha256:5ecf2bcb34d17415e89b546dbb44e73080f747e504273e4d4987630493cded1b \
-    --hash=sha256:66b57a9ca4b3221d51b237094b0303843b914b7d5afd4349970bb26518e350b0 \
-    --hash=sha256:93cfe5b7ff006de13e1e89830810ecbd014791b042cbe5eec253be11ac2b28f3 \
-    --hash=sha256:df186fcbf86dc1ce56305becb8434e4b6b7504bc724b71ad7a3239e0c9d14ef2 \
-    --hash=sha256:fec7fb46b10da10d9e1d078d1ff8ed9e05ae14f431fdbd11145edd0550b9a964
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
-    #   -r requirements.in
-    #   jwcrypto
+chardet==4.0.0 \
+    --hash=sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa \
+    --hash=sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5 \
+    # via aiohttp, requests
+cryptography==3.4.7 \
+    --hash=sha256:0f1212a66329c80d68aeeb39b8a16d54ef57071bf22ff4e521657b27372e327d \
+    --hash=sha256:1e056c28420c072c5e3cb36e2b23ee55e260cb04eee08f702e0edfec3fb51959 \
+    --hash=sha256:240f5c21aef0b73f40bb9f78d2caff73186700bf1bc6b94285699aff98cc16c6 \
+    --hash=sha256:26965837447f9c82f1855e0bc8bc4fb910240b6e0d16a664bb722df3b5b06873 \
+    --hash=sha256:37340614f8a5d2fb9aeea67fd159bfe4f5f4ed535b1090ce8ec428b2f15a11f2 \
+    --hash=sha256:3d10de8116d25649631977cb37da6cbdd2d6fa0e0281d014a5b7d337255ca713 \
+    --hash=sha256:3d8427734c781ea5f1b41d6589c293089704d4759e34597dce91014ac125aad1 \
+    --hash=sha256:7ec5d3b029f5fa2b179325908b9cd93db28ab7b85bb6c1db56b10e0b54235177 \
+    --hash=sha256:8e56e16617872b0957d1c9742a3f94b43533447fd78321514abbe7db216aa250 \
+    --hash=sha256:de4e5f7f68220d92b7637fc99847475b59154b7a1b3868fb7385337af54ac9ca \
+    --hash=sha256:eb8cc2afe8b05acbd84a43905832ec78e7b3873fb124ca190f574dca7389a87d \
+    --hash=sha256:ee77aa129f481be46f8d92a1a7db57269a2f23052d5f2433b4621bb457081cc9 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt, -r requirements.in, jwcrypto
 dictdiffer==0.8.1 \
     --hash=sha256:1adec0d67cdf6166bda96ae2934ddb5e54433998ceab63c984574d187cc563d2 \
-    --hash=sha256:d79d9a39e459fe33497c858470ca0d2e93cb96621751de06d631856adfd9c390
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
-github3.py==1.3.0 \
-    --hash=sha256:15a115c18f7bfcf934dfef7ab103844eb9f620c586bad65967708926da47cbda \
-    --hash=sha256:50833b5da35546b8cced0e8d7ff4c50a9afc2c8e46cc4d07dc4b66d26467c708
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
+    --hash=sha256:d79d9a39e459fe33497c858470ca0d2e93cb96621751de06d631856adfd9c390 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
+github3.py==2.0.0 \
+    --hash=sha256:7e153e5dc559f27e4d15c91571a2d6e1522c9faa4406e188459d9731f0b98875 \
+    --hash=sha256:8dd4ac612fd60cb277eaf6e2ce02f68dda54aba06870ca6fa2b28369bf39aa14 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
 idna==2.10 \
     --hash=sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6 \
-    --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0
-    # via
-    #   requests
-    #   yarl
-immutabledict==1.2.0 \
-    --hash=sha256:1e6bb628eb158d32caf961bed5bb283f9e57201b50f48cd5063175612f0f3efd \
-    --hash=sha256:9ba015dc189af8aac5921248af18a06d76a1d026e362f917a8e9ee29e8de5133
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
+    --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0 \
+    # via requests, yarl
+immutabledict==1.3.0 \
+    --hash=sha256:b52f880323b3e94e763d5a09930587cce68387e497a4ec669ae836c1bd8cdd1e \
+    --hash=sha256:e8dc4d8ba91de43d703c123b9e99f7029901265d3ee0f0a01cf17e3e6981bbf9 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/notarization_poller/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/scriptworker_client/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
 jsmin==2.2.2 \
-    --hash=sha256:b6df99b2cd1c75d9d342e4335b535789b8da9107ec748212706ef7bbe5c2553b
+    --hash=sha256:b6df99b2cd1c75d9d342e4335b535789b8da9107ec748212706ef7bbe5c2553b \
     # via -r requirements.in
-json-e==4.3.0 \
-    --hash=sha256:00559fe9451cc059aa4997e801e19f421c7d6393e2a9b37e621cd1031b6d496a
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
+json-e==4.4.1 \
+    --hash=sha256:7d9f6235f855ce70418b9d6158c043c588c3c3d7d0902972f3fb7c5399997ce9 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
 jsonschema==3.2.0 \
     --hash=sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163 \
-    --hash=sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
+    --hash=sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/scriptworker_client/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
 jwcrypto==0.8 \
     --hash=sha256:16e17faa4dce36551ade3a3ccb06236a61e5924ea1db163c9be9827acf935a82 \
-    --hash=sha256:b7fee2635bbefdf145399392f5be26ad54161c8271c66b5fe107b4b452f06c24
+    --hash=sha256:b7fee2635bbefdf145399392f5be26ad54161c8271c66b5fe107b4b452f06c24 \
     # via github3.py
 macholib==1.14 \
     --hash=sha256:0c436bc847e7b1d9bda0560351bf76d7caf930fb585a828d13608839ef42c432 \
-    --hash=sha256:c500f02867515e6c60a27875b408920d18332ddf96b4035ef03beddd782d4281
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/iscript/requirements/base.in
-    #   -r requirements.in
+    --hash=sha256:c500f02867515e6c60a27875b408920d18332ddf96b4035ef03beddd782d4281 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/iscript/requirements/base.in, -r requirements.in
 mohawk==1.1.0 \
     --hash=sha256:3ed296a30453d0b724679e0fd41e4e940497f8e461a9a9c3b7f36e43bab0fa09 \
-    --hash=sha256:d2a0e3ab10a209cc79e95e28f2dd54bd4a73fd1998ffe27b7ba0f962b6be9723
-    # via
-    #   requests-hawk
-    #   taskcluster
+    --hash=sha256:d2a0e3ab10a209cc79e95e28f2dd54bd4a73fd1998ffe27b7ba0f962b6be9723 \
+    # via requests-hawk, taskcluster
 mozfile==2.1.0 \
-    --hash=sha256:e5dc835582ea150e35ecd57e9d86cb707d3aa3b2505679db7332326dd49fd6b8
+    --hash=sha256:e5dc835582ea150e35ecd57e9d86cb707d3aa3b2505679db7332326dd49fd6b8 \
     # via -r requirements.in
 multidict==5.1.0 \
     --hash=sha256:018132dbd8688c7a69ad89c4a3f39ea2f9f33302ebe567a879da8f4ca73f0d0a \
@@ -227,31 +202,27 @@ multidict==5.1.0 \
     --hash=sha256:ecc771ab628ea281517e24fd2c52e8f31c41e66652d07599ad8818abaad38cda \
     --hash=sha256:f200755768dc19c6f4e2b672421e0ebb3dd54c38d5a4f262b872d8cfcc9e93b5 \
     --hash=sha256:f21756997ad8ef815d8ef3d34edd98804ab5ea337feedcd62fb52d22bf531281 \
-    --hash=sha256:fc13a9524bc18b6fb6e0dbec3533ba0496bbed167c56d0aabefd965584557d80
-    # via
-    #   aiohttp
-    #   yarl
+    --hash=sha256:fc13a9524bc18b6fb6e0dbec3533ba0496bbed167c56d0aabefd965584557d80 \
+    # via aiohttp, yarl
 pexpect==4.8.0 \
     --hash=sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937 \
-    --hash=sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/iscript/requirements/base.in
+    --hash=sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/iscript/requirements/base.in
 ptyprocess==0.7.0 \
     --hash=sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35 \
-    --hash=sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220
+    --hash=sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220 \
     # via pexpect
 pycparser==2.20 \
     --hash=sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0 \
-    --hash=sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705
+    --hash=sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705 \
     # via cffi
 pyrsistent==0.17.3 \
-    --hash=sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e
+    --hash=sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e \
     # via jsonschema
 python-dateutil==2.8.1 \
     --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c \
-    --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a
-    # via
-    #   arrow
-    #   github3.py
+    --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a \
+    # via arrow, github3.py
 pyyaml==5.4.1 \
     --hash=sha256:08682f6b72c722394747bddaf0aa62277e02557c0fd1c42cb853016a38f8dedf \
     --hash=sha256:0f5f5786c0e09baddcd8b4b45f20a7b5d61a7e7e99846e3c799b05c7c53fa696 \
@@ -265,67 +236,62 @@ pyyaml==5.4.1 \
     --hash=sha256:5accb17103e43963b80e6f837831f38d314a0495500067cb25afab2e8d7a4018 \
     --hash=sha256:607774cbba28732bfa802b54baa7484215f530991055bb562efbed5b2f20a45e \
     --hash=sha256:6c78645d400265a062508ae399b60b8c167bf003db364ecb26dcab2bda048253 \
+    --hash=sha256:72a01f726a9c7851ca9bfad6fd09ca4e090a023c00945ea05ba1638c09dc3347 \
     --hash=sha256:74c1485f7707cf707a7aef42ef6322b8f97921bd89be2ab6317fd782c2d53183 \
+    --hash=sha256:895f61ef02e8fed38159bb70f7e100e00f471eae2bc838cd0f4ebb21e28f8541 \
     --hash=sha256:8c1be557ee92a20f184922c7b6424e8ab6691788e6d86137c5d93c1a6ec1b8fb \
     --hash=sha256:bb4191dfc9306777bc594117aee052446b3fa88737cd13b7188d0e7aa8162185 \
+    --hash=sha256:bfb51918d4ff3d77c1c856a9699f8492c612cde32fd3bcd344af9be34999bfdc \
     --hash=sha256:c20cfa2d49991c8b4147af39859b167664f2ad4561704ee74c1de03318e898db \
+    --hash=sha256:cb333c16912324fd5f769fff6bc5de372e9e7a202247b48870bc251ed40239aa \
     --hash=sha256:d2d9808ea7b4af864f35ea216be506ecec180628aced0704e34aca0b040ffe46 \
+    --hash=sha256:d483ad4e639292c90170eb6f7783ad19490e7a8defb3e46f97dfe4bacae89122 \
     --hash=sha256:dd5de0646207f053eb0d6c74ae45ba98c3395a571a2891858e87df7c9b9bd51b \
     --hash=sha256:e1d4970ea66be07ae37a3c2e48b5ec63f7ba6804bdddfdbd3cfd954d25a82e63 \
     --hash=sha256:e4fac90784481d221a8e4b1162afa7c47ed953be40d31ab4629ae917510051df \
-    --hash=sha256:fa5ae20527d8e831e8230cbffd9f8fe952815b2b7dae6ffec25318803a7528fc
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
+    --hash=sha256:fa5ae20527d8e831e8230cbffd9f8fe952815b2b7dae6ffec25318803a7528fc \
+    --hash=sha256:fd7f6999a8070df521b6384004ef42833b9bd62cfee11a09bda1079b4b704247 \
+    --hash=sha256:fdc842473cd33f45ff6bce46aea678a54e3d21f1b61a7750ce3c498eedfe25d6 \
+    --hash=sha256:fe69978f3f768926cfa37b867e3843918e012cf83f680806599ddce33c2c68b0 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/scriptworker_client/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
 requests-hawk==1.1.0 \
     --hash=sha256:1a5e61cab14627f1b5ba7de0e3fb2b681007ff7b2a49110d504e5cd6d7fd62d6 \
-    --hash=sha256:5ad9393ec0979067d07a725ccf8c18bfbbbe1f3455df59692bed71462904efe9
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/iscript/requirements/base.in
+    --hash=sha256:5ad9393ec0979067d07a725ccf8c18bfbbbe1f3455df59692bed71462904efe9 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/iscript/requirements/base.in
 requests==2.25.1 \
     --hash=sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804 \
-    --hash=sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e
-    # via
-    #   github3.py
-    #   requests-hawk
-    #   taskcluster
-six==1.15.0 \
-    --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
-    --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced
-    # via
-    #   jsonschema
-    #   mohawk
-    #   mozfile
-    #   python-dateutil
-    #   taskcluster
+    --hash=sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e \
+    # via github3.py, requests-hawk, taskcluster
+six==1.16.0 \
+    --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
+    --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254 \
+    # via jsonschema, mohawk, mozfile, python-dateutil, taskcluster
 slugid==2.0.0 \
     --hash=sha256:a950d98b72691178bdd4d6c52743c4a2aa039207cf7a97d71060a111ff9ba297 \
-    --hash=sha256:aec8b0e01c4ad32e38e12d609eab3ec912fd129aaf6b2ded0199b56a5f8fd67c
+    --hash=sha256:aec8b0e01c4ad32e38e12d609eab3ec912fd129aaf6b2ded0199b56a5f8fd67c \
     # via taskcluster
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \
     --hash=sha256:b25e122ecec249c4299ac7b20b08db76e3e2025bdaeb699a9d444556de5fd367 \
-    --hash=sha256:f66dcbd6572a6216ab65949f0fa0b91f2df647918028436c384e6af5cd12ae2b
+    --hash=sha256:f66dcbd6572a6216ab65949f0fa0b91f2df647918028436c384e6af5cd12ae2b \
     # via taskcluster
 taskcluster==39.2.0 \
     --hash=sha256:07dec0b12c80122498d772a242f92373d65731f133fb0d9aba5c2adf78475b13 \
     --hash=sha256:844d58207f7ccba73cce2413ff79ad83ef39e4095e0269fb82ff14fa9b1c3e2f \
-    --hash=sha256:e5fe89c1f85b3caf141106053c1e98bcb930a629889e67acb2bd9aa92bd95182
-    # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/iscript/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/00d85b2574c693b5eccd00b9095314662a5560d3/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/e5422970f06e983e85365470a6694ab0173ebd14/requirements.txt
-typing-extensions==3.7.4.3 \
-    --hash=sha256:7cb407020f00f7bfc3cb3e7881628838e69d8f3fcab2f64742a5e76b2f841918 \
-    --hash=sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c \
-    --hash=sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f
+    --hash=sha256:e5fe89c1f85b3caf141106053c1e98bcb930a629889e67acb2bd9aa92bd95182 \
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/iscript/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/0ac27f13cc443cdadbaa715442ee720aec1da7a7/notarization_poller/requirements/base.in, -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/a76a16da95e0d2483907b8a327b7a3f69743fbff/requirements.txt
+typing-extensions==3.10.0.0 \
+    --hash=sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497 \
+    --hash=sha256:50b6f157849174217d0656f99dc82fe932884fb250826c18350e159ec6cdf342 \
+    --hash=sha256:779383f6086d90c99ae41cf0ff39aac8a7937a9283ce0a414e5dd782f4c94a84 \
     # via aiohttp
 uritemplate==3.0.1 \
     --hash=sha256:07620c3f3f8eed1f12600845892b0e036a2420acf513c53f7de0abd911a5894f \
-    --hash=sha256:5af8ad10cec94f215e3f48112de2022e1d5a37ed427fbd88652fa908f2ab7cae
+    --hash=sha256:5af8ad10cec94f215e3f48112de2022e1d5a37ed427fbd88652fa908f2ab7cae \
     # via github3.py
-urllib3==1.26.3 \
-    --hash=sha256:1b465e494e3e0d8939b50680403e3aedaa2bc434b7d5af64dfd3c958d7f5ae80 \
-    --hash=sha256:de3eedaad74a2683334e282005cd8d7f22f4d55fa690a2a1020a416cb0a47e73
+urllib3==1.26.4 \
+    --hash=sha256:2f4da4594db7e1e110a944bb1b551fdf4e6c136ad42e4234131391e21eb5b0df \
+    --hash=sha256:e7b021f7241115872f92f43c6508082facffbd1c048e3c6e2bb9c2a157e28937 \
     # via requests
 yarl==1.6.3 \
     --hash=sha256:00d7ad91b6583602eb9c1d085a2cf281ada267e9a197e8b7cae487dadbfa293e \
@@ -364,11 +330,11 @@ yarl==1.6.3 \
     --hash=sha256:e6b5460dc5ad42ad2b36cca524491dfcaffbfd9c8df50508bddc354e787b8dc2 \
     --hash=sha256:f040bcc6725c821a4c0665f3aa96a4d0805a7aaf2caf266d256b8ed71b9f041c \
     --hash=sha256:f0b059678fd549c66b89bed03efcabb009075bd131c248ecdf087bdb6faba24a \
-    --hash=sha256:fcbb48a93e8699eae920f8d92f7160c03567b421bc17362a9ffbbd706a816f71
+    --hash=sha256:fcbb48a93e8699eae920f8d92f7160c03567b421bc17362a9ffbbd706a816f71 \
     # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==53.0.0 \
-    --hash=sha256:0e86620d658c5ca87a71a283bd308fcaeb4c33e17792ef6f081aec17c171347f \
-    --hash=sha256:1b18ef17d74ba97ac9c0e4b4265f123f07a8ae85d9cd093949fa056d3eeeead5
+setuptools==56.2.0 \
+    --hash=sha256:7bb5652625e94e73b9358b7ed8c6431b732e80cf31f4e0972294c64f0e5b849e \
+    --hash=sha256:bc30153eec47d82f20c6f5e1a13d4ee725c6deb7013a67557f89bfe5d25235c4 \
     # via jsonschema
