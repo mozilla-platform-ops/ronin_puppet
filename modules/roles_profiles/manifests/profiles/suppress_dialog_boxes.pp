@@ -23,12 +23,12 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         }
         'Windows': {
 
-      include win_os_settings::disbale_notifications
+            include win_os_settings::disbale_notifications
 
-      # Bug list
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1373551
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58"
+        # Bug list
+        # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
+        # https://bugzilla.mozilla.org/show_bug.cgi?id=1373551
+        # https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58"
         }
         default: {
             fail("${::operatingsystem} not supported")

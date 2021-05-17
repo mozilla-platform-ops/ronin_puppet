@@ -32,3 +32,8 @@ win-worker:
   # Applications
   vnc_msi:  "UltraVnc_1223_X64.msi"
   vnc_name:  "UltraVnc"
+
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "restricted"

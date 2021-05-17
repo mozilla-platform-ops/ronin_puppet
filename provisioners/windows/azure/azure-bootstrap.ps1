@@ -70,15 +70,16 @@ function Setup-Logging {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Install-BootstrapModule {
+function InstallRoninModule {
   param (
     [string] $src_Organisation,
     [string] $src_Repository,
     [string] $src_Revision,
+    [string] $moduleName,
     [string] $local_dir = "$env:systemdrive\BootStrap",
-    [string] $filename = "bootstrap.psm1",
-    [string] $module_name = ($filename).replace(".pms1",""),
-    [string] $modulesPath = ('{0}\Modules\bootstrap' -f $pshome),
+    [string] $filename = ('{0}.psm1' -f $moduleName),
+    [string] $module_name = ($moduleName).replace(".pms1",""),
+    [string] $modulesPath = ('{0}\Modules\{1}' -f $pshome, $moduleName),
     [string] $bootstrap_module = "$modulesPath\bootstrap",
     [string] $moduleUrl = ('https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/modules/{3}' -f $src_Organisation, $src_Repository, $src_Revision, $filename)
   )
@@ -89,7 +90,7 @@ function Install-BootstrapModule {
     mkdir $bootstrap_module  -ErrorAction SilentlyContinue
     Invoke-WebRequest $moduleUrl -OutFile "$bootstrap_module\\$filename" -UseBasicParsing
     Get-Content -Encoding UTF8 "$bootstrap_module\\$filename" | Out-File -Encoding Unicode "$modulesPath\\$filename"
-    Import-Module -Name $module_name
+    Import-Module -Name $moduleName
     }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -97,6 +98,7 @@ function Install-BootstrapModule {
 }
 
 # Ensuring scripts can run uninhibited
+# This is noisey but works
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 
 $workerType = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('workerType') })[0].value
@@ -105,24 +107,29 @@ $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicPa
 $src_Revision = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRevision') })[0].value
 $image_provisioner = 'azure'
 
-
 If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
-  $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+    $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-  Setup-Logging
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-  Install-AzPrerequ
-  Bootstrap-schtasks -workerType azure -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-  shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
+    Setup-Logging
+    InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+    InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+    Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+    AzInstall-Prerequ
+    AzMount-DiskTwo
+    AzSet-DriveLetters
+    exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-  Ronin-PreRun
-  Bootstrap-AzPuppet
+    InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+    InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+    Ronin-PreRun
+    AzBootstrap-Puppet
+    exit 0
 }
 If ($stage -eq 'complete') {
-  Install-BootstrapModule -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
-#  Bootstrap-CleanUp
+    InstallRoninModule -moduleName common-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+    InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
+    Bootstrap-CleanUp
+    exit 0
 }

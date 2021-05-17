@@ -142,7 +142,10 @@ function Install-AzPrerequ {
     [string] $work_dir = "$env:systemdrive\scratch",
     [string] $git = "Git-2.18.0-64-bit.exe",
     [string] $puppet = "puppet-agent-6.0.0-x64.msi",
-    [string] $vault_file = "azure_vault_template.yaml"
+    [string] $vault_file = "azure_vault_template.yaml",
+    [string] $rdagent = "rdagent",
+    [string] $azure_guest_agent = "WindowsAzureGuestAgent",
+    [string] $azure_telemetry = "WindowsAzureTelemetryService"
     #[string] $tooltool_tok =  (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\tooltool").token
   )
   begin {
@@ -156,11 +159,23 @@ function Install-AzPrerequ {
     Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
     Set-location -path $local_dir
     remove-item $work_dir   -Recurse  -force
+    # Get-AppxPackage *windowsstore* | Remove-AppxPackage
 
     Start-Process $local_dir\$git /verysilent -wait
     Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
     Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
     Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
+
+    # net stop $rdagent
+    #net stop $azure_guest_agent
+    #net stop $azure_telemetry
+
+    # sc delete $rdagent3
+    #sc config "$azure_guest_agent" start= disabled
+    #sc config "$azure_telemetry" start= disabled
+
+    #sc delete $azure_guest_agent
+    #sc delete $azure_telemetry
 
     # May not be needed. If not this can be removed in the future
     #Invoke-WebRequest -Uri  $ext_src/$vault_file  -UseBasicParsing -OutFile $local_dir\$vault_file
@@ -470,8 +485,8 @@ function Bootstrap-AzPuppet {
           $git_exit = $LastExitCode
           if ($git_exit -ne 0) {
             Write-Log -message  ('{0} :: FAILED to set  Ronin Puppet HEAD to {1}! Check if deploymentID is valid. Giving up on bootstrsaping!' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
-            shutdown @('-s', '-t', '0', '-c', 'Shutdown;Bootstrapping failed on possible invalid deploymentID ', '-f', '-d', '4:5')
-            exit
+            #shutdown @('-s', '-t', '0', '-c', 'Shutdown;Bootstrapping failed on possible invalid deploymentID ', '-f', '-d', '4:5')
+            exit 423
           }
           Write-Log -message  ('{0} :: Setting Ronin Puppet HEAD to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
           Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
@@ -509,29 +524,36 @@ function Bootstrap-AzPuppet {
         if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
           Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
-          shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          #shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          #return
+          #exit 2
+          exit 0
         } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 300
-          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          #return
+          #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+          exit 0
+          # exit 2
         }
       } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Write-Log -message  ('{0} :: Attempting to generalize image' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        C:\Windows\system32\sysprep\sysprep.exe /generalize /quit /oobe /mode:vm | Tee-Object -Variable cmdOutput
-        # C:\Windows\system32\sysprep\sysprep.exe /generalize /quit /oobe | Tee-Object -Variable cmdOutput
-        Write-Log -message  ('{0} :: {1}' -f $($MyInvocation.MyCommand.Name), ($cmdOutput)) -severity 'DEBUG'
-        Write-Log -message  ('{0} :: Sysprep generalize command completeted' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
-        Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-		pause
+        #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
+        #Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+		#return
+        exit 0
+        # exit 2
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
-        Start-sleep -s 600
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        Start-sleep -s 300
+        #return
+        #shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+        exit 0
+        #exit 2
       }
     }
   }
@@ -623,6 +645,76 @@ Function Start-Restore {
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Mount-DiskTwo {
+# Starting with disk 2 for now
+# Azure packer images does have a disk 1 labled ad temp storage
+# Maybe use that in the future
+  param (
+    [string] $lock = 'C:\dsc\in-progress.lock'
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
+      Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+    } else {
+      $pagefileName = $false
+      Get-WmiObject Win32_PagefileSetting | ? { !$_.Name.StartsWith('c:') } | % {
+        $pagefileName = $_.Name
+        try {
+          $_.Delete()
+          Write-Log -message ('{0} :: page file: {1}, deleted.' -f $($MyInvocation.MyCommand.Name), $pagefileName) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to delete page file: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $pagefileName, $_.Exception.Message) -severity 'ERROR'
+        }
+      }
+      if (Get-Command -Name 'Clear-Disk' -errorAction SilentlyContinue) {
+        try {
+          Clear-Disk -Number 2 -RemoveData -Confirm:$false
+          Write-Log -message ('{0} :: disk 1 partition table cleared.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to clear partition table on disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: partition table clearing skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if (Get-Command -Name 'Initialize-Disk' -errorAction SilentlyContinue) {
+        try {
+          Initialize-Disk -Number 2 -PartitionStyle MBR
+          Write-Log -message ('{0} :: disk 1 initialized.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to initialize disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: disk initialisation skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
+        try {
+          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
+          Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
+          Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+        try {
+          New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
+          Format-Volume -FileSystem NTFS -NewFileSystemLabel task -DriveLetter Z -Confirm:$false
+          Write-Log -message ('{0} :: task drive Z: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to format task drive Z:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: partitioning skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+    }
   }
 }
 Function Bootstrap-CleanUp {

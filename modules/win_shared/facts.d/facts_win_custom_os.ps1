@@ -6,7 +6,8 @@
 
 # Windows release ID.
 # From time to time we need to have the different releases of the same OS version
-$release_id = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
+$release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
+$release_id = $release_key.ReleaseId
 $win_os_build = [System.Environment]::OSVersion.Version.build
 
 # OS caption

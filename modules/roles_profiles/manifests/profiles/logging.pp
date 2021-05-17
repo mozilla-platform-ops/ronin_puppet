@@ -29,23 +29,22 @@ class roles_profiles::profiles::logging (
 
             if ($facts['custom_win_location'] == 'datacenter') {
                 $log_aggregator  = lookup('windows.datacenter.log_aggregator')
-                $conf_file       = 'nxlog.conf'
-            } elsif ($facts['custom_win_location']) == 'azure' {
+            } else {
                 $log_aggregator  = lookup('windows.external.papertrail')
-                # log-level support is only setup for Azure
-                # it will eventual expand to other Windows locations
-                $log_level       = lookup('win-worker.log.level')
-                $conf_file       = "azure_${log_level}_nxlog.conf"
+            }
+            if ($facts['custom_win_location'] == 'datacenter') or ($facts['custom_win_location'] == 'azure') {
+                if ($facts['custom_win_bootstrap_stage'] != 'complete') {
+                    $log_level = 'verbose'
+                } else {
+                    $log_level = lookup('win-worker.log.level')
+                }
                 if ($log_level != 'debug') and ($log_level != 'restricted') and ($log_level != 'verbose')  {
                     fail("Log level ${log_level} is not supported")
-
                 }
+                $conf_file  = "${facts['custom_win_location']}_${log_level}_nxlog.conf"
             } else {
-                # data will need to be added as could support builds out
-                $log_aggregator  = lookup('windows.external.papertrail')
-                $conf_file       = 'non_datacenter_nxlog.conf'
+                $conf_file = 'non_datacenter_nxlog.conf'
             }
-
             class { 'win_nxlog':
                 nxlog_dir      => "${facts['custom_win_programfilesx86']}\\nxlog",
                 location       => $facts['custom_win_location'],

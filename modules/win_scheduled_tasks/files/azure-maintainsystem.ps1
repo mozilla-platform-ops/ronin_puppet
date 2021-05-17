@@ -185,6 +185,8 @@ function Puppet-Run {
     [string] $inmutable = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable,
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
     [string] $logdir = "$env:systemdrive\logs",
+    [string] $fail_dir = "$env:systemdrive\fail_logs",
+    [string] $log_file = "$datetime-puppetrun.log",
     [string] $datetime = (get-date -format yyyyMMdd-HHmm),
     [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
   )
@@ -194,10 +196,8 @@ function Puppet-Run {
   process {
 
     Check-RoninNodeOptions
-    # Do not up teh Ronin Repo, so that there are no chnges in configuration
+    # Do not update Ronin Repo, so that there are no chnges in configuration
     # from the time of image creation
-    # Check-RoninLock
-    UpdateRonin
 
     # Setting Env variabes for PuppetFile install and Puppet run
     # The ssl variables are needed for R10k
@@ -214,13 +214,19 @@ function Puppet-Run {
     $env:USERNAME = "Administrator"
     $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
-    Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
-    R10k puppetfile install --moduledir=r10k_modules
+    Set-Location "$env:systemdrive\ronin"
+
+    # r10k not currently in use. leaving in place because it may change in the future
+    # Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
+    # R10k puppetfile install --moduledir=r10k_modules
     # Needs to be removed from path or a wrong puppet file will be used
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
+    If(!(test-path $fail_dir))  {
+        New-Item -ItemType Directory -Force -Path $fail_dir
+    }
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-puppetrun.log
+    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$log_file
     [int]$puppet_exit = $LastExitCode
 
     if ($run_to_success -eq 'true') {
@@ -229,10 +235,14 @@ function Puppet-Run {
           Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -value $puppet_exit
           Remove-Item $lock -ErrorAction SilentlyContinue
+          # If the Puppet run fails send logs to papertrail
+          # Nxlog watches $fail_dir for files names *-puppetrun.log
+          Move-Item $logdir\$log_file -Destination $fail_dir
           shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif ($last_exit -ne 0){
           Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -value $puppet_exit
           Remove-Item $lock
+          Move-Item $logdir\$log_file -Destination $fail_dir
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 600
           shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
@@ -245,6 +255,7 @@ function Puppet-Run {
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -value $last_exit
+        Move-Item $logdir\$log_file -Destination $fail_dir
         Remove-Item -path $lock
         shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
       }
@@ -254,7 +265,58 @@ function Puppet-Run {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-
+function Set-DriveLetters {
+  param (
+    [hashtable] $driveLetterMap = @{
+      'E:' = 'Y:';
+      'F:' = 'Z:'
+    }
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    $driveLetterMap.Keys | % {
+      $old = $_
+      $new = $driveLetterMap.Item($_)
+      if (Test-VolumeExists -DriveLetter @($old[0])) {
+        $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
+        if ($null -ne $volume) {
+          $volume.DriveLetter = $new
+          $volume.Put()
+          if ((Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$new'") -and (Test-VolumeExists -DriveLetter @($new[0]))) {
+            Write-Log -message ('{0} :: drive {1} assigned new drive letter: {2}.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'INFO'
+          } else {
+            Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using wmi, failed.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'WARN'
+            try {
+              Get-Partition -DriveLetter $old[0] | Set-Partition -NewDriveLetter $new[0]
+            } catch {
+              Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using get/set partition, failed. {3}' -f $($MyInvocation.MyCommand.Name), $old, $new, $_.Exception.Message) -severity 'ERROR'
+            }
+          }
+        }
+      }
+    }
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
+      $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
+      if ($null -ne $volume) {
+        $volume.DriveLetter = 'Z:'
+        $volume.Put()
+        Write-Log -message ('{0} :: drive Y: assigned new drive letter: Z:.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+      }
+    }
+    $volumes = @(Get-WmiObject -Class Win32_Volume | Sort-Object { $_.Name })
+    Write-Log -message ('{0} :: {1} volumes detected.' -f $($MyInvocation.MyCommand.Name), $volumes.length) -severity 'INFO'
+    foreach ($volume in $volumes) {
+      Write-Log -message ('{0} :: {1} {2}gb' -f $($MyInvocation.MyCommand.Name), $volume.Name.Trim('\'), [math]::Round($volume.Capacity/1GB,2)) -severity 'DEBUG'
+    }
+    $partitions = @(Get-WmiObject -Class Win32_DiskPartition | Sort-Object { $_.Name })
+    Write-Log -message ('{0} :: {1} disk partitions detected.' -f $($MyInvocation.MyCommand.Name), $partitions.length) -severity 'INFO'
+    foreach ($partition in $partitions) {
+      Write-Log -message ('{0} :: {1}: {2}gb' -f $($MyInvocation.MyCommand.Name), $partition.Name, [math]::Round($partition.Size/1GB,2)) -severity 'DEBUG'
+    }
+  }
+}
 function StartWorkerRunner {
     param (
     )
@@ -278,12 +340,14 @@ function Check-AzVM-Name {
         $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
         if ($instanceName -notlike $env:computername) {
             Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
-            Rename-Computer -NewName $instanceName
+            [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
+            $env:COMPUTERNAME = $instanceName
+            Rename-Computer -NewName $instanceName -force
             # Don't waste time/money on rebooting to pick up name change
             # shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
-            exit
+            return
         } else {
-            Write-Log -message  ('{0} :: LOOK HERE! Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
+            Write-Log -message  ('{0} :: Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
         }
     }
     end {
@@ -292,19 +356,22 @@ function Check-AzVM-Name {
 }
 
 $bootstrap_stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-$reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet reboot_count -ErrorAction SilentlyContinue
-  If ( $reboot_count_exists -ne $null) {
-  $previous_boots = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").reboot_count
-  $new_count = $previous_boots + 1
-  Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name reboot_count -value $new_count -force
-}
-If ($bootstrap_stage -eq 'complete') {
+$hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
+$managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
+
+# Hand_off_ready value is set by the packer manifest
+# TODO: add json manifest location
+If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Check-AzVM-Name
+  if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
+    Set-DriveLetters
+  }
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
   StartWorkerRunner
+  # let worker runner perform reboots
   Exit-PSSession
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'

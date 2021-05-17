@@ -2,21 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_scheduled_tasks::maintain_system (
-    String $startup_script
-) {
+class win_scheduled_tasks::at_task_user_logon {
 
-    $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
+    $at_task_user_logon_bat = "${facts['custom_win_roninprogramdata']}\\at_task_user_logon.bat"
 
     if $::operatingsystem == 'Windows' {
-        file { $maintainsystem_ps1:
-            content => file("win_scheduled_tasks/${startup_script}"),
+        file { $at_task_user_logon_bat:
+            content => file('win_scheduled_tasks/at_task_user_logon.bat'),
         }
         # Resource from puppetlabs-scheduled_task
-        scheduled_task { 'maintain_system':
+        scheduled_task { 'at_task_user_logon':
             ensure    => 'present',
-            command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
-            arguments => "-executionpolicy bypass -File ${maintainsystem_ps1}",
+            command   => "${facts['custom_win_system32']}\\cmd.exe",
+            arguments => "/c ${at_task_user_logon_bat}",
             enabled   => true,
             trigger   => [{
                 'schedule'         => 'boot',

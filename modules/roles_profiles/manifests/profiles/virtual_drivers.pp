@@ -7,9 +7,7 @@ class roles_profiles::profiles::virtual_drivers {
     case $::operatingsystem {
         'Windows': {
 
-            # Obfuscating command flags because the developer does not intend for the arguments to be public available
-            # For the command contact the developer https://vac.muzychenko.net/en/support.htm
-            $flags    = lookup('vac_flags')
+            $flags    = '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
             $vac_dir  = lookup('windows.dir.vac')
             $version  = lookup('win-worker.vac.version')
             $work_dir = "${vac_dir}\\vac${version}"
