@@ -50,6 +50,8 @@ class linux_packages::puppet {
 
           # install latest puppet-agent
           package { 'install puppet agent':
+            # if changing version, also ensure this is in sync with
+            # provisioners/linux/bootstrap_linux.sh
             ensure  => '7.5.0-1bionic',
             name    => 'puppet-agent',
             require => Exec['apt_update'],
