@@ -13,8 +13,8 @@
 set -e
 # set -x
 
-# install puppet 6
-wget https://apt.puppetlabs.com/puppet6-release-bionic.deb -O /tmp/puppet.deb
+# install puppet 7
+wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/puppet.deb
 dpkg -i /tmp/puppet.deb
 apt-get update
 apt-get remove -y puppet
