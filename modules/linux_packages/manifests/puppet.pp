@@ -23,7 +23,6 @@ class linux_packages::puppet {
 
           package { $packages_to_purge:
               ensure => purged,
-              alias  => 'purge packages',
           }
 
           # fetch and install the new repo deb
@@ -32,7 +31,7 @@ class linux_packages::puppet {
               path      => '/tmp/puppet.deb',
               mode      => 'a+r',
               source    => 'https://apt.puppetlabs.com/puppet7-release-bionic.deb',
-              subscribe => Package['purge packages'],
+              subscribe => Package[$packages_to_purge],
           }
 
           package { 'puppet repo deb':
