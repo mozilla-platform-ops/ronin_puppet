@@ -11,10 +11,10 @@ class linux_packages::puppet {
           include apt
 
           $packages_to_purge = [
-                                # remove unversioned repo deb
+                                # remove unversioned repo package
                                 'puppet-release',
-                                # purge older release repo pacckages
-                                'puppet5-release','puppet6-release',
+                                # purge older versioned release packages
+                                'puppet5-release', 'puppet6-release',
                                 # older packages that could be present?
                                 'puppet5-agent',
                                 # we don't need the full package and it conflicts with puppet-agent
