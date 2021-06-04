@@ -10,51 +10,47 @@ class linux_packages::puppet {
 
           include apt
 
-          # remove puppet 5 repo, puppet-agent, and puppet if present
-          # - will conflict later if not removed
-          package { 'remove old puppet repo deb':
-            ensure => purged,
-            name   => 'puppet5-release',
-          }
+          $packages_to_purge = [
+                                # remove unversioned repo deb
+                                'puppet-release',
+                                # purge older release repo pacckages
+                                'puppet5-release','puppet6-release',
+                                # older packages that could be present?
+                                'puppet5-agent',
+                                # we don't need the full package and it conflicts with puppet-agent
+                                'puppet'
+                                ]
 
-          # puppet 7 is out, this explodes now
-          package { 'remove old puppet repo deb, 2':
-            ensure => purged,
-            name   => 'puppet6-release',
-          }
-
-          package { 'remove old puppet-agent deb':
-            ensure => purged,
-            name   => 'puppet5-agent',
-          }
-
-          # we don't need the full package and it conflicts with puppet-agent
-          package { 'remove puppet deb':
-            ensure => purged,
-            name   => 'puppet',
+          package { $packages_to_purge:
+              ensure => purged,
+              alias  => 'purge packages',
           }
 
           # fetch and install the new repo deb
           file { 'puppet_repo_deb':
-              ensure => 'file',
-              path   => '/tmp/puppet.deb',
-              mode   => 'a+r',
-              source => 'https://apt.puppetlabs.com/puppet-release-bionic.deb',
+              ensure    => 'file',
+              path      => '/tmp/puppet.deb',
+              mode      => 'a+r',
+              source    => 'https://apt.puppetlabs.com/puppet7-release-bionic.deb',
+              subscribe => Package['purge packages'],
           }
 
           package { 'puppet repo deb':
-            ensure   => installed,
-            provider => dpkg,
-            source   => '/tmp/puppet.deb',
+            ensure    => installed,
+            provider  => dpkg,
+            source    => '/tmp/puppet.deb',
+            subscribe => File['puppet_repo_deb']
           }
 
           # install latest puppet-agent
           package { 'install puppet agent':
-            # if changing version, also ensure this is in sync with
+            # 1. if changing version, also ensure this is in sync with
             # provisioners/linux/bootstrap_linux.sh
-            ensure  => '7.5.0-1bionic',
-            name    => 'puppet-agent',
-            require => Exec['apt_update'],
+            # 2. if upgrading, make sure to purge the old versioned release deb (see above)
+            ensure    => '7.5.0-1bionic',
+            name      => 'puppet-agent',
+            require   => Exec['apt_update'],
+            subscribe => Package['puppet repo deb']
           }
 
         }
