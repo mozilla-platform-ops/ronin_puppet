@@ -42,6 +42,9 @@ class roles_profiles::profiles::mozilla_build {
                 builds_dir                => "${facts['custom_win_systemdrive']}\\builds",
                 tooltool_tok              => $tooltool_tok,
             }
+            if $facts['custom_win_release_id'] == '2004'{
+                include win_mozilla_build::python_3_9_5
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
             # Mozilla Build Version
