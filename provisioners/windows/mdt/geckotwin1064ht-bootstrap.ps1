@@ -103,8 +103,8 @@ function Install-BootstrapModule {
 
 $workerType = 'gecko-t-win10-64-ht'
 $src_Organisation = 'markcor'
-$src_Repository = 'ronin_puppet'
-$src_Revision = 'move_logs'
+$src_Repository = 'mozilla-platform-ops'
+$src_Revision = 'master'
 #$src_Revision = "cloud_windows"
 $image_provisioner = 'mdt'
 $max_boots = 999
