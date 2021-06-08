@@ -73,7 +73,7 @@ LogFile   %ROOT%\data\nxlog.log
 </Input>
 
 <Output <%= $facts[custom_win_mozspace] %>_aggregator>
-  Module om_tcp
+  Module om_ssl
   Host <%= $win_nxlog::configuration::log_aggregator %>
   Port 52806
   Exec $Hostname = hostname_fqdn();
