@@ -5,6 +5,7 @@
 class win_mozilla_build::virtualenv_support {
 
     require win_mozilla_build::install
+    require win_mozilla_build::python_3_9_5
 
     $source  = $win_mozilla_build::external_source
     $venv_dir = "${win_mozilla_build::install_path}\\python\\Lib\\site-packages\\virtualenv_support"

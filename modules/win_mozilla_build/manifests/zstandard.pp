@@ -5,6 +5,7 @@
 class win_mozilla_build::zstandard {
 
     require win_mozilla_build::pip
+    require win_mozilla_build::python_3_9_5
 
     $needed_py3_zstandard_ver = $win_mozilla_build::needed_py3_zstandard_ver
     $mozbld = $win_mozilla_build::install_path
