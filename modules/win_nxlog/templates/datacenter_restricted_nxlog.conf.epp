@@ -76,6 +76,8 @@ LogFile   %ROOT%\data\nxlog.log
   Module om_ssl
   Host <%= $win_nxlog::configuration::log_aggregator %>
   Port 52806
+  CAFile %ROOT%\cert\papertrail-bundle.pem
+  AllowUntrusted FALSE
   Exec $Hostname = hostname_fqdn();
   Exec to_syslog_ietf();
 </Output>
