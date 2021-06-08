@@ -102,8 +102,8 @@ function Install-BootstrapModule {
 }
 
 $workerType = 'gecko-t-win10-64-ht'
-$src_Organisation = 'markcor'
-$src_Repository = 'mozilla-platform-ops'
+$src_Organisation = 'mozilla-platform-ops'
+$src_Repository = 'ronin_puppet'
 $src_Revision = 'master'
 #$src_Revision = "cloud_windows"
 $image_provisioner = 'mdt'
