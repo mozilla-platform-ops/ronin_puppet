@@ -59,6 +59,9 @@ $domain = 'wintest.releng.mdc1.mozilla.com'
 $current_worker_type = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType
 $gw_service = (Get-Service Generic*)
 $wmi = (Get-WmiObject -Class win32_OperatingSystem)
+$hours = ((($wmi.ConvertToDateTime($wmi.LocalDateTime) - $wmi.ConvertToDateTime($wmi.LastBootUpTime)).hours)
+
+write-host i have been up for $hours hours
 
 if ($production_worker_type -ne $current_worker_type) {
 	Write-Log -message  ('{0} :: AUDIT: Node is not in production. Currently configured to be a {1} worker.' -f $($MyInvocation.MyCommand.Name), ($current_worker_type)) -severity 'DEBUG'
