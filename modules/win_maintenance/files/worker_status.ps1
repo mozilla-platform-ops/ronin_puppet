@@ -66,10 +66,6 @@ if ($production_worker_type -ne $current_worker_type) {
 	exit 98
 }
 
-if (($wmi.ConvertToDateTime($wmi.LocalDateTime) – $wmi.ConvertToDateTime($wmi.LastBootUpTime)).Days -gt 2){
-    Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    exit 99
-}
 if ($gw_service.status -ne "running") {
     Write-Log -message  ('{0} :: AUDIT: Generic worker service is not running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     exit 99
