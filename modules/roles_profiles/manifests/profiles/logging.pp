@@ -27,11 +27,8 @@ class roles_profiles::profiles::logging (
     case $::operatingsystem {
         'Windows': {
 
-            if ($facts['custom_win_location'] == 'datacenter') {
-                $log_aggregator  = lookup('windows.datacenter.log_aggregator')
-            } else {
-                $log_aggregator  = lookup('windows.external.papertrail')
-            }
+            $log_aggregator  = lookup('windows.external.papertrail')
+
             if ($facts['custom_win_location'] == 'datacenter') or ($facts['custom_win_location'] == 'azure') {
                 if ($facts['custom_win_bootstrap_stage'] != 'complete') {
                     $log_level = 'verbose'
