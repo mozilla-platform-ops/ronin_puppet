@@ -58,7 +58,7 @@ $production_worker_type=$args[0]
 $domain = 'wintest.releng.mdc1.mozilla.com'
 $current_worker_type = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType
 $gw_service = (Get-Service Generic*)
-$wmi = Get-WmiObject -Class win32_OperatingSystem
+$wmi = (Get-WmiObject -Class win32_OperatingSystem)
 
 if ($production_worker_type -ne $current_worker_type) {
 	Write-Log -message  ('{0} :: AUDIT: Node is not in production. Currently configured to be a {1} worker.' -f $($MyInvocation.MyCommand.Name), ($current_worker_type)) -severity 'DEBUG'
