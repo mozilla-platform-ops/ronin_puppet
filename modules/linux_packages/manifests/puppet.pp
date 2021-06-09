@@ -27,18 +27,18 @@ class linux_packages::puppet {
           }
 
           # fetch and install the new repo deb
+          $deb_name = 'puppet7-release-bionic.deb'
           file { 'puppet_repo_deb':
               ensure    => 'file',
-              path      => '/tmp/puppet.deb',
+              path      => "/tmp/${deb_name}",
               mode      => 'a+r',
-              source    => 'https://apt.puppetlabs.com/puppet7-release-bionic.deb',
+              source    => "https://apt.puppetlabs.com/${deb_name}",
               subscribe => Package[$packages_to_purge],
           }
-
           package { 'puppet repo deb':
             ensure    => installed,
             provider  => dpkg,
-            source    => '/tmp/puppet.deb',
+            source    => "/tmp/${deb_name}",
             subscribe => File['puppet_repo_deb']
           }
 
