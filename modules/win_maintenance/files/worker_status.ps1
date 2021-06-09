@@ -65,6 +65,7 @@ if ($production_worker_type -ne $current_worker_type) {
 	Write-host ('{0}.{1} is not in production. Currently configured to be {2} worker.' -f $($env:computername), ($domain), ($current_worker_type))
 	exit 98
 }
+
 if (($wmi.ConvertToDateTime($wmi.LocalDateTime) – $wmi.ConvertToDateTime($wmi.LastBootUpTime)).Days -gt 2){
     Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     exit 99
