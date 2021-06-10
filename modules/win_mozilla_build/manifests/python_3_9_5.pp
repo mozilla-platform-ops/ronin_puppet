@@ -2,13 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_mozilla_build::python_3_9_5 (
-    String $install_dir
-) {
+class win_mozilla_build::python_3_9_5 {
 
+    require win_mozilla_build::install
+
+    $install_dir = "${facts['custom_win_systemdrive']}\\mozilla-build\\python3"
 
     exec { 'remove_old_pyhton3':
-        command  => "Remove-Item -Recurse -Force ${win_mozilla_build::install_path}\\python3",
+        command  => "Remove-Item -Recurse -Force ${install_dir}",
         unless   => "test-path ${install_dir}\\python39.dll",
         provider => powershell,
     }
