@@ -12,7 +12,7 @@ class win_mozilla_build::modifications {
     file { $win_mozilla_build::builds_dir:
         ensure => directory,
     }
-    if $win_mozilla_build::upgrade_python == true {
+    if $win_mozilla_build::upgrade_python != true {
         file { "${mozbld}\\python3\\python.exe":
             ensure => absent,
             purge  => true,
