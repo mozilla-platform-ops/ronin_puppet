@@ -150,6 +150,10 @@ function get_status() {
       then
         echo "$name is up but gw not running"
         echo "$ip" >> "$downnodes"
+      elif [ "$result" == 101 ];
+      then
+        echo "$name has been up for more than a day. Assuming gw is stuck."
+        echo "$ip" >> "$downnodes"
       elif [ "$result" == 124 ];
       then
         echo "$name" is up but not responding
