@@ -70,7 +70,7 @@ if ($production_worker_type -ne $current_worker_type) {
 
 if ($time -gt 24) {
    Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-   exit 99
+   exit 101
 }
 if ($gw_service.status -ne "running") {
     Write-Log -message  ('{0} :: AUDIT: Generic worker service is not running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
