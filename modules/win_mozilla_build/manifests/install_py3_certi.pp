@@ -5,7 +5,9 @@
 class win_mozilla_build::install_py3_certi {
 
     require win_mozilla_build::install
-    require win_mozilla_build::python_3_9_5
+    if $win_mozilla_build::upgrade_python == true {
+        require win_mozilla_build::python_3_9_5
+    }
 
     $mozbld = $win_mozilla_build::install_path
 

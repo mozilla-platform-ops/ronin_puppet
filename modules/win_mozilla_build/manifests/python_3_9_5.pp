@@ -20,4 +20,9 @@ class win_mozilla_build::python_3_9_5 {
         install_options_string => "TargetDir=${install_dir} /passive",
         creates                => "${install_dir}\\python39.dll",
     }
+    exec { 'copy_python3_exe':
+        command  => "Copy-Item ${install_dir}\\python.exe -Destination  ${install_dir}\\python3.exe",
+        provider => powershell,
+        creates  => "${install_dir}\\python3.exe",
+    }
 }

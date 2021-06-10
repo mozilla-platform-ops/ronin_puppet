@@ -20,7 +20,9 @@ class win_mozilla_build (
     String $tempdir,
     String $system32,
     String $external_source,
+    Boolean $upgrade_python,
     String $builds_dir,
+
     $tooltool_tok = undef
 ) {
 
