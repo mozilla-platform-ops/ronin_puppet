@@ -10,7 +10,7 @@ class win_mozilla_build::python_3_9_5 {
 
     exec { 'remove_old_pyhton3':
         command  => "Remove-Item -Recurse -Force ${install_dir}",
-        onlyif   => "test-path ${install_dir}\\python39.dll",
+        creates  => "${install_dir}\\python39.dll",
         provider => powershell,
     }
 
