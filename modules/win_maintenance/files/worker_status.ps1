@@ -59,9 +59,10 @@ $domain = 'wintest.releng.mdc1.mozilla.com'
 $current_worker_type = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType
 $gw_service = (Get-Service Generic*)
 
-$bootuptime = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
-$CurrentDate = Get-Date
-$uptime = $CurrentDate - $bootuptime
+$uptime = ((get-date)-([System.Management.ManagementDateTimeconverter]::ToDateTime((Get-WmiObject win32_operatingsystem).lastbootuptime))|select hours)
+$time = $uptime -replace "@{Hours=","" -replace "}",""
+write-host Node has been up for $time hours
+
 
 write-host i have been up for $uptime hours
 
@@ -71,9 +72,9 @@ if ($production_worker_type -ne $current_worker_type) {
 	exit 98
 }
 
-if $bootuptime - $CurrentDate -gt 2 {
+if $bootuptime - $time -gt 1 {
    Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    exit 99
+   exit 99
 }
 if ($gw_service.status -ne "running") {
     Write-Log -message  ('{0} :: AUDIT: Generic worker service is not running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
