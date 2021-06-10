@@ -22,6 +22,9 @@ class roles_profiles::profiles::microsoft_tools {
                 moz_profile_source => lookup('win-worker.mozilla_profile.source'),
                 moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
             }
+            if $facts['custom_win_release_id'] == '2004'{
+                include win_packages::cppbuildtools
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
         }
