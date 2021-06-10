@@ -61,10 +61,6 @@ $gw_service = (Get-Service Generic*)
 
 $uptime = ((get-date)-([System.Management.ManagementDateTimeconverter]::ToDateTime((Get-WmiObject win32_operatingsystem).lastbootuptime))|select hours)
 $time = $uptime -replace "@{Hours=","" -replace "}",""
-write-host Node has been up for $time hours
-
-
-write-host i have been up for $uptime hours
 
 if ($production_worker_type -ne $current_worker_type) {
 	Write-Log -message  ('{0} :: AUDIT: Node is not in production. Currently configured to be a {1} worker.' -f $($MyInvocation.MyCommand.Name), ($current_worker_type)) -severity 'DEBUG'
@@ -72,7 +68,7 @@ if ($production_worker_type -ne $current_worker_type) {
 	exit 98
 }
 
-if ($time -gt 1) {
+if ($time -gt 24) {
    Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
    exit 99
 }
