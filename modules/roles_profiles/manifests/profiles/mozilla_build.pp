@@ -43,7 +43,9 @@ class roles_profiles::profiles::mozilla_build {
                 tooltool_tok              => $tooltool_tok,
             }
             # if $facts['custom_win_release_id'] == '2004'{
-                include win_mozilla_build::python_3_9_5
+                class { 'win_mozilla_build::python_3_9_5':
+                    install_dir => "${facts['custom_win_systemdrive']}\\mozilla-build\\python3",
+                }
             # }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
