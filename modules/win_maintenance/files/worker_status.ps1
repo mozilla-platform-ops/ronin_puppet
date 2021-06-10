@@ -58,10 +58,12 @@ $production_worker_type=$args[0]
 $domain = 'wintest.releng.mdc1.mozilla.com'
 $current_worker_type = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType
 $gw_service = (Get-Service Generic*)
-$wmi = (Get-WmiObject -Class win32_OperatingSystem)
-$hours = ((($wmi.ConvertToDateTime($wmi.LocalDateTime) - $wmi.ConvertToDateTime($wmi.LastBootUpTime)).hours)
 
-write-host i have been up for $hours hours
+$bootuptime = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
+$CurrentDate = Get-Date
+$uptime = $CurrentDate - $bootuptime
+
+write-host i have been up for $uptime hours
 
 if ($production_worker_type -ne $current_worker_type) {
 	Write-Log -message  ('{0} :: AUDIT: Node is not in production. Currently configured to be a {1} worker.' -f $($MyInvocation.MyCommand.Name), ($current_worker_type)) -severity 'DEBUG'
@@ -69,10 +71,10 @@ if ($production_worker_type -ne $current_worker_type) {
 	exit 98
 }
 
-if (($wmi.ConvertToDateTime($wmi.LocalDateTime) - $wmi.ConvertToDateTime($wmi.LastBootUpTime)).Days -gt 2){
-    Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    exit 99
-}
+#if (($wmi.ConvertToDateTime($wmi.LocalDateTime) - $wmi.ConvertToDateTime($wmi.LastBootUpTime)).Days -gt 2){
+#    Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+#    exit 99
+#}
 if ($gw_service.status -ne "running") {
     Write-Log -message  ('{0} :: AUDIT: Generic worker service is not running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     exit 99
