@@ -72,7 +72,7 @@ if ($production_worker_type -ne $current_worker_type) {
 	exit 98
 }
 
-if $bootuptime - $time -gt 1 {
+if ($time -gt 1) {
    Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
    exit 99
 }
