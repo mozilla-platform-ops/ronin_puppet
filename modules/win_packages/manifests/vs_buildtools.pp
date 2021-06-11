@@ -4,14 +4,13 @@
 
 class win_packages::vs_buildtools {
 
-    $sdk_dir = "${facts['custom_win_programfilesx86']}\\Microsoft SDKs"
+    $tools_dir = "${facts['custom_win_programfilesx86']}\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\Tools"
 
     if $::operatingsystem == 'Windows' {
         win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':
             pkg                    => 'vs_buildtools__1552942004.1623183462.exe',
             install_options_string => '--quiet',
-            creates                =>
-                "${sdk_dir}\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.10240.0\\343.xml",
+            creates                => "${tools_dir}\\LaunchDevCmd.bat",
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
