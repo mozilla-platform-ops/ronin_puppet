@@ -9,7 +9,7 @@ class win_packages::vs_buildtools {
     if $::operatingsystem == 'Windows' {
         win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':
             pkg                    => 'vs_buildtools__1552942004.1623183462.exe',
-            install_options_string => '--quiet',
+            install_options_string => '--all --quiet',
             creates                => "${tools_dir}\\LaunchDevCmd.bat",
         }
     } else {
