@@ -7,6 +7,7 @@ class win_mozilla_build::virtualenv_support {
     require win_mozilla_build::install
     if $win_mozilla_build::upgrade_python == true {
         require win_mozilla_build::python_3_9_5
+        require win_packages::vs_buildtools
     }
 
     $source  = $win_mozilla_build::external_source

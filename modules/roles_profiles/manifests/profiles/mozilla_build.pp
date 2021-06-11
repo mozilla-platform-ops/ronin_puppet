@@ -49,6 +49,9 @@ class roles_profiles::profiles::mozilla_build {
                 tooltool_tok              => $tooltool_tok,
                 upgrade_python            => $upgrade_python,
             }
+            if $upgrade_python == true {
+                include win_packages::vs_buildtools
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
             # Mozilla Build Version

@@ -7,6 +7,7 @@ class win_mozilla_build::zstandard {
     require win_mozilla_build::pip
     if $win_mozilla_build::upgrade_python == true {
         require win_mozilla_build::python_3_9_5
+        require win_packages::vs_buildtools
     }
 
     $needed_py3_zstandard_ver = $win_mozilla_build::needed_py3_zstandard_ver
