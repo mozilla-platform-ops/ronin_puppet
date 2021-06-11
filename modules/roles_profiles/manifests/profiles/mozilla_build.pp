@@ -27,9 +27,9 @@ class roles_profiles::profiles::mozilla_build {
                 $upgrade_python = false
             }
 
-            if $upgrade_python == true {
-                include win_packages::vs_buildtools
-            }
+            #if $upgrade_python == true {
+            #    include win_packages::vs_buildtools
+            #}
 
             class { 'win_mozilla_build':
                 current_mozbld_ver        => $facts['custom_win_mozbld_vesion'],
