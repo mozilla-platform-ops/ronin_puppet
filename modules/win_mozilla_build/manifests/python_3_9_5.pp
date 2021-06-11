@@ -19,9 +19,11 @@ class win_mozilla_build::python_3_9_5 {
         pkg                    => 'python-3.9.5-amd64.exe',
         install_options_string => "TargetDir=${install_dir} /passive",
         creates                => "${install_dir}\\python39.dll",
+        require                => Exec['remove_old_pyhton3'],
     }
     file { "${install_dir}\\python3.exe":
-        ensure => present,
-        source => "${install_dir}\\python.exe",
+        ensure  => present,
+        source  => "${install_dir}\\python.exe",
+        require => Exec['python_3_9_5install'],
     }
 }

@@ -4,7 +4,7 @@
 
 class win_packages::vs_buildtools {
 
-    $tools_dir = "${facts['custom_win_programfilesx86']}\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\Tools"
+    $tools_dir = "${facts['custom_win_programfilesx86']}\\Microsoft\ Visual\ Studio\\2019\\BuildTools\\Common7\\Tools"
 
     if $::operatingsystem == 'Windows' {
         win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':

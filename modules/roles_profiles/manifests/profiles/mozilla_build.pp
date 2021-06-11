@@ -27,6 +27,10 @@ class roles_profiles::profiles::mozilla_build {
                 $upgrade_python = false
             }
 
+            if $upgrade_python == true {
+                include win_packages::vs_buildtools
+            }
+
             class { 'win_mozilla_build':
                 current_mozbld_ver        => $facts['custom_win_mozbld_vesion'],
                 needed_mozbld_ver         => lookup('win-worker.mozilla_build.version'),
@@ -48,9 +52,6 @@ class roles_profiles::profiles::mozilla_build {
                 builds_dir                => "${facts['custom_win_systemdrive']}\\builds",
                 tooltool_tok              => $tooltool_tok,
                 upgrade_python            => $upgrade_python,
-            }
-            if $upgrade_python == true {
-                include win_packages::vs_buildtools
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
