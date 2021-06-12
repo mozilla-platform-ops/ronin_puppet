@@ -14,8 +14,9 @@ class roles_profiles::profiles::microsoft_tools {
             # In this case triggers the exec and adds to the local WMI repo each time
             # For now pulling from S3
 
-            include win_packages::vc_redist_x86
-            include win_packages::vc_redist_x64
+            #include win_packages::vc_redist_x86
+            #include win_packages::vc_redist_x64
+            include win_packages::cppbuildtools
             include win_os_settings::powershell_profile
 
             class { 'win_packages::performance_tool_kit':
