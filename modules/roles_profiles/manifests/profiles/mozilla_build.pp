@@ -7,7 +7,10 @@ class roles_profiles::profiles::mozilla_build {
     case $::operatingsystem {
         'Windows': {
 
-        # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
+            # C++ libraries need to be in place before Python bits
+            require roles_profiles::profiles::microsoft_tools
+
+            # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
             $cache_drive  = $facts['custom_win_location'] ? {
                 'azure'   => 'y:',
                 default => $facts['custom_win_systemdrive'],
