@@ -4,13 +4,13 @@
 
 class win_packages::vs_buildtools {
 
-    $tools_dir = "${facts['custom_win_systemdrive']}\\vs_tools"
+    $tools_dir = "${facts['custom_win_programfilesx86']}\\Microsoft Visual Studio\Installer"
 
     if $::operatingsystem == 'Windows' {
         win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':
             pkg                    => 'vs_buildtools__1552942004.1623183462.exe',
             install_options_string => '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --passive',
-            creates                => "${tools_dir}\\LaunchDevCmd.bat",
+            creates                => "${tools_dir}\\NOTICE.txt",
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
