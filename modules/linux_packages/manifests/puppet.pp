@@ -39,6 +39,7 @@ class linux_packages::puppet {
             ensure    => installed,
             provider  => dpkg,
             source    => "/tmp/${deb_name}",
+            notify    => Exec['apt_update'],
             subscribe => File['puppet_repo_deb']
           }
 
@@ -49,7 +50,7 @@ class linux_packages::puppet {
             # 2. if upgrading, make sure to purge the old versioned release deb (see above)
             ensure    => '7.7.0-1bionic',
             name      => 'puppet-agent',
-            notify    => Exec['apt_update'],
+            require   => Exec['apt_update'],
             subscribe => Package['puppet repo deb']
           }
 
