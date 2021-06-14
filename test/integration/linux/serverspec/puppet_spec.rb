@@ -6,7 +6,7 @@ describe package('puppet-agent'), :if => os[:family] == 'ubuntu' do
   # - available with inspec (https://docs.chef.io/inspec/resources/package/#version-1)
 end
 
-describe package('puppet-release'), :if => os[:family] == 'ubuntu' do
+describe package('puppet7-release'), :if => os[:family] == 'ubuntu' do
   it { should be_installed }
 end
 
@@ -15,7 +15,13 @@ describe service('run-puppet') do
   it { should be_enabled }
 end
 
+## not enabled/present
+
 # ensure puppet-agent isn't set to run
 describe service('puppet') do
   it { should_not be_enabled }
+end
+
+describe package('puppet-release') do
+  it { should_not be_installed }
 end
