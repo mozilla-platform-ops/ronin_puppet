@@ -14,7 +14,7 @@ class win_packages::vs_buildtools {
         win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':
             pkg                    => 'vs_buildtools__1552942004.1623183462.exe',
             install_options_string => "--add ${vc_tools} --passive",
-            creates                => "${tools_dir}\\NOTICE2.txt",
+            creates                => "${tools_dir}\\NOTICE.txt",
         }
         win_packages::win_exe_pkg  { 'winsdksetup':
             pkg                    => 'winsdksetup.exe',
