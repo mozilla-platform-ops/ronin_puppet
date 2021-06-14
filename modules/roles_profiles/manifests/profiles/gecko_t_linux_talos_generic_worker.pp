@@ -34,14 +34,12 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_talos
 
             class { 'puppet::atboot':
-                telegraf_user       => lookup('telegraf.user'),
-                telegraf_password   => lookup('telegraf.password'),
-                puppet_repo         => 'https://github.com/aerickson/ronin_puppet.git',
-                puppet_env          => 'aerickson',
-                puppet_branch       => 'boostrap_real_solution',
-                puppet_notify_email => 'aerickson@gmail.com',
+                telegraf_user     => lookup('telegraf.user'),
+                telegraf_password => lookup('telegraf.password'),
+                puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
+                puppet_branch     => 'master',
                 # Note the camelCase key names
-                meta_data           => {
+                meta_data         => {
                     workerType    => $worker_type,
                     workerGroup   => $worker_group,
                     provisionerId => 'releng-hardware',
