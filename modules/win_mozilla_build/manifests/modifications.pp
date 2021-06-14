@@ -41,18 +41,35 @@ class win_mozilla_build::modifications {
         value => $win_mozilla_build::install_path,
     }
     # Resource from counsyl-windows
-    windows::path {
-        [
-            "${win_mozilla_build::program_files}\\Mercurial",
-            "${mozbld}\\bin",
-            "${mozbld}\\kdiff",
-            "${mozbld}\\moztools-x64\\bin",
-            "${mozbld}\\mozmake", "${mozbld}\\nsis-3.01",
-            "${mozbld}\\python",
-            "${mozbld}\\python\\Scripts",
-            "${mozbld}\\python3",
-            "${mozbld}\\msys\\bin",
-            "${mozbld}\\msys\\local\\bin"
-        ]:
+    if $win_mozilla_build::upgrade_python == true {
+      windows::path {
+          [
+              "${win_mozilla_build::program_files}\\Mercurial",
+              "${mozbld}\\bin",
+              "${mozbld}\\kdiff",
+              "${mozbld}\\moztools-x64\\bin",
+              "${mozbld}\\mozmake", "${mozbld}\\nsis-3.01",
+              "${mozbld}\\python",
+              "${mozbld}\\python\\Scripts",
+              "${mozbld}\\python3",
+              "${mozbld}\\msys\\bin",
+              "${mozbld}\\msys\\local\\bin"
+          ]:
+    }
+  } else {
+      windows::path {
+          [
+              "${win_mozilla_build::program_files}\\Mercurial",
+              "${mozbld}\\bin",
+              "${mozbld}\\kdiff",
+              "${mozbld}\\moztools-x64\\bin",
+              "${mozbld}\\mozmake", "${mozbld}\\nsis-3.01",
+              "${mozbld}\\python",
+              "${mozbld}\\python\\Scripts",
+              "${mozbld}\\python3",
+              "${mozbld}\\msys\\bin",
+              "${mozbld}\\msys\\local\\bin"
+          ]:
+    }
     }
 }
