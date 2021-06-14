@@ -179,6 +179,48 @@ groups:
       - macmini-r8-178.test.releng.mdc1.mozilla.com
       - macmini-r8-179.test.releng.mdc1.mozilla.com
       - macmini-r8-180.test.releng.mdc1.mozilla.com
+      - macmini-r8-181.test.releng.mdc1.mozilla.com
+      - macmini-r8-182.test.releng.mdc1.mozilla.com
+      - macmini-r8-183.test.releng.mdc1.mozilla.com
+      - macmini-r8-184.test.releng.mdc1.mozilla.com
+      - macmini-r8-185.test.releng.mdc1.mozilla.com
+      - macmini-r8-186.test.releng.mdc1.mozilla.com
+      - macmini-r8-187.test.releng.mdc1.mozilla.com
+      - macmini-r8-188.test.releng.mdc1.mozilla.com
+      - macmini-r8-189.test.releng.mdc1.mozilla.com
+      - macmini-r8-190.test.releng.mdc1.mozilla.com
+      - macmini-r8-191.test.releng.mdc1.mozilla.com
+      - macmini-r8-192.test.releng.mdc1.mozilla.com
+      - macmini-r8-193.test.releng.mdc1.mozilla.com
+      - macmini-r8-194.test.releng.mdc1.mozilla.com
+      - macmini-r8-201.test.releng.mdc1.mozilla.com
+      - macmini-r8-202.test.releng.mdc1.mozilla.com
+      - macmini-r8-203.test.releng.mdc1.mozilla.com
+      - macmini-r8-204.test.releng.mdc1.mozilla.com
+      - macmini-r8-205.test.releng.mdc1.mozilla.com
+      - macmini-r8-206.test.releng.mdc1.mozilla.com
+      - macmini-r8-207.test.releng.mdc1.mozilla.com
+      - macmini-r8-208.test.releng.mdc1.mozilla.com
+      - macmini-r8-209.test.releng.mdc1.mozilla.com
+      - macmini-r8-210.test.releng.mdc1.mozilla.com
+      - macmini-r8-211.test.releng.mdc1.mozilla.com
+      - macmini-r8-212.test.releng.mdc1.mozilla.com
+      - macmini-r8-213.test.releng.mdc1.mozilla.com
+      - macmini-r8-214.test.releng.mdc1.mozilla.com
+      - macmini-r8-215.test.releng.mdc1.mozilla.com
+      - macmini-r8-216.test.releng.mdc1.mozilla.com
+      - macmini-r8-277.test.releng.mdc1.mozilla.com
+      - macmini-r8-278.test.releng.mdc1.mozilla.com
+      - macmini-r8-279.test.releng.mdc1.mozilla.com
+      - macmini-r8-280.test.releng.mdc1.mozilla.com
+      - macmini-r8-281.test.releng.mdc1.mozilla.com
+      - macmini-r8-282.test.releng.mdc1.mozilla.com
+      - macmini-r8-283.test.releng.mdc1.mozilla.com
+      - macmini-r8-284.test.releng.mdc1.mozilla.com
+      - macmini-r8-285.test.releng.mdc1.mozilla.com
+      - macmini-r8-286.test.releng.mdc1.mozilla.com
+      - macmini-r8-287.test.releng.mdc1.mozilla.com
+      - macmini-r8-288.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8
 
