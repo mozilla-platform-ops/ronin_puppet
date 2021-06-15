@@ -138,7 +138,6 @@ groups:
       - macmini-r8-135.test.releng.mdc1.mozilla.com
       - macmini-r8-136.test.releng.mdc1.mozilla.com
       - macmini-r8-137.test.releng.mdc1.mozilla.com
-      - macmini-r8-140.test.releng.mdc1.mozilla.com
       - macmini-r8-141.test.releng.mdc1.mozilla.com
       - macmini-r8-142.test.releng.mdc1.mozilla.com
       - macmini-r8-143.test.releng.mdc1.mozilla.com
@@ -261,6 +260,7 @@ groups:
   - name: gecko-3-b-osx-1015
     targets:
       - macmini-r8-139.test.releng.mdc1.mozilla.com
+      - macmini-r8-140.test.releng.mdc1.mozilla.com
       - macmini-r8-198.test.releng.mdc1.mozilla.com
       - macmini-r8-199.test.releng.mdc1.mozilla.com
       - macmini-r8-200.test.releng.mdc1.mozilla.com
