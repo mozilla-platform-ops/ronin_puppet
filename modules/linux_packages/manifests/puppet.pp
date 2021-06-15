@@ -39,6 +39,7 @@ class linux_packages::puppet {
             ensure    => installed,
             provider  => dpkg,
             source    => "/tmp/${deb_name}",
+            notify    => Exec['apt_update'],
             subscribe => File['puppet_repo_deb']
           }
 
