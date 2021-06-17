@@ -1,4 +1,5 @@
 ---
+name: t-mojave-r7
 groups:
   - name: t-mojave-r7-mdc1
     targets:
