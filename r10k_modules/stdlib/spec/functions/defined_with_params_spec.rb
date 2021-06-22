@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'defined_with_params' do
   describe 'when no resource is specified' do
@@ -35,11 +35,9 @@ describe 'defined_with_params' do
     let :pre_condition do
       'file { "/tmp/a": ensure => present }'
     end
-    let(:is_puppet_6_or_greater) { Puppet::Util::Package.versioncmp(Puppet.version, '6.0.0') >= 0 }
-    let(:undef_value) { is_puppet_6_or_greater ? nil : :undef } # even if :undef would work on 6.0.1, :undef should not be used
 
     it { is_expected.to run.with_params('File[/tmp/a]', {}).and_return(true) }
-    it { is_expected.to run.with_params('File[/tmp/a]', 'ensure' => 'present', 'owner' => undef_value).and_return(true) }
+    it { is_expected.to run.with_params('File[/tmp/a]', 'ensure' => 'present', 'owner' => :undef).and_return(true) }
   end
 
   describe 'when the reference is a' do
@@ -54,8 +52,8 @@ describe 'defined_with_params' do
       context 'with array' do
         it 'fails' do
           expect {
-            subject.execute(['User[dan]'], {})
-          }.to raise_error(ArgumentError, %r{not understood: 'Array'})
+            subject.call([['User[dan]'], {}])
+          }.to raise_error ArgumentError, %r{not understood: 'Array'}
         end
       end
     end
@@ -63,7 +61,7 @@ describe 'defined_with_params' do
 
   describe 'when passed a defined type' do
     let :pre_condition do
-      'define test::deftype() { } test::deftype { "foo": }'
+      'test::deftype { "foo": }'
     end
 
     it { is_expected.to run.with_params('Test::Deftype[foo]', {}).and_return(true) }

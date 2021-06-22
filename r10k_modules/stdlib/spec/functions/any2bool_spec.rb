@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'any2bool' do
   it { is_expected.not_to eq(nil) }
@@ -10,7 +10,7 @@ describe 'any2bool' do
   it { is_expected.to run.with_params('1.5').and_return(true) }
 
   describe 'when testing stringy values that mean "true"' do
-    ['TRUE', '1', 't', 'y', 'true', 'yes'].each do |value|
+    %w[TRUE 1 t y true yes].each do |value|
       it { is_expected.to run.with_params(value).and_return(true) }
     end
   end

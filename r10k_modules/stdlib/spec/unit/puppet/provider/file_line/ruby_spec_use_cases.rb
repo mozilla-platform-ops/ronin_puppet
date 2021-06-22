@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 provider_class = Puppet::Type.type(:file_line).provider(:ruby)
 #  These tests fail on windows when run as part of the rake task. Individually they pass

@@ -2,7 +2,89 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [2.4.0](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/2.4.0) (2018-09-27)
+## [v5.0.0](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/v5.0.0) (2021-06-02)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/v4.0.0...v5.0.0)
+
+### Changed
+
+- Always run as given user, even if identity set [\#473](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/473) ([bigpresh](https://github.com/bigpresh))
+
+## [v4.0.0](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/v4.0.0) (2021-03-03)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/v3.2.1...v4.0.0)
+
+### Changed
+
+- pdksync - Remove Puppet 5 from testing and bump minimal version to 6.0.0 [\#491](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/491) ([carabasdaniel](https://github.com/carabasdaniel))
+
+## [v3.2.1](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/v3.2.1) (2021-02-16)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/v3.2.0...v3.2.1)
+
+### Fixed
+
+- \(MODULES-9997\) - Removing extra unwrap on Sensitive value [\#490](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/490) ([pmcmaw](https://github.com/pmcmaw))
+
+## [v3.2.0](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/v3.2.0) (2021-01-20)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/v3.1.1...v3.2.0)
+
+### Added
+
+- pdksync - \(feat\) - Add support for Puppet 7 [\#476](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/476) ([daianamezdrea](https://github.com/daianamezdrea))
+- pdksync - \(IAC-973\) - Update travis/appveyor to run on new default branch `main` [\#466](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/466) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \[MODULES-10857\] Rename exist function to exists in cvs.rb [\#484](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/484) ([carabasdaniel](https://github.com/carabasdaniel))
+- \(IAC-1223\) Correct clone https test [\#471](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/471) ([pmcmaw](https://github.com/pmcmaw))
+- check if pass containes non-ASCII chars before provider is created [\#464](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/464) ([adrianiurca](https://github.com/adrianiurca))
+
+## [v3.1.1](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/v3.1.1) (2020-06-26)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/v3.1.0...v3.1.1)
+
+### Fixed
+
+- prevent ANSI color escape sequences from messing up git output [\#458](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/458) ([kenyon](https://github.com/kenyon))
+- Unset GIT\_SSH\_COMMAND before exec'ing git command [\#435](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/435) ([mzagrabe](https://github.com/mzagrabe))
+
+## [v3.1.0](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/v3.1.0) (2019-12-10)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/v3.0.0...v3.1.0)
+
+### Added
+
+- \(FM-8234\) Port to Litmus [\#429](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/429) ([sheenaajay](https://github.com/sheenaajay))
+- pdksync - Add support on Debian10 [\#428](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/428) ([lionce](https://github.com/lionce))
+- feature\(git\): add keep local changes option [\#425](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/425) ([jfroche](https://github.com/jfroche))
+
+### Fixed
+
+- feat: do not chown excluded files [\#432](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/432) ([jfroche](https://github.com/jfroche))
+
+## [v3.0.0](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/v3.0.0) (2019-06-13)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/2.4.0...v3.0.0)
+
+### Changed
+
+- pdksync - \(MODULES-8444\) - Raise lower Puppet bound [\#413](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/413) ([david22swan](https://github.com/david22swan))
+
+### Added
+
+- \(FM-8035\) Add RedHat 8 support [\#419](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/419) ([eimlav](https://github.com/eimlav))
+- \(MODULES-8738\) Allow Sensitive value for basic\_auth\_password [\#416](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/416) ([eimlav](https://github.com/eimlav))
+- \(MODULES-8140\) - Add SLES 15 support [\#399](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/399) ([eimlav](https://github.com/eimlav))
+
+### Fixed
+
+- MODULES-8910 fix for failing git install using RepoForge instead of epel [\#414](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/414) ([Lavinia-Dan](https://github.com/Lavinia-Dan))
+- \(maint\) Add HTML anchor tag [\#404](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/404) ([clairecadman](https://github.com/clairecadman))
+- pdksync - \(FM-7655\) Fix rubygems-update for ruby \< 2.3 [\#401](https://github.com/puppetlabs/puppetlabs-vcsrepo/pull/401) ([tphoney](https://github.com/tphoney))
+
+## [2.4.0](https://github.com/puppetlabs/puppetlabs-vcsrepo/tree/2.4.0) (2018-09-28)
 
 [Full Changelog](https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/2.3.0...2.4.0)
 
@@ -233,7 +315,7 @@ new features for Bzr and Git.
  - Fix for issue with detached HEAD.
  - `force => true` will now destroy and recreate repo.
  - Actually use the remote parameter.
- - Use origin/master instead of origin/HEAD when on master.
+ - Use origin/main instead of origin/HEAD when on main.
 - SVN:
  - Fix svnlook behavior with plain directories.
 
@@ -255,7 +337,7 @@ our many contributors for all of these fixes!
  - "ensure => latest" support.
 - SVN:
  - Added configuration parameter.
- - Add support for master svn repositories.
+ - Add support for main svn repositories.
 - CVS:
  - Allow for setting the CVS_RSH environment variable.
 
@@ -297,4 +379,4 @@ our many contributors for all of these fixes!
 [1.0.0]: https://github.com/puppetlabs/puppetlabs-vcsrepo/compare/0.2.0...1.0.0
 
 
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*

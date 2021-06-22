@@ -1,12 +1,17 @@
-Puppet::Type.newtype(:scheduled_task) do
+# frozen_string_literal: true
 
-  @doc = "Installs and manages Windows Scheduled Tasks.  All attributes
-    except `name`, `command`, and `trigger` are optional; see the description
-    of the `trigger` attribute for details on setting schedules."
+Puppet::Type.newtype(:scheduled_task) do
+  @doc = <<-PUPPET
+    @summary
+      Installs and manages Windows Scheduled Tasks.
+    @note
+      All attributes except `name`, `command`, and `trigger` are optional; see the description
+      of the `trigger` attribute for details on setting schedules."
+    PUPPET
 
   feature :compatibility, "The provider accepts compatibility to be
     set for the given task.",
-    :methods => [:compatibility, :compatibility=]
+          methods: [:compatibility, :compatibility=]
 
   ensurable
 
@@ -15,38 +20,43 @@ Puppet::Type.newtype(:scheduled_task) do
       affects every trigger for the task; triggers cannot be enabled or
       disabled individually."
 
-    newvalue(:true,  :event => :task_enabled)
-    newvalue(:false, :event => :task_disabled)
+    newvalue(:true,  event: :task_enabled)
+    newvalue(:false, event: :task_disabled)
 
     defaultto(:true)
   end
 
   newparam(:name) do
-    desc "The name assigned to the scheduled task.  This will uniquely
-      identify the task on the system."
+    desc "The name assigned to the scheduled task. This will uniquely
+      identify the task on the system. If specifying a scheduled task
+      inside of subfolder(s), specify the path from root, such as
+      `subfolder/mytaskname`. This will create the scheduled task
+      `mytaskname` in the container named `subfolder`. You can only
+      specify a taskname inside of subfolders if the compatibility is
+      set to 2 or higher and when using the taskscheduler2_api provider."
 
     isnamevar
   end
 
   newproperty(:command) do
-    desc "The full path to the application to run, without any arguments."
+    desc 'The full path to the application to run, without any arguments.'
 
     validate do |value|
-      raise Puppet::Error.new(_('Must be specified using an absolute path.')) unless absolute_path?(value)
+      raise Puppet::Error, _('Must be specified using an absolute path.') unless absolute_path?(value)
     end
     munge do |value|
       # windows converts slashes to backslashes, so the *is* value
       # has backslashes. Do the same for the *should* value, so that
       # we are slash-insensitive. See #13009
-      File.expand_path(value).gsub(/\//, '\\')
+      File.expand_path(value).tr(%(\/), '\\')
     end
   end
 
   newproperty(:working_dir) do
-    desc "The full path of the directory in which to start the command."
+    desc 'The full path of the directory in which to start the command.'
 
     validate do |value|
-      raise Puppet::Error.new(_('Must be specified using an absolute path.')) unless absolute_path?(value)
+      raise Puppet::Error, _('Must be specified using an absolute path.') unless absolute_path?(value)
     end
   end
 
@@ -67,7 +77,12 @@ Puppet::Type.newtype(:scheduled_task) do
 
       Please also note that Puppet must be running as a privileged user
       in order to manage `scheduled_task` resources. Running as an
-      unprivileged user will result in 'access denied' errors."
+      unprivileged user will result in 'access denied' errors.
+
+      If a user is specified without an accompanying password, and the
+      user does not end with a dollar sign (`$`) signifying a Group
+      Managed Service Account (gMSA), the task will be created with
+      `Run only when user is logged on` specified."
 
     defaultto :system
 
@@ -84,7 +99,7 @@ Puppet::Type.newtype(:scheduled_task) do
       to determine if a scheduled task is in sync or not."
   end
 
-  newproperty(:compatibility, :required_features=>:compatibility) do
+  newproperty(:compatibility, required_features: :compatibility) do
     desc "The compatibility level associated with the task. May currently be set
       to 1 for compatibility with tasks on a Windows XP or Windows Server
       2003 computer, 2 for compatibility with tasks on a Windows 2008 computer,
@@ -102,7 +117,7 @@ Puppet::Type.newtype(:scheduled_task) do
     defaultto(1)
 
     validate do |value|
-      raise Puppet::Error.new(_("must be a number")) unless value.is_a?(Integer)
+      raise Puppet::Error, _('must be a number') unless value.is_a?(Integer)
       super(value)
     end
 
@@ -110,7 +125,7 @@ Puppet::Type.newtype(:scheduled_task) do
     munge { |value| value }
   end
 
-  newproperty(:trigger, :array_matching => :all) do
+  newproperty(:trigger, array_matching: :all) do
     desc <<-'EOT'
       One or more triggers defining when the task should run. A single trigger is
       represented as a hash, and multiple triggers can be specified with an array of
@@ -132,6 +147,9 @@ Puppet::Type.newtype(:scheduled_task) do
           * `minutes_interval` --- The repeat interval in minutes.
           * `minutes_duration` --- The duration in minutes, needs to be greater than the
             minutes_interval.
+          * `disable_time_zone_synchronization` --- Whether or not to disable the
+            `synchronise across time zones` function. Due to difficulties with the
+            api this is non idempotent. Defaults to false
       * For `daily` triggers:
           * `every` --- How often the task should run, as a number of days. Defaults
             to 1. ("2" means every other day, "3" means every three days, etc.)
@@ -145,7 +163,8 @@ Puppet::Type.newtype(:scheduled_task) do
           * `months` --- Which months the task should run, as an array. Defaults to
             all months. Each month must be an integer between 1 and 12.
           * `on` **(Required)** --- Which days of the month the task should run,
-            as an array. Each day must be an integer between 1 and 31.
+            as an array. Each day must be an integer between 1 and 31 or the string `last`.
+            The string `last` is only supported for tasks with level 2 compatibility or higher.
       * For `monthly` (by weekday) triggers:
           * `months` --- Which months the task should run, as an array. Defaults to
             all months. Each month must be an integer between 1 and 12.
@@ -236,12 +255,16 @@ Puppet::Type.newtype(:scheduled_task) do
       provider.trigger_insync?(current, @should)
     end
 
-    def should_to_s(new_value=@should)
+    def should_to_s(new_value = @should)
       super(new_value)
     end
 
-    def is_to_s(current_value=@is)
+    def to_s?(current_value = @is)
       super(current_value)
     end
+  end
+
+  validate do
+    provider.validate_name if provider.respond_to?(:validate_name)
   end
 end

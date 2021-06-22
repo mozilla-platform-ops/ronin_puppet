@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'swapcase' do
   it { is_expected.not_to eq(nil) }
@@ -23,9 +23,9 @@ describe 'swapcase' do
       it { is_expected.to run.with_params(['one']).and_return(['ONE']) }
       it { is_expected.to run.with_params(['ONE']).and_return(['one']) }
       it { is_expected.to run.with_params(['oNe']).and_return(['OnE']) }
-      it { is_expected.to run.with_params(['one', 'ONE']).and_return(['ONE', 'one']) }
-      it { is_expected.to run.with_params(['ONE', 'OnE']).and_return(['one', 'oNe']) }
-      it { is_expected.to run.with_params(['oNe', 'one']).and_return(['OnE', 'ONE']) }
+      it { is_expected.to run.with_params(%w[one ONE]).and_return(%w[ONE one]) }
+      it { is_expected.to run.with_params(%w[ONE OnE]).and_return(%w[one oNe]) }
+      it { is_expected.to run.with_params(%w[oNe one]).and_return(%w[OnE ONE]) }
     end
     describe 'containing mixed types' do
       it { is_expected.to run.with_params(['OnE', {}]).and_return(['oNe', {}]) }

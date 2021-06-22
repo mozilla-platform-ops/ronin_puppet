@@ -2,6 +2,128 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v7.0.2](https://github.com/puppetlabs/puppetlabs-concat/tree/v7.0.2) (2021-06-21)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/v7.0.1...v7.0.2)
+
+### Fixed
+
+- fix merge nil hashes [\#708](https://github.com/puppetlabs/puppetlabs-concat/pull/708) ([thde](https://github.com/thde))
+- Do not modify metaparams in place [\#705](https://github.com/puppetlabs/puppetlabs-concat/pull/705) ([ekohl](https://github.com/ekohl))
+
+## [v7.0.1](https://github.com/puppetlabs/puppetlabs-concat/tree/v7.0.1) (2021-03-29)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/v7.0.0...v7.0.1)
+
+### Fixed
+
+- \(IAC-1497\) remove unsupported `translate` dependency [\#693](https://github.com/puppetlabs/puppetlabs-concat/pull/693) ([DavidS](https://github.com/DavidS))
+
+## [v7.0.0](https://github.com/puppetlabs/puppetlabs-concat/tree/v7.0.0) (2021-03-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/v6.4.0...v7.0.0)
+
+### Changed
+
+- pdksync - Remove Puppet 5 from testing and bump minimal version to 6.0.0 [\#685](https://github.com/puppetlabs/puppetlabs-concat/pull/685) ([carabasdaniel](https://github.com/carabasdaniel))
+
+## [v6.4.0](https://github.com/puppetlabs/puppetlabs-concat/tree/v6.4.0) (2020-12-14)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/v6.3.0...v6.4.0)
+
+### Added
+
+- pdksync - \(feat\) Add support for Puppet 7 [\#672](https://github.com/puppetlabs/puppetlabs-concat/pull/672) ([daianamezdrea](https://github.com/daianamezdrea))
+
+## [v6.3.0](https://github.com/puppetlabs/puppetlabs-concat/tree/v6.3.0) (2020-11-30)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/v6.2.0...v6.3.0)
+
+### Added
+
+- \(IAC-746\) - Add ubuntu 20.04 support [\#644](https://github.com/puppetlabs/puppetlabs-concat/pull/644) ([david22swan](https://github.com/david22swan))
+- Add support for Deferred function in concat fragment [\#627](https://github.com/puppetlabs/puppetlabs-concat/pull/627) ([baurmatt](https://github.com/baurmatt))
+
+### Fixed
+
+- \(MODULES-9711\) Consistently manage concat with no fragments [\#661](https://github.com/puppetlabs/puppetlabs-concat/pull/661) ([seanmil](https://github.com/seanmil))
+- \(IAC-981\) - Removal of inappropriate terminology [\#659](https://github.com/puppetlabs/puppetlabs-concat/pull/659) ([david22swan](https://github.com/david22swan))
+
+## [v6.2.0](https://github.com/puppetlabs/puppetlabs-concat/tree/v6.2.0) (2020-01-21)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/v6.1.0...v6.2.0)
+
+### Added
+
+- pdksync - \(FM-8581\) - Debian 10 added to travis and provision file refactored [\#624](https://github.com/puppetlabs/puppetlabs-concat/pull/624) ([david22swan](https://github.com/david22swan))
+- \(FM-8698\) - Addition of Support for CentOS 8 [\#615](https://github.com/puppetlabs/puppetlabs-concat/pull/615) ([david22swan](https://github.com/david22swan))
+- FM-8398 - support Debian10 [\#599](https://github.com/puppetlabs/puppetlabs-concat/pull/599) ([lionce](https://github.com/lionce))
+
+### Fixed
+
+- Fix newline handling at the end of fragments [\#623](https://github.com/puppetlabs/puppetlabs-concat/pull/623) ([SimonPe](https://github.com/SimonPe))
+
+## [v6.1.0](https://github.com/puppetlabs/puppetlabs-concat/tree/v6.1.0) (2019-07-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/v6.0.0...v6.1.0)
+
+### Added
+
+- FM-8049 - add redhat8 support [\#584](https://github.com/puppetlabs/puppetlabs-concat/pull/584) ([lionce](https://github.com/lionce))
+
+### Fixed
+
+- \(MODULES-9479\) Fix nested array merge behavior [\#593](https://github.com/puppetlabs/puppetlabs-concat/pull/593) ([seanmil](https://github.com/seanmil))
+- \(FM-8317\) Updated regex to allow for windows paths with \'s [\#591](https://github.com/puppetlabs/puppetlabs-concat/pull/591) ([pgrant87](https://github.com/pgrant87))
+- \(bugfix\) allow private keys in ssh testing [\#585](https://github.com/puppetlabs/puppetlabs-concat/pull/585) ([tphoney](https://github.com/tphoney))
+
+## [v6.0.0](https://github.com/puppetlabs/puppetlabs-concat/tree/v6.0.0) (2019-05-21)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/5.3.0...v6.0.0)
+
+### Changed
+
+- pdksync - \(MODULES-8444\) - Raise lower Puppet bound [\#575](https://github.com/puppetlabs/puppetlabs-concat/pull/575) ([david22swan](https://github.com/david22swan))
+
+### Added
+
+- \(FM-7606\) enable litmus for concat [\#577](https://github.com/puppetlabs/puppetlabs-concat/pull/577) ([tphoney](https://github.com/tphoney))
+
+### Fixed
+
+- \(FM-8073\) litmus block support [\#580](https://github.com/puppetlabs/puppetlabs-concat/pull/580) ([tphoney](https://github.com/tphoney))
+
+## [5.3.0](https://github.com/puppetlabs/puppetlabs-concat/tree/5.3.0) (2019-02-20)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/5.2.0...5.3.0)
+
+### Added
+
+- \(MODULES-8138\) - Addition of support for SLES 15 [\#545](https://github.com/puppetlabs/puppetlabs-concat/pull/545) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \(FM-7725\) - Remove OSX testing/support for concat [\#561](https://github.com/puppetlabs/puppetlabs-concat/pull/561) ([lionce](https://github.com/lionce))
+- pdksync - \(FM-7655\) Fix rubygems-update for ruby \< 2.3 [\#550](https://github.com/puppetlabs/puppetlabs-concat/pull/550) ([tphoney](https://github.com/tphoney))
+
+## [5.2.0](https://github.com/puppetlabs/puppetlabs-concat/tree/5.2.0) (2018-12-10)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/5.1.0...5.2.0)
+
+### Added
+
+- \(FM-7339\) - Add i18n implementation [\#537](https://github.com/puppetlabs/puppetlabs-concat/pull/537) ([eimlav](https://github.com/eimlav))
+- \(FM-7341\) - Added REFERENCE.md and updated documentation [\#536](https://github.com/puppetlabs/puppetlabs-concat/pull/536) ([eimlav](https://github.com/eimlav))
+- \(MODULES-5124\) Add support for JSON arrays [\#519](https://github.com/puppetlabs/puppetlabs-concat/pull/519) ([johanfleury](https://github.com/johanfleury))
+
+### Fixed
+
+- \(FM-7581\) - Fix CI failures for Windows 2016 and 10 Enterprise [\#540](https://github.com/puppetlabs/puppetlabs-concat/pull/540) ([eimlav](https://github.com/eimlav))
+- \(MODULES-8287\) - Fix fomat=\>'yaml' allowing only hashes [\#535](https://github.com/puppetlabs/puppetlabs-concat/pull/535) ([eimlav](https://github.com/eimlav))
+-  \(FM-7513\) - Removing Windows 2016-core from our support matrix  [\#534](https://github.com/puppetlabs/puppetlabs-concat/pull/534) ([pmcmaw](https://github.com/pmcmaw))
+- \(MODULES-8088\) - newline\_spec.rb test expectation update [\#531](https://github.com/puppetlabs/puppetlabs-concat/pull/531) ([lionce](https://github.com/lionce))
+- \(MODULES-7717\) ensure\_newline uses unix line ending on windows [\#517](https://github.com/puppetlabs/puppetlabs-concat/pull/517) ([tkishel](https://github.com/tkishel))
+
 ## [5.1.0](https://github.com/puppetlabs/puppetlabs-concat/tree/5.1.0) (2018-10-03)
 
 [Full Changelog](https://github.com/puppetlabs/puppetlabs-concat/compare/5.0.0...5.1.0)
@@ -284,7 +406,7 @@ should be able to use 1.1.0 without any failures, but you may find deprecation
 warnings and we'll be aggressively moving for a 2.0 to remove those too.
 
 For further information on deprecations, please read:
-https://github.com/puppetlabs/puppetlabs-concat/blob/master/README.md#api-deprecations
+https://github.com/puppetlabs/puppetlabs-concat/blob/main/README.md#api-deprecations
 
 #### Removed
 - Puppet 0.24 support.
@@ -435,4 +557,4 @@ defining resource defaults.
 - 2012/12/12 - Added (file) $replace parameter to concat
 
 
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*

@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'join_keys_to_values' do
   it { is_expected.not_to eq(nil) }
@@ -19,11 +19,11 @@ describe 'join_keys_to_values' do
 
   it { is_expected.to run.with_params({ 'key' => nil }, ':').and_return(['key:']) }
   it 'runs join_keys_to_values(<hash with multiple keys>, ":") and return the proper array' do
-    is_expected.to run.with_params({ 'key1' => 'value1', 'key2' => 'value2' }, ':').and_return(['key1:value1', 'key2:value2'])
+    result = subject.call([{ 'key1' => 'value1', 'key2' => 'value2' }, ':'])
+    expect(result.sort).to eq(['key1:value1', 'key2:value2'].sort)
   end
-
   it 'runs join_keys_to_values(<hash with array value>, " ") and return the proper array' do
-    expected_result = ['key1 value1', 'key2 value2', 'key2 value3']
-    is_expected.to run.with_params({ 'key1' => 'value1', 'key2' => ['value2', 'value3'] }, ' ').and_return(expected_result)
+    result = subject.call([{ 'key1' => 'value1', 'key2' => %w[value2 value3] }, ' '])
+    expect(result.sort).to eq(['key1 value1', 'key2 value2', 'key2 value3'].sort)
   end
 end

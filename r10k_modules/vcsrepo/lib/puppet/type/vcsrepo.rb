@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 require 'puppet/parameter/boolean'
 
@@ -56,7 +58,11 @@ Puppet::Type.newtype(:vcsrepo) do
   feature :include_paths,
           'The provider supports checking out only specific paths'
 
+  feature :keep_local_changes,
+          'The provider supports keeping local changes on files tracked by the repository when changing revision'
+
   ensurable do
+    desc 'Ensure the version control repository.'
     attr_accessor :latest
 
     def insync?(is)
@@ -67,13 +73,13 @@ Puppet::Type.newtype(:vcsrepo) do
         return true unless [:absent, :purged, :held].include?(is)
       when :latest
         return true if is == :latest
-        return false
+        false
       when :bare
-        return is == :bare
+        is == :bare
       when :mirror
-        return is == :mirror
+        is == :mirror
       when :absent
-        return is == :absent
+        is == :absent
       end
     end
 
@@ -289,7 +295,24 @@ Puppet::Type.newtype(:vcsrepo) do
     defaultto :false
   end
 
+  newparam :keep_local_changes do
+    desc 'Keep local changes on files tracked by the repository when changing revision'
+    newvalues(true, false)
+    defaultto :false
+  end
+
   autorequire(:package) do
     ['git', 'git-core', 'mercurial', 'subversion']
+  end
+
+  private
+
+  def set_sensitive_parameters(sensitive_parameters)
+    if sensitive_parameters.include?(:basic_auth_password)
+      sensitive_parameters.delete(:basic_auth_password)
+      parameter(:basic_auth_password).sensitive = true
+    end
+
+    super(sensitive_parameters)
   end
 end

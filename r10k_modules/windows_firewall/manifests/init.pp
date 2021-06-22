@@ -4,7 +4,7 @@
 
 # == Class: windows_firewall
 #
-# Module to manage the windows firewall and it's configured exceptions
+# Module to manage the windows firewall and its configured exceptions
 #
 # === Requirements/Dependencies
 #
@@ -23,17 +23,9 @@
 #   include ::windows_firewall
 #
 class windows_firewall (
-  String $ensure = 'running',
+  Stdlib::Ensure::Service $ensure = 'running',
 ) {
-
-  case $::operatingsystemversion {
-    /Windows Server 2003/,/Windows Server 2003 R2/,/Windows XP/: {
-      $firewall_name = 'SharedAccess'
-    }
-    default: {
-      $firewall_name = 'MpsSvc'
-    }
-  }
+  $firewall_name = 'MpsSvc'
 
   if $ensure == 'running' {
     $enabled = true

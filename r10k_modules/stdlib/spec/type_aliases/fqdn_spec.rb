@@ -1,9 +1,13 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 if Puppet::Util::Package.versioncmp(Puppet.version, '4.5.0') >= 0
   describe 'Stdlib::Fqdn' do
     describe 'valid handling' do
-      ['example', 'example.com', 'www.example.com'].each do |value|
+      %w[
+        example
+        example.com
+        www.example.com
+      ].each do |value|
         describe value.inspect do
           it { is_expected.to allow_value(value) }
         end

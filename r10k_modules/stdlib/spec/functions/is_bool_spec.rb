@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'is_bool' do
   it { is_expected.not_to eq(nil) }
@@ -19,12 +19,12 @@ describe 'is_bool' do
     # Checking for deprecation warning, which should only be provoked when the env variable for it is set.
     it 'displays a single deprecation' do
       ENV['STDLIB_LOG_DEPRECATIONS'] = 'true'
-      expect(scope).to receive(:warning).with(include('This method is deprecated'))
+      scope.expects(:warning).with(includes('This method is deprecated'))
       is_expected.to run.with_params(true).and_return(true)
     end
     it 'displays no warning for deprecation' do
       ENV['STDLIB_LOG_DEPRECATIONS'] = 'false'
-      expect(scope).to receive(:warning).with(include('This method is deprecated')).never
+      scope.expects(:warning).with(includes('This method is deprecated')).never
       is_expected.to run.with_params(false).and_return(true)
     end
   end

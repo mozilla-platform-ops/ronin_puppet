@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 require 'puppet/type'
 require 'puppet/type/service'
 
@@ -9,7 +9,7 @@ describe 'service_provider', :type => :fact do
   context 'when macosx' do
     it 'returns launchd' do
       provider = Puppet::Type.type(:service).provider(:launchd)
-      allow(Puppet::Type.type(:service)).to receive(:defaultprovider).and_return(provider)
+      Puppet::Type.type(:service).stubs(:defaultprovider).returns provider
 
       expect(Facter.fact(:service_provider).value).to eq('launchd')
     end
@@ -18,7 +18,7 @@ describe 'service_provider', :type => :fact do
   context 'when systemd' do
     it 'returns systemd' do
       provider = Puppet::Type.type(:service).provider(:systemd)
-      allow(Puppet::Type.type(:service)).to receive(:defaultprovider).and_return(provider)
+      Puppet::Type.type(:service).stubs(:defaultprovider).returns provider
 
       expect(Facter.fact(:service_provider).value).to eq('systemd')
     end
@@ -27,7 +27,7 @@ describe 'service_provider', :type => :fact do
   context 'when redhat' do
     it 'returns redhat' do
       provider = Puppet::Type.type(:service).provider(:redhat)
-      allow(Puppet::Type.type(:service)).to receive(:defaultprovider).and_return(provider)
+      Puppet::Type.type(:service).stubs(:defaultprovider).returns provider
 
       expect(Facter.fact(:service_provider).value).to eq('redhat')
     end

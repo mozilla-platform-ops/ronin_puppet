@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'type3x' do
   it 'exists' do
@@ -15,7 +15,7 @@ describe 'type3x' do
   end
 
   it 'returns array when given an array' do
-    result = scope.function_type3x([['aaabbbbcccc', 'asdf']])
+    result = scope.function_type3x([%w[aaabbbbcccc asdf]])
     expect(result).to(eq('array'))
   end
 

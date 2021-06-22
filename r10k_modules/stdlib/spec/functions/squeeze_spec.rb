@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'squeeze' do
   it { is_expected.not_to eq(nil) }
@@ -43,7 +43,7 @@ describe 'squeeze' do
   context 'when using a class extending String' do
     it 'calls its squeeze method' do
       value = AlsoString.new('aaaaaaaaa')
-      expect_any_instance_of(AlsoString).to receive(:squeeze).and_return('foo') # rubocop:disable RSpec/AnyInstance
+      value.expects(:squeeze).returns('foo')
       expect(subject).to run.with_params(value).and_return('foo')
     end
   end

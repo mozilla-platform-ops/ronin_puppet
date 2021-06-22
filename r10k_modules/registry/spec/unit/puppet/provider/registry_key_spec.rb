@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-require_relative 'spec_helper'
+require 'spec_helper'
 require 'puppet/type/registry_key'
 
 describe Puppet::Type.type(:registry_key).provider(:registry), :if => Puppet.features.microsoft_windows? do

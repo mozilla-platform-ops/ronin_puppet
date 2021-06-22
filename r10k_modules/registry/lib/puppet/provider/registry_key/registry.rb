@@ -2,35 +2,25 @@
 begin
   # We expect this to work once Puppet supports Rubygems in #7788
   require "puppet_x/puppetlabs/registry"
+  require "puppet_x/puppetlabs/registry/provider_base"
 rescue LoadError => detail
   # Work around #7788 (Rubygems support for modules)
   require 'pathname' # JJM WORK_AROUND #14073
   module_base = Pathname.new(__FILE__).dirname
   require module_base + "../../../" + "puppet_x/puppetlabs/registry"
+  require module_base + "../../../" + "puppet_x/puppetlabs/registry/provider_base"
 end
 
 Puppet::Type.type(:registry_key).provide(:registry) do
-  include Puppet::Util::Windows::Registry if Puppet.features.microsoft_windows?
+  include PuppetX::Puppetlabs::Registry::ProviderBase
 
   defaultfor :operatingsystem => :windows
   confine    :operatingsystem => :windows
 
   def self.instances
-    PuppetX::Puppetlabs::Registry.hkeys.keys.collect do |hkey|
+    hkeys.keys.collect do |hkey|
       new(:provider => :registry, :name => "#{hkey.to_s}")
     end
-  end
-
-  def hive
-    PuppetX::Puppetlabs::Registry.hkeys[path.root]
-  end
-
-  def access
-    path.access
-  end
-
-  def subkey
-    path.subkey
   end
 
   def create
@@ -47,7 +37,13 @@ Puppet::Type.type(:registry_key).provide(:registry) do
     Puppet.debug("Destroying registry key #{self}")
 
     raise ArgumentError, "Cannot delete root key: #{path}" unless subkey
-    self.delete_key(hive, subkey, access)
+
+    from_string_to_wide_string(subkey) do |subkey_ptr|
+      # hive.hkey returns an integer value that's like a FD
+      if RegDeleteKeyExW(hive.hkey, subkey_ptr, access, 0) != 0
+        raise "Failed to delete registry key: #{self}"
+      end
+    end
   end
 
   def values

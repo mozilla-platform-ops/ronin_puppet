@@ -1,5 +1,5 @@
 #! /usr/bin/env ruby
-require_relative 'spec_helper'
+require 'spec_helper'
 require 'puppet/util'
 require 'puppet_x/puppetlabs/powershell/powershell_manager'
 require 'fileutils'
@@ -31,8 +31,6 @@ describe Puppet::Type.type(:exec).provider(:powershell) do
       "#{ENV['SYSTEMROOT']}\\sysnative\\WindowsPowershell\\v1.0\\powershell.exe"
     elsif File.exists?("#{ENV['SYSTEMROOT']}\\system32\\WindowsPowershell\\v1.0\\powershell.exe")
       "#{ENV['SYSTEMROOT']}\\system32\\WindowsPowershell\\v1.0\\powershell.exe"
-    elsif !Puppet::Util::Platform.windows?
-      'pwsh'
     else
       'powershell.exe'
     end
@@ -83,23 +81,6 @@ describe Puppet::Type.type(:exec).provider(:powershell) do
           provider.run_spec_override(command)
         end
       end
-
-      context "on non-windows", :if => !Puppet.features.microsoft_windows? do
-        it "should call sh -c" do
-          Puppet::Type::Exec::ProviderPowershell.any_instance.expects(:run)
-            .with(regexp_matches(/^sh -c /), anything)
-
-          provider.run_spec_override(command)
-        end
-
-        it "should supply default arguments to supress user interaction" do
-          Puppet::Type::Exec::ProviderPowershell.any_instance.expects(:run).
-            with(regexp_matches(/^sh -c ".* #{args} < .*"/), false)
-
-          provider.run_spec_override(command)
-        end
-      end
-
     end
 
     context "actual runs" do
@@ -144,45 +125,6 @@ describe Puppet::Type.type(:exec).provider(:powershell) do
           expect(status.exitstatus).to eq(1)
         end
       end
-
-      context "on non-Windows", :if => !Puppet.features.microsoft_windows? do
-        # The usage of uname is a little fragile however there is basically nothing
-        # which is universal across all Linux/Unix/Mac distributions; Unlike Well Known SIDS in Windows
-        # The closest is the presence of the uname command and its generic text output
-        let(:command) { '& uname' }
-        let(:uname_regex) { '(Linux|Darwin)' }
-
-        it "returns the output and status" do
-          output, status = provider.run(command)
-
-          expect(output).to match(/#{uname_regex}/)
-          expect(status.exitstatus).to eq(0)
-        end
-
-        it "returns true if the `onlyif` check command succeeds" do
-          resource[:onlyif] = command
-
-          expect(resource.parameter(:onlyif).check(command)).to eq(true)
-        end
-
-        it "returns false if the `unless` check command succeeds" do
-          resource[:unless] = command
-
-          expect(resource.parameter(:unless).check(command)).to eq(false)
-        end
-
-        it "runs commands properly that output to multiple streams" do
-          command = 'echo "foo"; [System.Console]::Error.WriteLine("bar"); & foo.exe'
-          output, status = provider.run(command)
-
-          # Collected all streams inside of a single output string
-          expected = "^foo\nbar\n.+The term 'foo\.exe' is not recognized as the name of a cmdlet, function.+"
-
-          # Due to the different behaviour of sh across non-Windows platforms, must use a regex
-          expect(output).to match(expected)
-          expect(status.exitstatus).to eq(1)
-        end
-      end
     end
   end
 
@@ -199,14 +141,13 @@ describe Puppet::Type.type(:exec).provider(:powershell) do
   end
 
   describe 'when specifying a working directory' do
-    describe 'that does not exist' do
-      let(:work_dir)  {
-        if Puppet.features.microsoft_windows?
-          "#{ENV['SYSTEMROOT']}\\some\\directory\\that\\does\\not\\exist"
-        else
-          '/some/directory/that/does/not/exist'
-        end
-      }
+    describe 'that does not exist on Windows' do
+      before :each do
+        skip('Not on Windows platform') unless Puppet.features.microsoft_windows?
+      end
+
+      # This working directory error is specific to the PowerShell manager on Windows.
+      let(:work_dir)  { "#{ENV['SYSTEMROOT']}\\some\\directory\\that\\does\\not\\exist" }
       let(:command)  { 'exit 0' }
       let(:resource) { Puppet::Type.type(:exec).new(:command => command, :provider => :powershell, :cwd => work_dir) }
       let(:provider) { described_class.new(resource) }
@@ -228,6 +169,7 @@ describe Puppet::Type.type(:exec).provider(:powershell) do
     let(:tmpdir) { Dir.mktmpdir('statetmp').encode!(Encoding::UTF_8) }
 
     before :each do
+      skip('Not on Windows platform') unless Puppet.features.microsoft_windows?
       # a statedir setting must now exist per the new transactionstore code
       # introduced in Puppet 4.6 for corrective changes, as a new YAML file
       # called transactionstore.yaml will be written under this path
@@ -266,19 +208,7 @@ describe Puppet::Type.type(:exec).provider(:powershell) do
       transaction
     end
 
-    it 'does not emit an irrelevant upgrade message when in a non-Windows environment',
-      :if => !Puppet.features.microsoft_windows? do
-
-      expect(PuppetX::PowerShell::PowerShellManager.supported?).to eq(false)
-
-      # the upgrade message is not relevant on non-Windows platforms
-      Puppet::Type::Exec::ProviderPowershell.expects(:upgrade_message).never
-
-      apply_compiled_manifest(manifest)
-    end
-
-    it 'does not emit a warning message when PowerShellManager is usable in a Windows environment',
-      :if => Puppet.features.microsoft_windows? do
+    it 'does not emit a warning message when PowerShellManager is usable in a Windows environment' do
 
       PuppetX::PowerShell::PowerShellManager.stubs(:win32console_enabled?).returns(false)
 
@@ -290,8 +220,7 @@ describe Puppet::Type.type(:exec).provider(:powershell) do
       apply_compiled_manifest(manifest)
     end
 
-    it 'emits a warning message when PowerShellManager cannot be used in a Windows environment',
-      :if => Puppet.features.microsoft_windows? do
+    it 'emits a warning message when PowerShellManager cannot be used in a Windows environment' do
 
       # pretend we're Ruby 1.9.3 / Puppet 3.x x86
       PuppetX::PowerShell::PowerShellManager.stubs(:win32console_enabled?).returns(true)

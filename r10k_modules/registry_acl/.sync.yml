@@ -1,0 +1,20 @@
+---
+hiera.yaml:
+  unmanaged: true
+data/common.yaml:
+  unmanaged: true
+Gemfile:
+  optional:
+    ':system_tests':
+      - gem: beaker
+      - gem: beaker-rspec
+      - gem: beaker-puppet_install_helper
+      - gem: beaker-module_install_helper
+      - gem: beaker-windows
+      - gem: beaker-vagrant
+.rubocop.yml:
+  profiles:
+    strict:
+      configs:
+        AllCops:
+          TargetRubyVersion: '2.4'

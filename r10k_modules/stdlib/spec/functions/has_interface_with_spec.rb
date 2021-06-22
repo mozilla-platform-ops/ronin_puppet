@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'has_interface_with' do
   it { is_expected.not_to eq(nil) }

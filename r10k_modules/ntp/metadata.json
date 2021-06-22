@@ -1,7 +1,7 @@
 {
   "name": "puppetlabs-ntp",
-  "version": "7.3.0",
-  "author": "Puppet Inc",
+  "version": "9.0.1",
+  "author": "puppetlabs",
   "summary": "Installs, configures, and manages the NTP service.",
   "license": "Apache-2.0",
   "source": "https://github.com/puppetlabs/puppetlabs-ntp",
@@ -10,15 +10,13 @@
   "dependencies": [
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 4.13.1 < 6.0.0"
+      "version_requirement": ">= 4.13.1 < 8.0.0"
     }
   ],
-  "data_provider": null,
   "operatingsystem_support": [
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "5",
         "6",
         "7"
       ]
@@ -26,7 +24,6 @@
     {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
-        "5",
         "6",
         "7"
       ]
@@ -34,7 +31,6 @@
     {
       "operatingsystem": "OracleLinux",
       "operatingsystemrelease": [
-        "5",
         "6",
         "7"
       ]
@@ -49,15 +45,16 @@
     {
       "operatingsystem": "SLES",
       "operatingsystemrelease": [
-        "11 SP1",
-        "12"
+        "12",
+        "15"
       ]
     },
     {
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
         "8",
-        "9"
+        "9",
+        "10"
       ]
     },
     {
@@ -65,7 +62,8 @@
       "operatingsystemrelease": [
         "14.04",
         "16.04",
-        "18.04"
+        "18.04",
+        "20.04"
       ]
     },
     {
@@ -81,28 +79,16 @@
         "6.1",
         "7.1"
       ]
-    },
-    {
-      "operatingsystem": "Amazon",
-      "operatingsystemrelease": [
-        "2013.09",
-        "2014.03",
-        "2014.09",
-        "2015.03"
-      ]
-    },
-    {
-      "operatingsystem": "Archlinux"
     }
   ],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 4.9.4 < 7.0.0"
+      "version_requirement": ">= 6.0.0 < 8.0.0"
     }
   ],
   "description": "NTP Module for Debian, Ubuntu, CentOS, RHEL, OEL, Fedora, FreeBSD, ArchLinux, Amazon Linux and Gentoo.",
-  "template-url": "https://github.com/puppetlabs/pdk-templates",
-  "template-ref": "heads/master-0-g8fc95db",
-  "pdk-version": "1.7.0"
+  "template-url": "https://github.com/puppetlabs/pdk-templates.git#main",
+  "template-ref": "heads/main-0-g7be43a3",
+  "pdk-version": "1.18.1"
 }

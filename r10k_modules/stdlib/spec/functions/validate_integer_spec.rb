@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'validate_integer' do
   after(:each) do
@@ -8,7 +8,7 @@ describe 'validate_integer' do
   # Checking for deprecation warning
   it 'displays a single deprecation' do
     ENV['STDLIB_LOG_DEPRECATIONS'] = 'true'
-    expect(scope).to receive(:warning).with(include('This method is deprecated'))
+    scope.expects(:warning).with(includes('This method is deprecated'))
     is_expected.to run.with_params(3)
   end
 

@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 # This is a workaround for bug: #4248 whereby ruby files outside of the normal
-# provider/type path do not load until pluginsync has occured on the puppetmaster
+# provider/type path do not load until pluginsync has occured on the puppet server
 #
 # In this case I'm trying the relative path first, then falling back to normal
 # mechanisms. This should be fixed in future versions of puppet but it looks
@@ -11,7 +13,8 @@ Puppet::Type.newtype(:firewallchain) do
   include Puppet::Util::Firewall
 
   @doc = <<-PUPPETCODE
-    This type provides the capability to manage rule chains for firewalls.
+    @summary
+      This type provides the capability to manage rule chains for firewalls.
 
     Currently this supports only iptables, ip6tables and ebtables on Linux. And
     provides support for setting the default policy on chains and tables that
@@ -21,6 +24,13 @@ Puppet::Type.newtype(:firewallchain) do
     If Puppet is managing the iptables, iptables-persistent, or iptables-services packages,
     and the provider is iptables_chain, the firewall resource will autorequire
     those packages to ensure that any required binaries are installed.
+
+    #### Providers
+      * iptables_chain is the only provider that supports firewallchain.
+
+    #### Features
+      * iptables_chain: The provider provides iptables chain features.
+      * policy: Default policy (inbuilt chains only).
   PUPPETCODE
 
   feature :iptables_chain, 'The provider provides iptables chain features.'
@@ -41,8 +51,8 @@ Puppet::Type.newtype(:firewallchain) do
 
     validate do |value|
       if value !~ NAME_FORMAT
-        raise ArgumentError, 'Inbuilt chains must be in the form {chain}:{table}:{protocol} where {table} is one of FILTER,' \
-            ' NAT, MANGLE, RAW, RAWPOST, BROUTE, SECURITY or empty (alias for filter), chain can be anything without colons' \
+        raise ArgumentError, 'Inbuilt chains must be in the form {chain}:{table}:{protocol} where {table} is one of filter,' \
+            ' nat, mangle, raw, rawpost, broute, security or empty (alias for filter), chain can be anything without colons' \
             ' or one of PREROUTING, POSTROUTING, BROUTING, INPUT, FORWARD, OUTPUT for the inbuilt chains, and {protocol} being' \
             " IPv4, IPv6, ethernet (ethernet bridging) got '#{value}' table:'#{Regexp.last_match(1)}' chain:'#{Regexp.last_match(2)}' protocol:'#{Regexp.last_match(3)}'"
       else
@@ -51,7 +61,7 @@ Puppet::Type.newtype(:firewallchain) do
         protocol = Regexp.last_match(3)
         case table
         when 'filter'
-          if chain =~ %r{^(PREROUTING|POSTROUTING|BROUTING)$}
+          if %r{^(PREROUTING|POSTROUTING|BROUTING)$}.match?(chain)
             raise ArgumentError, "INPUT, OUTPUT and FORWARD are the only inbuilt chains that can be used in table 'filter'"
           end
         when 'mangle'
@@ -59,25 +69,25 @@ Puppet::Type.newtype(:firewallchain) do
             raise ArgumentError, "PREROUTING, POSTROUTING, INPUT, FORWARD and OUTPUT are the only inbuilt chains that can be used in table 'mangle'"
           end
         when 'nat'
-          if chain =~ %r{^(BROUTING|FORWARD)$}
+          if %r{^(BROUTING|FORWARD)$}.match?(chain)
             raise ArgumentError, "PREROUTING, POSTROUTING, INPUT, and OUTPUT are the only inbuilt chains that can be used in table 'nat'"
           end
           if Gem::Version.new(Facter['kernelmajversion'].value.dup) < Gem::Version.new('3.7') && protocol =~ %r{^(IP(v6)?)?$}
             raise ArgumentError, "table nat isn't valid in IPv6. You must specify ':IPv4' as the name suffix"
           end
         when 'raw'
-          if chain =~ %r{^(POSTROUTING|BROUTING|INPUT|FORWARD)$}
+          if %r{^(POSTROUTING|BROUTING|INPUT|FORWARD)$}.match?(chain)
             raise ArgumentError, 'PREROUTING and OUTPUT are the only inbuilt chains in the table \'raw\''
           end
         when 'broute'
           if protocol != 'ethernet'
             raise ArgumentError, 'BROUTE is only valid with protocol \'ethernet\''
           end
-          if chain =~ %r{^PREROUTING|POSTROUTING|INPUT|FORWARD|OUTPUT$}
+          if %r{^PREROUTING|POSTROUTING|INPUT|FORWARD|OUTPUT$}.match?(chain)
             raise ArgumentError, 'BROUTING is the only inbuilt chain allowed on on table \'broute\''
           end
         when 'security'
-          if chain =~ %r{^(PREROUTING|POSTROUTING|BROUTING)$}
+          if %r{^(PREROUTING|POSTROUTING|BROUTING)$}.match?(chain)
             raise ArgumentError, "INPUT, OUTPUT and FORWARD are the only inbuilt chains that can be used in table 'security'"
           end
         end
@@ -133,6 +143,7 @@ Puppet::Type.newtype(:firewallchain) do
         '(?i)foo' or '(?i:foo)'
 
       Full example:
+      ```
       firewallchain { 'INPUT:filter:IPv4':
         purge => true,
         ignore => [
@@ -140,6 +151,7 @@ Puppet::Type.newtype(:firewallchain) do
           '--comment "[^"]*(?i:ignore)[^"]*"', # ignore any rules with "ignore" (case insensitive) in the comment in the rule
         ],
       }
+      ```
     PUPPETCODE
 
     validate do |value|
@@ -151,6 +163,15 @@ Puppet::Type.newtype(:firewallchain) do
       patterns = [patterns] if patterns.is_a?(String)
       patterns.map { |p| Regexp.new(p) }
     end
+  end
+
+  newparam(:ignore_foreign, boolean: true) do
+    desc <<-PUPPETCODE
+      Ignore rules that do not match the puppet title pattern "^\d+[[:graph:][:space:]]" when purging unmanaged firewall rules in this chain.
+      This can be used to ignore rules that were not put in by puppet. Beware that nothing keeps other systems from configuring firewall rules with a comment that starts with digits, and is indistinguishable from puppet-configured rules.
+    PUPPETCODE
+    newvalues(false, true)
+    defaultto false
   end
 
   # Classes would be a better abstraction, pending:
@@ -229,6 +250,9 @@ Puppet::Type.newtype(:firewallchain) do
 
     # Remove rules which match our ignore filter
     rules_resources.delete_if { |res| value(:ignore).find_index { |f| res.provider.properties[:line].match(f) } } if value(:ignore)
+
+    # Remove rules that were (presumably) not put in by puppet
+    rules_resources.delete_if { |res| res.provider.properties[:name].match(%r{^(\d+)[[:graph:][:space:]]})[1].to_i >= 9000 } if value(:ignore_foreign) == :true
 
     # We mark all remaining rules for deletion, and then let the catalog override us on rules which should be present
     rules_resources.each { |res| res[:ensure] = :absent }

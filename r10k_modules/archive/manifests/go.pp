@@ -17,7 +17,6 @@ define archive::go (
   Optional[Boolean]         $cleanup      = undef,
   Optional[Stdlib::Compat::Absolute_path] $archive_path = undef,
 ) {
-
   include archive::params
 
   if $archive_path {
@@ -40,7 +39,7 @@ define archive::go (
     extract       => $extract,
     extract_path  => $extract_path,
     source        => $file_url,
-    checksum      => go_md5($username, $password, $name, $md5_url),
+    checksum      => archive::go_md5($username, $password, $name, $md5_url),
     checksum_type => 'md5',
     creates       => $creates,
     cleanup       => $cleanup,

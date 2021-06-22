@@ -20,13 +20,25 @@ This module adds a new exec provider capable of executing PowerShell commands.
 
 ## Module Description
 
-Puppet provides a built-in `exec` type that is capable of executing commands. This module adds a `powershell` provider to the `exec` type,  which enables `exec` parameters, listed below. This module is particularly helpful if you need to run PowerShell commands but don't know the details about how PowerShell is executed, because you can run PowerShell commands in Puppet without the module.
+Puppet provides a built-in `exec` type that is capable of executing commands. This module adds a `powershell` and `pwsh` provider to the `exec` type,  which enables `exec` parameters, listed below. This module is particularly helpful if you need to run PowerShell commands but don't know how PowerShell is executed, because you can run PowerShell commands in Puppet without the module.
 
 ## Setup
 
 ### Requirements
 
-This module requires PowerShell to be installed and the `powershell.exe` to be available in the system PATH.
+The `powershell` provider requires you install [Windows PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-5.1) and have `powershell.exe` available in the system PATH. Note that most Windows operating systems already have Windows PowerShell installed.
+
+The `pwsh` provider requires you install [PowerShell Core](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6) and make `pwsh` available either in the system PATH or specified in the `path` parameter.
+
+For example, when you install PowerShell Core in `/usr/alice/pscore`, you need the following manifest:
+
+~~~ puppet
+exec { 'RESOURCENAME':
+  ...
+  path     => '/usr/alice/pscore',
+  provider => pwsh,
+}
+~~~
 
 ### Beginning with powershell
 
@@ -41,7 +53,7 @@ exec { 'RESOURCENAME':
 
 ## Usage
 
-When using `exec` resources with the `powershell` provider, the `command` parameter must be single-quoted to prevent Puppet from interpolating `$(..)`.
+When using `exec` resources with the `powershell` or `pwsh` provider, the `command` parameter must be single-quoted to prevent Puppet from interpolating `$(..)`.
 
 For instance, to rename the Guest account:
 
@@ -129,7 +141,9 @@ However, to produce output from a script, use the `Write-` prefixed cmdlets such
 
 #### Provider
 
-* powershell: Adapts the Puppet `exec` resource to run PowerShell commands.
+* `powershell`: Adapts the Puppet `exec` resource to run [Windows PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-5.1) commands.
+
+* `pwsh`: Adapts the Puppet `exec` resource to run [PowerShell Core](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6) commands.
 
 #### Parameters
 
@@ -163,6 +177,8 @@ Runs the exec only if the command returns 0. Valid options: String. Default: Und
 
 Specifies the search path used for command execution. Valid options: String of the path, an array, or a semicolon-separated list. Default: Undefined.
 
+The `pwsh` provider can also use the path to find the pwsh executable.
+
 ##### `refresh`
 
 Refreshes the command. Valid options: String. Default: Undefined.
@@ -193,24 +209,33 @@ Runs the `exec`, unless the command returns 0. Valid options: String. Default: U
 
 ## Limitations
 
-* Only supported on Windows Server 2008 and above, and Windows 7 and above.
+* The `powershell` provider is only supported on:
 
-* Experimental support added for Ubuntu 16.04, Ubuntu 14.0.4 and, CentOS 7.
+  * Windows Server 2008 and above
+  
+  * Windows 7 and above
+   
+* The `pwsh` provider is supported on:
 
-  Note that this module will not install PowerShell on these platforms. For further information see the [Linux installation instructions](https://github.com/PowerShell/PowerShell/blob/master/docs/installation/linux.md).
+  * CentOS 7
 
-  Note that on non-Windows platforms the `HOME` environment variable is not available and can cause PowerShell to raise a `The type initializer for 'System.Management.Automation.ConfigPropertyAccessor' threw an exception.` error. This is documented in PowerShell [GitHub Issue 1794](https://github.com/PowerShell/PowerShell/issues/1794). To workaround this issue, add an environment variable parameter to the `Exec` resource which specifies the `HOME` environment variable. For example:
+  * Debian 8.7+, Debian 9
 
-  ``` puppet
-  exec { "CreateTestFile":
-    command     => "'puppet' | Set-Content -Path '/tmp/puppet-test'",
-    unless      => 'If (Test-Path -Path "/tmp/puppet-test") { exit 0 } else { exit 1}',
-    environment => [ 'HOME=/home/username'],
-    provider    => powershell,
-  }
-  ```
+  * Fedora 27, 28
 
-* Only supported on Powershell 2.0 and above.
+  * MacOS 10.12+
+
+  * Red Hat Enterprise Linux 7
+
+  * Ubuntu 14.04, 16.0.4 and 18.04
+
+  * Windows Desktop 7 and above
+
+  * Windows Server 2008 R2 and above
+
+  Note that this module will not install PowerShell on these platforms. For further information see the [Linux installation instructions](https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux).
+
+* Only supported on Windows PowerShell 2.0 and above, and PowerShell Core 6.1 and above.
 
 * When using here-strings in inline or templated scripts executed by this module, you must use the double-quote style syntax that begins with `@"` and ends with `"@`. The single-quote syntax that begins with `@'` and ends with `'@` is not supported.
 

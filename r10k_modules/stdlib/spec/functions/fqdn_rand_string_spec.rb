@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'fqdn_rand_string' do
   let(:default_charset) { %r{\A[a-zA-Z0-9]{100}\z} }
@@ -55,7 +55,7 @@ describe 'fqdn_rand_string' do
 
     # workaround not being able to use let(:facts) because some tests need
     # multiple different hostnames in one context
-    allow(scope).to receive(:lookupvar).with('::fqdn', {}).and_return(host)
+    scope.stubs(:lookupvar).with('::fqdn', {}).returns(host)
 
     function_args = [max]
     if args.key?(:charset) || !extra.empty?

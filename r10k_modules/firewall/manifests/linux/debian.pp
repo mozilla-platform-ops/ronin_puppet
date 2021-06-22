@@ -1,39 +1,43 @@
-# = Class: firewall::linux::debian
+# @summary
+#   Installs the `iptables-persistent` package for Debian-alike systems. This allows rules to be stored to file and restored on boot.
 #
-# Installs the `iptables-persistent` package for Debian-alike systems. This
-# allows rules to be stored to file and restored on boot.
+# @param ensure
+#   Ensure parameter passed onto Service[] resources. Valid options: 'running' or 'stopped'. Defaults to 'running'.
 #
-# == Parameters:
+# @param enable
+#   Enable parameter passed onto Service[] resources. Defaults to 'true'.
 #
-# [*ensure*]
-#   Ensure parameter passed onto Service[] resources.
-#   Default: running
+# @param service_name
+#   Specify the name of the IPv4 iptables service. Defaults defined in firewall::params.
 #
-# [*enable*]
-#   Enable parameter passed onto Service[] resources.
-#   Default: true
+# @param package_name
+#   Specify the platform-specific package(s) to install. Defaults defined in firewall::params.
+#
+# @param package_ensure
+#   Controls the state of the iptables package on your system. Valid options: 'present' or 'latest'. Defaults to 'latest'.
+#
+# @api private
 #
 class firewall::linux::debian (
   $ensure         = running,
   $enable         = true,
-  $service_name   = $::firewall::params::service_name,
-  $package_name   = $::firewall::params::package_name,
-  $package_ensure = $::firewall::params::package_ensure,
+  $service_name   = $firewall::params::service_name,
+  $package_name   = $firewall::params::package_name,
+  $package_ensure = $firewall::params::package_ensure,
 ) inherits ::firewall::params {
-
   if $package_name {
     #Fixes hang while installing iptables-persistent on debian 8
-    exec {'iptables-persistent-debconf':
-        command     => "/bin/echo \"${package_name} ${package_name}/autosave_v4 boolean false\" |
+    exec { 'iptables-persistent-debconf':
+      command     => "/bin/echo \"${package_name} ${package_name}/autosave_v4 boolean false\" |
                       /usr/bin/debconf-set-selections && /bin/echo \"${package_name} ${package_name}/autosave_v6 boolean false\" |
                       /usr/bin/debconf-set-selections",
 
-        refreshonly => true,
+      refreshonly => true,
     }
-    package { $package_name:
-      ensure  => $package_ensure,
-      require => Exec['iptables-persistent-debconf'],
-    }
+    ensure_packages([$package_name],{
+        ensure  => $package_ensure,
+        require => Exec['iptables-persistent-debconf']
+    })
   }
 
   if($::operatingsystemrelease =~ /^6\./ and $enable == true and $::iptables_persistent_version

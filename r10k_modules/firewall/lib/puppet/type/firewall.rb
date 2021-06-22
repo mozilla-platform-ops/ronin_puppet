@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 # See: #10295 for more details.
 #
 # This is a workaround for bug: #4248 whereby ruby files outside of the normal
-# provider/type path do not load until pluginsync has occured on the puppetmaster
+# provider/type path do not load until pluginsync has occured on the puppet server
 #
 # In this case I'm trying the relative path first, then falling back to normal
 # mechanisms. This should be fixed in future versions of puppet but it looks
@@ -13,8 +15,8 @@ Puppet::Type.newtype(:firewall) do
   include Puppet::Util::Firewall
 
   @doc = <<-PUPPETCODE
-    This type provides the capability to manage firewall rules within
-    puppet.
+    @summary
+      This type provides the capability to manage firewall rules within puppet.
 
     **Autorequires:**
 
@@ -26,9 +28,130 @@ Puppet::Type.newtype(:firewall) do
     and the provider is iptables or ip6tables, the firewall resource will
     autorequire those packages to ensure that any required binaries are
     installed.
+
+    #### Providers
+      Note: Not all features are available with all providers.
+
+      * ip6tables: Ip6tables type provider
+
+        * Required binaries: ip6tables-save, ip6tables.
+        * Supported features: address_type, connection_limiting, conntrack, dnat, hop_limiting, icmp_match,
+        interface_match, iprange, ipsec_dir, ipsec_policy, ipset, iptables, isfirstfrag,
+        ishasmorefrags, islastfrag, length, log_level, log_prefix, log_uid,
+        log_tcp_sequence, log_tcp_options, log_ip_options, mask, mss,
+        owner, pkttype, queue_bypass, queue_num, rate_limiting, recent_limiting, reject_type,
+        snat, socket, state_match, string_matching, tcp_flags, hashlimit, bpf.
+
+      * iptables: Iptables type provider
+
+        * Required binaries: iptables-save, iptables.
+        * Default for kernel == linux.
+        * Supported features: address_type, clusterip, connection_limiting, conntrack, dnat, icmp_match,
+        interface_match, iprange, ipsec_dir, ipsec_policy, ipset, iptables, isfragment, length,
+        log_level, log_prefix, log_uid, log_tcp_sequence, log_tcp_options, log_ip_options,
+        mark, mask, mss, netmap, nflog_group, nflog_prefix,
+        nflog_range, nflog_threshold, owner, pkttype, queue_bypass, queue_num, rate_limiting,
+        recent_limiting, reject_type, snat, socket, state_match, string_matching, tcp_flags, bpf.
+
+    #### Features
+      * address_type: The ability to match on source or destination address type.
+
+      * clusterip: Configure a simple cluster of nodes that share a certain IP and MAC address without an explicit load balancer in front of them.
+
+      * condition: Match if a specific condition variable is (un)set (requires xtables-addons)
+
+      * connection_limiting: Connection limiting features.
+
+      * conntrack: Connection tracking features.
+
+      * dnat: Destination NATing.
+
+      * hop_limiting: Hop limiting features.
+
+      * icmp_match: The ability to match ICMP types.
+
+      * interface_match: Interface matching.
+
+      * iprange: The ability to match on source or destination IP range.
+
+      * ipsec_dir: The ability to match IPsec policy direction.
+
+      * ipsec_policy: The ability to match IPsec policy.
+
+      * iptables: The provider provides iptables features.
+
+      * isfirstfrag: The ability to match the first fragment of a fragmented ipv6 packet.
+
+      * isfragment: The ability to match fragments.
+
+      * ishasmorefrags: The ability to match a non-last fragment of a fragmented ipv6 packet.
+
+      * islastfrag: The ability to match the last fragment of an ipv6 packet.
+
+      * length: The ability to match the length of the layer-3 payload.
+
+      * log_level: The ability to control the log level.
+
+      * log_prefix: The ability to add prefixes to log messages.
+
+      * log_uid: The ability to log the userid of the process which generated the packet.
+
+      * log_tcp_sequence: The ability to log TCP sequence numbers.
+
+      * log_tcp_options: The ability to log TCP packet header.
+
+      * log_ip_options: The ability to log IP/IPv6 packet header.
+
+      * mark: The ability to match or set the netfilter mark value associated with the packet.
+
+      * mask: The ability to match recent rules based on the ipv4 mask.
+
+      * nflog_group: The ability to set the group number for NFLOG.
+
+      * nflog_prefix: The ability to set a prefix for nflog messages.
+
+      * nflog_range: The ability to set nflog_range.
+
+      * nflog_threshold: The ability to set nflog_threshold.
+
+      * owner: The ability to match owners.
+
+      * pkttype: The ability to match a packet type.
+
+      * rate_limiting: Rate limiting features.
+
+      * recent_limiting: The netfilter recent module.
+
+      * reject_type: The ability to control reject messages.
+
+      * set_mss: Set the TCP MSS of a packet.
+
+      * snat: Source NATing.
+
+      * socket: The ability to match open sockets.
+
+      * state_match: The ability to match stateful firewall states.
+
+      * string_matching: The ability to match a given string by using some pattern matching strategy.
+
+      * tcp_flags: The ability to match on particular TCP flag settings.
+
+      * netmap: The ability to map entire subnets via source or destination nat rules.
+
+      * hashlimit: The ability to use the hashlimit-module.
+
+      * bpf: The ability to use Berkeley Paket Filter rules.
+
+      * ipvs: The ability to match IP Virtual Server packets.
+
+      * ct_target: The ability to set connection tracking parameters for a packet or its associated connection.
+
+      * random_fully: The ability to use --random-fully flag.
   PUPPETCODE
 
   feature :connection_limiting, 'Connection limiting features.'
+  feature :condition, 'Match if a specific condition variable is (un)set.'
+  feature :conntrack, 'Connection tracking features.'
   feature :hop_limiting, 'Hop limiting features.'
   feature :rate_limiting, 'Rate limiting features.'
   feature :recent_limiting, 'The netfilter recent module'
@@ -43,6 +166,9 @@ Puppet::Type.newtype(:firewall) do
   feature :log_level, 'The ability to control the log level'
   feature :log_prefix, 'The ability to add prefixes to log messages'
   feature :log_uid, 'Add UIDs to log messages'
+  feature :log_tcp_sequence, 'Add TCP sequence numbers to log messages'
+  feature :log_tcp_options, 'Add TCP packet header to log messages'
+  feature :log_ip_options, 'Add IP/IPv6 packet header to log messages'
   feature :mark, 'Match or Set the netfilter mark value associated with the packet'
   feature :mss, 'Match a given TCP MSS value or range.'
   feature :tcp_flags, 'The ability to match on particular TCP flag settings'
@@ -68,13 +194,16 @@ Puppet::Type.newtype(:firewall) do
   feature :queue_num, 'Which NFQUEUE to send packets to'
   feature :queue_bypass, 'If nothing is listening on queue_num, allow packets to bypass the queue'
   feature :hashlimit, 'Hashlimit features'
-
+  feature :bpf, 'Berkeley Paket Filter feature'
+  feature :ipvs, 'Packet belongs to an IP Virtual Server connection'
+  feature :ct_target, 'The ability to set connection tracking parameters for a packet or its associated connection'
+  feature :random_fully, 'The ability to use --random-fully flag'
   # provider specific features
   feature :iptables, 'The provider provides iptables features.'
 
   ensurable do
     desc <<-PUPPETCODE
-      Manage the state of this rule. The default action is *present*.
+      Manage the state of this rule.
     PUPPETCODE
 
     newvalue(:present) do
@@ -296,7 +425,7 @@ Puppet::Type.newtype(:firewall) do
 
   newproperty(:port, array_matching: :all) do
     desc <<-PUPPETCODE
-      DEPRECATED
+      *note* This property has been DEPRECATED
 
       The destination or source port to match for this filter (if the protocol
       supports ports). Will accept a single element or an array.
@@ -330,11 +459,11 @@ Puppet::Type.newtype(:firewall) do
     end
   end
 
-  newproperty(:dst_type, required_features: :address_type) do
+  newproperty(:dst_type, required_features: :address_type, array_matching: :all) do
     desc <<-PUPPETCODE
       The destination address type. For example:
 
-          dst_type => 'LOCAL'
+          dst_type => ['LOCAL']
 
       Can be one of:
 
@@ -350,19 +479,36 @@ Puppet::Type.newtype(:firewall) do
       * THROW - undocumented
       * NAT - undocumented
       * XRESOLVE - undocumented
+
+      In addition, it accepts '--limit-iface-in' and '--limit-iface-out' flags, specified as:
+
+          dst_type => ['LOCAL --limit-iface-in']
+
+      It can also be negated using '!':
+
+          dst_type => ['! LOCAL']
+
+      Will accept a single element or an array.
     PUPPETCODE
 
     newvalues(*[:UNSPEC, :UNICAST, :LOCAL, :BROADCAST, :ANYCAST, :MULTICAST,
                 :BLACKHOLE, :UNREACHABLE, :PROHIBIT, :THROW, :NAT, :XRESOLVE].map { |address_type|
-                [address_type, "! #{address_type}".to_sym]
+                [
+                  address_type,
+                  "! #{address_type}".to_sym,
+                  "#{address_type} --limit-iface-in".to_sym,
+                  "#{address_type} --limit-iface-out".to_sym,
+                  "! #{address_type} --limit-iface-in".to_sym,
+                  "! #{address_type} --limit-iface-out".to_sym,
+                ]
               }.flatten)
   end
 
-  newproperty(:src_type, required_features: :address_type) do
+  newproperty(:src_type, required_features: :address_type, array_matching: :all) do
     desc <<-PUPPETCODE
       The source address type. For example:
 
-          src_type => 'LOCAL'
+          src_type => ['LOCAL']
 
       Can be one of:
 
@@ -378,18 +524,34 @@ Puppet::Type.newtype(:firewall) do
       * THROW - undocumented
       * NAT - undocumented
       * XRESOLVE - undocumented
+
+      In addition, it accepts '--limit-iface-in' and '--limit-iface-out' flags, specified as:
+
+          src_type => ['LOCAL --limit-iface-in']
+
+      It can also be negated using '!':
+
+          src_type => ['! LOCAL']
+
+      Will accept a single element or an array.
     PUPPETCODE
 
     newvalues(*[:UNSPEC, :UNICAST, :LOCAL, :BROADCAST, :ANYCAST, :MULTICAST,
                 :BLACKHOLE, :UNREACHABLE, :PROHIBIT, :THROW, :NAT, :XRESOLVE].map { |address_type|
-                [address_type, "! #{address_type}".to_sym]
+                [
+                  address_type,
+                  "! #{address_type}".to_sym,
+                  "#{address_type} --limit-iface-in".to_sym,
+                  "#{address_type} --limit-iface-out".to_sym,
+                  "! #{address_type} --limit-iface-in".to_sym,
+                  "! #{address_type} --limit-iface-out".to_sym,
+                ]
               }.flatten)
   end
 
   newproperty(:proto) do
     desc <<-PUPPETCODE
-      The specific protocol to match for this rule. By default this is
-      *tcp*.
+      The specific protocol to match for this rule.
     PUPPETCODE
 
     newvalues(*[:ip, :tcp, :udp, :icmp, :"ipv6-icmp", :esp, :ah, :vrrp, :igmp, :ipencap, :ipv4, :ipv6, :ospf, :gre, :cbt, :sctp, :pim, :all].map { |proto|
@@ -415,8 +577,8 @@ Puppet::Type.newtype(:firewall) do
       Note that you specify them in the order that iptables --list-rules
       would list them to avoid having puppet think you changed the flags.
       Example: FIN,SYN,RST,ACK SYN matches packets with the SYN bit set and the
-	       ACK,RST and FIN bits cleared.  Such packets are used to request
-               TCP  connection initiation.
+      ACK,RST and FIN bits cleared. Such packets are used to request
+      TCP  connection initiation.
     PUPPETCODE
   end
 
@@ -432,8 +594,6 @@ Puppet::Type.newtype(:firewall) do
       * POSTROUTING
 
       Or you can provide a user-based chain.
-
-      The default value is 'INPUT'.
     PUPPETCODE
 
     defaultto 'INPUT'
@@ -449,8 +609,6 @@ Puppet::Type.newtype(:firewall) do
       * filter
       * raw
       * rawpost
-
-      By default the setting is 'filter'.
     PUPPETCODE
 
     newvalues(:nat, :mangle, :filter, :raw, :rawpost)
@@ -470,10 +628,11 @@ Puppet::Type.newtype(:firewall) do
       * MASQUERADE
       * REDIRECT
       * MARK
+      * CT
 
       But any valid chain name is allowed.
 
-      For the values ACCEPT, DROP and REJECT you must use the generic
+      For the values ACCEPT, DROP, and REJECT, you must use the generic
       'action' parameter. This is to enfore the use of generic parameters where
       possible for maximum cross-platform modelling.
 
@@ -482,10 +641,10 @@ Puppet::Type.newtype(:firewall) do
     PUPPETCODE
 
     validate do |value|
-      unless value =~ %r{^[a-zA-Z0-9\-_]+$}
+      unless %r{^[a-zA-Z0-9\-_]+$}.match?(value)
         raise ArgumentError, <<-PUPPETCODE
           Jump destination must consist of alphanumeric characters, an
-          underscore or a yphen.
+          underscore or a hyphen.
         PUPPETCODE
       end
 
@@ -515,10 +674,10 @@ Puppet::Type.newtype(:firewall) do
     PUPPETCODE
 
     validate do |value|
-      unless value =~ %r{^[a-zA-Z0-9\-_]+$}
+      unless %r{^[a-zA-Z0-9\-_]+$}.match?(value)
         raise ArgumentError, <<-PUPPETCODE
           Goto destination must consist of alphanumeric characters, an
-          underscore or a yphen.
+          underscore or a hyphen.
         PUPPETCODE
       end
 
@@ -540,7 +699,7 @@ Puppet::Type.newtype(:firewall) do
             iniface => '! lo',
 
     PUPPETCODE
-    newvalues(%r{^!?\s?[a-zA-Z0-9\-\._\+\:]+$})
+    newvalues(%r{^!?\s?[a-zA-Z0-9\-\._\+\:@]+$})
   end
 
   newproperty(:outiface, required_features: :interface_match) do
@@ -551,7 +710,7 @@ Puppet::Type.newtype(:firewall) do
            outiface => '! lo',
 
     PUPPETCODE
-    newvalues(%r{^!?\s?[a-zA-Z0-9\-\._\+\:]+$})
+    newvalues(%r{^!?\s?[a-zA-Z0-9\-\._\+\:@]+$})
   end
 
   # NAT specific properties
@@ -581,6 +740,17 @@ Puppet::Type.newtype(:firewall) do
     PUPPETCODE
   end
 
+  newproperty(:random_fully, required_features: :random_fully) do
+    desc <<-PUPPETCODE
+      When using a jump value of "MASQUERADE", "DNAT", "REDIRECT", or "SNAT"
+      this boolean will enable fully randomized port mapping.
+
+      **NOTE** Requires Kernel >= 3.13 and iptables >= 1.6.2
+    PUPPETCODE
+
+    newvalues(:true, :false)
+  end
+
   newproperty(:random, required_features: :dnat) do
     desc <<-PUPPETCODE
       When using a jump value of "MASQUERADE", "DNAT", "REDIRECT", or "SNAT"
@@ -593,7 +763,7 @@ Puppet::Type.newtype(:firewall) do
   # Reject ICMP type
   newproperty(:reject, required_features: :reject_type) do
     desc <<-PUPPETCODE
-      When combined with jump => "REJECT" you can specify a different icmp
+      When combined with action => "REJECT" you can specify a different icmp
       response to be sent back to the packet sender.
     PUPPETCODE
   end
@@ -624,12 +794,46 @@ Puppet::Type.newtype(:firewall) do
       When combined with jump => "LOG" specifies the log prefix to use when
       logging.
     PUPPETCODE
+
+    munge do |value|
+      if value == ''
+        raise('log_prefix should not be an empty string')
+      end
+      value
+    end
   end
 
   newproperty(:log_uid, required_features: :log_uid) do
     desc <<-PUPPETCODE
       When combined with jump => "LOG" specifies the uid of the process making
       the connection.
+    PUPPETCODE
+
+    newvalues(:true, :false)
+  end
+
+  newproperty(:log_tcp_sequence, required_features: :log_tcp_sequence) do
+    desc <<-PUPPETCODE
+      When combined with jump => "LOG" enables logging of the TCP sequence
+      numbers.
+    PUPPETCODE
+
+    newvalues(:true, :false)
+  end
+
+  newproperty(:log_tcp_options, required_features: :log_tcp_options) do
+    desc <<-PUPPETCODE
+      When combined with jump => "LOG" logging of the TCP packet
+      header.
+    PUPPETCODE
+
+    newvalues(:true, :false)
+  end
+
+  newproperty(:log_ip_options, required_features: :log_ip_options) do
+    desc <<-PUPPETCODE
+      When combined with jump => "LOG" logging of the TCP IP/IPv6
+      packet header.
     PUPPETCODE
 
     newvalues(:true, :false)
@@ -774,7 +978,7 @@ Puppet::Type.newtype(:firewall) do
     end
   end
 
-  newproperty(:ctstate, array_matching: :all, required_features: :state_match) do
+  newproperty(:ctstate, array_matching: :all, required_features: :conntrack) do
     desc <<-PUPPETCODE
       Matches a packet based on its state in the firewall stateful inspection
       table, using the conntrack module. Values can be:
@@ -784,9 +988,11 @@ Puppet::Type.newtype(:firewall) do
       * NEW
       * RELATED
       * UNTRACKED
+      * SNAT
+      * DNAT
     PUPPETCODE
 
-    newvalues(:INVALID, :ESTABLISHED, :NEW, :RELATED, :UNTRACKED)
+    newvalues(:INVALID, :ESTABLISHED, :NEW, :RELATED, :UNTRACKED, :SNAT, :DNAT)
 
     # States should always be sorted. This normalizes the resource states to
     # keep it consistent with the sorted result from iptables-save.
@@ -802,6 +1008,286 @@ Puppet::Type.newtype(:firewall) do
       value = [value] unless value.is_a?(Array)
       value.join(',')
     end
+  end
+
+  newproperty(:ctproto, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The specific layer-4 protocol number to match for this rule using the
+      conntrack module.
+    PUPPETCODE
+    newvalue(%r{^!?\s?\d+$})
+  end
+
+  newproperty(:ctorigsrc, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The original source address using the conntrack module. For example:
+
+          ctorigsrc => '192.168.2.0/24'
+
+      You can also negate a mask by putting ! in front. For example:
+
+          ctorigsrc => '! 192.168.2.0/24'
+
+      The ctorigsrc can also be an IPv6 address if your provider supports it.
+    PUPPETCODE
+
+    munge do |value|
+      case @resource[:provider]
+      when :iptables
+        protocol = :IPv4
+      when :ip6tables
+        protocol = :IPv6
+      else
+        raise('cannot work out protocol family')
+      end
+
+      begin
+        @resource.host_to_mask(value, protocol)
+        if protocol == :IPv4
+          value.chomp('/32')
+        elsif protocol == :IPv6
+          value.chomp('/128')
+        end
+      rescue StandardError => e
+        raise("host_to_ip failed for #{value}, exception #{e}")
+      end
+    end
+  end
+
+  newproperty(:ctorigdst, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The original destination address using the conntrack module. For example:
+
+          ctorigdst => '192.168.2.0/24'
+
+      You can also negate a mask by putting ! in front. For example:
+
+          ctorigdst => '! 192.168.2.0/24'
+
+      The ctorigdst can also be an IPv6 address if your provider supports it.
+    PUPPETCODE
+
+    munge do |value|
+      case @resource[:provider]
+      when :iptables
+        protocol = :IPv4
+      when :ip6tables
+        protocol = :IPv6
+      else
+        raise('cannot work out protocol family')
+      end
+
+      begin
+        @resource.host_to_mask(value, protocol)
+        if protocol == :IPv4
+          value.chomp('/32')
+        elsif protocol == :IPv6
+          value.chomp('/128')
+        end
+      rescue StandardError => e
+        raise("host_to_ip failed for #{value}, exception #{e}")
+      end
+    end
+  end
+
+  newproperty(:ctreplsrc, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The reply source address using the conntrack module. For example:
+
+          ctreplsrc => '192.168.2.0/24'
+
+      You can also negate a mask by putting ! in front. For example:
+
+          ctreplsrc => '! 192.168.2.0/24'
+
+      The ctreplsrc can also be an IPv6 address if your provider supports it.
+    PUPPETCODE
+
+    munge do |value|
+      case @resource[:provider]
+      when :iptables
+        protocol = :IPv4
+      when :ip6tables
+        protocol = :IPv6
+      else
+        raise('cannot work out protocol family')
+      end
+
+      begin
+        @resource.host_to_mask(value, protocol)
+        if protocol == :IPv4
+          value.chomp('/32')
+        elsif protocol == :IPv6
+          value.chomp('/128')
+        end
+      rescue StandardError => e
+        raise("host_to_ip failed for #{value}, exception #{e}")
+      end
+    end
+  end
+
+  newproperty(:ctrepldst, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The reply destination address using the conntrack module. For example:
+
+          ctrepldst => '192.168.2.0/24'
+
+      You can also negate a mask by putting ! in front. For example:
+
+          ctrepldst => '! 192.168.2.0/24'
+
+      The ctrepldst can also be an IPv6 address if your provider supports it.
+    PUPPETCODE
+
+    munge do |value|
+      case @resource[:provider]
+      when :iptables
+        protocol = :IPv4
+      when :ip6tables
+        protocol = :IPv6
+      else
+        raise('cannot work out protocol family')
+      end
+
+      begin
+        @resource.host_to_mask(value, protocol)
+        if protocol == :IPv4
+          value.chomp('/32')
+        elsif protocol == :IPv6
+          value.chomp('/128')
+        end
+      rescue StandardError => e
+        raise("host_to_ip failed for #{value}, exception #{e}")
+      end
+    end
+  end
+
+  newproperty(:ctorigsrcport, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The original source port to match for this filter using the conntrack module.
+      For example:
+
+          ctorigsrcport => '80'
+
+      You can also specify a port range: For example:
+
+          ctorigsrcport => '80:81'
+
+      You can also negate a port by putting ! in front. For example:
+
+          ctorigsrcport => '! 80'
+
+    PUPPETCODE
+    newvalue(%r{^!?\s?\d+$|^!?\s?\d+\:\d+$})
+  end
+
+  newproperty(:ctorigdstport, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The original destination port to match for this filter using the conntrack module.
+      For example:
+
+          ctorigdstport => '80'
+
+      You can also specify a port range: For example:
+
+          ctorigdstport => '80:81'
+
+      You can also negate a port by putting ! in front. For example:
+
+          ctorigdstport => '! 80'
+
+    PUPPETCODE
+    newvalue(%r{^!?\s?\d+$|^!?\s?\d+\:\d+$})
+  end
+
+  newproperty(:ctreplsrcport, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The reply source port to match for this filter using the conntrack module.
+      For example:
+
+          ctreplsrcport => '80'
+
+      You can also specify a port range: For example:
+
+          ctreplsrcport => '80:81'
+
+      You can also negate a port by putting ! in front. For example:
+
+          ctreplsrcport => '! 80'
+
+    PUPPETCODE
+    newvalue(%r{^!?\s?\d+$|^!?\s?\d+\:\d+$})
+  end
+
+  newproperty(:ctrepldstport, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      The reply destination port to match for this filter using the conntrack module.
+      For example:
+
+          ctrepldstport => '80'
+
+      You can also specify a port range: For example:
+
+          ctrepldstport => '80:81'
+
+      You can also negate a port by putting ! in front. For example:
+
+          ctrepldstport => '! 80'
+
+    PUPPETCODE
+    newvalue(%r{^!?\s?\d+$|^!?\s?\d+\:\d+$})
+  end
+
+  newproperty(:ctstatus, array_matching: :all, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      Matches a packet based on its status using the conntrack module. Values can be:
+
+      * EXPECTED
+      * SEEN_REPLY
+      * ASSURED
+      * CONFIRMED
+    PUPPETCODE
+
+    newvalues(:NONE, :EXPECTED, :SEEN_REPLY, :ASSURED, :CONFIRMED)
+
+    # Statuses should always be sorted. This normalizes the resource status to
+    # keep it consistent with the sorted result from iptables-save.
+    def should=(values)
+      @should = super(values).sort_by { |sym| sym.to_s }
+    end
+
+    def to_s?(value)
+      should_to_s(value)
+    end
+
+    def should_to_s(value)
+      value = [value] unless value.is_a?(Array)
+      value.join(',')
+    end
+  end
+
+  newproperty(:ctexpire, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      Matches a packet based on lifetime remaining in seconds or range of values
+      using the conntrack module. For example:
+
+          ctexpire => '100:150'
+
+    PUPPETCODE
+    newvalue(%r{^!?\s?\d+$|^!?\s?\d+\:\d+$})
+  end
+
+  newproperty(:ctdir, required_features: :conntrack) do
+    desc <<-PUPPETCODE
+      Matches a packet that is flowing in the specified direction using the
+      conntrack module. If this flag is not specified at all, matches packets
+      in both directions. Values can be:
+
+      * REPLY
+      * ORIGINAL
+    PUPPETCODE
+
+    newvalues(:REPLY, :ORIGINAL)
   end
 
   # Connection mark
@@ -1095,8 +1581,9 @@ Puppet::Type.newtype(:firewall) do
       Enable the recent module. Takes as an argument one of set, update,
       rcheck or remove. For example:
 
+        ```
         # If anyone's appeared on the 'badguy' blacklist within
-        # the last 60 seconds, drop their traffic, and update the timestamp.
+        #  the last 60 seconds, drop their traffic, and update the timestamp.
         firewall { '100 Drop badguy traffic':
           recent   => 'update',
           rseconds => 60,
@@ -1105,8 +1592,12 @@ Puppet::Type.newtype(:firewall) do
           action   => 'DROP',
           chain    => 'FORWARD',
         }
-        # No-one should be sending us traffic on eth0 from localhost
-        # Blacklist them
+        ```
+
+
+        ```
+        # No-one should be sending us traffic on eth0 from the
+        #  localhost, Blacklist them
         firewall { '101 blacklist strange traffic':
           recent      => 'set',
           rsource     => true,
@@ -1116,6 +1607,7 @@ Puppet::Type.newtype(:firewall) do
           action      => 'DROP',
           chain       => 'FORWARD',
         }
+        ```
     PUPPETCODE
 
     newvalues(:set, :update, :rcheck, :remove)
@@ -1190,6 +1682,17 @@ Puppet::Type.newtype(:firewall) do
     newvalues(:true, :false)
   end
 
+  newproperty(:rpfilter, required_features: :rpfilter) do
+    desc <<-PUPPETCODE
+      Enable the rpfilter module.
+    PUPPETCODE
+
+    newvalues(:loose, :validmark, :'accept-local', :invert)
+    munge do |value|
+      _value = '--' + value
+    end
+  end
+
   newproperty(:socket, required_features: :socket) do
     desc <<-PUPPETCODE
       If true, matches if an open socket can be found by doing a coket lookup
@@ -1242,7 +1745,7 @@ Puppet::Type.newtype(:firewall) do
 
   newproperty(:stat_mode) do
     desc <<-PUPPETCODE
-      Set the matching mode for statistic matching. Supported modes are `random` and `nth`.
+      Set the matching mode for statistic matching.
     PUPPETCODE
 
     newvalues(:nth, :random)
@@ -1254,7 +1757,7 @@ Puppet::Type.newtype(:firewall) do
     PUPPETCODE
 
     validate do |value|
-      unless value =~ %r{^\d+$}
+      unless %r{^\d+$}.match?(value)
         raise ArgumentError, <<-PUPPETCODE
           stat_every value must be a digit
         PUPPETCODE
@@ -1405,11 +1908,11 @@ Puppet::Type.newtype(:firewall) do
     PUPPETCODE
 
     munge do |value|
-      if value =~ %r{^([0-9]):}
+      if %r{^([0-9]):}.match?(value)
         value = "0#{value}"
       end
 
-      if value =~ %r{^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$}
+      if %r{^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$}.match?(value)
         value = "#{value}:00"
       end
 
@@ -1424,11 +1927,11 @@ Puppet::Type.newtype(:firewall) do
     PUPPETCODE
 
     munge do |value|
-      if value =~ %r{^([0-9]):}
+      if %r{^([0-9]):}.match?(value)
         value = "0#{value}"
       end
 
-      if value =~ %r{^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$}
+      if %r{^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$}.match?(value)
         value = "#{value}:00"
       end
 
@@ -1456,7 +1959,7 @@ Puppet::Type.newtype(:firewall) do
 
   newproperty(:week_days, required_features: :iptables) do
     desc <<-PUPPETCODE
-      Only match on the given weekdays. Possible values are Mon, Tue, Wed, Thu, Fri, Sat, Sun.
+      Only match on the given weekdays.
     PUPPETCODE
 
     newvalues(:Mon, :Tue, :Wed, :Thu, :Fri, :Sat, :Sun)
@@ -1490,7 +1993,7 @@ Puppet::Type.newtype(:firewall) do
   newproperty(:clusterip_hashmode, required_features: :clusterip) do
     desc <<-PUPPETCODE
       Used with the CLUSTERIP jump target.
-      Specify the hashing mode. Valid values: sourceip, sourceip-sourceport, sourceip-sourceport-destport.
+      Specify the hashing mode.
     PUPPETCODE
 
     newvalues(:sourceip, :'sourceip-sourceport', :'sourceip-sourceport-destport')
@@ -1564,9 +2067,19 @@ Puppet::Type.newtype(:firewall) do
       String matching feature. Matches the packet against the pattern
       given as an argument.
     PUPPETCODE
+  end
 
+  newproperty(:string_hex) do
+    desc <<-PUPPETCODE
+      String matching feature. Matches the package against the hex pattern
+      given as an argument.
+    PUPPETCODE
     munge do |value|
-      _value = "'" + value + "'"
+      _value = if value.include?('!')
+                 value.split('|').map { |x| x.include?('!') ? x : "|#{x.delete(' ')}|" }.join
+               else
+                 value.delete(' ')
+               end
     end
   end
 
@@ -1703,6 +2216,60 @@ Puppet::Type.newtype(:firewall) do
     PUPPETCODE
   end
 
+  newproperty(:bytecode, required_features: :iptables) do
+    desc <<-PUPPETCODE
+      Match using Linux Socket Filter. Expects a BPF program in decimal format.
+      This is the format generated by the nfbpf_compile utility.
+    PUPPETCODE
+  end
+
+  newproperty(:ipvs, required_features: :ipvs) do
+    desc <<-PUPPETCODE
+      Indicates that the current packet belongs to an IPVS connection.
+    PUPPETCODE
+    newvalues(:true, :false)
+  end
+
+  newproperty(:zone, required_features: :ct_target) do
+    desc <<-PUPPETCODE
+      Assign this packet to zone id and only have lookups done in that zone.
+    PUPPETCODE
+  end
+
+  newproperty(:helper, required_features: :ct_target) do
+    desc <<-PUPPETCODE
+      Invoke the nf_conntrack_xxx helper module for this packet.
+    PUPPETCODE
+  end
+
+  newproperty(:cgroup) do
+    desc <<-PUPPETCODE
+      Matches against the net_cls cgroup ID of the packet.
+    PUPPETCODE
+  end
+
+  newproperty(:notrack, required_features: :ct_target) do
+    # use this parameter with latest version of iptables
+    desc <<-PUPPETCODE
+     Invoke the disable connection tracking for this packet.
+     This parameter can be used with iptables version >= 1.8.3
+    PUPPETCODE
+    newvalues(:true, :false)
+  end
+
+  newproperty(:condition, required_features: :condition) do
+    desc <<-PUPPETCODE
+      Match on boolean value (0/1) stored in /proc/net/nf_condition/name.
+    PUPPETCODE
+    validate do |value|
+      unless value.is_a?(String)
+        raise ArgumentError, <<-PUPPETCODE
+          Condition must be a string.
+        PUPPETCODE
+      end
+    end
+  end
+
   autorequire(:firewallchain) do
     reqs = []
     protocol = nil
@@ -1716,8 +2283,9 @@ Puppet::Type.newtype(:firewall) do
 
     unless protocol.nil?
       table = value(:table)
+      main_chains = ['INPUT', 'OUTPUT', 'FORWARD']
       [value(:chain), value(:jump)].each do |chain|
-        reqs << "#{chain}:#{table}:#{protocol}" unless chain.nil? || (['INPUT', 'OUTPUT', 'FORWARD'].include?(chain) && table == :filter)
+        reqs << "#{chain}:#{table}:#{protocol}" unless chain.nil? || (main_chains.include?(chain) && table == :filter)
       end
     end
 
@@ -1783,29 +2351,29 @@ Puppet::Type.newtype(:firewall) do
     # Now we analyse the individual properties to make sure they apply to
     # the correct combinations.
     if value(:uid)
-      unless value(:chain).to_s =~ %r{OUTPUT|POSTROUTING}
+      unless %r{OUTPUT|POSTROUTING}.match?(value(:chain).to_s)
         raise 'Parameter uid only applies to chains ' \
           'OUTPUT,POSTROUTING'
       end
     end
 
     if value(:gid)
-      unless value(:chain).to_s =~ %r{OUTPUT|POSTROUTING}
+      unless %r{OUTPUT|POSTROUTING}.match?(value(:chain).to_s)
         raise 'Parameter gid only applies to chains ' \
           'OUTPUT,POSTROUTING'
       end
     end
 
     if value(:set_mark)
-      unless value(:jump).to_s  =~ %r{MARK} &&
-             value(:table).to_s =~ %r{mangle}
+      unless value(:jump).to_s.include?('MARK') &&
+             value(:table).to_s.include?('mangle')
         raise 'Parameter set_mark only applies to ' \
           'the mangle table and when jump => MARK'
       end
     end
 
     if value(:dport)
-      unless value(:proto).to_s =~ %r{tcp|udp|sctp}
+      unless %r{tcp|udp|sctp}.match?(value(:proto).to_s)
         raise '[%s] Parameter dport only applies to sctp, tcp and udp ' \
           'protocols. Current protocol is [%s] and dport is [%s]' %
               [value(:name), should(:proto), should(:dport)]
@@ -1831,7 +2399,7 @@ Puppet::Type.newtype(:firewall) do
     end
 
     if value(:jump).to_s == 'DNAT'
-      unless value(:table).to_s =~ %r{nat}
+      unless %r{nat}.match?(value(:table).to_s)
         raise 'Parameter jump => DNAT only applies to table => nat'
       end
 
@@ -1841,7 +2409,7 @@ Puppet::Type.newtype(:firewall) do
     end
 
     if value(:jump).to_s == 'SNAT'
-      unless value(:table).to_s =~ %r{nat}
+      unless %r{nat}.match?(value(:table).to_s)
         raise 'Parameter jump => SNAT only applies to table => nat'
       end
 
@@ -1851,14 +2419,15 @@ Puppet::Type.newtype(:firewall) do
     end
 
     if value(:jump).to_s == 'MASQUERADE'
-      unless value(:table).to_s =~ %r{nat}
+      unless %r{nat}.match?(value(:table).to_s)
         raise 'Parameter jump => MASQUERADE only applies to table => nat'
       end
     end
 
-    if value(:log_prefix) || value(:log_level) || value(:log_uid)
+    if value(:log_prefix) || value(:log_level) || value(:log_uid) ||
+       value(:log_tcp_sequence) || value(:log_tcp_options) || value(:log_ip_options) == :true
       unless value(:jump).to_s == 'LOG'
-        raise 'Parameter log_prefix, log_level and log_uid require jump => LOG'
+        raise 'Parameter log_prefix, log_level, log_tcp_sequence, log_tcp_options, log_ip_options  and log_uid require jump => LOG'
       end
     end
 
@@ -1896,13 +2465,13 @@ Puppet::Type.newtype(:firewall) do
       raise "Parameter 'stat_probability' requires 'stat_mode' to be set to 'random'"
     end
 
-    if value(:checksum_fill)
+    if value(:checksum_fill) == :true
       unless value(:jump).to_s == 'CHECKSUM' && value(:table).to_s == 'mangle'
         raise 'Parameter checksum_fill requires jump => CHECKSUM and table => mangle'
       end
     end
 
-    if value(:queue_num) || value(:queue_bypass)
+    if value(:queue_num) || value(:queue_bypass) == :true
       unless value(:jump).to_s == 'NFQUEUE'
         raise 'Paramter queue_number and queue_bypass require jump => NFQUEUE'
       end
@@ -1911,6 +2480,30 @@ Puppet::Type.newtype(:firewall) do
     if value(:hashlimit_name)
       unless value(:hashlimit_upto) || value(:hashlimit_above)
         raise 'Either hashlimit_upto or hashlimit_above are required'
+      end
+    end
+
+    if value(:zone)
+      unless value(:jump).to_s == 'CT'
+        raise 'Parameter zone requires jump => CT'
+      end
+    end
+
+    if value(:helper)
+      unless value(:jump).to_s == 'CT'
+        raise 'Parameter helper requires jump => CT'
+      end
+    end
+
+    if value(:notrack)
+      unless value(:jump).to_s == 'CT'
+        raise 'Parameter notrack requires jump => CT'
+      end
+    end
+
+    if value(:jump).to_s == 'CT'
+      unless %r{raw}.match?(value(:table).to_s)
+        raise 'Parameter jump => CT only applies to table => raw'
       end
     end
   end

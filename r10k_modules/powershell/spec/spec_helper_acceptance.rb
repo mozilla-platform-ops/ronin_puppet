@@ -4,6 +4,7 @@ require 'beaker-rspec/spec_helper'
 require 'beaker-rspec/helpers/serverspec'
 require 'beaker/puppet_install_helper'
 require 'beaker/testmode_switcher/dsl'
+require 'beaker/module_install_helper'
 
 UNSUPPORTED_PLATFORMS = ['debian', 'ubuntu', 'Solaris']
 FUTURE_PARSER = ENV['FUTURE_PARSER'] == 'true' || false
@@ -12,17 +13,16 @@ run_puppet_install_helper
 configure_type_defaults_on(hosts)
 
 unless ENV['MODULE_provision'] == 'no'
-
-  on default, "mkdir -p #{default['distmoduledir']}/powershell"
-  result = on default, "echo #{default['distmoduledir']}/powershell"
-  target = result.raw_output.chomp
-  proj_root = File.expand_path(File.join(File.dirname(__FILE__), '..'))
-  %w(lib metadata.json).each do |file|
-    scp_to default, "#{proj_root}/#{file}", target
+  # Due to a bug in beaker-puppet, passing in a hosts array with differing architectures does
+  # weird things e.g. uses windows paths in linux.  Best to just pass in one host at a time.
+  hosts.each do |host|
+    install_module_on(host)
+    install_module_dependencies_on(host)
   end
 
   # Install PowerShell on hosts that are not a Master, Dashboard or Database
   agents.each do |host|
+    ps_version = host['powershell']
     if not_controller(host)
       case host.platform
       when "ubuntu-14.04-amd64"
@@ -31,22 +31,32 @@ unless ENV['MODULE_provision'] == 'no'
         on(host,'curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -')
         on(host,'curl https://packages.microsoft.com/config/ubuntu/14.04/prod.list | sudo tee /etc/apt/sources.list.d/microsoft.list')
         on(host,'sudo apt-get update')
-        on(host,'sudo apt-get install -y powershell')
+        # e.g. sudo apt-get install -y powershell=6.1.2-1.ubuntu.14.04
+        apt_text = "=#{ps_version}-1.ubuntu.14.04" unless ps_version.nil?
+        on(host,"sudo apt-get install -y powershell#{apt_text}")
       when "ubuntu-16.04-amd64"
         # Instructions for installing on Ubuntu 16 from
         # https://github.com/PowerShell/PowerShell/blob/master/docs/installation/linux.md#ubuntu-1604
         on(host,'curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -')
         on(host,'curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/microsoft.list')
         on(host,'sudo apt-get update')
-        on(host,'sudo apt-get install -y powershell')
+        # e.g. sudo apt-get install -y powershell=6.1.2-1.ubuntu.16.04
+        apt_text = "=#{ps_version}-1.ubuntu.16.04" unless ps_version.nil?
+        on(host,"sudo apt-get install -y powershell#{apt_text}")
       when "el-7-x86_64"
         # Instructions for installing on CentOS 7, Oracle Linux7, RHEL 7 from
         # https://github.com/PowerShell/PowerShell/blob/master/docs/installation/linux.md#centos-7
         # sudo is not required and seems to throw errors when running under beaker `sudo: sorry, you must have a tty to run sudo`
         on(host,'curl https://packages.microsoft.com/config/rhel/7/prod.repo | tee /etc/yum.repos.d/microsoft.repo')
-        on(host,'yum install -y powershell')
+        # e.g. yum install -y powershell-6.1.2
+        yum_text = "-#{ps_version}" unless ps_version.nil?
+        on(host,"yum install -y powershell#{yum_text}")
       when /^windows/
-        # No need to do anything
+        # Install PowerShell 6 if needed
+        unless ps_version.nil?
+          on(host,"powershell -NoLogo -NoProfile -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri https://github.com/PowerShell/PowerShell/releases/download/v#{ps_version}/PowerShell-#{ps_version}-win-x64.msi -OutFile C:\\PSPkg.msi -UseBasicParsing\"")
+          on(host,'msiexec.exe /i C:\\\\PSPkg.msi /qn ALLUSERS=1 /l*v C:\\\\PSPkg-install.log')
+        end
       else
         raise("Unable to install PowerShell on host '#{host.name}' with platform '#{host.platform}'")
       end
@@ -76,4 +86,3 @@ RSpec.configure do |c|
     apply_manifest_on(posix_agents, absent_files, :catch_failures => true) if posix_agents.count > 0
   end
 end
-

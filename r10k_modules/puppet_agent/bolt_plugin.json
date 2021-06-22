@@ -1,5 +1,0 @@
-{
-  "hooks": {
-    "puppet_library": { "task": "puppet_agent::install" }
-  }
-}

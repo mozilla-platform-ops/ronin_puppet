@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'is_mac_address' do
   it { is_expected.not_to eq(nil) }

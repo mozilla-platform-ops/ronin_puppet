@@ -1,6 +1,6 @@
 {
   "name": "puppetlabs-powershell",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "author": "Puppet Inc",
   "summary": "Adds a new exec provider for executing PowerShell commands.",
   "license": "Apache-2.0",
@@ -20,22 +20,52 @@
         "Server 2012",
         "Server 2012 R2",
         "Server 2016",
+        "Server 2019",
         "7",
         "8",
         "10"
       ]
     },
     {
-      "operatingsystem": "Ubuntu",
-      "operatingsystemrelease": [
-        "14.04",
-        "16.04"
-      ]
-    },
-    {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
         "7"
+      ]
+    },
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "Fedora",
+      "operatingsystemrelease": [
+        "27",
+        "28"
+      ]
+    },
+    {
+      "operatingsystem": "OSX ",
+      "operatingsystemrelease": [
+        "10.12",
+        "10.13",
+        "10.14"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "14.04",
+        "16.04",
+        "18.04"
       ]
     }
   ],
@@ -45,7 +75,7 @@
       "version_requirement": ">= 4.7.0 < 7.0.0"
     }
   ],
-  "pdk-version": "1.6.0",
-  "template-url": "file://C:/Program Files/Puppet Labs/DevelopmentKit/share/cache/pdk-templates.git",
-  "template-ref": "1.6.0-0-gf5564c0"
+  "pdk-version": "1.8.0",
+  "template-url": "https://github.com/puppetlabs/pdk-templates",
+  "template-ref": "heads/master-0-ga6554ab"
 }

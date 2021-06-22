@@ -1,11 +1,90 @@
-# Changelog
-All notable changes to this project will be documented in this file.
+# Change log
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [Unreleased]
+## [v3.0.1](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v3.0.1) (2021-06-14)
 
-## [1.0.1] - 2019-03-07
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v3.0.0...v3.0.1)
+
+### Fixed
+
+- \(MODULES-10986\) Fix gMSA username support [\#188](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/188) ([sigv](https://github.com/sigv))
+
+## [v3.0.0](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v3.0.0) (2021-03-03)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v2.3.1...v3.0.0)
+
+### Changed
+
+- pdksync - Remove Puppet 5 from testing and bump minimal version to 6.0.0 [\#180](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/180) ([carabasdaniel](https://github.com/carabasdaniel))
+
+## [v2.3.1](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v2.3.1) (2020-12-18)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v2.3.0...v2.3.1)
+
+### Fixed
+
+- \(MODULES-10893\) Fix Last Day Of Month Trigger [\#175](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/175) ([RandomNoun7](https://github.com/RandomNoun7))
+
+## [v2.3.0](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v2.3.0) (2020-12-16)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v2.2.1...v2.3.0)
+
+### Added
+
+- pdksync - \(feat\) - Add support for Puppet 7 [\#169](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/169) ([daianamezdrea](https://github.com/daianamezdrea))
+
+### Fixed
+
+- \(DOCS\) update docs to match the code. [\#171](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/171) ([binford2k](https://github.com/binford2k))
+
+## [v2.2.1](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v2.2.1) (2020-08-26)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v2.2.0...v2.2.1)
+
+### Added
+
+- pdksync - \(IAC-973\) - Update travis/appveyor to run on new default branch `main` [\#154](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/154) ([david22swan](https://github.com/david22swan))
+- (IAC-732) - implement `Run only when user is logged on [\#150](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/150) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \(bugfix\) - fix `disable_time_zone_synchronization` so that it correctly disables functionality when set to true [\#161](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/161) ([david22swan](https://github.com/david22swan))
+- \(MODULES-10783\) Add back empty? check for `datetime_string` value [\#158](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/158) ([sanfrancrisko](https://github.com/sanfrancrisko))
+
+## [v2.2.0](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v2.2.0) (2020-08-24)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v2.1.0...v2.2.0)
+
+## [v2.1.0](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v2.1.0) (2020-07-24)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v2.0.1...v2.1.0)
+
+### Added
+
+- \(IAC-918\) - `disable_time_zone_synchronization` function implemented [\#145](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/145) ([david22swan](https://github.com/david22swan))
+
+## [v2.0.1](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v2.0.1) (2020-02-12)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/v2.0.0...v2.0.1)
+
+### Fixed
+
+- \(MODULES-10101\) Use RunOnLastWeekOfMonth for which\_occurrence = last [\#119](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/119) ([sanfrancrisko](https://github.com/sanfrancrisko))
+
+## [v2.0.0](https://github.com/puppetlabs/puppetlabs-scheduled_task/tree/v2.0.0) (2019-08-15)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/1.0.1...v2.0.0)
+
+### Changed
+
+- \(MODULES-9370\) Raise Supported Puppet lower bound from 4.9.0 to 5.5.10 [\#88](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/88) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+### Added
+
+- \(MODULES-7203\) Support nonroot task folders [\#83](https://github.com/puppetlabs/puppetlabs-scheduled_task/pull/83) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+## 1.0.1
 
 ### Fixed
 
@@ -71,10 +150,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - Updated README with examples for the new provider ([MODULES-6264](https://tickets.puppetlabs.com/browse/MODULES-6264))
 - Updated acceptance tests for the new provider ([MODULES-6362](https://tickets.puppetlabs.com/browse/MODULES-6362))
 
-[Unreleased]: https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/1.0.1...HEAD
 [1.0.1]: https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/0.4.0...1.0.0
 [0.4.0]: https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/puppetlabs/puppetlabs-scheduled_task/compare/10cb19e08bc6b198e25a633aec5ce4157ae4d283...0.1.0
+
+
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*

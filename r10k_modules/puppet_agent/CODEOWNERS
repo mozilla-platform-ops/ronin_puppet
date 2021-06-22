@@ -1,6 +1,0 @@
-# default to night-s-watch
-* @puppetlabs/night-s-watch
-
-# tasks
-/tasks @puppetlabs/bolt
-/task_spec @puppetlabs/bolt

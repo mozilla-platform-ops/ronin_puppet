@@ -101,7 +101,7 @@ scheduled_task { 'Disk Cleanup Weekly Repeating':
   trigger   => [{
     'schedule'         => 'weekly',
     'start_time'       => '07:00',
-    'day_of_week'      => ['mon', 'tues', 'wed', 'thu', 'fri'], # Note the absence of Sunday and Monday
+    'day_of_week'      => ['mon', 'tues', 'wed', 'thurs', 'fri'], # Note the absence of Saturday and Sunday
     'minutes_interval' => '60',
     'minutes_duration' => '720'
   }],
@@ -198,6 +198,9 @@ All attributes except `name`, `command`, and `trigger` are optional; see the des
 
 The name assigned to the scheduled task.
 This will uniquely identify the task on the system.
+If specifying a scheduled task inside of subfolder(s), specify the path from root, such as `subfolder\\mytaskname`.
+This will create the scheduled task `mytaskname` in the container named `subfolder`.
+You can only specify a taskname inside of subfolders if the compatibility is set to 2 or higher and when using the taskscheduler2_api provider.
 
 ##### `ensure`
 
@@ -298,6 +301,9 @@ For all triggers:
     Each month must be an integer between 1 and 12.
   * `on` (Required) — Which days of the month the task should run, as an array.
     Each day must be an integer between 1 and 31.
+    * The string `last` may be used in the array for this property to trigger a
+    task to run on the last day of each selected month. This feature is only
+    available for tasks with compatibility level `2` or higher.
 * For monthly (by weekday) triggers:
   * `months` — Which months the task should run, as an array. Defaults to all months. Each month must be an integer between 1 and 12.
   * `day_of_week` (Required) — Which day of the week the task should run, as an array with only one element.
@@ -333,4 +339,5 @@ The full path of the directory in which to start the command.
 <a id="development"></a>
 ## Development
 
-Puppet modules on the Puppet Forge are open projects, and community contributions are essential for keeping them great. We can't access the huge number of platforms and myriad hardware, software, and deployment configurations that Puppet is intended to serve, therefore want to keep it as easy as possible to contribute changes so that our modules work in your environment. There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things. For guidelines on how to contribute, see our [module contribution guide](https://docs.puppet.com/forge/contributing.html).
+Puppet modules on the Puppet Forge are open projects, and community contributions are essential for keeping them great. We can't access the huge number of platforms and myriad hardware, software, and deployment configurations that Puppet is intended to serve, therefore want to keep it as easy as possible to contribute changes so that our modules work in your environment. There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things. 
+If you would like to contribute to this module, please follow the rules in the [CONTRIBUTING.md](https://github.com/puppetlabs/puppetlabs-scheduled_task/blob/main/CONTRIBUTING.md). For more information, see our [module contribution guide.](https://puppet.com/docs/puppet/latest/contributing.html).

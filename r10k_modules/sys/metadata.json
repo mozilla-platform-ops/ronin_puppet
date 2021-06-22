@@ -1,0 +1,40 @@
+{
+  "name": "counsyl-sys",
+  "version": "0.9.24",
+  "author": "Counsyl, Inc.",
+  "summary": "Common platform packages, resources and modules",
+  "license": "Apache-2.0",
+  "source": "git://github.com/counsyl/puppet-sys.git",
+  "project_page": "https://github.com/counsyl/puppet-sys",
+  "issues_url": "https://github.com/counsyl/puppet-sys/issues",
+  "description": "Common platform packages, resources and modules",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS"
+    },
+    {
+      "operatingsystem": "Darwin"
+    },
+    {
+      "operatingsystem": "Debian"
+    },
+    {
+      "operatingsystem": "OpenBSD"
+    },
+    {
+      "operatingsystem": "RedHat"
+    },
+    {
+      "operatingsystem": "Solaris"
+    },
+    {
+      "operatingsystem": "Ubuntu"
+    },
+    {
+      "operatingsystem": "windows"
+    }
+  ],
+  "dependencies": [
+    {"name":"puppetlabs/stdlib","version_requirement":">= 4.7.0 <5.0.0"}
+  ]
+}

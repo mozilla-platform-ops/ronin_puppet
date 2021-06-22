@@ -1,12 +1,11 @@
 class homebrew::install {
 
-  # manually defined in ronin
-  #  '/usr/local/lib',
   $brew_sys_folders = [
     '/usr/local/bin',
     '/usr/local/etc',
     '/usr/local/Frameworks',
     '/usr/local/include',
+    '/usr/local/lib',
     '/usr/local/lib/pkgconfig',
     '/usr/local/var',
   ]

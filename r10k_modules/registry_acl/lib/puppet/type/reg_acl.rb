@@ -1,13 +1,13 @@
+# frozen_string_literal: true
+
 Puppet::Type.newtype(:reg_acl) do
-  desc "Puppet type for managing Windows Registry ACLs"
+  desc 'Puppet type for managing Windows Registry ACLs'
 
   def initialize(*args)
     super
 
     # if target is unset, use the title
-    if self[:target].nil? then
-      self[:target] = self[:name]
-    end
+    self[:target] ||= self[:name]
   end
 
   newparam(:name) do
@@ -16,13 +16,13 @@ Puppet::Type.newtype(:reg_acl) do
     "
 
     validate do |value|
-      if value.nil? or value.empty?
-        raise ArgumentError, "A non-empty name must be specified."
+      if value.nil? || value.empty?
+        raise ArgumentError, 'A non-empty name must be specified.'
       end
     end
 
     munge do |value|
-      t = value.split(/[:,\\]/)
+      t = value.split(%r{[:,\\]})
       newvalue = "#{t[0]}:#{t[1..-1].join('\\')}"
       newvalue
     end
@@ -31,35 +31,35 @@ Puppet::Type.newtype(:reg_acl) do
   end
 
   newparam(:target) do
-    desc "Path to the registry key.  If not provided the name parameter will be used."
+    desc 'Path to the registry key.  If not provided the name parameter will be used.'
 
     validate do |value|
-      if value.nil? or value.empty?
-        raise ArgumentError, "A non-empty target must be specified."
+      if value.nil? || value.empty?
+        raise ArgumentError, 'A non-empty target must be specified.'
       end
     end
 
     munge do |value|
-      t = value.split(/[:,\\]/)
+      t = value.split(%r{[:,\\]})
       newvalue = "#{t[0]}:#{t[1..-1].join('\\')}"
       newvalue
     end
-
   end
 
   newproperty(:owner) do
-    desc "Provide the name of the owner for this registry key. Can be string or SID."
+    desc 'Provide the name of the owner for this registry key. Can be string or SID.'
 
     munge do |value|
-      provider.get_account_sid(value)
+      provider.account_sid(value)
     end
 
-    def change_to_s(current,should)
-      super(provider.owner_to_s(current),provider.owner_to_s(should))
+    def change_to_s(current, should)
+      super(provider.owner_to_s(current), provider.owner_to_s(should))
     end
   end
 
-  newproperty(:permissions, :array_matching => :all) do
+  newproperty(:permissions, array_matching: :all) do
+    # rubocop:disable Metrics/LineLength
     desc "
     Array of hashes of desired ACEs to be applied to target registry key. By default, reg_acl will simply compare existing permissions (non-inherited only) and make sure that the provided permissions are applied. Use the purge parameter to adjust this behavior.
 
@@ -75,58 +75,57 @@ Puppet::Type.newtype(:reg_acl) do
 
     RegistryRights: String of Permissions to apply. Keep in mind you can combine values where needed(single string, comma seperated). Common values are 'FullControl', 'ReadKey', and 'WriteKey'. Valid values: 'QueryValues','SetValue','CreateSubKey','EnumerateSubKeys','Notify','CreateLink','ReadKey','WriteKey','Delete','ReadPermissions','ChangePermissions','TakeOwnership','FullControl'. See https://msdn.microsoft.com/en-us/library/system.security.accesscontrol.registryrights(v=vs.110).aspx for more details.
     "
+    # rubocop:enable Metrics/LineLength
 
     validate do |value|
-      raise ArgumentError, "All supplied ACE must contain the RegistryRights setting"    if !value.has_key?('RegistryRights')
-      raise ArgumentError, "All supplied ACE must contain the IdentityReference setting" if !value.has_key?('IdentityReference')
+      raise ArgumentError, 'All supplied ACE must contain the RegistryRights setting'    unless value.key?('RegistryRights')
+      raise ArgumentError, 'All supplied ACE must contain the IdentityReference setting' unless value.key?('IdentityReference')
 
-      if value.has_key?('IsInherited') and value['IsInherited'] == true
+      if value.key?('IsInherited') && value['IsInherited'] == true
         raise ArgumentError, "Cannot specify ACE that has 'InheritedFlags' set to true; update the parent!"
       end
     end
 
     # Let's fill in some blanks
     munge do |value|
-      value['AccessControlType'] = 'Allow'                             if !value.has_key?('AccessControlType')
-      value['IsInherited']       = false                               if !value.has_key?('IsInherited')
-      value['InheritanceFlags']  = 'ContainerInherit, ObjectInherit'   if !value.has_key?('InheritanceFlags')
-      value['PropagationFlags']  = 'None'                              if !value.has_key?('PropagationFlags')
-      value['IdentityReference'] = provider.get_account_sid(value['IdentityReference'])
+      value['AccessControlType'] = 'Allow'                             unless value.key?('AccessControlType')
+      value['IsInherited']       = false                               unless value.key?('IsInherited')
+      value['InheritanceFlags']  = 'ContainerInherit, ObjectInherit'   unless value.key?('InheritanceFlags')
+      value['PropagationFlags']  = 'None'                              unless value.key?('PropagationFlags')
+      value['IdentityReference'] = provider.account_sid(value['IdentityReference'])
 
       # Sort perms
-      value['RegistryRights'] = value['RegistryRights'].delete("\s").split(/,/).sort.join(', ')
+      value['RegistryRights'] = value['RegistryRights'].delete("\s").split(%r{,}).sort.join(', ')
 
       value
     end
 
-    def change_to_s(current,should)
+    def change_to_s(current, should)
+      purge = provider.purge_state
 
-      purge = provider.get_purge_state
-      newperms = Hash.new
-
-      if purge == :all
-        newperms = should
-      elsif purge == :listed
-        newperms = current - ( current & should )
-      else
-        newperms = current + should
-      end
+      newperms = if purge == :all
+                   should
+                 elsif purge == :listed
+                   current - (current & should)
+                 else
+                   current + should
+                 end
 
       # Build a readble message
-      msg = String.new
+      msg = ''.dup
       msg << "Permissions changed from:\n[\n"
-      provider.permissions_to_s(current).each {|p| msg << "  #{p.sort_by {|k,v| k.to_s}.to_h}\n" }
+      provider.permissions_to_s(current).each { |p| msg << "  #{p.sort_by { |k, _v| k.to_s }.to_h}\n" }
       msg << "]\n  to\n[\n"
-      provider.permissions_to_s(newperms).each {|p| msg << "  #{p.sort_by {|k,v| k.to_s}.to_h}\n" }
+      provider.permissions_to_s(newperms).each { |p| msg << "  #{p.sort_by { |k, _v| k.to_s }.to_h}\n" }
       msg << "\n]\n"
 
-      return msg
+      msg
     end
 
     def insync?(current)
-      return provider.are_permissions_insync?(current, @should)
+      provider.are_permissions_insync?(current, @should)
     end
- end
+  end
 
   newparam(:purge) do
     desc "
@@ -143,7 +142,7 @@ Puppet::Type.newtype(:reg_acl) do
   end
 
   newproperty(:inherit_from_parent) do
-    desc "Should this ACL include inherited permissions? Valid values are true, false. Default: true"
+    desc 'Should this ACL include inherited permissions? Valid values are true, false. Default: true'
     defaultto :true
     newvalues(:true, :false)
     def insync?(is)
@@ -153,13 +152,12 @@ Puppet::Type.newtype(:reg_acl) do
 
   validate do
     # If purge is set to all then inherit_from_parent MUST be true
-    if self[:purge].downcase.to_sym == :all and self[:inherit_from_parent].downcase.to_sym == :true
-        raise ArgumentError, "Cannot purge set purge to 'all' and inherit_from_parent to 'true'!  Set inherit_from_parent to false to manage explicit permissions!"
+    if self[:purge].downcase.to_sym == :all && self[:inherit_from_parent].downcase.to_sym == :true
+      raise ArgumentError, "Cannot purge set purge to 'all' and inherit_from_parent to 'true'!  Set inherit_from_parent to false to manage explicit permissions!"
     end
 
     if self[:purge].downcase.to_sym == :all
-      raise ArgumentError, "Must have an owner set!" unless self[:owner]
+      raise ArgumentError, 'Must have an owner set!' unless self[:owner]
     end
   end
-
 end

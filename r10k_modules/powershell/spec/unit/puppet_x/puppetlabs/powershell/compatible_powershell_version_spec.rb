@@ -1,11 +1,12 @@
 #! /usr/bin/env ruby
-require_relative 'spec_helper'
+require 'spec_helper'
 require 'puppet/type'
 require 'puppet_x/puppetlabs/powershell/powershell_version'
 require 'puppet_x/puppetlabs/powershell/compatible_powershell_version'
 
-describe PuppetX::PuppetLabs::PowerShell::CompatiblePowerShellVersion, :if => Puppet::Util::Platform.windows? do
+describe PuppetX::PuppetLabs::PowerShell::CompatiblePowerShellVersion do
   before(:each) do
+    skip('Not on Windows platform') unless Puppet.features.microsoft_windows?
     @compat = PuppetX::PuppetLabs::PowerShell::CompatiblePowerShellVersion
   end
 

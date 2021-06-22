@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'reject' do
   it { is_expected.not_to eq(nil) }
@@ -14,7 +14,7 @@ describe 'reject' do
     is_expected.to run.with_params(1, 'two').and_raise_error(Puppet::ParseError, %r{first argument not an array})
   }
   it { is_expected.to run.with_params([], 'two').and_return([]) }
-  it { is_expected.to run.with_params(['one', 'two', 'three'], 'two').and_return(['one', 'three']) }
-  it { is_expected.to run.with_params(['one', 'two', 'three'], 't(wo|hree)').and_return(['one']) }
-  it { is_expected.to run.with_params(['όŉệ', 'ţщồ', 'ţңяέέ'], 'ţ(щồ|ңяέέ)').and_return(['όŉệ']) }
+  it { is_expected.to run.with_params(%w[one two three], 'two').and_return(%w[one three]) }
+  it { is_expected.to run.with_params(%w[one two three], 't(wo|hree)').and_return(['one']) }
+  it { is_expected.to run.with_params(%w[όŉệ ţщồ ţңяέέ], 'ţ(щồ|ңяέέ)').and_return(['όŉệ']) }
 end

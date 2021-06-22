@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'seeded_rand' do
   it { is_expected.not_to eq(nil) }
@@ -46,7 +46,7 @@ describe 'seeded_rand' do
 
     # workaround not being able to use let(:facts) because some tests need
     # multiple different hostnames in one context
-    allow(scope).to receive(:lookupvar).with('::fqdn', {}).and_return(host)
+    scope.stubs(:lookupvar).with('::fqdn', {}).returns(host)
 
     scope.function_seeded_rand([max, seed])
   end

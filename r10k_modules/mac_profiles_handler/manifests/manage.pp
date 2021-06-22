@@ -22,20 +22,20 @@ define mac_profiles_handler::manage(
         mode   => '0700',
       }
 
-      if ! defined(File["/var/db/mobileconfigs"]) {
-        file { "/var/db/mobileconfigs":
+      if ! defined(File["${facts['puppet_vardir']}/mobileconfigs"]) {
+        file { "${facts['puppet_vardir']}/mobileconfigs":
           ensure => directory,
         }
       }
       case $type {
         'template': {
-          file { "/var/db/mobileconfigs/${name}":
+          file { "${facts['puppet_vardir']}/mobileconfigs/${name}":
             ensure  => file,
             content => $file_source,
           }
         }
         default: {
-          file { "/var/db/mobileconfigs/${name}":
+          file { "${facts['puppet_vardir']}/mobileconfigs/${name}":
             ensure => file,
             source => $file_source,
           }
@@ -43,9 +43,9 @@ define mac_profiles_handler::manage(
       }
       profile_manager { $name:
         ensure    => $ensure,
-        profile   => "/var/db/mobileconfigs/${name}",
-        require   => File["/var/db/mobileconfigs/${name}"],
-        subscribe => File["/var/db/mobileconfigs/${name}"],
+        profile   => "${facts['puppet_vardir']}/mobileconfigs/${name}",
+        require   => File["${facts['puppet_vardir']}/mobileconfigs/${name}"],
+        subscribe => File["${facts['puppet_vardir']}/mobileconfigs/${name}"],
       }
     }
   }

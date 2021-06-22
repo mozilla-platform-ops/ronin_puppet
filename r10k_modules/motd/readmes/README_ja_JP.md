@@ -29,7 +29,7 @@ motdモジュールは、幅広いシステムにおいて本日のメッセー�
 
 ```puppet
 class { 'motd':
-  template => 'mymodule/mytemplate.erb',
+  template => 'mymodule/mytemplate.epp',
 }
 ```
 
@@ -43,7 +43,7 @@ class { 'motd':
 
 
 ## リファレンス
-[REFERENCE.md](https://github.com/puppetlabs/puppetlabs-motd/blob/master/REFERENCE.md)を参照してください。
+[REFERENCE.md](https://github.com/puppetlabs/puppetlabs-motd/blob/main/REFERENCE.md)を参照してください。
 
 #### パブリッククラス
 
@@ -83,7 +83,7 @@ Debianシステムにおいて、動的なmotdの有効/無効を切り替えま
 
 ## 制約
 
-サポートされているオペレーティングシステムの一覧については、[metadata.json](https://github.com/puppetlabs/puppetlabs-motd/blob/master/metadata.json)を参照してください。
+サポートされているオペレーティングシステムの一覧については、[metadata.json](https://github.com/puppetlabs/puppetlabs-motd/blob/main/metadata.json)を参照してください。
 
 動的なmotdの無効化は、Debianのみでサポートされています。
 

@@ -10,11 +10,12 @@
 1. [Limitations - OS compatibility, etc.](#limitations)
 1. [Development - Guide for contributing to the module](#development)
 
-
+<a id="module-description"></a>
 ## Module description
 
 The ntp module installs, configures, and manages the NTP service across a range of operating systems and distributions.
 
+<a id="setup"></a>
 ## Setup
 
 ### Beginning with ntp
@@ -27,6 +28,7 @@ class { 'ntp':
 }
 ```
 
+<a id="usage"></a>
 ## Usage
 
 All parameters for the ntp module are contained within the main `ntp` class, so for any function of the module, set the options you want. See the common usages below for examples.
@@ -119,21 +121,26 @@ class { 'ntp':
 }
 ```
 
+<a id="reference"></a>
 ## Reference
 
-See [REFERENCE.md](REFERENCE.md)
+See [REFERENCE.md](https://github.com/puppetlabs/puppetlabs-ntp/blob/main/REFERENCE.md)
 
+<a id="limitations"></a>
 ## Limitations
 
 This module has been tested on [all PE-supported platforms](https://forge.puppetlabs.com/supported#compat-matrix). Additionally, it is tested (but not supported) on Solaris 10 and Fedora 20-22.
 
-For an extensive list of supported operating systems, see [metadata.json](https://github.com/puppetlabs/puppetlabs-ntp/blob/master/metadata.json)
+For an extensive list of supported operating systems, see [metadata.json](https://github.com/puppetlabs/puppetlabs-ntp/blob/main/metadata.json)
 
+<a id="development"></a> 
 ## Development
+
+We are experimenting with a new tool for running acceptance tests. It's name is [puppet_litmus](https://github.com/puppetlabs/puppet_litmus) this replaces beaker as the test runner. To run the acceptance tests follow the instructions [here](https://github.com/puppetlabs/puppet_litmus/wiki/Tutorial:-use-Litmus-to-execute-acceptance-tests-with-a-sample-module-(MoTD)#install-the-necessary-gems-for-the-module).
 
 Puppet modules on the Puppet Forge are open projects, and community contributions are essential for keeping them great. Please follow our guidelines when contributing changes.
 
-For more information, see our [module contribution guide.](https://docs.puppetlabs.com/forge/contributing.html)
+For more information, see our [module contribution guide.](https://puppet.com/docs/puppet/latest/contributing.html)
 
 ### Contributors
 

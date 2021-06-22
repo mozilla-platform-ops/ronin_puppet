@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'the enclose_ipv6 function' do
   let(:scope) { PuppetlabsSpec::PuppetInternals.scope }
@@ -12,7 +12,7 @@ describe 'the enclose_ipv6 function' do
   end
 
   it 'raises a ParseError if there is more than 1 arguments' do
-    expect { scope.function_enclose_ipv6(['argument1', 'argument2']) }.to(raise_error(Puppet::ParseError))
+    expect { scope.function_enclose_ipv6(%w[argument1 argument2]) }.to(raise_error(Puppet::ParseError))
   end
 
   it 'raises a ParseError when given garbage' do

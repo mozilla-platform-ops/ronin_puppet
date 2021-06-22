@@ -4,6 +4,72 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v5.0.0](https://github.com/voxpupuli/puppet-archive/tree/v5.0.0) (2021-04-16)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.6.0...v5.0.0)
+
+**Breaking changes:**
+
+- metadata.json: drop Puppet 5, add Puppet 7 support [\#436](https://github.com/voxpupuli/puppet-archive/pull/436) ([kenyon](https://github.com/kenyon))
+- Drop support for CentOS/RHEL 6 and variants [\#431](https://github.com/voxpupuli/puppet-archive/pull/431) ([alexjfisher](https://github.com/alexjfisher))
+
+**Implemented enhancements:**
+
+- Enable Debian 9/10 support [\#439](https://github.com/voxpupuli/puppet-archive/pull/439) ([bastelfreak](https://github.com/bastelfreak))
+- Support stdlib 7.x [\#437](https://github.com/voxpupuli/puppet-archive/pull/437) ([treydock](https://github.com/treydock))
+- Add `archives` parameter to make use with an ENC or hiera easier [\#423](https://github.com/voxpupuli/puppet-archive/pull/423) ([jcpunk](https://github.com/jcpunk))
+- Add initial support for gsutil and pulling from Google Storage buckets [\#421](https://github.com/voxpupuli/puppet-archive/pull/421) ([j0sh3rs](https://github.com/j0sh3rs))
+
+**Fixed bugs:**
+
+- Fix downloading when passwords contain spaces [\#430](https://github.com/voxpupuli/puppet-archive/pull/430) ([alexjfisher](https://github.com/alexjfisher))
+- Windows: find 7zip binary [\#428](https://github.com/voxpupuli/puppet-archive/pull/428) ([joerg16](https://github.com/joerg16))
+
+**Merged pull requests:**
+
+- Produce a better error for the puppet downloader when file not found [\#434](https://github.com/voxpupuli/puppet-archive/pull/434) ([hajee](https://github.com/hajee))
+- Pass over credentials in archive::artifactory [\#433](https://github.com/voxpupuli/puppet-archive/pull/433) ([jramosf](https://github.com/jramosf))
+- Clean up temporary files when checksums don't match [\#412](https://github.com/voxpupuli/puppet-archive/pull/412) ([benridley](https://github.com/benridley))
+
+## [v4.6.0](https://github.com/voxpupuli/puppet-archive/tree/v4.6.0) (2020-08-21)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.5.0...v4.6.0)
+
+**Implemented enhancements:**
+
+- Add `temp_dir` parameter to `archive::nexus` [\#415](https://github.com/voxpupuli/puppet-archive/pull/415) ([alexcit](https://github.com/alexcit))
+- Use curl netrc file instead of `--user` [\#399](https://github.com/voxpupuli/puppet-archive/pull/399) ([alexjfisher](https://github.com/alexjfisher))
+
+**Closed issues:**
+
+- Feature request: make password sensitive and hide on fail [\#397](https://github.com/voxpupuli/puppet-archive/issues/397)
+
+**Merged pull requests:**
+
+- README.md: correct spelling typo [\#414](https://github.com/voxpupuli/puppet-archive/pull/414) ([kenyon](https://github.com/kenyon))
+- Fix several markdown lint issues [\#408](https://github.com/voxpupuli/puppet-archive/pull/408) ([dhoppe](https://github.com/dhoppe))
+
+## [v4.5.0](https://github.com/voxpupuli/puppet-archive/tree/v4.5.0) (2020-04-02)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.4.0...v4.5.0)
+
+**Implemented enhancements:**
+
+- Add VZ 6/7 to metadata.json [\#402](https://github.com/voxpupuli/puppet-archive/pull/402) ([bastelfreak](https://github.com/bastelfreak))
+
+**Closed issues:**
+
+- Could not autoload puppet/parser/functions/artifactory\_sha1: no such file to load -- puppet\_x/bodeco/util [\#320](https://github.com/voxpupuli/puppet-archive/issues/320)
+
+**Merged pull requests:**
+
+- Convert `archive` class docs to puppet-strings and small README improvements [\#394](https://github.com/voxpupuli/puppet-archive/pull/394) ([alexjfisher](https://github.com/alexjfisher))
+- Convert `go_md5` function to modern API [\#392](https://github.com/voxpupuli/puppet-archive/pull/392) ([alexjfisher](https://github.com/alexjfisher))
+- Use `relative_require` in artifactory functions [\#391](https://github.com/voxpupuli/puppet-archive/pull/391) ([alexjfisher](https://github.com/alexjfisher))
+- Convert `assemble_nexus_url` to modern API [\#390](https://github.com/voxpupuli/puppet-archive/pull/390) ([alexjfisher](https://github.com/alexjfisher))
+- Remove duplicate CONTRIBUTING.md file [\#389](https://github.com/voxpupuli/puppet-archive/pull/389) ([dhoppe](https://github.com/dhoppe))
+- Add Darwin \(mac os x\) compatibility [\#387](https://github.com/voxpupuli/puppet-archive/pull/387) ([bjoernhaeuser](https://github.com/bjoernhaeuser))
+
 ## [v4.4.0](https://github.com/voxpupuli/puppet-archive/tree/v4.4.0) (2019-11-04)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.3.0...v4.4.0)

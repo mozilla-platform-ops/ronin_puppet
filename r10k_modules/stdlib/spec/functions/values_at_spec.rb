@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require 'spec_helper'
 
 describe 'values_at' do
   describe 'signature validation' do
@@ -31,8 +31,8 @@ describe 'values_at' do
   end
 
   context 'when requesting a single item using UTF8 and double byte characters' do
-    it { is_expected.to run.with_params(['ẩ', 'β', 'с', 'ď'], 0).and_return(['ẩ']) }
-    it { is_expected.to run.with_params(['文', '字', 'の', '値'], 2).and_return(['の']) }
+    it { is_expected.to run.with_params(%w[ẩ β с ď], 0).and_return(['ẩ']) }
+    it { is_expected.to run.with_params(%w[文 字 の 値], 2).and_return(['の']) }
   end
 
   context 'when requesting multiple items' do

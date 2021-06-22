@@ -2,6 +2,97 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v9.0.1](https://github.com/puppetlabs/puppetlabs-ntp/tree/v9.0.1) (2021-03-29)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/v9.0.0...v9.0.1)
+
+### Fixed
+
+- Allow setting user and group permissions of the NTP logfile [\#615](https://github.com/puppetlabs/puppetlabs-ntp/pull/615) ([Kristijan](https://github.com/Kristijan))
+
+## [v9.0.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/v9.0.0) (2021-03-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/v8.5.0...v9.0.0)
+
+### Changed
+
+- pdksync - Remove Puppet 5 from testing and bump minimal version to 6.0.0 [\#605](https://github.com/puppetlabs/puppetlabs-ntp/pull/605) ([carabasdaniel](https://github.com/carabasdaniel))
+
+## [v8.5.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/v8.5.0) (2020-12-16)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/v8.4.0...v8.5.0)
+
+### Added
+
+- pdksync - \(feat\) - Add support for Puppet 7 [\#594](https://github.com/puppetlabs/puppetlabs-ntp/pull/594) ([daianamezdrea](https://github.com/daianamezdrea))
+- \(MAINT\) Make mode for logfile configurable [\#590](https://github.com/puppetlabs/puppetlabs-ntp/pull/590) ([tmanninger](https://github.com/tmanninger))
+- \(IAC-997\) Removal of inappropriate terminology [\#587](https://github.com/puppetlabs/puppetlabs-ntp/pull/587) ([pmcmaw](https://github.com/pmcmaw))
+
+## [v8.4.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/v8.4.0) (2020-09-11)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/v8.3.0...v8.4.0)
+
+### Added
+
+- pdksync - \(IAC-973\) - Update travis/appveyor to run on new default branch `main` [\#579](https://github.com/puppetlabs/puppetlabs-ntp/pull/579) ([david22swan](https://github.com/david22swan))
+- \(IAC-746\) - Add ubuntu 20.04 support [\#575](https://github.com/puppetlabs/puppetlabs-ntp/pull/575) ([david22swan](https://github.com/david22swan))
+
+## [v8.3.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/v8.3.0) (2020-04-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/v8.2.0...v8.3.0)
+
+### Added
+
+- \(MAINT\) Add Solaris family Hiera data [\#554](https://github.com/puppetlabs/puppetlabs-ntp/pull/554) ([paescuj](https://github.com/paescuj))
+- pdksync - \(FM-8581\) - Debian 10 added to travis and provision file refactored [\#552](https://github.com/puppetlabs/puppetlabs-ntp/pull/552) ([david22swan](https://github.com/david22swan))
+- \(MODULES-10413\) Allow custom ntp user and daemon options  [\#551](https://github.com/puppetlabs/puppetlabs-ntp/pull/551) ([david22swan](https://github.com/david22swan))
+
+## [v8.2.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/v8.2.0) (2019-12-09)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/v8.1.0...v8.2.0)
+
+### Added
+
+- FM-8407 - Add support on Debian 10 [\#528](https://github.com/puppetlabs/puppetlabs-ntp/pull/528) ([lionce](https://github.com/lionce))
+
+## [v8.1.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/v8.1.0) (2019-09-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/v8.0.0...v8.1.0)
+
+### Added
+
+- \(FM-8188\) convert ntp to use litmus [\#517](https://github.com/puppetlabs/puppetlabs-ntp/pull/517) ([tphoney](https://github.com/tphoney))
+
+### Fixed
+
+- Fix disable\_dhclient [\#521](https://github.com/puppetlabs/puppetlabs-ntp/pull/521) ([raphink](https://github.com/raphink))
+
+## [v8.0.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/v8.0.0) (2019-05-14)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/7.4.0...v8.0.0)
+
+### Changed
+
+- pdksync - \(MODULES-8444\) - Raise lower Puppet bound [\#510](https://github.com/puppetlabs/puppetlabs-ntp/pull/510) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- Service hasstatus and hasrestart atributes [\#499](https://github.com/puppetlabs/puppetlabs-ntp/pull/499) ([ffapitalle](https://github.com/ffapitalle))
+
+## [7.4.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/7.4.0) (2019-02-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/7.3.0...7.4.0)
+
+### Added
+
+- \(MODULES-8139\) - Add SLES 15 support [\#492](https://github.com/puppetlabs/puppetlabs-ntp/pull/492) ([eimlav](https://github.com/eimlav))
+- \(MODULES-8098\) - Add logconfig option to config file [\#491](https://github.com/puppetlabs/puppetlabs-ntp/pull/491) ([eimlav](https://github.com/eimlav))
+
+### Fixed
+
+- \(FM-7719\) - Remove Amazon Linux and Arch Linux testing/support for ntp module [\#498](https://github.com/puppetlabs/puppetlabs-ntp/pull/498) ([david22swan](https://github.com/david22swan))
+- pdksync - \(FM-7655\) Fix rubygems-update for ruby \< 2.3 [\#495](https://github.com/puppetlabs/puppetlabs-ntp/pull/495) ([tphoney](https://github.com/tphoney))
+
 ## [7.3.0](https://github.com/puppetlabs/puppetlabs-ntp/tree/7.3.0) (2018-09-27)
 
 [Full Changelog](https://github.com/puppetlabs/puppetlabs-ntp/compare/7.2.0...7.3.0)
@@ -453,4 +544,4 @@ Configuration directives that might possibly be affected:
 * Initial release under puppetlabs
 
 
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
