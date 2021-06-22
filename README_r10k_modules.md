@@ -14,15 +14,30 @@ This directory stores snapshots of third party puppet modules and is managed wit
 puppet module list --tree --modulepath=./r10k_modules
 ```
 
-### Updating modules
+### Re-installing modules
 
-This will force update all r10k modules as defined in the Puppetfile.
+This will force install all r10k modules as defined in the Puppetfile.
 
 ```bash
 r10k puppetfile install --moduledir=./r10k_modules -v --force
 ```
 
-After updating, commit changes to git and push.
+After installing, commit changes to git and push.
+
+### Updating modules
+
+Uses https://github.com/rnelson0/puppet-generate-puppetfile.
+
+```bash
+gem install generate-puppetfile
+generate-puppetfile -p Puppetfile
+# update Puppetfile with output
+
+# reinstall (copied from step above)
+r10k puppetfile install --moduledir=./r10k_modules -v --force
+
+# commit
+```
 
 ### Github Review Visibility
 
