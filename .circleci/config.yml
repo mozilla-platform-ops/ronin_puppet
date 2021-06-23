@@ -29,7 +29,9 @@ jobs:
     steps:
       - checkout
       - run: BUNDLE_GEMFILE=.gemfile bundle install
-      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+      - run:
+          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+          no_output_timeout: 30m
       - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
 
 workflows:
