@@ -91,10 +91,8 @@ class worker_runner (
                 $launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
             }
 
-            # note copied from packages python3:
-            # As of puppet 7.0.0, facts.os.architecture still reports the M1 arm64 hardware as x86_6
-            # therfore, we check the mac model instead
-            if $facts['system_profiler']['model_identifier'] == 'Macmini9,1' {
+            # arm64 if Apple processor
+            if /^Apple.*/ in $facts['processors']['models'] {
                 $arch_name = "arm64"
             } else {
                 $arch_name = "amd64"
