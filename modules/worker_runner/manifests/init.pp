@@ -91,13 +91,23 @@ class worker_runner (
                 $launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
             }
 
-            # TODO: Move installation to s3
+            # note copied from packages python3:
+            # As of puppet 7.0.0, facts.os.architecture still reports the M1 arm64 hardware as x86_6
+            # therfore, we check the mac model instead
+            if $facts['system_profiler']['model_identifier'] == 'Macmini9,1' {
+                $arch_name = "arm64"
+            } else {
+                $arch_name = "amd64"
+            }
+
             $taskcluster_binaries = [ 'start-worker', 'generic-worker-multiuser', 'generic-worker-simple', 'livelog', 'taskcluster-proxy' ]
             $taskcluster_binaries.each |String $bin| {
-                file { "/usr/local/bin/${bin}":
-                    ensure => 'file',
-                    source => "https://github.com/taskcluster/taskcluster/releases/download/v${taskcluster_version}/${bin}-darwin-amd64",
-                    mode   => '0755',
+                $pkg_name = "${bin}-${taskcluster_version}-${arch_name}"
+                packages::macos_package_from_s3 { $pkg_name:
+                    private             => false,
+                    os_version_specific => false,
+                    type                => 'bin',
+                    file_destination    => "/usr/local/bin/${bin}",
                 }
             }
 
