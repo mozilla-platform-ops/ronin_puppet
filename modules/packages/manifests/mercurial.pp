@@ -17,7 +17,7 @@ class packages::mercurial (
 
     # libdir = '../../Library/Python/2.7/site-packages/'   # 5.1 pkg hg (LIBDIR)
     # libdir = '../../../Library/Python/2.7/site-packages' # 5.5+ pkg hg
-    if ! '11' == $facts['os']['macosx']['version']['major'] \
+    if ! '11' == $facts['os']['macosx']['version']['major']
        and $version == '5.1' {
         file { '/usr/Library':
             ensure  => 'link',
