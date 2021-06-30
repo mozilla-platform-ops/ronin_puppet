@@ -15,14 +15,10 @@ class packages::mercurial (
         type                => 'pkg',
     }
 
-    # pkg installs /usr/local/bin/hg
-    # which looks for the mercurial packages in:
-    # libdir = '../../Library/Python/2.7/site-packages/'
-    # but installs them in:
-    # /Library/Python/2.7/site-packages/
-    # So, link /Library under /usr to make hg find it.
-    # Not needed for bigsur on M1
-    if ! '11' == $facts['os']['macosx']['version']['major'] {
+    # libdir = '../../Library/Python/2.7/site-packages/'   # 5.1 pkg hg (LIBDIR)
+    # libdir = '../../../Library/Python/2.7/site-packages' # 5.5+ pkg hg
+    if ! '11' == $facts['os']['macosx']['version']['major'] \
+       and $version == '5.1' {
         file { '/usr/Library':
             ensure  => 'link',
             target  => '/Library',
