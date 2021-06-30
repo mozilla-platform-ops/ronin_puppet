@@ -40,7 +40,7 @@ class telegraf (
         },
         puppetagent => {
             location => $facts['os']['name'] ? {
-                'Darwin' => '/opt/puppetlabs/puppet/cache/state/last_run_summary.yaml',
+                'Darwin' => '/opt/puppetlabs/puppet/public/last_run_summary.yaml',
                 default  => '/var/lib/puppet/state/last_run_summary.yaml',
             },
         },
