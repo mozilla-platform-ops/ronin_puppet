@@ -78,6 +78,13 @@ class worker_runner (
     $worker_runner_conf      = "${data_dir}/worker-runner-config.yaml"
     $ed25519_signing_key     = "${data_dir}/generic-worker.ed25519.signing.key"
 
+    macos_utils::logrotate { 'worker-stderr-logs':
+        path     => "${log_dir}/stderr.log",
+    }
+    macos_utils::logrotate { 'worker-stdout-logs':
+        path     => "${log_dir}/stdout.log",
+    }
+
     case $::operatingsystem {
         'Darwin': {
 

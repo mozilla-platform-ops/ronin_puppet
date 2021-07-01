@@ -13,7 +13,7 @@
   <array>
     <string>/usr/local/bin/telegraf</string>
     <string>--config</string>
-    <string>/etc/telegraf/telegraf.conf</string>
+    <string>${telegraf_conf}</string>
     <string>--config-directory</string>
     <string>/etc/telegraf/telegraf.d</string>
   </array>
@@ -22,8 +22,8 @@
   <key>WorkingDirectory</key>
   <string>/var</string>
   <key>StandardErrorPath</key>
-  <string>/var/log/telegraf/telegraf-stderr.log</string>
+  <string>${telegraf_stderr_log}</string>
   <key>StandardOutPath</key>
-  <string>/var/log/telegraf/telegraf-stdout.log</string>
+  <string>${telegraf_stdout_log}</string>
 </dict>
 </plist>

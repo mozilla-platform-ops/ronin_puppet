@@ -1,0 +1,45 @@
+[[inputs.tail]]
+  name_override = "worker_log"
+  interval = "10s"
+  files = ["/opt/worker/logs/stderr.log","/opt/worker/logs/stdout.log"]
+  #from_beginning = true
+  path_tag = ""
+  #path_tag = "path"
+  data_format = "grok"
+  grok_timezone = "UTC"
+  grok_patterns = ['\A%{TC_TIMESTAMP:timestamp}%{SPACE}%{GREEDYDATA:msg}']
+  #json_query = '{"appname":processImagePath,timestamp,"pid":processID,"msg":eventMessage,"severity":messageType}'
+  grok_custom_patterns = '''
+    TC_TIMESTAMP %{YEAR}/%{MONTHNUM}/%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE}?
+  '''
+  [inputs.tail.tags]
+    appname = "generic-worker-simple"
+    severity = "info"
+  [inputs.tail.multiline]
+    pattern = '^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z?'
+    #match_which_line = "previous"
+    invert_match = true
+    timeout = "3s"
+
+## /opt/worker/tasks/task_1624197316/generic-worker/live_backing.log
+#[[inputs.tail]]
+#  name_override = "task_log"
+#  interval = "10s"
+#  files = ["/opt/worker/tasks/task*/generic-worker/live_backing.log"]
+#  #from_beginning = true
+#  path_tag = "path"
+#  data_format = "grok"
+#  grok_timezone = "UTC"
+#  grok_patterns = ['\A\[%{NOTSPACE:appname}%{SPACE}%{NOTSPACE:timestamp:ts}\]%{SPACE}%{GREEDYDATA:msg}']
+#  # [taskcluster 2021-06-21T13:35:12.100Z] 
+#  [inputs.tail.tags]
+#    appname = "taskcluster"
+#    severity = "info"
+#  #[inputs.tail.multiline]
+#  #  pattern = '^\[taskcluster .*\]  +'
+#  #  timeout = "3s"
+
+# Debug:
+#[[outputs.file]]
+#  files = ["stdout"]
+

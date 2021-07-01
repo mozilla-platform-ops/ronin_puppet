@@ -15,6 +15,19 @@ class telegraf (
     $influxdb_username = lookup('telegraf.user')
     $influxdb_password = lookup('telegraf.password')
 
+    $syslog_host       = lookup('papertrail.host', {'default_value' => ''})
+    $syslog_port       = lookup('papertrail.port', {'default_value' => 514})
+    
+    $worker_stdout     = '/opt/worker/logs/stdout.log'
+    $worker_stderr     = '/opt/worker/logs/stderr.log'
+
+    macos_utils::logrotate { 'telegraf-stderr-logs':
+        path     => "/var/log/telegraf/telegraf-stderr.log",
+    }
+    macos_utils::logrotate { 'telegraf-stdout-logs':
+        path     => "/var/log/telegraf/telegraf-stdout.log",
+    }
+
     # Merge full hash of defaults for agent and input plugins.
     $_agent_params = {
         'interval' => '300s',
@@ -61,6 +74,31 @@ class telegraf (
                 '/etc/telegraf/telegraf.conf':
                     ensure  => present,
                     content => template('telegraf/telegraf.conf.erb'),
+                    mode    => '0644';
+
+                '/etc/telegraf/telegraf.d/in.macos.log.conf':
+                    ensure  => present,
+                    content => template('telegraf/in.macos.log.conf.erb'),
+                    mode    => '0644';
+
+                '/etc/telegraf/telegraf.d/in.taskcluster.log.conf':
+                    ensure  => present,
+                    content => template('telegraf/in.taskcluster.log.conf.erb'),
+                    mode    => '0644';
+
+                '/etc/telegraf/papertrail-bundle.pem':
+                    ensure  => present,
+                    content => file('telegraf/papertrail-bundle.pem'),
+                    mode    => '0600';
+
+                '/etc/telegraf/telegraf.d/out.papertrail.conf':
+                    ensure  => present,
+                    content => template('telegraf/out.papertrail.conf.erb'),
+                    mode    => '0600';
+
+                '/etc/telegraf/telegraf.d/out.influxdb.conf':
+                    ensure  => present,
+                    content => template('telegraf/out.influxdb.conf.erb'),
                     mode    => '0600';
 
                 '/var/log/telegraf':

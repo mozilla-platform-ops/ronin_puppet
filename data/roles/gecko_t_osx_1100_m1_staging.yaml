@@ -1,13 +1,6 @@
 ---
 ntp_server: time.apple.org
 
-# Common worker metadata conveniently aliased to generic worker data from above
-worker_metadata:
-  workerId: "%{lookup('gw.worker_id')}"
-  workerGroup: "%{lookup('gw.worker_group')}"
-  workerType: "%{lookup('gw.worker_type')}"
-  provisionerId: "%{lookup('gw.provisioner_id')}"
-
 worker:
   taskcluster_version: 44.0.0
   provider_type: standalone
