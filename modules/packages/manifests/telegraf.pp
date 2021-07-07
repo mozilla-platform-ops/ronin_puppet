@@ -7,9 +7,9 @@ class packages::telegraf (
 ) {
     # arm64 if Apple processor
     if /^Apple.*/ in $facts['processors']['models'] {
-        $suffix = "-arm64"
+        $suffix = '-arm64'
     } else {
-        $suffix = ""
+        $suffix = ''
     }
 
     packages::macos_package_from_s3 { "telegraf-${version}${suffix}.dmg":
