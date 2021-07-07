@@ -3,17 +3,14 @@
 <plist version="1.0">
 <dict>
   <key>KeepAlive</key>
-  <dict>
-    <key>SuccessfulExit</key>
-    <false/>
-  </dict>
+  <true/>
   <key>Label</key>
   <string>telegraf</string>
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/bin/telegraf</string>
     <string>--config</string>
-    <string>${telegraf_conf}</string>
+    <string><%= @telegraf_conf %></string>
     <string>--config-directory</string>
     <string>/etc/telegraf/telegraf.d</string>
   </array>
@@ -22,8 +19,8 @@
   <key>WorkingDirectory</key>
   <string>/var</string>
   <key>StandardErrorPath</key>
-  <string>${telegraf_stderr_log}</string>
+  <string><%= @telegraf_stderr_log %></string>
   <key>StandardOutPath</key>
-  <string>${telegraf_stdout_log}</string>
+  <string><%= @telegraf_stdout_log %></string>
 </dict>
 </plist>

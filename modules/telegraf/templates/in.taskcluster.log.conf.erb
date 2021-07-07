@@ -1,7 +1,7 @@
 [[inputs.tail]]
   name_override = "worker_log"
   interval = "10s"
-  files = ["/opt/worker/logs/stderr.log","/opt/worker/logs/stdout.log"]
+  files = ["<%= @worker_data_dir %>/logs/stderr.log","<%= @worker_data_dir %>/logs/stdout.log"]
   #from_beginning = true
   path_tag = ""
   #path_tag = "path"
@@ -13,7 +13,7 @@
     TC_TIMESTAMP %{YEAR}/%{MONTHNUM}/%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE}?
   '''
   [inputs.tail.tags]
-    appname = "generic-worker-simple"
+    appname = "generic-worker"
     severity = "info"
   [inputs.tail.multiline]
     pattern = '^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}Z?'

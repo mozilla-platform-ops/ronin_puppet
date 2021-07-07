@@ -11,22 +11,24 @@ class telegraf (
 
     require packages::telegraf
 
-    $influxdb_url      = 'https://telegraf.relops.mozops.net'
-    $influxdb_username = lookup('telegraf.user')
-    $influxdb_password = lookup('telegraf.password')
-
-    $syslog_host       = lookup('papertrail.host', {'default_value' => ''})
-    $syslog_port       = lookup('papertrail.port', {'default_value' => 514})
-    
-    $worker_stdout     = '/opt/worker/logs/stdout.log'
-    $worker_stderr     = '/opt/worker/logs/stderr.log'
-
+    $telegraf_conf       = '/etc/telegraf/telegraf.conf'
+    $telegraf_stdout_log = '/var/log/telegraf/telegraf-stdout.log'
+    $telegraf_stderr_log = '/var/log/telegraf/telegraf-stderr.log'
     macos_utils::logrotate { 'telegraf-stderr-logs':
-        path     => "/var/log/telegraf/telegraf-stderr.log",
+        path             => $telegraf_stderr_log
     }
     macos_utils::logrotate { 'telegraf-stdout-logs':
-        path     => "/var/log/telegraf/telegraf-stdout.log",
+        path             => $telegraf_stdout_log
     }
+
+    $influxdb_url        = lookup('telegraf.host')
+    $influxdb_username   = lookup('telegraf.user')
+    $influxdb_password   = lookup('telegraf.password')
+
+    $syslog_host         = lookup('papertrail.host', {'default_value' => ''})
+    $syslog_port         = lookup('papertrail.port', {'default_value' => 514})
+    
+    $worker_data_dir     = lookup('worker.data_dir', {'default_value' => '/opt/worker'})
 
     # Merge full hash of defaults for agent and input plugins.
     $_agent_params = {
@@ -71,7 +73,7 @@ class telegraf (
                 '/etc/telegraf/telegraf.d':
                     ensure => 'directory';
 
-                '/etc/telegraf/telegraf.conf':
+                "${telegraf_conf}":
                     ensure  => present,
                     content => template('telegraf/telegraf.conf.erb'),
                     mode    => '0644';
