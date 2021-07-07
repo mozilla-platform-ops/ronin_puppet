@@ -93,9 +93,9 @@ class worker_runner (
 
             # arm64 if Apple processor
             if /^Apple.*/ in $facts['processors']['models'] {
-                $arch_name = "arm64"
+                $arch_name = 'arm64'
             } else {
-                $arch_name = "amd64"
+                $arch_name = 'amd64'
             }
 
             $taskcluster_binaries = [ 'start-worker', 'generic-worker-multiuser', 'generic-worker-simple', 'livelog', 'taskcluster-proxy' ]
