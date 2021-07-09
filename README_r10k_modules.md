@@ -29,7 +29,7 @@ After installing, commit changes to git and push.
 Uses https://github.com/rnelson0/puppet-generate-puppetfile.
 
 ```bash
-gem install generate-puppetfile
+bundle install
 generate-puppetfile -p Puppetfile
 # update Puppetfile with output
 

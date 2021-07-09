@@ -15,3 +15,5 @@ gem 'rake'
 gem 'serverspec'
 gem 'test-kitchen'
 gem 'r10k'
+
+gem "generate-puppetfile", "~> 1.1"
