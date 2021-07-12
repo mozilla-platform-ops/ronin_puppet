@@ -12,6 +12,9 @@ ROLE_FILE='/etc/puppet_role'
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
 FQDN=$(${FACTER_BIN} networking.fqdn)
+VAULT_ADDR=http://127.0.0.1:8200
+# If token doesn't exist, continue
+VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
 
 export LANG=en_US.UTF-8
 
@@ -149,7 +152,7 @@ function run_puppet {
 
     PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
-    $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
+    VAULT_ADDR=$VAULT_ADDR VAULT_TOKEN=$VAULT_TOKEN $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     PUPPET_RUN_DURATION=$SECONDS
     retval=$?
     # just in case, if there were any errors logged, flag it as an error run
