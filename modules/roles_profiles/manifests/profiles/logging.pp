@@ -54,7 +54,7 @@ class roles_profiles::profiles::logging (
                 stackdriver_key      => $stackdriver_key,
                 stackdriver_clientid => $stackdriver_clientid,
                 syslog_host          => lookup('papertrail.host', {'default_value' => $syslog_host}),
-                syslog_port          => lookup('papertrail.port', {'default_value' => $syslog_port}),
+                syslog_port          => Integer(lookup('papertrail.port', {'default_value' => $syslog_port})),
                 mac_log_level        => $mac_log_level,
                 tail_worker_logs     => $tail_worker_logs,
                 worker_stdout        => $worker_stdout,
