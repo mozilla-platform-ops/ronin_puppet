@@ -59,13 +59,19 @@ $domain = 'wintest.releng.mdc1.mozilla.com'
 $current_worker_type = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType
 $gw_service = (Get-Service Generic*)
 
+$uptime = ((get-date)-([System.Management.ManagementDateTimeconverter]::ToDateTime((Get-WmiObject win32_operatingsystem).lastbootuptime))|select Days)
+$time = $uptime -replace "@{Days=","" -replace "}",""
+
 if ($production_worker_type -ne $current_worker_type) {
 	Write-Log -message  ('{0} :: AUDIT: Node is not in production. Currently configured to be a {1} worker.' -f $($MyInvocation.MyCommand.Name), ($current_worker_type)) -severity 'DEBUG'
 	Write-host ('{0}.{1} is not in production. Currently configured to be {2} worker.' -f $($env:computername), ($domain), ($current_worker_type))
 	exit 98
 }
 
-
+if ($time -gt 1) {
+   Write-Log -message  ('{0} :: AUDIT: Worker has been up longer than a day.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+   exit 101
+}
 if ($gw_service.status -ne "running") {
     Write-Log -message  ('{0} :: AUDIT: Generic worker service is not running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     exit 99
@@ -73,5 +79,5 @@ if ($gw_service.status -ne "running") {
     Write-Log -message  ('{0} :: AUDIT: Generic worker process is not found.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     exit 99
 } else {
-	exit 0
+    exit 0
 }
