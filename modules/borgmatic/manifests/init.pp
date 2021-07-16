@@ -11,6 +11,8 @@ class borgmatic (
     Integer $minute = 0,
 ) {
 
+    #TODO: manage installing borgmatic
+
     file { '/etc/borgmatic/config.yaml':
         ensure  => file,
         mode    => '0600',
