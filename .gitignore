@@ -32,6 +32,9 @@ vendor/
 
 # ignore bolt rerun state file
 .rerun.json
+.plugin_cache.json
+.plan_cache.json
+.task_cache.json
 
 # ignore direnv
 .envrc

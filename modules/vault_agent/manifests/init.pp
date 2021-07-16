@@ -24,11 +24,12 @@ class vault_agent (
     }
 
     file {
-        # Make sure these secret files have the correct permissions and ownership
+        # Make sure these secret files have the correct permissions and ownership, BUT DO NOT manage the content
         [ '/etc/vault_approle_id', '/etc/vault_approle_secret' ]:
-            ensure => present,
-            mode   => '0600',
-            notify => Service['vault-agent'];
+            ensure  => present,
+            mode    => '0600',
+            replace => false, # Do not change content
+            notify  => Service['vault-agent'];
 
 
         # Create vault agent config
