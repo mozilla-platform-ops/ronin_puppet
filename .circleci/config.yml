@@ -33,12 +33,22 @@ jobs:
           command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
       - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
-
+  macos_test:
+    macos:
+      xcode: 12.4.0
+    steps:
+      - checkout
+      - run: sw_vers
+      - run: id
+      - run:
+          name: Run Unit Tests
+          command: xcodebuild test -scheme circleci-demo-macos
 workflows:
   ci_test:
     jobs:
       - pre_commit
       - r10k_install
+      - macos_test
 #      - kitchen_converge_and_verify:
 #          matrix:
 #            parameters:
