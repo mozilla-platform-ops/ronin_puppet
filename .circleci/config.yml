@@ -39,8 +39,8 @@ workflows:
     jobs:
       - pre_commit
       - r10k_install
-      - kitchen_converge_and_verify:
-          matrix:
-            parameters:
-              # "maas-region" and "maas-rack" removed as we're not using them currently
-              kitchen_target: ["bitbar", "linux"]
+#      - kitchen_converge_and_verify:
+#          matrix:
+#            parameters:
+#              # "maas-region" and "maas-rack" removed as we're not using them currently
+#              kitchen_target: ["bitbar", "linux"]
