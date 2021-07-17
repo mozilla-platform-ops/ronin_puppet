@@ -40,9 +40,7 @@ jobs:
       - checkout
       - run: sw_vers
       - run: id
-      - run:
-          name: Run Unit Tests
-          command: xcodebuild test -scheme circleci-demo-macos
+      - run: sudo id
 workflows:
   ci_test:
     jobs:
