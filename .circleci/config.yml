@@ -42,9 +42,9 @@ jobs:
       - checkout
       - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run:
-          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
-      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
+      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
   macos_test:
     executor: macos-1015
     steps:
@@ -68,10 +68,10 @@ workflows:
       - pre_commit
       - r10k_install
       - macos_test
-      - macos_test2:
-         context: slack-secrets
-#      - kitchen_converge_and_verify:
-#          matrix:
-#            parameters:
-#              # "maas-region" and "maas-rack" removed as we're not using them currently
-#              kitchen_target: ["bitbar", "linux"]
+#      - macos_test2:
+#         context: slack-secrets
+      - kitchen_converge_and_verify:
+          matrix:
+            parameters:
+              # "maas-region" and "maas-rack" removed as we're not using them currently
+              kitchen_target: ["bitbar", "linux"]
