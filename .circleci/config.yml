@@ -60,7 +60,7 @@ jobs:
       - run: id
       - run: sudo id
       - slack/status:
-        fail_only: false
+          fail_only: false
 
 workflows:
   ci_test:
