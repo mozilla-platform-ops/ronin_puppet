@@ -49,12 +49,20 @@ jobs:
       - run: sw_vers
       - run: id
       - run: sudo id
+  macos_test2:
+    executor: macos-1100
+    steps:
+      - checkout
+      - run: sw_vers
+      - run: id
+      - run: sudo id
 workflows:
   ci_test:
     jobs:
       - pre_commit
       - r10k_install
       - macos_test
+      - macos_test2
 #      - kitchen_converge_and_verify:
 #          matrix:
 #            parameters:
