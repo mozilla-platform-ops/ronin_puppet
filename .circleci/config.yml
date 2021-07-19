@@ -1,9 +1,20 @@
 version: 2.1
 
-jobs:
-  pre_commit:
+executors:
+  ubuntu-2004:
     machine:
       image: ubuntu-2004:202010-01
+  # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+  macos-1015:
+    macos:
+      xcode: 12.4.0
+  macos-1100:
+    macos:
+      xcode: 12.5.1
+
+jobs:
+  pre_commit:
+    executor: ubuntu-2004
     steps:
       - checkout
       - run: sudo apt-get update
@@ -14,15 +25,13 @@ jobs:
       - run: git fetch --all
       - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
-    machine:
-      image: ubuntu-2004:202010-01
+    executor: ubuntu-2004
     steps:
       - checkout
       - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   kitchen_converge_and_verify:
-    machine:
-      image: ubuntu-2004:202010-01
+    executor: ubuntu-2004
     parameters:
       kitchen_target:
         type: string
@@ -34,8 +43,7 @@ jobs:
           no_output_timeout: 30m
       - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
   macos_test:
-    macos:
-      xcode: 12.4.0
+    executor: macos-1015
     steps:
       - checkout
       - run: sw_vers
