@@ -41,7 +41,6 @@ jobs:
   pre_commit:
     executor: ubuntu-2004
     steps:
-      - export_env_vars
       - checkout
       - run: sudo apt-get update
       - run: sudo apt-get install shellcheck
