@@ -28,7 +28,7 @@ commands:
       - run: bundle clean --force
       - save_cache:
           paths:
-            - ~/.bundle
+            - vendor/
           key: v1-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
