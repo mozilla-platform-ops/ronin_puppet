@@ -52,6 +52,7 @@ jobs:
       - run: sw_vers
       - run: id
       - run: sudo id
+      - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.macos.circleci.yml bundle exec kitchen converge test
   macos_test2:
     executor: macos-1100
