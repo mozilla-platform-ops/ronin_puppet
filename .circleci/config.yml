@@ -15,10 +15,33 @@ executors:
     macos:
       xcode: 12.5.1
 
+commands:
+  gem_cache:
+    steps:
+      - restore_cache:
+        keys:
+          # when lock file changes, use increasingly general patterns to restore cache
+          - v1-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "gemfile.lock" }}
+          - v1-gem-cache-{{ arch }}-{{ .Branch }}-
+          - v1-gem-cache-{{ arch }}-
+      - run: bundle install
+      - run: bundle clean --force
+      - save_cache:
+          paths:
+            - ~/.bundle
+          key: v1-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "gemfile.lock" }}
+  export_env_vars:
+    steps:
+      - run:
+        name: Setup Environment Variables
+        command: |
+          echo "BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
+
 jobs:
   pre_commit:
     executor: ubuntu-2004
     steps:
+      - export_env_vars
       - checkout
       - run: sudo apt-get update
       - run: sudo apt-get install shellcheck
@@ -30,6 +53,7 @@ jobs:
   r10k_install:
     executor: ubuntu-2004
     steps:
+      - export_env_vars
       - checkout
       - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
@@ -39,6 +63,7 @@ jobs:
       kitchen_target:
         type: string
     steps:
+      - export_env_vars
       - checkout
       - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run:
@@ -48,15 +73,17 @@ jobs:
   macos_test:
     executor: macos-1015
     steps:
+      - export_env_vars
       - checkout
       - run: sw_vers
       - run: id
       - run: sudo id
-      - run: BUNDLE_GEMFILE=.gemfile bundle install
-      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.macos.circleci.yml bundle exec kitchen converge test
+      - run: bundle install
+      - run: KITCHEN_YAML=.kitchen_configs/kitchen.macos.circleci.yml bundle exec kitchen converge test
   macos_test2:
     executor: macos-1100
     steps:
+      - export_env_vars
       - checkout
       - run: sw_vers
       - run: id
