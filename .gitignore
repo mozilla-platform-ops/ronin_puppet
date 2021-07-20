@@ -1,7 +1,7 @@
 # Ignore files produced by vagrant
 *.log
 .vagrant/*
-.kitchen
+.kitchen/
 
 # ignore local r10k files
 .r10k/
@@ -38,3 +38,6 @@ vendor/
 
 # ignore direnv
 .envrc
+
+# rbenv
+.ruby-version

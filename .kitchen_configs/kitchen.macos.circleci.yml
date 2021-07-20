@@ -1,0 +1,66 @@
+---
+# from https://github.com/scoopex/puppet-kitchen_template
+driver:
+  name: vagrant
+  provider: virtualbox
+  provision: true
+
+provisioner:
+  name: puppet_apply
+  custom_pre_apply_command: |
+    if [ ! -f "/opt/puppetlabs/bin/puppet" ]; then
+    echo Downloading Puppet Agent ...
+    curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-agent-7.8.0-1.osx10.15.dmg
+    echo Mounting dmg ...
+    sudo hdiutil mount puppet-agent-7.8.0-1.osx10.15.dmg
+    echo Installing Puppet Agent
+    sudo installer -pkg /Volumes/puppet-agent-7.8.0-1.osx10.15/puppet-agent-7.8.0-1-installer.pkg -target /
+    echo Ejecting dmg ...
+    sudo hdiutil eject /Volumes/puppet-agent-7.8.0-1.osx10.15
+    echo Installing r10k
+    sudo /opt/puppetlabs/puppet/bin/gem install r10k -v 3.0.3
+    sudo ln -s /opt/puppetlabs/puppet/bin/r10k /opt/puppetlabs/bin/r10k
+    fi
+  modules_path: modules:r10k_modules
+  hiera_data_path: data
+  hiera_data_remote_path: /tmp/kitchen/data
+  hiera_deep_merge: false
+  puppet_verbose: true
+  #puppet_version: 7
+  puppet_binary: /opt/puppetlabs/bin/puppet
+  puppet_debug: true
+  require_chef_for_busser: false
+  require_puppet_collections: false
+  require_puppet_omnibus: false
+  require_puppet_repo: false
+  resolve_with_librarian_puppet: false
+  resolve_with_r10k: false
+  update_package_repos: false
+  custom_options: '--show_diff'
+  verify_host_key: false
+
+verifier:
+  name: serverspec
+  default_pattern: true
+
+busser:
+  ruby_bindir: /usr/bin
+
+platforms:
+  - name: macos-1015
+    driver:
+      box: macinbox
+  - name: circleci-macos-1015
+    driver:
+      name: localhost
+      clean_up_on_destroy: false
+
+suites:
+  - name: test
+    provisioner:
+      manifests_path: manifests-kitchen/macos-1015
+      custom_facts:
+        puppet_role: testing
+    includes:
+      - circleci-macos-1015
+    attributes:

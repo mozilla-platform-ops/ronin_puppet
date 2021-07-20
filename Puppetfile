@@ -1,3 +1,4 @@
+moduledir 'r10k_modules'
 forge "https://forgeapi.puppetlabs.com"
 
 # tip: keep sorted to avoid merge conflicts
