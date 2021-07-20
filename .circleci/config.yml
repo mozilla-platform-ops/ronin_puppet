@@ -19,7 +19,7 @@ commands:
   gem_cache:
     steps:
       - restore_cache:
-        keys:
+          keys:
           # when lock file changes, use increasingly general patterns to restore cache
           - v1-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "gemfile.lock" }}
           - v1-gem-cache-{{ arch }}-{{ .Branch }}-
@@ -33,9 +33,9 @@ commands:
   export_env_vars:
     steps:
       - run:
-        name: Setup Environment Variables
-        command: |
-          echo "BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
+          name: Setup Environment Variables
+          command: |
+            echo "BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
 
 jobs:
   pre_commit:
