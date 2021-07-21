@@ -42,6 +42,7 @@ commands:
           - v1-apt-cache-{{ arch }}-{{ .Branch }}-
           - v1-apt-cache-{{ arch }}-
   apt_cache_save:
+    steps:
       - save_cache:
           paths:
             - docker/apt-cache/
