@@ -139,5 +139,4 @@ workflows:
           matrix:
             parameters:
               # "maas-region" and "maas-rack" removed as we're not using them currently
-#              kitchen_target: ["bitbar"]
               kitchen_target: ["bitbar", "linux"]
