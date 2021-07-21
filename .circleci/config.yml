@@ -38,10 +38,10 @@ commands:
           - v2-gem-cache-{{ arch }}-{{ .Branch }}-
           - v2-gem-cache-{{ arch }}-
       - run:
-        name: Bundle Install and forced clean
-        command: |
-          bundle install
-          bundle clean --force
+          name: Bundle Install and forced clean
+          command: |
+            bundle install
+            bundle clean --force
       - save_cache:
           paths:
             - vendor/
