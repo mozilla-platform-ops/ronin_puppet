@@ -35,7 +35,7 @@ commands:
   apt_cache_restore:
     steps:
       - run: mkdir -p /tmp/docker/var/cache/apt
-      - run: ls -laR /tmp/docker/var/cache/apt > apt_cache_debs_checksum
+      - run: sudo ls -laR /tmp/docker/var/cache/apt > apt_cache_debs_checksum
       - restore_cache:
           keys:
           - v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
@@ -43,10 +43,10 @@ commands:
           - v1-apt-cache-{{ arch }}-
   apt_cache_save:
     steps:
-      - run: ls -laR /tmp/docker/var/cache/apt > apt_cache_debs_checksum
+      - run: sudo ls -laR /tmp/docker/var/cache/apt > apt_cache_debs_checksum
       - save_cache:
           paths:
-            - docker/apt-cache/
+            - /tmp/docker/var/cache/apt
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
     steps:
