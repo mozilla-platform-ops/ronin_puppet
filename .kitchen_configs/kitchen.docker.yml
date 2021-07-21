@@ -9,7 +9,7 @@ driver:
 
 provisioner:
   name: puppet_apply
-  modules_path: modules
+  modules_path: modules:r10k_modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: true
@@ -50,7 +50,7 @@ provisioner:
   custom_options: '--show_diff'
   verify_host_key: false
   resolve_with_librarian_puppet: false
-  resolve_with_r10k: true
+  resolve_with_r10k: false
 
 platforms:
   - name: ubuntu-18.04
