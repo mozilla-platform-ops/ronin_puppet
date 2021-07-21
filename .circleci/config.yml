@@ -86,7 +86,7 @@ jobs:
         #      - gem_cache
       - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run:
-          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >> -l debug
           no_output_timeout: 30m
       - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
     environment:
