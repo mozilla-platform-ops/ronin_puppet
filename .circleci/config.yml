@@ -4,6 +4,9 @@ orbs:
   slack: circleci/slack@3.4.2
 
 executors:
+  ubuntu-2004-docker:
+    docker:
+      - image: ubuntu:20.04
   ubuntu-2004:
     machine:
       image: ubuntu-2004:202010-01
@@ -55,7 +58,7 @@ commands:
 
 jobs:
   pre_commit:
-    executor: ubuntu-2004
+    executor: ubuntu-2004-docker
     steps:
       - checkout
       - run: sudo apt-get update
@@ -66,12 +69,12 @@ jobs:
       - run: git fetch --all
       - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
-    executor: ubuntu-2004
+    executor: ubuntu-2004-docker
     steps:
       - export_env_vars
       - checkout
-      - run: BUNDLE_GEMFILE=.gemfile bundle install
-      - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+      - gem_cache
+      - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   kitchen_converge_and_verify:
     executor: ubuntu-2004
     parameters:
@@ -80,11 +83,13 @@ jobs:
     steps:
       - export_env_vars
       - checkout
-      - run: BUNDLE_GEMFILE=.gemfile bundle install
+      - gem_cache
       - run:
-          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+          command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
-      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
+      - run: bundle exec kitchen verify << parameters.kitchen_target >>
+    environment:
+      KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
   macos_test:
     executor: macos-1015
     steps:
