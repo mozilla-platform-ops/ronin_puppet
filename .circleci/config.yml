@@ -115,7 +115,7 @@ workflows:
     jobs:
       - pre_commit
       - r10k_install
-      - macos_test
+        #      - macos_test
 #      - macos_test2:
 #         context: slack-secrets
       - kitchen_converge_and_verify:
