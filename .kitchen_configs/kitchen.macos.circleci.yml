@@ -7,20 +7,6 @@ driver:
 
 provisioner:
   name: puppet_apply
-  custom_pre_apply_command: |
-    if [ ! -f "/opt/puppetlabs/bin/puppet" ]; then
-    echo Downloading Puppet Agent ...
-    curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-agent-7.8.0-1.osx10.15.dmg
-    echo Mounting dmg ...
-    sudo hdiutil mount puppet-agent-7.8.0-1.osx10.15.dmg
-    echo Installing Puppet Agent
-    sudo installer -pkg /Volumes/puppet-agent-7.8.0-1.osx10.15/puppet-agent-7.8.0-1-installer.pkg -target /
-    echo Ejecting dmg ...
-    sudo hdiutil eject /Volumes/puppet-agent-7.8.0-1.osx10.15
-    echo Installing r10k
-    sudo /opt/puppetlabs/puppet/bin/gem install r10k -v 3.0.3
-    sudo ln -s /opt/puppetlabs/puppet/bin/r10k /opt/puppetlabs/bin/r10k
-    fi
   modules_path: modules:r10k_modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
