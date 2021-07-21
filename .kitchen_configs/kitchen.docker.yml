@@ -41,8 +41,8 @@ provisioner:
             bugzilla_api_key: 'BZ_KEY'
   provision_command:
     - locale-gen en_US.UTF-8
+    - rm -f /etc/apt/apt.conf.d/docker-clean
     - apt-get install dbus
-#    - mkdir -p docker/var/cache/apt/archives
   puppet_verbose: true
   # explodes if specified, defaults to latest/6
   # https://github.com/petems/puppet-install-shell/issues/137
