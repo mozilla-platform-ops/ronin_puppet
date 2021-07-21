@@ -34,11 +34,12 @@ commands:
             sudo -E installer -pkg /Volumes/puppet-bolt-3.9.2/puppet-bolt-3.9.2-1-installer.pkg -target /
   apt_cache_restore:
     steps:
-      - run: mkdir -p docker/var/cache/apt
+      - run: mkdir -p /tmp/docker/var/cache/apt
+      - run: touch /tmp/docker/var/cache/apt/pkgcache.bin
       - restore_cache:
           keys:
           # when lock file changes, use increasingly general patterns to restore cache
-          - v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "docker/var/cache/apt/pkgcache.bin" }}
+          - v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/docker/var/cache/apt/pkgcache.bin" }}
           - v1-apt-cache-{{ arch }}-{{ .Branch }}-
           - v1-apt-cache-{{ arch }}-
   apt_cache_save:

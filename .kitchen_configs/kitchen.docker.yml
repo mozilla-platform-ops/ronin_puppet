@@ -6,7 +6,7 @@ driver:
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
-  mount: type=volume,source=docker/var/cache/apt,destination=/var/cache/apt
+  mount: type=volume,source=/tmp/docker/var/cache/apt,destination=/var/cache/apt
 
 provisioner:
   name: puppet_apply
