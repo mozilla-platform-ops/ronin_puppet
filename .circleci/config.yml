@@ -97,8 +97,8 @@ jobs:
       - checkout
       - gem_cache
       - install_macos_puppet
-      - run: bundle exec kitchen converge test
-      - run: bundle exec kitchen verify test
+      - run: bundle exec kitchen converge macos
+      - run: bundle exec kitchen verify macos
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
   macos_test2:

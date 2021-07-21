@@ -13,7 +13,6 @@ provisioner:
   hiera_deep_merge: false
   provision_command: echo PROVISION
   puppet_verbose: true
-  #puppet_version: 7
   puppet_binary: /opt/puppetlabs/bin/puppet
   puppet_debug: true
   require_chef_for_busser: false
@@ -43,7 +42,7 @@ platforms:
       clean_up_on_destroy: false
 
 suites:
-  - name: test
+  - name: macos
     provisioner:
       manifests_path: manifests-kitchen/macos-1015
       custom_facts:
