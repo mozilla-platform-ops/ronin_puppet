@@ -18,14 +18,17 @@ executors:
 commands:
   install_macos_puppet:
     steps:
-      # Install puppet agent
-      - run: curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-agent-7.8.0-1.osx10.15.dmg
-      - run: hdiutil mount puppet-agent-7.8.0-1.osx10.15.dmg
-      - run: sudo -E installer -pkg /Volumes/puppet-agent-7.8.0-1.osx10.15/puppet-agent-7.8.0-1-installer.pkg -target /
-      # Install bolt
-      - run: curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-bolt-3.9.2-1.osx10.15.dmg
-      - run: hdiutil mount puppet-bolt-3.9.2-1.osx10.15.dmg
-      - run: sudo -E installer -pkg /Volumes/puppet-bolt-3.9.2/puppet-bolt-3.9.2-1-installer.pkg -target /
+      - run:
+          name: Install puppet agent and bolt
+          command: |
+            # Install puppet agent
+            curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-agent-7.8.0-1.osx10.15.dmg
+            hdiutil mount puppet-agent-7.8.0-1.osx10.15.dmg
+            sudo -E installer -pkg /Volumes/puppet-agent-7.8.0-1.osx10.15/puppet-agent-7.8.0-1-installer.pkg -target /
+            # Install bolt
+            curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-bolt-3.9.2-1.osx10.15.dmg
+            hdiutil mount puppet-bolt-3.9.2-1.osx10.15.dmg
+            sudo -E installer -pkg /Volumes/puppet-bolt-3.9.2/puppet-bolt-3.9.2-1-installer.pkg -target /
   gem_cache:
     steps:
       - restore_cache:
