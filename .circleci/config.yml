@@ -1,64 +1,9 @@
 version: 2.1
 
-orbs:
-  slack: circleci/slack@3.4.2
-
-executors:
-  ubuntu-2004-docker:
-    docker:
-      - image: ubuntu:20.04
-  ubuntu-2004:
-    machine:
-      image: ubuntu-2004:202010-01
-  # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
-  macos-1015:
-    macos:
-      xcode: 12.4.0
-  macos-1100:
-    macos:
-      xcode: 12.5.1
-
-commands:
-  install_macos_puppet:
-    steps:
-      - run:
-          name: Install puppet agent and bolt
-          command: |
-            # Install puppet agent
-            curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-agent-7.8.0-1.osx10.15.dmg
-            hdiutil mount puppet-agent-7.8.0-1.osx10.15.dmg
-            sudo -E installer -pkg /Volumes/puppet-agent-7.8.0-1.osx10.15/puppet-agent-7.8.0-1-installer.pkg -target /
-            # Install bolt
-            curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-bolt-3.9.2-1.osx10.15.dmg
-            hdiutil mount puppet-bolt-3.9.2-1.osx10.15.dmg
-            sudo -E installer -pkg /Volumes/puppet-bolt-3.9.2/puppet-bolt-3.9.2-1-installer.pkg -target /
-  gem_cache:
-    steps:
-      - restore_cache:
-          keys:
-          # when lock file changes, use increasingly general patterns to restore cache
-          - v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-          - v2-gem-cache-{{ arch }}-{{ .Branch }}-
-          - v2-gem-cache-{{ arch }}-
-      - run:
-          name: Bundle Install and forced clean
-          command: |
-            bundle install
-            bundle clean --force
-      - save_cache:
-          paths:
-            - vendor/
-          key: v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-  export_env_vars:
-    steps:
-      - run:
-          name: Setup Additional Environment Variables
-          command: |
-            echo "export BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
-
 jobs:
   pre_commit:
-    executor: ubuntu-2004
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
       - checkout
       - run: sudo apt-get update
@@ -69,55 +14,31 @@ jobs:
       - run: git fetch --all
       - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
-    executor: ubuntu-2004
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
-      - export_env_vars
       - checkout
-      - gem_cache
-      - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+      - run: BUNDLE_GEMFILE=.gemfile bundle install
+      - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   kitchen_converge_and_verify:
-    executor: ubuntu-2004
+    machine:
+      image: ubuntu-2004:202010-01
     parameters:
       kitchen_target:
         type: string
     steps:
-      # - export_env_vars
       - checkout
-        #      - gem_cache
       - run: BUNDLE_GEMFILE=.gemfile bundle install
       - run:
-          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >> -l debug
+          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
-      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen_configs/kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
-    environment:
-      KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
-  macos_test:
-    executor: macos-1015
-    steps:
-      - export_env_vars
-      - checkout
-      - gem_cache
-      - install_macos_puppet
-      - run: bundle exec kitchen converge macos
-      - run: bundle exec kitchen verify macos
-    environment:
-      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
-  macos_test2:
-    executor: macos-1100
-    steps:
-      - export_env_vars
-      - checkout
-      - slack/status:
-          fail_only: false
+      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
 
 workflows:
   ci_test:
     jobs:
       - pre_commit
       - r10k_install
-        #      - macos_test
-#      - macos_test2:
-#         context: slack-secrets
       - kitchen_converge_and_verify:
           matrix:
             parameters:
