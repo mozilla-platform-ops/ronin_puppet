@@ -58,7 +58,7 @@ commands:
 
 jobs:
   pre_commit:
-    executor: ubuntu-2004-docker
+    executor: ubuntu-2004
     steps:
       - checkout
       - run: sudo apt-get update
@@ -69,7 +69,7 @@ jobs:
       - run: git fetch --all
       - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
-    executor: ubuntu-2004-docker
+    executor: ubuntu-2004
     steps:
       - export_env_vars
       - checkout

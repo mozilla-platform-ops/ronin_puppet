@@ -11,6 +11,7 @@ provisioner:
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: false
+  provision_command: echo PROVISION
   puppet_verbose: true
   #puppet_version: 7
   puppet_binary: /opt/puppetlabs/bin/puppet
