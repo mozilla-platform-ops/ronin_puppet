@@ -6,6 +6,7 @@ driver:
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
+  mount: type=volume,source=docker/var/cache/apt,destination=/var/cache/apt
 
 provisioner:
   name: puppet_apply
@@ -38,7 +39,10 @@ provisioner:
             quarantine_client_id: '3333'
             quarantine_access_token: 'Q_TOKEN'
             bugzilla_api_key: 'BZ_KEY'
-  provision_command: locale-gen en_US.UTF-8; apt-get install dbus
+  provision_command:
+    - locale-gen en_US.UTF-8
+    - apt-get install dbus
+#    - mkdir -p docker/var/cache/apt/archives
   puppet_verbose: true
   # explodes if specified, defaults to latest/6
   # https://github.com/petems/puppet-install-shell/issues/137

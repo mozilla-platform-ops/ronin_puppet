@@ -32,6 +32,20 @@ commands:
             curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-bolt-3.9.2-1.osx10.15.dmg
             hdiutil mount puppet-bolt-3.9.2-1.osx10.15.dmg
             sudo -E installer -pkg /Volumes/puppet-bolt-3.9.2/puppet-bolt-3.9.2-1-installer.pkg -target /
+  apt_cache_restore:
+    steps:
+      - run: mkdir -p docker/var/cache/apt
+      - restore_cache:
+          keys:
+          # when lock file changes, use increasingly general patterns to restore cache
+          - v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "docker/var/cache/apt/pkgcache.bin" }}
+          - v1-apt-cache-{{ arch }}-{{ .Branch }}-
+          - v1-apt-cache-{{ arch }}-
+  apt_cache_save:
+      - save_cache:
+          paths:
+            - docker/apt-cache/
+          key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "docker/var/cache/apt/pkgcache.bin" }}
   gem_cache:
     steps:
       - restore_cache:
@@ -84,10 +98,12 @@ jobs:
       - export_env_vars
       - checkout
       - gem_cache
+      - apt_cache_restore
       - run:
           command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
       - run: bundle exec kitchen verify << parameters.kitchen_target >>
+      - apt_cache_save
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
   macos_test:
@@ -121,4 +137,5 @@ workflows:
           matrix:
             parameters:
               # "maas-region" and "maas-rack" removed as we're not using them currently
-              kitchen_target: ["bitbar", "linux"]
+              kitchen_target: ["bitbar"]
+#              kitchen_target: ["bitbar", "linux"]
