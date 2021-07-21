@@ -8,8 +8,8 @@ driver:
     - SYS_ADMIN
   mount: type=bind,source=/tmp/docker/var/cache/apt,destination=/var/cache/apt
   provision_command:
-    - locale-gen en_US.UTF-8
     - rm -f /etc/apt/apt.conf.d/docker-clean
+    - apt-get update
     - apt-get install dbus
 
 provisioner:
