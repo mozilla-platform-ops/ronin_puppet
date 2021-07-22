@@ -7,7 +7,7 @@ driver:
 
 provisioner:
   name: puppet_apply
-  modules_path: modules:r10k_modules
+  modules_path: "modules:r10k_modules"
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: false
@@ -45,12 +45,13 @@ platforms:
 suites:
   - name: default
     provisioner:
-      custom_options: '-e include roles_profiles::roles::testing'
+      custom_options: '-e "include roles_profiles::roles::testing"'
       custom_facts:
         puppet_role: testing
     verifier:
       patterns:
       - test/integration/macos/serverspec/*_spec.rb
+      default_pattern: false
     includes:
       - circleci-macos
     attributes:
