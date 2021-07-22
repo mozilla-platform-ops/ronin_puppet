@@ -37,17 +37,20 @@ platforms:
   - name: macos-1015
     driver:
       box: macinbox
-  - name: circleci-macos-1015
+  - name: circleci-macos
     driver:
       name: localhost
       clean_up_on_destroy: false
 
 suites:
-  - name: macos
+  - name: default
     provisioner:
-      manifests_path: manifests-kitchen/macos-1015
+      custom_options: '-e include roles_profiles::roles::testing'
       custom_facts:
         puppet_role: testing
+    verifier:
+      patterns:
+      - test/integration/macos/serverspec/*_spec.rb
     includes:
-      - circleci-macos-1015
+      - circleci-macos
     attributes:
