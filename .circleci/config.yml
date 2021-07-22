@@ -138,7 +138,7 @@ workflows:
               os: [macos-1015, macos-1100]
               suite: ["default"]
           context: slack-secrets
-      - linux_intergration_tests:
+      - linux_integration_tests:
           matrix:
             parameters:
               kitchen_target: ["bitbar", "linux"]
