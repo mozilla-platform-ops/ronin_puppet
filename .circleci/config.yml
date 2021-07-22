@@ -108,33 +108,36 @@ jobs:
       - apt_cache_save
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
-  macos_test:
-    executor: macos-1015
+  integration_tests:
+    parameters:
+      os:
+        type: executor
+      suite:
+        type: string
+    executor: << parameters.os >>
     steps:
       - export_env_vars
       - checkout
       - gem_cache
       - install_macos_puppet
-      - run: bundle exec kitchen converge macos
-      - run: bundle exec kitchen verify macos
+      - run: bundle exec kitchen converge << parameters.suite >>
+      - run: bundle exec kitchen verify << parameters.suite >>
+#      - slack/status:
+#          fail_only: false
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
-  macos_test2:
-    executor: macos-1100
-    steps:
-      - export_env_vars
-      - checkout
-      - slack/status:
-          fail_only: false
 
 workflows:
   ci_test:
     jobs:
-#      - pre_commit
-#      - r10k_install
-      - macos_test
-#      - macos_test2:
-#         context: slack-secrets
+      - pre_commit
+      - r10k_install
+      - integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1015, macos-1100]
+              suite: ["testing"]
+          context: slack-secrets
       - kitchen_converge_and_verify:
           matrix:
             parameters:
