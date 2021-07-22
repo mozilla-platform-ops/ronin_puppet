@@ -126,6 +126,7 @@ jobs:
 #          fail_only: false
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      PUPPET_ROLE: testing
 
 workflows:
   ci_test:
