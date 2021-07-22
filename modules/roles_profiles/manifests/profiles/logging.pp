@@ -5,13 +5,7 @@
 class roles_profiles::profiles::logging (
     String $worker_type         = '',  # not used by windows
     String $stackdriver_project = 'none',
-    String $syslog_host         = join([
-      'log-aggregator',
-      "${1 + fqdn_rand(2)}",
-      '.srv.releng.',
-      regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1'),
-      '.mozilla.com'
-    ]),
+    String $syslog_host         = 'syslog1.private.mdc1.mozilla.com',
     Integer $syslog_port        = 514,
     String $mac_log_level       = '17',
     Boolean $tail_worker_logs   = false,
@@ -27,11 +21,8 @@ class roles_profiles::profiles::logging (
     case $::operatingsystem {
         'Windows': {
 
-            if ($facts['custom_win_location'] == 'datacenter') {
-                $log_aggregator  = lookup('windows.datacenter.log_aggregator')
-            } else {
-                $log_aggregator  = lookup('windows.external.papertrail')
-            }
+            $log_aggregator  = lookup('windows.external.papertrail')
+
             if ($facts['custom_win_location'] == 'datacenter') or ($facts['custom_win_location'] == 'azure') {
                 if ($facts['custom_win_bootstrap_stage'] != 'complete') {
                     $log_level = 'verbose'
@@ -63,7 +54,7 @@ class roles_profiles::profiles::logging (
                 stackdriver_key      => $stackdriver_key,
                 stackdriver_clientid => $stackdriver_clientid,
                 syslog_host          => lookup('papertrail.host', {'default_value' => $syslog_host}),
-                syslog_port          => lookup('papertrail.port', {'default_value' => $syslog_port}),
+                syslog_port          => Integer(lookup('papertrail.port', {'default_value' => $syslog_port})),
                 mac_log_level        => $mac_log_level,
                 tail_worker_logs     => $tail_worker_logs,
                 worker_stdout        => $worker_stdout,

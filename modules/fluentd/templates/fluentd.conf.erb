@@ -27,7 +27,6 @@
   command "\
     log stream --type log --level info --color none \
       --predicate '(process MATCHES \"(logger|sudo|su|sshd)\" || messageType >= <%= @mac_log_level %>)' \
-      --timeout 1d \
     | sed -l -e '2d' \
     "
     # messageType integers:

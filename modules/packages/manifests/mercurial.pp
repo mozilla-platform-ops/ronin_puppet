@@ -22,7 +22,7 @@ class packages::mercurial (
     # /Library/Python/2.7/site-packages/
     # So, link /Library under /usr to make hg find it.
     # Not needed for bigsur on M1
-    if ! member(['10.15', '11.0', '11.1', '11.2'], $facts['os']['macosx']['version']['major']) {
+    if member(['10.14'], $facts['os']['macosx']['version']['major']) {
         file { '/usr/Library':
             ensure  => 'link',
             target  => '/Library',
