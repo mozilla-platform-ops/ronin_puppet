@@ -91,7 +91,7 @@ jobs:
       - checkout
       - gem_cache
       - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
-  kitchen_converge_and_verify:
+  linux_integration_tests:
     executor: ubuntu-2004
     parameters:
       kitchen_target:
@@ -108,7 +108,7 @@ jobs:
       - apt_cache_save
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
-  integration_tests:
+  macos_integration_tests:
     parameters:
       os:
         type: executor
@@ -132,13 +132,13 @@ workflows:
     jobs:
       - pre_commit
       - r10k_install
-      - integration_tests:
+      - macos_integration_tests:
           matrix:
             parameters:
               os: [macos-1015, macos-1100]
               suite: ["default"]
           context: slack-secrets
-      - kitchen_converge_and_verify:
+      - linux_intergration_tests:
           matrix:
             parameters:
               kitchen_target: ["bitbar", "linux"]
