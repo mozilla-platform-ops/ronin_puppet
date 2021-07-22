@@ -15,7 +15,7 @@ provisioner:
   puppet_verbose: true
   puppet_binary: /opt/puppetlabs/bin/puppet
   puppet_debug: true
-  require_chef_for_busser: false
+  require_chef_for_busser: true
   require_puppet_collections: false
   require_puppet_omnibus: false
   require_puppet_repo: false

@@ -130,13 +130,12 @@ jobs:
 workflows:
   ci_test:
     jobs:
-      - pre_commit
-      - r10k_install
+#      - pre_commit
+#      - r10k_install
       - macos_test
 #      - macos_test2:
 #         context: slack-secrets
-      - kitchen_converge_and_verify:
-          matrix:
-            parameters:
-              # "maas-region" and "maas-rack" removed as we're not using them currently
-              kitchen_target: ["bitbar", "linux"]
+#      - kitchen_converge_and_verify:
+#          matrix:
+#            parameters:
+#              kitchen_target: ["bitbar", "linux"]
