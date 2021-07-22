@@ -28,6 +28,7 @@ provisioner:
 verifier:
   name: serverspec
   default_pattern: true
+  remote_exec: false
 
 busser:
   ruby_bindir: /usr/bin
