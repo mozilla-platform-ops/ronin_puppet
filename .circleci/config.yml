@@ -136,7 +136,7 @@ workflows:
           matrix:
             parameters:
               os: [macos-1015, macos-1100]
-              suite: ["testing"]
+              suite: ["macos"]
           context: slack-secrets
       - kitchen_converge_and_verify:
           matrix:
