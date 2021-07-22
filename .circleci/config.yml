@@ -135,7 +135,7 @@ workflows:
       - macos_test
 #      - macos_test2:
 #         context: slack-secrets
-#      - kitchen_converge_and_verify:
-#          matrix:
-#            parameters:
-#              kitchen_target: ["bitbar", "linux"]
+      - kitchen_converge_and_verify:
+          matrix:
+            parameters:
+              kitchen_target: ["bitbar", "linux"]
