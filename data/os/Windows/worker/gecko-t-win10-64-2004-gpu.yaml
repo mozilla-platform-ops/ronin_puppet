@@ -5,21 +5,24 @@ win-worker:
   generic_worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
-    exe_version: '16.6.0'
+    version: '43.0.0'
 
   taskcluster:
     worker_runner:
-        provider: "standalone"
-        version: '29.0.1'
+        name: 'start-worker-windows-amd64'
+        version: '43.0.0'
+        provider: "azure"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
-        version: '5.1.0'
+        version: '43.0.0'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
-    livelog_exe: "livelog-windows-amd64-1.1.0.exe"
-    client_id: "azure/gecko-t/win10-64-az-test"
-    worker_pool_id: "gecko-t/win10-64-az-test"
+    livelog:
+        name: "livelog-windows-amd64"
+        version: '43.0.0'
+    client_id: "azure/gecko-t/win10-64-2004-gpu"
+    worker_pool_id: "gecko-t/win10-64-2004-gpu"
     worker_group: "test"
 
   # Mozilla-build
@@ -40,3 +43,13 @@ win-worker:
   vnc_name:  "UltraVnc"
   nssm:
     version: '2.24'
+  azure:
+    vm_agent:
+      version: '2.7.41491.949_191001-1418.fre'
+      name: "Windows Azure VM Agent - 2.7.41491.949"
+  vac:
+    version: '464'
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "verbose"
