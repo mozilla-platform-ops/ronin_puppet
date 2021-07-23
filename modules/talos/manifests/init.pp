@@ -7,6 +7,10 @@ class talos (
 ) {
     case $::operatingsystem {
         'Darwin': {
+            $builds_dir = $facts['os']['macosx']['version']['major'] ? {
+                '11' => '/opt/builds',
+                default => '/builds'
+            }
 
             include httpd
             include packages::java_developer_package_for_osx
@@ -14,19 +18,19 @@ class talos (
             require dirs::builds
 
             file {
-                [ '/builds/slave',
-                  '/builds/slave/talos-data',
-                  '/builds/slave/talos-data/talos',
-                  '/builds/git-shared',
-                  '/builds/hg-shared',
-                  '/builds/tooltool_cache' ]:
+                [ "${builds_dir}/slave",
+                  "${builds_dir}/slave/talos-data",
+                  "${builds_dir}/slave/talos-data/talos",
+                  "${builds_dir}/git-shared",
+                  "${builds_dir}/hg-shared",
+                  "${builds_dir}/tooltool_cache" ]:
                     ensure => directory,
                     owner  => $user,
                     group  => 'staff',
                     mode   => '0755',
             }
 
-            $document_root = '/builds/slave/talos-data/talos'
+            $document_root = "${builds_dir}/slave/talos-data/talos"
             httpd::config { 'talos.conf':
                 content => template('talos/talos-httpd.conf.erb'),
             }
