@@ -140,7 +140,7 @@ workflows:
             parameters:
               os: [macos-1015, macos-1100]
               suite: ["default"]
-              role: ["testing"]
+              role: ["gecko_t_osx_1015_r8", "testing"]
           context: slack-secrets
       - linux_integration_tests:
           matrix:

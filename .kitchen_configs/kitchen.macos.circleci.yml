@@ -48,10 +48,10 @@ suites:
       custom_options: '-e "include roles_profiles::roles::<%= ENV["PUPPET_ROLE"] %>"'
       custom_facts:
         puppet_role: <%= ENV['PUPPET_ROLE'] %>
-    verifier:
-      patterns:
-      - test/integration/macos/serverspec/*_spec.rb
-      default_pattern: false
+#    verifier:
+#      patterns:
+#      - test/integration/macos/serverspec/*_spec.rb
+#      default_pattern: false
     includes:
       - circleci-macos
     attributes:
