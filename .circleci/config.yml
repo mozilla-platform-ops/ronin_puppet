@@ -112,6 +112,8 @@ jobs:
     parameters:
       os:
         type: executor
+      role:
+        type: string
       suite:
         type: string
     executor: << parameters.os >>
@@ -122,11 +124,11 @@ jobs:
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
-#      - slack/status:
-#          fail_only: false
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
-      PUPPET_ROLE: testing
+      PUPPET_ROLE: << parameters.role >>
+#      - slack/status:
+#          fail_only: false
 
 workflows:
   ci_test:
@@ -138,6 +140,7 @@ workflows:
             parameters:
               os: [macos-1015, macos-1100]
               suite: ["default"]
+              role: ["testing"]
           context: slack-secrets
       - linux_integration_tests:
           matrix:
