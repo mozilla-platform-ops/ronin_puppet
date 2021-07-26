@@ -121,6 +121,7 @@ jobs:
     steps:
       - export_env_vars
       - checkout
+      - vault/install
       - run: vault version
       - gem_cache
       - install_macos_puppet
