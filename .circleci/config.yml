@@ -75,7 +75,8 @@ commands:
             echo "export BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
   setup_vault:
     steps:
-      - vault/install
+      - vault/install:
+          verify: false
       - run: vault version
       - run:
           name: Start vault server in dev mode
@@ -131,8 +132,6 @@ jobs:
     steps:
       - export_env_vars
       - checkout
-      - vault/install:
-          verify: false
       - setup_vault
       - gem_cache
       - install_macos_puppet
