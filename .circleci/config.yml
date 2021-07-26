@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@3.4.2
+  hashicorp-vault: jmingtan/hashicorp-vault@0.2.1
 
 executors:
   ubuntu-2004-docker:
@@ -120,6 +121,8 @@ jobs:
     steps:
       - export_env_vars
       - checkout
+      - vault/install
+      - run: vault version
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
@@ -140,9 +143,9 @@ workflows:
             parameters:
               os: [macos-1015, macos-1100]
               suite: ["default"]
-              role: ["gecko_t_osx_1015_r8", "testing"]
+              role: ["gecko_t_osx_1015_r8"]
           context: slack-secrets
-      - linux_integration_tests:
-          matrix:
-            parameters:
-              kitchen_target: ["bitbar", "linux"]
+          #      - linux_integration_tests:
+          # matrix:
+          #  parameters:
+          #    kitchen_target: ["bitbar", "linux"]
