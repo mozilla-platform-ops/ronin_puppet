@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   slack: circleci/slack@3.4.2
   vault: jmingtan/hashicorp-vault@0.2.1
+  terraform: circleci/terraform@2.1.0
 
 executors:
   ubuntu-2004-docker:
@@ -89,6 +90,11 @@ commands:
             echo "export VAULT_TOKEN=root" >> $BASH_ENV
       - run: vault status
       - run: vault token lookup
+      - terraform/install:
+          arch: arm64
+          os: darwin
+          version: 1.0.3
+      - run: terraform version
 
 jobs:
   pre_commit:
