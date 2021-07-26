@@ -90,6 +90,11 @@ commands:
             echo "export VAULT_TOKEN=root" >> $BASH_ENV
       - run: vault status
       - run: vault token lookup
+      - run:
+          name: Install wget
+          command: brew install wget
+          environment:
+            HOMEBREW_NO_AUTO_UPDATE: 1
       - terraform/install:
           arch: arm64
           os: darwin
