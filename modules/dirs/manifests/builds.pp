@@ -4,7 +4,12 @@
 
 class dirs::builds {
 
-    file { '/builds':
+    $builds_dir = $facts['os']['macosx']['version']['major'] ? {
+        '11' => '/opt/builds',
+        default => '/builds'
+    }
+
+    file { $builds_dir:
         ensure => directory,
         mode   => '0755',
     }
