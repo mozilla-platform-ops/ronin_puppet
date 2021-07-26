@@ -77,7 +77,10 @@ commands:
     steps:
       - vault/install
       - run: vault version
-      - run: vault server -dev -dev-root-token-id="root" &
+      - run:
+          name: Start vault server in dev mode
+          command: vault server -dev -dev-root-token-id="root"
+          background: true
       - run: vault status
 
 jobs:
