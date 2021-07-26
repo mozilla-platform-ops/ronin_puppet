@@ -81,7 +81,7 @@ commands:
           name: Start vault server in dev mode
           command: vault server -dev -dev-root-token-id="root"
           background: true
-      - run: vault status
+      - run: VAULT_ADDR=http://127.0.0.1:8200 vault status
 
 jobs:
   pre_commit:
