@@ -93,7 +93,7 @@ commands:
       - terraform/install:
           arch: arm64
           os: darwin
-          version: 1.0.3
+          terraform_version: 1.0.3
       - run: terraform version
 
 jobs:
