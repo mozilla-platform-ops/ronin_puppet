@@ -33,7 +33,7 @@ commands:
             curl -s -O https://downloads.puppet.com/mac/puppet/10.15/x86_64/puppet-bolt-3.9.2-1.osx10.15.dmg
             hdiutil mount puppet-bolt-3.9.2-1.osx10.15.dmg
             sudo -E installer -pkg /Volumes/puppet-bolt-3.9.2/puppet-bolt-3.9.2-1-installer.pkg -target /
-      - run: /opt/puppetlabs/bolt/bin/gem install vault debouncer
+      - run: sudo /opt/puppetlabs/puppet/bin/gem install vault debouncer
   apt_cache_restore:
     steps:
       - run: mkdir -p /tmp/docker/var/cache/apt
