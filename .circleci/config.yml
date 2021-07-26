@@ -77,7 +77,7 @@ commands:
     steps:
       - vault/install
       - run: vault version
-      - run: vault server -dev
+      - run: vault server -dev -dev-root-token-id="root" &
       - run: vault status
 
 jobs:
