@@ -80,9 +80,15 @@ commands:
       - run: vault version
       - run:
           name: Start vault server in dev mode
-          command: vault server -dev -dev-root-token-id="root"
+          command: vault server -dev -dev-root-token-id="root" -dev-listen-address=127.0.0.1:8202
           background: true
-      - run: VAULT_ADDR=http://127.0.0.1:8200 vault status
+      - run:
+          name: Export VAULT_ADDR and VAULT_TOKEN
+          command: |
+            echo "export VAULT_ADDR=http://127.0.0.1:8202" >> $BASH_ENV
+            echo "export VAULT_TOKEN=root" >> $BASH_ENV
+      - run: vault status
+      - run: vault token lookup
 
 jobs:
   pre_commit:
