@@ -112,10 +112,11 @@ jobs:
       - run: apt-get update
       - run: apt-get -y install shellcheck git
       - run:
-          name: Install terrraform
+          name: Install tfenv and terraform
           command: |
             git clone https://github.com/tfutils/tfenv.git ~/.tfenv
             echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> ~/.bash_profile
+            export PATH="$HOME/.tfenv/bin:$PATH"
             tfenv install 1.0.3
             tfenv use 1.0.3
       - run: pip3 install pre-commit
