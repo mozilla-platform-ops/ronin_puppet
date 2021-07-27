@@ -91,13 +91,21 @@ class worker_runner (
                 $launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
             }
 
-            # TODO: Move installation to s3
+            # arm64 if Apple processor
+            if /^Apple.*/ in $facts['processors']['models'] {
+                $arch_name = 'arm64'
+            } else {
+                $arch_name = 'amd64'
+            }
+
             $taskcluster_binaries = [ 'start-worker', 'generic-worker-multiuser', 'generic-worker-simple', 'livelog', 'taskcluster-proxy' ]
             $taskcluster_binaries.each |String $bin| {
-                file { "/usr/local/bin/${bin}":
-                    ensure => 'file',
-                    source => "https://github.com/taskcluster/taskcluster/releases/download/v${taskcluster_version}/${bin}-darwin-amd64",
-                    mode   => '0755',
+                $pkg_name = "${bin}-${taskcluster_version}-${arch_name}"
+                packages::macos_package_from_s3 { $pkg_name:
+                    private             => false,
+                    os_version_specific => false,
+                    type                => 'bin',
+                    file_destination    => "/usr/local/bin/${bin}",
                 }
             }
 
