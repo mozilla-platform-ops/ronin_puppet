@@ -159,7 +159,6 @@ jobs:
       - export_env_vars
       - checkout
       - setup_vault:
-          parameters:
             role: << parameters.role >>
       - gem_cache
       - install_macos_puppet
