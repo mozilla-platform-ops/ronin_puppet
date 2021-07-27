@@ -126,6 +126,7 @@ jobs:
       - run:
           name: Run pre-commit
           command: |
+            export PATH="$HOME/.tfenv/bin:$PATH"
             tfenv use 1.0.3
             pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
