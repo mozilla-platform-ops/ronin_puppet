@@ -110,7 +110,7 @@ jobs:
       - checkout
       - run: id
       - run: apt-get update
-      - run: apt-get install shellcheck
+      - run: apt-get -y install shellcheck
       - run:
           name: Install terrraform
           command: |
