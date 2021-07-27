@@ -110,7 +110,7 @@ jobs:
       - checkout
       - run: id
       - run: apt-get update
-      - run: apt-get -y install shellcheck git curl unzip python3-pip
+      - run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
       - run:
           name: Install tfenv and terraform
           command: |
