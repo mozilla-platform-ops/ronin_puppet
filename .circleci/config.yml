@@ -75,6 +75,9 @@ commands:
           command: |
             echo "export BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
   setup_vault:
+    parameters:
+      role:
+        type: string
     steps:
       - vault/install:
           verify: false
@@ -155,7 +158,9 @@ jobs:
     steps:
       - export_env_vars
       - checkout
-      - setup_vault
+      - setup_vault:
+          parameters:
+            role: << parameters.role >>
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
