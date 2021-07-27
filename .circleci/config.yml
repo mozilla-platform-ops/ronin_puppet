@@ -101,8 +101,6 @@ commands:
       - run: terraform version
       - terraform/fmt:
           path: test/integration/<< parameters.role >>/terraform/
-      - terraform/validate:
-          path: test/integration/<< parameters.role >>/terraform/
       - terraform/init:
           backend: false
           path: test/integration/<< parameters.role >>/terraform/
@@ -116,7 +114,7 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get update
-      - run: sudo apt-get install shellcheck
+      - run: sudo apt-get install shellcheck terraform tflint
       - run: pip3 install pre-commit
         #      - run: pre-commit run --all-files --verbose
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
