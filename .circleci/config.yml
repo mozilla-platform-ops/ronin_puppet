@@ -110,7 +110,7 @@ jobs:
       - checkout
       - run: id
       - run: apt-get update
-      - run: apt-get -y install shellcheck git
+      - run: apt-get -y install shellcheck git curl
       - run:
           name: Install tfenv and terraform
           command: |
