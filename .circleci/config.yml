@@ -108,8 +108,9 @@ jobs:
     executor: ubuntu-2004-docker
     steps:
       - checkout
-      - run: sudo apt-get update
-      - run: sudo apt-get install shellcheck
+      - run: id
+      - run: apt-get update
+      - run: apt-get install shellcheck
       - run:
           name: Install terrraform
           command: |

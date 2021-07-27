@@ -32,7 +32,8 @@ resource "vault_mount" "hiera" {
 }
 
 resource "vault_generic_secret" "common_telegraf" {
-  path = "hiera/common/vault_secrets::telegraf"
+  depends_on = [vault_mount.hiera]
+  path       = "hiera/common/vault_secrets::telegraf"
 
   data_json = <<EOT
 {
@@ -43,7 +44,8 @@ EOT
 }
 
 resource "vault_generic_secret" "role_cltbld" {
-  path = "hiera/roles/${var.role}/vault_secrets::cltbld_user"
+  depends_on = [vault_mount.hiera]
+  path       = "hiera/roles/${var.role}/vault_secrets::cltbld_user"
 
   data_json = <<EOT
 {
@@ -56,7 +58,8 @@ EOT
 }
 
 resource "vault_generic_secret" "role_generic_worker" {
-  path = "hiera/roles/${var.role}/vault_secrets::generic_worker"
+  depends_on = [vault_mount.hiera]
+  path       = "hiera/roles/${var.role}/vault_secrets::generic_worker"
 
   data_json = <<EOT
 {
