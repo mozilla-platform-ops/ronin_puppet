@@ -31,40 +31,16 @@ resource "vault_mount" "hiera" {
   }
 }
 
-resource "vault_generic_secret" "common_telegraf" {
+resource "vault_generic_secret" "common_yaml_secrets" {
   depends_on = [vault_mount.hiera]
-  path       = "hiera/common/vault_secrets::telegraf"
-
-  data_json = <<EOT
-{
-  "password": "password_value_test",
-  "user": "user_value_test"
-}
-EOT
+  for_each   = fileset(path.module, "common/*.yaml")
+  path       = "hiera/common/vault_secrets::${replace(basename(each.value), ".yaml", "")}"
+  data_json  = jsonencode(yamldecode(file("${each.value}")))
 }
 
-resource "vault_generic_secret" "role_cltbld" {
+resource "vault_generic_secret" "role_yaml_secrets" {
   depends_on = [vault_mount.hiera]
-  path       = "hiera/roles/${var.role}/vault_secrets::cltbld_user"
-
-  data_json = <<EOT
-{
-  "iterations": "432432",
-  "kcpassword": "testing",
-  "password": "testing",
-  "salt": "testing"
-}
-EOT
-}
-
-resource "vault_generic_secret" "role_generic_worker" {
-  depends_on = [vault_mount.hiera]
-  path       = "hiera/roles/${var.role}/vault_secrets::generic_worker"
-
-  data_json = <<EOT
-{
-  "taskcluster_access_token": "taskcluster_access_token_value_test",
-  "taskcluster_client_id": "taskcluster_client_id_value_test"
-}
-EOT
+  for_each   = fileset(path.module, "roles/*.yaml")
+  path       = "hiera/roles/${var.role}/vault_secrets::${replace(basename(each.value), ".yaml", "")}"
+  data_json  = jsonencode(yamldecode(file("${each.value}")))
 }
