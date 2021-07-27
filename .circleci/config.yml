@@ -98,16 +98,26 @@ commands:
           command: brew install terraform
           environment:
             HOMEBREW_NO_AUTO_UPDATE: 1
-      - run: terraform version
-      - run: terraform -chdir=test/integration/<< parameters.role >>/terraform/ init -input=false -backend=false -no-color
-      - run: terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -input=false -auto-approve -no-color
+      - run:
+          name: Configure and seed vault server
+          commmand: |
+            terraform version
+            terraform -chdir=test/integration/<< parameters.role >>/terraform/ init -input=false -backend=false
+            terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -input=false -auto-approve
 jobs:
   pre_commit:
-    executor: ubuntu-2004
+    executor: ubuntu-2004-docker
     steps:
       - checkout
       - run: sudo apt-get update
-      - run: sudo apt-get install shellcheck terraform
+      - run: sudo apt-get install shellcheck
+      - run:
+          name: Install terrraform
+          command: |
+            git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+            echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> ~/.bash_profile
+            tfenv install 1.0.3
+            tfenv use 1.0.3
       - run: pip3 install pre-commit
         #      - run: pre-commit run --all-files --verbose
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git

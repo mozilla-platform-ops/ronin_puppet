@@ -1,3 +1,8 @@
+variable "role" {
+  type    = string
+  default = "gecko_t_osx_1015_r8"
+}
+
 terraform {
   required_providers {
     vault = {
@@ -24,4 +29,39 @@ resource "vault_mount" "hiera" {
   options = {
     version = 2
   }
+}
+
+resource "vault_generic_secret" "common_telegraf" {
+  path = "hiera/common/vault_secrets::telegraf"
+
+  data_json = <<EOT
+{
+  "password": "password_value_test",
+  "user": "user_value_test"
+}
+EOT
+}
+
+resource "vault_generic_secret" "role_cltbld" {
+  path = "hiera/roles/${var.role}/vault_secrets::cltbld_user"
+
+  data_json = <<EOT
+{
+  "iterations": "432432",
+  "kcpassword": "testing",
+  "password": "testing",
+  "salt": "testing"
+}
+EOT
+}
+
+resource "vault_generic_secret" "role_generic_worker" {
+  path = "hiera/roles/${var.role}/vault_secrets::generic_worker"
+
+  data_json = <<EOT
+{
+  "taskcluster_access_token": "taskcluster_access_token_value_test",
+  "taskcluster_client_id": "taskcluster_client_id_value_test"
+}
+EOT
 }
