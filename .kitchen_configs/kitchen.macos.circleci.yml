@@ -52,7 +52,6 @@ suites:
       patterns:
       - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       default_pattern: false
-      format: progress
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - circleci-macos
