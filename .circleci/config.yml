@@ -99,7 +99,7 @@ commands:
             HOMEBREW_NO_AUTO_UPDATE: 1
       - run:
           name: Configure and seed vault server
-          commmand: |
+          command: |
             terraform version
             terraform -chdir=test/integration/<< parameters.role >>/terraform/ init -input=false -backend=false
             terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -input=false -auto-approve
