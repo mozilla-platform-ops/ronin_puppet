@@ -123,7 +123,11 @@ jobs:
         #      - run: pre-commit run --all-files --verbose
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
       - run: git fetch --all
-      - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
+      - run:
+          name: Run pre-commit
+          command: |
+            tfenv use 1.0.3
+            pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     executor: ubuntu-2004
     steps:
