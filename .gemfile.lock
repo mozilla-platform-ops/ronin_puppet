@@ -47,7 +47,7 @@ GEM
     aws-sdk-cloudtrail (1.35.0)
       aws-sdk-core (~> 3, >= 3.112.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-cloudwatch (1.51.0)
+    aws-sdk-cloudwatch (1.52.0)
       aws-sdk-core (~> 3, >= 3.112.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-cloudwatchevents (1.46.0)
@@ -430,7 +430,7 @@ GEM
       gettext-setup (~> 0.11)
       minitar
       semantic_puppet (~> 1.0)
-    puppetlabs_spec_helper (3.0.0)
+    puppetlabs_spec_helper (4.0.0)
       mocha (~> 1.0)
       pathspec (>= 0.2.1, < 1.1.0)
       puppet-lint (~> 2.0)
@@ -470,6 +470,8 @@ GEM
     rspec-puppet (2.9.0)
       rspec
     rspec-support (3.10.2)
+    rspec_junit_formatter (0.4.1)
+      rspec-core (>= 2, < 4, != 2.12.0)
     rsync (1.0.9)
     rubyntlm (0.6.3)
     rubyzip (2.3.2)
@@ -671,6 +673,7 @@ DEPENDENCIES
   puppetlabs_spec_helper
   r10k
   rake
+  rspec_junit_formatter
   serverspec
   test-kitchen
   vault

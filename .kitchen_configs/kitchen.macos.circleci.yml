@@ -50,8 +50,10 @@ suites:
         puppet_role: <%= ENV['PUPPET_ROLE'] %>
     verifier:
       patterns:
-      - test/integration/macos/serverspec/*_spec.rb
+      - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       default_pattern: false
+      format: progress
+      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - circleci-macos
     attributes:
