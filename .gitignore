@@ -41,3 +41,16 @@ vendor/
 
 # rbenv
 .ruby-version
+
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform lock files
+.terraform.lock.hcl
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log

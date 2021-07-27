@@ -96,7 +96,17 @@ commands:
           environment:
             HOMEBREW_NO_AUTO_UPDATE: 1
       - run: terraform version
-
+      - terraform/fmt:
+          path: test/integration/<< parameters.role >>/terraform/
+      - terraform/validate:
+          path: test/integration/<< parameters.role >>/terraform/
+      - terraform/init:
+          backend: false
+          path: test/integration/<< parameters.role >>/terraform/
+      - terraform/plan:
+          path: test/integration/<< parameters.role >>/terraform/
+      - terraform/apply:
+          path: test/integration/<< parameters.role >>/terraform/
 jobs:
   pre_commit:
     executor: ubuntu-2004
@@ -105,10 +115,10 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install shellcheck
       - run: pip3 install pre-commit
-      - run: pre-commit run --all-files --verbose
-        #      - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
-        #      - run: git fetch --all
-        #      - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
+        #      - run: pre-commit run --all-files --verbose
+      - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
+      - run: git fetch --all
+      - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     executor: ubuntu-2004
     steps:

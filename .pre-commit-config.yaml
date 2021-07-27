@@ -21,14 +21,16 @@ repos:
     args:
     - --fix
     - --fail-on-warnings
+    - --no-documentation-check
 
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 2.1.5
   hooks:
     - id: shellcheck
 
-#repos:
-#  - repo: https://github.com/gruntwork-io/pre-commit
-#    rev: v0.1.12
-#    hooks:
-#      - id: shellcheck
+- repo: https://github.com/gruntwork-io/pre-commit
+  rev: v0.1.12
+  hooks:
+    - id: terraform-fmt
+    - id: terraform-validate
+    - id: tflint
