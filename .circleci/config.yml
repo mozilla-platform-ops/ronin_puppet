@@ -23,6 +23,15 @@ executors:
       xcode: 12.5.1
 
 commands:
+  install_ruby:
+    steps:
+      - run:
+          name: Install ruby
+          command: brew install rbenv ruby-build
+          environment:
+            HOMEBREW_NO_AUTO_UPDATE: 1
+      - run: rbenv install 2.7.2
+      - run: rbenv local 2.7.2
   install_macos_puppet:
     parameters:
       puppet_version:
@@ -189,6 +198,8 @@ jobs:
     steps:
       - export_env_vars
       - checkout
+      - run: brew update
+      - install_ruby
       - setup_vault:
             role: << parameters.role >>
       - gem_cache
