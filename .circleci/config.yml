@@ -27,11 +27,9 @@ commands:
     steps:
       - run:
           name: Install ruby
-          command: brew install rbenv ruby-build
+          command: brew install ruby@2.7
           environment:
             HOMEBREW_NO_AUTO_UPDATE: 1
-      - run: rbenv install 2.7.2
-      - run: rbenv local 2.7.2
   install_macos_puppet:
     parameters:
       puppet_version:
