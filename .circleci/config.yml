@@ -12,13 +12,13 @@ executors:
     machine:
       image: ubuntu-2004:202010-01
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
-  macos-1014:
+  macos-1014: &1014
     macos:
       xcode: 11.1.0
-  macos-1015:
+  macos-1015: &1015
     macos:
       xcode: 12.4.0
-  macos-1100:
+  macos-1100: &1100
     macos:
       xcode: 12.5.1
 
@@ -82,6 +82,9 @@ commands:
             - /tmp/docker/var/cache/apt
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
+    parameters:
+      os:
+        type: executor
     steps:
       - restore_cache:
           keys:
@@ -89,6 +92,11 @@ commands:
           - v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
           - v2-gem-cache-{{ arch }}-{{ .Branch }}-
           - v2-gem-cache-{{ arch }}-
+      - when:
+          condition:
+            equal: [ *1014, << parameters.os >> ]
+            steps:
+              - run: chruby 2.6.4
       - run:
           name: Bundle Install and forced clean
           command: |
@@ -197,8 +205,9 @@ jobs:
       - export_env_vars
       - checkout
       - setup_vault:
-            role: << parameters.role >>
-      - gem_cache
+          role: << parameters.role >>
+      - gem_cache:
+          os: << parameters.os >>
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
