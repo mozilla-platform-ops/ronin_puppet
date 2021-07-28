@@ -196,7 +196,6 @@ jobs:
     steps:
       - export_env_vars
       - checkout
-      - install_ruby
       - setup_vault:
             role: << parameters.role >>
       - gem_cache
