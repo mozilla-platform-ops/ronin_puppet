@@ -198,7 +198,6 @@ jobs:
     steps:
       - export_env_vars
       - checkout
-      - run: brew update
       - install_ruby
       - setup_vault:
             role: << parameters.role >>
