@@ -82,9 +82,6 @@ commands:
             - /tmp/docker/var/cache/apt
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
-    parameters:
-      os:
-        type: executor
     steps:
       - restore_cache:
           keys:
@@ -92,11 +89,6 @@ commands:
           - v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
           - v2-gem-cache-{{ arch }}-{{ .Branch }}-
           - v2-gem-cache-{{ arch }}-
-      - when:
-          condition:
-            equal: [ *1014, << parameters.os >> ]
-          steps:
-            - run: chruby 2.6.4
       - run:
           name: Bundle Install and forced clean
           command: |
@@ -206,8 +198,12 @@ jobs:
       - checkout
       - setup_vault:
           role: << parameters.role >>
-      - gem_cache:
-          os: << parameters.os >>
+      - when:
+          condition:
+            equal: [ *1014, << parameters.os >> ]
+          steps:
+            - run: chruby 2.6.4
+      - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
