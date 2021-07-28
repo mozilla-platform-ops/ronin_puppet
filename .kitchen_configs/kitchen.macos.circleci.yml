@@ -56,3 +56,28 @@ suites:
     includes:
       - circleci-macos
     attributes:
+  - name: mac_v3_signing
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::<%= ENV["PUPPET_ROLE"] %>"'
+      custom_facts:
+        puppet_role: <%= ENV['PUPPET_ROLE'] %>
+      hiera_writer_files:
+        - secrets/vault.yaml:
+            duo:
+                ikey: duo_ikey_testing
+                skey: duo_skey_testing
+                host: duo_host_testing
+            telegraf:
+                user: telegraf_user_testing
+                password: telegraf_password_testing
+            papertrail:
+                host: papertrail_host_testing
+                port: papertrail_port_testing
+    verifier:
+      patterns:
+      - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
+      default_pattern: false
+      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+    includes:
+      - circleci-macos
+    attributes:
