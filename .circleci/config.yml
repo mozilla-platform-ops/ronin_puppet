@@ -224,7 +224,7 @@ workflows:
           matrix:
             parameters:
               os: [macos-1014]
-              suite: ["mac_v3_signing"]
+              suite: ["mac-v3-signing"]
               role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
           context: slack-secrets
       - macos_integration_tests:
