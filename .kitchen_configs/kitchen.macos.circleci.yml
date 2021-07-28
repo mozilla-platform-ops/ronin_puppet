@@ -72,7 +72,7 @@ suites:
                 password: telegraf_password_testing
             papertrail:
                 host: papertrail_host_testing
-                port: papertrail_port_testing
+                port: 12345
     verifier:
       patterns:
       - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
