@@ -34,10 +34,10 @@ busser:
   ruby_bindir: /usr/bin
 
 platforms:
-  - name: macos-1015
+  - name: virtualbox
     driver:
       box: macinbox
-  - name: circleci-macos
+  - name: localhost
     driver:
       name: localhost
       clean_up_on_destroy: false
@@ -54,9 +54,9 @@ suites:
       default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
-      - circleci-macos
+      - localhost
     attributes:
-  - name: mac_v3_signing
+  - name: mac-v3-signing
     provisioner:
       custom_options: '-e "include roles_profiles::roles::<%= ENV["PUPPET_ROLE"] %>"'
       custom_facts:
@@ -79,5 +79,5 @@ suites:
       default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
-      - circleci-macos
+      - localhost
     attributes:
