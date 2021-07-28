@@ -12,6 +12,9 @@ executors:
     machine:
       image: ubuntu-2004:202010-01
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+  macos-1014:
+    macos:
+      xcode: 11.1.0
   macos-1015:
     macos:
       xcode: 12.4.0
@@ -28,8 +31,8 @@ commands:
         default: "7.9.0"
       bolt_version:
         type: enum
-        enum: ["3.14.1"]
-        default: "3.14.1"
+        enum: ["3.13.0"]
+        default: "3.13.0"
     steps:
       - run:
           name: Install puppet agent and bolt
@@ -123,7 +126,7 @@ commands:
           command: |
             terraform version
             terraform -chdir=test/integration/<< parameters.role >>/terraform/ init -input=false -backend=false
-            terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -input=false -auto-approve
+            terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -var="role=<< parameters.role >>" -input=false -auto-approve
 jobs:
   pre_commit:
     executor: ubuntu-2004-docker
@@ -205,6 +208,13 @@ workflows:
     jobs:
       - pre_commit
       - r10k_install
+      - macos_integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1014]
+              suite: ["default"]
+              role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
+          context: slack-secrets
       - macos_integration_tests:
           matrix:
             parameters:

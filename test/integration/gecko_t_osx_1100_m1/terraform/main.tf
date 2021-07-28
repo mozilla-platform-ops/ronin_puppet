@@ -1,6 +1,5 @@
 variable "role" {
-  type    = string
-  default = "gecko_t_osx_1100_m1"
+  type = string
 }
 
 terraform {
