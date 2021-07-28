@@ -42,7 +42,7 @@ platforms:
       name: localhost
       clean_up_on_destroy: false
 
-secrets/vault.yaml: &secrets
+secrets: &secrets
   duo:
     ikey: duo_ikey_testing
     skey: duo_skey_testing
@@ -183,7 +183,8 @@ suites:
       custom_facts:
         puppet_role: <%= ENV['PUPPET_ROLE'] %>
       hiera_writer_files:
-        - *secrets
+        - secrets/vault.yaml:
+            <<: *secrets
     verifier:
       patterns:
       - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
