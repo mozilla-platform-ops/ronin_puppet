@@ -95,8 +95,8 @@ commands:
       - when:
           condition:
             equal: [ *1014, << parameters.os >> ]
-            steps:
-              - run: chruby 2.6.4
+          steps:
+            - run: chruby 2.6.4
       - run:
           name: Bundle Install and forced clean
           command: |
