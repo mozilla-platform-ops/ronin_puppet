@@ -64,15 +64,120 @@ suites:
       hiera_writer_files:
         - secrets/vault.yaml:
             duo:
-                ikey: duo_ikey_testing
-                skey: duo_skey_testing
-                host: duo_host_testing
+              ikey: duo_ikey_testing
+              skey: duo_skey_testing
+              host: duo_host_testing
             telegraf:
-                user: telegraf_user_testing
-                password: telegraf_password_testing
+              user: telegraf_user_testing
+              password: telegraf_password_testing
             papertrail:
-                host: papertrail_host_testing
-                port: 12345
+              host: papertrail_host_testing
+              port: 12345
+            widevine_config:
+              user: widevine_config_user_testing
+              key: widevine_config_key_testing
+            scriptworker_secrets:
+              ff-prod:
+                taskcluster_client_id: taskcluster_client_id_testing
+                taskcluster_access_token: taskcluster_access_token_testing
+              tb-prod:
+                tb_taskcluster_client_id: tb_taskcluster_client_id_testing
+                tb_taskcluster_access_token: tb_taskcluster_access_token_testing
+              dep:
+                taskcluster_client_id: taskcluster_client_id_testing
+                taskcluster_access_token: taskcluster_access_token_testing
+                tb_taskcluster_client_id: tb_taskcluster_client_id_testing
+                tb_taskcluster_access_token: tb_taskcluster_access_token_testing
+            depbld1_user:
+              password: c53f29ab8a8a72d47918dc22dc7a1d69bef4fddd9ca1f7a28613ed8f3b9a90b2506c7a8942552a163da29f7129d4ae8fce432dc2a5298b31af9e6535bbb218d6380051acd4216abe63b67d7678746af8d573e3db925ef1a1c7efc5224391b50e308e155d5fc9992b74b132fe10492fa6c885ed0ec3d8ab92596d9e8f5a88c9e3
+              salt: a5c3ec88f81db73f51c45a866fed47cbd5c098167648a58c97be5c53b00a421b
+              iterations: 46573
+              kcpassword: testing
+            depbld2_user:
+              password: c53f29ab8a8a72d47918dc22dc7a1d69bef4fddd9ca1f7a28613ed8f3b9a90b2506c7a8942552a163da29f7129d4ae8fce432dc2a5298b31af9e6535bbb218d6380051acd4216abe63b67d7678746af8d573e3db925ef1a1c7efc5224391b50e308e155d5fc9992b74b132fe10492fa6c885ed0ec3d8ab92596d9e8f5a88c9e3
+              salt: a5c3ec88f81db73f51c45a866fed47cbd5c098167648a58c97be5c53b00a421b
+              iterations: 46573
+              kcpassword: testing
+            tbbld_user:
+              password: c53f29ab8a8a72d47918dc22dc7a1d69bef4fddd9ca1f7a28613ed8f3b9a90b2506c7a8942552a163da29f7129d4ae8fce432dc2a5298b31af9e6535bbb218d6380051acd4216abe63b67d7678746af8d573e3db925ef1a1c7efc5224391b50e308e155d5fc9992b74b132fe10492fa6c885ed0ec3d8ab92596d9e8f5a88c9e3
+              salt: a5c3ec88f81db73f51c45a866fed47cbd5c098167648a58c97be5c53b00a421b
+              iterations: 46573
+              kcpassword: testing
+            signing_secrets:
+              ff-prod:
+                nightly:
+                  notarization_account: notarization_account_testing
+                  notarization_password: notarization_password_testing
+                  identity: identity_testing
+                  keychain_password: keychain_password_testing
+                  pkg_cert_id: pkg_cert_id_tesing
+                  widevine_user: widevine_user_testing
+                  widevine_pass: widevine_pass_testing
+                  omnija_user: omnija_user_testing
+                  omnija_pass: omnija_pass_testing
+                  langpack_user: langpack_user_testing
+                  langpack_pass: langpack_pass_testing
+                release:
+                  notarization_account: notarization_account_testing
+                  notarization_password: notarization_password_testing
+                  identity: identity_testing
+                  keychain_password: keychain_password_testing
+                  pkg_cert_id: pkg_cert_id_tesing
+                  widevine_user: widevine_user_testing
+                  widevine_pass: widevine_pass_testing
+                  omnija_user: omnija_user_testing
+                  omnija_pass: omnija_pass_testing
+                  langpack_user: langpack_user_testing
+                  langpack_pass: langpack_pass_testing
+              tb-prod:
+                nightly:
+                  notarization_account: notarization_account_testing
+                  notarization_password: notarization_password_testing
+                  identity: identity_testing
+                  keychain_password: keychain_password_testing
+                  pkg_cert_id: pkg_cert_id_tesing
+                  widevine_user: widevine_user_testing
+                  widevine_pass: widevine_pass_testing
+                  omnija_user: omnija_user_testing
+                  omnija_pass: omnija_pass_testing
+                  langpack_user: langpack_user_testing
+                  langpack_pass: langpack_pass_testing
+                release:
+                  notarization_account: notarization_account_testing
+                  notarization_password: notarization_password_testing
+                  identity: identity_testing
+                  keychain_password: keychain_password_testing
+                  pkg_cert_id: pkg_cert_id_tesing
+                  widevine_user: widevine_user_testing
+                  widevine_pass: widevine_pass_testing
+                  omnija_user: omnija_user_testing
+                  omnija_pass: omnija_pass_testing
+                  langpack_user: langpack_user_testing
+                  langpack_pass: langpack_pass_testing
+              dep:
+                dep:
+                  notarization_account: notarization_account_testing
+                  notarization_password: notarization_password_testing
+                  identity: identity_testing
+                  keychain_password: keychain_password_testing
+                  pkg_cert_id: pkg_cert_id_tesing
+                  widevine_user: widevine_user_testing
+                  widevine_pass: widevine_pass_testing
+                  omnija_user: omnija_user_testing
+                  omnija_pass: omnija_pass_testing
+                  langpack_user: langpack_user_testing
+                  langpack_pass: langpack_pass_testing
+            poller_secrets:
+              ff-prod:
+                taskcluster_client_id: taskcluster_client_id_testing
+                taskcluster_access_token: taskcluster_access_token_testing
+                notarization_account: notarization_account_testing
+                notarization_password: notarization_password_testing
+              tb-prod:
+                taskcluster_client_id: taskcluster_client_id_testing
+                taskcluster_access_token: taskcluster_access_token_testing
+                notarization_account: notarization_account_testing
+                notarization_password: notarization_password_testing
     verifier:
       patterns:
       - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
