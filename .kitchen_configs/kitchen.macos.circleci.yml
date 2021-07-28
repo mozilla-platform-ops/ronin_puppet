@@ -91,22 +91,22 @@ suites:
             cltbld_user:
               password: c53f29ab8a8a72d47918dc22dc7a1d69bef4fddd9ca1f7a28613ed8f3b9a90b2506c7a8942552a163da29f7129d4ae8fce432dc2a5298b31af9e6535bbb218d6380051acd4216abe63b67d7678746af8d573e3db925ef1a1c7efc5224391b50e308e155d5fc9992b74b132fe10492fa6c885ed0ec3d8ab92596d9e8f5a88c9e3
               salt: a5c3ec88f81db73f51c45a866fed47cbd5c098167648a58c97be5c53b00a421b
-              iterations: 46573
+              iterations: '46573'
               kcpassword: testing
             depbld1_user:
               password: c53f29ab8a8a72d47918dc22dc7a1d69bef4fddd9ca1f7a28613ed8f3b9a90b2506c7a8942552a163da29f7129d4ae8fce432dc2a5298b31af9e6535bbb218d6380051acd4216abe63b67d7678746af8d573e3db925ef1a1c7efc5224391b50e308e155d5fc9992b74b132fe10492fa6c885ed0ec3d8ab92596d9e8f5a88c9e3
               salt: a5c3ec88f81db73f51c45a866fed47cbd5c098167648a58c97be5c53b00a421b
-              iterations: 46573
+              iterations: '46573'
               kcpassword: testing
             depbld2_user:
               password: c53f29ab8a8a72d47918dc22dc7a1d69bef4fddd9ca1f7a28613ed8f3b9a90b2506c7a8942552a163da29f7129d4ae8fce432dc2a5298b31af9e6535bbb218d6380051acd4216abe63b67d7678746af8d573e3db925ef1a1c7efc5224391b50e308e155d5fc9992b74b132fe10492fa6c885ed0ec3d8ab92596d9e8f5a88c9e3
               salt: a5c3ec88f81db73f51c45a866fed47cbd5c098167648a58c97be5c53b00a421b
-              iterations: 46573
+              iterations: '46573'
               kcpassword: testing
             tbbld_user:
               password: c53f29ab8a8a72d47918dc22dc7a1d69bef4fddd9ca1f7a28613ed8f3b9a90b2506c7a8942552a163da29f7129d4ae8fce432dc2a5298b31af9e6535bbb218d6380051acd4216abe63b67d7678746af8d573e3db925ef1a1c7efc5224391b50e308e155d5fc9992b74b132fe10492fa6c885ed0ec3d8ab92596d9e8f5a88c9e3
               salt: a5c3ec88f81db73f51c45a866fed47cbd5c098167648a58c97be5c53b00a421b
-              iterations: 46573
+              iterations: '46573'
               kcpassword: testing
             signing_secrets:
               ff-prod:
