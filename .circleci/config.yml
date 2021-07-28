@@ -202,7 +202,7 @@ jobs:
           condition:
             equal: [ *1014, << parameters.os >> ]
           steps:
-            - run: chruby 2.6.4
+            - run: echo "ruby-2.6.4" > ~/.ruby-version
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
