@@ -27,13 +27,13 @@ commands:
           command: |
             #!/bin/bash
             MAJOR_OS_VER=$(sw_vers -productVersion|cut -d . -f 1)
-            if [ $MAJOR_OS_VER -eq 10 ]
+            if [ "${MAJOR_OS_VER}" -eq 10 ]
             then
                 OS_VER=$(sw_vers -productVersion|cut -d . -f 1,2)
             else
                 OS_VER="${MAJOR_OS_VER}.0"
             fi
-            echo OSX version is $OS_VER
+            echo OSX version is "${OS_VER}"
             # Install puppet agent
             curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-agent-7.8.0-1.osx${OS_VER}.dmg"
             hdiutil mount "puppet-agent-7.8.0-1.osx${OS_VER}.dmg"
