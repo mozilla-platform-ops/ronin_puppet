@@ -52,7 +52,7 @@ commands:
             # Install bolt
             curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
             hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
-            sudo -E installer -pkg "/Volumes/puppet-bolt-${BOLT_VER}/puppet-bolt-${BOLT_VER}-1-installer.pkg" -target /
+            sudo -E installer -pkg "/Volumes/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}/puppet-bolt-${BOLT_VER}-1-installer.pkg" -target /
             # Install gems needed for hiera vault
             sudo /opt/puppetlabs/puppet/bin/gem install vault debouncer
   apt_cache_restore:
