@@ -21,10 +21,21 @@ executors:
 
 commands:
   install_macos_puppet:
+    parameters:
+      puppet_version:
+        type: enum
+        enum: ["7.9.0"]
+        default: "7.9.0"
+      bolt_version:
+        type: enum
+        enum: ["3.14.1"]
+        default: "3.14.1"
     steps:
       - run:
           name: Install puppet agent and bolt
           command: |
+            PUPPET_VER="<< parameters.puppet_version >>"
+            BOLT_VER="<< parameters.bolt_version >>"
             # Determine OSX version
             MAJOR_OS_VER=$(sw_vers -productVersion|cut -d . -f 1)
             if [ "${MAJOR_OS_VER}" -eq 10 ]
@@ -35,13 +46,13 @@ commands:
             fi
             echo OSX version is "${OS_VER}"
             # Install puppet agent
-            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-agent-7.8.0-1.osx${OS_VER}.dmg"
-            hdiutil mount "puppet-agent-7.8.0-1.osx${OS_VER}.dmg"
-            sudo -E installer -pkg "/Volumes/puppet-agent-7.8.0-1.osx${OS_VER}/puppet-agent-7.8.0-1-installer.pkg" -target /
+            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
+            hdiutil mount "puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
+            sudo -E installer -pkg "/Volumes/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}/puppet-agent-${PUPPET_VER}-1-installer.pkg" -target /
             # Install bolt
-            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-bolt-3.9.2-1.osx${OS_VER}.dmg"
-            hdiutil mount "puppet-bolt-3.9.2-1.osx${OS_VER}.dmg"
-            sudo -E installer -pkg "/Volumes/puppet-bolt-3.9.2/puppet-bolt-3.9.2-1-installer.pkg" -target /
+            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            sudo -E installer -pkg "/Volumes/puppet-bolt-${BOLT_VER}/puppet-bolt-${BOLT_VER}-1-installer.pkg" -target /
             # Install gems needed for hiera vault
             sudo /opt/puppetlabs/puppet/bin/gem install vault debouncer
   apt_cache_restore:
