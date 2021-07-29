@@ -21,6 +21,7 @@ repos:
     args:
     - --fix
     - --fail-on-warnings
+    - --no-documentation-check
 
 - repo: https://github.com/mozilla-platform-ops/pre-commit-hooks
   rev: f5ccc6f
