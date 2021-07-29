@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+
+    <!-- This Source Code Form is subject to the terms of the Mozilla Public
+       - License, v. 2.0. If a copy of the MPL was not distributed with this
+       - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<dict>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>LANG</key>
+        <string>en_US.UTF-8</string>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin</string>
+        <key>SSH_AUTH_SOCK</key>
+        <string></string>
+    </dict>
+    <key>Label</key>
+    <string>com.mozilla.borgmatic</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>borgmatic</string>
+        <string>--verbosity</string>
+        <string>1</string>
+        <string>--files</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer><%= @hour %></integer>
+        <key>Minute</key>
+        <integer><%= @minute %></integer>
+    </dict>
+    <key>StandardErrorPath</key>
+    <string>/var/log/borgmatic.log</string>
+    <key>StandardOutPath</key>
+    <string>/var/log/borgmatic.log</string>
+</dict>
+</plist>
