@@ -11,7 +11,6 @@ provisioner:
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: false
-  provision_command: echo PROVISION
   puppet_verbose: true
   puppet_binary: /opt/puppetlabs/bin/puppet
   puppet_debug: true
@@ -22,7 +21,6 @@ provisioner:
   resolve_with_librarian_puppet: false
   resolve_with_r10k: false
   update_package_repos: false
-  custom_options: '--show_diff'
   verify_host_key: false
 
 verifier:
@@ -42,6 +40,7 @@ platforms:
       name: localhost
       clean_up_on_destroy: false
 
+# Fake mac-v3-signing secrets
 secrets: &secrets
   duo:
     ikey: duo_ikey_testing
@@ -177,6 +176,8 @@ suites:
     includes:
       - localhost
     attributes:
+    # This suite solely exists to mock the secrets.yaml for the mac-v3-siging roles
+    # Once all secrets are migrated to vault, this can be dropped and the default suite can be used
   - name: mac-v3-signing
     provisioner:
       custom_options: '-e "include roles_profiles::roles::<%= ENV["PUPPET_ROLE"] %>"'
