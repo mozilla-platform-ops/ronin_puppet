@@ -23,13 +23,6 @@ executors:
       xcode: 12.5.1
 
 commands:
-  install_ruby:
-    steps:
-      - run:
-          name: Install ruby
-          command: brew install ruby@2.7
-          environment:
-            HOMEBREW_NO_AUTO_UPDATE: 1
   install_macos_puppet:
     parameters:
       puppet_version:
@@ -241,8 +234,7 @@ workflows:
               suite: ["default"]
               role: ["gecko_t_osx_1100_m1"]
           context: slack-secrets
-
-          #      - linux_integration_tests:
-          # matrix:
-          #  parameters:
-          #    kitchen_target: ["bitbar", "linux"]
+      - linux_integration_tests:
+          matrix:
+            parameters:
+              kitchen_target: ["bitbar", "linux"]
