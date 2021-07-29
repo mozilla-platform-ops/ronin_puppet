@@ -7,7 +7,7 @@ orbs:
 executors:
   ubuntu-2004-docker:
     docker:
-      - image: ubuntu:20.04
+      - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
   ubuntu-2004:
     machine:
       image: ubuntu-2004:202010-01
@@ -132,19 +132,16 @@ jobs:
     executor: ubuntu-2004-docker
     steps:
       - checkout
-      - run: id
-      - run: apt-get update
-      - run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
-      - run:
-          name: Install tfenv and terraform
-          command: |
-            git clone https://github.com/tfutils/tfenv.git ~/.tfenv
-            echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> ~/.bash_profile
-            export PATH="$HOME/.tfenv/bin:$PATH"
-            tfenv install 1.0.3
-            tfenv use 1.0.3
-      - run: pip3 install pre-commit
-        #      - run: pre-commit run --all-files --verbose
+        #- run: apt-get update
+        #- run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
+        #- run:
+        #  name: Install tfenv and terraform
+        #  command: |
+        #    git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+        #    export PATH="$HOME/.tfenv/bin:$PATH"
+        #    tfenv install 1.0.3
+        #- run: pip3 install pre-commit
+#     - run: pre-commit run --all-files --verbose
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
       - run: git fetch --all
       - run:
