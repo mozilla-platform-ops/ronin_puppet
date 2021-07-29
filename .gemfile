@@ -1,11 +1,12 @@
 source 'https://rubygems.org'
 
-gem 'puppet', '6.2.0', :require => false
-gem 'puppet-lint', '2.3.6'
+gem 'puppet', '7.8.0', :require => false
+gem 'puppet-lint', '2.4.2'
 
 gem 'kitchen-verifier-serverspec'
 gem 'kitchen-inspec'
 gem 'kitchen-docker'
+gem 'kitchen-localhost'
 gem 'kitchen-puppet'
 gem 'kitchen-sync'
 gem 'kitchen-vagrant'
@@ -15,3 +16,6 @@ gem 'rake'
 gem 'serverspec'
 gem 'test-kitchen'
 gem 'r10k'
+gem 'debouncer'
+gem 'vault'
+gem 'rspec_junit_formatter'

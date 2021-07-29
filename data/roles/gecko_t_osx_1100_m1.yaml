@@ -30,7 +30,7 @@ packages_classes:
   - python3
   - python3_psutil
   - python3_zstandard
-  - rosetta_2
+#  - rosetta_2
   - scres
   - tooltool
   - virtualenv

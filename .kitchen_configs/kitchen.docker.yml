@@ -6,10 +6,15 @@ driver:
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
+  mount: type=bind,source=/tmp/docker/var/cache/apt,destination=/var/cache/apt
+  provision_command:
+    - rm -f /etc/apt/apt.conf.d/docker-clean
+    - apt-get update
+    - apt-get install dbus
 
 provisioner:
   name: puppet_apply
-  modules_path: modules
+  modules_path: modules:r10k_modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: true
@@ -38,7 +43,6 @@ provisioner:
             quarantine_client_id: '3333'
             quarantine_access_token: 'Q_TOKEN'
             bugzilla_api_key: 'BZ_KEY'
-  provision_command: locale-gen en_US.UTF-8; apt-get install dbus
   puppet_verbose: true
   # explodes if specified, defaults to latest/6
   # https://github.com/petems/puppet-install-shell/issues/137
@@ -50,7 +54,7 @@ provisioner:
   custom_options: '--show_diff'
   verify_host_key: false
   resolve_with_librarian_puppet: false
-  resolve_with_r10k: true
+  resolve_with_r10k: false
 
 platforms:
   - name: ubuntu-18.04
