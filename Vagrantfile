@@ -39,4 +39,11 @@ Vagrant.configure("2") do |config|
     SHELL
   end
 
+  config.vm.define "catalina", autostart: false do |catalina|
+    catalina.vm.box = "macinbox"
+    catalina.vm.provision "shell", inline: <<-SHELL
+        echo Provisioning
+    SHELL
+  end
+
 end
