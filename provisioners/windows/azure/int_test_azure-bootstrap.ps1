@@ -54,5 +54,7 @@ New-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete' -
 # Using the azure module to ensure the same software is used in testing and production
 InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
 AzInstall-Prerequ
-AzMount-DiskTwo
-AzSet-DriveLetters
+if ($test_location -like "azure") {
+    AzMount-DiskTwo
+    AzSet-DriveLetters
+}
