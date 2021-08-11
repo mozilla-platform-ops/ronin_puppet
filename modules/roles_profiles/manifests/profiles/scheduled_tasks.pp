@@ -9,6 +9,7 @@ class roles_profiles::profiles::scheduled_tasks {
             if ($facts['custom_win_location'] == 'azure') {
                 $startup_script = 'azure-maintainsystem.ps1'
                 include win_scheduled_tasks::at_task_user_logon
+                include win_scheduled_tasks::kill_remote_clipboard
             } else {
                 $startup_script = 'maintainsystem.ps1'
             }
