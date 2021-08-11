@@ -225,10 +225,11 @@ jobs:
       - checkout
       - gem_cache
       - run: env
-#      - run: bundle exec kitchen converge << parameters.suite >>
-#      - run: bundle exec kitchen verify << parameters.suite >>
-#      - store_test_results:
-#          path: rspec
+      - run: bundle exec kitchen converge << parameters.suite >>
+      - run: bundle exec kitchen verify << parameters.suite >>
+      - run: bundle exec kitchen destroy << parameters.suite >>
+      - store_test_results:
+          path: rspec
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
       PUPPET_ROLE: << parameters.role >>
