@@ -225,9 +225,11 @@ jobs:
       - checkout
       - gem_cache
       - run: env
-      - run: bundle exec kitchen converge << parameters.suite >>
-      - run: bundle exec kitchen verify << parameters.suite >>
-      - run: bundle exec kitchen destroy << parameters.suite >>
+      - run: bundle exec kitchen converge << parameters.suite >> -l debug
+      - run: bundle exec kitchen verify << parameters.suite >> -l debug
+      - run:
+          command: bundle exec kitchen destroy << parameters.suite >> -l debug
+          when: always
       - store_test_results:
           path: rspec
     environment:
