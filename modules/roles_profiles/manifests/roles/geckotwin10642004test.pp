@@ -27,4 +27,5 @@ class roles_profiles::roles::geckotwin10642004test {
     include roles_profiles::profiles::windows_worker_runner
     include roles_profiles::profiles::microsoft_tools
     include roles_profiles::profiles::language
+    include roles_profiles::profiles::disable_remote_clipboard
 }
