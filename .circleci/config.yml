@@ -204,12 +204,50 @@ jobs:
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:
 #          fail_only: false
+  windows_integration_tests:
+    parameters:
+      role:
+        type: string
+      suite:
+        type: string
+    executor: << parameters.os >>
+    steps:
+      - export_env_vars
+      - checkout
+      - setup_vault:
+          role: << parameters.role >>
+      - when:
+          condition:
+            equal: [ *1014, << parameters.os >> ]
+          steps:
+            - run: echo "ruby-2.6.4" > ~/.ruby-version
+      - gem_cache
+      - install_macos_puppet
+      - run: bundle exec kitchen converge << parameters.suite >>
+      - run: bundle exec kitchen verify << parameters.suite >>
+      - store_test_results:
+          path: rspec
+    environment:
+      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      PUPPET_ROLE: << parameters.role >>
+#      - slack/status:
+#          fail_only: false
 
 workflows:
   ci_test:
     jobs:
       - pre_commit
       - r10k_install
+      - windows_integration_tests:
+          matrix:
+            parameters:
+              os: [windows-2019]
+              suite: [""]
+              role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
+          context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
 #      - macos_integration_tests:
 #          matrix:
 #            parameters:
