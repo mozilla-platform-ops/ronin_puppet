@@ -225,6 +225,7 @@ jobs:
       - checkout
       - gem_cache
       - run: env
+      - run: bundle exec kitchen create << parameters.suite >> -l debug
       - run: bundle exec kitchen converge << parameters.suite >> -l debug
       - run: bundle exec kitchen verify << parameters.suite >> -l debug
       - run:

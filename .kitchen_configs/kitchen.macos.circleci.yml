@@ -54,6 +54,13 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
     transport:
       name: winrm
 # Fake mac-v3-signing secrets
