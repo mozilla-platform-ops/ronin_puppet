@@ -240,7 +240,7 @@ workflows:
       - windows_integration_tests:
           matrix:
             parameters:
-              os: [win_1064_1804]
+              os: [win-1064-1804]
               suite: ["windows"]
               role: ["geckotwin10641803hw"]
           context:
