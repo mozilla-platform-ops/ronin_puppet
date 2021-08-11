@@ -5,6 +5,9 @@ orbs:
   vault: jmingtan/hashicorp-vault@0.2.1
 
 executors:
+  docker-base:
+    docker:
+      - image: cimg/base:2021.04
   ubuntu-2004-docker:
     docker:
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
@@ -206,27 +209,23 @@ jobs:
 #          fail_only: false
   windows_integration_tests:
     parameters:
+      os:
+        type: enum
+        enum: ["win-1064-1804", "win-1064-2004"]
       role:
         type: string
       suite:
         type: string
-    executor: << parameters.os >>
+    executor: docker-base
     steps:
       - export_env_vars
       - checkout
-      - setup_vault:
-          role: << parameters.role >>
-      - when:
-          condition:
-            equal: [ *1014, << parameters.os >> ]
-          steps:
-            - run: echo "ruby-2.6.4" > ~/.ruby-version
       - gem_cache
-      - install_macos_puppet
-      - run: bundle exec kitchen converge << parameters.suite >>
-      - run: bundle exec kitchen verify << parameters.suite >>
-      - store_test_results:
-          path: rspec
+      - run: env
+#      - run: bundle exec kitchen converge << parameters.suite >>
+#      - run: bundle exec kitchen verify << parameters.suite >>
+#      - store_test_results:
+#          path: rspec
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
       PUPPET_ROLE: << parameters.role >>
@@ -241,10 +240,12 @@ workflows:
       - windows_integration_tests:
           matrix:
             parameters:
-              os: [windows-2019]
-              suite: [""]
-              role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
-          context: slack-secrets
+              os: [win_1064_1803]
+              suite: ["windows"]
+              role: ["geckotwin10641803hw"]
+          context:
+            - slack-secrets
+            - puppet-test-kitchen-azure-sp
           requires:
             - pre_commit
             - r10k_install
