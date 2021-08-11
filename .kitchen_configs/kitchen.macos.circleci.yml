@@ -48,7 +48,8 @@ platforms:
       destroy_resource_group_contents: true
       location: 'West US 2'
       machine_size: 'Standard_F8s_v2'
-      image_urn: MicrosoftWindowsServer:WindowsServer:2019-Datacenter-smalldisk:latest
+#      image_urn: MicrosoftWindowsServer:WindowsServer:2019-Datacenter-smalldisk:latest
+      image_urn: MicrosoftWindowsDesktop:Windows-10:20h1-evd:19041.1165.2108022359
       use_ephemeral_osdisk: true
       vm_tags:
         owner: relops@mozilla.com
