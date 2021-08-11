@@ -1,7 +1,7 @@
 exclude: '^r10k_modules/'
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.4.0
+  rev: v4.0.1
   hooks:
   - id: check-executables-have-shebangs
   - id: check-json
@@ -21,8 +21,16 @@ repos:
     args:
     - --fix
     - --fail-on-warnings
+    - --no-documentation-check
 
-- repo: https://github.com/mozilla-platform-ops/pre-commit-hooks
-  rev: f5ccc6f
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 2.1.5
   hooks:
     - id: shellcheck
+
+- repo: https://github.com/gruntwork-io/pre-commit
+  rev: v0.1.12
+  hooks:
+    - id: terraform-fmt
+    - id: terraform-validate
+      #    - id: tflint

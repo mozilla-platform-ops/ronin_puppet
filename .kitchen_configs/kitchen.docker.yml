@@ -1,0 +1,85 @@
+---
+driver:
+  name: docker
+  use_sudo: false
+  privileged: true
+  run_command: /bin/systemd
+  cap_add:
+    - SYS_ADMIN
+  mount: type=bind,source=/tmp/docker/var/cache/apt,destination=/var/cache/apt
+  provision_command:
+    - rm -f /etc/apt/apt.conf.d/docker-clean
+    - apt-get update
+    - apt-get install dbus
+
+provisioner:
+  name: puppet_apply
+  modules_path: modules:r10k_modules
+  hiera_data_path: data
+  hiera_data_remote_path: /tmp/kitchen/data
+  hiera_deep_merge: true
+  hiera_writer_files:
+    - secrets/vault.yaml:
+        telegraf:
+          user: telegraf
+          password: telegraf4fun
+        papertrail:
+          host: localhost
+          port: 1111
+        linux_vnc:
+          user: cltbld
+          group: cltbld
+          user_homedir: '/home/cltbld'
+          password: 'vnc4free'
+        cltbld_user:
+          password: 'abc123'
+          salt: 'h3hhahchahah'
+          iterations: '3'
+        generic_worker:
+          gecko_t_linux_talos:
+            taskcluster_client_id: '123'
+            taskcluster_access_token: 'foo'
+            livelog_secret: 'haha'
+            quarantine_client_id: '3333'
+            quarantine_access_token: 'Q_TOKEN'
+            bugzilla_api_key: 'BZ_KEY'
+  puppet_verbose: true
+  # explodes if specified, defaults to latest/6
+  # https://github.com/petems/puppet-install-shell/issues/137
+  # puppet_version: 6
+  puppet_debug: true
+  require_chef_for_busser: true
+  require_puppet_omnibus: true
+  require_puppet_repo: false
+  custom_options: '--show_diff'
+  verify_host_key: false
+  resolve_with_librarian_puppet: false
+  resolve_with_r10k: false
+
+platforms:
+  - name: ubuntu-18.04
+
+verifier:
+  name: serverspec
+  default_pattern: true
+
+busser:
+  sudo: true
+
+suites:
+  - name: linux
+    provisioner:
+      manifests_path: manifests-kitchen/linux
+    attributes:
+  - name: bitbar
+    provisioner:
+      manifests_path: manifests-kitchen/bitbar
+    attributes:
+  - name: maas_region
+    provisioner:
+      manifests_path: manifests-kitchen/maas_region
+    attributes:
+  - name: maas_rack
+    provisioner:
+      manifests_path: manifests-kitchen/maas_rack
+    attributes:
