@@ -8,6 +8,9 @@ executors:
   docker-base:
     docker:
       - image: cimg/base:2021.04
+  docker-ruby:
+    docker:
+      - image: cimg/ruby:2.7
   ubuntu-2004-docker:
     docker:
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
@@ -216,7 +219,7 @@ jobs:
         type: string
       suite:
         type: string
-    executor: docker-base
+    executor: docker-ruby
     steps:
       - export_env_vars
       - checkout
