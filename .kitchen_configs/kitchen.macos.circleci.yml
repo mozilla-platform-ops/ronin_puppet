@@ -39,7 +39,7 @@ platforms:
     driver:
       name: localhost
       clean_up_on_destroy: false
-  - name: windows2019
+  - name: windows-1064
     driver:
       name: azurerm
       explicit_resource_group_name: Puppet-Test-Kitchen
@@ -236,5 +236,5 @@ suites:
       remote_exec: true
       test_serverspec_installed: false
     includes:
-      - windows2019
+      - windows-1064
     attributes:
