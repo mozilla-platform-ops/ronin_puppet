@@ -1,46 +1,249 @@
 version: 2.1
 
+orbs:
+  slack: circleci/slack@3.4.2
+  vault: jmingtan/hashicorp-vault@0.2.1
+
+executors:
+  ubuntu-2004-docker:
+    docker:
+      - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
+  ubuntu-2004:
+    machine:
+      image: ubuntu-2004:202010-01
+  # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+  macos-1014: &1014
+    macos:
+      xcode: 11.1.0
+  macos-1015: &1015
+    macos:
+      xcode: 12.4.0
+  macos-1100: &1100
+    macos:
+      xcode: 12.5.1
+
+commands:
+  install_macos_puppet:
+    parameters:
+      puppet_version:
+        type: enum
+        enum: ["7.9.0"]
+        default: "7.9.0"
+      bolt_version:
+        type: enum
+        enum: ["3.13.0"]
+        default: "3.13.0"
+    steps:
+      - run:
+          name: Install puppet agent and bolt
+          command: |
+            PUPPET_VER="<< parameters.puppet_version >>"
+            BOLT_VER="<< parameters.bolt_version >>"
+            # Determine OSX version
+            MAJOR_OS_VER=$(sw_vers -productVersion|cut -d . -f 1)
+            if [ "${MAJOR_OS_VER}" -eq 10 ]
+            then
+                OS_VER=$(sw_vers -productVersion|cut -d . -f 1,2)
+            else
+                OS_VER="${MAJOR_OS_VER}"
+            fi
+            echo OSX version is "${OS_VER}"
+            # Install puppet agent
+            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
+            hdiutil mount "puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
+            sudo -E installer -pkg "/Volumes/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}/puppet-agent-${PUPPET_VER}-1-installer.pkg" -target /
+            # Install bolt
+            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            sudo -E installer -pkg "/Volumes/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}/puppet-bolt-${BOLT_VER}-1-installer.pkg" -target /
+            # Install gems needed for hiera vault
+            sudo /opt/puppetlabs/puppet/bin/gem install vault debouncer
+  apt_cache_restore:
+    steps:
+      - run: mkdir -p /tmp/docker/var/cache/apt
+      - run: sudo find /tmp/docker/var/cache/apt -type f -name *.deb | sort > apt_cache_debs_checksum
+      - restore_cache:
+          keys:
+          - v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
+          - v1-apt-cache-{{ arch }}-{{ .Branch }}-
+          - v1-apt-cache-{{ arch }}-
+  apt_cache_save:
+    steps:
+      - run: sudo find /tmp/docker/var/cache/apt -type f -name *.deb | sort > apt_cache_debs_checksum
+      - save_cache:
+          paths:
+            - /tmp/docker/var/cache/apt
+          key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
+  gem_cache:
+    steps:
+      - restore_cache:
+          keys:
+          # when lock file changes, use increasingly general patterns to restore cache
+          - v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+          - v2-gem-cache-{{ arch }}-{{ .Branch }}-
+          - v2-gem-cache-{{ arch }}-
+      - run:
+          name: Bundle Install and forced clean
+          command: |
+            bundle install
+            bundle clean --force
+      - save_cache:
+          paths:
+            - vendor/
+          key: v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+  export_env_vars:
+    steps:
+      - run:
+          name: Setup Additional Environment Variables
+          command: |
+            echo "export BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
+  setup_vault:
+    parameters:
+      role:
+        type: string
+    steps:
+      - vault/install:
+          verify: false
+      - run: vault version
+      - run:
+          name: Start vault server in dev mode
+          command: vault server -dev -dev-root-token-id="root" -dev-listen-address=127.0.0.1:8202
+          background: true
+      - run:
+          name: Export VAULT_ADDR and VAULT_TOKEN
+          command: |
+            echo "export VAULT_ADDR=http://127.0.0.1:8202" >> $BASH_ENV
+            echo "export VAULT_TOKEN=root" >> $BASH_ENV
+      - run: vault status
+      - run: vault token lookup
+      - run:
+          name: Install terraform
+          command: brew install terraform
+          environment:
+            HOMEBREW_NO_AUTO_UPDATE: 1
+      - run:
+          name: Configure and seed vault server
+          command: |
+            terraform version
+            terraform -chdir=test/integration/<< parameters.role >>/terraform/ init -input=false -backend=false
+            terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -var="role=<< parameters.role >>" -input=false -auto-approve
 jobs:
   pre_commit:
-    machine:
-      image: ubuntu-2004:202010-01
+    executor: ubuntu-2004-docker
     steps:
       - checkout
-      - run: sudo apt-get update
-      - run: sudo apt-get install shellcheck
-      - run: pip3 install pre-commit
-      #- run: pre-commit run --all-files --verbose
+        #- run: apt-get update
+        #- run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
+        #- run:
+        #  name: Install tfenv and terraform
+        #  command: |
+        #    git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+        #    export PATH="$HOME/.tfenv/bin:$PATH"
+        #    tfenv install 1.0.3
+        #- run: pip3 install pre-commit
+#     - run: pre-commit run --all-files --verbose
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
       - run: git fetch --all
-      - run: pre-commit run --from-ref original/master --to-ref HEAD --verbose
+      - run:
+          name: Run pre-commit
+          command: |
+            export PATH="$HOME/.tfenv/bin:$PATH"
+            tfenv use 1.0.3
+            pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
-    machine:
-      image: ubuntu-2004:202010-01
+    executor: ubuntu-2004
     steps:
+      - export_env_vars
       - checkout
-      - run: BUNDLE_GEMFILE=.gemfile bundle install
-      - run: BUNDLE_GEMFILE=.gemfile bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
-  kitchen_converge_and_verify:
-    machine:
-      image: ubuntu-2004:202010-01
+      - gem_cache
+      - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+  linux_integration_tests:
+    executor: ubuntu-2004
     parameters:
       kitchen_target:
         type: string
     steps:
+      - export_env_vars
       - checkout
-      - run: BUNDLE_GEMFILE=.gemfile bundle install
+      - gem_cache
+      - apt_cache_restore
       - run:
-          command: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen converge << parameters.kitchen_target >>
+          command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
-      - run: BUNDLE_GEMFILE=.gemfile KITCHEN_YAML=.kitchen.docker.yml bundle exec kitchen verify << parameters.kitchen_target >>
+      - run: bundle exec kitchen verify << parameters.kitchen_target >>
+      - apt_cache_save
+    environment:
+      KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
+  macos_integration_tests:
+    parameters:
+      os:
+        type: executor
+      role:
+        type: string
+      suite:
+        type: string
+    executor: << parameters.os >>
+    steps:
+      - export_env_vars
+      - checkout
+      - setup_vault:
+          role: << parameters.role >>
+      - when:
+          condition:
+            equal: [ *1014, << parameters.os >> ]
+          steps:
+            - run: echo "ruby-2.6.4" > ~/.ruby-version
+      - gem_cache
+      - install_macos_puppet
+      - run: bundle exec kitchen converge << parameters.suite >>
+      - run: bundle exec kitchen verify << parameters.suite >>
+      - store_test_results:
+          path: rspec
+    environment:
+      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      PUPPET_ROLE: << parameters.role >>
+#      - slack/status:
+#          fail_only: false
 
 workflows:
   ci_test:
     jobs:
       - pre_commit
       - r10k_install
-      - kitchen_converge_and_verify:
+      - macos_integration_tests:
           matrix:
             parameters:
-              # "maas-region" and "maas-rack" removed as we're not using them currently
+              os: [macos-1014]
+              suite: ["mac-v3-signing"]
+              role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
+          context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - macos_integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1015]
+              suite: ["default"]
+              role: ["gecko_t_osx_1015_r8"]
+          context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - macos_integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1100]
+              suite: ["default"]
+              role: ["gecko_t_osx_1100_m1"]
+          context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - linux_integration_tests:
+          matrix:
+            parameters:
               kitchen_target: ["bitbar", "linux"]
+          requires:
+            - pre_commit
+            - r10k_install

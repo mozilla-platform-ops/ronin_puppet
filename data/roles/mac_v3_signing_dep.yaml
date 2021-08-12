@@ -1,5 +1,8 @@
 ---
 
+# Package class parameters
+packages::vault::version: 1.7.3
+
 # Override secrets with vault secrets
 
 papertrail:

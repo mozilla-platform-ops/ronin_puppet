@@ -1,0 +1,11 @@
+---
+name: services
+groups:
+  - name: deploystudio
+    targets:
+      - install2.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: services_deploystudio
+    config:
+      ssh:
+        user: root

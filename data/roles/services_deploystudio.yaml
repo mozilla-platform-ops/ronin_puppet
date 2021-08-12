@@ -1,0 +1,22 @@
+---
+
+# Borgmatic
+borgmatic_hour: 1
+borgmatic_minute: 15
+borgmatic_ssh_public_key: "%{lookup('vault_secrets::borgmatic.data.ssh_public_key')}"
+borgmatic_ssh_private_key: "%{lookup('vault_secrets::borgmatic.data.ssh_private_key')}"
+borgmatic_ssh_private_key_path: "/var/root/.ssh/id_ed25519_borg_2021-02-17"
+borgmatic_config:
+    location:
+      source_directories:
+        - "/Deploy"
+      repositories:
+        - ssh://borg@borg1.private.mdc1.mozilla.com/data/borg/backups/install2.test.releng.mdc1.mozilla.com
+      one_file_system: true
+    storage:
+      ssh_command: ssh -oStrictHostKeyChecking=no -i "%{lookup('borgmatic_ssh_private_key_path')}"
+      encryption_passphrase: "%{lookup('vault_secrets::borgmatic.data.encryption_passphrase')}"
+    retention:
+      keep_daily: 14
+      keep_weekly: 4
+      keep_monthly: 6
