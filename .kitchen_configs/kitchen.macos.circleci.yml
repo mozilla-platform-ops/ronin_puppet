@@ -42,18 +42,16 @@ platforms:
   - name: windows-1064
     driver:
       name: azurerm
-      explicit_resource_group_name: Puppet-Test-Kitchen
-      destroy_explicit_resource_group: false
-      destroy_explicit_resource_group_tags: false
-      destroy_resource_group_contents: true
       location: 'West US 2'
       machine_size: 'Standard_F8s_v2'
-#      image_urn: MicrosoftWindowsServer:WindowsServer:2019-Datacenter-smalldisk:latest
       image_urn: MicrosoftWindowsDesktop:Windows-10:20h1-evd:19041.1165.2108022359
       use_ephemeral_osdisk: true
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+      resource_group_tags:
+        project: circleci-test-kitchen
+        owner: relops@mozilla.com
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -63,6 +61,7 @@ platforms:
         winrm set winrm/config/service/auth '@{Basic="true"}'
     transport:
       name: winrm
+
 # Fake mac-v3-signing secrets
 secrets: &secrets
   duo:

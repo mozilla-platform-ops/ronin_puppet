@@ -256,40 +256,40 @@ workflows:
           requires:
             - pre_commit
             - r10k_install
-#      - macos_integration_tests:
-#          matrix:
-#            parameters:
-#              os: [macos-1014]
-#              suite: ["mac-v3-signing"]
-#              role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
-#          context: slack-secrets
-#          requires:
-#            - pre_commit
-#            - r10k_install
-#      - macos_integration_tests:
-#          matrix:
-#            parameters:
-#              os: [macos-1015]
-#              suite: ["default"]
-#              role: ["gecko_t_osx_1015_r8"]
-#          context: slack-secrets
-#          requires:
-#            - pre_commit
-#            - r10k_install
-#      - macos_integration_tests:
-#          matrix:
-#            parameters:
-#              os: [macos-1100]
-#              suite: ["default"]
-#              role: ["gecko_t_osx_1100_m1"]
-#          context: slack-secrets
-#          requires:
-#            - pre_commit
-#            - r10k_install
-#      - linux_integration_tests:
-#          matrix:
-#            parameters:
-#              kitchen_target: ["bitbar", "linux"]
-#          requires:
-#            - pre_commit
-#            - r10k_install
+      - macos_integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1014]
+              suite: ["mac-v3-signing"]
+              role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
+          context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - macos_integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1015]
+              suite: ["default"]
+              role: ["gecko_t_osx_1015_r8"]
+          context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - macos_integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1100]
+              suite: ["default"]
+              role: ["gecko_t_osx_1100_m1"]
+          context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - linux_integration_tests:
+          matrix:
+            parameters:
+              kitchen_target: ["bitbar", "linux"]
+          requires:
+            - pre_commit
+            - r10k_install
