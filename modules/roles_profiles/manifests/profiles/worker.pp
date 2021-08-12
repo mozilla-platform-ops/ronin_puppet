@@ -22,41 +22,6 @@ class roles_profiles::profiles::worker {
             # TODO: don't assume these are need with all workers. break out into another profile?
             include mercurial::system_hgrc
             include mercurial::ext::robustcheckout
-
-            class { 'telegraf':
-                global_tags  => {
-                    workerId      => lookup('worker.worker_id'),
-                    workerGroup   => lookup('worker.worker_group'),
-                    workerType    => split(lookup('worker.worker_pool_id'), '/')[1],
-                    provisionerId => split(lookup('worker.worker_pool_id'), '/')[0],
-                },
-                agent_params => {
-                    interval          => '300s',
-                    round_interval    => true,
-                    collection_jitter => '0s',
-                    flush_interval    => '120s',
-                    flush_jitter      => '60s',
-                    precision         => 's',
-                },
-                inputs       => {
-                    # current default telegraf monitors: system, mem, swap, disk'/', puppetagent
-                    temp     => {},
-                    cpu      => {
-                        interval         => '60s',
-                        percpu           => true,
-                        totalcpu         => true,
-                        ## If true, collect raw CPU time metrics.
-                        collect_cpu_time => false,
-                        ## If true, compute and report the sum of all non-idle CPU states.
-                        report_active    => false,
-                    },
-                    diskio   => {},
-                    procstat => {
-                        interval => '60s',
-                        exe      => 'generic-worker-simple',
-                    },
-                },
-            }
         }
         default: {
             fail("${::operatingsystem} not supported")
