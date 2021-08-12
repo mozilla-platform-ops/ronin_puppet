@@ -27,7 +27,7 @@ class telegraf (
 
     $syslog_host         = lookup('papertrail.host', {'default_value' => ''})
     $syslog_port         = lookup('papertrail.port', {'default_value' => 514})
-    
+
     $worker_data_dir     = lookup('worker.data_dir', {'default_value' => '/opt/worker'})
 
     # Merge full hash of defaults for agent and input plugins.
