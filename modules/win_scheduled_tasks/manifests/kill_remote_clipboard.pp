@@ -13,8 +13,8 @@ class win_scheduled_tasks::kill_remote_clipboard {
         # Resource from puppetlabs-scheduled_task
         scheduled_task { 'kill_remote_clipboard':
             ensure    => 'present',
-            command   => "${facts['custom_win_system32']}\\cmd.exe",
-            arguments => "/c ${kill_rdpclip}",
+            command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
+            arguments => "-executionpolicy bypass -File ${kill_rdpclip}",
             enabled   => true,
             trigger   => [{
                 'schedule'         => 'boot',
