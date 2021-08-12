@@ -63,10 +63,6 @@ puppet_run_strategy: never
 #firewall_role: osx_taskcluster_worker
 
 # Override secrets with vault secrets
-telegraf:
-    user: "%{lookup('vault_secrets::telegraf.data.user')}"
-    password: "%{lookup('vault_secrets::telegraf.data.password')}"
-
 cltbld_user:
     password: "%{lookup('vault_secrets::cltbld_user.data.password')}"
     salt: "%{lookup('vault_secrets::cltbld_user.data.salt')}"
