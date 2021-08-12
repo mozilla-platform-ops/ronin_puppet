@@ -25,10 +25,10 @@ class roles_profiles::profiles::worker {
 
             class { 'telegraf':
                 global_tags  => {
-                    workerId          => lookup('worker.worker_id'),
-                    workerGroup       => lookup('worker.worker_group'),
-                    workerType        => split(lookup('worker.worker_pool_id'), '/')[1],
-                    provisionerId     => split(lookup('worker.worker_pool_id'), '/')[0],
+                    workerId      => lookup('worker.worker_id'),
+                    workerGroup   => lookup('worker.worker_group'),
+                    workerType    => split(lookup('worker.worker_pool_id'), '/')[1],
+                    provisionerId => split(lookup('worker.worker_pool_id'), '/')[0],
                 },
                 agent_params => {
                     interval          => '300s',

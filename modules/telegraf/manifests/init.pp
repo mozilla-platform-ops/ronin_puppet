@@ -73,7 +73,7 @@ class telegraf (
                 '/etc/telegraf/telegraf.d':
                     ensure => 'directory';
 
-                "${telegraf_conf}":
+                $telegraf_conf:
                     ensure  => present,
                     content => template('telegraf/telegraf.conf.erb'),
                     mode    => '0644';
