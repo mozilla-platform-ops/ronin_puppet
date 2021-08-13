@@ -18,8 +18,8 @@ class win_scheduled_tasks::kill_remote_clipboard {
             enabled   => true,
             trigger   => [{
                 'schedule'         => 'boot',
-                'minutes_interval' => '0',
-                'minutes_duration' => '0'
+                'minutes_interval' => '1',
+                'minutes_duration' => '60'
             }],
             user      => 'system',
         }
