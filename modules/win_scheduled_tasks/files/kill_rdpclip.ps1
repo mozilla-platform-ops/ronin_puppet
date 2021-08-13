@@ -8,12 +8,10 @@ Do {
 
     $status = Get-Process rdpclip -ErrorAction SilentlyContinue
     If (!($status)) {
-		Start-Sleep -Seconds 1
+		Start-Sleep -Seconds 10
 	}
     Else {
-		$started = $true
+        Stop-Process -Name rdpclip -force
 	}
 }
 Until ( $started )
-
-Stop-Process -Name rdpclip -force
