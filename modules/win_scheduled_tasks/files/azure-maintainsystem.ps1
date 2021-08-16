@@ -354,7 +354,19 @@ function Check-AzVM-Name {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-
+function Stop_AzGuestService {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        Stop-Service -Name "Stop-Service -Name "iisadmin" -Force -Confirm" -Force
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 $bootstrap_stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 $hand_off_ready = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").hand_off_ready
 $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
@@ -370,6 +382,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
+  Stop_AzGuestService
   StartWorkerRunner
   # let worker runner perform reboots
   Exit-PSSession
