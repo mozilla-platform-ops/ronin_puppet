@@ -354,6 +354,24 @@ function Check-AzVM-Name {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Stop_Local_ClipBoard {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+		while($clip_service -eq null){
+			$clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"}
+			start-sleep -s 5
+	}
+	Stop-Service -Name $clip_service.name
+    Write-Log -message  ('{0} :: Taskuser clipboard is currently {1}' -f $($MyInvocation.MyCommand.Name), $clip_service.status) -severity 'DEBUG'
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 function Stop_AzGuestService {
     param (
     )
@@ -382,7 +400,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
-  Stop_AzGuestService
+  Stop_Local_ClipBoard
   StartWorkerRunner
   # let worker runner perform reboots
   Exit-PSSession
