@@ -361,7 +361,7 @@ function Stop_Local_ClipBoard {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-		while($clip_service -eq null){
+		while($clip_service -eq $null){
 			$clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"}
 			start-sleep -s 5
 	}
