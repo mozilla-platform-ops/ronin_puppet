@@ -355,6 +355,8 @@ function Check-AzVM-Name {
     }
 }
 function Stop_Local_ClipBoard {
+    # The cbdhsvc_* service name changes per user
+    # Ctaching here are start up to ensure it is disabled.
     param (
     )
     begin {
@@ -367,6 +369,7 @@ function Stop_Local_ClipBoard {
 	}
 	Stop-Service -Name $clip_service.name
     start-sleep -s 2
+    $clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"})
     Write-Log -message  ('{0} :: Taskuser clipboard is currently {1}' -f $($MyInvocation.MyCommand.Name), $clip_service.status) -severity 'DEBUG'
     }
     end {
