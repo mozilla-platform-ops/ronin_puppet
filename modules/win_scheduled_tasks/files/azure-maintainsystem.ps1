@@ -163,13 +163,13 @@ Function UpdateRonin {
       # Fall back to clone if pull fails
      Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
      Write-Log -message  ('{0} :: Deleting old repository and cloning repository .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-	 Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
-	 Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
-	 Remove-Item -Recurse -Force $ronin_repo
-	 Start-Sleep -s 2
-	 git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
-	 Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
-	 Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
+     Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
+     Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
+     Remove-Item -Recurse -Force $ronin_repo
+     Start-Sleep -s 2
+     git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+     Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
+     Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
     }
   }
   end {
@@ -363,11 +363,11 @@ function Stop_Local_ClipBoard {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-		while($clip_service -eq $null){
-			$clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"})
-			start-sleep -s 5
-	}
-	Stop-Service -Name $clip_service.name
+        while($clip_service -eq $null){
+            $clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"})
+            start-sleep -s 5
+    }
+    Stop-Service -Name $clip_service.name
     start-sleep -s 2
     $clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"})
     Write-Log -message  ('{0} :: Taskuser clipboard is currently {1}' -f $($MyInvocation.MyCommand.Name), $clip_service.status) -severity 'DEBUG'
@@ -404,8 +404,8 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
-  Stop_Local_ClipBoard
   StartWorkerRunner
+  Stop_Local_ClipBoard
   # let worker runner perform reboots
   Exit-PSSession
 } else {
