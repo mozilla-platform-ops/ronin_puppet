@@ -45,7 +45,7 @@ while($true) {
 		Write-Log -message  ('{0} :: Local Clip Board service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 	} else {
 		$start_type = ((Get-Service $clip_service.name).StartType)
-		 Write-Log -message  ('{0} ::  {1} service is {2} and start up is set to {3}' -f $($MyInvocation.MyCommand.Name), ($clip_service), ($clip_service.status), ($start_type)) -severity 'DEBUG'
+	    Write-Log -message  ('{0} ::  {1} service is {2} and start up is set to {3}' -f $($MyInvocation.MyCommand.Name), ($clip_service), ($clip_service.status), ($start_type)) -severity 'DEBUG'
 	}
 	if ($clip_service.status -eq "running"){
 		Write-Log -message  ('{0} ::  Stopping {1} service' -f $($MyInvocation.MyCommand.Name), ($clip_service)) -severity 'DEBUG'

@@ -8,7 +8,7 @@ class win_scheduled_tasks::kill_local_clipboard {
 
     if $::operatingsystem == 'Windows' {
         file { $kill_localclip:
-            content => file('win_scheduled_tasks/kill_localclip.ps1'),
+            content => file('win_scheduled_tasks/kill_local_clipboard.ps1'),
         }
         # Resource from puppetlabs-scheduled_task
         scheduled_task { 'kill_remote_clipboard':
