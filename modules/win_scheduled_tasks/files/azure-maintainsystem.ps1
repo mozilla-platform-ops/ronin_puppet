@@ -354,29 +354,7 @@ function Check-AzVM-Name {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-function Stop_Local_ClipBoard {
-    # The cbdhsvc_* service name changes per user
-    # Ctaching here are start up to ensure it is disabled.
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        while($clip_service -eq $null){
-        Write-Log -message ('{0} :: Cannot find clipboard {1}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-            $clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"})
-            start-sleep -s 5
-    }
-    Stop-Service -Name $clip_service.name
-    start-sleep -s 2
-    $clip_service = (Get-Service | Where-Object {$_.name -Like "cbdhsvc_*"})
-    Write-Log -message  ('{0} :: Task user clipboard is currently {1}' -f $($MyInvocation.MyCommand.Name), $clip_service.status) -severity 'DEBUG'
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
+# not used
 function Stop_AzGuestService {
     param (
     )
@@ -406,7 +384,6 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
     Puppet-Run
   }
   StartWorkerRunner
-  Stop_Local_ClipBoard
   # let worker runner perform reboots
   Exit-PSSession
 } else {
