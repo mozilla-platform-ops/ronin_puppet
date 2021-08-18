@@ -15,10 +15,10 @@ class telegraf (
     $telegraf_stdout_log = '/var/log/telegraf/telegraf-stdout.log'
     $telegraf_stderr_log = '/var/log/telegraf/telegraf-stderr.log'
     macos_utils::logrotate { 'telegraf-stderr-logs':
-        path             => $telegraf_stderr_log
+        path             => $telegraf_stderr_log,
     }
     macos_utils::logrotate { 'telegraf-stdout-logs':
-        path             => $telegraf_stdout_log
+        path             => $telegraf_stdout_log,
     }
 
     $influxdb_url        = lookup('telegraf.host')
