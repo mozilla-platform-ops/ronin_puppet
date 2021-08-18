@@ -46,9 +46,6 @@ secrets: &secrets
     ikey: duo_ikey_testing
     skey: duo_skey_testing
     host: duo_host_testing
-  telegraf:
-    user: telegraf_user_testing
-    password: telegraf_password_testing
   papertrail:
     host: papertrail_host_testing
     port: 12345
