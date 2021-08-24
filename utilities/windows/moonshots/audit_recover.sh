@@ -299,6 +299,10 @@ function recheck_status() {
       then
         echo "$name" is up but no audit script. Misconfigured
         echo "$ip" >> "$unrecovered"
+      elif [ "$result" == 1 ];
+      then
+        echo "$name" is not productive. Concidered down.
+        echo "$ip" >> "$unrecovered"
       elif [ "$result" == 99 ];
       then
         echo "$name" is up but gw not running
