@@ -162,7 +162,7 @@ function get_status() {
       # Leaving the detail exits in place for future script imporvement
       elif [ "$result" == 1 ];
       then
-        echo "$name" is not productive. Will recheck. 
+        echo "$name" is not productive. Will recheck.
         echo "$ip" >> "$downnodes"
       fi
     fi
