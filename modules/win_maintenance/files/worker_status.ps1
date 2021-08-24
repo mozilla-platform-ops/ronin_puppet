@@ -8,7 +8,7 @@ function Write-Log {
   param (
     [string] $message,
     [string] $severity = 'INFO',
-    [string] $source = 'OpenCloudConfig',
+    [string] $source = 'MaintainSystem',
     [string] $logName = 'Application'
   )
   if ((-not ([System.Diagnostics.EventLog]::Exists($logName))) -or (-not ([System.Diagnostics.EventLog]::SourceExists($source)))) {

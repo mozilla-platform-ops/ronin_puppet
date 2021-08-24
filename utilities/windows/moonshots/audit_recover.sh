@@ -157,7 +157,13 @@ function get_status() {
       elif [ "$result" == 124 ];
       then
         echo "$name" is up but not responding
-    echo "$ip" >> "$downnodes"
+        echo "$ip" >> "$downnodes"
+      # If the powershell script returns a non-zero the bash script will see it as exit 1
+      # Leaving the detail exits in place for future script imporvement
+      elif [ "$result" == 1 ];
+      then
+        echo "$name" is not productive. Check logs for more details. 
+        echo "$ip" >> "$downnodes"
       fi
     fi
     done
