@@ -162,7 +162,7 @@ function get_status() {
       # Leaving the detail exits in place for future script imporvement
       elif [ "$result" == 1 ];
       then
-        echo "$name" is not productive. Check logs for more details. 
+        echo "$name" is not productive. Will recheck. 
         echo "$ip" >> "$downnodes"
       fi
     fi
@@ -202,6 +202,10 @@ function get_status() {
         elif [ "$result" == 124 ];
         then
           echo "$name is up but not responding"
+          echo "$ip" >> "$downnodes_2nd"
+        elif [ "$result" == 1 ];
+        then
+          echo "$name" is not productive. Check logs for more details.
           echo "$ip" >> "$downnodes_2nd"
         fi
       fi
