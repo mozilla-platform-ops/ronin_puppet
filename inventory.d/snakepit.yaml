@@ -1,0 +1,19 @@
+---
+name: snakepit
+groups:
+  - name: head
+    targets:
+      - mlchead
+    facts:
+      puppet_role: snakepit_head
+  - name: workers
+    targets:
+      - mlc0
+      - mlc1
+      - mlc2
+      - mlc3
+      - mlc4
+      - mlc5
+      - mlc6
+    facts:
+      puppet_role: snakepit_worker
