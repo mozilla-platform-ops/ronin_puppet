@@ -83,3 +83,11 @@ suites:
     provisioner:
       manifests_path: manifests-kitchen/maas_rack
     attributes:
+  - name: snakepit_head
+    provisioner:
+      manifests_path: manifests-kitchen/snakepit_head
+    attributes:
+  - name: snakepit_worker
+    provisioner:
+      manifests_path: manifests-kitchen/snakepit_worker
+    attributes:

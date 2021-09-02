@@ -6,7 +6,4 @@ class roles_profiles::roles::snakepit_worker {
 
     include ::roles_profiles::profiles::snakepit_worker
 
-    # TODO: configure users
-    # TODO: configure fstab
-
 }

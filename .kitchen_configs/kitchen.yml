@@ -54,7 +54,7 @@ busser:
 
 platforms:
   # vagrant automatically generates a hostname, if that exceeds 64 characters vbox fails, see bug #6
-  - name: ubuntu18-kitchen_template
+  - name: ubuntu18
     driver_plugin: vagrant
     driver_config:
       customize:
@@ -67,25 +67,27 @@ platforms:
 suites:
   - name: linux
     provisioner:
-      manifests_path: manifests-kitchen/linux
+      # manifests_path: manifests-kitchen/linux
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:
   - name: bitbar
     provisioner:
-      manifests_path: manifests-kitchen/bitbar
+      # manifests_path: manifests-kitchen/bitbar
+      custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:
-  - name: maas_region
+  - name: snakepit_head
     provisioner:
-      manifests_path: manifests-kitchen/maas_region
+      manifests_path: manifests-kitchen/snakepit_head
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:
-  - name: maas_rack
+  - name: snakepit_worker
     provisioner:
-      manifests_path: manifests-kitchen/maas_rack
+      manifests_path: manifests-kitchen/snakepit_worker
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:

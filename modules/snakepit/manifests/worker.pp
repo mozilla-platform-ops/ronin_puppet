@@ -7,4 +7,7 @@ class snakepit::worker () {
   # include ::maas::prereqs
   # include apt
 
+  # TODO: configure users
+  # TODO: configure fstab
+
 }

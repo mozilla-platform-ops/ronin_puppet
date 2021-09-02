@@ -7,4 +7,24 @@ class snakepit::head () {
   # include ::maas::prereqs
   # include apt
 
+  # TODO: configure users
+
+  # create bitbar user & group
+  # group { 'bitbar':
+  #   ensure => 'present',
+  # }
+
+  # user { 'bitbar':
+  #   ensure           => 'present',
+  #   home             => '/home/bitbar',
+  #   password         => '!!',
+  #   password_max_age => '99999',
+  #   password_min_age => '0',
+  #   shell            => '/bin/bash',
+  #   gid              => 'bitbar',
+  # }
+
+  # TODO: configure NFS packages/service
+  # TODO: configure /etc/exports
+
 }

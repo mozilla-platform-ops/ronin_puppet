@@ -6,8 +6,4 @@ class roles_profiles::roles::snakepit_head {
 
     include ::roles_profiles::profiles::snakepit_head
 
-    # TODO: configure users
-    # TODO: configure NFS packages/service
-    # TODO: configure /etc/exports
-
 }
