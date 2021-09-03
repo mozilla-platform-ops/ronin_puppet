@@ -26,7 +26,7 @@ class snakepit::worker () {
     gid      => 'snakepit',
   }
 
+  # TODO: create mountpoint
   # TODO: configure fstab
-  #  - create mountpoint
 
 }

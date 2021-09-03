@@ -18,7 +18,9 @@ class snakepit::head () {
     gid      => 'snakepit',
   }
 
+  # TODO: configure root's allowed ssh keys
   # TODO: configure NFS packages/service
+  # TODO: configure snakepit app dirs
   # TODO: configure /etc/exports
 
 }
