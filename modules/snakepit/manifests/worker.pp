@@ -8,6 +8,27 @@ class snakepit::worker () {
   # include apt
 
   # TODO: configure users
+
+  ssh_authorized_key { 'root@mlchead':
+    user => 'root',
+    type => 'ssh-rsa',
+    key  => template('snakepit/mlchead_root_ssh_pubkey.txt'),
+  }
+
+  group { 'snakepit':
+    ensure => 'present',
+    gid    => 1777
+  }
+
+  user { 'snakepit':
+    ensure   => 'present',
+    home     => '/home/snakepit',
+    uid      => 1777,
+    password => '!!',  # it has a pw set in prod... what is it?
+    shell    => '/bin/bash',
+    gid      => 'snakepit',
+  }
+
   # TODO: configure fstab
 
 }

@@ -4,25 +4,19 @@
 
 class snakepit::head () {
 
-  # include ::maas::prereqs
-  # include apt
+  group { 'snakepit':
+    ensure => 'present',
+    gid    => 1777
+  }
 
-  # TODO: configure users
-
-  # create bitbar user & group
-  # group { 'bitbar':
-  #   ensure => 'present',
-  # }
-
-  # user { 'bitbar':
-  #   ensure           => 'present',
-  #   home             => '/home/bitbar',
-  #   password         => '!!',
-  #   password_max_age => '99999',
-  #   password_min_age => '0',
-  #   shell            => '/bin/bash',
-  #   gid              => 'bitbar',
-  # }
+  user { 'snakepit':
+    ensure   => 'present',
+    home     => '/home/snakepit',
+    uid      => 1777,
+    password => '!!',  # it has a pw set in prod... what is it?
+    shell    => '/bin/bash',
+    gid      => 'snakepit',
+  }
 
   # TODO: configure NFS packages/service
   # TODO: configure /etc/exports
