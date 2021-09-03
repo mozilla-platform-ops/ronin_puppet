@@ -3,7 +3,7 @@ name: snakepit
 groups:
   - name: head
     targets:
-      - mlchead
+      - mlchead  # mlc1-devl.qa.ber3.mozilla.com
     facts:
       puppet_role: snakepit_head
   - name: workers
