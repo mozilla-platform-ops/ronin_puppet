@@ -243,7 +243,7 @@ workflows:
       - linux_integration_tests:
           matrix:
             parameters:
-              kitchen_target: ["bitbar", "linux"]
+              kitchen_target: ["bitbar", "linux", "snakepit-head", "snakepit-worker"]
           requires:
             - pre_commit
             - r10k_install
