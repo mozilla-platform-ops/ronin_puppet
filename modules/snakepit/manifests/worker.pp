@@ -4,15 +4,12 @@
 
 class snakepit::worker () {
 
-  # include ::maas::prereqs
-  # include apt
-
-  # TODO: configure users
+  # configure users
 
   ssh_authorized_key { 'root@mlchead':
     user => 'root',
     type => 'ssh-rsa',
-    key  => template('snakepit/mlchead_root_ssh_pubkey.txt'),
+    key  => strip(template('snakepit/mlchead_root_ssh_pubkey.key')),
   }
 
   group { 'snakepit':
@@ -30,5 +27,6 @@ class snakepit::worker () {
   }
 
   # TODO: configure fstab
+  #  - create mountpoint
 
 }
