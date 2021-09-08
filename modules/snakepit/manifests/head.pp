@@ -19,6 +19,7 @@ class snakepit::head () {
   }
 
   # TODO: configure root's allowed ssh keys
+  # TODO: add relops users, add relops users to sudoers
   # TODO: configure NFS packages/service
   # TODO: configure snakepit app dirs
   # TODO: configure /etc/exports
