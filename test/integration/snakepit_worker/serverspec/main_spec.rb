@@ -12,6 +12,8 @@ describe 'users' do
     it { should exist }
     it { should have_uid 1777 }
     it { should belong_to_primary_group 'snakepit' }
+    it { should have_home_directory '/home/snakepit' }
+    it { should have_login_shell '/bin/bash' }
   end
 end
 
