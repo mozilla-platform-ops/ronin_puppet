@@ -22,3 +22,35 @@ describe 'groups' do
     it { should have_gid 1777 }
   end
 end
+
+# TODO: test mount point
+# TODO: test fstab
+#  https://github.com/mizzy/serverspec/blob/master/spec/type/linux/fstab_spec.rb
+describe file('/mnt/snakepit') do
+  it { should exist }
+  it { should be_directory }
+  it { should be_mode 750 }
+  it { should be_owned_by 'snakepit' }
+  it { should be_grouped_into 'snakepit' }
+end
+
+# 192.168.1.1:/snakepit   /mnt/snakepit   nfs   nosuid,hard,tcp,bg,noatime 0 0
+describe fstab do
+  # let(:stdout) { "/dev/sda1 /mnt ext4 ro,errors=remount-ro,barrier=0 0 2\r\n" }
+  it do
+    should have_entry(
+      :device => '192.168.1.1:/snakepit',
+      :mount_point => '/mnt/snakepit',
+      :type => 'nfs',
+      :options => {
+        :nosuid => true,
+        :hard => true,
+        :tcp => true,
+        :bg => true,
+        :noatime => true
+      },
+      :dump => 0,
+      :pass => 0
+    )
+  end
+end
