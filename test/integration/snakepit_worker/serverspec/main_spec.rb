@@ -1,6 +1,8 @@
 require_relative 'spec_helper'
 
+#
 # snakepit_worker
+#
 
 describe 'users' do
   describe user('root') do
@@ -17,15 +19,14 @@ describe 'users' do
   end
 end
 
+# TODO: check for relops (and evgeny) users
+
 describe 'groups' do
   describe group('snakepit') do
     it { should have_gid 1777 }
   end
 end
 
-# TODO: test mount point
-# TODO: test fstab
-#  https://github.com/mizzy/serverspec/blob/master/spec/type/linux/fstab_spec.rb
 describe file('/mnt/snakepit') do
   it { should exist }
   it { should be_directory }
@@ -34,9 +35,7 @@ describe file('/mnt/snakepit') do
   it { should be_grouped_into 'snakepit' }
 end
 
-# 192.168.1.1:/snakepit   /mnt/snakepit   nfs   nosuid,hard,tcp,bg,noatime 0 0
 describe fstab do
-  # let(:stdout) { "/dev/sda1 /mnt ext4 ro,errors=remount-ro,barrier=0 0 2\r\n" }
   it do
     should have_entry(
       :device => '192.168.1.1:/snakepit',

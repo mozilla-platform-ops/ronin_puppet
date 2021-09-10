@@ -1,6 +1,8 @@
 require_relative 'spec_helper'
 
+#
 # snakepit_head
+#
 
 describe 'users' do
   describe user('root') do
