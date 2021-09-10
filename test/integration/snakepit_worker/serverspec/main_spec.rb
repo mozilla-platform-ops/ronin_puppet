@@ -19,8 +19,6 @@ describe 'users' do
   end
 end
 
-# TODO: check for relops users (and evgeny)
-
 describe 'groups' do
   describe group('snakepit') do
     it { should have_gid 1777 }
@@ -52,4 +50,9 @@ describe fstab do
       :pass => 0
     )
   end
+end
+
+# verify nfs-common package
+describe package('nfs-common') do
+  it { should be_installed }
 end

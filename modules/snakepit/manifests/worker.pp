@@ -4,14 +4,14 @@
 
 class snakepit::worker () {
 
-  # configure users
-
+  # root ssh key
   ssh_authorized_key { 'root@mlchead':
     user => 'root',
     type => 'ssh-rsa',
     key  => strip(template('snakepit/mlchead_root_ssh_pubkey.key')),
   }
 
+  # snakepit user and group
   group { 'snakepit':
     ensure => 'present',
     gid    => 1777
@@ -24,6 +24,12 @@ class snakepit::worker () {
     password => '!!',  # it has a pw set in prod... what is it?
     shell    => '/bin/bash',
     gid      => 'snakepit',
+  }
+
+  # install nfs client package
+  package {
+      'nfs-common':
+          ensure => present;
   }
 
   # create mountpoint
