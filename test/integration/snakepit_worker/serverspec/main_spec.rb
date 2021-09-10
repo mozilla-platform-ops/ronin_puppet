@@ -19,7 +19,7 @@ describe 'users' do
   end
 end
 
-# TODO: check for relops (and evgeny) users
+# TODO: check for relops users (and evgeny)
 
 describe 'groups' do
   describe group('snakepit') do

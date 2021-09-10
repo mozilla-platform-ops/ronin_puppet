@@ -26,17 +26,13 @@ class snakepit::worker () {
     gid      => 'snakepit',
   }
 
-  # TODO: create mountpoint
-  # /mnt/snakepit
-
+  # create mountpoint
   file { '/mnt/snakepit':
     ensure => 'directory',
     path   => '/mnt/snakepit',
-    mode   => '0750',  # TODO: what should these be? also update README.md
+    mode   => '0750',  # TODO: what should these be? also update README.md. is it important when it's just mounted over?
     owner  => 'snakepit',
     group  => 'snakepit'
-
-
   }
 
   # configure fstab

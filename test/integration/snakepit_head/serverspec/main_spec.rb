@@ -15,7 +15,6 @@ describe 'users' do
     it { should belong_to_primary_group 'snakepit' }
     it { should have_home_directory '/home/snakepit' }
     it { should have_login_shell '/bin/bash' }
-    # it { should belong_to_group '' }
   end
 end
 
