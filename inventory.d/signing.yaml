@@ -30,3 +30,15 @@ groups:
       - dep-mac-v3-signing3.srv.releng.mdc1.mozilla.com
     facts:
       puppet_role: mac_v3_signing_dep
+  - name: mac-v3-signing-mozillavpn
+    targets:
+      - macmini-r8-180.test.releng.mdc1.mozilla.com
+      - macmini-r8-182.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mac_v3_signing_mozvpn
+  - name: mac-v3-signing-mozillavpn
+    targets:
+      - macmini-r8-179.test.releng.mdc1.mozilla.com
+      - macmini-r8-181.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mac_v3_signing_mozvpn_b
