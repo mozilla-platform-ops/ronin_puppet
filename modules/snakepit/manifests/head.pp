@@ -19,6 +19,13 @@ class snakepit::head () {
   }
 
   # configure root's allowed ssh keys
+  file { '/root/.ssh':
+    ensure => 'directory',
+    mode   => '0700',
+    owner  => 'root',
+    group  => 'root'
+  }
+
   file { '/root/.ssh/authorized_keys':
     mode    => '0600',
     owner   => 'root',

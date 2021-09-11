@@ -52,8 +52,22 @@ describe file('/etc/exports') do
   it { should contain '/snakepit       192.168.0.0/16(rw,no_root_squash,no_subtree_check)' }
 end
 
+
+# nfs testing on docker doesn't work (modules arenn't loaded in host)
+def proc_1_cgroup
+  file('/proc/1/cgroup').content
+end
+
+def is_docker
+  if proc_1_cgroup().include?('docker')
+    return true
+  else
+    return false
+  end
+end
+
 # verify serivce is exporting them
-describe command('exportfs') do
+describe command('exportfs'), :if => !is_docker do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should contain "/snakepit     	192.168.0.0/16" }
 end
