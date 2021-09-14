@@ -369,16 +369,18 @@ function Stop_AzGuestService {
     }
 }
 
-$mozilla_key = "HKLM:\SOFTWARE\Mozilla"
-$ronin_key = "$mozilla_key\ronin_puppet"
-While (($exists = Get-ItemProperty -Path $ronin_key -Name bootstrap_stage -ErrorAction SilentlyContinue) -eq $null -or $exists.Length -eq 0) {
-    Write-Log -message  ('{0} :: Waiting for registry before starting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Start-Sleep -Seconds 15
+$managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
+
+While ($managed_by -eq $null) {
+    Write-Log -message  ('{0} :: Waiting for metadata availability ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Start-Sleep -Seconds 5
+    $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
 }
 
+$mozilla_key = "HKLM:\SOFTWARE\Mozilla"
+$ronin_key = "$mozilla_key\ronin_puppet"
 $bootstrap_stage =  (Get-ItemProperty -path "$ronin_key").bootstrap_stage
 $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
-$managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
 
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
