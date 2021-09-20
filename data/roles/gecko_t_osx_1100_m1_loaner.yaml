@@ -9,10 +9,10 @@ worker_metadata:
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
 worker:
-  taskcluster_version: 40.0.3
+  taskcluster_version: 44.0.0
   provider_type: standalone
-  worker_pool_id: releng-hardware/gecko-t-osx-1100-m1-loaner
-  worker_group: mslv
+  worker_pool_id: releng-hardware/gecko-t-osx-1100-m1-bug1731655
+  worker_group: macstadium-vegas
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
@@ -30,13 +30,14 @@ packages_classes:
   - python3
   - python3_psutil
   - python3_zstandard
-  - rosetta_2
+#  - rosetta_2
   - scres
   - tooltool
   - virtualenv
   - wget
   - xcode_cmd_line_tools
   - zstandard
+  - telegraf
 
 # Package class parameters
 packages::google_chrome::version: v80.0.3987.106
@@ -44,12 +45,13 @@ packages::mercurial::version: 5.5.2
 packages::nodejs::version: 12.11.1
 packages::python2::version: 2.7.18
 packages::python2_zstandard::version: 0.11.1
-packages::python3::version: 3.7.9
+packages::python3::version: 3.9.6
 packages::python3_zstandard::version: 0.11.1
 packages::virtualenv::version: 16.4.3
 packages::wget::version: 1.20.3_1
 packages::xcode_cmd_line_tools::version: '12.2'
 packages::zstandard::version: 1.3.8
+packages::telegraf::version: 1.19.0
 
 # Talos class parameters
 talos::user: cltbld
