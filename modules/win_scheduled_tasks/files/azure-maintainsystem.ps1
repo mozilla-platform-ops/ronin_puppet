@@ -375,7 +375,7 @@ $ronin_key = "$mozilla_key\ronin_puppet"
 $bootstrap_stage =  (Get-ItemProperty -path "$ronin_key").bootstrap_stage
 $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 
-If ($hand_off_ready -eq 'yes')) {
+If ($hand_off_ready -eq 'yes') {
     While ($managed_by -eq $null) {
         Write-Log -message  ('{0} :: Waiting for metadata availability ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Start-Sleep -Seconds 5
