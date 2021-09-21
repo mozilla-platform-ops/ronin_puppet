@@ -43,6 +43,11 @@ describe package('nfs-kernel-server') do
   it { should be_installed }
 end
 
+# TODO: configure threads
+# root@mlchead:/etc/default# cat nfs-kernel-server
+# # Number of servers to start up
+# RPCNFSDCOUNT=32
+
 # verify exports
 describe file('/etc/exports') do
   it { should exist }
@@ -53,7 +58,8 @@ describe file('/etc/exports') do
 end
 
 
-# nfs testing on docker doesn't work (modules arenn't loaded in host)
+# nfs testing on docker doesn't work (modules aren't loaded in host)
+#  detect if we're on docker by inspecting PID 1's cgroup
 def proc_1_cgroup
   file('/proc/1/cgroup').content
 end

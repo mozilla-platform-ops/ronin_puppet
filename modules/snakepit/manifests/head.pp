@@ -33,8 +33,6 @@ class snakepit::head () {
     content => strip(template('snakepit/head_root_authorized_keys.key')),
   }
 
-  # TODO: configure more snakepit app dirs?
-
   # create snakepit app dir
   file { '/snakepit':
     ensure => 'directory',
@@ -65,6 +63,17 @@ class snakepit::head () {
     notify  => Service['nfs-server'],
   }
 
+  # TODO: configure number of NFS daemon threads
+  # root@mlchead:/etc/default# cat nfs-kernel-server
+  # Number of servers to start up
+  # RPCNFSDCOUNT=32
+
+  # TODO: configure more snakepit app dirs?
+
   # TODO: add relops users, add relops users to sudoers
+
+  # TODO: configure nfsd
+  # 32 on mlchead, set in /etc/defaults/nfs-kernel-server
+  # RPCNFSDCOUNT=8
 
 }
