@@ -400,10 +400,19 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
     Puppet-Run
   }
   StartWorkerRunner
-  start-sleep -s 10800
-  Write-Log -message  ('{0} :: UNPRODUCTIVE: Instance has been up for 3 hours without rebooting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-  shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker has been up longer than expected', '-f', '-d', '4:5')
-  Exit-PSSession
+  # wait and check if GW has started
+  # Followed by additional checks to ensure VM is productive if up
+  start-sleep -s 900
+  while($true) {
+    $gw = (Get-process -name generic-worker -ErrorAction SilentlyContinue )
+    if ($gw -eq $null) {
+      Write-Log -message  ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      start-sleep -s 3
+      shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
+    } else {
+      start-sleep -s 60
+    }
+  }
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   Exit-PSSession
