@@ -410,7 +410,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
       start-sleep -s 3
       shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
     } else {
-      start-sleep -s 60
+      start-sleep -s 120
     }
   }
 } else {
