@@ -274,3 +274,10 @@ groups:
       - macmini-r8-202.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_3_b_osx_1015
+
+  - name: mozvpn-b-osx
+    targets:
+      - macmini-r8-179.test.releng.mdc1.mozilla.com
+      - macmini-r8-181.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mozvpn_b_osx
