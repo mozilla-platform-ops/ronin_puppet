@@ -13,11 +13,11 @@ class linux_packages::testresources {
     'Ubuntu': {
       package {
         'python-testresources':
-          ensure => latest;
+          ensure => present;
       }
       package {
         'python3-testresources':
-          ensure => latest;
+          ensure => present;
       }
     }
     default: {
