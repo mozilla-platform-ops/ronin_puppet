@@ -47,12 +47,22 @@ describe file('/home/cltbld/.pip/pip.conf') do
   it { should exist }
 end
 
-# ensure pip check returns 0
+# ensure pip check returns 0 for all pythons
 
-describe command('pip check') do
+# system provided
+describe command('python -m pip check') do
   its(:exit_status) { should eq 0 }
 end
 
-describe command('pip3 check') do
+# system provided 3.6
+describe command('python3 -m pip check') do
+  its(:exit_status) { should eq 0 }
+end
+
+describe command('python3.8 -m pip check') do
+  its(:exit_status) { should eq 0 }
+end
+
+describe command('python3.9 -m pip check') do
   its(:exit_status) { should eq 0 }
 end
