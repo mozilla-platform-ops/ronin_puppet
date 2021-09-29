@@ -42,7 +42,7 @@ describe fstab do
       :options => {
         :nosuid => true,
         :hard => true,
-        :tcp => true,
+        :udp => true,
         :bg => true,
         :noatime => true
       },

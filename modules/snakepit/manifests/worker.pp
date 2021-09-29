@@ -47,7 +47,7 @@ class snakepit::worker () {
     atboot  => true,
     device  => '192.168.1.1:/snakepit',
     fstype  => 'nfs',
-    options => 'nosuid,hard,tcp,bg,noatime',
+    options => 'nosuid,hard,udp,bg,noatime',
     pass    => 0
   }
 
