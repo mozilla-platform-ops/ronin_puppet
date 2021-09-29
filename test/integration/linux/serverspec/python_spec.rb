@@ -46,3 +46,13 @@ end
 describe file('/home/cltbld/.pip/pip.conf') do
   it { should exist }
 end
+
+# ensure pip check returns 0
+
+describe command('pip check') do
+  its(:exit_status) { should eq 0 }
+end
+
+describe command('pip3 check') do
+  its(:exit_status) { should eq 0 }
+end
