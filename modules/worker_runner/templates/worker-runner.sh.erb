@@ -15,6 +15,25 @@ date > $last_premature_end
 # TODO: Add only find and delete orpan files if running in multiuser mode
 #(find /private/var/folders/ -nouser -delete; echo "Finished clearing old cache files" ) &
 
+# Clear caches if files are missing
+function check_cache() {
+  cache_file=${1:-/opt/worker/directory-caches.json}
+  cache_dir=${2:-/opt/worker/}
+
+  for file in $(grep location "$cache_file" \
+    | grep -o "${cache_dir}[^\"]*"); do
+    if [[ ! -e "$file" ]]; then
+      echo "${file} missing"
+      exit 1
+    fi
+  done
+}
+function clear_bad_cache() {
+  check_cache "$1" || rm "$1"
+}
+clear_bad_cache /opt/worker/directory-caches.json
+clear_bad_cache /opt/worker/file-caches.json
+
 # Removing the tasks-resolved-count.txt allows the worker to exit properly when numberOfTasksToRun is reached
 rm <%= @data_dir %>/tasks-resolved-count.txt
 
