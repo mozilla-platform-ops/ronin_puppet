@@ -1,5 +1,7 @@
 getSecrets: false
 provider:
+  providerID: "<%= @provider_id %>"
+  staticSecret: "<%= @static_secret %>"
   providerType: <%= @provider_type %>
   rootURL: "<%= @root_url %>"
   clientID: <%= @client_id %>
@@ -33,6 +35,7 @@ workerConfig:
   wstAudience: "firefoxcitc"
   wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
   workerTypeMetadata:
+    configDate: "<%= Time.now.gmtime %>"
     workerId: "<%= @worker_id %>"
     workerGroup: "<%= @worker_group %>"
     ip: "<%= @ipaddress %>"

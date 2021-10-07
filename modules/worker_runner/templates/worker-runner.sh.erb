@@ -18,21 +18,23 @@ date > $last_premature_end
 # Clear caches if files are missing
 function check_cache() {
   cache_file=${1:-/opt/worker/directory-caches.json}
-  cache_dir=${2:-/opt/worker/}
+  cache_dir=${2:-/opt/worker/cache}
 
   for file in $(grep location "$cache_file" \
     | grep -o "${cache_dir}[^\"]*"); do
     if [[ ! -e "$file" ]]; then
       echo "${file} missing"
-      exit 1
+      return 1
     fi
   done
 }
 function clear_bad_cache() {
-  check_cache "$1" || rm "$1"
+  check_cache "$1" "$2" && return
+  set -x
+  rm "$1" && rm -rf "$2"/*
 }
-clear_bad_cache /opt/worker/directory-caches.json
-clear_bad_cache /opt/worker/file-caches.json
+clear_bad_cache <%= @data_dir %>/directory-caches.json <%= @data_dir %>/cache
+clear_bad_cache <%= @data_dir %>/file-caches.json <%= @data_dir %>/downloads
 
 # Removing the tasks-resolved-count.txt allows the worker to exit properly when numberOfTasksToRun is reached
 rm <%= @data_dir %>/tasks-resolved-count.txt
