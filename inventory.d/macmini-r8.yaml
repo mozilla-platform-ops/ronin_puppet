@@ -2,6 +2,16 @@
 name: macmini-r8
 groups:
   - name: gecko-t-osx-1015-r8
+    config:
+      ssh:
+        username:
+          _plugin: vault
+          path: hiera/common/macmini_r8
+          field: username
+        password:
+          _plugin: vault
+          path: hiera/common/macmini_r8
+          field: password
     targets:
       - macmini-r8-1.test.releng.mdc1.mozilla.com
       - macmini-r8-2.test.releng.mdc1.mozilla.com
@@ -275,9 +285,14 @@ groups:
     facts:
       puppet_role: gecko_3_b_osx_1015
 
-  - name: mozvpn-b-osx
+  - name: mozillavpn-1-b-osx
     targets:
       - macmini-r8-179.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mozillavpn_1_b_osx
+
+  - name: mozillavpn-3-b-osx
+    targets:
       - macmini-r8-181.test.releng.mdc1.mozilla.com
     facts:
-      puppet_role: mozvpn_b_osx
+      puppet_role: mozillavpn_3_b_osx
