@@ -19,13 +19,9 @@ class roles_profiles::roles::mozvpn_b_osx {
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::relops_users
-    #include ::roles_profiles::profiles::cltbld_user
-    include ::roles_profiles::profiles::homebrew
-    #include ::macos_utils::uninstall_homebrew
-
-    #include ::roles_profiles::profiles::gecko_1_b_osx_1015_generic_worker
+    #include ::roles_profiles::profiles::homebrew
+    include ::macos_utils::uninstall_homebrew
 
     include ::roles_profiles::profiles::packages_installed
-    include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
 }
