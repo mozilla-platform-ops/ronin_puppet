@@ -24,4 +24,6 @@ class roles_profiles::roles::mozillavpn_1_b_osx {
 
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::worker
+
+    include dirs::tools
 }
