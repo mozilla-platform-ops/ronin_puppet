@@ -21,20 +21,33 @@ worker:
 packages_classes:
   - mercurial
   - nodejs
+    #- python2
+    #- python2_psutil
+    #- python2_zstandard
   - python3
-  - python3_zstandard
+    #- python3_psutil
+    #- python3_zstandard
+  - scres
   - tooltool
-  - virtualenv
+    #- virtualenv
   - wget
   - xcode_cmd_line_tools
   - zstandard
   - telegraf
 
+symlinks:
+  /System/Volumes/Data/tools/bin/python36: /usr/local/bin/python3.6
+  /System/Volumes/Data/tools/bin/python3: /usr/local/bin/python3
+  /System/Volumes/Data/tools/python36: /Library/Frameworks/Python.framework/Versions/3.6
+
 # Package class parameters
 packages::mercurial::version: 5.5.2
 packages::nodejs::version: 12.11.1
+packages::python2::version: 2.7.18
+packages::python2_zstandard::version: 0.11.1
 packages::python3::version: 3.6.8
-packages::python3_zstandard::version: latest  #0.11.1
+  #packages::python3::version: 3.9.6
+packages::python3_zstandard::version: latest  # 0.11.1
 packages::virtualenv::version: 16.4.3
 packages::wget::version: 1.20.3_1
 packages::xcode_cmd_line_tools::version: '12.4'

@@ -26,4 +26,5 @@ class roles_profiles::roles::mozillavpn_3_b_osx {
     include ::roles_profiles::profiles::worker
 
     include dirs::tools
+    include ::roles_profiles::profiles::symlinks
 }

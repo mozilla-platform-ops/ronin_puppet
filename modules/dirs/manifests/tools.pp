@@ -20,6 +20,11 @@ class dirs::tools {
                         ensure => directory,
                         mode   => '0755',
                     }
+
+                    file { '/System/Volumes/Data/tools/bin':
+                        ensure => directory,
+                        mode   => '0755',
+                    }
                 }
                 default: {
                     file { '/tools':
