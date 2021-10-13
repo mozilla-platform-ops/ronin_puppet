@@ -1,5 +1,15 @@
 ---
 name: macmini-r8
+config:
+  ssh:
+    username:
+      _plugin: vault
+      path: hiera/common/macmini_r8
+      field: username
+    password:
+      _plugin: vault
+      path: hiera/common/macmini_r8
+      field: password
 groups:
   - name: gecko-t-osx-1015-r8
     targets:

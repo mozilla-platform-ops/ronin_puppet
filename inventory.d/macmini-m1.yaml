@@ -1,5 +1,15 @@
 ---
 name: macmini-m1
+config:
+  ssh:
+    username:
+      _plugin: vault
+      path: hiera/common/macmini_m1
+      field: username
+    password:
+      _plugin: vault
+      path: hiera/common/macmini_m1
+      field: password
 groups:
   - name: gecko-t-osx-1100-m1-dhouse
     targets:

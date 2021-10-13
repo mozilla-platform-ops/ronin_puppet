@@ -4,3 +4,6 @@ modulepath:
 - "./modules"
 - "./r10k_modules"
 concurrency: 8
+plugins:
+  vault:
+    version: 2
