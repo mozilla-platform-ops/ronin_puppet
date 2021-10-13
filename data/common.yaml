@@ -23,6 +23,9 @@ user_groups:
     - hneiva
     - mtabara
   cia:
+    # XXX bclary's account existence seems to be baked into the bitbar
+    #     puppet configs; we likely need to find a new owner before we
+    #     can remove his account.
     - bclary
 
 scriptworker_users:
