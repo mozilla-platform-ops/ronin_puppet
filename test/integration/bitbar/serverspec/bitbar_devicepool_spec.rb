@@ -1,10 +1,6 @@
 require_relative 'spec_helper'
 
 describe 'users' do
-  describe user('bclary') do
-    it { should exist }
-  end
-
   describe user('aerickson') do
     it { should exist }
   end
