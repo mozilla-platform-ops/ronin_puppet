@@ -69,17 +69,17 @@ busser:
 suites:
   - name: linux
     provisioner:
-      manifests_path: manifests-kitchen/linux
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     attributes:
   - name: bitbar
     provisioner:
-      manifests_path: manifests-kitchen/bitbar
+      custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
     attributes:
-  - name: maas_region
+  - name: snakepit_head
     provisioner:
-      manifests_path: manifests-kitchen/maas_region
+      custom_options: '-e "include roles_profiles::roles::snakepit_head"'
     attributes:
-  - name: maas_rack
+  - name: snakepit_worker
     provisioner:
-      manifests_path: manifests-kitchen/maas_rack
+      custom_options: '-e "include roles_profiles::roles::snakepit_worker"'
     attributes:

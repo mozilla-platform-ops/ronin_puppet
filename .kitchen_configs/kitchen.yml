@@ -1,11 +1,13 @@
 ---
 # from https://github.com/scoopex/puppet-kitchen_template
 driver:
+  name: vagrant
+  provider: virtualbox
   provision: true
 
 provisioner:
   name: puppet_apply
-  modules_path: modules
+  modules_path: "modules:r10k_modules"
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
   hiera_deep_merge: true
@@ -43,7 +45,7 @@ provisioner:
   custom_options: '--show_diff'
   verify_host_key: false
   resolve_with_librarian_puppet: false
-  resolve_with_r10k: true
+  resolve_with_r10k: false
 
 verifier:
   name: serverspec
@@ -54,7 +56,7 @@ busser:
 
 platforms:
   # vagrant automatically generates a hostname, if that exceeds 64 characters vbox fails, see bug #6
-  - name: ubuntu18-kitchen_template
+  - name: ubuntu18
     driver_plugin: vagrant
     driver_config:
       customize:
@@ -67,25 +69,25 @@ platforms:
 suites:
   - name: linux
     provisioner:
-      manifests_path: manifests-kitchen/linux
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:
   - name: bitbar
     provisioner:
-      manifests_path: manifests-kitchen/bitbar
+      custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:
-  - name: maas_region
+  - name: snakepit_head
     provisioner:
-      manifests_path: manifests-kitchen/maas_region
+      custom_options: '-e "include roles_profiles::roles::snakepit_head"'
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:
-  - name: maas_rack
+  - name: snakepit_worker
     provisioner:
-      manifests_path: manifests-kitchen/maas_rack
+      custom_options: '-e "include roles_profiles::roles::snakepit_worker"'
     includes:
-      - ubuntu18-kitchen_template
+      - ubuntu18
     attributes:
