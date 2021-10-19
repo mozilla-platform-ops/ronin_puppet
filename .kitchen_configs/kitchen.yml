@@ -79,15 +79,3 @@ suites:
     includes:
       - ubuntu18
     attributes:
-  - name: snakepit_head
-    provisioner:
-      custom_options: '-e "include roles_profiles::roles::snakepit_head"'
-    includes:
-      - ubuntu18
-    attributes:
-  - name: snakepit_worker
-    provisioner:
-      custom_options: '-e "include roles_profiles::roles::snakepit_worker"'
-    includes:
-      - ubuntu18
-    attributes:
