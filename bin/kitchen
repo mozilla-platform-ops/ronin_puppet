@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-
-# DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-# travis has CI=true set, our spec_helper checks for this and can disable problematic tests
-CI=TRUE KITCHEN_YAML=".kitchen_configs/kitchen.yml" bundle exec kitchen "$@"
