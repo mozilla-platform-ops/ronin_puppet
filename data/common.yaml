@@ -45,7 +45,7 @@ scriptworker_users:
         - mac_sign_and_pkg
         - mac_geckodriver
         - mac_single_file
-      dmg_prefix: "dep1"
+      dmg_prefix: "dep2"
       worker_id_suffix: "b"
       cot_product: "firefox"
       widevine_filename: "widevine_dep.crt"
