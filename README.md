@@ -50,9 +50,15 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 [kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to
 automate running convergence and serverspec tests for each role.
 
-The `.kitchen.yml` config uses Vagrant and virtualBox, while the `.kitchen.docker.yml` config uses Docker.
+The repo contains configurations for Test Kitchen to use Vagant, Docker, and Mac instances.
 
-- Docker is the only way we can test on Travis.
+- ./bin/kitchen: Uses Vagrant and VirtualBox. Configured in .kitchen_configs/kitchen.yml.
+- ./bin/kitchen_docker: Uses Docker. Configured in .kitchen_configs/kitchen_docker.yml.
+- (no binary): Uses CircleCI Mac instances. Configured in .kitchen_configs/kitchen.macos.circleci.yml.
+
+We use Vagrant/VirutalBox and Docker for a few reasons:
+
+- Docker is the only way we can test on cloud CI systems.
 - Some tests don't work with Docker (kernel module tests).
 - Docker is faster (~1 minute faster on a converge from a new image).
 
