@@ -1,10 +1,6 @@
 require_relative 'spec_helper'
 
 describe 'users' do
-  describe user('bclary') do
-    it { should exist }
-  end
-
   describe user('aerickson') do
     it { should exist }
   end
@@ -67,10 +63,4 @@ end
 describe command('/home/bitbar/android-tools/devicepool_last_started_alert/venv/bin/python --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3/ }
-end
-
-# departed users
-
-describe file('/etc/passwd') do
-  its(:content) { should match /bclary\:.*\:\/usr\/sbin\/nologin/ }
 end

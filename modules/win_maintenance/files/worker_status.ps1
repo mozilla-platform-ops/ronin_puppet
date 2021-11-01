@@ -8,7 +8,7 @@ function Write-Log {
   param (
     [string] $message,
     [string] $severity = 'INFO',
-    [string] $source = 'OpenCloudConfig',
+    [string] $source = 'MaintainSystem',
     [string] $logName = 'Application'
   )
   if ((-not ([System.Diagnostics.EventLog]::Exists($logName))) -or (-not ([System.Diagnostics.EventLog]::SourceExists($source)))) {
@@ -65,7 +65,7 @@ $time = $uptime -replace "@{Days=","" -replace "}",""
 if ($production_worker_type -ne $current_worker_type) {
 	Write-Log -message  ('{0} :: AUDIT: Node is not in production. Currently configured to be a {1} worker.' -f $($MyInvocation.MyCommand.Name), ($current_worker_type)) -severity 'DEBUG'
 	Write-host ('{0}.{1} is not in production. Currently configured to be {2} worker.' -f $($env:computername), ($domain), ($current_worker_type))
-	exit 98
+	exit
 }
 
 if ($time -gt 1) {
