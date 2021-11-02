@@ -167,6 +167,7 @@ jobs:
       - checkout
       - gem_cache
       - apt_cache_restore
+      - run: gem install bundler  # get latest bundler
       - run:
           command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
