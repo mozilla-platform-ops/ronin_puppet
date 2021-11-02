@@ -85,6 +85,7 @@ commands:
       - run:
           name: Bundle Install and forced clean
           command: |
+            gem install bundle
             bundle install
             bundle clean --force
       - save_cache:
@@ -165,9 +166,8 @@ jobs:
     steps:
       - export_env_vars
       - checkout
-      - gem_cache
+      - gem_cache  # also runs bundle install
       - apt_cache_restore
-      - run: gem install bundler  # get latest bundler
       - run:
           command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
