@@ -54,6 +54,7 @@ end
 # verify the colord fix is in place
 describe file('/etc/systemd/system/graphical.target') do
   it { should exist }
-  it { should contain 'After=multi-user.target rescue.service rescue.target display-manager.service colord.service' }
-  it { should contain 'Wants=display-manager.service colord.service' }
+
+  its('content') { should match /After=multi-user.target rescue.service rescue.target display-manager.service colord.service/ }
+  its('content') { should match /Wants=display-manager.service colord.service/ }
 end
