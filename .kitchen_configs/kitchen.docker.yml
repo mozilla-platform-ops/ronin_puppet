@@ -60,8 +60,9 @@ platforms:
   - name: ubuntu-18.04
 
 verifier:
-  name: serverspec
-  default_pattern: true
+  name: inspec
+  # default_pattern: true
+  # remote_exec: false
 
 busser:
   sudo: true
