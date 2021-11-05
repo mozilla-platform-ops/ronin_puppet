@@ -48,8 +48,7 @@ provisioner:
   resolve_with_r10k: false
 
 verifier:
-  name: serverspec
-  default_pattern: true
+  name: inspec
 
 busser:
   ruby_bindir: /usr/bin

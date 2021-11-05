@@ -61,8 +61,6 @@ platforms:
 
 verifier:
   name: inspec
-  # default_pattern: true
-  # remote_exec: false
 
 busser:
   sudo: true
