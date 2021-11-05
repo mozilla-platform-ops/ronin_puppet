@@ -38,5 +38,6 @@ describe file('/home/relops/.ssh/authorized_keys') do
   it { should exist }
 
   # ensure common relops key is present
-  it { should contain 'AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j+zRPprLFeTgRwkgI6mcjQCeEoaqOY2 Relops ed25519 Key' }
+  # - have to escape the '+', ugh.
+  its('content') { should match /AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j\+zRPprLFeTgRwkgI6mcjQCeEoaqOY2/ }
 end
