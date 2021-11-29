@@ -1,8 +1,8 @@
 require 'serverspec'
 
-# avoid getting spammed with messages
-# see https://medium.com/@Joachim8675309/testkitchen-with-chef-and-serverspec-2ac0cd938e5
-set :backend, :exec
+set :backend, :cmd
+set :os, :family => 'windows'
+
 
 RSpec.configure do |c|
     # do something here in the future

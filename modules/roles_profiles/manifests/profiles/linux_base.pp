@@ -18,6 +18,8 @@ class roles_profiles::profiles::linux_base {
             include linux_mercurial
             include disable_services
             include grub
+            # fix for ubuntu packaging bug
+            include linux_packages::testresources
 
             # TODO:
             # - add auditd
