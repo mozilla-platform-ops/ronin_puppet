@@ -9,10 +9,6 @@ describe 'users' do
     it { should exist }
   end
 
-  describe user('jwatkins') do
-    it { should exist }
-  end
-
   describe user('dhouse') do
     it { should exist }
   end
@@ -28,10 +24,6 @@ describe 'groups' do
   end
 
   describe user('dhouse') do
-    it { should belong_to_group 'wheel' }
-  end
-
-  describe user('jwatkins') do
     it { should belong_to_group 'wheel' }
   end
 end
