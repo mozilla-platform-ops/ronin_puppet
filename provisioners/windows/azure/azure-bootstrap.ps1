@@ -116,8 +116,8 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     InstallRoninModule -moduleName azure-bootstrap -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision
     Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
     AzInstall-Prerequ
-    AzMount-DiskTwo
-    AzSet-DriveLetters
+    #AzMount-DiskTwo
+    #AzSet-DriveLetters
     exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
