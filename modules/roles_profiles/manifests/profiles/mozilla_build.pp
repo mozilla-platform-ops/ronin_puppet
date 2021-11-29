@@ -14,7 +14,7 @@ class roles_profiles::profiles::mozilla_build {
             if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
                 $cache_drive  = 'y'
             } else {
-                $cache_drive  = $facts ['custom_win_systemdrive']
+                $cache_drive  = $facts['custom_win_systemdrive']
             }
             # tooltool token is not needed with worker-runner
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1624900#c1
