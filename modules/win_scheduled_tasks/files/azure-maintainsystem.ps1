@@ -265,6 +265,91 @@ function Puppet-Run {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+
+function Test-VolumeExists {
+  param (
+    [char[]] $driveLetter
+  )
+  if (Get-Command -Name 'Get-Volume' -ErrorAction 'SilentlyContinue') {
+    return (@(Get-Volume -DriveLetter $driveLetter -ErrorAction 'SilentlyContinue').Length -eq $driveLetter.Length)
+  }
+  # volume commandlets are unavailable on windows 7, so we use wmi to access volumes here.
+  return (@($driveLetter | % { Get-WmiObject -Class Win32_Volume -Filter ('DriveLetter=''{0}:''' -f $_) -ErrorAction 'SilentlyContinue' }).Length -eq $driveLetter.Length)
+}
+function AzMount-DiskTwo {
+# Starting with disk 2 for now
+# Azure packer images does have a disk 1 labled ad temp storage
+# Maybe use that in the future
+  param (
+    [string] $lock = 'C:\dsc\in-progress.lock'
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
+      Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+    } else {
+      $pagefileName = $false
+      Get-WmiObject Win32_PagefileSetting | ? { !$_.Name.StartsWith('c:') } | % {
+        $pagefileName = $_.Name
+        try {
+          $_.Delete()
+          Write-Log -message ('{0} :: page file: {1}, deleted.' -f $($MyInvocation.MyCommand.Name), $pagefileName) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to delete page file: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $pagefileName, $_.Exception.Message) -severity 'ERROR'
+        }
+      }
+      if (Get-Command -Name 'Clear-Disk' -errorAction SilentlyContinue) {
+        try {
+          Clear-Disk -Number 2 -RemoveData -Confirm:$false
+          # Clear-Disk -Number 1 -RemoveData -Confirm:$false
+          Write-Log -message ('{0} :: disk 1 partition table cleared.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to clear partition table on disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: partition table clearing skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if (Get-Command -Name 'Initialize-Disk' -errorAction SilentlyContinue) {
+        try {
+          Initialize-Disk -Number 2 -PartitionStyle MBR
+          # Initialize-Disk -Number 1 -PartitionStyle MBR
+          Write-Log -message ('{0} :: disk 1 initialized.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to initialize disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: disk initialisation skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
+        try {
+          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
+          # New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
+          Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
+          Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+        try {
+          New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
+          # New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
+          Format-Volume -FileSystem NTFS -NewFileSystemLabel task -DriveLetter Z -Confirm:$false
+          Write-Log -message ('{0} :: task drive Z: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to format task drive Z:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: partitioning skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+    }
+  }
+}
 function Set-DriveLetters {
   param (
     [hashtable] $driveLetterMap = @{
@@ -391,10 +476,11 @@ $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
-  Check-AzVM-Name
   if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
+    AzMount-DiskTwo
     Set-DriveLetters
   }
+  Check-AzVM-Name
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
