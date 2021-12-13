@@ -264,6 +264,8 @@ function AzBootstrap-Puppet {
       If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
         git checkout $deploymentID
         $git_exit = $LastExitCode
+        write-hsot LOOK HERE for GIT checkout exit!!!!
+        write-host git exit was $git_exit
         if ($git_exit -eq 0) {
           Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
           Write-Log -message  ('{0} :: Setting Ronin Puppet HEAD to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
@@ -278,7 +280,6 @@ function AzBootstrap-Puppet {
           $git_exit = $LastExitCode
           if ($git_exit -ne 0) {
             Write-Log -message  ('{0} :: FAILED to set  Ronin Puppet HEAD to {1}! Check if deploymentID is valid. Giving up on bootstrsaping!' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
-            #shutdown @('-s', '-t', '0', '-c', 'Shutdown;Bootstrapping failed on possible invalid deploymentID ', '-f', '-d', '4:5')
             exit 423
           }
           Write-Log -message  ('{0} :: Setting Ronin Puppet HEAD to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
@@ -346,42 +347,6 @@ function AzBootstrap-Puppet {
   }
 }
 
-Function Bootstrap-CleanUp {
-  param (
-    [string] $bootstrapdir  = "$env:systemdrive\BootStrap\"
-
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-  Write-Log -message  ('{0} :: Bootstrap has completed. Removing schedule task and directory' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-  Remove-Item -Recurse -Force $bootstrapdir
-  Schtasks /delete /tn bootstrap /f
-
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-Function Wait-On-MDT {
-   param (
-   )
-   begin {
-     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-       while ((Test-Path "$env:systemdrive:\MININT")) {
-         Write-Log -message  ('{0} ::Detecting MDT deployment has not completed. Waiting 10 seconds.'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-         Start-Sleep 10
-       }
-       Write-Log -message  ('{0} ::MDT deployment appears complete'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    }
-    end {
-      Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-
 # Ensuring scripts can run uninhibited
 # This is noisey but works
 Powershell Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
@@ -396,17 +361,17 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-    Setup-Logging
-    Set-RoninRegOptions  -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-    AzInstall-Prerequ
+    Setup-Logging -DisableNameChecking
+    Set-RoninRegOptions -DisableNameChecking -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+    AzInstall-Prerequ -DisableNameChecking
     exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-    Ronin-PreRun
-    AzBootstrap-Puppet
+    Ronin-PreRun -DisableNameChecking
+    AzBootstrap-Puppet -DisableNameChecking
     exit 0
 }
 If ($stage -eq 'complete') {
-    Bootstrap-CleanUp
+    Write-Log -message  ('{0} ::Bootstrapping appears complete'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     exit 0
 }
