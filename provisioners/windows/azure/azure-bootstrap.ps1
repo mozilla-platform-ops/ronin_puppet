@@ -87,11 +87,11 @@ function Set-RoninRegOptions {
   }
   process {
     If(!( test-path "$ronnin_key")) {
-      New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
-      New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+      New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
+      New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet -force
     }
 
-    New-Item -Path $ronnin_key -Name source –Force
+    New-Item -Path $ronnin_key -Name source -force
     New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String
     New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
     $role = $workerType -replace '-',''
