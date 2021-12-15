@@ -264,7 +264,7 @@ function AzBootstrap-Puppet {
       If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
         git checkout $deploymentID
         $git_exit = $LastExitCode
-        write-hsot LOOK HERE for GIT checkout exit!!!!
+        write-host LOOK HERE for GIT checkout exit!!!!
         write-host git exit was $git_exit
         if ($git_exit -eq 0) {
           Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
