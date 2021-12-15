@@ -171,6 +171,7 @@ Function Clone-Ronin {
       git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
       $git_exit = $LastExitCode
       if ($git_exit -eq 0) {
+        cd $ronin_repo
         $git_hash = (git rev-parse --verify HEAD)
         Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
         Write-Log -message  ('{0} :: Cloning from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
@@ -189,7 +190,7 @@ Function Clone-Ronin {
   }
 }
 
-Function Ronin-PreRun {
+Function AzRonin-PreRun {
   param (
     [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes.pp",
@@ -210,7 +211,9 @@ Function Ronin-PreRun {
   }
   process {
 
-    Clone-Ronin
+    if (!(test-path $env:systemdrive\ronin)) {
+        Clone-Ronin
+    }
 
     if (!(Test-path $nodes_def)) {
       Copy-item -path $nodes_def_src -destination $nodes_def -force
@@ -367,7 +370,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-    Ronin-PreRun -DisableNameChecking
+    AzRonin-PreRun -DisableNameChecking
     AzBootstrap-Puppet -DisableNameChecking
     exit 0
 }
