@@ -274,7 +274,7 @@ function AzBootstrap-Puppet {
     $git_hash = (git rev-parse --short HEAD)
     if ($git_hash -ne $deploymentID){
       If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-        git checkout $deploymentID
+        git checkout $deploymentID > $null
         $git_exit = $LastExitCode
         write-host LOOK HERE for GIT checkout exit!!!!
         write-host git exit was $git_exit
