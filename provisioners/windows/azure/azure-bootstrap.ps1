@@ -254,33 +254,31 @@ function Apply-AzRoninPuppet {
         puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
         [int]$puppet_exit = $LastExitCode
 
-        if ($run_to_success -eq 'true') {
-            if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
-                if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
-                    Write-Log -message  ('{0} :: Puppet apply failed 1st run.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                    Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
-                    Move-StrapPuppetLogs
-                    exit 0
-                } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
-                    Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
-                    Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                    Move-StrapPuppetLogs
-                exit 1
-                }
-            } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
-                Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
+            if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
+                Write-Log -message  ('{0} :: Puppet apply failed 1st run.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
-                Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
-                Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Move-StrapPuppetLogs
                 exit 0
-            } else {
-                Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
-                Start-sleep -s 300
+            } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
+                Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
+                Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Move-StrapPuppetLogs
                 exit 1
             }
+        } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
+            Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
+            Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
+            Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Move-StrapPuppetLogs
+            exit 0
+        } else {
+            Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
+            Start-sleep -s 300
+            Move-StrapPuppetLogs
+            exit 1
         }
     }
     end {
