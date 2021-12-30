@@ -38,7 +38,7 @@
 # Specifies that network packets with matching remote IP port numbers matched by this rule.
 #
 # [*display_name*]
-# Specifies the rule name assigned to the rule that you want to display
+# Specifies the rule name assigned to the rule that you want to display. Defaults to the title of the resource.
 #
 # [*description*]
 # Provides information about the firewall rule.
@@ -76,124 +76,93 @@
 #     description  => 'Inbound rule for My App',
 #   }
 #
-define windows_firewall::exception(
+define windows_firewall::exception (
   Enum['present', 'absent'] $ensure = 'present',
   Enum['in', 'out'] $direction = 'in',
   Enum['allow', 'block'] $action = 'allow',
   Boolean $enabled = true,
   Optional[Enum['TCP', 'UDP', 'ICMPv4', 'ICMPv6']] $protocol = undef,
-  Optional[Variant[Integer[1, 65535], Enum['any']]] $local_port = undef,
-  Optional[Variant[Integer[1, 65535], Enum['any']]] $remote_port = undef,
+  Windows_firewall::Port  $local_port  = undef,
+  Windows_firewall::Port  $remote_port = undef,
   Optional[String] $remote_ip = undef,
-  Optional[String] $program = undef,
-  String[0, 255] $display_name = '',
-  String $description = '',
+  Optional[Stdlib::Windowspath] $program = undef,
+  String[0, 255] $display_name = $title,
+  String[0, 255] $description = '',
   Boolean $allow_edge_traversal = false,
 ) {
+  # Check if we're allowing a program or port/protocol and validate accordingly
+  if $program == undef {
+    $local_port_param  = 'localport'
+    $remote_port_param = 'remoteport'
 
-    # Check if we're allowing a program or port/protocol and validate accordingly
-    if $program == undef {
-      #check whether to use 'localport', or just 'port' depending on OS
-      case $::operatingsystemversion {
-        /Windows Server 2003/, /Windows XP/: {
-          $local_port_param = 'port'
-          unless empty($remote_port) {
-            fail "Sorry, :remote_port param is not supported on ${::operatingsystemversion}"
-          }
-        }
-        default: {
-          $local_port_param  = 'localport'
-          $remote_port_param = 'remoteport'
-        }
+    $fw_command = 'portopening'
+
+    if $remote_port or $local_port {
+      unless $protocol {
+        fail 'Sorry, protocol is required, when defining local or remote port'
       }
+    }
 
-      $fw_command = 'portopening'
-
-      if $remote_port or $local_port {
-        unless $protocol {
-          fail 'Sorry, protocol is required, when defining local or remote port'
-        }
-      }
-
-      if $protocol =~ /^ICMPv(4|6)/ {
-        $allow_context = "protocol=${protocol}"
+    if $protocol =~ /^ICMPv(4|6)/ {
+      $allow_context = "protocol=${protocol}"
+    } else {
+      if $local_port {
+        $local_port_cmd = "${local_port_param}=${local_port}"
       } else {
-        if $local_port {
-          $local_port_cmd = "${local_port_param}=${local_port}"
-        } else {
-          $local_port_cmd = ''
-        }
-
-        if $remote_port {
-          $remote_port_cmd = "${remote_port_param}=${remote_port}"
-        } else {
-          $remote_port_cmd = ''
-        }
-
-        # Strip whitespace that in case remore_port_cmd is empty
-        $allow_context = rstrip("protocol=${protocol} ${local_port_cmd} ${remote_port_cmd}")
+        $local_port_cmd = ''
       }
-    } else {
-      $fw_command = 'allowedprogram'
-      $allow_context = "program=\"${program}\""
-      validate_absolute_path($program)
-    }
 
-    case $::operatingsystemversion {
-      'Windows Server 2012', 'Windows Server 2008', 'Windows Server 2008 R2', 'Windows Vista','Windows 7','Windows 8': {
-        validate_slength($description,255)
+      if $remote_port {
+        $remote_port_cmd = "${remote_port_param}=${remote_port}"
+      } else {
+        $remote_port_cmd = ''
       }
-      default: { }
+
+      # Strip whitespace that in case remore_port_cmd is empty
+      $allow_context = rstrip("protocol=${protocol} ${local_port_cmd} ${remote_port_cmd}")
     }
+  } else {
+    $fw_command = 'allowedprogram'
+    $allow_context = "program=\"${program}\""
+  }
 
-    # Set command to check for existing rules
-    $netsh_exe = "${facts['os']['windows']['system32']}\\netsh.exe"
-    $check_rule_existance= "${netsh_exe} advfirewall firewall show rule name=\"${display_name}\""
+  # Set command to check for existing rules
+  $netsh_exe = "${facts['os']['windows']['system32']}\\netsh.exe"
+  $check_rule_existance= "${netsh_exe} advfirewall firewall show rule name=\"${display_name}\""
 
-    # Use unless for exec if we want the rule to exist, include a description
-    if $ensure == 'present' {
-      $fw_action = 'add'
-      $unless = $check_rule_existance
-      $onlyif = undef
-      $fw_description = "description=\"${description}\""
-    } else {
+  # Use unless for exec if we want the rule to exist, include a description
+  if $ensure == 'present' {
+    $fw_action = 'add'
+    $unless = $check_rule_existance
+    $onlyif = undef
+    $fw_description = "description=\"${description}\""
+  } else {
     # Or onlyif if we expect it to be absent; no description argument
-      $fw_action = 'delete'
-      $onlyif = $check_rule_existance
-      $unless = undef
-      $fw_description = ''
-    }
+    $fw_action = 'delete'
+    $onlyif = $check_rule_existance
+    $unless = undef
+    $fw_description = ''
+  }
 
-    case $::operatingsystemversion {
-      /Windows Server 2003/, /Windows XP/: {
-        $mode = $enabled ? {
-          true  => 'ENABLE',
-          false => 'DISABLE',
-        }
-        $netsh_command = "${netsh_exe} firewall ${fw_action} ${fw_command} name=\"${display_name}\" mode=${mode} ${allow_context}"
-      }
-      default: {
-        $mode = $enabled ? {
-          true  => 'yes',
-          false => 'no',
-        }
-        $edge = $allow_edge_traversal ? {
-          true  => 'yes',
-          false => 'no',
-        }
+  $mode = $enabled ? {
+    true  => 'yes',
+    false => 'no',
+  }
+  $edge = $allow_edge_traversal ? {
+    true  => 'yes',
+    false => 'no',
+  }
 
-        if $fw_action == 'delete' and $program == undef {
-          $netsh_command = "${netsh_exe} advfirewall firewall ${fw_action} rule name=\"${display_name}\" ${fw_description} dir=${direction} ${allow_context} remoteip=\"${remote_ip}\""
-        } else {
-          $netsh_command = "${netsh_exe} advfirewall firewall ${fw_action} rule name=\"${display_name}\" ${fw_description} dir=${direction} action=${action} enable=${mode} edge=${edge} ${allow_context} remoteip=\"${remote_ip}\""
-        }
-      }
-    }
-
-    exec { "set rule ${display_name}":
-      command  => $netsh_command,
-      provider => windows,
-      onlyif   => $onlyif,
-      unless   => $unless,
-    }
+  if $fw_action == 'delete' and $program == undef {
+    $netsh_command = "${netsh_exe} advfirewall firewall ${fw_action} rule name=\"${display_name}\" ${fw_description} dir=${direction} ${allow_context} remoteip=\"${remote_ip}\""
+  } else {
+    $netsh_command = "${netsh_exe} advfirewall firewall ${fw_action} rule name=\"${display_name}\" ${fw_description} dir=${direction} action=${action} enable=${mode} edge=${edge} ${allow_context} remoteip=\"${remote_ip}\""
+  }
+  #
+  exec { "set rule ${display_name}":
+    command  => $netsh_command,
+    provider => windows,
+    onlyif   => $onlyif,
+    unless   => $unless,
+  }
 }
