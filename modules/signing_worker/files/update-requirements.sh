@@ -47,7 +47,7 @@ cat <<EOF > requirements.in
 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/$scriptworker_revision/requirements.txt
 
 # mozbuild dependencies
-jsmin
+jsmin>=3
 mozfile
 
 # widevine dependencies
