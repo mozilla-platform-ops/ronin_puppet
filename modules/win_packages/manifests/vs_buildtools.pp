@@ -5,7 +5,7 @@
 class win_packages::vs_buildtools {
 
     $prog_dir = $facts['custom_win_programfilesx86']
-    $tools_dir = "${prog_dir}\\Microsoft Visual Studio\Installer"
+    $tools_dir = "${prog_dir}\\Microsoft Visual Studio\\Installer"
     $vc_tools  = 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
     $sdk       = 'ExtensionSDKs\Microsoft.Midi.GmDls\10.0.19041.0'
     $sdk_dir   = "${prog_dir}\\Microsoft SDKs\\Windows Kits\\10\\ExtensionSDKs\\${sdk}"
