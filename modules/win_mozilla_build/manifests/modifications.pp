@@ -52,7 +52,6 @@ class win_mozilla_build::modifications {
         windows_env { "PATH=${mozbld}\\python\\Scripts": }
         windows_env { "PATH=${mozbld}\\python3": }
         windows_env { "PATH=${mozbld}\\msys\\bin": }
-        windows_env { "PATH=${mozbld}\\msys\\bin": }
         windows_env { "PATH=${mozbld}\\msys\\local\\bin": }
     } else {
       # Deprecate use of windows::path during 2022 hardware refreshes
