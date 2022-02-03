@@ -1,6 +1,6 @@
 ---
 version: 5
-datadir: data
+#datadir: data
 hierarchy:
   - name: "common"
     backend: yaml
