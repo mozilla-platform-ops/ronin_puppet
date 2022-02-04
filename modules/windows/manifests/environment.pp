@@ -28,7 +28,7 @@ define windows::environment(
 ) {
 
   # Ensure only valid target parameter.
-  validate_re($target, '^(Machine|User)$', 'Invalid target parameter')
+  validate_legacy(String, validate_re, $target, '^(Machine|User)$', 'Invalid target parameter')
 
   case $ensure {
     'present': {

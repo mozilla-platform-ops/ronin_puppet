@@ -1,3 +1,5 @@
+# This module is no longer maintained at Puppet Forge. Moved here to adjust and add as needed.
+
 windows
 =======
 
