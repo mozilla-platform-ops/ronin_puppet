@@ -6,10 +6,7 @@ class roles_profiles::profiles::firewall {
 
     case $::operatingsystem {
         'Windows': {
-            #include win_firewall::allow_ping
-            windows::firewall_rule { 'ICMP Ping':
-                protocol => 'icmpv4:8,any',
-            }
+            include win_firewall::allow_ping
             if $facts['custom_win_location'] == 'aws' {
                 if $facts['custom_win_firewall_status'] == 'running' {
                     include win_firewall::disable_firewall
