@@ -7,7 +7,7 @@ class win_nxlog::fw_exception {
     require win_nxlog::install
 
     # Resource from puppet-windows_firewall
-    windows_firewall::exception { 'nxlog':
+    windows_firewall_rule { 'nxlog':
         ensure       => present,
         direction    => 'out',
         action       => 'allow',

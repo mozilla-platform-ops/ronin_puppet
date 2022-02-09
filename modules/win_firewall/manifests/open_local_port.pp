@@ -11,7 +11,7 @@ define win_firewall::open_local_port (
 
     # Resource from puppet-windows_firewall
 
-    windows_firewall::exception { "allow_${fw_display_name}_in":
+    windows_firewall_rule { "allow_${fw_display_name}_in":
         ensure       => present,
         direction    => 'in',
         action       => 'allow',
@@ -23,7 +23,7 @@ define win_firewall::open_local_port (
         description  => "ALLOWED ${fw_display_name} in. [${port}]",
     }
     if $reciprocal {
-        windows_firewall::exception { "allow_${fw_display_name}_out":
+        windows_firewall_rule { "allow_${fw_display_name}_out":
             ensure       => present,
             direction    => 'out',
             action       => 'allow',

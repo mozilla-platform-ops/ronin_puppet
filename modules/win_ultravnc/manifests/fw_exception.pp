@@ -7,7 +7,7 @@ class win_ultravnc::fw_exception {
     require win_ultravnc::install
 
     # Resource from puppet-windows_firewall
-    windows_firewall::exception { 'ultra':
+    windows_firewall_rule { 'ultra':
         ensure       => present,
         direction    => 'in',
         action       => 'allow',

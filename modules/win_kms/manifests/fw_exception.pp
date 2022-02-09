@@ -6,7 +6,7 @@ class win_kms::fw_exception {
 
     if $facts['custom_win_location'] == 'datacenter'or 'aws' {
         # Resources from puppet-windows_firewall
-        windows_firewall::exception { 'KMS_in':
+        windows_firewall_rule { 'KMS_in':
             ensure       => present,
             direction    => 'in',
             action       => 'allow',
@@ -17,7 +17,7 @@ class win_kms::fw_exception {
             display_name => 'Allow KMS in',
             description  => 'Windows authentication',
         }
-        windows_firewall::exception { 'KMS_out':
+        windows_firewall_rule { 'KMS_out':
             ensure       => present,
             direction    => 'out',
             action       => 'allow',
