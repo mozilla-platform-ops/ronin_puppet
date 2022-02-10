@@ -1,3 +1,7 @@
+This module is no longer maintained at Puppet Forge
+Moved here to remove or update outdated parts.
+
+
 windows
 =======
 

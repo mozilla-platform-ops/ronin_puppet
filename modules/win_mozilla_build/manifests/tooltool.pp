@@ -26,7 +26,7 @@ class win_mozilla_build::tooltool {
         permissions                =>   {
                                             identity    => 'everyone',
                                             rights      => ['full'],
-                                            type        => 'allow',
+                                            perm_type   => 'allow',
                                             child_types => 'all',
                                             affects     => 'all'
                                         },
