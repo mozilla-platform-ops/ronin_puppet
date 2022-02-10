@@ -12,7 +12,7 @@ class win_ultravnc::fw_exception {
         direction    => 'inbound',
         action       => 'allow',
         enabled      => true,
-        protocol     => 'TCP',
+        protocol     => 'tcp',
         local_port   => $win_ultravnc::port,
         remote_ip    => $win_ultravnc::jumphosts,
         display_name => 'UltraVNC in',

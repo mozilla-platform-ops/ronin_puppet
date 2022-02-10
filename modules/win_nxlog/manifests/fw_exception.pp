@@ -12,7 +12,7 @@ class win_nxlog::fw_exception {
         direction    => 'outbound',
         action       => 'allow',
         enabled      => true,
-        protocol     => 'TCP',
+        protocol     => 'tcp',
         local_port   => 514,
         display_name => 'papertrail 1',
         description  => 'Nxlogout. [TCP 514]',
