@@ -9,7 +9,7 @@ class win_ultravnc::fw_exception {
     # Resource from puppet-windows_firewall
     windows_firewall_rule { 'ultra':
         ensure       => present,
-        direction    => 'in',
+        direction    => 'inbound',
         action       => 'allow',
         enabled      => true,
         protocol     => 'TCP',

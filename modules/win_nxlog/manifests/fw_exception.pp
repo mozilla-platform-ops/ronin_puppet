@@ -9,7 +9,7 @@ class win_nxlog::fw_exception {
     # Resource from puppet-windows_firewall
     windows_firewall_rule { 'nxlog':
         ensure       => present,
-        direction    => 'out',
+        direction    => 'outbound',
         action       => 'allow',
         enabled      => true,
         protocol     => 'TCP',

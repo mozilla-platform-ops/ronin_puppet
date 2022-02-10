@@ -13,7 +13,7 @@ define win_firewall::open_local_port (
 
     windows_firewall_rule { "allow_${fw_display_name}_in":
         ensure       => present,
-        direction    => 'in',
+        direction    => 'inbound',
         action       => 'allow',
         enabled      => true,
         protocol     => 'TCP',
@@ -25,7 +25,7 @@ define win_firewall::open_local_port (
     if $reciprocal {
         windows_firewall_rule { "allow_${fw_display_name}_out":
             ensure       => present,
-            direction    => 'out',
+            direction    => 'outbound',
             action       => 'allow',
             enabled      => true,
             protocol     => 'TCP',
