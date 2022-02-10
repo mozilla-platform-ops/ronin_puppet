@@ -12,6 +12,8 @@ notarization_password: "<%= @poller_config['notarization_password'] %>"
 artifact_upload_timeout: 1200
 verbose: true
 
-log_dir: <%= @poller_dir %>/logs
 work_dir: <%= @poller_dir %>/work
-watch_log_file: true
+log_dir: <%= @poller_dir %>/logs
+log_max_bytes: 10000000
+log_max_backups: 10
+watch_log_file: false

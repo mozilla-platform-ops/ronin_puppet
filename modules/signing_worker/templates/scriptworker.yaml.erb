@@ -22,11 +22,14 @@ cot_product: "<%= @cot_product %>"
 # 5000 per hour. https://developer.github.com/v3/#rate-limiting
 github_oauth_token: "<%= @github_oauth_token %>"
 
-log_dir: "<%= @scriptworker_base %>/logs"
 work_dir: "<%= @scriptworker_base %>/work"
 artifact_dir: "<%= @scriptworker_base %>/artifacts"
 task_log_dir: "<%= @scriptworker_base %>/artifacts/public/logs"
-watch_log_file: true
+log_dir: "<%= @scriptworker_base %>/logs"
+log_max_bytes: 10000000
+log_max_backups: 10
+watch_log_file: false
+
 
 scriptworker_provisioners:
     - scriptworker-prov-v1
