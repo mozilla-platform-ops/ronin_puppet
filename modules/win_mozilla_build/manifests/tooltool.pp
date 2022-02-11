@@ -32,6 +32,7 @@ class win_mozilla_build::tooltool {
                                         },
         inherit_parent_permissions => true,
     }
+
     if $win_mozilla_build::tooltool_tok != undef {
         file { "${builds}\\relengapi.tok":
             content   => $win_mozilla_build::tooltool_tok,
