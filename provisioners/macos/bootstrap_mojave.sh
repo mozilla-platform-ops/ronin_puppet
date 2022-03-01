@@ -29,6 +29,10 @@ PUPPET_FORK="${PUPPET_REPO%.git}"
 PUPPET_FORK="${PUPPET_FORK#*.com}"
 PUPPET_REPO_BUNDLE="https://github.com/${PUPPET_FORK}/archive/${PUPPET_BRANCH}.tar.gz"
 
+export VAULT_ADDR=http://127.0.0.1:8200
+# If token doesn't exist, continue
+export VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
+
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {
     # TODO: emit an critical error event so provisioner knows this node needs to be handled
