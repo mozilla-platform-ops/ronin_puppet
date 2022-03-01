@@ -4,6 +4,11 @@ PUPPET_REPO=${PUPPET_REPO:-"https://github.com/davehouse/ronin_puppet.git"}
 PUPPET_BRANCH=${PUPPET_BRANCH:-"bug1665379_mac-builders-test"}
 PUPPET_ROLE=${PUPPET_ROLE:-"gecko_1_b_osx_1015-beta"}
 
+export VAULT_ADDR=http://127.0.0.1:8200
+# If token doesn't exist, continue
+VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
+export VAULT_TOKEN
+
 export PATH="$PATH:/opt/puppetlabs/bin"
 
 macos_version="10.15.6"
