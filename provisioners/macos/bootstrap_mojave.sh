@@ -31,7 +31,8 @@ PUPPET_REPO_BUNDLE="https://github.com/${PUPPET_FORK}/archive/${PUPPET_BRANCH}.t
 
 export VAULT_ADDR=http://127.0.0.1:8200
 # If token doesn't exist, continue
-export VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
+VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
+export VAULT_TOKEN
 
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {

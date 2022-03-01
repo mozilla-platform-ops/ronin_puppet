@@ -6,7 +6,8 @@ PUPPET_ROLE=${PUPPET_ROLE:-"gecko_1_b_osx_1015-beta"}
 
 export VAULT_ADDR=http://127.0.0.1:8200
 # If token doesn't exist, continue
-export VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
+VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
+export VAULT_TOKEN
 
 export PATH="$PATH:/opt/puppetlabs/bin"
 
