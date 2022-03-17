@@ -77,9 +77,7 @@ function Set-RoninRegOptions {
     	[string] $ronnin_key = "$mozilla_key\ronin_puppet",
     	[string] $source_key = "$ronnin_key\source",
     	[string] $image_provisioner,
-    	#[string] $workerType,
-        [string] $worker_pool_id
-        [string] $base_image,
+    	[string] $workerType,
     	[string] $src_Organisation,
     	[string] $src_Repository,
     	[string] $src_Branch
@@ -95,15 +93,13 @@ function Set-RoninRegOptions {
 
     	New-Item -Path $ronnin_key -Name source -force
     	New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String
-    	#New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
-        $WorkerPoolID = $worker_pool_id -replace '/','-'
-        New-ItemProperty -Path "$ronnin_key" -Name 'worker_pool_id' -Value "$WorkerPoolID" -PropertyType String
-    	#$role = $workerType -replace '-',''
-    	#New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
-        New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$base_image" -PropertyType String
+    	New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
+    	$role = $workerType -replace '-',''
+    	New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
     	Write-Log -message  ('{0} :: Node workerType set to {1}' -f $($MyInvocation.MyCommand.Name), ($workerType)) -severity 'DEBUG'
 
     	New-ItemProperty -Path "$ronnin_key" -Name 'inmutable' -Value 'false' -PropertyType String
+    	New-ItemProperty -Path "$ronnin_key" -Name 'runtosuccess' -Value 'true' -PropertyType String
     	New-ItemProperty -Path "$ronnin_key" -Name 'last_run_exit' -Value '0' -PropertyType Dword
     	New-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'setup' -PropertyType String
 
@@ -294,8 +290,7 @@ function Apply-AzRoninPuppet {
 # This is noisey but works
 # Powershell Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue > $null
 
-$worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('worker_pool_id') })[0].value
-$base_image = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('base_image') })[0].value
+$workerType = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('workerType') })[0].value
 $src_Organisation = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceOrganisation') })[0].value
 $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRepository') })[0].value
 $src_Branch = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceBranch') })[0].value
@@ -306,7 +301,7 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging -DisableNameChecking
-    Set-RoninRegOptions -DisableNameChecking -workerType $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
+    Set-RoninRegOptions -DisableNameChecking -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     Install-AzPrerequ -DisableNameChecking
     exit 0
 }
