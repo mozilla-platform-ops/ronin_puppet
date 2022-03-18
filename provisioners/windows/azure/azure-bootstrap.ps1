@@ -78,7 +78,7 @@ function Set-RoninRegOptions {
     	[string] $source_key = "$ronnin_key\source",
     	[string] $image_provisioner,
     	#[string] $workerType,
-        [string] $worker_pool_id
+        [string] $worker_pool_id,
         [string] $base_image,
     	[string] $src_Organisation,
     	[string] $src_Repository,
