@@ -48,9 +48,13 @@ if ($firewall_status -like "*off*") {
 	$firewall_status = "running"
 }
 
+# Base image ID
+$role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
+
 write-host "custom_win_release_id=$release_id"
 write-host "custom_win_os_caption=$os_caption"
 write-host "custom_win_kms_activated=$kms_status"
 write-host "custom_win_admin_sid=$win_admin_sid"
 Write-host "custom_win_net_category=$NetworkCategory"
 Write-host "custom_win_firewall_status=$firewall_status"
+Write-host "custom_win_role=$role"
