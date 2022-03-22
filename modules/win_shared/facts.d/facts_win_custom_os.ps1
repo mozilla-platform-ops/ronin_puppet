@@ -50,6 +50,7 @@ if ($firewall_status -like "*off*") {
 
 # Base image ID
 #$role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
+$role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
 
 
 write-host "custom_win_release_id=$release_id"
