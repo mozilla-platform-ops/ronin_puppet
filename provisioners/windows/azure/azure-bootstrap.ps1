@@ -306,7 +306,7 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging -DisableNameChecking
-    Set-RoninRegOptions -DisableNameChecking -workerType $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
+    Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     Install-AzPrerequ -DisableNameChecking
     exit 0
 }
