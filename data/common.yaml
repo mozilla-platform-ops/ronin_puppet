@@ -37,6 +37,7 @@ scriptworker_users:
       worker_id_suffix: "a"
       cot_product: "firefox"
       widevine_filename: "widevine_dep.crt"
+      keychain_file: "certs/dep-signing.keychain"
     depbld2:
       home: /builds/dep2
       supported_behaviors:
@@ -48,6 +49,7 @@ scriptworker_users:
       worker_id_suffix: "b"
       cot_product: "firefox"
       widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
     tbbld:
       home: /builds/tb-dep
       supported_behaviors:
@@ -60,6 +62,7 @@ scriptworker_users:
       worker_id_suffix: "tb"
       cot_product: "thunderbird"
       widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
   tb-prod:
     cltbld:
       home: /builds/scriptworker
@@ -74,6 +77,7 @@ scriptworker_users:
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
+      keychain_filename: "mozilla.20220330.keychain"
       ed_key_filename: "ed25519_privkey"
       notarization_users:
         - notary1
@@ -100,6 +104,7 @@ scriptworker_users:
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
+      keychain_filename: "mozilla.20220330.keychain"
       ed_key_filename: "ed25519_privkey"
       notarization_users:
         - notary1

@@ -17,7 +17,7 @@ mac_config:
 <% @role_config.each do |role, role_data| -%>
     <%= role %>:
         notarize_type: single_zip
-        signing_keychain: "<%= @certs_dir %>/<%= role %>-signing.keychain"
+        signing_keychain: "<%= @keychain_path %>"
         supported_behaviors:
 <% @supported_behaviors.each do |behavior| -%>
             - <%= behavior %>
