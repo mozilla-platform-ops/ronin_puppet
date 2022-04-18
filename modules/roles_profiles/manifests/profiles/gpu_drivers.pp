@@ -7,7 +7,7 @@ class roles_profiles::profiles::gpu_drivers {
     case $::operatingsystem {
         'Windows': {
 
-            if $facts['custom_win_gpu'] == True {
+            if $facts['custom_win_gpu'] == 'yes' {
                 class { 'win_packages::drivers::nvidia_grid':
                     driver_name => '391.81_grid_win10_server2016_64bit_international',
                     srcloc      => lookup('windows.s3.ext_pkg_src'),

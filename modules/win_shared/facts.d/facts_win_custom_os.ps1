@@ -56,9 +56,9 @@ $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
 $worker_pool_id = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id
 
 if ($worker_pool_id -like "*gpu*") {
-    $gpu = True
+    $gpu = 'yes'
 } else {
-    $gpu = False
+    $gpu = 'no'
 }
 
 write-host "custom_win_release_id=$release_id"
