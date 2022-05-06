@@ -288,11 +288,13 @@ groups:
   - name: mozillavpn-1-b-osx
     targets:
       - macmini-r8-179.test.releng.mdc1.mozilla.com
+      - macmini-r8-182.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: mozillavpn_1_b_osx
 
   - name: mozillavpn-3-b-osx
     targets:
+      - macmini-r8-180.test.releng.mdc1.mozilla.com
       - macmini-r8-181.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: mozillavpn_3_b_osx
