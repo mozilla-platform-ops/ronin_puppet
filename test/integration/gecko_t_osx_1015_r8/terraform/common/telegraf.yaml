@@ -1,3 +1,1 @@
----
-user: user_value_test
-password: password_value_test
+../../../common_test/terraform/common/telegraf.yaml

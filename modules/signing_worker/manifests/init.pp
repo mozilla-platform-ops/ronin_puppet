@@ -14,6 +14,7 @@ define signing_worker (
     String $widevine_user,
     String $widevine_key,
     String $widevine_filename,
+    String $keychain_filename,
     Hash $worker_config,
     Hash $role_config,
     Hash $poller_config,
@@ -53,6 +54,7 @@ define signing_worker (
       default => "${certs_dir}/${ed_key_filename}",
     }
     $widevine_cert_path = "${certs_dir}/${widevine_filename}"
+    $keychain_path = "${certs_dir}/${keychain_filename}"
 
     signing_worker::system_user { "create_user_${user}":
         user       => $user,
@@ -144,7 +146,7 @@ define signing_worker (
     }
 
     vcsrepo { $scriptworker_clone_dir:
-        ensure   => present,
+        ensure   => latest,
         provider => git,
         source   => 'https://github.com/mozilla-releng/scriptworker',
         revision => $worker_config['scriptworker_revision'],
@@ -163,7 +165,7 @@ define signing_worker (
     }
 
     vcsrepo { $scriptworker_scripts_clone_dir:
-        ensure   => present,
+        ensure   => latest,
         provider => git,
         source   => 'https://github.com/mozilla-releng/scriptworker-scripts',
         revision => $worker_config['scriptworker_scripts_revision'],

@@ -5,6 +5,12 @@ orbs:
   vault: jmingtan/hashicorp-vault@0.2.1
 
 executors:
+  docker-base:
+    docker:
+      - image: cimg/base:2021.04
+  docker-ruby:
+    docker:
+      - image: cimg/ruby:2.7
   ubuntu-2004-docker:
     docker:
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
@@ -14,7 +20,7 @@ executors:
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
   macos-1014: &1014
     macos:
-      xcode: 11.1.0
+      xcode: 11.7.0
   macos-1015: &1015
     macos:
       xcode: 12.4.0
@@ -204,12 +210,52 @@ jobs:
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:
 #          fail_only: false
+  windows_integration_tests:
+    parameters:
+      os:
+        type: enum
+        enum: ["win-1064-1804", "win-1064-2004"]
+      role:
+        type: string
+      suite:
+        type: string
+    executor: docker-ruby
+    steps:
+      - export_env_vars
+      - checkout
+      - gem_cache
+      - run: env
+      - run: bundle exec kitchen create << parameters.suite >> -l debug
+      - run: bundle exec kitchen converge << parameters.suite >> -l debug
+      - run: bundle exec kitchen verify << parameters.suite >> -l debug
+      - run:
+          command: bundle exec kitchen destroy << parameters.suite >> -l debug
+          when: always
+      - store_test_results:
+          path: rspec
+    environment:
+      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      PUPPET_ROLE: << parameters.role >>
+#      - slack/status:
+#          fail_only: false
 
 workflows:
   ci_test:
     jobs:
       - pre_commit
       - r10k_install
+      - windows_integration_tests:
+          matrix:
+            parameters:
+              os: [win-1064-1804]
+              suite: ["windows"]
+              role: ["geckotwin10641803hw"]
+          context:
+            - slack-secrets
+            - puppet-test-kitchen-azure-sp
+          requires:
+            - pre_commit
+            - r10k_install
       - macos_integration_tests:
           matrix:
             parameters:

@@ -39,6 +39,28 @@ platforms:
     driver:
       name: localhost
       clean_up_on_destroy: false
+  - name: windows-1064
+    driver:
+      name: azurerm
+      location: 'West US 2'
+      machine_size: 'Standard_F8s_v2'
+      image_urn: MicrosoftWindowsDesktop:Windows-10:20h1-evd:19041.1165.2108022359
+      use_ephemeral_osdisk: true
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+      resource_group_tags:
+        project: circleci-test-kitchen
+        owner: relops@mozilla.com
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+    transport:
+      name: winrm
 
 # Fake mac-v3-signing secrets
 secrets: &secrets
@@ -195,3 +217,23 @@ suites:
       - localhost
     attributes:
       notarization_password: notarization_password_testing
+  - name: windows
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::<%= ENV["PUPPET_ROLE"] %>"'
+      custom_facts:
+        puppet_role: <%= ENV['PUPPET_ROLE'] %>
+    verifier:
+      custom_install_command: |
+        echo "This is the install command"
+        hostname
+      custom_serverspec_command: |
+        echo "This is the serverspec command"
+      patterns:
+      - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
+      default_pattern: false
+      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+      remote_exec: true
+      test_serverspec_installed: false
+    includes:
+      - windows-1064
+    attributes:

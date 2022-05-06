@@ -18,11 +18,11 @@ user_groups:
     - aerickson
     - rthijssen
   signing:
+    - ahalberstadt
     - asasaki
-    - bhearsum
-    - mtabara
-  cia:
-    - bclary
+    - gbrown
+    - hneiva
+  cia: []
 
 scriptworker_users:
   dep:
@@ -37,6 +37,7 @@ scriptworker_users:
       worker_id_suffix: "a"
       cot_product: "firefox"
       widevine_filename: "widevine_dep.crt"
+      keychain_file: "certs/dep-signing.keychain"
     depbld2:
       home: /builds/dep2
       supported_behaviors:
@@ -44,10 +45,11 @@ scriptworker_users:
         - mac_sign_and_pkg
         - mac_geckodriver
         - mac_single_file
-      dmg_prefix: "dep1"
+      dmg_prefix: "dep2"
       worker_id_suffix: "b"
       cot_product: "firefox"
       widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
     tbbld:
       home: /builds/tb-dep
       supported_behaviors:
@@ -60,6 +62,7 @@ scriptworker_users:
       worker_id_suffix: "tb"
       cot_product: "thunderbird"
       widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
   tb-prod:
     cltbld:
       home: /builds/scriptworker
@@ -74,6 +77,7 @@ scriptworker_users:
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
+      keychain_filename: "mozilla.20220330.keychain"
       ed_key_filename: "ed25519_privkey"
       notarization_users:
         - notary1
@@ -100,6 +104,7 @@ scriptworker_users:
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
+      keychain_filename: "mozilla.20220330.keychain"
       ed_key_filename: "ed25519_privkey"
       notarization_users:
         - notary1
@@ -121,16 +126,16 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'signing-mac-v1'
-        scriptworker_revision: "cd731fa4b02b10b430f9414df678f47640491931"
-        scriptworker_scripts_revision: "b5bc337fcbe2c62a389521bf4265f776df688dcd"
+        scriptworker_revision: "a851bb9c8a0d2b51730603b721ff9262c1bb5655"
+        scriptworker_scripts_revision: "e01f64e4f741a440f403ef1a476d6b7449f6da39"
     tb-prod:
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'tb-signing-mac-v1'
-        scriptworker_revision: "cd731fa4b02b10b430f9414df678f47640491931"
-        scriptworker_scripts_revision: "b5bc337fcbe2c62a389521bf4265f776df688dcd"
+        scriptworker_revision: "a851bb9c8a0d2b51730603b721ff9262c1bb5655"
+        scriptworker_scripts_revision: "e01f64e4f741a440f403ef1a476d6b7449f6da39"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
@@ -138,8 +143,8 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
-        scriptworker_revision: "cd731fa4b02b10b430f9414df678f47640491931"
-        scriptworker_scripts_revision: "b5bc337fcbe2c62a389521bf4265f776df688dcd"
+        scriptworker_revision: "a851bb9c8a0d2b51730603b721ff9262c1bb5655"
+        scriptworker_scripts_revision: "e01f64e4f741a440f403ef1a476d6b7449f6da39"
 
 poller_config:
     ff-prod:
@@ -221,17 +226,17 @@ all_users:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8+tn/e5jQUPsZUgZrTKHkYI03SyDVupuxYUAlxEan9BkGaGJ2QnJbaI8HbRgQ6U2vOgQsmAA+og3mhr9tJOJjRpqnfkEO29HyZHtPDQSHG7Qb6ZuW2P3rFSjrLFHEfMWKXn75FM8EraF+ERvf6kwYu6WL+2Q+OS/dQSLRjuqNJWIvbNDmeNiYNVf/0D+McZ2b26XJtg/skfwbGRMQvHRdq1jcsWTGhO3pLyV+3tfxZggvKBEWzymXR9HoOwngR2+X1RAkrzYoLstJw4GGg5kQEYJ+uZhacUuWCToZgX1DqkYGIvaICM0PLgNCiiWjxeUM5v5TAk6A5cNk+NihomgD rthijssen@gmail.com
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCylu05r0CzbbIRzdvuMsxyskQsxgBvS8PdYbCQ/FcJtivjpE10oXrpYQvbT9QQK0iheWKhSAtDUSrn9X4OYqSTZPOUyE1osQnxS1/BL+GFKFnl4QakGUV/+KJbbu1BSuiUsk/mE6qSa9QgYckfIm1O7j3QctsRBPs7wPHKFPrVhIE7zhswT+jdHVGa+LPdDk27V3Oj4O5GRNySb7v7sTYHExnuD4Di6vHXSlyhqCBQ9VLWMuWnIhrHAuq0j93Dvg3xB4WJ4B6BsEkYQFHOyX5pWgz6u6ZSU0X5G2mQU1xvkIbe0s+1QmOhNFpZrJm3pjkxhtEMH6lxNt1ZeEEoXjWPb/kZ5mj15TGG0LAE3I7Xdq80o5T5MNU8uJjAh+mEQEQYaHmY86J0UoNeslKL7ti5aHUS+20DjaCCOrq9n6bz/dr+2V9XJsOifJufIMA80o7vJ5CgUCSKY6CPsCKU2FDYhasPuFRwEfaMLAqMv717Ayse3yYIB2rYkMxai8AkbqYl/1UymAVHKUnF07lHhWojueGxJJEvsZo/jAErBw/4Wb3GSXwLRSQqdWEFdV63sLt0gg2FH6gOyzubRBNy+OaoCLdJa0R+OYrkQg2rC+NmwUdFIbPtB+o45xDHkoCCXncHx0MIUAyI53gbk8G5SusZxwEsiJwmDnSxo2J/VBUQAw== Rob_Thijssen_<rthijssen@gmail.com>
 
+  ahalberstadt:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDobzliCCDeAiMIIYD2IrNs1YYYy1jshn/9LKP+D3IM0+ArWiBW8yBaYyhI5Cv2PqxhLhrHyKSuIVRcGTqmugG0cz/iwhL/7Ruedo5Hn+gEtPMgX1Ju9Ya9wckZAtkluqzzBPTebOTh0jevUwNF7bvrQUZu7NTfrCUa3DVWQya65Z7WIwX2SaMOLxXMW+XgX1NUYobav3iamqbNLOGuSNzUpFsQy7yAOaOnMT34wqemNpMndzAEU3ZPM7/XRxDcUTxfbHlNCqzWI2mGqAQz9m4Ssvb59/R7b3+qXyvyKEAKqra/Mu5l5KmT7dH2NH1fTuznR7AjJ4pUlSmM7gNsOQhLmaAFiZ4jKdXvaB4CW162RfhmD7eJQb4sV6mLqRNvjvz14DpKlA+Z7izjuBDWZwZx+9xXSGfpwCaH92zCn09NKbsA6Ghscn1vzrf7a4CfrT8FDAf0Eiqr4DvymRL0OMuUdLg2EO65lMNaPKPcOHyWC9pDPWzD9iKhGyXAOROs0ak= ahal@DESKTOP-BF76SPQ
+
   asasaki:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQClqul9yd93oK71/O+ADPnDoabci2lF2gUYaTEGl/y3MoWWE4Vw9ZZx9/T9GWZSYPVRoTfJ6Bkex0uZodQhphcNW4aDoCU1L21qqoC3AmTw/v475bGZLwa9CLT0UkNQXCTMnNPk8GGBLhvaV8EKnCV2rNGvwx2Squ6seTRB04Ah8UnA5xJnYozTcwp8h71zrbqifceu9XIyDB4EVdBfgV4xLAMUs5o1z8Hh3cGUag2ywS4S8MbI/U36ES285Ps+B25AmAm2TWhMulKPmdTDCPI5BYo5RFe7gcWKjWYItD9dqkChCgB0uUyiYucSBbHtSYDG7Odau8BYZavx7s/S+Wyg30+guc1YvmoGrYsBi6b6YMTC7Vx3hl7m2KCx2Q21ZKO8tpEFx7Wuadm3ydt/hFKZ9PfN2zN7ZuvTMecPqznZLTJ4ZiehgfmwhSoTNlg7DliTMD2rktXJ/eNxVUo30aDIZteW9Tk9MiKSN/sUAKREkmmhMtJOfZw1XeNF0BZbqAFpoFsRrw18kO1XV4+jf6QJ8+aMYC2WEMOhXIlENfL9BNIHgCK5kY+6VqJ4OlOLJu/YGwGd4UxSmm1XG8dz5+UhDAmm/4y6iKGOBwJLBqS3JTF0fimPYSg/yO126vIoLs3+TLACA8PQGMOlNW2k2Xm3JWUDhHBztOdMz3SJFq/IjQ== Mozilla_key_for_Aki_Sasaki
 
-  bhearsum:
-    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDE3iS1A6yhZPSxu5oMvRcd7ad7eZD0nmkQ7XmaOI/rZAGtJczFa0Z3uCZ6lmY+SneunMCn9o1pQOoI2gexQjIJ4ehLhiDUMU/Kc2SczVuCQ2C5nuu8Z/KNCpD299w7jHWZ+ItBdcfKRd3eNwuc7foR6Bof1LqtAGNFHwn2WrF7Tr5SRJ66RYjt1DMI2JtQmY/No9vWXa0GhiDcDgy1XPZLqEzVx8/FxzQzwkgvzvAKHDNXdZChYBPGwtGouDgKskI+CQQqJtKkcW4qJYghgCSdwJ5YWQSDBwvcv7rJ5pi9MSZiWSjtP48CeEhbolE56lVybcVNupKSjayDV+DUpVSam9Gss00AqabC8YUBTL4dHIcWixL3lFkmaMoxKbkSAA/KrAc1GcThXTHhDJHgNOsssj8x4uH9kcHbjBbs4djzMfuGect7pXb8wjjg2ZrKmfc/55pTq3stGa1bXb/mTVPYuRtaJXnGYUZ4pwI7QBdb0f9XFK4YukrC4TeEi1y6O9+ZsmUOTkVO9y8cr05xLFcz9Zr08q8i0gK16ziMQVaN0r4bdH563kxSkz8K5KETaB+gLO7Flzyc5lWJ/3iy9JzgA/HuUI9PBgSk+SHhv5bwm7/yEiCMUnwR3rdzl1XhWMKusULX4MqDQvur4wSBaGhZrI72vE3uI146xHXlZG50Iw== Even_newer_Mozilla_key
+  gbrown:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7yH96JpXxkCkyPfn0HpJa8bd+tx+IlfhzxihdgBHLK gbrown@mozilla.com
 
-  mtabara:
-    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC7HawuW6BRfhDJgSzFugQxKNPUH5RyrKTntuhWv1OclR+whzKG5nKmi41C93AdHGH6/+5VgNT0FdC93JJ0XtjQdx7UEdnVEjuEU85x4FSAoPaj1T9R8ywivO/By2lHROUDI1dqygXEzMXmxL4+2zPwtAS9i+z92wlPSEx9mcmEooZ4W58FqdcnQzio7otpxJ6rmE61/vLNaZ9JaPqYxbzL4GGYZOjV+DhVMd+qSRBFiyZPSkkEEpv7XpxM9nyRy+vPTQL7MEn6MPH0Ec0OC+kfIHxTEgfG64c7JKBPdvGyiO0j/7KsRbK3A63sOFeekAbcsNBUeuVqpai4DXMIPz1qjnzAifJ8vUSCVLTpsv94pyzTkgnDp7FjGBOECgLTeK9cURbSrp4R2jiVMbbR/FGyb/pcGLjlk/uRCAJxJ6ivKkCdrxXtmNnSN8GI1cHldc6h4m6TUVuI3kefbOsPjiFvTxyuJqXCVLMN+M6NOjLpT2V4iHRqWzFyMfzdRc2ksocoIGWc9aOnaPgiyA0/CxsfnDo5AUQN9K1GjumwxvlAh8TeLHphagjnfd0yQHFglitp8nrT/2jzGc5N3jaiS68TFrWJGhvXOIkVwS+b3IX/T+agoq8Q4os5u4KJdGajke7RbTsWeYoGhX349KUVsAaUoxBZncrbmmgsgNqGGwRsPQ== Mozilla_key
-
-  bclary:
-    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCjEqpf1njrTlmvBMhfKJiQFP92uuS2EFIoL/f2u/39Q83Opk7T3mFOEvmnBNy83J7/k7j21VMzovdylsLk169x6NqPMZZ7sdtNW/WAiImUyWAVkuszkl7rbh8XdgF/UzTi8uHUAVZI/8gsh8g3wQ9h61BOWX7GEag99pho+ECpEGDjb3HXOD4B4vr/qZO5eMIssHzCKDXWchOpwlNPYk5Yij61+Hm/eTobSFLk7Rk1RGjuwcKpJUG8D3MmfTPY7I4YFA+i6TaQJJj/OdWguH599R/SIU6cVoqsQee9GDD2sSxsuDeop7ckM27kfklL2APeG2UBZ8Ugsnw7niJx9LJxk9PUY4ohs2LrNlwrEiB8Uq5yw9PF6Ik3aD4y8mHXSV/xajMA6s67XwdCZd51DwEZ9Q7h8ULsq1kpDvXx7+9OZ/xwucTuiH9sbvf438gx0/E+GAg24qhvQPQdA7+W2T2CJJPEhoe3OlJRibOgFHm1CmV3h6F34e5g8qz2kPGcNEu/toB9+14YyQfP7nZrz4UnHw3bJcNEHvl1JaSDcm2GiE3Nu0MYeAtnmWOA3AFs6IhkEvwFeY3lE1n6oyKB7XGeNxdrRTCMckM/ojoo9Hi3NbZ0giorM5vKcSeOE/iLtSDdaE1cUFdgrBqv6mBGxuGHukWmZNh+Z2o16RhQWZK1NQ== bclary@mozilla.com
+  hneiva:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCjfZR0LUC7TDL+VKC63dZ1JGzDBWja+3l0kziyY7nA03bG+XKVsi8vh09d0N0xysdrKnFaW25zMACx1V8yBpOzSgcfOJtBrTR9k6ScsLN3pCsNqlMY3MO0pTxcgTNclqVefsMfoQxHv1OsOve7LI9Po9q6XkjbqoOV2UjoVe0U8GIZSl/nwQmVk/cPzCm/zSutL3vIbH5W4XD8MKPQBM5+iJdMZb+idXRUXEAl1334zitAFe9dy8FzN8EyPk+tTj1lJDj77HWYnNaW1ws+qvhErlH+bD2FqD/fKv9c6LA9RTZsYor9pP40DZ5+E+bx0NUPjmrAAWyHfVUzgz7f2AIZmfrZQkOwjgFA3lmtMuthYh42AnIswzbUSRaRWbGmG68h20twSIpRX1tJR1g97j1wZtL8wFjdceN/cL+41TlPxZXoF34s9I2hVm0ZBgVqz8xj/gp8FFZj35qCnk78HAKxIBQhYzhv6ei28PhRkGlvWYrOXJcr2Wgpc+ELylyEe6ieTzPec2jyGd7vTGtmkLtPBcI/SJDD/kMo1E3CGQI208daXBkWIVEZnRIhqQJJzX+bg54UPARocuEq2sNLdcuuKf5Mq8wvbwaGioNDXYLrRqWtIWPUDoi0E0Stl9Z+ecZoJZqAjKCp6Fyuv7wmsx0LmkVX/t0qL5x3GKTyDfn48w== hneiva@mozilla.com
 
   # from relops_common_keys_2020-09-08.yml
   relops:

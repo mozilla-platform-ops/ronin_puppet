@@ -1,20 +1,25 @@
 require_relative 'spec_helper'
 
 describe 'users' do
-  describe user('bclary') do
-    it { should exist }
-  end
-
   describe user('aerickson') do
     it { should exist }
+    %w(aerickson wheel).each do |group|
+      its('groups') { should include group }
+    end
   end
 
   describe user('jwatkins') do
     it { should exist }
+    %w(jwatkins wheel).each do |group|
+      its('groups') { should include group }
+    end
   end
 
   describe user('dhouse') do
     it { should exist }
+    %w(dhouse wheel).each do |group|
+      its('groups') { should include group }
+    end
   end
 
   describe user('bitbar') do
@@ -22,22 +27,8 @@ describe 'users' do
   end
 end
 
-describe 'groups' do
-  describe user('aerickson') do
-    it { should belong_to_group 'wheel' }
-  end
-
-  describe user('dhouse') do
-    it { should belong_to_group 'wheel' }
-  end
-
-  describe user('jwatkins') do
-    it { should belong_to_group 'wheel' }
-  end
-end
-
 describe 'git repo' do
-  describe command('cd /home/bitbar/mozilla-bitbar-devicepool && git status') do
+  describe bash('cd /home/bitbar/mozilla-bitbar-devicepool && git status') do
     its(:exit_status) { should eq 0 }
   end
 end
@@ -67,10 +58,4 @@ end
 describe command('/home/bitbar/android-tools/devicepool_last_started_alert/venv/bin/python --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3/ }
-end
-
-# departed users
-
-describe file('/etc/passwd') do
-  its(:content) { should match /bclary\:.*\:\/usr\/sbin\/nologin/ }
 end
