@@ -49,6 +49,8 @@ win-worker:
       name: "Windows Azure VM Agent - 2.7.41491.949"
   vac:
     version: '464'
+  git:
+    version: '2.36.1'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
