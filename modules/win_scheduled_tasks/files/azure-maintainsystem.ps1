@@ -181,7 +181,7 @@ function Puppet-Run {
     # So Puppet can update config files as needed.
     Write-Log -message  ('{0} :: Updating worker pool ID for Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('worker_pool_id') })[0].value
-    Set-ItemProperty -Path "$ronninKey" -Name 'worker_pool_id' -Value "$worker_pool_id" -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path "$roninKey" -Name 'worker_pool_id' -Value "$worker_pool_id" -ErrorAction SilentlyContinue
 
     # r10k not currently in use. leaving in place because it may change in the future
     # Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
