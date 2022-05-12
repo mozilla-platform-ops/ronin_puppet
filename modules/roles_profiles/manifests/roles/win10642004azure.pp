@@ -25,6 +25,7 @@ class roles_profiles::roles::win10642004azure {
     # include roles_profiles::profiles::ssh
 
     # Worker
+    include roles_profiles::profiles::git
     include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
     include roles_profiles::profiles::windows_worker_runner
