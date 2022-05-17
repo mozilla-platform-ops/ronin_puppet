@@ -173,6 +173,19 @@ secrets: &secrets
         omnija_pass: omnija_pass_testing
         langpack_user: langpack_user_testing
         langpack_pass: langpack_pass_testing
+    vpn:
+      dep:
+        notarization_account: notarization_account_testing
+        notarization_password: notarization_password_testing
+        identity: identity_testing
+        keychain_password: keychain_password_testing
+        pkg_cert_id: pkg_cert_id_tesing
+      dep:
+        notarization_account: notarization_account_testing
+        notarization_password: notarization_password_testing
+        identity: identity_testing
+        keychain_password: keychain_password_testing
+        pkg_cert_id: pkg_cert_id_tesing
   poller_secrets:
     ff-prod:
       taskcluster_client_id: taskcluster_client_id_testing
