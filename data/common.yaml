@@ -124,15 +124,21 @@ scriptworker_users:
         - mac_notarize_vpn
       notarization_users:  # Do we need this?
         - notary1
+      dmg_prefix: "prod"
       cot_product: "mozillavpn"
       keychain_filename: "mozilla.20220330.keychain"
+      widevine_filename: "N/A"
+      ed_key_filename: "N/A"
     # TODO: Split dep into it's own worker
     depbld1:
       home: /builds/dep
       supported_behaviors:
         - mac_sign_and_pkg_vpn
+      dmg_prefix: "dep1"
       cot_product: "mozillavpn"
-      keychain_file: "dep-signing.keychain"
+      keychain_filename: "dep-signing.keychain"
+      widevine_filename: "N/A"
+      ed_key_filename: "N/A"
 
 scriptworker_config:
     ff-prod:
@@ -162,8 +168,7 @@ scriptworker_config:
         scriptworker_revision: "daed501a11466730ad6b784c57e9f0ae7757f5c3"
         scriptworker_scripts_revision: "95ce0c7535fc4cacec52be6d53e008e6aa388a5e"
     vpn:
-        taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
-        tb_taskcluster_scope_prefix: ''
+        vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
@@ -236,6 +241,10 @@ signingworker_roles:
             sign_with_entitlements: true
             verify_mac_signature: true
             base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
+            tb_base_bundle_id: 'n/a'
+            widevine_url: 'n/a'
+            omnija_url: 'n/a'
+            langpack_url: 'n/a'
 
 all_users:
   jwatkins:
