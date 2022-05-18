@@ -11,13 +11,13 @@ define signing_worker (
     String $dmg_prefix,
     String $cot_product,
     Array $supported_behaviors,
-    String $widevine_user,
-    String $widevine_key,
-    String $widevine_filename,
     String $keychain_filename,
     Hash $worker_config,
     Hash $role_config,
     Hash $poller_config,
+    Variant[String, Undef] $widevine_user = undef,
+    Variant[String, Undef] $widevine_key = undef,
+    Variant[String, Undef] $widevine_filename = undef,
     String $worker_type_prefix = '',
     String $worker_id_suffix = '',
     String $group = 'staff',
@@ -93,7 +93,7 @@ define signing_worker (
 
     $scriptworker_clone_dir = "${scriptworker_base}/scriptworker"
     $scriptworker_scripts_clone_dir = "${scriptworker_base}/scriptworker-scripts"
-    $widevine_clone_dir = "${scriptworker_base}/widevine"
+
     $tc_scope_prefix = $cot_product ? {
         'firefox' => $worker_config['taskcluster_scope_prefix'],
         'thunderbird' => $worker_config['tb_taskcluster_scope_prefix'],
@@ -213,37 +213,41 @@ define signing_worker (
         require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
     }
 
-    # We only clone this once for three reasons:
-    # 1) It is almost never updated
-    # 2) We don't support general code deployments through puppet (yet)
-    # 3) The clone url contains a github token, which we don't want sitting around on disk
-    #
-    # In an ideal world we'd still use `vcsrepo` for this, but it breaks after we
-    # clean up the token, so we're stuck with this for now.
-    exec { "clone widevine ${scriptworker_base}":
-        command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
-        user    => $user,
-        group   => $group,
-        unless  => "test -d ${widevine_clone_dir}",
-        path    => ['/bin', '/usr/bin'],
-        require => File[$scriptworker_base],
-    }
-    # This has credentials in it. Clean up.
-    ->file { "Remove widevine directory ${scriptworker_base}":
-        ensure  => absent,
-        path    => "${widevine_clone_dir}/.git",
-        recurse => true,
-        purge   => true,
-        force   => true,
-    }
-    exec { "install ${scriptworker_base} widevine":
-        command     => "${virtualenv_dir}/bin/python setup.py install",
-        cwd         => $widevine_clone_dir,
-        user        => $user,
-        group       => $group,
-        refreshonly => true,
-        subscribe   => [Exec["clone widevine ${scriptworker_base}"], Python::Virtualenv["signingworker_${user}"]],
-        require     => [Exec["clone widevine ${scriptworker_base}"], Python::Virtualenv["signingworker_${user}"]],
+    if $widevine_filename {
+        $widevine_clone_dir = "${scriptworker_base}/widevine"
+
+        # We only clone this once for three reasons:
+        # 1) It is almost never updated
+        # 2) We don't support general code deployments through puppet (yet)
+        # 3) The clone url contains a github token, which we don't want sitting around on disk
+        #
+        # In an ideal world we'd still use `vcsrepo` for this, but it breaks after we
+        # clean up the token, so we're stuck with this for now.
+        exec { "clone widevine ${scriptworker_base}":
+            command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
+            user    => $user,
+            group   => $group,
+            unless  => "test -d ${widevine_clone_dir}",
+            path    => ['/bin', '/usr/bin'],
+            require => File[$scriptworker_base],
+        }
+        # This has credentials in it. Clean up.
+        ->file { "Remove widevine directory ${scriptworker_base}":
+            ensure  => absent,
+            path    => "${widevine_clone_dir}/.git",
+            recurse => true,
+            purge   => true,
+            force   => true,
+        }
+        exec { "install ${scriptworker_base} widevine":
+            command     => "${virtualenv_dir}/bin/python setup.py install",
+            cwd         => $widevine_clone_dir,
+            user        => $user,
+            group       => $group,
+            refreshonly => true,
+            subscribe   => [Exec["clone widevine ${scriptworker_base}"], Python::Virtualenv["signingworker_${user}"]],
+            require     => [Exec["clone widevine ${scriptworker_base}"], Python::Virtualenv["signingworker_${user}"]],
+        }
     }
 
     # XXX once we:
