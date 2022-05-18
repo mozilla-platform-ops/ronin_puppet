@@ -127,7 +127,7 @@ scriptworker_users:
       cot_product: "mozillavpn"
       keychain_filename: "mozilla.20220330.keychain"
     # TODO: Split dep into it's own worker
-    depbld:
+    depbld1:
       home: /builds/dep
       supported_behaviors:
         - mac_sign_and_pkg_vpn
