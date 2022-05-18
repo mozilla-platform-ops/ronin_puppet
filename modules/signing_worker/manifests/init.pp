@@ -97,14 +97,17 @@ define signing_worker (
     $tc_scope_prefix = $cot_product ? {
         'firefox' => $worker_config['taskcluster_scope_prefix'],
         'thunderbird' => $worker_config['tb_taskcluster_scope_prefix'],
+        'mozillavpn' => $worker_config['vpn_taskcluster_scope_prefix'],
     }
     $tc_client_id = $cot_product ? {
         'firefox' => $worker_config['taskcluster_client_id'],
         'thunderbird' => $worker_config['tb_taskcluster_client_id'],
+        'mozillavpn' => $worker_config['vpn_taskcluster_client_id'],
     }
     $tc_access_token = $cot_product ? {
         'firefox' => $worker_config['taskcluster_access_token'],
         'thunderbird' => $worker_config['tb_taskcluster_access_token'],
+        'mozillavpn' => $worker_config['vpn_taskcluster_access_token'],
     }
 
     file { $requirements:
