@@ -37,7 +37,7 @@ scriptworker_users:
       worker_id_suffix: "a"
       cot_product: "firefox"
       widevine_filename: "widevine_dep.crt"
-      keychain_file: "certs/dep-signing.keychain"
+      keychain_filename: "dep-signing.keychain"
     depbld2:
       home: /builds/dep2
       supported_behaviors:
