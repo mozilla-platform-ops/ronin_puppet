@@ -94,7 +94,7 @@ try:
    smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
    smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
    print "Successfully sent email"
-except SMTPException:
+except smtplib.SMTPException:
    print "Error: unable to send email"
 EOF
 }
