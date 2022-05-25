@@ -140,6 +140,9 @@ EOF
 }
 
 function run_puppet {
+    echo "#############################################"
+    echo "Running puppet - $(date)"
+    echo "#############################################"
 
     # Always bring the puppet git up-to-sync before executing puppet
     if ! update_puppet; then
