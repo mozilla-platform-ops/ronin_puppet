@@ -9,7 +9,6 @@ apple_firmware_acceptance:
     Macmini7,1: [ 'MM71.0232.B00' ]
     MacBookPro13,3: [ 'VirtualBox' ]
 
-
 user_groups:
   relops:
     - jwatkins
@@ -265,6 +264,14 @@ all_users:
   poller:
     - ssh-rsa AAAA invalid@mozilla.com
 
+telegraf:
+  user: "%{lookup('vault_secrets::telegraf.data.user')}"
+  password: "%{lookup('vault_secrets::telegraf.data.password')}"
+  host: 'https://telegraf.relops.mozops.net'
+
+papertrail:
+  host: "%{lookup('vault_secrets::papertrail.data.host')}"
+  port: "%{lookup('vault_secrets::papertrail.data.port')}"
 
 # Class parameter defaults: most data lookups should take place in profiles
 # so use only when necessary

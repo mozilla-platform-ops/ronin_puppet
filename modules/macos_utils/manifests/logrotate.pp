@@ -4,6 +4,8 @@
 
 define macos_utils::logrotate (
     String $path,
+    String $owner                     = '',
+    String $group                     = '',
     String $mode                      = '600', # File mode of log file
     String $count                     = '2',   # How many files to retain
     String $size                      = '*',   # How big until rotation (Size in KB)
