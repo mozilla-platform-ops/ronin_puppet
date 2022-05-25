@@ -36,6 +36,7 @@ packages_classes:
   - telegraf
 
 symlinks:
+  /System/Volumes/Data/tools/bin: /usr/local/bin
   /System/Volumes/Data/tools/bin/python36: /usr/local/bin/python3.6
   /System/Volumes/Data/tools/bin/python3: /usr/local/bin/python3
   /System/Volumes/Data/tools/python36: /Library/Frameworks/Python.framework/Versions/3.6
