@@ -133,6 +133,8 @@ class roles_profiles::profiles::mac_v3_signing {
                     workerId      => $facts['networking']['hostname'],
                 },
             }
+
+            include nrpe::check::puppet_agent_mac
         }
         default: {
             fail("${::operatingsystem} not supported")
