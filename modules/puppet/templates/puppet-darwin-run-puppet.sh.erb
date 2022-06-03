@@ -78,8 +78,15 @@ function email_report {
     ERR_SUBJECT=$1
     ERR_MSG=$2
 
+    RELAY_HOST="<%= @smtp_relay_host %>"
     SENDER="root@${FQDN}"
     RECEIVER="${PUPPET_MAIL}"
+
+    if [[ "${RELAY_HOST}" == 'localhost' ]]; then
+        echo "No email server setup. Skipping email."
+        echo $ERR_MSG
+        return
+    fi
     python <<EOF
 import smtplib
 
@@ -90,12 +97,9 @@ Subject: ${ERR_SUBJECT}
 ${ERR_MSG}
 """
 
-try:
-   smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
-   smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
-   print "Successfully sent email"
-except smtplib.SMTPException:
-   print "Error: unable to send email"
+smtpObj = smtplib.SMTP("${RELAY_HOST}")
+smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
+print "Successfully sent email"
 EOF
 }
 
