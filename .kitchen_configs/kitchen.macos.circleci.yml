@@ -91,7 +91,7 @@ secrets: &secrets
       tb_taskcluster_access_token: tb_taskcluster_access_token_testing
       vpn_taskcluster_client_id: vpn_taskcluster_client_id_testing
       vpn_taskcluster_access_token: vpn_taskcluster_access_token_testing
-    mozillavpn:
+    vpn:
       vpn_taskcluster_client_id: vpn_taskcluster_client_id_testing
       vpn_taskcluster_access_token: vpn_taskcluster_access_token_testing
   cltbld_user:
@@ -179,13 +179,7 @@ secrets: &secrets
         langpack_user: langpack_user_testing
         langpack_pass: langpack_pass_testing
     vpn:
-      dep:
-        notarization_account: notarization_account_testing
-        notarization_password: notarization_password_testing
-        identity: identity_testing
-        keychain_password: keychain_password_testing
-        pkg_cert_id: pkg_cert_id_tesing
-      dep:
+      release:
         notarization_account: notarization_account_testing
         notarization_password: notarization_password_testing
         identity: identity_testing

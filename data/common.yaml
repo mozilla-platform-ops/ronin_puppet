@@ -231,6 +231,7 @@ signingworker_roles:
             verify_mac_signature: false
             base_bundle_id: 'org.mozilla.firefox-mac-dep'
             tb_base_bundle_id: 'org.mozilla.thunderbird-mac-dep'
+            vpn_base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
@@ -240,8 +241,7 @@ signingworker_roles:
             notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
-            base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
-            tb_base_bundle_id: 'n/a'
+            vpn_base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
             widevine_url: 'n/a'
             omnija_url: 'n/a'
             langpack_url: 'n/a'
