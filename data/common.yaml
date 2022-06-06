@@ -64,6 +64,15 @@ scriptworker_users:
       # TODO: confirm if we need widevine for tb
       widevine_filename: "widevine_dep.crt"
       keychain_filename: "dep-signing.keychain"
+    vpnbld:
+      home: /builds/vpn-dep
+      supported_behaviors:
+        - mac_sign_and_pkg_vpn
+      dmg_prefix: "dep1"
+      worker_type_prefix: "vpn-"
+      worker_id_suffix: "vpn"
+      cot_product: "mozillavpn"
+      keychain_filename: "dep-signing.keychain"
   tb-prod:
     cltbld:
       home: /builds/scriptworker
@@ -130,15 +139,6 @@ scriptworker_users:
       cot_product: "mozillavpn"
       keychain_filename: "mozilla.20220330.keychain"
       ed_key_filename: "ed25519_privkey"
-    # TODO: Split dep into it's own worker
-    depbld1:
-      home: /builds/dep
-      supported_behaviors:
-        - mac_sign_and_pkg_vpn
-      dmg_prefix: "dep1"
-      cot_product: "mozillavpn"
-      keychain_filename: "dep-signing.keychain"
-      ed_key_filename: "N/A"
 
 scriptworker_config:
     ff-prod:
