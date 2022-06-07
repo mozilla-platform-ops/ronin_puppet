@@ -82,11 +82,6 @@ function email_report {
     SENDER="root@${FQDN}"
     RECEIVER="${PUPPET_MAIL}"
 
-    if [[ "${RELAY_HOST}" == 'localhost' ]]; then
-        echo "No email server setup. Skipping email."
-        echo $ERR_MSG
-        return
-    fi
     python <<EOF
 import smtplib
 
