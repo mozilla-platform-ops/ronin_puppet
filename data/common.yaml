@@ -161,6 +161,7 @@ scriptworker_config:
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         sign_chain_of_trust: false
         verify_chain_of_trust: true
         verify_cot_signature: false
