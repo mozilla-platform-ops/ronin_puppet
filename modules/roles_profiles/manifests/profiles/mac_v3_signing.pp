@@ -31,6 +31,7 @@ class roles_profiles::profiles::mac_v3_signing {
                 /^dep-mac-v3-signing\d+/ => 'dep',
                 /^tb-mac-v3-signing\d+/ => 'tb-prod',
                 /^vpn-mac-v3-signing\d+/ => 'vpn',
+                /^mac-v3-signing17/ => 'dep',
                 default => 'ff-prod',
             }
 
