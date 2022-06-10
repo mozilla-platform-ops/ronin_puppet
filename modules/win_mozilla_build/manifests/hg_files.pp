@@ -33,7 +33,7 @@ class win_mozilla_build::hg_files {
         permissions => {
             identity                   => 'everyone',
             rights                     => ['full'],
-            type                       => 'allow',
+            perm_type                  => 'allow',
             child_types                => 'all',
             affects                    => 'all',
             inherit_parent_permissions => true,

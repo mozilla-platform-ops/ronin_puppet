@@ -5,8 +5,8 @@ defaults:
   datadir: data
 
 hierarchy:
-  - name: "Per Windows workerType data"
-    path: "os/Windows/worker/%{facts.custom_win_gw_workertype}.yaml"
+  - name: "Per Windows role(base image) data"
+    path: "roles/%{facts.custom_win_role}.yaml"
 
   - name: "Per-OS defaults"
     path: "os/%{facts.os.family}.yaml"

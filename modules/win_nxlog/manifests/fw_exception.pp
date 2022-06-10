@@ -7,12 +7,12 @@ class win_nxlog::fw_exception {
     require win_nxlog::install
 
     # Resource from puppet-windows_firewall
-    windows_firewall::exception { 'nxlog':
+    windows_firewall_rule { 'nxlog':
         ensure       => present,
-        direction    => 'out',
+        direction    => 'outbound',
         action       => 'allow',
         enabled      => true,
-        protocol     => 'TCP',
+        protocol     => 'tcp',
         local_port   => 514,
         display_name => 'papertrail 1',
         description  => 'Nxlogout. [TCP 514]',

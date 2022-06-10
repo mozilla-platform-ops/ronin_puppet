@@ -11,24 +11,24 @@ define win_firewall::open_local_port (
 
     # Resource from puppet-windows_firewall
 
-    windows_firewall::exception { "allow_${fw_display_name}_in":
+    windows_firewall_rule { "allow_${fw_display_name}_in":
         ensure       => present,
-        direction    => 'in',
+        direction    => 'inbound',
         action       => 'allow',
         enabled      => true,
-        protocol     => 'TCP',
+        protocol     => 'tcp',
         local_port   => $port,
         remote_ip    => 'any',
         display_name => "${fw_display_name}_IN",
         description  => "ALLOWED ${fw_display_name} in. [${port}]",
     }
     if $reciprocal {
-        windows_firewall::exception { "allow_${fw_display_name}_out":
+        windows_firewall_rule { "allow_${fw_display_name}_out":
             ensure       => present,
-            direction    => 'out',
+            direction    => 'outbound',
             action       => 'allow',
             enabled      => true,
-            protocol     => 'TCP',
+            protocol     => 'tcp',
             local_port   => $port,
             remote_ip    => 'any',
             display_name => "${fw_display_name}_OUT",

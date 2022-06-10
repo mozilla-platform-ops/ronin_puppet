@@ -9,7 +9,7 @@ class roles_profiles::profiles::power_management {
             include macos_mobileconfig_profiles::power_management
         }
         'Windows': {
-            class { 'windows::power_scheme':
+            class { 'win_os_settings::power_scheme':
                 ensure => 'High performance',
             }
             # Bug List

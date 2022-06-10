@@ -57,8 +57,12 @@ if (Test-Path $taskcluster_proxy_file) {
 }
 write-host "custom_win_taskcluster_proxy_version=$proxy_version"
 
-# workerType is set during proviosning (This may only be for hardware)
+# workerType is set during proviosning (This may only be for hardware) And OLD.
 if (test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet") {
     $gw_workertype = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType
     write-host "custom_win_gw_workerType=$gw_workertype"
 }
+
+# Get worker pool ID
+$worker_pool_id = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id
+write-host "custom_win_worker_pool_id=$worker_pool_id"

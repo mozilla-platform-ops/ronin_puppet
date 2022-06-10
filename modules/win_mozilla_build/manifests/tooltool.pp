@@ -26,12 +26,13 @@ class win_mozilla_build::tooltool {
         permissions                =>   {
                                             identity    => 'everyone',
                                             rights      => ['full'],
-                                            type        => 'allow',
+                                            perm_type   => 'allow',
                                             child_types => 'all',
                                             affects     => 'all'
                                         },
         inherit_parent_permissions => true,
     }
+
     if $win_mozilla_build::tooltool_tok != undef {
         file { "${builds}\\relengapi.tok":
             content   => $win_mozilla_build::tooltool_tok,

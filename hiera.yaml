@@ -10,10 +10,9 @@ hierarchy:
   - name: "Per-role data"
     path: "roles/%{facts.puppet_role}.yaml"
 
-    # This should be deleted once the windows is converged to use per-role data instead
-    # and win_hiera.yaml can also be deleted
-  - name: "Per Windows workerType data"
-    path: "os/Windows/worker/%{facts.custom_win_gw_workertype}.yaml"
+    # Windows doesn't have facts.puppet_role
+  - name: "Per-role Windows"
+    path: "roles/%{facts.custom_win_role}.yaml"
 
   - name: "Per-OS defaults"
     path: "os/%{facts.os.family}.yaml"

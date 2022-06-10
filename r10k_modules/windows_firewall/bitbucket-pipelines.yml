@@ -1,0 +1,24 @@
+# *File originally created by PDQTest*
+# To run locally:
+# https://confluence.atlassian.com/bitbucket/debug-your-pipelines-locally-with-docker-838273569.html
+---
+image: declarativesystems/pdqtest-ubuntu:2018-10-06-0
+
+pipelines:
+  default:
+  - step:
+      caches:
+      - bundler
+      script:
+      - source /etc/profile.d/rvm.sh
+      - ruby --version
+      - which ruby
+      - bundler --version
+      - sh .ci_custom.sh
+      - make pdqtestbundle
+      - cd .pdqtest && bundle exec pdqtest --inplace --inplace-enable all
+
+definitions:
+  caches:
+    bundler: vendor/bundle
+

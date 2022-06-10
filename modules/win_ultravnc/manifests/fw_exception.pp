@@ -7,12 +7,12 @@ class win_ultravnc::fw_exception {
     require win_ultravnc::install
 
     # Resource from puppet-windows_firewall
-    windows_firewall::exception { 'ultra':
+    windows_firewall_rule { 'ultra':
         ensure       => present,
-        direction    => 'in',
+        direction    => 'inbound',
         action       => 'allow',
         enabled      => true,
-        protocol     => 'TCP',
+        protocol     => 'tcp',
         local_port   => $win_ultravnc::port,
         remote_ip    => $win_ultravnc::jumphosts,
         display_name => 'UltraVNC in',

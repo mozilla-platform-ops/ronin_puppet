@@ -17,7 +17,7 @@ class win_mozilla_maintenance_service::grant_programdata_access {
         permissions                =>   {
                                             identity    => 'everyone',
                                             rights      => ['full'],
-                                            type        => 'allow',
+                                            perm_type   => 'allow',
                                             child_types => 'all',
                                             affects     => 'all'
                                         },

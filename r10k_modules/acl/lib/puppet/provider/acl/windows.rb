@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 require 'puppet/type'
 require 'pathname'
 
 Puppet::Type.type(:acl).provide :windows do
+  @doc = 'Windows specific provider for acl type.'
+
   # confine :feature => :microsoft_windows
   confine operatingsystem: :windows
   defaultfor operatingsystem: :windows
@@ -35,7 +39,7 @@ Puppet::Type.type(:acl).provide :windows do
   def create
     case @resource[:target_type]
     when :file
-      raise Puppet::Error, "ACL cannot create target resources. Target resource will already have a security descriptor on it when created. Ensure target '#{@resource[:target]}' exists." unless ::File.exist?(@resource[:target]) # rubocop:disable Metrics/LineLength
+      raise Puppet::Error, "ACL cannot create target resources. Target resource will already have a security descriptor on it when created. Ensure target '#{@resource[:target]}' exists." unless ::File.exist?(@resource[:target]) # rubocop:disable Layout/LineLength
     else
       raise Puppet::ResourceError, 'At present only :target_type => :file is supported on Windows.'
     end
@@ -101,6 +105,8 @@ Puppet::Type.type(:acl).provide :windows do
     return [] if should.nil? || !should.is_a?(Array)
 
     sd = get_security_descriptor
+    return [] if sd.nil?
+
     should_aces = sync_aces(sd.dacl, should, @resource[:purge] == :true, @resource[:purge] == :listed_permissions)
 
     permissions_to_s(should_aces)

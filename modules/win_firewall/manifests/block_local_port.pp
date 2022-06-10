@@ -11,24 +11,24 @@ define win_firewall::block_local_port (
 
     # Resource from puppet-windows_firewall
 
-    windows_firewall::exception { "block_${fw_display_name}_in":
+    windows_firewall_rule { "block_${fw_display_name}_in":
         ensure       => present,
-        direction    => 'in',
+        direction    => 'inbound',
         action       => 'block',
         enabled      => true,
-        protocol     => 'TCP',
+        protocol     => 'tcp',
         local_port   => $port,
         remote_ip    => '$remote_ip',
         display_name => "${fw_display_name}_IN",
         description  => "BLOCKED ${fw_display_name} in. [${port}]",
     }
     if $reciprocal {
-        windows_firewall::exception { "block_${fw_display_name}_out":
+        windows_firewall_rule { "block_${fw_display_name}_out":
             ensure       => present,
-            direction    => 'out',
+            direction    => 'outbound',
             action       => 'block',
             enabled      => true,
-            protocol     => 'TCP',
+            protocol     => 'tcp',
             local_port   => $port,
             remote_ip    => 'any',
             display_name => "${fw_display_name}_OUT",

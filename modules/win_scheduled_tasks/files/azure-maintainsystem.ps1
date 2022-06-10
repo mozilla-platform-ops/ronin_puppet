@@ -137,56 +137,17 @@ function Check-RoninLock {
   }
 }
 
-Function UpdateRonin {
-  param (
-    [string] $sourceOrg,
-    [string] $sourceRepo,
-    [string] $sourceRev,
-    [string] $ronin_repo = "$env:systemdrive\ronin"
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation').Organisation } else { 'mozilla-platform-ops' })
-    $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository').Repository } else { 'ronin_puppet' })
-    $sourceRev = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision').Revision } else { 'master' })
-
-    Set-Location "$env:systemdrive\ronin"
-    git pull https://github.com/$sourceOrg/$sourceRepo $sourceRev
-    $git_exit = $LastExitCode
-    if ($git_exit -eq 0) {
-      $git_hash = (git rev-parse --verify HEAD)
-      Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
-      Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-    } else {
-      # Fall back to clone if pull fails
-     Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-     Write-Log -message  ('{0} :: Deleting old repository and cloning repository .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-     Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
-     Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
-     Remove-Item -Recurse -Force $ronin_repo
-     Start-Sleep -s 2
-     git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
-     Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
-     Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
 function Puppet-Run {
   param (
     [int] $exit,
     [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
     [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
-    [string] $run_to_success = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").runtosuccess,
     [string] $inmutable = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable,
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
     [string] $logdir = "$env:systemdrive\logs",
     [string] $fail_dir = "$env:systemdrive\fail_logs",
     [string] $log_file = "$datetime-puppetrun.log",
+    [string] $roninKey = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
     [string] $datetime = (get-date -format yyyyMMdd-HHmm),
     [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
   )
@@ -216,6 +177,12 @@ function Puppet-Run {
 
     Set-Location "$env:systemdrive\ronin"
 
+    # Ensure worker pool ID matches what was provisioned.
+    # So Puppet can update config files as needed.
+    Write-Log -message  ('{0} :: Updating worker pool ID for final Puppet run' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('worker-pool-id') })[0].value
+    Set-ItemProperty -Path "$roninKey" -Name 'worker_pool_id' -Value "$worker_pool_id" -ErrorAction SilentlyContinue
+
     # r10k not currently in use. leaving in place because it may change in the future
     # Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
     # R10k puppetfile install --moduledir=r10k_modules
@@ -226,21 +193,21 @@ function Puppet-Run {
     }
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$log_file
+    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$log_file
     [int]$puppet_exit = $LastExitCode
 
     if ($run_to_success -eq 'true') {
       if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
         if($last_exit -eq 0) {
           Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -value $puppet_exit
+          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
           Remove-Item $lock -ErrorAction SilentlyContinue
           # If the Puppet run fails send logs to papertrail
           # Nxlog watches $fail_dir for files names *-puppetrun.log
           Move-Item $logdir\$log_file -Destination $fail_dir
           shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         } elseif ($last_exit -ne 0){
-          Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -value $puppet_exit
+          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
           Remove-Item $lock
           Move-Item $logdir\$log_file -Destination $fail_dir
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -249,12 +216,12 @@ function Puppet-Run {
         }
       } elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -value $puppet_exit
+        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
         Remove-Item -path $lock
         Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name inmutable -value true
       } else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -value $last_exit
+        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$last_exit"
         Move-Item $logdir\$log_file -Destination $fail_dir
         Remove-Item -path $lock
         shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
@@ -434,20 +401,6 @@ function Check-AzVM-Name {
         } else {
             Write-Log -message  ('{0} :: Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
         }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-# not used
-function Stop_AzGuestService {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        Stop-Service -Name "Stop-Service -Name "iisadmin" -Force -Confirm" -Force
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
