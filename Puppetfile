@@ -5,7 +5,6 @@ forge "https://forgeapi.puppetlabs.com"
 mod 'ipcrm-registry_acl', '0.0.6'
 mod 'jorten-timezone', '0.1.0'
 mod 'puppet-archive', '4.4.0'
-mod 'puppet-windows_firewall', '4.0.0'
 mod 'puppetlabs-acl', '4.0.0'
 mod 'puppetlabs-apt', '6.1.1'
 mod 'puppetlabs-concat', '5.1.0'
