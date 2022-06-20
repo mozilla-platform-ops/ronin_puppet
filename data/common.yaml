@@ -68,7 +68,7 @@ scriptworker_users:
       home: /builds/vpn-dep
       supported_behaviors:
         - mac_sign_and_pkg_vpn
-      dmg_prefix: "dep1"
+      dmg_prefix: "vpn"
       worker_type_prefix: "vpn-"
       worker_id_suffix: "vpn"
       cot_product: "mozillavpn"
@@ -86,7 +86,6 @@ scriptworker_users:
         - mac_notarize_part_3
       dmg_prefix: "prod"
       cot_product: "thunderbird"
-      # TODO: confirm if we need widevine for tb
       widevine_filename: "widevine_prod.crt"
       keychain_filename: "mozilla.20220330.keychain"
       ed_key_filename: "ed25519_privkey"
@@ -133,8 +132,6 @@ scriptworker_users:
       home: /builds/scriptworker
       supported_behaviors:
         - mac_notarize_vpn
-      notarization_users:  # Do we need this?
-        - notary1
       dmg_prefix: "prod"
       cot_product: "mozillavpn"
       keychain_filename: "mozilla.20220330.keychain"
