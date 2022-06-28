@@ -63,6 +63,15 @@ scriptworker_users:
       cot_product: "thunderbird"
       widevine_filename: "widevine_dep.crt"
       keychain_filename: "dep-signing.keychain"
+    vpnbld:
+      home: /builds/vpn-dep
+      supported_behaviors:
+        - mac_sign_and_pkg_vpn
+      dmg_prefix: "vpn"
+      worker_type_prefix: "vpn-"
+      worker_id_suffix: "vpn"
+      cot_product: "mozillavpn"
+      keychain_filename: "dep-signing.keychain"
   tb-prod:
     cltbld:
       home: /builds/scriptworker
@@ -117,6 +126,15 @@ scriptworker_users:
         - notary8
         - notary9
         - notary10
+  vpn:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_notarize_vpn
+      dmg_prefix: "prod"
+      cot_product: "mozillavpn"
+      keychain_filename: "mozilla.20220330.keychain"
+      ed_key_filename: "ed25519_privkey"
 
 scriptworker_config:
     ff-prod:
@@ -139,10 +157,19 @@ scriptworker_config:
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         sign_chain_of_trust: false
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
+        scriptworker_revision: "daed501a11466730ad6b784c57e9f0ae7757f5c3"
+        scriptworker_scripts_revision: "95ce0c7535fc4cacec52be6d53e008e6aa388a5e"
+    vpn:
+        vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'mozillavpn-3-signing-mac'
         scriptworker_revision: "daed501a11466730ad6b784c57e9f0ae7757f5c3"
         scriptworker_scripts_revision: "95ce0c7535fc4cacec52be6d53e008e6aa388a5e"
 
@@ -201,10 +228,20 @@ signingworker_roles:
             verify_mac_signature: false
             base_bundle_id: 'org.mozilla.firefox-mac-dep'
             tb_base_bundle_id: 'org.mozilla.thunderbird-mac-dep'
+            vpn_base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
-
+    vpn:
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            vpn_base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
+            widevine_url: 'n/a'
+            omnija_url: 'n/a'
+            langpack_url: 'n/a'
 
 all_users:
   jwatkins:

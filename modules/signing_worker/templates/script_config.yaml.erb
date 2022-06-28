@@ -26,6 +26,8 @@ mac_config:
         verify_mac_signature: <%= role_data['verify_mac_signature'] %>
 <% if @cot_product == "firefox" -%>
         base_bundle_id: "<%= role_data['base_bundle_id'] %>"
+<% elsif @cot_product == "mozillavpn" -%>
+        base_bundle_id: "<%= role_data['vpn_base_bundle_id'] %>"
 <% else -%>
         base_bundle_id: "<%= role_data['tb_base_bundle_id'] %>"
 <% end -%>

@@ -30,6 +30,7 @@ class roles_profiles::profiles::mac_v3_signing {
             $role = $facts['networking']['hostname']? {
                 /^dep-mac-v3-signing\d+/ => 'dep',
                 /^tb-mac-v3-signing\d+/ => 'tb-prod',
+                /^vpn-mac-v3-signing\d+/ => 'vpn',
                 default => 'ff-prod',
             }
 
