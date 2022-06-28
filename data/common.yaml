@@ -61,7 +61,6 @@ scriptworker_users:
       worker_type_prefix: "tb-"
       worker_id_suffix: "tb"
       cot_product: "thunderbird"
-      # TODO: confirm if we need widevine for tb
       widevine_filename: "widevine_dep.crt"
       keychain_filename: "dep-signing.keychain"
     vpnbld:
