@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 require 'rspec-puppet'
-require 'puppetlabs_spec_helper/module_spec_helper'
 
 require 'simplecov'
 require 'simplecov-console'
+
+require 'datadog/ci'
 
 class FakeFunction
   def self.dispatch(name, &block); end
@@ -46,11 +47,19 @@ SimpleCov.start do
 end
 
 RSpec.configure do |config|
-  config.expect_with :rspec
+  config.expect_with :rspec do |c|
+    c.max_formatted_output_length = nil
+  end
   # Enable rpec-mocks
   config.mock_with :rspec
 
   begin
     config.warnings = false
   end
+end
+
+Datadog.configure do |c|
+  c.ci_mode.enabled = true
+  c.service = 'petems-hiera_vault'
+  c.use :rspec
 end
