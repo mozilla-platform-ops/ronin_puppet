@@ -17,6 +17,7 @@ user_groups:
     - mcornmesser
     - aerickson
     - rthijssen
+    - jmoss
   signing:
     - ahalberstadt
     - asasaki
@@ -253,7 +254,10 @@ all_users:
   mcornmesser:
     - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAgEAgl+gdJm/ugZQJhjWRldBMoijBAxX9aK4djspM+X+59SqdLidnHG7IyOyzniUVa5IgL8ak91v59zgTM4K9VmLdbH1EttiryJ2juYygBClFQC3p7NiHLhtuJOrrMbb7K53I6dJVxui8f3Rj58nV7Y3wvrdmoxKboVYGLNCWcVhEOFpfvr+RftMPfAgOTBgAXqWt3954OGmDLAPVCUruuNrZpFYZ4WBEVsZYFvljXz7eBZCS1HyeYtDDmNECGSKMvyR1C32kGpDfK+I8cngaZAdhUpEYVWJeIQmACUoilgx8A/K0GfPmnncfi3QJUrucFAmA8f87k4PczamTMszmdmOiXVzKCID2DtH/uunTtDe7toIuA2A0fCYeFGkvEgIUAIifhifduJdbvNuVJ/AmEcOAN9PIAzhGQh7WhPRagJeydgtB2hQihRSaVVQgSNUJA8trAQKAArB/cJSZgIu9PED6ZuRzUWpA3HPzVxyx9v73d/c0ZnacF8VP74ucOaqi+z/QUe3dPKg14x4kJQHthPJm8oVS04sWQjRVTyXgcEnHyYiEOhAq5XCd1Pss7hLICKuc9L4/AKMoKpzf2mqPuhfEHJ77MGHXfGFwY08rFpU54wRiO7tyX09w+S1CKImjoz3mjYZu42W6gIyLbCzxbMaV9aRK27Tn/A1j1NBcQvGEn0= rsa-key-20170619
     - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA1zBG1hfe9OgISQxo0tQgy9VfTWk81mIadB90aSowIfdUZdGg0qoDKY5JHKMxi1BOwzN/UnEO+PeS3pIRY/2Xr7ywMgnoqYo9mkF/Q0EHnjVwjJxWfza9eEvI0SoBpPu1FlCgk+unzedEaJTc0KzNKEjRxVL4/XXvIgV4U/BukYAEYAsPFWXIvkSNi9GrNrAkKRuXCVOItBQjYGP+hg9vbnGOAmzIzgAmxxxos/LH7+z/59H0Cmm4wgzgm5JCRyIIHueYkHJYswx1crr1KQTooghJf+mGV1Iif+ymVylk2nnsdfQLqYHgSte4BnXV9NZGa1PIGmA/+wHVUfaiXNtjOQ== rsa-key-20170620
-
+  
+  jmoss:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB/I95HQM/Wr9XZkQzXfhFSpqmIiGx0fIegDNtkkoOHW jwmoss88@gmail.com
+    
   aerickson:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCVIzgS4A6o6HZ5QoQvYbRz2Ztwdu1saKSFHz2PfvDiLrhbNzrxekJ+KCYIo0KjmxQGbPFfWYmLQCm1ARdqtU2hBTcm/NQrKZDendLwiX1EGBHvrwy4bwdlm72Hp+O1czb8tyvwgJMfVjmwWMG0FTRHunrv8eFyp9AmSlnDP+BQkEii41f7UY8tdZGbYChLKjHz2px2lhKj1jRt879Vy4zLw9l6wjfJ40A88Cf1rfsblfKP7iS5umeGvtqtSDbOU1dbiH73IJci/GTQiptr/Scu7MBMq/clzD/WGC+cIdregaG7AhZLcr4kqpk2lrAWpfRK/LgHa7vYy8XvRHt+oTpF aerickson@aerickson-45094.local
 
