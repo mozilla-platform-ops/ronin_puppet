@@ -28,7 +28,7 @@ describe 'users' do
 end
 
 describe 'git repo' do
-  describe bash('cd /home/bitbar/mozilla-bitbar-devicepool && git status') do
+  describe bash("sudo -u bitbar bash -c 'cd /home/bitbar/mozilla-bitbar-devicepool && git status'") do
     its(:exit_status) { should eq 0 }
   end
 end
