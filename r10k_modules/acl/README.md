@@ -1,12 +1,11 @@
-acl
-==============
+# acl
 
 #### Table of Contents
 
-2. [Module Description - What does the module do?](#module-description)
-3. [Setup - The basics of getting started with acl](#setup)
+1. [Module Description - What does the module do?](#module-description)
+1. [Setup - The basics of getting started with acl](#setup)
     * [Beginning with acl - Installation](#beginning-with-acl)
-4. [Usage - The custom type available for configuration](#usage)
+1. [Usage - The custom type available for configuration](#usage)
     * [Manage a basic ACL with all parameters expressed](#manage-a-basic-acl-with-all-parameters-expressed)
     * [Manage multiple permissions at once](#manage-multiple-permissions-at-once)
     * [Same target, multiple resources](#same-target-multiple-resources)
@@ -21,9 +20,9 @@ acl
     * [Set ACE propagation](#set-ace-propagation)
     * [Remove ACE permissions](#remove-ace-permissions)
     * [Use same identity, multiple ACEs](#use-same-identity-multiple-aces)
-5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
-6. [Limitations - Known issues in acl](#limitations)
-7. [Development - Guide for contributing to the module](#development)
+1. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
+1. [Limitations - Known issues in acl](#limitations)
+1. [Development - Guide for contributing to the module](#development)
 
 ## Module Description
 
@@ -39,7 +38,7 @@ Install this module with the following command:
 $ puppet module install [--modulepath <path>] puppetlabs/acl
 ~~~
 
-The above command also includes the optional argument to specify your Puppet master's `modulepath` as the location to install the module.
+The above command also includes the optional argument to specify your Puppet server's `modulepath` as the location to install the module.
 
 ### Beginning with acl
 
@@ -401,7 +400,7 @@ Valid identity formats:
 
  * `mask`: *Required if `rights => 'mask_specific'` is set.* Indicates rights granted or denied to the trustee. If the `rights` element isn't set to 'mask_specific', the `mask` element has no effect. Valid options: an integer representing a [permissions mask](http://msdn.microsoft.com/en-us/library/aa394063(v=vs.85).aspx).
 
-  If you want more granular detail about `mask` values, we've provided an [ACL Mask Rights Addition spreadsheet](https://github.com/puppetlabs/puppetlabs-acl/blob/master/tools/ACL_Access_Rights_Mask_Addition.xlsx) in the acl module's `tools` directory.
+  If you want more granular detail about `mask` values, we've provided an [ACL Mask Rights Addition spreadsheet](https://github.com/puppetlabs/puppetlabs-acl/blob/main/tools/ACL_Access_Rights_Mask_Addition.xlsx) in the acl module's `tools` directory.
 
  * `perm_type`: *Optional.* Specifies whether the target should or should *not* have the described permissions. Valid options: 'allow' and 'deny'. Default: 'allow'.
 
@@ -452,11 +451,13 @@ Please log tickets and issues at our [Module Issue Tracker](https://tickets.pupp
 
 ## Development
 
+We are experimenting with a new tool for running acceptance tests. It's name is [puppet_litmus](https://github.com/puppetlabs/puppet_litmus) this replaces beaker as the test runner. To run the acceptance tests follow the instructions [here](https://github.com/puppetlabs/puppet_litmus/wiki/Tutorial:-use-Litmus-to-execute-acceptance-tests-with-a-sample-module-(MoTD)#install-the-necessary-gems-for-the-module).
+
 Puppet modules on the Puppet Forge are open projects, and community contributions are essential for keeping them great. We can’t access the huge number of platforms and myriad of hardware, software, and deployment configurations that Puppet is intended to serve.
 
 We want to keep it as easy as possible to contribute changes so that our modules work in your environment. There are a few guidelines that we need contributors to follow so that we can have a chance of keeping on top of things.
 
-For more information, see our [module contribution guide.](https://docs.puppet.com/forge/contributing.html)
+For more information, see our [module contribution guide.](https://puppet.com/docs/puppet/latest/contributing.html)
 
 ### Contributors
 

@@ -5,34 +5,33 @@
 define win_firewall::open_local_port (
     String  $fw_display_name,
     Integer $port,
-    String $remote_ip,
     Boolean $reciprocal,
 ) {
 
     # Resource from puppet-windows_firewall
 
-    windows_firewall::exception { "allow_${fw_display_name}_in":
-        ensure       => present,
-        direction    => 'in',
-        action       => 'allow',
-        enabled      => true,
-        protocol     => 'TCP',
-        local_port   => $port,
-        remote_ip    => 'any',
-        display_name => "${fw_display_name}_IN",
-        description  => "ALLOWED ${fw_display_name} in. [${port}]",
+    windows_firewall_rule { "allow_${fw_display_name}_in":
+        ensure         => present,
+        direction      => 'inbound',
+        action         => 'allow',
+        enabled        => true,
+        protocol       => 'tcp',
+        local_port     => $port,
+        remote_address => 'any',
+        display_name   => "${fw_display_name}_IN",
+        description    => "ALLOWED ${fw_display_name} in. [${port}]",
     }
     if $reciprocal {
-        windows_firewall::exception { "allow_${fw_display_name}_out":
-            ensure       => present,
-            direction    => 'out',
-            action       => 'allow',
-            enabled      => true,
-            protocol     => 'TCP',
-            local_port   => $port,
-            remote_ip    => 'any',
-            display_name => "${fw_display_name}_OUT",
-            description  => "ALLOWED ${fw_display_name} out. [${port}]",
+        windows_firewall_rule { "allow_${fw_display_name}_out":
+            ensure         => present,
+            direction      => 'outbound',
+            action         => 'allow',
+            enabled        => true,
+            protocol       => 'tcp',
+            local_port     => $port,
+            remote_address => 'any',
+            display_name   => "${fw_display_name}_OUT",
+            description    => "ALLOWED ${fw_display_name} out. [${port}]",
         }
     }
 }

@@ -1,0 +1,17 @@
+{
+  "CHANGELOG.md": "b0c1c2180db2362adc4b4d6b1a819870",
+  "Gemfile": "2d9d647b55c795bdee138a9d2e267f54",
+  "HISTORY.md": "ccb8c79ee3c62850d9e0bb2d4e8dbd62",
+  "LICENSE": "e092239e8c36c7a11965aabab642090d",
+  "README.md": "12182c3ed061ada7a32ea70a629464e5",
+  "Rakefile": "90f5e04fcf98664dfce089ec2dae2109",
+  "examples/init.pp": "b449fd26fbde5aafa9b0aaa4f7ea0f98",
+  "lib/facter/windows_env.rb": "d1d3a97851e655e4fc9c6a4945e0e670",
+  "lib/puppet/provider/windows_env/windows_env.rb": "5b2ab6b3885eb2d9dba7656e86ea08d7",
+  "lib/puppet/type/windows_env.rb": "42004c491167039a623b68e165c78141",
+  "metadata.json": "0a0970760331d075c93eb014895559cc",
+  "spec/acceptance/nodesets/ec2/image_templates.yaml": "516f9c4c3407993a100090ce9e1a643c",
+  "spec/acceptance/nodesets/ec2/windows-2016-base-x64.yml": "e9db4dd16c60c52b433694130c2583a0",
+  "spec/spec_helper.rb": "a66b643907fe4d911e659943ed920d26",
+  "spec/unit/puppet/type/windows_env_type_spec.rb": "095f1a7ab5095296750222f7e1ebaa21"
+}

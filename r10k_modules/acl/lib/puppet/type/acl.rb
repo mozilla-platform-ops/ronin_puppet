@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'puppet/type'
 require 'pathname'
 
 Puppet::Type.newtype(:acl) do
   require Pathname.new(__FILE__).dirname + '../../' + 'puppet/type/acl/ace'
 
-  @doc = <<-'EOT'
+  @doc = <<-DOC
     Manages access control lists (ACLs).  The `acl` type is
     typically used when you need more complex management of
     permissions e.g. Windows. ACLs typically contain access
@@ -27,31 +29,37 @@ Puppet::Type.newtype(:acl) do
     For very specific examples, see the readme[1] and learn
     about the different features of the `acl` type.
 
-    [1] https://github.com/puppetlabs/puppetlabs-acl/blob/master/README.md
+    [1] https://github.com/puppetlabs/puppetlabs-acl/blob/main/README.md
 
     **Autorequires:** If Puppet is managing the user, group or
     target of an acl resource, the acl type will autorequire
     them.
 
+    **Examples:**
+
+    Minimally expressed sample usage:
+
     At a minimum, you need to provide the target and at least
     one permission (access control entry or ACE). It will default
     the other settings to sensible defaults.
 
-    Minimally expressed sample usage:
 
+    ```
       acl { 'c:/tempperms':
         permissions => [
          { identity => 'Administrator', rights => ['full'] },
          { identity => 'Users', rights => ['read','execute'] }
        ],
       }
+    ```
+
+    Fully expressed sample usage:
 
     If you want you can provide a fully expressed ACL. The
     fully expressed acl in the sample below produces the same
     settings as the minimal sample above.
 
-    Fully expressed sample usage:
-
+    ```
       acl { 'c:/tempperms':
         target      => 'c:/tempperms',
         target_type => 'file',
@@ -64,6 +72,9 @@ Puppet::Type.newtype(:acl) do
         group       => 'Users', #Creator_Group specific, doesn't manage unless specified
         inherit_parent_permissions => 'true',
       }
+    ```
+
+    Manage same ACL resource multiple acls sample usage:
 
     You can manage the same target across multiple acl
     resources with some caveats. The title of the resource
@@ -74,8 +85,7 @@ Puppet::Type.newtype(:acl) do
     the permissions will be added and removed every catalog
     application. Use this feature with care.
 
-    Manage same ACL resource multiple acls sample usage:
-
+    ```
       acl { 'c:/tempperms':
         permissions => [
          { identity => 'Administrator', rights => ['full'] }
@@ -88,9 +98,11 @@ Puppet::Type.newtype(:acl) do
          { identity => 'Users', rights => ['read','execute'] }
        ],
       }
+    ```
 
     Removing upstream inheritance with purge sample usage:
 
+    ```
       acl { 'c:/tempperms':
         purge       => 'true',
         permissions => [
@@ -99,14 +111,15 @@ Puppet::Type.newtype(:acl) do
         ],
         inherit_parent_permissions => 'false',
       }
+    ```
 
-     Warning: While managing ACLs you could lock the user running
-     Puppet completely out of managing resources using
-     purge => 'true' with inherit_parent_permissions => 'false'.
-     If Puppet is locked out of managing the resource, manual
-     intervention on affected nodes will be required.
+    Warning: While managing ACLs you could lock the user running
+    Puppet completely out of managing resources using
+    `purge => 'true'` with `inherit_parent_permissions => 'false'`.
+    If Puppet is locked out of managing the resource, manual
+    intervention on affected nodes will be required.
 
-  EOT
+  DOC
 
   feature :ace_order_required, 'The provider determines if the order of access control entries (ACE) is required.'
   feature :can_inherit_parent_permissions, 'The provider can inherit permissions from the parent.'
@@ -238,7 +251,7 @@ Puppet::Type.newtype(:acl) do
       super(current)
     end
 
-    def is_to_s(currentvalue) # rubocop:disable Style/PredicateName  False positive; this is an accepted puppet method name
+    def is_to_s(currentvalue) # rubocop:disable Naming/PredicateName  False positive; this is an accepted puppet method name
       if provider.respond_to?(:permissions_to_s)
         return provider.permissions_to_s(currentvalue)
       end
@@ -301,7 +314,7 @@ Puppet::Type.newtype(:acl) do
       super(current)
     end
 
-    def is_to_s(currentvalue) # rubocop:disable Style/PredicateName  False positive; this is an accepted puppet method name
+    def is_to_s(currentvalue) # rubocop:disable Naming/PredicateName  False positive; this is an accepted puppet method name
       if provider.respond_to?(:owner_to_s)
         return provider.owner_to_s(currentvalue)
       end
@@ -341,7 +354,7 @@ Puppet::Type.newtype(:acl) do
       super(current)
     end
 
-    def is_to_s(currentvalue) # rubocop:disable Style/PredicateName  False positive; this is an accepted puppet method name
+    def is_to_s(currentvalue) # rubocop:disable Naming/PredicateName  False positive; this is an accepted puppet method name
       if provider.respond_to?(:group_to_s)
         return provider.group_to_s(currentvalue)
       end
@@ -411,13 +424,11 @@ Puppet::Type.newtype(:acl) do
     end
 
     permissions = self[:permissions]
-    unless permissions.nil?
-      permissions.each do |permission|
-        if has_account_name_method
-          required_users << provider.get_account_name(permission.identity).to_s
-        end
-        required_users << permission.identity.to_s
+    permissions&.each do |permission|
+      if has_account_name_method
+        required_users << provider.get_account_name(permission.identity).to_s
       end
+      required_users << permission.identity.to_s
     end
 
     required_users.uniq
@@ -451,13 +462,11 @@ Puppet::Type.newtype(:acl) do
     end
 
     permissions = self[:permissions]
-    unless permissions.nil?
-      permissions.each do |permission|
-        if has_account_group_method
-          required_groups << provider.get_group_name(permission.identity).to_s
-        end
-        required_groups << permission.identity.to_s
+    permissions&.each do |permission|
+      if has_account_group_method
+        required_groups << provider.get_group_name(permission.identity).to_s
       end
+      required_groups << permission.identity.to_s
     end
 
     required_groups.uniq

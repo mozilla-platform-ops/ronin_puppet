@@ -8,8 +8,6 @@ class roles_profiles::profiles::ssh {
         'Windows': {
 
             $pwrshl_run_script    = lookup('win_pwrshl_run_script')
-            $mdc1_jumphosts       = lookup('windows.datacenter.mdc1.jump_hosts')
-            $mdc2_jumphosts       = lookup('windows.datacenter.mdc2.jump_hosts')
             $ssh_program_data     = "${facts['custom_win_programdata']}\\ssh"
             $programfiles         = $facts['custom_win_programfiles']
             $firewall_port        = lookup('windows.datacenter.ports.ssh')
@@ -35,10 +33,8 @@ class roles_profiles::profiles::ssh {
                 if $facts['custom_win_sshd'] == 'installed' {
                     include win_openssh::service
                 }
-                # Restrict SSH access in datacenters to jump hosts.
-                win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc1_jumphost":
+                win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc1":
                     port            => $firewall_port,
-                    remote_ip       => $mdc1_jumphosts,
                     reciprocal      => true,
                     fw_display_name => "${firewall_rule_name}_mdc1",
                 }

@@ -20,7 +20,7 @@ class win_mozilla_maintenance_service::install {
         permissions                =>   {
                                             identity    => 'everyone',
                                             rights      => ['full'],
-                                            type        => 'allow',
+                                            perm_type   => 'allow',
                                             child_types => 'all',
                                             affects     => 'all'
                                         },

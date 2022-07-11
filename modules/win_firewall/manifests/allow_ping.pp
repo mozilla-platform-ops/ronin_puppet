@@ -5,7 +5,13 @@
 class win_firewall::allow_ping {
 
     # Resource from counsyl-windows
-    windows::firewall_rule { 'ICMP Ping':
-        protocol => 'icmpv4:8,any',
+    #windows::firewall_rule { 'ICMP Ping':
+    #    protocol => 'icmpv4:8,any',
+    #}
+    windows_firewall_rule { 'icmpv4':
+        ensure    => present,
+        direction => 'inbound',
+        action    => 'allow',
+        protocol  => 'icmpv4',
     }
 }

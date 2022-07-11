@@ -1,91 +1,122 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-Each new release typically also includes the latest modulesync defaults.
-These should not affect the functionality of the module.
 
-## [v2.0.2](https://github.com/voxpupuli/puppet-windows_firewall/tree/v2.0.2) (2018-10-19)
+## Release 1.2.3 (2021-06-09)
 
-[Full Changelog](https://github.com/voxpupuli/puppet-windows_firewall/compare/v2.0.1...v2.0.2)
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v1.2.2...v1.2.3)
 
-**Closed issues:**
+**Features**
 
-- Update documentation for changed attribute data types [\#79](https://github.com/voxpupuli/puppet-windows_firewall/issues/79)
+**Bugfixes**
 
-**Merged pull requests:**
+- [LocalAddress and RemoteAddress are not sorted](https://github.com/webalexeu/puppet-windows_firewall/issues/14)
 
-- modulesync 2.2.0 and allow puppet 6.x [\#82](https://github.com/voxpupuli/puppet-windows_firewall/pull/82) ([bastelfreak](https://github.com/bastelfreak))
-- example and param doc update [\#81](https://github.com/voxpupuli/puppet-windows_firewall/pull/81) ([joeypiccola](https://github.com/joeypiccola))
-- allow puppetlabs/stdlib 5.x [\#77](https://github.com/voxpupuli/puppet-windows_firewall/pull/77) ([bastelfreak](https://github.com/bastelfreak))
+**Known Issues**
 
-## [v2.0.1](https://github.com/voxpupuli/puppet-windows_firewall/tree/v2.0.1) (2018-08-20)
+## Release 1.2.2 (2021-04-29)
 
-[Full Changelog](https://github.com/voxpupuli/puppet-windows_firewall/compare/v2.0.0...v2.0.1)
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v1.2.1...v1.2.2)
 
-**Fixed bugs:**
+**Features**
 
-- Remove hardcoded c drive reference for firewall exceptions [\#63](https://github.com/voxpupuli/puppet-windows_firewall/pull/63) ([TraGicCode](https://github.com/TraGicCode))
+- Run Firewall rules filter queries only if Firewall IPSec Rules exists (ipsec show function) to improve speed processing
 
-**Closed issues:**
+**Bugfixes**
 
-- Update puppetlabs-registry module dependency [\#72](https://github.com/voxpupuli/puppet-windows_firewall/issues/72)
-- Don't  working when Windows installed not on drive C:\ [\#52](https://github.com/voxpupuli/puppet-windows_firewall/issues/52)
-- Use in-built Windows Facter facts [\#45](https://github.com/voxpupuli/puppet-windows_firewall/issues/45)
-- liamjbennett/win\_facts module causes Registry errors [\#34](https://github.com/voxpupuli/puppet-windows_firewall/issues/34)
-- fixing remote ports [\#22](https://github.com/voxpupuli/puppet-windows_firewall/issues/22)
-- fix broken ensure=absent [\#21](https://github.com/voxpupuli/puppet-windows_firewall/issues/21)
+**Known Issues**
 
-**Merged pull requests:**
+- LocalAddress and RemoteAddress are not sorted
 
-- allow puppetlabs/registry 2.x [\#74](https://github.com/voxpupuli/puppet-windows_firewall/pull/74) ([bastelfreak](https://github.com/bastelfreak))
-- Remove docker nodesets [\#69](https://github.com/voxpupuli/puppet-windows_firewall/pull/69) ([bastelfreak](https://github.com/bastelfreak))
-- drop EOL OSs; fix puppet version range [\#68](https://github.com/voxpupuli/puppet-windows_firewall/pull/68) ([bastelfreak](https://github.com/bastelfreak))
-- Puppet 4+ data types to get rid of some validate\_re [\#61](https://github.com/voxpupuli/puppet-windows_firewall/pull/61) ([ofalk](https://github.com/ofalk))
+## Release 1.2.1 (2021-04-29)
 
-## [v2.0.0](https://github.com/voxpupuli/puppet-windows_firewall/tree/v2.0.0) (2017-11-17)
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v1.2.0...v1.2.1)
 
-[Full Changelog](https://github.com/voxpupuli/puppet-windows_firewall/compare/v1.1.0...v2.0.0)
+**Features**
 
-**Merged pull requests:**
+**Bugfixes**
 
-- bump puppet version dependency to \>= 4.7.1 \< 6.0.0 [\#58](https://github.com/voxpupuli/puppet-windows_firewall/pull/58) ([bastelfreak](https://github.com/bastelfreak))
+- [Undefined method error](https://github.com/webalexeu/puppet-windows_firewall/issues/11)
 
-## [v1.1.0](https://github.com/voxpupuli/puppet-windows_firewall/tree/v1.1.0) (2017-02-11)
+**Known Issues**
 
-This is the last release with Puppet3 support!
-* Fix several markdown issues
-* Add missing badges
-* Fix several rubocop issues
-* Set min version_requirement for Puppet + bump deps
-* Rubocop: automatic fixes
+## Release 1.2.0 (2021-04-28)
 
-## 2016-05-08 Release 1.0.3
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v1.1.0...v1.2.0)
 
-* modulesync with voxpupuli defaults
+**Features**
 
-## 2016-02-03 Release 1.0.2
+- Rewrite rules query (show function) to improve speed processing
 
-* Added support for matching remote ports
+**Bugfixes**
 
+- [Show function execution time issue](https://github.com/webalexeu/puppet-windows_firewall/issues/9)
 
-## 2015-07-23 Release 1.0.1
+**Known Issues**
 
-* Fixed rules not being deleted
+- Undefined method error
 
+## Release 1.1.0 (2021-03-29)
 
-## 2013-10-20 Release 0.0.3
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v1.0.1...v1.1.0)
 
-* Add program rule support, various other fixes
+**Features**
 
+- local_user, remote_user and remote_machine are now based on user/group name. Automatic NAME to SID lookup is performed in order to generate the correct SDDL string required for those variables (Those variables are hash variables. Previously string variables)
 
-## 2013-10-20 Release 0.0.2
+**Bugfixes**
 
-* Some bug fixes and additional testing
+**Known Issues**
 
+- Show function execution time issue
 
-## 2013-10-20 Release 0.0.1
+## Release 1.0.1 (2021-03-23)
 
-* The initial version
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v1.0.0...v1.0.1)
 
+**Features**
 
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
+- Removing support for: 2008 Server/2008R2 Server/2012 Server/Windows 7
+
+**Bugfixes**
+
+- [Update of rule not working when using square brackets in the name](https://github.com/webalexeu/puppet-windows_firewall/issues/6)
+
+**Known Issues**
+
+## Release 1.0.0 (2021-03-22)
+
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v0.2.0...v1.0.0)
+
+**Features**
+
+- Add update function for rules. Previously, in case of firewall rule parameters change, rule was deleted and created with new parameters, now rule is in-place updated (Only firewall rule name change will trigger a delete/create process)
+
+**Bugfixes**
+
+**Known Issues**
+
+- Update of rule not working when using square brackets in the name
+
+## Release 0.2.0 (2020-12-18)
+
+[Full Changelog](https://github.com/webalexeu/puppet-windows_firewall/compare/v0.1.0...v0.2.0)
+
+**Features**
+
+- Listing of rules is now based on PowerShell (Previously netsh)
+
+**Bugfixes**
+
+**Known Issues**
+
+## Release 0.1.0 (2020-12-17)
+
+**Features**
+
+- Initial Release (Forked from https://github.com/GeoffWilliams/puppet-windows_firewall)
+- Add management of Connection Security Rules (IPsec)
+
+**Bugfixes**
+
+**Known Issues**

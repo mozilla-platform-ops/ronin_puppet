@@ -12,8 +12,6 @@ class roles_profiles::profiles::vnc {
             $ini_file             = "${facts['custom_win_programfiles']}\\uvnc bvba\\UltraVNC\\ultravnc.ini"
             $package              = 'UltraVnc'
             $msi                  = 'UltraVnc_1223_X64.msi'
-            $mdc1_jumphosts       = lookup('windows.datacenter.mdc1.jump_hosts')
-            $mdc2_jumphosts       = lookup('windows.datacenter.mdc2.jump_hosts')
             $firewall_port        = lookup('windows.datacenter.ports.vnc')
             $firewall_name        = 'UltraVNC'
 
@@ -27,17 +25,10 @@ class roles_profiles::profiles::vnc {
             case $facts['custom_win_mozspace'] {
                 # Restrict VNC access in datacenters to jump hosts.
                 'mdc1', 'mdc2': {
-                    win_firewall::open_local_port { "allow_${firewall_name}_mdc1_jumphost":
+                    win_firewall::open_local_port { "allow_${firewall_name}_mdc1":
                         port            => $firewall_port,
-                        remote_ip       => $mdc1_jumphosts,
                         reciprocal      => true,
                         fw_display_name => "${firewall_name}_mdc1",
-                    }
-                    win_firewall::open_local_port { "allow_${firewall_name}_mdc2_jumphost":
-                        port            => $firewall_port,
-                        remote_ip       => $mdc1_jumphosts,
-                        reciprocal      => true,
-                        fw_display_name => "${firewall_name}_mdc2",
                     }
                 }
                 default : {

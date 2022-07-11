@@ -6,7 +6,7 @@ class win_mozilla_build::hg_install {
 
     if $win_mozilla_build::current_hg_ver != $win_mozilla_build::needed_hg_ver {
         win_packages::win_msi_pkg { "Mercurial ${win_mozilla_build::needed_hg_ver} (x64)" :
-            pkg             => 'mercurial-4.7.1-x64.msi',
+            pkg             => "mercurial-${win_mozilla_build::needed_hg_ver}-x64.msi",
             install_options => ['/quiet'],
         }
     }

@@ -5,6 +5,9 @@
 class win_mozilla_build::install_psutil {
 
     require win_mozilla_build::install
+    if $win_mozilla_build::upgrade_python == true {
+        require win_mozilla_build::python_3_9_5
+    }
 
     $mozbld      = $win_mozilla_build::install_path
     $version     = $win_mozilla_build::psutil_ver

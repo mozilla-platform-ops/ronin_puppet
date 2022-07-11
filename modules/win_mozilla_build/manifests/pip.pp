@@ -5,6 +5,9 @@
 class win_mozilla_build::pip {
 
     require win_mozilla_build::install
+    if $win_mozilla_build::upgrade_python == true {
+        require win_mozilla_build::python_3_9_5
+    }
 
     $needed_py3_pip_ver = $win_mozilla_build::needed_py3_pip_ver
     $mozbld = $win_mozilla_build::install_path
@@ -29,7 +32,7 @@ class win_mozilla_build::pip {
         permissions => {
             identity                   => 'everyone',
             rights                     => ['full'],
-            type                       => 'allow',
+            perm_type                  => 'allow',
             child_types                => 'all',
             affects                    => 'all',
             inherit_parent_permissions => true,
