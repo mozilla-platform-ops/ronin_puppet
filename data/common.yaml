@@ -22,6 +22,8 @@ user_groups:
     - asasaki
     - gbrown
     - hneiva
+    - jcristau
+    - jlorenzo
   cia: []
 
 scriptworker_users:
@@ -274,6 +276,12 @@ all_users:
 
   hneiva:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCjfZR0LUC7TDL+VKC63dZ1JGzDBWja+3l0kziyY7nA03bG+XKVsi8vh09d0N0xysdrKnFaW25zMACx1V8yBpOzSgcfOJtBrTR9k6ScsLN3pCsNqlMY3MO0pTxcgTNclqVefsMfoQxHv1OsOve7LI9Po9q6XkjbqoOV2UjoVe0U8GIZSl/nwQmVk/cPzCm/zSutL3vIbH5W4XD8MKPQBM5+iJdMZb+idXRUXEAl1334zitAFe9dy8FzN8EyPk+tTj1lJDj77HWYnNaW1ws+qvhErlH+bD2FqD/fKv9c6LA9RTZsYor9pP40DZ5+E+bx0NUPjmrAAWyHfVUzgz7f2AIZmfrZQkOwjgFA3lmtMuthYh42AnIswzbUSRaRWbGmG68h20twSIpRX1tJR1g97j1wZtL8wFjdceN/cL+41TlPxZXoF34s9I2hVm0ZBgVqz8xj/gp8FFZj35qCnk78HAKxIBQhYzhv6ei28PhRkGlvWYrOXJcr2Wgpc+ELylyEe6ieTzPec2jyGd7vTGtmkLtPBcI/SJDD/kMo1E3CGQI208daXBkWIVEZnRIhqQJJzX+bg54UPARocuEq2sNLdcuuKf5Mq8wvbwaGioNDXYLrRqWtIWPUDoi0E0Stl9Z+ecZoJZqAjKCp6Fyuv7wmsx0LmkVX/t0qL5x3GKTyDfn48w== hneiva@mozilla.com
+
+  jcristau:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDD1coEjA0xXcjmJ7H2kJGWGCW4JkK8JMfzogw94t2VZVFEHFx1YSVE00dObjci8387V0QySsrndt8qIFIbUa4vss1+EtfOnd7kbPCXD8EoWJGv9G70OfdV1uMmDF10heZPdj3OmkWfusvGOEYaOQuuz3HQUYT3YO9F+8llFsCIsyeLj7xcAY8pGvYqj0Fh2uJAc72zetqGjvB7PKJmoYphVHLtEnW1OrvDouhk9fJL1SF06Kf0RmkI7N+bBPVcHYczwkLHY13OA0D8szHentG2557lwN/02UzlY25RNjCEBjlC4IIrVRKdgP4aBl/CijIiJ1tN40qp/edAQ0vjYnAN jcristau@mozilla.com
+
+  jlorenzo:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgKAI4ewrAAfxgV1sE5cNwublsALzX3xYGWwU3RLoCa yubikey-mozilla-2022
 
   # from relops_common_keys_2020-09-08.yml
   relops:
