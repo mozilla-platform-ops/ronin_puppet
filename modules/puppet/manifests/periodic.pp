@@ -9,7 +9,7 @@ class puppet::periodic (
     String $puppet_repo         = 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
     String $puppet_branch       = 'master',
     String $puppet_notify_email = 'puppet-ronin-reports@mozilla.com',
-    String $smtp_relay_host     = 'localhost',
+    String $smtp_relay_host     = lookup({'name' => 'smtp_relay_host', 'default_value' => 'localhost'}),
     Hash $meta_data             = {},
 ) {
 

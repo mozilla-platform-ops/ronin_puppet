@@ -20,7 +20,7 @@ executors:
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
   macos-1014: &1014
     macos:
-      xcode: 11.1.0
+      xcode: 11.7.0
   macos-1015: &1015
     macos:
       xcode: 12.4.0

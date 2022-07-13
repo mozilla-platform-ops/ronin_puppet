@@ -31,4 +31,4 @@ mod 'mac_profiles_handler',
 
 mod 'hiera_vault',
   :git => "https://github.com/petems/petems-hiera_vault.git",
-  :commit => '4376028fd137c62c856a4168f2698bd5930117c6'
+  :commit => '2f8fadc7a778feda19dbfd54c65c51761b26c9ec'

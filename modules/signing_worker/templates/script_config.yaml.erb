@@ -17,7 +17,7 @@ mac_config:
 <% @role_config.each do |role, role_data| -%>
     <%= role %>:
         notarize_type: single_zip
-        signing_keychain: "<%= @certs_dir %>/<%= role %>-signing.keychain"
+        signing_keychain: "<%= @keychain_path %>"
         supported_behaviors:
 <% @supported_behaviors.each do |behavior| -%>
             - <%= behavior %>
@@ -26,6 +26,8 @@ mac_config:
         verify_mac_signature: <%= role_data['verify_mac_signature'] %>
 <% if @cot_product == "firefox" -%>
         base_bundle_id: "<%= role_data['base_bundle_id'] %>"
+<% elsif @cot_product == "mozillavpn" -%>
+        base_bundle_id: "<%= role_data['vpn_base_bundle_id'] %>"
 <% else -%>
         base_bundle_id: "<%= role_data['tb_base_bundle_id'] %>"
 <% end -%>

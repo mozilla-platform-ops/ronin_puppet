@@ -7,11 +7,13 @@ group :test do
     gem 'puppet', ENV['PUPPET_VERSION'] || '~> 6'
   end
 
-  gem 'json_pure'
+  gem 'json', ">= 2.3.0"
+  gem 'json_pure', ">= 2.3.1"
   gem 'safe_yaml'
 
   gem 'rake'
   gem 'puppet-lint'
+  gem 'rspec'
   gem 'rspec-puppet'
   gem 'puppet-syntax'
   gem 'puppetlabs_spec_helper'
@@ -31,4 +33,8 @@ group :development do
   gem 'pdk'
   gem 'pry'
   gem 'rb-readline'
+end
+
+group :test do 
+  gem 'ddtrace', ">=0.51.0"
 end

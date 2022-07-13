@@ -30,6 +30,7 @@ class roles_profiles::profiles::mac_v3_signing {
             $role = $facts['networking']['hostname']? {
                 /^dep-mac-v3-signing\d+/ => 'dep',
                 /^tb-mac-v3-signing\d+/ => 'tb-prod',
+                /^vpn-mac-v3-signing\d+/ => 'vpn',
                 default => 'ff-prod',
             }
 
@@ -64,6 +65,7 @@ class roles_profiles::profiles::mac_v3_signing {
                     widevine_user       => $widevine_user,
                     widevine_key        => $widevine_key,
                     widevine_filename   => $user_data['widevine_filename'],
+                    keychain_filename   => $user_data['keychain_filename'],
                     worker_config       => $worker_config,
                     role_config         => $role_config,
                     notarization_users  => $user_data['notarization_users'],

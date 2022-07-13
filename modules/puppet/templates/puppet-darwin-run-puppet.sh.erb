@@ -78,8 +78,10 @@ function email_report {
     ERR_SUBJECT=$1
     ERR_MSG=$2
 
+    RELAY_HOST="<%= @smtp_relay_host %>"
     SENDER="root@${FQDN}"
     RECEIVER="${PUPPET_MAIL}"
+
     python <<EOF
 import smtplib
 
@@ -90,12 +92,9 @@ Subject: ${ERR_SUBJECT}
 ${ERR_MSG}
 """
 
-try:
-   smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
-   smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
-   print "Successfully sent email"
-except SMTPException:
-   print "Error: unable to send email"
+smtpObj = smtplib.SMTP("${RELAY_HOST}")
+smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
+print "Successfully sent email"
 EOF
 }
 
@@ -140,6 +139,9 @@ EOF
 }
 
 function run_puppet {
+    echo "#############################################"
+    echo "Running puppet - $(date)"
+    echo "#############################################"
 
     # Always bring the puppet git up-to-sync before executing puppet
     if ! update_puppet; then
