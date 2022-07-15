@@ -12,11 +12,13 @@ apple_firmware_acceptance:
 
 user_groups:
   relops:
-    - jwatkins
-    - dhouse
-    - mcornmesser
     - aerickson
-    - rthijssen
+    - ahalberstadt
+    - asasaki
+    - dhouse
+    - gbrown
+    - hneiva
+    - mcornmesser
   signing:
     - ahalberstadt
     - asasaki
