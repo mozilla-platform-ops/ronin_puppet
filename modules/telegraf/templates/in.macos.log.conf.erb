@@ -1,0 +1,62 @@
+[[inputs.execd]]
+  #command = ["log", "stream", "--type", "log", "--style", "ndjson", "--level", "info", "--color", "none", "--predicate", "'(process MATCHES \"(logger|sudo|su|sshd)\" || messageType >= 17)'"]
+  command = ["bash", "-c", "log stream --type log --style ndjson --level info --color none --predicate '(process MATCHES \"(logger|sudo|su|sshd)\" || messageType >= 17)' | sed -l -e '1d'"]
+  signal = "none"
+  restart_delay = "10s"
+  #commands = ["log stream --type log --style ndjson --level info --color none --predicate '(process MATCHES \"(logger|sudo|su|sshd)\" || messageType >= 17)' --timeout 5s"]
+  #commands = ["bash -c \"log stream --type log --style ndjson --level info --color none --predicate '(process MATCHES \\\"(logger|sudo|su|sshd)\\\" || messageType >= 17)' | sed -l -e '1d'|head -1\""]
+  data_format = "json"
+  json_query = '{"appname":processImagePath,timestamp,"pid":processID,"msg":eventMessage,"severity":messageType}'
+  json_strict = false
+  json_time_key = "timestamp"
+  json_time_format = "2006-01-02 15:04:05.000000-0700"
+  json_timezone = "UTC"
+  tag_keys = ["appname","severity"]
+  json_string_fields = ["msg"]
+  #timeout = "10s"
+  name_override = "syslog"
+  #interval = "5s"
+
+[[processors.regex]]
+  [[processors.regex.tags]]
+    namepass = ["syslog"]
+    key = "appname"
+    pattern = "^/(usr/)?(s?bin|lib(exec)?)/([^/]*)$"
+    replacement = "${4}"
+
+[[processors.strings]]
+  #[[processors.strings.trim_prefix]]
+  #  namepass = ["syslog"]
+  #  tag = "appname"
+  #  prefix = "/usr/bin/"
+  #[[processors.strings.trim_prefix]]
+  #  namepass = ["syslog"]
+  #  tag = "appname"
+  #  prefix = "/usr/sbin/"
+  [[processors.strings.trim_suffix]]
+    tag = "host"
+    suffix = ".local"
+
+[[processors.enum]]
+  namepass = ["syslog"]
+  [[processors.enum.mapping]]
+    #field = "severity"
+    tag = "severity"
+    default = "info"
+    [processors.enum.mapping.value_mappings]
+      Debug = "debug"
+      Info = "info"
+      Default = "warn"
+      Error = "error"
+      Fatal = "crit"
+  [[processors.enum.mapping]]
+    #field = "severity"
+    tag = "severity"
+    dest = "severity_code"
+    default = 6
+    [processors.enum.mapping.value_mappings]
+      Debug = 7
+      Info = 6
+      Default = 5
+      Error = 3
+      Fatal = 2

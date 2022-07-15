@@ -11,16 +11,6 @@
   <%= key -%> = <% if value.is_a?(String) %>"<%= value %>"<% elsif value.is_a?(Array) %><%= value.inspect %><% else %><%= value %><% end %>
 <%   end -%>
 
-[[outputs.influxdb]]
-  urls = ["<%= @influxdb_url %>"]
-  database = "relops"
-  #skip_database_creation = true
-  username = "<%= @influxdb_username %>"
-  password = "<%= @influxdb_password %>"
-  retention_policy = ""
-  write_consistency = "any"
-  timeout = "120s"
-
 <% if @_inputs -%>
 # INPUTS:
 <%   @_inputs.sort.each do | input, options | -%>

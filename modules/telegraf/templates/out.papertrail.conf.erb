@@ -1,0 +1,13 @@
+[[outputs.syslog]]
+  flush_interval = "1s"
+  address = "tcp://<%= @syslog_host -%>:<%= @syslog_port -%>"
+  <% if @syslog_host =~ /papertrail/ -%>
+  tls_cert = "/etc/telegraf/papertrail-bundle.pem"
+  #insecure_skip_verify = true
+  <% end -%>
+  namepass = ["*log"]
+  default_appname = "telegraf"
+  default_facility_code = 1
+  default_severity_code = 5
+  trailer = "NUL"
+  keep_alive_period = "1m"
