@@ -107,6 +107,7 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_notarize_single_file
         - mac_geckodriver
         - mac_single_file
         - mac_notarize
