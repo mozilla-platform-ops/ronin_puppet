@@ -183,10 +183,18 @@ function run_puppet {
 
 block_on_network
 
-# Call the run_puppet function in a endless loop
-while ! run_puppet; do
-    echo "Puppet run failed; re-trying after 10m"
-    sleep 600
+# Call the run_puppet function in a loop
+MAX_PUPPET_ATTEMPTS=5
+for i in `seq $MAX_PUPPET_ATTEMPTS`; do
+    if run_puppet; then
+        break
+    fi
+    if [ $i -lt $MAX_PUPPET_ATTEMPTS ]; then
+        echo "Puppet run failed; re-trying after 10m"
+        sleep 600
+    else
+        exit 1
+    fi
 done
 
 # Touch the semaphore to allow launchd to start generic worker (if applicable)
