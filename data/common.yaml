@@ -16,7 +16,6 @@ user_groups:
     - dhouse
     - mcornmesser
     - aerickson
-    - rthijssen
     - jmoss
   signing:
     - ahalberstadt
