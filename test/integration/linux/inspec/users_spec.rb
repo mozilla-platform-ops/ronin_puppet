@@ -15,7 +15,7 @@ describe 'users' do
 end
 
 describe file('/etc/group') do
-  its(:content) { should match /admin:x:[\d]+:jwatkins,dhouse,mcornmesser,aerickson,jmoss/ }
+  its(:content) { should match /admin:x:[\d]+:jwatkins,dhouse,mcornmesser,jmoss,aerickson/ }
 end
 
 # root should have * pw
