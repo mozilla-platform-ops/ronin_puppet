@@ -107,12 +107,13 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
-        - mac_notarize_single_file
         - mac_geckodriver
         - mac_single_file
         - mac_notarize
         - mac_notarize_part_1
         - mac_notarize_part_3
+        - mac_notarize_geckodriver
+        - mac_notarize_single_file
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
