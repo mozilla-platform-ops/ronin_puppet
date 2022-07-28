@@ -122,7 +122,9 @@ function Install-AzPrerequ {
         [string] $rdagent = "rdagent",
         [string] $azure_guest_agent = "WindowsAzureGuestAgent",
         [string] $azure_telemetry = "WindowsAzureTelemetryService",
-        [string] $ps_ver = $PSVersionTable.PSVersion.Major,
+        [string] $ps_ver_maj = $PSVersionTable.PSVersion.Major,
+        [string] $ps_ver_min = $PSVersionTable.PSVersion.Minor,
+        [string] $ps_ver = ('{0}.{1}' -f $ps_ver_maj,$ps_ver_min),
         [string] $wmf_5_1 ="Win8.1AndW2K12R2-KB3191564-x64.msu",
         [string] $bootzip = "BootStrap_Azure_07-2022.zip"
     )
@@ -142,7 +144,7 @@ function Install-AzPrerequ {
             exit 0
         }
         Set-location -path $work_dir
-        Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\$bootzip
+        Invoke-WebRequest -Uri  $ext_src/$bootzip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
         Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
         Set-location -path $local_dir
         remove-item $work_dir   -Recurse  -force
