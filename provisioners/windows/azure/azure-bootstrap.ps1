@@ -127,6 +127,8 @@ function Install-AzPrerequ {
     	[string] $rdagent = "rdagent",
     	[string] $azure_guest_agent = "WindowsAzureGuestAgent",
     	[string] $azure_telemetry = "WindowsAzureTelemetryService",
+		[string] $ps_ver = $PSVersionTable.PSVersion.Major,
+		[string] $wmf_5_1 ="Win8.1AndW2K12R2-KB3191564-x64.msu",
         [string] $bootzip = "BootStrap_Azure_07-2022.zip"
   	)
   	begin {
@@ -135,6 +137,15 @@ function Install-AzPrerequ {
   	process {
 
     	New-Item -path $work_dir -ItemType "directory"
+		if ($ps_ver -le 5) {
+			Write-Log -message  ('{0} :: Powershell does not meet the minimum version of 5.1 -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+			Write-Log -message  ('{0} :: Updating Powershell from version {1} to 5.1 -f $($MyInvocation.MyCommand.Name), $PSVersionTable.PSVersion.Major) -severity 'DEBUG'
+			write-host $ps_ver
+			write-host NEEDS updated
+			Invoke-WebRequest -Uri  $ext_src/$wmf_5_1  -UseBasicParsing -OutFile $work_dir\$wmf_5_1
+			wusa.exe $work_dir\$wmf_5_1 /quiet /norestart
+  			exit 0
+		}
     	Set-location -path $work_dir
     	Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\$bootzip
     	Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
