@@ -77,7 +77,6 @@ function Set-RoninRegOptions {
     	[string] $ronnin_key = "$mozilla_key\ronin_puppet",
     	[string] $source_key = "$ronnin_key\source",
     	[string] $image_provisioner,
-    	#[string] $workerType,
         [string] $worker_pool_id,
         [string] $base_image,
     	[string] $src_Organisation,
@@ -95,11 +94,7 @@ function Set-RoninRegOptions {
 
     	New-Item -Path $ronnin_key -Name source -force
     	New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String  -force
-    	#New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
-        #$WorkerPoolID = $worker_pool_id -replace '/','-'
         New-ItemProperty -Path "$ronnin_key" -Name 'worker_pool_id' -Value "$worker_pool_id" -PropertyType String -force
-    	#$role = $workerType -replace '-',''
-    	#New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
         New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$base_image" -PropertyType String -force
     	Write-Log -message  ('{0} :: Node workerType set to {1}' -f $($MyInvocation.MyCommand.Name), ($workerType)) -severity 'DEBUG'
 
@@ -140,8 +135,6 @@ function Install-AzPrerequ {
 		if ($ps_ver -le 5) {
 			Write-Log -message  ('{0} :: Powershell does not meet the minimum version of 5.1 -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 			Write-Log -message  ('{0} :: Updating Powershell from version {1} to 5.1 -f $($MyInvocation.MyCommand.Name), $PSVersionTable.PSVersion.Major) -severity 'DEBUG'
-			write-host $ps_ver
-			write-host NEEDS updated
 			Invoke-WebRequest -Uri  $ext_src/$wmf_5_1  -UseBasicParsing -OutFile $work_dir\$wmf_5_1
 			wusa.exe $work_dir\$wmf_5_1 /quiet /norestart
   			exit 0
