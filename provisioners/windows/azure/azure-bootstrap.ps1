@@ -137,6 +137,8 @@ function Install-AzPrerequ {
             Write-Log -message  ('{0} :: Updating Powershell from version {1} to 5.1' -f $($MyInvocation.MyCommand.Name), $PSVersionTable.PSVersion.Major) -severity 'DEBUG'
             Invoke-WebRequest -Uri  $ext_src/$wmf_5_1  -UseBasicParsing -OutFile $work_dir\$wmf_5_1
             wusa.exe $work_dir\$wmf_5_1 /quiet /norestart
+            # Wait to allow to allow msu to finish installing
+            start-sleep -Seconds 120
             exit 0
         }
         Set-location -path $work_dir
@@ -311,8 +313,8 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging -DisableNameChecking
-    Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     Install-AzPrerequ -DisableNameChecking
+    Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
