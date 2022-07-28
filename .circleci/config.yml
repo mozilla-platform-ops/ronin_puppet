@@ -10,7 +10,7 @@ executors:
       - image: cimg/base:2021.04
   docker-ruby:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:3.0
   ubuntu-2004-docker:
     docker:
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
