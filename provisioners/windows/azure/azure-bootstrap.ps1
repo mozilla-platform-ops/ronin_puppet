@@ -203,9 +203,13 @@ Function Set-AzRoninRepo {
     if (!(Test-path $secrets)) {
         Copy-item -path $secret_src -destination $secrets -recurse -force
     }
-        # Start to disable Windows defender here
-        Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
-        Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
+        # If Wn 10 Start to disable Windows defender here
+        # Prevent issues on the Pupept apply
+        $OSVersion = (get-itemproperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ProductName).ProductName
+        if ($OSVersion -like "Windows 10*") {
+            Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
+            Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
+        }
     }
         end {
             Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
