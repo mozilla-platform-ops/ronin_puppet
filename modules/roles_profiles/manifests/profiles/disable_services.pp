@@ -48,7 +48,8 @@ class roles_profiles::profiles::disable_services {
                 include win_disable_services::disable_onedrive
             }
             if $facts['custom_win_release_id'] == '1903' or '2004'{
-                include win_disable_services::disable_windows_defender_schtask
+                # disable for now
+                #include win_disable_services::disable_windows_defender_schtask
             } else {
                 # disable for now
                 #include win_disable_services::disable_windows_defender
