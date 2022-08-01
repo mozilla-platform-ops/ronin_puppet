@@ -27,7 +27,7 @@ class roles_profiles::profiles::microsoft_tools {
                 moz_profile_source => lookup('win-worker.mozilla_profile.source'),
                 moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
             }
-            if $facts['os']['release']['full'] != '2012 R2' {
+            if $facts['os']['release']['full'] == '2012 R2' {
                 include win_packages::dxsdk_jun10
             }
             # Bug List
