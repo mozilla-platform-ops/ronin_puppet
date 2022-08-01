@@ -8,13 +8,16 @@ class win_packages::dxsdk_jun10 {
     $sdk_dir = "Microsoft DirectX SDK (June 2010)\\\\system\\uninstall"
     $file    = 'DXSDK_Jun10.exe'
 
-    windowsfeature { 'NET-Framework-Core':
-        ensure => present,
+    exec { 'enable_netframework_core':
+        command  => file('win_packages/net_framework_install.ps1'),
+        provider => powershell,
+        unless   => "Test-Path '${prog86x}\\${sdk_dir}\\${file}'",
     }
 
     win_packages::win_exe_pkg  { 'dxsdk_jun10':
         pkg                    => 'DXSDK_Jun10.exe',
         install_options_string => '/U',
-        creates                => "${prog86x}\\${sdk_dir}\\${file}"
+        creates                => "${prog86x}\\${sdk_dir}\\${file}",
+        require                => Exec['enable_netframework_core'],
     }
 }
