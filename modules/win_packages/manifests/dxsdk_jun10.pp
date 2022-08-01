@@ -8,6 +8,10 @@ class win_packages::dxsdk_jun10 {
     $sdk_dir = "Microsoft DirectX SDK (June 2010)\\\\system\\uninstall"
     $file    = 'DXSDK_Jun10.exe'
 
+    windowsfeature { 'NET-Framework-Core':
+        ensure => present,
+    }
+
     win_packages::win_exe_pkg  { 'dxsdk_jun10':
         pkg                    => 'DXSDK_Jun10.exe',
         install_options_string => '/U',
