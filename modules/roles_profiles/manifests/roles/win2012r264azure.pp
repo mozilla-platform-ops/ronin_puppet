@@ -11,7 +11,7 @@ class roles_profiles::roles::win2012r264azure {
     include roles_profiles::profiles::firewall
     include roles_profiles::profiles::network
     include roles_profiles::profiles::ntp
-    #include roles_profiles::profiles::power_management
+    include roles_profiles::profiles::power_management
     #include roles_profiles::profiles::scheduled_tasks
     #include roles_profiles::profiles::azure_vm_agent
 
