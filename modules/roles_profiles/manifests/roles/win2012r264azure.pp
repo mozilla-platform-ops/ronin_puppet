@@ -13,7 +13,7 @@ class roles_profiles::roles::win2012r264azure {
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
     #include roles_profiles::profiles::scheduled_tasks
-    #include roles_profiles::profiles::azure_vm_agent
+    include roles_profiles::profiles::azure_vm_agent
 
     # Adminstration
     include roles_profiles::profiles::logging
