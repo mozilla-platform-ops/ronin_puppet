@@ -4,6 +4,9 @@
 
 class roles_profiles::roles::win2012r264azure {
 
+    # Needs to be applied before other Win Update is disabled
+    include roles_profiles::profiles::microsoft_tools
+
     # System
     include roles_profiles::profiles::disable_services
     include roles_profiles::profiles::suppress_dialog_boxes
@@ -24,5 +27,5 @@ class roles_profiles::roles::win2012r264azure {
     #include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
     #include roles_profiles::profiles::windows_worker_runner
-    include roles_profiles::profiles::microsoft_tools
+    #include roles_profiles::profiles::microsoft_tools
 }
