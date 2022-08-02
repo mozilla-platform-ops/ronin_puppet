@@ -16,6 +16,5 @@ class win_packages::dxsdk_jun10 {
         pkg                    => 'DXSDK_Jun10.exe',
         install_options_string => '/U',
         creates                => "${prog86x}\\${sdk_dir}\\${file}",
-        require                => Exec['enable_netframework_core'],
     }
 }
