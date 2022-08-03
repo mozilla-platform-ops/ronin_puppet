@@ -28,6 +28,7 @@ class win_mozilla_build (
     if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
         include win_mozilla_build::install
         include win_mozilla_build::hg_install
+        include win_mozilla_build::modifications
     } else {
         include win_mozilla_build::install
         include win_mozilla_build::hg_install

@@ -41,7 +41,14 @@ class win_mozilla_build::modifications {
         value => $win_mozilla_build::install_path,
     }
     # Resource from counsyl-windows
-    if $win_mozilla_build::upgrade_python == true {
+
+    if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
+        windows_env { "PATH=${mozbld}\\bin": }
+        windows_env { "PATH=${mozbld}\\kdiff": }
+        windows_env { "PATH=${mozbld}\\msys2": }
+        windows_env { "PATH=${mozbld}\\python3": }
+
+    } elsif $win_mozilla_build::upgrade_python == true {
         windows_env { "PATH=${win_mozilla_build::program_files}\\Mercurial": }
         windows_env { "PATH=${mozbld}\\bin": }
         windows_env { "PATH=${mozbld}\\kdiff": }
