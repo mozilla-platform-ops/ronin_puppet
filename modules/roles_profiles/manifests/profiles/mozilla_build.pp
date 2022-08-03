@@ -38,31 +38,35 @@ class roles_profiles::profiles::mozilla_build {
                 $upgrade_python = false
             }
 
-            #if $upgrade_python == true {
-            #    include win_packages::vs_buildtools
-            #}
 
-            class { 'win_mozilla_build':
-                current_mozbld_ver        => $facts['custom_win_mozbld_vesion'],
-                needed_mozbld_ver         => lookup('win-worker.mozilla_build.version'),
-                current_hg_ver            => $facts['custom_win_hg_version'],
-                needed_hg_ver             => lookup('win-worker.mozilla_build.hg_version'),
-                current_py3_pip_ver       => $facts['custom_win_py3_pip_version'],
-                needed_py3_pip_ver        => lookup('win-worker.mozilla_build.py3_pip_version'),
-                current_py3_zstandard_ver => $facts['custom_win_py3_zstandard_version'],
-                needed_py3_zstandard_ver  => lookup('win-worker.mozilla_build.py3_zstandard_version'),
-                install_path              => "${facts['custom_win_systemdrive']}\\mozilla-build",
-                system_drive              => $facts['custom_win_systemdrive'],
-                cache_drive               => $cache_drive,
-                program_files             => $facts['custom_win_programfiles'],
-                programdata               => $facts['custom_win_programdata'],
-                psutil_ver                => lookup('win-worker.mozilla_build.psutil_version'),
-                tempdir                   => $facts['custom_win_temp_dir'],
-                system32                  => $facts['custom_win_system32'],
-                external_source           => lookup('windows.s3.ext_pkg_src'),
-                builds_dir                => "${facts['custom_win_systemdrive']}\\builds",
-                tooltool_tok              => $tooltool_tok,
-                upgrade_python            => $upgrade_python,
+            if $facts['os']['release']['full'] == '2012 R2' {
+                class { 'win_mozilla_build::init_4_0_1':
+                    current_mozbld_ver => $facts['custom_win_mozbld_vesion'],
+                    needed_mozbld_ver  => lookup('win-worker.mozilla_build.version'),
+                }
+            } else {
+                class { 'win_mozilla_build':
+                    current_mozbld_ver        => $facts['custom_win_mozbld_vesion'],
+                    needed_mozbld_ver         => lookup('win-worker.mozilla_build.version'),
+                    current_hg_ver            => $facts['custom_win_hg_version'],
+                    needed_hg_ver             => lookup('win-worker.mozilla_build.hg_version'),
+                    current_py3_pip_ver       => $facts['custom_win_py3_pip_version'],
+                    needed_py3_pip_ver        => lookup('win-worker.mozilla_build.py3_pip_version'),
+                    current_py3_zstandard_ver => $facts['custom_win_py3_zstandard_version'],
+                    needed_py3_zstandard_ver  => lookup('win-worker.mozilla_build.py3_zstandard_version'),
+                    install_path              => "${facts['custom_win_systemdrive']}\\mozilla-build",
+                    system_drive              => $facts['custom_win_systemdrive'],
+                    cache_drive               => $cache_drive,
+                    program_files             => $facts['custom_win_programfiles'],
+                    programdata               => $facts['custom_win_programdata'],
+                    psutil_ver                => lookup('win-worker.mozilla_build.psutil_version'),
+                    tempdir                   => $facts['custom_win_temp_dir'],
+                    system32                  => $facts['custom_win_system32'],
+                    external_source           => lookup('windows.s3.ext_pkg_src'),
+                    builds_dir                => "${facts['custom_win_systemdrive']}\\builds",
+                    tooltool_tok              => $tooltool_tok,
+                    upgrade_python            => $upgrade_python,
+                }
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
