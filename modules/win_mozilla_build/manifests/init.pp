@@ -25,8 +25,9 @@ class win_mozilla_build (
 
     $tooltool_tok = undef
 ) {
-
-    if $::operatingsystem == 'Windows' {
+    if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
+        include win_mozilla_build::install
+    } else {
         include win_mozilla_build::install
         include win_mozilla_build::hg_install
         include win_mozilla_build::hg_files
@@ -39,8 +40,6 @@ class win_mozilla_build (
         include win_mozilla_build::grant_symlnk_access
         include win_mozilla_build::zstandard
         include win_mozilla_build::install_psutil
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
     }
 }
 

@@ -28,10 +28,10 @@ win-worker:
   # Mozilla-build
   mozilla_build:
     version: '4.0.1'
-    #hg_version: '5.9.3'
-    #py3_pip_version: '19.2.1'
-    #py3_zstandard_version: '0.15.2'
-    #psutil_version: '5.7.0'
+    hg_version: 'undef'
+    py3_pip_version: 'undef'
+    py3_zstandard_version: 'undef'
+    psutil_version: 'undef'
 
   # Mozilla profile
   mozilla_profile:
