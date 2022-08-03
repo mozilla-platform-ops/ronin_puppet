@@ -17,6 +17,9 @@ class roles_profiles::profiles::microsoft_tools {
 
             if $facts['custom_win_release_id'] == '2004'{
                 include win_packages::vs_buildtools
+            } elsif $facts['os']['release']['full'] == '2012 R2' {
+                include win_packages::vs_buildtools
+                include win_packages::dxsdk_jun10
             } else {
                 include win_packages::vc_redist_x86
                 include win_packages::vc_redist_x64
@@ -26,9 +29,6 @@ class roles_profiles::profiles::microsoft_tools {
             class { 'win_packages::performance_tool_kit':
                 moz_profile_source => lookup('win-worker.mozilla_profile.source'),
                 moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
-            }
-            if $facts['os']['release']['full'] == '2012 R2' {
-                include win_packages::dxsdk_jun10
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
