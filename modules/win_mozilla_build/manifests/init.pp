@@ -29,6 +29,7 @@ class win_mozilla_build (
         include win_mozilla_build::install
         include win_mozilla_build::hg_install
         include win_mozilla_build::modifications
+        include win_mozilla_build::install_py3_certi
         include win_mozilla_build::zstandard
         include win_mozilla_build::install_psutil
     } else {
