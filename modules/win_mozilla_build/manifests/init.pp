@@ -22,30 +22,27 @@ class win_mozilla_build (
     String $external_source,
     Boolean $upgrade_python,
     String $builds_dir,
-
     $tooltool_tok = undef
 ) {
-    if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
-        include win_mozilla_build::install
-        include win_mozilla_build::hg_install
-        include win_mozilla_build::modifications
-        include win_mozilla_build::install_py3_certi
-        include win_mozilla_build::zstandard
-        include win_mozilla_build::install_psutil
-    } else {
-        include win_mozilla_build::install
-        include win_mozilla_build::hg_install
-        include win_mozilla_build::hg_files
-        include win_mozilla_build::install_py3_certi
-        include win_mozilla_build::tooltool
-        include win_mozilla_build::modifications
-        include win_mozilla_build::set_registry_priority
-        include win_mozilla_build::virtualenv_support
-        include win_mozilla_build::pip
-        include win_mozilla_build::grant_symlnk_access
-        include win_mozilla_build::zstandard
-        include win_mozilla_build::install_psutil
-    }
+    include win_mozilla_build::install
+    include win_mozilla_build::hg_install
+    include win_mozilla_build::modifications
+    include win_mozilla_build::install_py3_certi
+    include win_mozilla_build::pip
+    include win_mozilla_build::zstandard
+    include win_mozilla_build::install_psutil
+    include win_mozilla_build::install
+    include win_mozilla_build::hg_install
+    include win_mozilla_build::hg_files
+    include win_mozilla_build::install_py3_certi
+    include win_mozilla_build::tooltool
+    include win_mozilla_build::modifications
+    include win_mozilla_build::set_registry_priority
+    include win_mozilla_build::virtualenv_support
+    include win_mozilla_build::pip
+    include win_mozilla_build::grant_symlnk_access
+    include win_mozilla_build::zstandard
+    include win_mozilla_build::install_psutil
 }
 
 # Bug list

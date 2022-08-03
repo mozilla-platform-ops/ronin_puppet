@@ -47,7 +47,6 @@ class win_mozilla_build::modifications {
         windows_env { "PATH=${mozbld}\\kdiff": }
         windows_env { "PATH=${mozbld}\\msys2": }
         windows_env { "PATH=${mozbld}\\python3": }
-
     } elsif $win_mozilla_build::upgrade_python == true {
         windows_env { "PATH=${win_mozilla_build::program_files}\\Mercurial": }
         windows_env { "PATH=${mozbld}\\bin": }
