@@ -24,7 +24,7 @@ class roles_profiles::roles::win2012r264azure {
 
     # Worker
     include roles_profiles::profiles::git
-    #include roles_profiles::profiles::mozilla_build
+    include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
     #include roles_profiles::profiles::windows_worker_runner
     #include roles_profiles::profiles::microsoft_tools
