@@ -28,7 +28,7 @@ win-worker:
   # Mozilla-build
   mozilla_build:
     version: '4.0.1'
-    hg_version: 'undef'
+    hg_version: '6.2.1'
     py3_pip_version: 'undef'
     py3_zstandard_version: 'undef'
     psutil_version: 'undef'
