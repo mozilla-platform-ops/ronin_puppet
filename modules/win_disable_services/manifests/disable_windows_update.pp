@@ -14,11 +14,6 @@ class win_disable_services::disable_windows_update {
         name   => 'wuauserv',
         enable => false,
       }
-      service { 'WaaSMedicSvc':
-        ensure => stopped,
-        name   => 'WaaSMedicSvc',
-        enable => false,
-      }
       service { 'UsoSvc':
         ensure => stopped,
         name   => 'UsoSvc',
