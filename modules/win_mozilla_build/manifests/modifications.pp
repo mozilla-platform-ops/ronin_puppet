@@ -33,9 +33,9 @@ class win_mozilla_build::modifications {
             ensure => link,
             target => "${win_mozilla_build::system_drive}\\users",
         }
-        file { "${mozbld}\\msys\\home":
+        file {  "${win_mozilla_build::system_drive}\\users":
             ensure => link,
-            target => "${win_mozilla_build::system_drive}\\users",
+            target => "${mozbld}\\msys2\\home",
         }
     }
     # Resource from counsyl-windows
