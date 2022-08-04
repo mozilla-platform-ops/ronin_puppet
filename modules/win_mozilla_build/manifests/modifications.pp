@@ -33,10 +33,11 @@ class win_mozilla_build::modifications {
             ensure => link,
             target => "${win_mozilla_build::system_drive}\\users",
         }
-        file {  "${win_mozilla_build::system_drive}\\users":
-            ensure => link,
-            target => "${mozbld}\\msys2\\home",
-        }
+        # Test without. This link is proabably not possible.
+        #file {  "${win_mozilla_build::system_drive}\\users":
+        #    ensure => link,
+        #    target => "${mozbld}\\msys2\\home",
+        #}
     }
     # Resource from counsyl-windows
     windows::environment { 'MOZILLABUILD':
