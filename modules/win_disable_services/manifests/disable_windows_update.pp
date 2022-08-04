@@ -7,7 +7,7 @@ class win_disable_services::disable_windows_update {
   $win_update_au_key = "${win_update_key}\\AU"
   $win_au_key        = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU"
 
-  case $facts['os']['kernelrelease'] {
+  case $facts['kernelrelease'] {
     '10.0.22000': {
       service { 'wuauserv':
         ensure => stopped,
