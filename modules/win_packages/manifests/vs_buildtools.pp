@@ -20,7 +20,7 @@ class win_packages::vs_buildtools {
         win_packages::win_exe_pkg  { 'winsdksetup':
             pkg                    => 'winsdksetup.exe',
             install_options_string => '/q /norestart',
-            creates                => "${sdk_dir}\\SDKManifest",
+            creates                => "${sdk_dir}\\SDKManifest.xml",
         }
     } else {
         fail("${module_name} does not support ${::operatingsystem}")
