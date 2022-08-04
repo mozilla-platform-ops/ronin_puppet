@@ -3,15 +3,46 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_disable_services::disable_windows_update {
+  $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
+  $win_update_au_key = "${win_update_key}\\AU"
+  $win_au_key        = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU"
+
   case $facts['os']['kernelrelease'] {
     '10.0.22000': {
+      service { 'wuauserv':
+        ensure => stopped,
+        name   => 'wuauserv',
+        enable => false,
+      }
+      service { 'WaaSMedicSvc':
+        ensure => stopped,
+        name   => 'WaaSMedicSvc',
+        enable => false,
+      }
+      service { 'UsoSvc':
+        ensure => stopped,
+        name   => 'UsoSvc',
+        enable => false,
+      }
+
+      registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
+        type => dword,
+        data => '0',
+      }
+      registry_value { "${win_au_key}\\AUOptions":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_au_key}\\NoAutoUpdate":
+        type => dword,
+        data => '1',
+      }
     } # Windows 11
     '10.0.19042': {
-      $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
-      $win_update_au_key = "${win_update_key}\\AU"
-      $win_au_key        = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU"
-
-      win_disable_services::disable_service { 'wuauserv':
+      service { 'wuauserv':
+        ensure => stopped,
+        name   => 'wuauserv',
+        enable => false,
       }
 
       # Using puppetlabs-registry
@@ -38,7 +69,6 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '2',
       }
-
       registry_value { "${win_update_key}\\DeferUpgrade":
         type => dword,
         data => '1',
@@ -51,7 +81,6 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '4',
       }
-
       registry_value { "${win_update_au_key}\\NoAutoRebootWithLoggedOnUsers":
         type => dword,
         data => '1',
@@ -73,14 +102,6 @@ class win_disable_services::disable_windows_update {
     }
     default: {
       fail("${module_name} does not support ${$facts['os']['kernelrelease']}")
-    }
-    # disable windows insider program
-    if $facts['custom_win_release_id'] == '2004' {
-      registry::value { 'AllowBuildPreview':
-        key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds',
-        type => dword,
-        data => '0',
-      }
     }
   }
 }
