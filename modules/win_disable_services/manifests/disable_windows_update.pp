@@ -3,89 +3,88 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_disable_services::disable_windows_update {
+  case $facts['os']['kernelrelease'] {
+    '10.0.22000': {
+    } # Windows 11
+    '10.0.19042': {
+      $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
+      $win_update_au_key = "${win_update_key}\\AU"
+      $win_au_key        = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU"
 
-    if $::operatingsystem == 'Windows' {
+      win_disable_services::disable_service { 'wuauserv':
+      }
 
-        $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
-        $win_update_au_key = "${win_update_key}\\AU"
-        $win_au_key        = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU"
+      # Using puppetlabs-registry
+      registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
+        type => dword,
+        data => '0',
+      }
+      registry_key { $win_au_key:
+        ensure => present,
+      }
+      registry_value { "${win_au_key}\\AUOptions":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_au_key}\\NoAutoUpdate":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_update_au_key}\\NoAutoUpdate":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_update_au_key}\\AUOptions":
+        type => dword,
+        data => '2',
+      }
 
-        win_disable_services::disable_service { 'wuauserv':
-        }
+      registry_value { "${win_update_key}\\DeferUpgrade":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_update_key}\\DeferUpgradePeriod":
+        type => dword,
+        data => '8',
+      }
+      registry_value { "${win_update_key}\\DeferUpdatePeriod":
+        type => dword,
+        data => '4',
+      }
 
-        # Using puppetlabs-registry
-        registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
-            type => dword,
-            data => '0',
-        }
-        registry_key { $win_au_key:
-            ensure => present,
-        }
-        registry_value { "${win_au_key}\\AUOptions":
-            type => dword,
-            data => '1',
-        }
-        registry_value { "${win_au_key}\\NoAutoUpdate":
-            type => dword,
-            data => '1',
-        }
-
-        if $facts['custom_win_release_id'] == '2004'{
-            registry_value { "${win_update_au_key}\\NoAutoUpdate":
-                type => dword,
-                data => '1',
-            }
-            registry_value { "${win_update_au_key}\\AUOptions":
-                type => dword,
-                data => '2',
-            }
-
-            registry_value { "${win_update_key}\\DeferUpgrade":
-                type => dword,
-                data => '1',
-            }
-            registry_value { "${win_update_key}\\DeferUpgradePeriod":
-                type => dword,
-                data => '8',
-            }
-            registry_value { "${win_update_key}\\DeferUpdatePeriod":
-                type => dword,
-                data => '4',
-            }
-
-            registry_value { "${win_update_au_key}\\NoAutoRebootWithLoggedOnUsers":
-                type => dword,
-                data => '1',
-            }
-            registry_value { "${win_update_au_key}\\ScheduledInstallDay":
-                type => dword,
-                data => '1',
-            }
-            registry_value { "${win_update_au_key}\\ScheduledInstallTime":
-                type => dword,
-                data => '1',
-            }
-            registry_value { "${win_update_au_key}\\AutomaticMaintenanceEnabled":
-                type => dword,
-                data => '0',
-            }
-            registry_value { "${win_update_au_key}\\MaintenanceDisabled":
-                type => dword,
-                data => '1',
-            }
-        }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+      registry_value { "${win_update_au_key}\\NoAutoRebootWithLoggedOnUsers":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_update_au_key}\\ScheduledInstallDay":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_update_au_key}\\ScheduledInstallTime":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_update_au_key}\\AutomaticMaintenanceEnabled":
+        type => dword,
+        data => '0',
+      }
+      registry_value { "${win_update_au_key}\\MaintenanceDisabled":
+      } # Windows 10 20h2
+    }
+    default: {
+      fail("${module_name} does not support ${$facts['os']['kernelrelease']}")
     }
     # disable windows insider program
-    if $facts['custom_win_release_id'] == '2004'{
+    if $facts['custom_win_release_id'] == '2004' {
       registry::value { 'AllowBuildPreview':
-          key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds',
-          type => dword,
-          data => '0',
+        key  => 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds',
+        type => dword,
+        data => '0',
+      }
     }
-    }
-    # Bug List
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=>1510756
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=>1485628
+  }
 }
+
+# Bug List
+# https://bugzilla.mozilla.org/show_bug.cgi?id=>1510756
+# https://bugzilla.mozilla.org/show_bug.cgi?id=>1485628
