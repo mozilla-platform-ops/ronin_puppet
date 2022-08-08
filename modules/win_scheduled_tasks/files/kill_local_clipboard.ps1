@@ -55,7 +55,7 @@ while ($true) {
       start-sleep -s 3
       Set-Service -name $clip_service.name -StartupType Disabled -force
       ## Disable in the registry as Set-Service doesn't seem to disable per-user services
-      Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\$($clip_service.name)" -Name "Start" -Value 4
+      Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\$($c.name)" -Name "Start" -Value 4
       start-sleep -s 5
       Write-Output "waiting"
     }
