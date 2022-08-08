@@ -19,12 +19,12 @@ class win_os_settings::tsl_1_2 {
     }
     registry_value { "${client_key}\\DisabledByDefault":
         ensure => present,
-        type   => dowrd,
+        type   => Numeric,
         data   => 0
     }
     registry_value { "${server_key}\\DisabledByDefault":
         ensure => present,
-        type   => dowrd,
+        type   => Numeric,
         data   => 0
     }
 }
