@@ -17,4 +17,7 @@ class win_packages::dxsdk_jun10 {
         install_options_string => '/U',
         creates                => "${prog86x}\\${sdk_dir}\\${file}",
     }
+    windows::environment { 'DXSDK_DIR':
+        value => "${facts['custom_win_programfilesx86']}\\Microsoft DirectX SDK (June 2010)"
+    }
 }
