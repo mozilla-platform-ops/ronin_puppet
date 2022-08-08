@@ -40,7 +40,7 @@ function Write-Log {
 # Commented out logs to reduce news but leaving in place if future debbugging is needed
 while ($true) {
   ## add support for multiple services
-  $clip_service = (Get-Service | Where-Object { $_.name -Like "cbdhsvc_*" })
+  $clip_service = (Get-Service | Where-Object { $_.name -Like "cbdhsvc*" })
   Foreach ($c in $clip_service) {
     if ($null -eq $c.Status) {
       Write-Log -message  ('{0} :: Local Clip Board service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
