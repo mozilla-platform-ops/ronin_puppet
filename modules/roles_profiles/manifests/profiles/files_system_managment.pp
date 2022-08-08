@@ -9,10 +9,15 @@ class roles_profiles::profiles::files_system_managment {
             include win_filesystem::disable8dot3
             include win_filesystem::disablelastaccess
             if $facts['custom_win_location'] == 'azure' {
-                win_filesystem::set_paging_file { 'azur_paging_file':
-                    location =>  'y:\pagefile.sys',
-                    min_size => 8192,
-                    max_size => 8192,
+                if $facts['custom_win_y_drive'] == 'exists'{
+                    win_filesystem::set_paging_file { 'azure_paging_file':
+                        location =>  'y:\pagefile.sys',
+                        min_size => 8192,
+                        max_size => 8192,
+                    }
+                }
+                if $facts['custom_win_x_drive'] == 'exists'{
+                    include win_filesystem::grant_z_access
                 }
             }
             # Bug List
