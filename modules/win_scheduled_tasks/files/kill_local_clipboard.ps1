@@ -51,9 +51,9 @@ while ($true) {
     }
     if ($c.status -eq "running") {
       Write-Log -message  ('{0} :: Stopping {1} service' -f $($MyInvocation.MyCommand.Name), $c.DisplayName) -severity 'DEBUG'
-      Stop-Service -Name $clip_service.name
+      Stop-Service -Name $c.name
       start-sleep -s 3
-      Set-Service -name $clip_service.name -StartupType Disabled -force
+      Set-Service -name $c.name -StartupType Disabled -force
       ## Disable in the registry as Set-Service doesn't seem to disable per-user services
       Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\$($c.name)" -Name "Start" -Value 4
       start-sleep -s 5
