@@ -23,6 +23,6 @@ class win_scheduled_tasks::kill_local_clipboard {
       user      => 'system',
     }
   } else {
-    fail("${module_name} does not support ${facts['facts['os']['name']']}")
+    fail("${module_name} does not support ${facts['os']['name']}")
   }
 }
