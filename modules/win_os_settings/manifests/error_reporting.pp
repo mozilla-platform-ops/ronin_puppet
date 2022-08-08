@@ -5,8 +5,24 @@
 class win_os_settings::error_reporting {
 
     $error_report_key = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\Error\\Reporting"
+    if $facts['custom_win_x_drive'] == 'exists'{
+        $dump_drive = 'Z:'
+    } else {
+        $dump_drive = $facts['custom_win_systemdrive']
+    }
+    $dump_dir = "${dump_drive}\\error-dumps"
+
+
+    file { $dump_dir :
+        ensure => directory,
+    }
 
     # Using puppetlabs-registry
+    registry::value { 'DumpFolder' :
+        key  => $error_report_key,
+        type => string,
+        data => $dump_dir,
+    }
     registry::value { 'LocalDumps' :
         key  => $error_report_key,
         type => dword,
