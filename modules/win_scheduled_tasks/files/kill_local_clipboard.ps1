@@ -40,7 +40,7 @@ function Write-Log {
 # Commented out logs to reduce news but leaving in place if future debbugging is needed
 while ($true) {
   ## add support for multiple services
-  $clip_service = (Get-Service | Where-Object { $_.name -Like "cbdhsvc*" })
+  $clip_service = (Get-Service | Where-Object { $_.name -Like "cbdhsvc_*" })
   Foreach ($c in $clip_service) {
     if ($null -eq $c.Status) {
       Write-Log -message  ('{0} :: Local Clip Board service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -55,7 +55,6 @@ while ($true) {
       start-sleep -s 3
       Set-Service -name $c.name -StartupType Disabled -force
       ## Disable in the registry as Set-Service doesn't seem to disable per-user services
-      Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\$($c.name)" -Name "Start" -Value 4
       start-sleep -s 5
       Write-Output "waiting"
     }
