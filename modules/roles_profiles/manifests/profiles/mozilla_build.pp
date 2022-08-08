@@ -13,7 +13,11 @@ class roles_profiles::profiles::mozilla_build {
             # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
 
             if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-                $cache_drive  = 'y:'
+                if $facts['custom_win_y_drive'] == 'exists'{
+                    $cache_drive  = 'y:'
+                } else {
+                    $cache_drive  = $facts['custom_win_systemdrive']
+                }
             } else {
                 $cache_drive  = $facts['custom_win_systemdrive']
             }
