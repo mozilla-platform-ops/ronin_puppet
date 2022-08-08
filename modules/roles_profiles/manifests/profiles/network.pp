@@ -18,6 +18,9 @@ class roles_profiles::profiles::network {
                 }
             }
             include win_network::disable_ipv6
+            if $facts['os']['release']['full'] == '2012 R2' {
+                include win_os_settings::tsl_1_2
+            }
             # Bug list
             # Network category
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1563287
