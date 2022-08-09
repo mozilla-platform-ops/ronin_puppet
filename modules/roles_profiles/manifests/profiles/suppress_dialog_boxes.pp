@@ -29,7 +29,7 @@ class roles_profiles::profiles::suppress_dialog_boxes {
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58"
     }
     default: {
-      fail("${facts['facts['os']['name']']} not supported")
+      fail("${$facts['os']['name']} not supported")
     }
   }
 }
