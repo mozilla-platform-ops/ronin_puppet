@@ -16,7 +16,7 @@ class roles_profiles::roles::win2012r264azure {
     include roles_profiles::profiles::network
     include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
-    #include roles_profiles::profiles::scheduled_tasks
+    include roles_profiles::profiles::scheduled_tasks
     include roles_profiles::profiles::azure_vm_agent
 
     # Adminstration
@@ -28,5 +28,5 @@ class roles_profiles::roles::win2012r264azure {
     include roles_profiles::profiles::git
     include roles_profiles::profiles::mozilla_build
     include roles_profiles::profiles::mozilla_maintenance_service
-    #include roles_profiles::profiles::windows_worker_runner
+    include roles_profiles::profiles::windows_worker_runner
 }
