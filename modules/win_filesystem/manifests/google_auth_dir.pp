@@ -4,7 +4,7 @@
 
 class win_filesystem::google_auth_dir {
 
-    $google_dir = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
+    $google_dir = "${facts['custom_win_programdata']}\\maintainsystem.ps1"
 
     file { $google_dir :
         ensure => directory,
