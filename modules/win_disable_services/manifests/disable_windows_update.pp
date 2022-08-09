@@ -6,14 +6,13 @@ class win_disable_services::disable_windows_update {
   $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
   $win_update_au_key = "${win_update_key}\\AU"
   $win_au_key        = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU"
-
+  service { 'wuauserv':
+    ensure => stopped,
+    name   => 'wuauserv',
+    enable => false,
+  }
   case $facts['kernelrelease'] {
     '10.0.22000': {
-      service { 'wuauserv':
-        ensure => stopped,
-        name   => 'wuauserv',
-        enable => false,
-      }
       service { 'UsoSvc':
         ensure => stopped,
         name   => 'UsoSvc',
@@ -34,12 +33,6 @@ class win_disable_services::disable_windows_update {
       }
     } # Windows 11
     '10.0.19042': {
-      service { 'wuauserv':
-        ensure => stopped,
-        name   => 'wuauserv',
-        enable => false,
-      }
-
       # Using puppetlabs-registry
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
         type => dword,
