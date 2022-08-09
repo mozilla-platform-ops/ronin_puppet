@@ -4,7 +4,7 @@
 
 class win_filesystem::grant_z_access {
 
-    if $facts['custom_win_x_drive'] == 'exists'{
+    if $facts['custom_win_z_drive'] == 'exists'{
         acl { 'Z:':
             permissions                =>   {
                                             identity    => 'everyone',

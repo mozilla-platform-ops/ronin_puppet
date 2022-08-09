@@ -5,7 +5,7 @@
 class win_os_settings::error_reporting {
 
     $error_report_key = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\Error\\Reporting"
-    if $facts['custom_win_x_drive'] == 'exists'{
+    if $facts['custom_win_z_drive'] == 'exists'{
         $dump_drive = 'Z:'
     } else {
         $dump_drive = $facts['custom_win_systemdrive']

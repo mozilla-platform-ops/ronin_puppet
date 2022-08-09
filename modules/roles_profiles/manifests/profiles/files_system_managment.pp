@@ -16,7 +16,7 @@ class roles_profiles::profiles::files_system_managment {
                         max_size => 8192,
                     }
                 }
-                if $facts['custom_win_x_drive'] == 'exists'{
+                if $facts['custom_win_z_drive'] == 'exists'{
                     include win_filesystem::grant_z_access
                 }
             }
