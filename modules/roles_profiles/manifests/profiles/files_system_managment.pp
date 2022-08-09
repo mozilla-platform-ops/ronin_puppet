@@ -3,25 +3,24 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::files_system_managment {
-
-    case $::operatingsystem {
-        'Windows': {
-            include win_filesystem::disable8dot3
-            include win_filesystem::disablelastaccess
-            if $facts['custom_win_location'] == 'azure' {
-                win_filesystem::set_paging_file { 'azur_paging_file':
-                    location =>  'y:\pagefile.sys',
-                    min_size => 8192,
-                    max_size => 8192,
-                }
-            }
-            # Bug List
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1515779
-            # Paging file
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1562974
+  case $facts['os']['name'] {
+    'Windows': {
+      include win_filesystem::disable8dot3
+      include win_filesystem::disablelastaccess
+      if $facts['custom_win_location'] == 'azure' {
+        win_filesystem::set_paging_file { 'azur_paging_file':
+          location => 'y:\pagefile.sys',
+          min_size => 8192,
+          max_size => 8192,
         }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+      }
+      # Bug List
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1515779
+      # Paging file
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1562974
     }
+    default: {
+      fail("${$facts['os']['name']} not supported")
+    }
+  }
 }
