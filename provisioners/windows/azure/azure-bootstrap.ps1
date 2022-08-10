@@ -56,7 +56,7 @@ function Setup-Logging {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        New-Item -ItemType Directory -Force -Path $local_dir
+        New-Item -ItemType Directory -Force -Path $local_dir -ErrorAction SilentlyContinue
 
         Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
         msiexec /i $local_dir\$nxlog_msi /passive
@@ -133,7 +133,7 @@ function Install-AzPrerequ {
     }
     process {
 
-        New-Item -path $work_dir -ItemType "directory"
+        New-Item -path $work_dir -ItemType "directory" -ErrorAction SilentlyContinue
         if ($ps_ver -le 5) {
             Write-Log -message  ('{0} :: Powershell does not meet the minimum version of 5.1' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Write-Log -message  ('{0} :: Updating Powershell from version {1} to 5.1' -f $($MyInvocation.MyCommand.Name), $PSVersionTable.PSVersion.Major) -severity 'DEBUG'
