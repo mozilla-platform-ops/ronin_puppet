@@ -13,11 +13,12 @@ class roles_profiles::roles::win116421h2azure {
   include roles_profiles::profiles::power_management
   include roles_profiles::profiles::scheduled_tasks
   include roles_profiles::profiles::azure_vm_agent
-  include roles_profiles::profiles::virtual_drivers
+  ## *_drivers depends on 7zip which isn't installed until common_tools
+  #include roles_profiles::profiles::virtual_drivers
   #include roles_profiles::profiles::gpu_drivers
 
   # Adminstration
-  #include roles_profiles::profiles::logging
+  include roles_profiles::profiles::logging
   #include roles_profiles::profiles::common_tools
   # Openssh Fails when Puppet runs as a  schedule task
   # https://bugzilla.mozilla.org/show_bug.cgi?id=1544141
