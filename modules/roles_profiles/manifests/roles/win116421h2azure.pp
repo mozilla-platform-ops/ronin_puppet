@@ -15,8 +15,8 @@ class roles_profiles::roles::win116421h2azure {
   ## Is this trying to install each time it's run
   include roles_profiles::profiles::azure_vm_agent
   ## *_drivers depends on 7zip which isn't installed until common_tools
-  #include roles_profiles::profiles::virtual_drivers
-  #include roles_profiles::profiles::gpu_drivers
+  include roles_profiles::profiles::virtual_drivers
+  include roles_profiles::profiles::gpu_drivers
 
   # Adminstration
   include roles_profiles::profiles::logging
