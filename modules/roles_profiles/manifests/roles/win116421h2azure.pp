@@ -21,9 +21,6 @@ class roles_profiles::roles::win116421h2azure {
   # Adminstration
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::common_tools
-  # Openssh Fails when Puppet runs as a  schedule task
-  # https://bugzilla.mozilla.org/show_bug.cgi?id=1544141
-  # include roles_profiles::profiles::ssh
 
   # Worker
   include roles_profiles::profiles::git
@@ -32,5 +29,4 @@ class roles_profiles::roles::win116421h2azure {
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_worker_runner
   #include roles_profiles::profiles::microsoft_tools
-  #include roles_profiles::profiles::language
 }

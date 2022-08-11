@@ -3,16 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::language {
-
-    case $::operatingsystem {
-        'Windows': {
-
-            win_language::pack { 'japanese':
-                pack => 'ja',
-            }
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+  case $facts['os']['name'] {
+    'Windows': {
+      win_language::pack { 'japanese':
+        pack => 'ja',
+      }
     }
+    default: {
+      fail("${$facts['os']['name']} not supported")
+    }
+  }
 }
