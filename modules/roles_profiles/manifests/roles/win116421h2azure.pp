@@ -28,8 +28,9 @@ class roles_profiles::roles::win116421h2azure {
   # Worker
   include roles_profiles::profiles::git
   #include roles_profiles::profiles::mozilla_build
+  ## Had to re-run mozilla_maintenance_service twice when mozilla_build wasn't a pre-req
   include roles_profiles::profiles::mozilla_maintenance_service
-  #include roles_profiles::profiles::windows_worker_runner
+  include roles_profiles::profiles::windows_worker_runner
   #include roles_profiles::profiles::microsoft_tools
   #include roles_profiles::profiles::language
 }
