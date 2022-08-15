@@ -44,8 +44,8 @@ win-worker:
     version: '2.24'
   azure:
     vm_agent:
-      version: '2.7.41491.949_191001-1418.fre'
-      name: "Windows Azure VM Agent - 2.7.41491.949"
+      version: '2.7.41491.1057_2205251057.fre'
+      name: "Windows Azure VM Agent - 2.7.41491.1057"
   vac:
     version: '464'
   git:
