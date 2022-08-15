@@ -15,7 +15,7 @@ class roles_profiles::profiles::microsoft_tools {
             # For now pulling from S3
 
 
-            if $facts['custom_win_release_id'] == '2004'{
+            if $facts['custom_win_release_id'] == '2004' or $facts['custom_win_release_id'] == '2009'{
                 include win_packages::vs_buildtools
             } else {
                 include win_packages::vc_redist_x86
