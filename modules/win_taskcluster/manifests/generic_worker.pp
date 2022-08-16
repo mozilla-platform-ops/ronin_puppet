@@ -31,7 +31,13 @@ class win_taskcluster::generic_worker (
     }
     # TODO: Add conditional language to profile based on OS version
     # To pass the correct source file name instead of hard code
-    file { "${generic_worker_dir}\\task-user-init.cmd":
-        content   => file('win_taskcluster/task-user-init-win10.cmd'),
+    if $facts['os']['release']['full'] == '2012 R2' {
+        file { "${generic_worker_dir}\\task-user-init.cmd":
+            content   => file('win_taskcluster/task-user-init-win2012.cmd'),
+        }
+    } else {
+        file { "${generic_worker_dir}\\task-user-init.cmd":
+            content   => file('win_taskcluster/task-user-init-win10.cmd'),
+        }
     }
 }
