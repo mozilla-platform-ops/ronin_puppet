@@ -3,18 +3,6 @@
 
 @echo off
 
-echo Wait for registry setting to exist before changing it...
-:CheckForStuckRects3
-:: Commenting out echo below to reduce logging
-:: echo Wait for registry setting to exist before changing it...
-reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3 /ve
-if %ERRORLEVEL% EQU 0 goto HideTaskBar
-:: Commenting out echo below to reduce logging
-:: Cannot use timeout command from non-interactive process
-:: (try it yourself with e.g. `echo hello | timeout /t 1`)
-ping -n 2 127.0.0.1 1>/nul
-goto CheckForStuckRects3
-
 :HideTaskBar
 echo Hiding taskbar...
 powershell -command "&{$p='HKCU:SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3';$v=(Get-ItemProperty -Path $p).Settings;$v[8]=3;&Set-ItemProperty -Path $p -Name Settings -Value $v;&Stop-Process -ProcessName explorer}"
