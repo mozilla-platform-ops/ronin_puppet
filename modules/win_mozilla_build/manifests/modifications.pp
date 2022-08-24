@@ -33,9 +33,9 @@ class win_mozilla_build::modifications {
             ensure => link,
             target => "${win_mozilla_build::system_drive}\\users",
         }
-        file { "${mozbld}\\msys\\home":
+        file { "${mozbld}\\msys":
             ensure => link,
-            target => "${mozbld}\\msys2\\home",
+            target => "${mozbld}\\msys2",
         }
         # Test without. This link is proabably not possible.
         #file {  "${win_mozilla_build::system_drive}\\users":
