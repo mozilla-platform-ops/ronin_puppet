@@ -12,11 +12,13 @@ class win_mozilla_build::modifications {
     file { $win_mozilla_build::builds_dir:
         ensure => directory,
     }
-    if $win_mozilla_build::upgrade_python != true {
-        file { "${mozbld}\\python3\\python.exe":
-            ensure => absent,
-            purge  => true,
-            force  => true,
+    if $win_mozilla_build::needed_mozbld_ver == '3.2' {
+        if $win_mozilla_build::upgrade_python != true {
+            file { "${mozbld}\\python3\\python.exe":
+                ensure => absent,
+                purge  => true,
+                force  => true,
+            }
         }
     }
     file { "${mozbld}\\python\\Scripts\\hg":
