@@ -61,8 +61,19 @@ if ($worker_pool_id -like "*gpu*") {
     $gpu = 'no'
 }
 
+if ($os_caption -like "*windows_10*") {
+	$os_verision = (-join( "win_10_", $release_id))
+} elseif ($os_caption -like "*windows_11*") {
+	$os_verision = (-join( "win_11_", $release_id))
+} elseif ($os_caption -like "*2012*") {
+	$os_verision = win_11
+} else {
+	$os_verision = $null
+}
+
 write-host "custom_win_release_id=$release_id"
 write-host "custom_win_os_caption=$os_caption"
+write-host "custom_win_os_version=$os_verision"
 write-host "custom_win_kms_activated=$kms_status"
 write-host "custom_win_admin_sid=$win_admin_sid"
 Write-host "custom_win_net_category=$NetworkCategory"

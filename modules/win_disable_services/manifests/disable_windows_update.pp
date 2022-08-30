@@ -11,8 +11,8 @@ class win_disable_services::disable_windows_update {
     name   => 'wuauserv',
     enable => false,
   }
-  case $facts['custom_win_release_id'] {
-    '2009': {
+  case $facts['custom_win_os_version'] {
+    'win_11_2009': {
       service { 'UsoSvc':
         ensure => stopped,
         name   => 'UsoSvc',
@@ -32,7 +32,7 @@ class win_disable_services::disable_windows_update {
         data => '1',
       }
     } # Windows 11
-    '2004': {
+    'win_10_2004': {
       # Using puppetlabs-registry
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
         type => dword,
