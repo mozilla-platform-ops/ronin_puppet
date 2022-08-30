@@ -5,14 +5,15 @@
 define win_language::pack (
   String $pack
 ) {
-  $install_script = 'language_pack_install.ps1'
-  $script_path    = "${facts['custom_win_roninprogramdata']}\\${install_script}"
 
-  file { $script_path:
-    content => file('win_language/install_language_pack.ps1'),
-  }
-  exec { "install_pack_${pack}":
-    provider => powershell,
-    command  => "${script_path} ${pack}",
-  }
+    $install_script = 'language_pack_install.ps1'
+    $script_path    = "${facts['custom_win_roninprogramdata']}\\${install_script}"
+
+    file { $script_path:
+        content => file('win_language/install_language_pack.ps1'),
+    }
+    exec { "install_pack_${pack}":
+        provider => powershell,
+        command  => "${script_path} ${pack}",
+    }
 }

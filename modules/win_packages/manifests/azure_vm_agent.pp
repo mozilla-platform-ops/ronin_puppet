@@ -3,11 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::azure_vm_agent (
-  String  $package,
-  String  $msi
+    String  $package,
+    String  $msi
 ) {
-  win_packages::win_msi_pkg { $package:
-    pkg             => $msi,
-    install_options => ['/quiet'],
-  }
+
+    win_packages::win_msi_pkg  { $package:
+        pkg             => $msi,
+        install_options => ['/quiet'],
+    }
 }

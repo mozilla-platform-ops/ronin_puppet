@@ -3,14 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_firewall::allow_ping {
-  # Resource from counsyl-windows
-  #windows::firewall_rule { 'ICMP Ping':
-  #    protocol => 'icmpv4:8,any',
-  #}
-  windows_firewall_rule { 'icmpv4':
-    ensure    => present,
-    direction => 'inbound',
-    action    => 'allow',
-    protocol  => 'icmpv4',
-  }
+
+    # Resource from counsyl-windows
+    #windows::firewall_rule { 'ICMP Ping':
+    #    protocol => 'icmpv4:8,any',
+    #}
+    windows_firewall_rule { 'icmpv4':
+        ensure    => present,
+        direction => 'inbound',
+        action    => 'allow',
+        protocol  => 'icmpv4',
+    }
 }

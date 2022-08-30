@@ -3,28 +3,29 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_scheduled_tasks::maintain_system (
-  String $startup_script
+    String $startup_script
 ) {
-  $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
 
-  if $facts['os']['name'] == 'Windows' {
-    file { $maintainsystem_ps1:
-      content => file("win_scheduled_tasks/${startup_script}"),
+    $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
+
+    if $facts['os']['name'] == 'Windows' {
+        file { $maintainsystem_ps1:
+            content => file("win_scheduled_tasks/${startup_script}"),
+        }
+        # Resource from puppetlabs-scheduled_task
+        scheduled_task { 'maintain_system':
+            ensure    => 'present',
+            command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
+            arguments => "-executionpolicy bypass -File ${maintainsystem_ps1}",
+            enabled   => true,
+            trigger   => [{
+                'schedule'         => 'boot',
+                'minutes_interval' => '0',
+                'minutes_duration' => '0'
+            }],
+            user      => 'system',
+        }
+    } else {
+        fail("${module_name} does not support ${$facts['os']['name']}")
     }
-    # Resource from puppetlabs-scheduled_task
-    scheduled_task { 'maintain_system':
-      ensure    => 'present',
-      command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
-      arguments => "-executionpolicy bypass -File ${maintainsystem_ps1}",
-      enabled   => true,
-      trigger   => [{
-          'schedule'         => 'boot',
-          'minutes_interval' => '0',
-          'minutes_duration' => '0'
-      }],
-      user      => 'system',
-    }
-  } else {
-    fail("${module_name} does not support ${$facts['os']['name']}")
-  }
 }

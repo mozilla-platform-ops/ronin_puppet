@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::microsoft_tools {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             # These may chnage for diffrent versions of Windows
@@ -15,7 +15,7 @@ class roles_profiles::profiles::microsoft_tools {
             # For now pulling from S3
 
 
-            if $facts['custom_win_release_id'] == '2004' or $facts['custom_win_release_id'] == '2009'{
+            if $facts['custom_win_release_id'] == '2004'{
                 include win_packages::vs_buildtools
             } else {
                 include win_packages::vc_redist_x86
@@ -31,7 +31,7 @@ class roles_profiles::profiles::microsoft_tools {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

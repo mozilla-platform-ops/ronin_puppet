@@ -3,21 +3,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::scheduled_tasks {
-  case $facts['os']['name'] {
-    'Windows': {
-      if ($facts['custom_win_location'] == 'azure') {
-        $startup_script = 'azure-maintainsystem.ps1'
-        include win_scheduled_tasks::at_task_user_logon
-      }
-      else {
-        $startup_script = 'maintainsystem.ps1'
-      }
-      class { 'win_scheduled_tasks::maintain_system':
-        startup_script => $startup_script,
-      }
+
+    case $facts['os']['name'] {
+        'Windows': {
+            if ($facts['custom_win_location'] == 'azure') {
+                $startup_script = 'azure-maintainsystem.ps1'
+                include win_scheduled_tasks::at_task_user_logon
+            } else {
+                $startup_script = 'maintainsystem.ps1'
+            }
+            class { 'win_scheduled_tasks::maintain_system':
+                startup_script => $startup_script,
+            }
+        }
+        default: {
+            fail("${$facts['os']['name']} not supported")
+        }
     }
-    default: {
-      fail("${$facts['os']['name']} not supported")
-    }
-  }
 }

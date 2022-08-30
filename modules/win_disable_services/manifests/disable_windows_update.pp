@@ -89,7 +89,7 @@ class win_disable_services::disable_windows_update {
       } # Windows 10 20h2
     }
     default: {
-      fail("${module_name} does not support ${$facts['os']['kernelrelease']}")
+      fail("${module_name} does not support ${$facts['custom_win_os_version']}")
     }
   }
 }
