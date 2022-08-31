@@ -32,7 +32,7 @@ class roles_profiles::profiles::mozilla_build {
                 default => lookup('tooltool_tok')
             }
 
-            if $facts['custom_win_mozbld_vesion'] == '3.9' {
+            if $facts['custom_win_mozbld_vesion'] == '3.2' {
                 $upgrade_python = true
             } else {
                 $upgrade_python = false
