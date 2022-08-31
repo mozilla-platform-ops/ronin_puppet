@@ -66,7 +66,7 @@ if ($os_caption -like "*windows_10*") {
 } elseif ($os_caption -like "*windows_11*") {
 	$os_version = (-join( "win_11_", $release_id))
 } elseif ($os_caption -like "*2012*") {
-	$os_version = win_11
+	$os_version = "win_2012"
 } else {
 	$os_version = $null
 }
