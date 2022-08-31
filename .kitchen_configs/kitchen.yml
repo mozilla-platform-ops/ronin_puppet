@@ -76,8 +76,8 @@ platforms:
     #     audio: "none"
     driver:
       # vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
-      # box: "ubuntu/jammy64"  # no libvirt/qemu support
-      box: "generic/ubuntu2204"
+      box: "ubuntu/jammy64"  # no libvirt/qemu support
+      # box: "generic/ubuntu2204"
       # box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
 suites:
   - name: linux
