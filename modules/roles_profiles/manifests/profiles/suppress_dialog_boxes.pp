@@ -23,7 +23,7 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         }
         'Windows': {
 
-            include win_os_settings::disbale_notifications
+            include win_os_settings::disable_notifications
 
         # Bug list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
