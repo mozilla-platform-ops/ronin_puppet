@@ -6,7 +6,7 @@ class win_scheduled_tasks::kill_local_clipboard {
 
     $kill_localclip = "${facts['custom_win_roninprogramdata']}\\kill_local_clipboard.ps1"
 
-    if facts['os']['name'] == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         file { $kill_localclip:
             content => file('win_scheduled_tasks/kill_local_clipboard.ps1'),
         }
