@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::common_tools {
 
-    case $::operatingsystem {
+    case $facts['os']['name']  {
         'Windows': {
             include win_packages::process_debug
             include win_packages::jq
@@ -20,7 +20,7 @@ class roles_profiles::profiles::common_tools {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1562042
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }
