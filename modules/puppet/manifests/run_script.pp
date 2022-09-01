@@ -16,7 +16,7 @@ class puppet::run_script (
     case $::operatingsystem {
         'Ubuntu': {
             case $::operatingsystemrelease {
-                '18.04': {
+                '18.04', '22.04': {
                     file {
                         '/usr/local/bin/run-puppet.sh':
                             owner   => 'root',
