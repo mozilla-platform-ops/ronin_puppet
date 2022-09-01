@@ -266,16 +266,16 @@ workflows:
           requires:
             - pre_commit
             - r10k_install
-      - macos_integration_tests:
-          matrix:
-            parameters:
-              os: [macos-1015]
-              suite: ["default"]
-              role: ["gecko_t_osx_1015_r8"]
-          context: slack-secrets
-          requires:
-            - pre_commit
-            - r10k_install
+      # - macos_integration_tests:
+      #     matrix:
+      #       parameters:
+      #         os: [macos-1015]
+      #         suite: ["default"]
+      #         role: ["gecko_t_osx_1015_r8"]
+      #     context: slack-secrets
+      #     requires:
+      #       - pre_commit
+      #       - r10k_install
       - macos_integration_tests:
           matrix:
             parameters:
