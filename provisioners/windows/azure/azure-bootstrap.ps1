@@ -195,7 +195,7 @@ Function Set-AzRoninRepo {
       	Copy-item -path $secret_src -destination $secrets -recurse -force
     }
 		# Start to disable Windows defender here
-    	Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
+    	#Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
     	Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
   	}
   		end {
