@@ -1,16 +1,12 @@
 source 'https://rubygems.org'
 
 gem 'puppet', '7.8.0', :require => false
-gem 'puppet-lint', '2.4.2'
-
-gem 'test-kitchen', '3.3.2'
+gem 'puppet-lint', '>= 2.4.2'
+gem 'test-kitchen', '>= 3.3.2'
+gem 'kitchen-inspec', '>= 2.6.1'
 
 gem 'kitchen-verifier-serverspec'
-gem 'kitchen-inspec', '2.6.1'
 gem 'kitchen-docker'
-# kitchen-localhost functionality is included in t-k now? doesn't seem to be yet... or by different name?
-#gem 'kitchen-localhost', '0.3.0'
-gem 'kitchen-localhost', git: 'https://github.com/aerickson/kitchen-localhost.git', branch: 'gemspec_tweaks'
 gem 'kitchen-puppet'
 gem 'kitchen-sync'
 gem 'kitchen-vagrant'
