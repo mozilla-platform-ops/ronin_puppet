@@ -42,10 +42,11 @@ describe 'service' do
 end
 
 # 2204 doesn't have python(2)
-if os.family == 'debian' and os.release == '18.04' do
+if os.family == 'debian' && os.release == '18.04'
   describe command('python --version') do
     its(:exit_status) { should eq 0 }
   end
+  # TODO: else with echo stating we're not testing for this?
 end
 
 describe command('/home/bitbar/mozilla-bitbar-devicepool/venv/bin/python --version') do
