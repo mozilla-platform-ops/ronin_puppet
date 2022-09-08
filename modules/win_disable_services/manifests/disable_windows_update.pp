@@ -11,15 +11,16 @@ class win_disable_services::disable_windows_update {
     name   => 'wuauserv',
     enable => false,
   }
-  registry_key { $win_au_key:
-    ensure => present,
-  }
   case $facts['custom_win_os_version'] {
     'win_11_2009': {
       service { 'UsoSvc':
         ensure => stopped,
         name   => 'UsoSvc',
         enable => false,
+      }
+
+      registry_key { $win_au_key:
+        ensure => present,
       }
 
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
@@ -41,6 +42,11 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '0',
       }
+      
+      registry_key { $win_au_key:
+        ensure => present,
+      }
+      
       registry_value { "${win_au_key}\\AUOptions":
         type => dword,
         data => '1',
