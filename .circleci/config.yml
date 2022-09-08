@@ -7,7 +7,7 @@ orbs:
 executors:
   docker-base:
     docker:
-      - image: cimg/base:2021.04
+      - image: cimg/base:2022.09
   docker-ruby:
     docker:
       - image: cimg/ruby:3.0
@@ -16,7 +16,7 @@ executors:
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
   ubuntu-2004:
     machine:
-      image: ubuntu-2004:202010-01
+      image: ubuntu-2004:2022.07.1
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
   macos-1014: &1014
     macos:
