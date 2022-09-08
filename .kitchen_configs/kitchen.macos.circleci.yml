@@ -37,8 +37,8 @@ platforms:
       box: macinbox
   - name: localhost
     driver:
-      name: localhost
-      clean_up_on_destroy: false
+      name: exec
+      #clean_up_on_destroy: false
   - name: windows-1064
     driver:
       name: azurerm
