@@ -42,7 +42,7 @@ describe 'service' do
 end
 
 # 2204 doesn't have python(2)
-if os.family == 'debian' and os.release == '18.04':
+if os.family == 'debian' and os.release == '18.04' do
   describe command('python --version') do
     its(:exit_status) { should eq 0 }
   end
