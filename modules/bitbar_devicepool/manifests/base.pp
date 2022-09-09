@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class bitbar_devicepool::base {
-
   # create bitbar user & group
   group { 'bitbar':
     ensure => 'present',
@@ -24,13 +23,13 @@ class bitbar_devicepool::base {
     ensure => directory,
     owner  => 'bitbar',
     group  => 'bitbar',
-    mode   => '0770'
+    mode   => '0770',
   }
   file { '/etc/bitbar':
     ensure => directory,
     owner  => 'root',
     group  => 'bitbar',
-    mode   => '0750'
+    mode   => '0750',
   }
 
   # create wheel group
@@ -50,7 +49,7 @@ class bitbar_devicepool::base {
   # - adm: to view all systemd logs
   $relops = lookup('user_groups.relops', Array, undef, undef)
   $relops.each |String $user| {
-      User<| title == $user |> { groups +> ['wheel', 'bitbar', 'adm']}
+    User<| title == $user |> { groups +> ['wheel', 'bitbar', 'adm'] }
   }
 
   # set timezone to pacific
@@ -61,7 +60,17 @@ class bitbar_devicepool::base {
 
   # install packages
   #  - vim, screen are nice-to-haves
-  $desired_packages = ['vim', 'screen', 'git', 'python', 'python3', 'virtualenv']
-  ensure_packages($desired_packages, {'ensure' => 'present'})
 
+  case $facts['os']['release']['full'] {
+    '18.04': {
+      $desired_packages = ['vim', 'screen', 'git', 'python', 'python3', 'virtualenv']
+    }
+    '22.04': {
+      $desired_packages = ['vim', 'screen', 'git', 'python3', 'python3-virtualenv']
+    }
+    default: {
+      fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
+    }
+  }
+  ensure_packages($desired_packages, { 'ensure' => 'present' })
 }
