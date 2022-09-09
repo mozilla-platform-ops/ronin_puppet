@@ -218,7 +218,7 @@ jobs:
       - store_test_results:
           path: rspec
     environment:
-      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:
 #          fail_only: false
@@ -247,7 +247,7 @@ jobs:
       - store_test_results:
           path: rspec
     environment:
-      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:
 #          fail_only: false
