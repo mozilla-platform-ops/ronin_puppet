@@ -71,12 +71,12 @@ class disable_services () {
         #   # TODO(aerickson): write this
         # }
         default: {
-          fail("Unrecognized Ubuntu version ${::operatingsystemrelease}")
+          fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
         }
       }
     }
     default: {
-      fail("gui is not supported on ${::operatingsystem}")
+      fail("gui is not supported on ${facts['os']['name']}")
     }
   }
 }
