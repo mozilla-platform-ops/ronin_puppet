@@ -59,7 +59,7 @@ busser:
 
 platforms:
   # vagrant automatically generates a hostname, if that exceeds 64 characters vbox fails, see bug #6
-  - name: ubuntu18
+  - name: ubuntu1804
     driver_plugin: vagrant
     driver_config:
       customize:
@@ -84,17 +84,9 @@ suites:
     provisioner:
       custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     includes:
-      - ubuntu18
-    attributes:
-  - name: bitbar1804
-    provisioner:
-      custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
-    includes:
-      - ubuntu18
+      - ubuntu1804
     attributes:
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
-    includes:
-      - ubuntu2204
     attributes:
