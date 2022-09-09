@@ -1,13 +1,16 @@
 ---
+# m1/m2 notes:
+#   - virtualbox doesn't work on arm64.
+#   - qemu/libvirt providers are tricky to get working
+#     - image needs to support them
+#
 # from https://github.com/scoopex/puppet-kitchen_template
 driver:
   name: vagrant
-  # for m1/m2 macs
-  #  qemu didn't work, hung at ssh
-  # provider: libvirt
-  # for all others? will others work with virtualbox?
   provider: virtualbox
   provision: true
+  public_key: test/id_ed25519.pub
+  private_key: test/id_ed25519
 
 provisioner:
   name: puppet_apply
@@ -68,17 +71,11 @@ platforms:
       vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
       box: ubuntu/bionic64
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
-  # TODO: setup docker driver, get docker image with working systemd, and test on travis.
   - name: ubuntu2204
     driver_plugin: vagrant
-    # driver_config:
-    #   customize:
-    #     audio: "none"
     driver:
-      # vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
-      box: "ubuntu/jammy64"  # no libvirt/qemu support
-      # box: "generic/ubuntu2204"
-      # box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
+      vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
+      box: "ubuntu/jammy64"
 suites:
   - name: linux
     provisioner:
