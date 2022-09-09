@@ -15,7 +15,7 @@ class bitbar_devicepool::devicepool {
   # create venv and install requirement
   $devicepool_path = '/home/bitbar/mozilla-bitbar-devicepool'
   exec { 'create devicepool venv and install requirements':
-      command =>"/usr/bin/virtualenv venv && ${devicepool_path}/venv/bin/pip install -r requirements.txt",
+      command =>"/usr/bin/virtualenv --python python3 venv && ${devicepool_path}/venv/bin/pip3 install -r requirements.txt",
       cwd     => $devicepool_path,
       user    => 'bitbar',
       unless  => "/bin/ls ${devicepool_path}/venv"
