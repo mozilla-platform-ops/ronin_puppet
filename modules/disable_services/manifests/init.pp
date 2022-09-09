@@ -67,9 +67,6 @@ class disable_services () {
             enable => false,
           }
         }
-        # '22.04': {
-        #   # TODO(aerickson): write this
-        # }
         default: {
           fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
         }
