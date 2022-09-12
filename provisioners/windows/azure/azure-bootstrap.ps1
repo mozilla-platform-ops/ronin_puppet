@@ -323,7 +323,7 @@ If ($stage -eq 'complete') {
 	## Remove old version of pester and install new version
 	Set-PesterVersion
 	## Change directory to tests
-	Set-Location $env:systemdrive\ronin\test\windows11
+	Set-Location $env:systemdrive\ronin\test\integration\windows11
 	## Loop through each test and run it
 	Get-ChildItem *.tests* | ForEach-Object {
 		Invoke-RoninWindowsTest -Test $_.Fullname
