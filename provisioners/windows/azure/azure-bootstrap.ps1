@@ -316,6 +316,17 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
     exit 0
 }
 If ($stage -eq 'complete') {
-    Write-Log -message  ('{0} ::Bootstrapping appears complete'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    exit 0
+    Write-Log -message  ('{0} ::Bootstrapping appears complete' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+	Write-Log -message  ('{0} ::Beginning Pester tests' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+	## Import module to bootstrap pester and run tests
+	Import-Module "$env:systemdrive\ronin\provisioners\windows\modules\bootstrap.psm1"
+	## Remove old version of pester and install new version
+	Set-PesterVersion
+	## Change directory to tests
+	Set-Location $env:systemdrive\ronin\test\windows11
+	## Loop through each test and run it
+	Get-ChildItem *.tests* | ForEach-Object {
+		Invoke-RoninWindowsTest -Test $_.Fullname
+	}
+	exit 0
 }

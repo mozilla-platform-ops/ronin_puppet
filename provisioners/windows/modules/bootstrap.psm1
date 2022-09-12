@@ -48,8 +48,8 @@ function Setup-Logging {
     [string] $local_dir = "$env:systemdrive\BootStrap",
     [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
     [string] $nxlog_conf = "nxlog.conf",
-    [string] $nxlog_pem  = "papertrail-bundle.pem",
-    [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
+    [string] $nxlog_pem = "papertrail-bundle.pem",
+    [string] $nxlog_dir = "$env:systemdrive\Program Files (x86)\nxlog"
 
   )
   begin {
@@ -201,7 +201,7 @@ function Set-RoninRegOptions {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    If(!( test-path "$ronnin_key")) {
+    If (!( test-path "$ronnin_key")) {
       New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
       New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
     }
@@ -209,7 +209,7 @@ function Set-RoninRegOptions {
     New-Item -Path $ronnin_key -Name source –Force
     New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String
     New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
-    $role = $workerType -replace '-',''
+    $role = $workerType -replace '-', ''
     New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
     Write-Log -message  ('{0} :: Node workerType set to {1}' -f $($MyInvocation.MyCommand.Name), ($workerType)) -severity 'DEBUG'
 
@@ -240,17 +240,18 @@ Function Clone-Ronin {
   }
   process {
 
-    If((test-path $env:systemdrive\ronin)) {
-        Remove-Item -Recurse -Force $env:systemdrive\ronin
+    If ((test-path $env:systemdrive\ronin)) {
+      Remove-Item -Recurse -Force $env:systemdrive\ronin
     }
-    If(!(test-path $env:systemdrive\ronin)) {
+    If (!(test-path $env:systemdrive\ronin)) {
       git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
       $git_exit = $LastExitCode
       if ($git_exit -eq 0) {
         $git_hash = (git rev-parse --verify HEAD)
         Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
         Write-Log -message  ('{0} :: Cloning from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-      } else {
+      }
+      else {
         Write-Log -message  ('{0} :: Git clone failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
         DO {
           Start-Sleep -s 15
@@ -279,7 +280,7 @@ Function Bootstrap-schtasks {
 
     # This will not really do anything for the Azure script but shouldn't hurt it
     # It is needed for hardware workers
-    $role = $workerType -replace '-',''
+    $role = $workerType -replace '-', ''
 
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
     Invoke-WebRequest https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_Revision/provisioners/windows/$image_provisioner/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
@@ -293,7 +294,7 @@ Function Bootstrap-schtasks {
 
 Function Ronin-PreRun {
   param (
-    [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
+    [string] $nodes_def_src = "$env:systemdrive\BootStrap\nodes.pp",
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes.pp",
     [string] $bootstrap_dir = "$env:systemdrive\BootStrap\",
     [string] $secret_src = "$env:systemdrive\BootStrap\secrets\",
@@ -348,7 +349,7 @@ function Bootstrap-Puppet {
     [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
     [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
     [string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").restore_needed,
-    [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+    [string] $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -356,7 +357,7 @@ function Bootstrap-Puppet {
   process {
 
     Set-Location $env:systemdrive\ronin
-    If(!(test-path $logdir\old))  {
+    If (!(test-path $logdir\old)) {
       New-Item -ItemType Directory -Force -Path $logdir\old
     }
     If ($stage -eq "inprogress") {
@@ -366,7 +367,8 @@ function Bootstrap-Puppet {
         $git_hash = (git rev-parse --verify HEAD)
         Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
         Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-      } else {
+      }
+      else {
         Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
         Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
         Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
@@ -406,25 +408,29 @@ function Bootstrap-Puppet {
           Write-Log -message  ('{0} :: Puppet apply failed.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-        } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
+        }
+        elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           if ( $restorable -like "yes") {
             if ( $restore_needed -like "false") {
-                Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
-            } else {
-                Start-Restore
+              Set-ItemProperty -Path "$ronnin_key" -name  restore_needed -value "puppetize_failed"
+            }
+            else {
+              Start-Restore
             }
           }
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 300
           shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         }
-      } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
+      }
+      elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
         shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
-      } else {
+      }
+      else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
         Start-sleep -s 600
@@ -454,8 +460,8 @@ function Bootstrap-AzPuppet {
     [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
     [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
     [string] $restore_needed = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").restore_needed,
-    [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage,
-	[string] $deploymentID = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('deploymentId') })[0].value
+    [string] $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage,
+    [string] $deploymentID = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq ('deploymentId') })[0].value
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -463,18 +469,19 @@ function Bootstrap-AzPuppet {
   process {
 
     Set-Location $env:systemdrive\ronin
-    If(!(test-path $logdir\old))  {
+    If (!(test-path $logdir\old)) {
       New-Item -ItemType Directory -Force -Path $logdir\old
     }
     $git_hash = (git rev-parse --short HEAD)
-    if ($git_hash -ne $deploymentID){
-      If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
+    if ($git_hash -ne $deploymentID) {
+      If (($stage -eq 'setup') -or ($stage -eq 'inprogress')) {
         git checkout $deploymentID
         $git_exit = $LastExitCode
         if ($git_exit -eq 0) {
           Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
           Write-Log -message  ('{0} :: Setting Ronin Puppet HEAD to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
-        } else {
+        }
+        else {
           Write-Log -message  ('{0} :: Git checkout failed! https://github.com/{1}/{2}. Branch: {3} Head: {4}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev), ($deploymentID) ) -severity 'DEBUG'
           Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
           Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
@@ -493,7 +500,8 @@ function Bootstrap-AzPuppet {
           Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
         }
       }
-    } else {
+    }
+    else {
       Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
     }
     Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
@@ -528,7 +536,8 @@ function Bootstrap-AzPuppet {
           #return
           #exit 2
           exit 0
-        } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
+        }
+        elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
           Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
           Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 300
@@ -537,16 +546,18 @@ function Bootstrap-AzPuppet {
           exit 0
           # exit 2
         }
-      } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
+      }
+      elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
         #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
         #Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-		#return
+        #return
         exit 0
         # exit 2
-      } else {
+      }
+      else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
         Start-sleep -s 300
@@ -575,7 +586,7 @@ Function set-restore_point {
     vssadmin delete shadows /all /quiet
     powershell.exe -Command Checkpoint-Computer -Description "default"
 
-    if(!(Test-Path $ronnin_key)) {
+    if (!(Test-Path $ronnin_key)) {
       New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
       New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
     }
@@ -603,44 +614,45 @@ Function Start-Restore {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if (($boots -ge $max_boots)  -or ($restore_needed -notlike "false")) {
-        if ($boots -ge $max_boots){
-            Write-Log -message  ('{0} :: System has reach the maxium number of reboots set at HKLM:\SOFTWARE\Mozilla\ronin_puppet\source\max_boots. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        }
-        if ($restore_needed -eq "gw_bad_config") {
-            Write-Log -message  ('{0} :: Generic_worker has faild to start multiple times. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        }
-        if ($restore_needed -eq "puppetize_failed") {
-            Write-Log -message  ('{0} :: Node has failed to Puppetize multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        }
-        if ($restore_needed -eq "force_restore") {
-            Write-Log -message  ('{0} :: Restore requested by audit scripts. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        }
-        else {
-            Write-Log -message  ('{0} :: Restore attempted for unknown reason. Restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
+    if (($boots -ge $max_boots) -or ($restore_needed -notlike "false")) {
+      if ($boots -ge $max_boots) {
+        Write-Log -message  ('{0} :: System has reach the maxium number of reboots set at HKLM:\SOFTWARE\Mozilla\ronin_puppet\source\max_boots. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if ($restore_needed -eq "gw_bad_config") {
+        Write-Log -message  ('{0} :: Generic_worker has faild to start multiple times. Attempting restore.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if ($restore_needed -eq "puppetize_failed") {
+        Write-Log -message  ('{0} :: Node has failed to Puppetize multiple times. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if ($restore_needed -eq "force_restore") {
+        Write-Log -message  ('{0} :: Restore requested by audit scripts. Attempting restore .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      else {
+        Write-Log -message  ('{0} :: Restore attempted for unknown reason. Restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
 
-        }
-        Stop-ScheduledTask -TaskName maintain_system
+      }
+      Stop-ScheduledTask -TaskName maintain_system
 
-        Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Stop-process -name generic-worker -force
-        Remove-Item -Recurse -Force $env:systemdrive\generic-worker
-        Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
-        Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
-        Remove-Item –Path -Force $env:windir\temp\*
-        sc delete "generic-worker"
-        Remove-ItemProperty -path $ronin_key -recurse -force
-        # OpenSSH will need to be addressed it fails after restore
-        # For now commented out of the roles manifests
-        # sc delete sshd
-        # sc delete ssh-agent
-        # Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
-        Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
-        $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
-        Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
+      Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      Stop-process -name generic-worker -force
+      Remove-Item -Recurse -Force $env:systemdrive\generic-worker
+      Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
+      Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
+      Remove-Item –Path -Force $env:windir\temp\*
+      sc delete "generic-worker"
+      Remove-ItemProperty -path $ronin_key -recurse -force
+      # OpenSSH will need to be addressed it fails after restore
+      # For now commented out of the roles manifests
+      # sc delete sshd
+      # sc delete ssh-agent
+      # Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
+      Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
+      $RestoreNumber = (Get-ComputerRestorePoint | Where-Object { $_.Description -eq "default" })
+      Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
 
-    } else {
-        Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    }
+    else {
+      Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     }
   }
   end {
@@ -648,9 +660,9 @@ Function Start-Restore {
   }
 }
 function Mount-DiskTwo {
-# Starting with disk 2 for now
-# Azure packer images does have a disk 1 labled ad temp storage
-# Maybe use that in the future
+  # Starting with disk 2 for now
+  # Azure packer images does have a disk 1 labled ad temp storage
+  # Maybe use that in the future
   param (
     [string] $lock = 'C:\dsc\in-progress.lock'
   )
@@ -660,7 +672,8 @@ function Mount-DiskTwo {
   process {
     if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
       Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-    } else {
+    }
+    else {
       $pagefileName = $false
       Get-WmiObject Win32_PagefileSetting | ? { !$_.Name.StartsWith('c:') } | % {
         $pagefileName = $_.Name
@@ -680,7 +693,8 @@ function Mount-DiskTwo {
         catch {
           Write-Log -message ('{0} :: failed to clear partition table on disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
         }
-      } else {
+      }
+      else {
         Write-Log -message ('{0} :: partition table clearing skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
       if (Get-Command -Name 'Initialize-Disk' -errorAction SilentlyContinue) {
@@ -691,7 +705,8 @@ function Mount-DiskTwo {
         catch {
           Write-Log -message ('{0} :: failed to initialize disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
         }
-      } else {
+      }
+      else {
         Write-Log -message ('{0} :: disk initialisation skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
       if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
@@ -711,7 +726,8 @@ function Mount-DiskTwo {
         catch {
           Write-Log -message ('{0} :: failed to format task drive Z:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
         }
-      } else {
+      }
+      else {
         Write-Log -message ('{0} :: partitioning skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
     }
@@ -719,16 +735,16 @@ function Mount-DiskTwo {
 }
 Function Bootstrap-CleanUp {
   param (
-    [string] $bootstrapdir  = "$env:systemdrive\BootStrap\"
+    [string] $bootstrapdir = "$env:systemdrive\BootStrap\"
 
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-  Write-Log -message  ('{0} :: Bootstrap has completed. Removing schedule task and directory' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-  Remove-Item -Recurse -Force $bootstrapdir
-  Schtasks /delete /tn bootstrap /f
+    Write-Log -message  ('{0} :: Bootstrap has completed. Removing schedule task and directory' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Remove-Item -Recurse -Force $bootstrapdir
+    Schtasks /delete /tn bootstrap /f
 
   }
   end {
@@ -736,19 +752,210 @@ Function Bootstrap-CleanUp {
   }
 }
 Function Wait-On-MDT {
-   param (
-   )
-   begin {
-     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  param (
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    while ((Test-Path "$env:systemdrive:\MININT")) {
+      Write-Log -message  ('{0} ::Detecting MDT deployment has not completed. Waiting 10 seconds.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      Start-Sleep 10
     }
-    process {
-       while ((Test-Path "$env:systemdrive:\MININT")) {
-         Write-Log -message  ('{0} ::Detecting MDT deployment has not completed. Waiting 10 seconds.'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-         Start-Sleep 10
-       }
-       Write-Log -message  ('{0} ::MDT deployment appears complete'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    }
-    end {
-      Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
+    Write-Log -message  ('{0} ::MDT deployment appears complete' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
+function Set-PesterVersion {
+  [CmdletBinding()]
+  param (
+    
+  )
+  
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+  }
+  
+  process {
+    ## Bootstrap for powershell modules
+    Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+
+    ## Remove built-in version of pester
+    $module = "C:\Program Files\WindowsPowerShell\Modules\Pester"
+    takeown /F $module /A /R
+    icacls $module /reset
+    icacls $module /grant "*S-1-5-32-544:F" /inheritance:d /T
+    Remove-Item -Path $module -Recurse -Force -Confirm:$false
+
+    ## install Pester
+    Install-Module -Name Pester -Force
+  }
+  
+  end {
+    Write-Log -message  ('{0} :: Pester 5 installation appears complete' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+  }
+}
+
+function Get-InstalledSoftware {
+  <#
+  .SYNOPSIS
+      Get all installed from the Uninstall keys in the registry.
+  .DESCRIPTION
+      Read a list of installed software from each Uninstall key.
+
+      This function provides an alternative to using Win32_Product.
+  .EXAMPLE
+      Get-InstalledSoftware
+
+      Get the list of installed applications from the local computer.
+  .EXAMPLE
+      Get-InstalledSoftware -IncludeLoadedUserHives
+
+      Get the list of installed applications from the local computer, including each loaded user hive.
+  .EXAMPLE
+      Get-InstalledSoftware -ComputerName None -DebugConnection
+
+      Display all error messages thrown when attempting to audit the specified computer.
+  .EXAMPLE
+      Get-InstalledSoftware -IncludeBlankNames
+
+      Display all results, including those with very limited information.
+  #>
+
+  [CmdletBinding()]
+  [OutputType([PSObject])]
+  param (
+      # The computer to execute against. By default, Get-InstalledSoftware reads registry keys on the local computer.
+      [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+      [String]$ComputerName = $env:COMPUTERNAME,
+
+      # Attempt to start the remote registry service if it is not already running. This parameter will only take effect if the service is not disabled.
+      [Switch]$StartRemoteRegistry,
+
+      # Some software packages, such as DropBox install into a users profile rather than into shared areas. Get-InstalledSoftware can increase the search to include each loaded user hive.
+      #
+      # If a registry hive is not loaded it cannot be searched, this is a limitation of this search style.
+      [Switch]$IncludeLoadedUserHives,
+
+      # By default Get-InstalledSoftware will suppress the display of entries with minimal information. If no DisplayName is set it will be hidden from view. This behaviour may be changed using this parameter.
+      [Switch]$IncludeBlankNames
+  )
+
+  $keys = 'Software\Microsoft\Windows\CurrentVersion\Uninstall',
+  'Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
+
+  # If the remote registry service is stopped before this script runs it will be stopped again afterwards.
+  if ($StartRemoteRegistry) {
+      $shouldStop = $false
+      $service = Get-Service RemoteRegistry -Computer $ComputerName
+
+      if ($service.Status -eq 'Stopped' -and $service.StartType -ne 'Disabled') {
+          $shouldStop = $true
+          $service | Start-Service
+      }
+  }
+
+  $baseKeys = [System.Collections.Generic.List[Microsoft.Win32.RegistryKey]]::new()
+
+  $baseKeys.Add([Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $ComputerName, 'Registry64'))
+  if ($IncludeLoadedUserHives) {
+      try {
+          $baseKey = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('Users', $ComputerName, 'Registry64')
+          foreach ($name in $baseKey.GetSubKeyNames()) {
+              if (-not $name.EndsWith('_Classes')) {
+                  Write-Debug ('Opening {0}' -f $name)
+
+                  try {
+                      $baseKeys.Add($baseKey.OpenSubKey($name, $false))
+                  }
+                  catch {
+                      $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                          $_.Exception.GetType()::new(
+                              ('Unable to access sub key {0} ({1})' -f $name, $_.Exception.InnerException.Message.Trim()),
+                              $_.Exception
+                          ),
+                          'SubkeyAccessError',
+                          'InvalidOperation',
+                          $name
+                      )
+                      Write-Error -ErrorRecord $errorRecord
+                  }
+              }
+          }
+      }
+      catch [Exception] {
+          Write-Error -ErrorRecord $_
+      }
+  }
+
+  foreach ($baseKey in $baseKeys) {
+      Write-Verbose ('Reading {0}' -f $baseKey.Name)
+
+      if ($basekey.Name -eq 'HKEY_LOCAL_MACHINE') {
+          $username = 'LocalMachine'
+      }
+      else {
+          # Attempt to resolve a SID
+          try {
+              [System.Security.Principal.SecurityIdentifier]$sid = Split-Path $baseKey.Name -Leaf
+              $username = $sid.Translate([System.Security.Principal.NTAccount]).Value
+          }
+          catch {
+              $username = Split-Path $baseKey.Name -Leaf
+          }
+      }
+
+      foreach ($key in $keys) {
+          try {
+              $uninstallKey = $baseKey.OpenSubKey($key, $false)
+
+              if ($uninstallKey) {
+                  $is64Bit = $true
+                  if ($key -match 'Wow6432Node') {
+                      $is64Bit = $false
+                  }
+
+                  foreach ($name in $uninstallKey.GetSubKeyNames()) {
+                      $packageKey = $uninstallKey.OpenSubKey($name)
+
+                      $installDate = Get-Date
+                      $dateString = $packageKey.GetValue('InstallDate')
+                      if (-not $dateString -or -not [DateTime]::TryParseExact($dateString, 'yyyyMMdd', (Get-Culture), 'None', [Ref]$installDate)) {
+                          $installDate = $null
+                      }
+
+                      [PSCustomObject]@{
+                          Name            = $name
+                          DisplayName     = $packageKey.GetValue('DisplayName')
+                          DisplayVersion  = $packageKey.GetValue('DisplayVersion')
+                          InstallDate     = $installDate
+                          InstallLocation = $packageKey.GetValue('InstallLocation')
+                          HelpLink        = $packageKey.GetValue('HelpLink')
+                          Publisher       = $packageKey.GetValue('Publisher')
+                          UninstallString = $packageKey.GetValue('UninstallString')
+                          URLInfoAbout    = $packageKey.GetValue('URLInfoAbout')
+                          Is64Bit         = $is64Bit
+                          Hive            = $baseKey.Name
+                          Path            = Join-Path $key $name
+                          Username        = $username
+                          ComputerName    = $ComputerName
+                      }
+                  }
+              }
+          }
+          catch {
+              Write-Error -ErrorRecord $_
+          }
+      }
+  }
+
+  # Stop the remote registry service if required
+  if ($StartRemoteRegistry -and $shouldStop) {
+      $service | Stop-Service
+  }
 }
