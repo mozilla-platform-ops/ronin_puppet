@@ -1,4 +1,4 @@
-function Bootstrap-Puppet {
+﻿function Bootstrap-Puppet {
     param (
       [int] $exit,
       [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",

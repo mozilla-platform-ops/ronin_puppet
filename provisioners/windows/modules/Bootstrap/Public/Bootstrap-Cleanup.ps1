@@ -1,4 +1,4 @@
-Function Bootstrap-CleanUp {
+﻿Function Bootstrap-CleanUp {
     param (
       [string] $bootstrapdir = "$env:systemdrive\BootStrap\"
   

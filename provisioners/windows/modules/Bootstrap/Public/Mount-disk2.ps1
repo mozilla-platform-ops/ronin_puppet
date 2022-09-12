@@ -1,4 +1,4 @@
-function Mount-DiskTwo {
+﻿function Mount-DiskTwo {
     # Starting with disk 2 for now
     # Azure packer images does have a disk 1 labled ad temp storage
     # Maybe use that in the future

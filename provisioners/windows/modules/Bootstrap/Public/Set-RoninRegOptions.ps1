@@ -1,4 +1,4 @@
-function Set-RoninRegOptions {
+﻿function Set-RoninRegOptions {
     param (
         [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
         [string] $ronnin_key = "$mozilla_key\ronin_puppet",

@@ -1,4 +1,4 @@
-function Get-InstalledSoftware {
+﻿function Get-InstalledSoftware {
     <#
     .SYNOPSIS
         Get all installed from the Uninstall keys in the registry.

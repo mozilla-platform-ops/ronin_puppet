@@ -1,4 +1,4 @@
-Function Set-RestorePoint {
+﻿Function Set-RestorePoint {
     param (
       [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
       [string] $ronnin_key = "$mozilla_key\ronin_puppet",
@@ -13,8 +13,8 @@ Function Set-RestorePoint {
       powershell.exe -Command Checkpoint-Computer -Description "default"
   
       if (!(Test-Path $ronnin_key)) {
-        New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
-        New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+        New-Item -Path HKLM:\SOFTWARE -Name Mozilla â€“Force
+        New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet â€“Force
       }
   
       New-ItemProperty -Path "$ronnin_key" -name "restorable" -PropertyType  string -value yes

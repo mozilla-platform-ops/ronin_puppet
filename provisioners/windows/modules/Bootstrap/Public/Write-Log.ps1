@@ -1,4 +1,4 @@
-function Write-Log {
+﻿function Write-Log {
 	param (
     	[string] $message,
     	[string] $severity = 'INFO',

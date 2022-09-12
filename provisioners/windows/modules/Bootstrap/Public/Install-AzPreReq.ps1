@@ -1,4 +1,4 @@
-function Install-AzPrerequ {
+﻿function Install-AzPrerequ {
     param (
         [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
         [string] $local_dir = "$env:systemdrive\BootStrap",

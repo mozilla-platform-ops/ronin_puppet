@@ -1,4 +1,4 @@
-Function Clone-Ronin {
+﻿Function Clone-Ronin {
     param (
         [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
         [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,

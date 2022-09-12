@@ -1,4 +1,4 @@
-Function Bootstrap-schtasks {
+﻿Function Bootstrap-schtasks {
     param (
         [string] $image_provisioner,
         [string] $workerType,

@@ -1,4 +1,4 @@
-function Wait-OnMDT {
+﻿function Wait-OnMDT {
     [CmdletBinding()]
     param (
         

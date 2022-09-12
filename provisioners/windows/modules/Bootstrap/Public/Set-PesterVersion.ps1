@@ -1,4 +1,4 @@
-function Set-PesterVersion {
+﻿function Set-PesterVersion {
     [CmdletBinding()]
     param (
       

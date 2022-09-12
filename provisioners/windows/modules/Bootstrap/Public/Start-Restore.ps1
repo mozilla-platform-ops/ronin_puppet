@@ -1,4 +1,4 @@
-Function Start-Restore {
+﻿Function Start-Restore {
     param (
         [string] $ronin_key = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
         [int32] $boots = (Get-ItemProperty $ronin_key).reboot_count,
@@ -35,8 +35,8 @@ Function Start-Restore {
             Remove-Item -Recurse -Force $env:systemdrive\generic-worker
             Remove-Item -Recurse -Force $env:systemdrive\mozilla-build
             Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\puppetlabs\ronin
-            Remove-Item –Path -Force $env:windir\temp\*
-            sc delete "generic-worker"
+            Remove-Item Path -Force $env:windir\temp\*
+            sc delete 'generic-worker'
             Remove-ItemProperty -path $ronin_key -recurse -force
             # OpenSSH will need to be addressed it fails after restore
             # For now commented out of the roles manifests
@@ -44,7 +44,7 @@ Function Start-Restore {
             # sc delete ssh-agent
             # Remove-Item -Recurse -Force $env:ALLUSERSPROFILE\ssh
             Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
-            $RestoreNumber = (Get-ComputerRestorePoint | Where-Object { $_.Description -eq "default" })
+            $RestoreNumber = (Get-ComputerRestorePoint | Where-Object { $_.Description -eq 'default' })
             Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
   
         }
@@ -56,4 +56,3 @@ Function Start-Restore {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-  

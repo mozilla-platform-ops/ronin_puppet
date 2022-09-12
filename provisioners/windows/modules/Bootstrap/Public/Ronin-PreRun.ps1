@@ -1,4 +1,4 @@
-Function Ronin-PreRun {
+﻿Function Ronin-PreRun {
     param (
         [string] $nodes_def_src = "$env:systemdrive\BootStrap\nodes.pp",
         [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes.pp",
