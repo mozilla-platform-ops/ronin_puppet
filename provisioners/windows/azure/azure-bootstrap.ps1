@@ -319,7 +319,7 @@ If ($stage -eq 'complete') {
     Write-Log -message  ('{0} ::Bootstrapping appears complete' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 	Write-Log -message  ('{0} ::Beginning Pester tests' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 	## Import module to bootstrap pester and run tests
-	Import-Module "$env:systemdrive\ronin\provisioners\windows\modules\bootstrap.psm1"
+	Import-Module "$env:systemdrive\ronin\provisioners\windows\modules\Bootstrap\Bootstrap.psm1"
 	## Remove old version of pester and install new version
 	Set-PesterVersion
 	## Change directory to tests
