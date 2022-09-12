@@ -326,7 +326,7 @@ If ($stage -eq 'complete') {
 	Set-Location $env:systemdrive\ronin\test\integration\windows11
 	## Loop through each test and run it
 	Get-ChildItem *.tests* | ForEach-Object {
-		Invoke-RoninWindowsTest -Test $_.Fullname
+		Invoke-RoninTest -Test $_.Fullname
 	}
 	exit 0
 }
