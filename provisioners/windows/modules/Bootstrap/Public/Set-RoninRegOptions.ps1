@@ -4,37 +4,39 @@ function Set-RoninRegOptions {
         [string] $ronnin_key = "$mozilla_key\ronin_puppet",
         [string] $source_key = "$ronnin_key\source",
         [string] $image_provisioner,
-        [string] $workerType,
+        #[string] $workerType,
+        [string] $worker_pool_id,
+        [string] $base_image,
         [string] $src_Organisation,
         [string] $src_Repository,
-        [string] $src_Revision
+        [string] $src_Branch
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
         If (!( test-path "$ronnin_key")) {
-            New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
-            New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
+            New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
+            New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet -force
         }
-  
-        New-Item -Path $ronnin_key -Name source –Force
-        New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String
-        New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
-        $role = $workerType -replace '-', ''
-        New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
+
+        New-Item -Path $ronnin_key -Name source -force
+        New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String  -force
+        #New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
+        #$WorkerPoolID = $worker_pool_id -replace '/','-'
+        New-ItemProperty -Path "$ronnin_key" -Name 'worker_pool_id' -Value "$worker_pool_id" -PropertyType String -force
+        #$role = $workerType -replace '-',''
+        #New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
+        New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$base_image" -PropertyType String -force
         Write-Log -message  ('{0} :: Node workerType set to {1}' -f $($MyInvocation.MyCommand.Name), ($workerType)) -severity 'DEBUG'
-  
-        New-ItemProperty -Path "$ronnin_key" -Name 'inmutable' -Value 'false' -PropertyType String
-        New-ItemProperty -Path "$ronnin_key" -Name 'runtosuccess' -Value 'true' -PropertyType String
-        New-ItemProperty -Path "$ronnin_key" -Name 'last_run_exit' -Value '0' -PropertyType Dword
-        New-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'setup' -PropertyType String
-  
-  
-        New-ItemProperty -Path "$source_key" -Name 'Organisation' -Value "$src_Organisation" -PropertyType String
-        New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String
-        New-ItemProperty -Path "$source_key" -Name 'Revision' -Value "$src_Revision" -PropertyType String
-  
+
+        New-ItemProperty -Path "$ronnin_key" -Name 'inmutable' -Value 'false' -PropertyType String -force
+        New-ItemProperty -Path "$ronnin_key" -Name 'last_run_exit' -Value '0' -PropertyType Dword -force
+        New-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'setup' -PropertyType String -force
+
+        New-ItemProperty -Path "$source_key" -Name 'Organisation' -Value "$src_Organisation" -PropertyType String -force
+        New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String -force
+        New-ItemProperty -Path "$source_key" -Name 'Branch' -Value "$src_Branch" -PropertyType String -force
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
