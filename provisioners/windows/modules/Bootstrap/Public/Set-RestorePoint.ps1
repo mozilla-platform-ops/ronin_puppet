@@ -1,4 +1,4 @@
-Function set-restore_point {
+Function Set-RestorePoint {
     param (
       [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
       [string] $ronnin_key = "$mozilla_key\ronin_puppet",
