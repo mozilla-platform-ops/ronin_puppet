@@ -15,12 +15,7 @@ class roles_profiles::profiles::microsoft_tools {
             # For now pulling from S3
 
 
-            if $facts['custom_win_release_id'] == '2004'{
-                include win_packages::vs_buildtools
-            } else {
-                include win_packages::vc_redist_x86
-                include win_packages::vc_redist_x64
-            }
+            include win_packages::vs_buildtools
             include win_os_settings::powershell_profile
 
             class { 'win_packages::performance_tool_kit':

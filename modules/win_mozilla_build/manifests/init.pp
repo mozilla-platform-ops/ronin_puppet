@@ -27,6 +27,8 @@ class win_mozilla_build (
 ) {
 
     if $::operatingsystem == 'Windows' {
+        require win_packages::vs_buildtools
+
         include win_mozilla_build::install
         include win_mozilla_build::hg_install
         include win_mozilla_build::hg_files
