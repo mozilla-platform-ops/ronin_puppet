@@ -16,10 +16,10 @@
   
         ## Remove built-in version of pester
         $module = "C:\Program Files\WindowsPowerShell\Modules\Pester"
-        takeown /F $module /A /R
-        icacls $module /reset
-        icacls $module /grant "*S-1-5-32-544:F" /inheritance:d /T
-        Remove-Item -Path $module -Recurse -Force -Confirm:$false
+        takeown /F $module /A /R | Out-Null
+        icacls $module /reset | Out-Null
+        icacls $module /grant "*S-1-5-32-544:F" /inheritance:d /T | Out-Null
+        Remove-Item -Path $module -Recurse -Force -Confirm:$false | Out-Null
   
         ## install Pester
         Install-Module -Name Pester -Force
