@@ -22,6 +22,6 @@ Describe "Windows Azure VM Agent" {
         ([Version]$Software.DisplayVersion).Build | Should -Be $ExpectedSoftwareVersion.Build
     }
     It "Windows Azure VM Agent is build version 1057" {
-        ([Version]$Software.DisplayVersion).Revision | Should -Be $ExpectedSoftwareVersion.Build
+        ([Version]$Software.DisplayVersion).Revision | Should -Be $ExpectedSoftwareVersion.Revision
     }
 }
