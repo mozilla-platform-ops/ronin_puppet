@@ -21,7 +21,7 @@ class roles_profiles::profiles::microsoft_tools {
                 include win_packages::vs_buildtools
                 include win_packages::dxsdk_jun10
                 include win_packages::binscope
-            } else {
+                # Required by rustc (tooltool artefact)
                 include win_packages::vc_redist_x86
                 include win_packages::vc_redist_x64
             }
