@@ -31,7 +31,7 @@ class win_mozilla_build::hg_files {
     }
     # Resource from counsyl-windows
     windows::environment { 'HG_CACHE':
-        value => "${win_mozilla_build::cache_drive}\\tooltool-cache",
+        value => "${win_mozilla_build::cache_drive}\\hg-cache",
     }
     # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::cache_drive}\\hg-shared":
