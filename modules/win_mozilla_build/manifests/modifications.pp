@@ -35,6 +35,8 @@ class win_mozilla_build::modifications {
             ensure => link,
             target => "${win_mozilla_build::system_drive}\\users",
         }
+    }
+    if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
         file { "${mozbld}\\msys":
             ensure => link,
             target => "${mozbld}\\msys2",
