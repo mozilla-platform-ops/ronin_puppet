@@ -301,6 +301,9 @@ $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicPa
 $src_Branch = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceBranch') })[0].value
 $image_provisioner = 'azure'
 
+Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
+Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerName).hostname)
+
 If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
@@ -320,6 +323,8 @@ If ($stage -eq 'complete') {
 	Write-Log -message  ('{0} ::Beginning Pester tests' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 	## Import module to bootstrap pester and run tests
 	Import-Module "$env:systemdrive\ronin\provisioners\windows\modules\Bootstrap\Bootstrap.psm1"
+	Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
+	Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerName).hostname)
 	## Remove old version of pester and install new version if not already running 5
 	if ((Get-Module -Name Pester -ListAvailable).version.major -ne 5) {
 		Set-PesterVersion
