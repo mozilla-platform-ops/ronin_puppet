@@ -4,7 +4,7 @@ class macos_safaridriver {
       $the_script = '/usr/local/bin/add-safari-permissions.sh'
 
       file { $the_script:
-        content => file('macos_safaridriver/mac_desktop_image.py'),
+        content => file('macos_safaridriver/add-safari-permissions.sh'),
       }
 
       exec { 'execute script':
