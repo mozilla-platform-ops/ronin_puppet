@@ -23,8 +23,8 @@
 - #3 Hiera lookups should only be done within profiles and then passed as args to the class.
 
 More information:
-- https://puppet.com/docs/pe/2018.1/the_roles_and_profiles_method.html
-- https://puppet.com/docs/pe/2017.2/r_n_p_intro.html
+- https://puppet.com/docs/puppet/6/designing_system_configs_roles_and_profiles.html
+- https://puppet.com/docs/puppet/6/the_roles_and_profiles_method.html#the_roles_and_profiles_method
 
 ## testing
 
