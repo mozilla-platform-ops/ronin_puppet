@@ -5,6 +5,7 @@ class macos_safaridriver {
 
       file { $the_script:
         content => file('macos_safaridriver/add-safari-permissions.sh'),
+        mode    => '0755'
       }
 
       exec { 'execute script':
