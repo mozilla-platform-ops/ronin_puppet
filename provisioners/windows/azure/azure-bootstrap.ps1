@@ -324,7 +324,6 @@ If ($stage -eq 'complete') {
 	## Import module to bootstrap pester and run tests
 	Import-Module "$env:systemdrive\ronin\provisioners\windows\modules\Bootstrap\Bootstrap.psm1"
 	Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
-	Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerName).hostname)
 	## Remove old version of pester and install new version if not already running 5
 	if ((Get-Module -Name Pester -ListAvailable).version.major -ne 5) {
 		Set-PesterVersion
