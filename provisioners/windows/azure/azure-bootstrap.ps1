@@ -195,7 +195,13 @@ Function Set-AzRoninRepo {
       	Copy-item -path $secret_src -destination $secrets -recurse -force
     }
 		# Start to disable Windows defender here
-    	#Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
+		$caption = ((Get-WmiObject Win32_OperatingSystem).caption)
+		$caption = $caption.ToLower()
+		$os_caption = $caption -replace ' ', '_'
+		if ($os_caption -like "*windows_10*") {
+			## This didn't work in windows 11, permissions issue. Will only run on Windows 10.
+    		Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
+		}
     	Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
   	}
   		end {
@@ -255,7 +261,7 @@ function Apply-AzRoninPuppet {
         Write-Log -message  ('{0} :: Moving old logs.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
         Write-Log -message  ('{0} :: Running Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log --debug
+        puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
         [int]$puppet_exit = $LastExitCode
 
         if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
