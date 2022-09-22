@@ -14,14 +14,15 @@ class macos_safaridriver {
       }
 
       # non-admin users need to be in _webdeveloper group for safaridriver to work
-      # if not, `safaridriver --diagnose` will complain with:
-      #   'ERROR: safaridriver could not launch because it is not configured'.
+      #   - https://developer.apple.com/forums/thread/124461
+      #   - if not, `safaridriver --diagnose` will complain with:
+      #       'ERROR: safaridriver could not launch because it is not configured'
       #
       # dseditgroup preferred to dscl
       #   - https://superuser.com/questions/214004/how-to-add-user-to-a-group-from-mac-os-x-command-line
       #
       # TODO: pull out user as param, i.e. don't hardcode cltbld user
-      $group = ['_webdeveloper']
+      $group = '_webdeveloper'
       exec { "cltbld_group_${group}":
         command => "/usr/sbin/dseditgroup -o edit -a cltbld -t user ${group}",
         unless  => "/usr/bin/groups cltbld | /usr/bin/grep -q -w ${group}",
