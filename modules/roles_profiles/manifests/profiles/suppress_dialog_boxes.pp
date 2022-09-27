@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::suppress_dialog_boxes {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             # Disables the setup assistant application that runs after a fresh OS installation
             # Installs a payloadless package which suppresses the Setup Assistant the first time the OS starts
@@ -23,7 +23,7 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         }
         'Windows': {
 
-            include win_os_settings::disbale_notifications
+            include win_os_settings::disable_notifications
 
         # Bug list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
@@ -31,7 +31,7 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58"
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

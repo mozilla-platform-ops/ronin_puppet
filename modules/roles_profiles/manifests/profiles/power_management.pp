@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::power_management {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             include macos_mobileconfig_profiles::power_management
         }
@@ -16,7 +16,7 @@ class roles_profiles::profiles::power_management {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524436
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

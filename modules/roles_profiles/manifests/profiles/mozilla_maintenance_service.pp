@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::mozilla_maintenance_service {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
         # Refrence https://support.mozilla.org/en-US/kb/what-mozilla-maintenance-service
 
@@ -37,7 +37,7 @@ class roles_profiles::profiles::mozilla_maintenance_service {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1353889
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

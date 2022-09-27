@@ -4,7 +4,7 @@
 
 class win_packages::process_debug {
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         win_packages::win_zip_pkg { 'proc_expolorer':
             pkg         => 'ProcessExplorer.zip',
             creates     => "${facts['custom_win_systemdrive']}\\ProcessExplorer\\procexp.exe",
@@ -16,6 +16,6 @@ class win_packages::process_debug {
             destination => "${facts['custom_win_systemdrive']}\\ProcessMonitor",
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${$facts['os']['name']}")
     }
 }

@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::ntp {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             class { 'macos_ntp':
                 enabled    => true,
@@ -32,7 +32,7 @@ class roles_profiles::profiles::ntp {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }
