@@ -17,6 +17,27 @@ class win_disable_services::disable_windows_update {
   }
 
   case $facts['custom_win_os_version'] {
+    'win_2012': {
+        win_disable_services::disable_service { 'wuauserv':
+        }
+
+        # Using puppetlabs-registry
+        registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
+            type => dword,
+            data => '0',
+        }
+        registry_key { $win_au_key:
+            ensure => present,
+        }
+        registry_value { "${win_au_key}\\AUOptions":
+            type => dword,
+            data => '1',
+        }
+        registry_value { "${win_au_key}\\NoAutoUpdate":
+            type => dword,
+            data => '1',
+        }
+  }
     'win_11_2009': {
       service { 'UsoSvc':
         ensure => stopped,
