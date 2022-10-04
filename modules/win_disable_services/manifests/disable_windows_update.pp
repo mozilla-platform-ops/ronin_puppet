@@ -18,9 +18,6 @@ class win_disable_services::disable_windows_update {
 
   case $facts['custom_win_os_version'] {
     'win_2012': {
-        win_disable_services::disable_service { 'wuauserv':
-        }
-
         # Using puppetlabs-registry
         registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
             type => dword,
