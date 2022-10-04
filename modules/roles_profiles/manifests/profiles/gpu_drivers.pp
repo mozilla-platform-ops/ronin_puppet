@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::gpu_drivers {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             class { 'win_packages::drivers::nvidia_grid':
@@ -13,7 +13,7 @@ class roles_profiles::profiles::gpu_drivers {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

@@ -10,7 +10,7 @@ class win_packages::vs_buildtools {
     $sdk       = 'ExtensionSDKs\Microsoft.Midi.GmDls\10.0.19041.0'
     $sdk_dir   = "${prog_dir}\\Microsoft SDKs\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.19041.0"
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':
             pkg                    => 'vs_buildtools__1552942004.1623183462.exe',
             install_options_string => "--add ${vc_tools} --passive",
@@ -23,6 +23,6 @@ class win_packages::vs_buildtools {
             creates                => "${sdk_dir}\\SDKManifest.xml",
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${$facts['os']['name']}")
     }
 }

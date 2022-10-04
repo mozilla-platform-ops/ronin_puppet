@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::git {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
         $git_version = lookup('win-worker.git.version')
@@ -20,7 +20,7 @@ class roles_profiles::profiles::git {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

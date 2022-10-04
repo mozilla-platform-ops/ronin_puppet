@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::language {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             win_language::pack { 'japanese':
@@ -12,7 +12,7 @@ class roles_profiles::profiles::language {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

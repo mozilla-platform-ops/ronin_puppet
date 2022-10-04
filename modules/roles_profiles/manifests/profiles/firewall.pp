@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::firewall {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             include win_firewall::allow_ping
             if $facts['custom_win_location'] == 'aws' {
@@ -19,7 +19,7 @@ class roles_profiles::profiles::firewall {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1358301
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

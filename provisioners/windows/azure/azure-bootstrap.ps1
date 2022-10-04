@@ -214,6 +214,22 @@ Function Set-AzRoninRepo {
         end {
             Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
+<<<<<<< HEAD
+=======
+		# Start to disable Windows defender here
+		$caption = ((Get-WmiObject Win32_OperatingSystem).caption)
+		$caption = $caption.ToLower()
+		$os_caption = $caption -replace ' ', '_'
+		if ($os_caption -like "*windows_10*") {
+			## This didn't work in windows 11, permissions issue. Will only run on Windows 10.
+    		Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
+		}
+    	Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
+  	}
+  		end {
+    		Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  	}
+>>>>>>> c7b55884c95e2a20c37f248f15d6c162f44bb5c0
 }
 
 function Move-StrapPuppetLogs {
@@ -314,6 +330,9 @@ $src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicPa
 $src_Branch = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceBranch') })[0].value
 $image_provisioner = 'azure'
 
+Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
+Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerName).hostname)
+
 If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
@@ -329,6 +348,24 @@ If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
     exit 0
 }
 If ($stage -eq 'complete') {
-    Write-Log -message  ('{0} ::Bootstrapping appears complete'  -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    exit 0
+    Write-Log -message  ('{0} ::Bootstrapping appears complete' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+	$caption = ((Get-WmiObject Win32_OperatingSystem).caption)
+	$caption = $caption.ToLower()
+	$os_caption = $caption -replace ' ', '_'
+	if ($os_caption -like "*windows_11*") {
+		## Target only windows 11 for tests at this time.
+		Import-Module "$env:systemdrive\ronin\provisioners\windows\modules\Bootstrap\Bootstrap.psm1"
+		Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
+		## Remove old version of pester and install new version if not already running 5
+		if ((Get-Module -Name Pester -ListAvailable).version.major -ne 5) {
+			Set-PesterVersion
+		}
+		## Change directory to tests
+		Set-Location $env:systemdrive\ronin\test\integration\windows11
+		## Loop through each test and run it
+		Get-ChildItem *.tests* | ForEach-Object {
+			Invoke-RoninTest -Test $_.Fullname
+		}
+	}
+	exit 0
 }

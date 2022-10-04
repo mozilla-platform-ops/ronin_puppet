@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::azure_vm_agent {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $agent_version = lookup('win-worker.azure.vm_agent.version')
@@ -17,7 +17,7 @@ class roles_profiles::profiles::azure_vm_agent {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

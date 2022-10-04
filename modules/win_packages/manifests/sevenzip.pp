@@ -4,12 +4,12 @@
 
 class win_packages::sevenzip {
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         win_packages::win_msi_pkg  { '7-Zip 18.06 (x64 edition)':
             pkg             => '7z1806-x64.msi',
             install_options => ['/quiet'],
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${$facts['os']['name']}")
     }
 }

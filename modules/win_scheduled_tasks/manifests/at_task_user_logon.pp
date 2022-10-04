@@ -6,7 +6,7 @@ class win_scheduled_tasks::at_task_user_logon {
 
     $at_task_user_logon_bat = "${facts['custom_win_roninprogramdata']}\\at_task_user_logon.bat"
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         file { $at_task_user_logon_bat:
             content => file('win_scheduled_tasks/at_task_user_logon.bat'),
         }
@@ -24,6 +24,6 @@ class win_scheduled_tasks::at_task_user_logon {
             user      => 'system',
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${$facts['os']['name']}")
     }
 }

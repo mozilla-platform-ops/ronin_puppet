@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::windows_worker_runner {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $nssm_dir              = lookup('windows.dir.nssm')
@@ -107,7 +107,7 @@ class roles_profiles::profiles::windows_worker_runner {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

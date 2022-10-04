@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::files_system_managment {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             include win_filesystem::disable8dot3
             include win_filesystem::disablelastaccess
@@ -26,7 +26,7 @@ class roles_profiles::profiles::files_system_managment {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1562974
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

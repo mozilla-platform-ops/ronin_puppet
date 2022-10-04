@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::virtual_drivers {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $flags    = '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
@@ -23,7 +23,7 @@ class roles_profiles::profiles::virtual_drivers {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1656286
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

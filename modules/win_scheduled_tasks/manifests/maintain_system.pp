@@ -8,7 +8,7 @@ class win_scheduled_tasks::maintain_system (
 
     $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         file { $maintainsystem_ps1:
             content => file("win_scheduled_tasks/${startup_script}"),
         }
@@ -26,6 +26,6 @@ class win_scheduled_tasks::maintain_system (
             user      => 'system',
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${$facts['os']['name']}")
     }
 }

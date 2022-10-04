@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::network {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             include ::macos_utils::wifi_disabled
             include ::macos_utils::bonjour_advertisements_disabled
@@ -28,7 +28,7 @@ class roles_profiles::profiles::network {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1671022
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 
