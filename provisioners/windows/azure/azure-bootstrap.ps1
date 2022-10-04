@@ -203,19 +203,6 @@ Function Set-AzRoninRepo {
     if (!(Test-path $secrets)) {
         Copy-item -path $secret_src -destination $secrets -recurse -force
     }
-        # If Wn 10 Start to disable Windows defender here
-        # Prevent issues on the Pupept apply
-        $OSVersion = (get-itemproperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ProductName).ProductName
-        if ($OSVersion -like "Windows 10*") {
-            Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
-            Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
-        }
-    }
-        end {
-            Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-<<<<<<< HEAD
-=======
 		# Start to disable Windows defender here
 		$caption = ((Get-WmiObject Win32_OperatingSystem).caption)
 		$caption = $caption.ToLower()
@@ -229,7 +216,6 @@ Function Set-AzRoninRepo {
   		end {
     		Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   	}
->>>>>>> c7b55884c95e2a20c37f248f15d6c162f44bb5c0
 }
 
 function Move-StrapPuppetLogs {
