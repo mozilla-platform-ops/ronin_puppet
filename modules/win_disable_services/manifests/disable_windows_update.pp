@@ -23,9 +23,6 @@ class win_disable_services::disable_windows_update {
             type => dword,
             data => '0',
         }
-        registry_key { $win_au_key:
-            ensure => present,
-        }
         registry_value { "${win_au_key}\\AUOptions":
             type => dword,
             data => '1',
