@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "ignorePaths": ["Puppetfile",
-                  "r10k_modules/**"],
+                  "r10k_modules/**",
+                  "modules/windowstime/Gemfile"],
   "extends": [
     "config:base"
   ]
