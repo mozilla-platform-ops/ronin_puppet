@@ -1,5 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "ignorePaths": ["r10k_modules/**"],
   "extends": [
     "config:base"
   ]
