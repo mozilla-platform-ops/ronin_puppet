@@ -22,8 +22,8 @@ class roles_profiles::profiles::suppress_dialog_boxes {
             include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
         'Windows': {
-
             include win_os_settings::disable_notifications
+            include win_disable_services::disable_uac
 
         # Bug list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
