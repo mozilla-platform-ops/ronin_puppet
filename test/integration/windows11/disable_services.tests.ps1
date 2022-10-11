@@ -35,6 +35,9 @@ Describe "Disable Services" {
             Get-ItemPropertyValue $win_au_key -Name "NoAutoUpdate" | Should -Be 1
         }
     }
+    Context "Disable User Account Control" {
+        Get-ItemPropertyValue HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name "EnableLUA" | Should -Be 0
+    }
     Context "Disable Local Clipboard" -Tags "Azure" -Skip {
         It "Service is stopped" {
             (Get-Service -Name "cbdhsvc_*").Status | Should -Be "Stopped"
