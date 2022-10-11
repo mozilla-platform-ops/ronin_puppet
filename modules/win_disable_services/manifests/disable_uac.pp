@@ -11,7 +11,7 @@ class win_disable_services::disable_uac {
       }
     }
     default: {
-      fail("${module_name} does not support ${$facts['custom_win_os_version']}")
+      warning("${module_name} does not support ${$facts['custom_win_os_version']}")
     }
   }
 }
