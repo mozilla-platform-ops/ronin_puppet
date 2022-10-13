@@ -6,8 +6,6 @@ set -x
 ROLE="bitbar_devicepool"
 PUPPET_REPO="https://github.com/mozilla-platform-ops/ronin_puppet.git"
 PUPPET_BRANCH="master"
-# PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git"
-# PUPPET_BRANCH="devicepool_fixes_99"
 
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 PUPPET_ENV_DIR='/etc/puppetlabs/environments'
@@ -17,7 +15,10 @@ R10K_BIN='/opt/puppetlabs/puppet/bin/r10k'
 ROLE_FILE='/etc/puppet_role'
 PUPPET_REPO_PATH="$PUPPET_ENV_DIR/production"
 
-
+# for testing, uncomment
+# PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git"
+# PUPPET_BRANCH="bitbar2204"
+# PUPPET_REPO_PATH="$PUPPET_ENV_DIR/aerickson"
 
 ## FUNCTIONS
 
@@ -132,7 +133,8 @@ else
 fi
 
 # install puppet
-wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet6-release-$(lsb_release -c -s).deb"
+rm /var/tmp/puppet*.deb*
+wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet7-release-$(lsb_release -c -s).deb"
 dpkg -i /var/tmp/*.deb
 apt-get update -y && apt-get install -y puppet-agent
 ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
