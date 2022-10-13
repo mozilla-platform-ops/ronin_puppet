@@ -1,8 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "ignorePaths": ["Puppetfile",
-                  "r10k_modules/**",
+  "ignorePaths": ["r10k_modules/**",
                   "modules/windowstime/Gemfile"],
+  "prBodyNotes": [":warning: If Puppetfile changes, don't land as is! You must push a commit to this PR with `r10k install`'s changes before landing. :warning:"],
   "extends": [
     "config:base"
   ]
