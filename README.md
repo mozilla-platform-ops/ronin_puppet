@@ -33,6 +33,7 @@ Many profiles run puppet at boot, but some only do on demand.
 ### bolt
 
 ```
+# setup bolt first, see https://mana.mozilla.org/wiki/display/ROPS/M1+and+R8+Catalina+Deployment
 bolt plan run deploy::apply -t macmini-r8-140.test.releng.mdc1.mozilla.com noop=false -v
 ```
 
