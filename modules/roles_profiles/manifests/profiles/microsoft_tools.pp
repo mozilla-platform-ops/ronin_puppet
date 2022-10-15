@@ -17,6 +17,10 @@ class roles_profiles::profiles::microsoft_tools {
 
             include win_packages::vs_buildtools
             include win_os_settings::powershell_profile
+            if $facts['custom_win_release_id'] == '1803'{
+                include win_packages::vc_redist_x86
+                include win_packages::vc_redist_x64
+            }
 
             class { 'win_packages::performance_tool_kit':
                 moz_profile_source => lookup('win-worker.mozilla_profile.source'),
