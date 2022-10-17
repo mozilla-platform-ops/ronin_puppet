@@ -1,3 +1,12 @@
+## Set variable for windows OS
+# Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+<#
+NOTE: This script is specific for items that can't be done until the user environment is in place.
+#>
+
 function Write-Log {
     param (
         [string] $message,
@@ -37,21 +46,10 @@ function Write-Log {
     }
 }
 
-## Set variable for windows OS
-# Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-# Custom facts based off OS details that are not included in the default facts
-
 # Windows release ID.
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
-$win_os_build = [System.Environment]::OSVersion.Version.build
-
-# OS caption
-# Used to determine which KMS license for cloud workers
 $caption = ((Get-WmiObject Win32_OperatingSystem).caption)
 $caption = $caption.ToLower()
 $os_caption = $caption -replace ' ', '_'
@@ -69,6 +67,19 @@ else {
     $os_version = $null
 }
 
+## Wait until explorer is set in the registry and then suppress notifications for firewall 
+while ($true) {
+    $explorer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction SilentlyContinue
+    if ($null -eq $explorer) {
+        Start-Sleep -Seconds 3
+    } 
+    else {
+        ## Tested against windows 11
+        cmd.exe /c 'netsh firewall set notifications mode = disable profile = all'
+        break
+    }
+}
+
 ## Accessibilty keys in HKCU
 $Accessibility = Get-ItemProperty -Path "HKCU:\Control Panel\Accessibility"
 
@@ -79,7 +90,7 @@ switch ($os_version) {
         if ($null -eq $Accessibility.DynamicScrollbars) {
             Try {
                 New-ItemProperty -Path "HKCU:\Control Panel\Accessibility" -Name "DynamicScrollbars" -Value 0 -ErrorAction Stop
-                Write-Log -message  ('{0} :: Scrollbars successfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                #Write-Log -message  ('{0} :: Scrollbars successfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             }
             Catch {
                 Write-Log -message  ('{0} :: Scrollbars unsuccessfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -88,7 +99,7 @@ switch ($os_version) {
         else {
             ## If it's already there, make sure it's 0
             if ($Accessibility.DynamicScrollbars -eq 0) {
-                Write-Log -message  ('{0} :: Scrollbars already set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                #Write-Log -message  ('{0} :: Scrollbars already set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 continue
             }
         }
