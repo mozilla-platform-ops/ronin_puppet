@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-class roles_profiles::roles::win202264azure {
+class roles_profiles::roles::win2022642009azure {
 
     # Needs to be applied before other Win Update is disabled
     include roles_profiles::profiles::microsoft_tools
