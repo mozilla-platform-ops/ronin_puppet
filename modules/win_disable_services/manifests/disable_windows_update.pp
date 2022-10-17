@@ -32,7 +32,7 @@ class win_disable_services::disable_windows_update {
             data => '1',
         }
   }
-    'win_11_2009': {
+    'win_11_2009', 'win_2022_2009': {
       service { 'UsoSvc':
         ensure => stopped,
         name   => 'UsoSvc',
