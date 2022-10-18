@@ -1,16 +1,27 @@
 class macos_safaridriver {
   case $facts['os']['name'] {
     'Darwin': {
-      $the_script = '/usr/local/bin/add-safari-permissions.sh'
+      $perm_script = '/usr/local/bin/add_tcc_perms.sh'
+      $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
 
-      file { $the_script:
-        content => file('macos_safaridriver/add-safari-permissions.sh'),
+      file { $perm_script:
+        content => file('macos_safaridriver/add_tcc_perms.sh'),
         mode    => '0755',
       }
 
-      exec { 'execute script':
-        command => $the_script,
-        require => File[$the_script],
+      file { $enable_script:
+        content => file('macos_safaridriver/safari-enable-remote-automation.sh'),
+        mode    => '0755',
+      }
+
+      exec { 'execute perms script':
+        command => $perm_script,
+        require => File[$perm_script],
+      }
+
+      exec { 'execute enable script':
+        command => $enable_script,
+        require => File[$enable_script],
       }
 
       # non-admin users need to be in _webdeveloper group for safaridriver to work
