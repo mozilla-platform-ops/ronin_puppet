@@ -2,13 +2,13 @@
 
 set -e
 
-# basd on https://circleci.com/developer/orbs/orb/circleci/macos#commands-add-safari-permissions
+# based on https://circleci.com/developer/orbs/orb/circleci/macos#commands-add-safari-permissions
 
-# if [ "$EUID" -eq 0 ]; then
-#   echo "Must not run as root!"
-#   echo "  'Allow Remote Automation' is per account."
-#   exit 1
-# fi
+if [ "$EUID" -eq 0 ]; then
+  echo "Must not run as root!"
+  echo "  'Allow Remote Automation' is per account."
+  exit 1
+fi
 
 current_user=$(id -u -n)
 semaphore_file="/Users/$current_user/Library/Preferences/semaphare/safari-enable-remote-automation-has-run"
