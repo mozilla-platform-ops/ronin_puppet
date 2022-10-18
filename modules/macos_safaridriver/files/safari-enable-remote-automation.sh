@@ -23,11 +23,12 @@ else
 fi
 
 if csrutil status | grep -q 'disabled'; then
-    # tcc work moved out
+    # TCC DB changes moved elsewhere
 
     # issue: code below will disable/enable 'allow remote automation'
     #   - no way to 'enable' only 'click'
-    #      see '(click menu item "Allow Remote Automation")'
+    #      see '(click menu item "Allow Remote Automation")' below
+    #   - current solution: semaphore above
     osascript -e '
       tell application "System Events"
         tell application "Safari" to activate
@@ -50,12 +51,10 @@ if csrutil status | grep -q 'disabled'; then
         end tell
       end tell'
 
-    # safaridriver enable done somewhere else
-    #sudo safaridriver --enable
+    # `sudo safaridriver --enable` enable done somewhere else
 else
     echo "Unable to add permissions! System Integrity Protection is enabled."
     exit 1
 fi
 
-# will the normal user have permissions to write this file?
 echo "$semaphore_version" > "$semaphore_file"
