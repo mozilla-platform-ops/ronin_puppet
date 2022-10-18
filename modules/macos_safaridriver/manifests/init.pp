@@ -28,11 +28,15 @@ class macos_safaridriver {
       }
 
       # needs to run as cltbld via launchctl or won't work
-      exec { 'execute enable script':
+      exec { 'execute enable remote automation script':
         # TODO: don't hardcode user id of cltbld
         command => "/bin/launchctl asuser 36 sudo -u cltbld ${enable_script}",
         require => File[$enable_script],
         # logoutput => true,
+      }
+
+      exec { 'enable safari driver':
+        command => '/usr/bin/safaridriver --enable',
       }
 
       # non-admin users need to be in _webdeveloper group for safaridriver to work
