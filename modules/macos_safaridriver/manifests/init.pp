@@ -20,28 +20,19 @@ class macos_safaridriver {
         mode    => '0755',
       }
 
-      exec { 'debugging':
-        command => '/bin/bash -c "id; printenv"',
+      exec { 'execute perms script':
+        command => $perm_script,
         require => File[$perm_script],
         user    => 'root',
         # logoutput => true,
       }
 
-      exec { 'execute perms script':
-        command   => $perm_script,
-        require   => File[$perm_script],
-        user      => 'root',
-        logoutput => true,
-      }
-
-      # launchctl asuser "$uid" sudo -u "$currentUser" command arguments
-
       # needs to run as cltbld via launchctl or won't work
       exec { 'execute enable script':
         # TODO: don't hardcode user id of cltbld
-        command   => "/bin/launchctl asuser 36 sudo -u cltbld ${enable_script}",
-        require   => File[$enable_script],
-        logoutput => true,
+        command => "/bin/launchctl asuser 36 sudo -u cltbld ${enable_script}",
+        require => File[$enable_script],
+        # logoutput => true,
       }
 
       # non-admin users need to be in _webdeveloper group for safaridriver to work
