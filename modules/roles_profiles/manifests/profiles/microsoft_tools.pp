@@ -14,23 +14,41 @@ class roles_profiles::profiles::microsoft_tools {
             # In this case triggers the exec and adds to the local WMI repo each time
             # For now pulling from S3
 
-
-            if $facts['custom_win_release_id'] == '2004'{
-                include win_packages::vs_buildtools
-            # This fact comes up as 2016 for 2022
-            } elsif $facts['os']['release']['full'] == (('2012 R2') or ('2016')) {
-                include win_packages::vs_buildtools
-                include win_packages::dxsdk_jun10
-                include win_packages::binscope
-                # Required by rustc (tooltool artefact)
-                include win_packages::vc_redist_x86
-                include win_packages::vc_redist_x64
-            }
             include win_os_settings::powershell_profile
 
             class { 'win_packages::performance_tool_kit':
                 moz_profile_source => lookup('win-worker.mozilla_profile.source'),
                 moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
+            }
+
+            # This fact comes up as 2016 for 2022
+            if $facts['os']['release']['full'] == (('2012 R2') or ('2016')) {
+                $purpose = 'builder'
+            } else {
+                $purpose = 'tester'
+            }
+
+            case $purpose {
+                'builder': {
+                    include win_packages::vs_buildtools
+                    include win_packages::dxsdk_jun10
+                    include win_packages::binscope
+                    # Required by rustc (tooltool artefact)
+                    include win_packages::vc_redist_x86
+                    include win_packages::vc_redist_x64
+                }
+                'tester': {
+                    case $facts['custom_win_release_id'] {
+                        '2004', '2009': {
+                            include win_packages::vs_buildtools
+                        }
+                        default: {
+                            include win_packages::vc_redist_x86
+                            include win_packages::vc_redist_x64
+                        }
+                    }
+                }
+                default: {}
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
