@@ -22,6 +22,7 @@ class macos_safaridriver {
       exec { 'execute enable script':
         command => $enable_script,
         require => File[$enable_script],
+        user    => 'cltbld',
       }
 
       # non-admin users need to be in _webdeveloper group for safaridriver to work
