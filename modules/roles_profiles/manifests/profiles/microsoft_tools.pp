@@ -17,7 +17,8 @@ class roles_profiles::profiles::microsoft_tools {
 
             if $facts['custom_win_release_id'] == '2004'{
                 include win_packages::vs_buildtools
-            } elsif $facts['os']['release']['full'] == '2012 R2' {
+            # This fact comes up as 2016 for 2022
+            } elsif $facts['os']['release']['full'] == (('2012 R2') or ('2016')) {
                 include win_packages::vs_buildtools
                 include win_packages::dxsdk_jun10
                 include win_packages::binscope
