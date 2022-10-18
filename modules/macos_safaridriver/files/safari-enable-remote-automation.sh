@@ -4,20 +4,22 @@ set -e
 
 # basd on https://circleci.com/developer/orbs/orb/circleci/macos#commands-add-safari-permissions
 
-if [ "$USER" == "root" ]; then
-    echo "Must not run as root ('Allow Remote Automation' is per account')!"
-    exit 1
-fi
+# if [ "$EUID" -eq 0 ]; then
+#   echo "Must not run as root!"
+#   echo "  'Allow Remote Automation' is per account."
+#   exit 1
+# fi
 
-semaphore_file="/var/tmp/semaphore/safari-enable-remote-automation-has-run"
+current_user=$(id -u -n)
+semaphore_file="/Users/$current_user/Library/Preferences/semaphare/safari-enable-remote-automation-has-run"
 semaphore_version="1"
-# mkdir -p /var/tmp/semaphore/
+mkdir -p "$(dirname "$semaphore_file")"
 touch "$semaphore_file"
-if [[ $(cat $semaphore_file) == "$semaphore_version" ]]; then
-  echo "semaphore_check: file indicates this version of the script has already run. exiting..."
+if [[ "$(cat "$semaphore_file")" == "$semaphore_version" ]]; then
+  echo "$0: file indicates this version of the script has already run. exiting..."
   exit 0
 else
-  echo "semaphore_check: running..."
+  echo "$0: running..."
 fi
 
 if csrutil status | grep -q 'disabled'; then
