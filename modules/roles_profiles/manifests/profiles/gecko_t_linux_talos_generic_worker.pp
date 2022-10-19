@@ -34,10 +34,12 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_talos
 
             class { 'puppet::atboot':
-                telegraf_user     => lookup('telegraf.user'),
-                telegraf_password => lookup('telegraf.password'),
-                puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-                puppet_branch     => 'master',
+                telegraf_user       => lookup('telegraf.user'),
+                telegraf_password   => lookup('telegraf.password'),
+                puppet_repo         => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
+                puppet_branch       => 'bug1746681-masterwayz-loaner',
+                puppet_notify_email => 'dhouse@mozilla.com',
+                puppet_env          => 'dev',
                 # Note the camelCase key names
                 meta_data         => {
                     workerType    => $worker_type,
