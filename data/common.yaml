@@ -17,6 +17,7 @@ user_groups:
     - mcornmesser
     - aerickson
     - jmoss
+    - masterwayz
   signing:
     - ahalberstadt
     - asasaki
@@ -281,6 +282,9 @@ all_users:
 
   jlorenzo:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgKAI4ewrAAfxgV1sE5cNwublsALzX3xYGWwU3RLoCa yubikey-mozilla-2022
+
+  masterwayz:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAkbFbNCNdMkYGazJPtIhbaImib9A9+xRtRZObl6ftCcrevU97PNsMCneaA6BRp/LyJtco32D+YF63CGVBTVtp4yxpkT4qYlVlZwa0GqwCfje130P2Hs+0k5sO+e+n3rIl+gBIvw0EeFdcfpN02BpUKJIX0BIKMqaKxZrmQn8E/Rpu6xGCFRy9wtjodcy3iwblEWPVRTlxowdX+XAO2zYMRYxCfV9/v6y+p2NQwPLsVDw5FimMc0+6iQVYkA+/xQRPIqeYYn5AxrB5ahvCXSQqL7Y/78v2JDNQNTk0xXUFJvtOxJiscH0Z8MGPCB0mE8m6ZX82WloD3gvpEOuFBoEm/w==
 
   # from relops_common_keys_2020-09-08.yml
   relops:
