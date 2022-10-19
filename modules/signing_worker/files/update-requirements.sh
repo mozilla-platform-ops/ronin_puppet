@@ -30,13 +30,13 @@ common_yaml=$(readlink -f "${MY_DIR}/../../../data/common.yaml")
 workdir=$(mktemp -d)
 
 # pull docker images
-docker pull "${yq_docker_image}" &>/dev/null || exit
-docker pull "${python_docker_image}" &>/dev/null || exit
+docker pull "${yq_docker_image}" > /dev/null || exit
+docker pull "${python_docker_image}" > /dev/null || exit
 
 # build python pip-tools for pip-compile
 dockerfile="FROM ${python_docker_image}
 RUN pip install pip-tools"
-echo "${dockerfile}" | docker build -q -t pip-compile - &>/dev/null || exit
+echo "${dockerfile}" | docker build -q -t pip-compile - >/dev/null || exit
 
 # Extract the revisions we need to find the right dependencies.
 scriptworker_revision=$(docker run --rm -it -v "${common_yaml}:/workdir/common.yaml" ${yq_docker_image} ".scriptworker_config.${worker_type}.scriptworker_revision" common.yaml | tr -d '\r')
