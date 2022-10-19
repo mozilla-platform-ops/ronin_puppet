@@ -1,3 +1,7 @@
+# @summary enable safaridriver on OS X systems
+#   - safaridriver allows Selenium and other programs to control Safari
+#
+# @param user_running_safari The user who will be running Safari/safaridriver.
 class macos_safaridriver (
   String $user_running_safari = 'cltbld',
 ) {
