@@ -38,7 +38,9 @@ class roles_profiles::profiles::microsoft_tools {
                     include win_packages::vc_redist_x64
                 }
                 default: {
-                        include win_packages::vs_buildtools
+                    include win_packages::vs_buildtools
+                    include win_packages::vc_redist_x86
+                    include win_packages::vc_redist_x64
                 }
             }
             # Bug List
