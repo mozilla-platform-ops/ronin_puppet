@@ -8,13 +8,6 @@
 yq_docker_image=mikefarah/yq:4.28.2
 python_docker_image=python:3.8.3-alpine3.12
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 worker_type"
-    echo "Worker type is ff-prod, tb-prod, or dep"
-    echo "Pinned requirements will be output to stdout"
-    exit 1
-fi
-
 # Note that MY_DIR is the location of the script...
 pushd "$(dirname "$0")" &>/dev/null || exit
 MY_DIR=$(pwd)
@@ -23,6 +16,18 @@ popd &>/dev/null || exit
 # be different
 cwd=$(pwd)
 
+if [ -z "$1" ]; then
+    echo "Updating all requirement files"
+    for f in ${MY_DIR}/requirements.*; do
+        target=$(echo $f | awk -F '.' '{print $2}')
+        echo "Updating ${f}"
+        ${MY_DIR}/${0} $target $f
+    done
+    exit
+fi
+
+output_file="requirements.${1}.txt"
+
 trap 'cd $cwd' EXIT
 
 worker_type=$1
@@ -30,13 +35,13 @@ common_yaml=$(readlink -f "${MY_DIR}/../../../data/common.yaml")
 workdir=$(mktemp -d)
 
 # pull docker images
-docker pull "${yq_docker_image}" > /dev/null || exit
-docker pull "${python_docker_image}" > /dev/null || exit
+docker pull "${yq_docker_image}" || exit
+docker pull "${python_docker_image}" || exit
 
 # build python pip-tools for pip-compile
 dockerfile="FROM ${python_docker_image}
-RUN pip install pip-tools"
-echo "${dockerfile}" | docker build -q -t pip-compile - >/dev/null || exit
+RUN --mount=type=cache,target=/root/.cache pip install pip-tools"
+echo "${dockerfile}" | docker build -q -t pip-compile - || exit
 
 # Extract the revisions we need to find the right dependencies.
 scriptworker_revision=$(docker run --rm -it -v "${common_yaml}:/workdir/common.yaml" ${yq_docker_image} ".scriptworker_config.${worker_type}.scriptworker_revision" common.yaml | tr -d '\r')
@@ -73,4 +78,10 @@ EOF
 
 
 # run pip-compile
-docker run --rm -v "$(readlink -f ./requirements.in):/w/requirements.in" -w /w pip-compile pip-compile --generate-hashes -r requirements.in 2>&1
+docker run \
+    --rm \
+    -v "$(readlink -f ./requirements.in):/tmp/requirements.in" \
+    -v "$MY_DIR:/w" \
+    -w /w \
+    pip-compile:latest \
+    pip-compile -q --generate-hashes -o $output_file -r /tmp/requirements.in
