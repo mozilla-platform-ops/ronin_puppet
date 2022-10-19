@@ -20,6 +20,8 @@ class macos_safaridriver {
         mode    => '0755',
       }
 
+      # TODO: pip install packaging as root if using tccutil.py
+
       exec { 'execute perms script':
         command => $perm_script,
         require => File[$perm_script],
