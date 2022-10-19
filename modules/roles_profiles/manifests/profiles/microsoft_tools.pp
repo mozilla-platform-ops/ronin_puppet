@@ -37,18 +37,9 @@ class roles_profiles::profiles::microsoft_tools {
                     include win_packages::vc_redist_x86
                     include win_packages::vc_redist_x64
                 }
-                'tester': {
-                    case $facts['custom_win_release_id'] {
-                        '2004', '2009': {
-                            include win_packages::vs_buildtools
-                        }
-                        default: {
-                            include win_packages::vc_redist_x86
-                            include win_packages::vc_redist_x64
-                        }
-                    }
+                default: {
+                    include win_packages::vs_buildtools
                 }
-                default: {}
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
