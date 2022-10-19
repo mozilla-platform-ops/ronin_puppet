@@ -1,6 +1,10 @@
-class macos_safaridriver {
+class macos_safaridriver (
+  String $user_running_safari = 'cltbld',
+) {
   case $facts['os']['name'] {
     'Darwin': {
+      # TODO: version check? tcc db entries probably differ per OS release
+
       $perm_script = '/usr/local/bin/add_tcc_perms.sh'
       $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
       $tcc_script = '/usr/local/bin/tccutil.py'
@@ -25,7 +29,8 @@ class macos_safaridriver {
       # needs to run as cltbld via launchctl or won't work
       exec { 'execute enable remote automation script':
         # TODO: don't hardcode user id of cltbld
-        command => "/bin/launchctl asuser 36 sudo -u cltbld ${enable_script}",
+        #   - make a driver script that gets id of cltbld on each system?
+        command => "/bin/launchctl asuser 36 sudo -u ${user_running_safari} ${enable_script}",
         require => File[$enable_script],
         # logoutput => true,
       }
@@ -44,10 +49,10 @@ class macos_safaridriver {
       #
       # TODO: pull out user as param, i.e. don't hardcode cltbld user
       $group = '_webdeveloper'
-      exec { "cltbld_group_${group}":
-        command => "/usr/sbin/dseditgroup -o edit -a cltbld -t user ${group}",
-        unless  => "/usr/bin/groups cltbld | /usr/bin/grep -q -w ${group}",
-        require => User['cltbld'],
+      exec { "${user_running_safari}_group_${group}":
+        command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
+        unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
+        require => User[$user_running_safari],
       }
     }
     default: {
