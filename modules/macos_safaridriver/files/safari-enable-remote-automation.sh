@@ -11,7 +11,7 @@ if [ "$EUID" -eq 0 ]; then
 fi
 
 current_user=$(id -u -n)
-semaphore_file="/Users/$current_user/Library/Preferences/semaphare/safari-enable-remote-automation-has-run"
+semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
 semaphore_version="1"
 mkdir -p "$(dirname "$semaphore_file")"
 touch "$semaphore_file"
