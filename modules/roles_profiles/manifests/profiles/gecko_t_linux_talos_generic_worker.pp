@@ -5,7 +5,7 @@
 class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
 
     # TODO: make these args to this module and use in call in gecko_t_linux_talos?
-    $worker_type  = 'gecko-t-linux-talos-1804'
+    $worker_type  = 'gecko-t-linux-talos-1804-bug1746681'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
     case $::operatingsystem {
