@@ -30,12 +30,19 @@ class roles_profiles::profiles::microsoft_tools {
 
             case $purpose {
                 'builder': {
-                    include win_packages::vs_buildtools
-                    include win_packages::dxsdk_jun10
-                    include win_packages::binscope
-                    # Required by rustc (tooltool artefact)
-                    include win_packages::vc_redist_x86
-                    include win_packages::vc_redist_x64
+                    case $facts['custom_win_os_version'] {
+                        'win_2022_2009': {
+                            include win_packages::vs_buildtools_2022
+                        }
+                        default: {
+                            include win_packages::vs_buildtools
+                            include win_packages::dxsdk_jun10
+                            include win_packages::binscope
+                            # Required by rustc (tooltool artefact)
+                            include win_packages::vc_redist_x86
+                            include win_packages::vc_redist_x64
+                        }
+                    }
                 }
                 default: {
                     include win_packages::vs_buildtools

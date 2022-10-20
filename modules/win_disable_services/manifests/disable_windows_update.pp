@@ -3,6 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_disable_services::disable_windows_update {
+
+    # Portions of the MS tools need to be in place before updates are disabled.
+    require roles_profiles::profiles::microsoft_tools
+
   $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
   $win_update_au_key = "${win_update_key}\\AU"
   $win_au_key        = 'HKLM\SOFTWARE\Microsoft\Windows\Windows\AU'
