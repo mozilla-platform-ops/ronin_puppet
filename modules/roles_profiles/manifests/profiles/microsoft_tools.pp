@@ -40,7 +40,6 @@ class roles_profiles::profiles::microsoft_tools {
                 }
                 # testers
                 default: {
-                    include win_packages::cppbuildtools
                     include win_packages::vs_buildtools
                 }
             }
