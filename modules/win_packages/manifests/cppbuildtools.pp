@@ -9,7 +9,7 @@ class win_packages::cppbuildtools {
 
     if $::operatingsystem == 'Windows' {
         win_packages::win_exe_pkg  { 'visualcppbuildtools':
-            pkg                    => 'visualcppbuildtools_full.exe',
+            pkg                    => 'vs_BuildTools.exe',
             install_options_string => '/q',
             creates                =>
                 "${sdk_dir}\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.10240.0\\SDKManifest.xml",
