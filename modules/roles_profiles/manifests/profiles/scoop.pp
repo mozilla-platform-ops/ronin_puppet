@@ -12,7 +12,6 @@ class roles_profiles::profiles::scoop {
             # https://scoop.sh/
             # https://forge.puppetlabs.com/modules/jovandeginste/scoop
 
-            include scoop
             include win_packages::scoop
 
         }
