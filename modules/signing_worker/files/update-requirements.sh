@@ -101,7 +101,7 @@ EOF
 
 for wt in "${worker_types[@]}"; do
     echo "Compiling $wt"
-    compile $wt
+    compile "$wt"
     echo "Done compiling $wt"
     echo "##################"
 done
