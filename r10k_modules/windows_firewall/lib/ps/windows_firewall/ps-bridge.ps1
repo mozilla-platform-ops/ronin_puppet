@@ -2,7 +2,6 @@
     [String] $Target,
     [String] $Name,
     [String] $DisplayName,
-    [String] $Description,
     $Enabled,
     $Action,
     [String] $Protocol,
@@ -10,6 +9,7 @@
     $Profile,
     [String] $Program,
     $Direction,
+    [String] $Description,
     [String] $LocalAddress,
     [String] $RemoteAddress,
     [String] $ProtocolType,
@@ -31,26 +31,26 @@ Import-Module NetSecurity
 
 function Convert-IpAddressToMaskLength([string] $Address)
 {
-  if ($Address -like '*/*') {
-  $Network=$Address.Split('/')[0]
-  $SubnetMask=$Address.Split('/')[1]
-  $result = 0; 
-  # ensure we have a valid IP address
-  [IPAddress] $ip = $SubnetMask;
-  $octets = $ip.IPAddressToString.Split('.');
-  foreach($octet in $octets)
-  {
-    while(0 -ne $octet) 
-    {
-      $octet = ($octet -shl 1) -band [byte]::MaxValue
-      $result++; 
+    if ($Address -like '*/*') {
+        $Network=$Address.Split('/')[0]
+        $SubnetMask=$Address.Split('/')[1]
+        $result = 0; 
+        # ensure we have a valid IP address
+        [IPAddress] $ip = $SubnetMask;
+        $octets = $ip.IPAddressToString.Split('.');
+        foreach($octet in $octets)
+        {
+            while(0 -ne $octet) 
+            {
+            $octet = ($octet -shl 1) -band [byte]::MaxValue
+            $result++; 
+            }
+        }
+        return $Network+'/'+$result;
     }
-  }
-  return $Network+'/'+$result;
-  }
-  else {
-      return $Address;
-  }   
+    else {
+        return $Address;
+    }   
 }
 
 # Lookup select firewall rules using powershell.
@@ -88,7 +88,8 @@ function Show {
                 Direction           = $firewallRule.Direction.toString()
                 EdgeTraversalPolicy = $firewallRule.EdgeTraversalPolicy.toString()
                 Profile             = $firewallRule.Profile.toString()
-                DisplayGroup        = $firewallRule.DisplayGroup
+                # If display group is empty, return 'None' (Required for windows_firewall_group)
+                DisplayGroup        = if ($null -ne $firewallRule.DisplayGroup) { $firewallRule.DisplayGroup } else { 'None' }
                 # Address Filter (Newer powershell versions return a hash)
                 LocalAddress        = if ($af.LocalAddress -is [object]) { ($af.LocalAddress | ForEach-Object {Convert-IpAddressToMaskLength $_} | Sort-Object) -join ","  } else { Convert-IpAddressToMaskLength $af.LocalAddress }
                 RemoteAddress       = if ($af.RemoteAddress -is [object]) { ($af.RemoteAddress | ForEach-Object {Convert-IpAddressToMaskLength $_} | Sort-Object) -join ","  } else { Convert-IpAddressToMaskLength $af.RemoteAddress }
@@ -115,7 +116,7 @@ function Show {
 }
 
 function delete {
-    write-host "Deleting $($Name)..."
+    write-host "Deleting $Name"
 
     # rules containing square brackets need to be escaped or nothing will match
     $Name = $name.replace(']', '`]').replace('[', '`[')
@@ -130,6 +131,7 @@ function delete {
 
 
 function create {
+    write-host "Creating $Name"
 
     $params = @{
         Name        = $Name;
@@ -226,25 +228,18 @@ function create {
 }
 
 function update {
-    write-host "Updating $($Name)..."
+    write-host "Updating $Name"
 
     # rules containing square brackets need to be escaped or nothing will match
     $Name = $name.replace(']', '`]').replace('[', '`[')
 
     $params = @{
+        Enabled        = $Enabled;
+        NewDisplayName = $DisplayName;
+        Description    = $Description;
+        Action         = $Action;
     }
-    if ($DisplayName) {
-        $params.Add("NewDisplayName", $DisplayName)
-    }
-    if ($Enabled) {
-        $params.Add("Enabled", $Enabled)
-    }
-    if ($Description) {
-        $params.Add("Description", $Description)
-    }
-    if ($Action) {
-        $params.Add("Action", $Action)
-    }
+
     #
     # general optional params
     #

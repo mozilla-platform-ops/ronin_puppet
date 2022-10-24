@@ -5,10 +5,9 @@ require 'puppet/util/windows'
 module PuppetX
   module WindowsFirewall
 
-    MOD_DIR = "windows_firewall/lib"
-    SCRIPT_FILE = "ps-bridge.ps1"
-    SCRIPT_PATH = File.join("ps/windows_firewall", SCRIPT_FILE)
-
+    MOD_DIR = 'windows_firewall/lib'
+    SCRIPT_FILE = 'ps-bridge.ps1'
+    SCRIPT_PATH = File.join('ps/windows_firewall', SCRIPT_FILE)
 
     # We need to be able to invoke the PS bridge script in both agent and apply
     # mode. In agent mode, the file will be found in LIBDIR, in apply mode it will
@@ -34,7 +33,7 @@ module PuppetX
         raise("windows_firewall unable to find #{SCRIPT_FILE} in expected location")
       end
 
-      cmd = ["powershell.exe", "-ExecutionPolicy", "Bypass", "-File", script]
+      cmd = ['powershell.exe', '-ExecutionPolicy', 'Bypass', '-File', script]
       cmd
     end
 
@@ -43,7 +42,7 @@ module PuppetX
       check_for_script = File.join(
           Puppet.settings[:environmentpath],
           Puppet.settings[:environment],
-          "modules",
+          'modules',
           MOD_DIR,
           SCRIPT_PATH,
           )
@@ -79,91 +78,93 @@ module PuppetX
     # convert a puppet type key name to the argument to use for `netsh` command
     def self.global_argument_lookup(key)
       {
-          :keylifetime       => "mainmode mmkeylifetime",
-          :secmethods        => "mainmode mmsecmethods",
-          :forcedh           => "mainmode mmforcedh",
-          :strongcrlcheck    => "ipsec strongcrlcheck",
-          :saidletimemin     => "ipsec saidletimemin",
-          :defaultexemptions => "ipsec defaultexemptions",
-          :ipsecthroughnat   => "ipsec ipsecthroughnat",
-          :authzcomputergrp  => "ipsec authzcomputergrp",
-          :authzusergrp      => "ipsec authzusergrp",
+          :keylifetime       => 'mainmode mmkeylifetime',
+          :secmethods        => 'mainmode mmsecmethods',
+          :forcedh           => 'mainmode mmforcedh',
+          :strongcrlcheck    => 'ipsec strongcrlcheck',
+          :saidletimemin     => 'ipsec saidletimemin',
+          :defaultexemptions => 'ipsec defaultexemptions',
+          :ipsecthroughnat   => 'ipsec ipsecthroughnat',
+          :authzcomputergrp  => 'ipsec authzcomputergrp',
+          :authzusergrp      => 'ipsec authzusergrp',
       }.fetch(key, key.to_s)
     end
 
     # convert a puppet type key name to the argument to use for `netsh` command
     def self.profile_argument_lookup(key)
       {
-        :localfirewallrules         => "settings localfirewallrules",
-        :localconsecrules           => "settings localconsecrules",
-        :inboundusernotification    => "settings inboundusernotification",
-        :remotemanagement           => "settings remotemanagement",
-        :unicastresponsetomulticast => "settings unicastresponsetomulticast",
-        :logallowedconnections      => "logging allowedconnections",
-        :logdroppedconnections      => "logging droppedconnections",
-        :filename                   => "logging filename",
-        :maxfilesize                => "logging maxfilesize",
-     }.fetch(key, key.to_s)
+        :localfirewallrules         => 'settings localfirewallrules',
+        :localconsecrules           => 'settings localconsecrules',
+        :inboundusernotification    => 'settings inboundusernotification',
+        :remotemanagement           => 'settings remotemanagement',
+        :unicastresponsetomulticast => 'settings unicastresponsetomulticast',
+        :logallowedconnections      => 'logging allowedconnections',
+        :logdroppedconnections      => 'logging droppedconnections',
+        :filename                   => 'logging filename',
+        :maxfilesize                => 'logging maxfilesize',
+      }.fetch(key, key.to_s)
     end
 
     def self.to_ps(key)
       {
-        :enabled               => lambda { |x| camel_case(x)},
-        :action                => lambda { |x| camel_case(x)},
-        :direction             => lambda { |x| camel_case(x)},
-        :interface_type        => lambda { |x| x.map {|e| camel_case(e)}.join(",")},
-        :profile               => lambda { |x| x.map {|e| camel_case(e)}.join(",")},
-        :protocol              => lambda { |x| x.to_s.upcase.sub("V","v")},
-        :icmp_type             => lambda { |x| camel_case(x)},
-        :edge_traversal_policy => lambda { |x| camel_case(x)},
-        :local_port            => lambda { |x| "\"#{camel_case(x)}\""},
-        :remote_port           => lambda { |x| "\"#{camel_case(x)}\""},
-        :local_address         => lambda { |x| "\"#{camel_case(x)}\""},
-        :remote_address        => lambda { |x| "\"#{camel_case(x)}\""},
-        :program               => lambda { |x| x.gsub(/\\/, '\\\\')},
-        :authentication        => lambda { |x| camel_case(x)},
-        :encryption            => lambda { |x| camel_case(x)},
-        :remote_machine        => lambda { |x| convert_to_sddl(x)},
-        :local_user            => lambda { |x| convert_to_sddl(x)},
-        :remote_user           => lambda { |x| convert_to_sddl(x)},
+        :enabled               => lambda { |x| camel_case(x) },
+        :action                => lambda { |x| camel_case(x) },
+        :direction             => lambda { |x| camel_case(x) },
+        :description           => lambda { |x| x.empty? == true ? "\"#{x}\"" : x },
+        :interface_type        => lambda { |x| x.map { |e| camel_case(e) }.join(',') },
+        :profile               => lambda { |x| x.map { |e| camel_case(e) }.join(',') },
+        :protocol              => lambda { |x| x.to_s.upcase.sub('V', 'v') },
+        :icmp_type             => lambda { |x| camel_case(x) },
+        :edge_traversal_policy => lambda { |x| camel_case(x) },
+        :local_port            => lambda { |x| "\"#{camel_case(x)}\"" },
+        :remote_port           => lambda { |x| "\"#{camel_case(x)}\"" },
+        :local_address         => lambda { |x| "\"#{camel_case(x)}\"" },
+        :remote_address        => lambda { |x| "\"#{camel_case(x)}\"" },
+        :program               => lambda { |x| x.to_s == 'any' ? x : x.gsub(/\\/, '\\\\') },
+        :authentication        => lambda { |x| camel_case(x) },
+        :encryption            => lambda { |x| camel_case(x) },
+        :remote_machine        => lambda { |x| convert_to_sddl(x) },
+        :local_user            => lambda { |x| convert_to_sddl(x) },
+        :remote_user           => lambda { |x| convert_to_sddl(x) },
       }.fetch(key, lambda { |x| x })
     end
 
     def self.to_ruby(key)
       {
-        :enabled                => lambda { |x| snake_case_sym(x)},
-        :action                 => lambda { |x| snake_case_sym(x)},
-        :direction              => lambda { |x| snake_case_sym(x)},
-        :interface_type         => lambda { |x| x.split(",").map{ |e| snake_case_sym(e.strip)}},
-        :profile                => lambda { |x| x.split(",").map{ |e| snake_case_sym(e.strip)}},
-        :protocol               => lambda { |x| snake_case_sym(x)},
+        :enabled                => lambda { |x| snake_case_sym(x) },
+        :action                 => lambda { |x| snake_case_sym(x) },
+        :direction              => lambda { |x| snake_case_sym(x) },
+        :interface_type         => lambda { |x| x.split(',').map{ |e| snake_case_sym(e.strip) } },
+        :profile                => lambda { |x| x.split(',').map{ |e| snake_case_sym(e.strip) } },
+        :protocol               => lambda { |x| snake_case_sym(x) },
         :icmp_type              => lambda { |x| x ? x.downcase : x },
-        :edge_traversal_policy  => lambda { |x| snake_case_sym(x)},
-        :program                => lambda { |x| x.gsub(/\\\\/, '\\')},
+        :edge_traversal_policy  => lambda { |x| snake_case_sym(x) },
+        :program                => lambda { |x| x.to_s == 'Any' ? x.downcase : x.gsub(/\\\\/, '\\') },
         :remote_port            => lambda { |x| x.downcase },
         :local_port             => lambda { |x| x.downcase },
         :remote_address         => lambda { |x| x.downcase },
         :local_address          => lambda { |x| x.downcase },
         :authentication         => lambda { |x| x.downcase },
         :encryption             => lambda { |x| x.downcase },
-        :remote_machine         => lambda { |x| convert_from_sddl(x)},
-        :local_user             => lambda { |x| convert_from_sddl(x)},
-        :remote_user            => lambda { |x| convert_from_sddl(x)},
+        :remote_machine         => lambda { |x| convert_from_sddl(x) },
+        :local_user             => lambda { |x| convert_from_sddl(x) },
+        :remote_user            => lambda { |x| convert_from_sddl(x) },
+        :service                => lambda { |x| x.downcase },
       }.fetch(key, lambda { |x| x })
     end
 
     # Convert name to SID and structure result as SDDL value
-    def self.convert_to_sddl_acl(value,ace)
+    def self.convert_to_sddl_acl(value, ace)
       # we need to convert users to sids first
       sids = []
       value.split(',').sort.each do |name|
         name.strip!
         sid = Puppet::Util::Windows::SID.name_to_sid(name)
-        #If resolution failed, thrown a warning
+        # If resolution failed, thrown a warning
         if sid.nil?
           warn("\"#{value}\" does not exist")
         else
-          #Generate structured SSDL ACL
+          # Generate structured SSDL ACL
           cur_sid = '('+ ace +';;CC;;;' + sid + ')'
         end
         sids << cur_sid unless cur_sid.nil?
@@ -171,15 +172,19 @@ module PuppetX
       sids.sort.join('')
     end
 
-    # Convert name to SID and structure result as SDDL value
+    # Convert name to SID and structure result as SDDL value (Only if value is not any)
     def self.convert_to_sddl(value)
-      'O:LSD:' + (convert_to_sddl_acl(value['allow'],'A') unless value['allow'].nil?).to_s + (convert_to_sddl_acl(value['block'],'D') unless value['block'].nil?).to_s
+      if value.to_s == 'any'
+        value
+      else
+        'O:LSD:' + (convert_to_sddl_acl(value['allow'], 'A') unless value['allow'].nil?).to_s + (convert_to_sddl_acl(value['block'], 'D') unless value['block'].nil?).to_s
+      end
     end
-  
+
     # Parse SDDL value and convert SID to name
     def self.convert_from_sddl(value)
       if value == 'Any'
-        #Return value in lowercase
+        # Return value in lowercase
         value.downcase!
       else
         # we need to convert users to sids first
@@ -189,18 +194,18 @@ module PuppetX
         value.gsub! ')(', ','
         # Remove '()'
         value.delete! '()'
-        #Define variables
+        # Define variables
         names = {}
         allow = []
         deny = []
         value.split(',').sort.each do |sid|
-          #ACE is first character
+          # ACE is first character
           ace = sid.chr.upcase
-          #Delete prefix on each user
+          # Delete prefix on each user
           sid.delete_prefix! ace + ';;CC;;;'
           sid.strip!
           name = Puppet::Util::Windows::SID.sid_to_name(sid)
-          #If resolution failed, return SID
+          # If resolution failed, return SID
           if name.nil?
             cur_name = sid.downcase!
           else
@@ -228,7 +233,7 @@ module PuppetX
     # 2. converting spaces to underscores
     # 3. convert to symbol
     def self.key_name(input)
-      input.downcase.gsub(/\s/, "_").to_sym
+      input.downcase.gsub(/\s/, '_').to_sym
     end
 
     # Convert input CamelCase to snake_case symbols
@@ -242,18 +247,18 @@ module PuppetX
       input.to_s.split('_').collect(&:capitalize).join
     end
 
-    def self.delete_rule(name)
-      Puppet.notice("(windows_firewall) deleting rule '#{name}'")
-      out = Puppet::Util::Execution.execute(resolve_ps_bridge + ["delete", name]).to_s
+    def self.delete_rule(resource)
+      Puppet.notice("(windows_firewall) deleting rule '#{resource[:display_name]}'")
+      out = Puppet::Util::Execution.execute(resolve_ps_bridge + ["delete", resource[:name]]).to_s
       Puppet.debug out
     end
 
     def self.update_rule(resource)
-      Puppet.notice("(windows_firewall) updating rule '#{resource[:name]}'")
+      Puppet.notice("(windows_firewall) updating rule '#{resource[:display_name]}'")
 
       # `Name` is mandatory and also a `parameter` not a `property`
-      args = [ "-Name", resource[:name] ]
-      
+      args = [ '-Name', resource[:name] ]
+
       resource.properties.reject { |property|
         [:ensure, :protocol_type, :protocol_code].include?(property.name) ||
             property.value == :none
@@ -268,18 +273,18 @@ module PuppetX
       }
       Puppet.debug "Updating firewall rule with args: #{args}"
 
-      out = Puppet::Util::Execution.execute(resolve_ps_bridge + ["update"] + args)
+      out = Puppet::Util::Execution.execute(resolve_ps_bridge + ['update'] + args)
       Puppet.debug out
     end
 
     # Create a new firewall rule using powershell
     # @see https://docs.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule?view=win10-ps
     def self.create_rule(resource)
-      Puppet.notice("(windows_firewall) adding rule '#{resource[:name]}'")
+      Puppet.notice("(windows_firewall) adding rule '#{resource[:display_name]}'")
 
       # `Name` is mandatory and also a `parameter` not a `property`
-      args = [ "-Name", resource[:name] ]
-      
+      args = [ '-Name', resource[:name] ]
+
       resource.properties.reject { |property|
         [:ensure, :protocol_type, :protocol_code].include?(property.name) ||
             property.value == :none
@@ -294,18 +299,18 @@ module PuppetX
       }
       Puppet.debug "Creating firewall rule with args: #{args}"
 
-      out = Puppet::Util::Execution.execute(resolve_ps_bridge + ["create"] + args)
+      out = Puppet::Util::Execution.execute(resolve_ps_bridge + ['create'] + args)
       Puppet.debug out
     end
 
     def self.rules
-      Puppet.debug("query all rules")
-      rules = JSON.parse Puppet::Util::Execution.execute(resolve_ps_bridge + ["show"]).to_s
-      
+      Puppet.debug('query all rules')
+      rules = JSON.parse Puppet::Util::Execution.execute(resolve_ps_bridge + ['show']).to_s
+
       # Rules is an array of hash as-parsed and hash keys need converted to
       # lowercase ruby labels
       puppet_rules = rules.map { |e|
-        Hash[e.map { |k,v|
+        Hash[e.map { |k, v|
           key = snake_case_sym(k)
           [key, to_ruby(key).call(v)]
         }].merge({ensure: :present})
@@ -315,7 +320,7 @@ module PuppetX
     end
 
     def self.groups
-      Puppet.debug("query all groups")
+      Puppet.debug('query all groups')
       # get all individual firewall rules, then create a new hash containing the overall group
       # status for each group of rules
       g = {}
@@ -340,8 +345,8 @@ module PuppetX
 
       # convert into puppet's preferred hash format which is an array of hashes
       # with each hash representing a distinct resource
-      transformed = g.map { |k,v|
-        {:name => k, :enabled => v}
+      transformed = g.map { |k, v|
+        { :name => k, :enabled => v}
       }
 
       Puppet.debug("group rules #{transformed}")
@@ -353,7 +358,7 @@ module PuppetX
     def self.parse_profile(input)
       profile = {}
       first_line = true
-      profile_name = "__error__"
+      profile_name = '__error__'
       input.split("\n").reject { |line|
         line =~ /---/ || line =~ /^\s*$/
       }.each { |line|
@@ -364,7 +369,7 @@ module PuppetX
         else
           # nasty hack - "firewall policy" setting contains space and will break our
           # logic below. Also the setter in `netsh` to use is `firewallpolicy`. Just fix it...
-          line = line.sub("Firewall Policy", "firewallpolicy")
+          line = line.sub('Firewall Policy', 'firewallpolicy')
 
           # split each line at most twice by first glob of whitespace
           line_split = line.split(/\s+/, 2)
@@ -409,17 +414,17 @@ module PuppetX
             #   DHGroup2-AES128-SHA1,DHGroup2-3DES-SHA1
             # but must be input with a colon like this:
             #   DHGroup2:AES128-SHA1,DHGroup2:3DES-SHA1
-            safe_value = value.split(",").map { |e|
-              e.sub("-", ":")
-            }.join(",")
+            safe_value = value.split(',').map { |e|
+              e.sub('-', ':')
+            }.join(',')
           when :strongcrlcheck
-            safe_value = value.split(":")[0]
+            safe_value = value.split(':')[0]
           when :defaultexemptions
-            safe_value = value.split(",").sort
+            safe_value = value.split(',').sort
           when :saidletimemin
-            safe_value = value.sub("min","")
+            safe_value = value.sub('min', '')
           when :ipsecthroughnat
-            safe_value = value.gsub(" ","")
+            safe_value = value.gsub(' ', '')
           else
             safe_value = value
           end
@@ -428,7 +433,7 @@ module PuppetX
         end
       }
 
-      globals[:name] = "global"
+      globals[:name] = 'global'
 
       Puppet.debug "Parsed windows firewall globals: #{globals}"
       globals
@@ -439,8 +444,8 @@ module PuppetX
       profiles = []
       # the output of `show allprofiles` contains several blank lines that make parsing somewhat
       # harder so just run it for each of the three profiles to make life easy...
-      ["publicprofile", "domainprofile", "privateprofile"].each { |profile|
-        profiles <<  parse_profile(Puppet::Util::Execution.execute([cmd, "advfirewall", "show", profile]).to_s)
+      ['publicprofile', 'domainprofile', 'privateprofile'].each { |profile|
+        profiles <<  parse_profile(Puppet::Util::Execution.execute([cmd, 'advfirewall', 'show', profile]).to_s)
       }
       profiles
     end
@@ -451,8 +456,8 @@ module PuppetX
       profiles = []
       # the output of `show allprofiles` contains several blank lines that make parsing somewhat
       # harder so just run it for each of the three profiles to make life easy...
-      ["publicprofile", "domainprofile", "privateprofile"].each { |profile|
-        profiles <<  parse_global(Puppet::Util::Execution.execute([cmd, "advfirewall", "show", "global"]).to_s)
+      ['publicprofile', 'domainprofile', 'privateprofile'].each { |profile|
+        profiles <<  parse_global(Puppet::Util::Execution.execute([cmd, 'advfirewall', 'show', 'global']).to_s)
       }
       profiles
     end

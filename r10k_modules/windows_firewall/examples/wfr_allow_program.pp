@@ -1,7 +1,7 @@
 #@PDQTestWin
-windows_firewall_rule { "puppet - allow messenger":
+windows_firewall_rule { 'puppet - allow messenger':
   ensure    => present,
-  direction => "inbound",
-  action    => "allow",
-  program   => "C:\\programfiles\\messenger\\msnmsgr.exe",
+  direction => 'inbound',
+  action    => 'allow',
+  program   => 'C:\\programfiles\\messenger\\msnmsgr.exe';
 }
