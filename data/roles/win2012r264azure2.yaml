@@ -29,7 +29,7 @@ win-worker:
   mozilla_build:
     version: '3.2'
     hg_version: '6.2.1'
-    py3_pip_version: '22.0.4'
+    py3_pip_version: '21.3.1'
     py3_zstandard_version: '0.15.2'
     psutil_version: '5.7.0'
 
