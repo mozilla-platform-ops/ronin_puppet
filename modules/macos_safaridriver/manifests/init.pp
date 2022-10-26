@@ -3,7 +3,7 @@
 #
 # @param user_running_safari The user who will be running Safari/safaridriver.
 class macos_safaridriver (
-  String $user_running_safari = 'cltbld',
+  String $user_running_safari = 'cltbld',  # not fully parameterized, see below
 ) {
   case $facts['os']['name'] {
     'Darwin': {
@@ -29,6 +29,7 @@ class macos_safaridriver (
             require => File[$perm_script],
             user    => 'root',
             # logoutput => true,
+            # TODO: only run if needed, use semaphore?
           }
 
           # needs to run as cltbld via launchctl or won't work
@@ -37,11 +38,14 @@ class macos_safaridriver (
             #   - make a driver script that gets id of cltbld on each system?
             command => "/bin/launchctl asuser 36 sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
+            # semaphore created in script
+            unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
             # logoutput => true,
           }
 
           exec { 'enable safari driver':
             command => '/usr/bin/safaridriver --enable',
+            # TODO: only run if needed, currently no good test... use semaphore?
           }
 
           # non-admin users need to be in _webdeveloper group for safaridriver to work
