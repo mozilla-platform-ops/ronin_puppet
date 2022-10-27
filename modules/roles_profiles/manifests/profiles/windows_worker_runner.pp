@@ -42,10 +42,10 @@ class roles_profiles::profiles::windows_worker_runner {
             # HERE
             case $facts['os']['release']['full'] {
                 'win 10', '2012 R2': {
-                    $init = win_10_file
+                    $init = 'task-user-init-win10.cmd'
                 }
                 'win 11': {
-                    $init = win_11_file
+                    $init = 'task-user-init-win11.cmd'
                 }
                 default: {
                     $init = undef
