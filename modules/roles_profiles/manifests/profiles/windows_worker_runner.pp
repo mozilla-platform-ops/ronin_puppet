@@ -41,7 +41,7 @@ class roles_profiles::profiles::windows_worker_runner {
 
             # HERE
             case $facts['os']['release']['full'] {
-                'win 10', '2012': {
+                'win 10', '2012 R2': {
                     $init = win_10_file
                 }
                 'win 11': {
