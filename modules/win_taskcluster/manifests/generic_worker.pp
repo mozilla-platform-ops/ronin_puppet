@@ -7,7 +7,10 @@ class win_taskcluster::generic_worker (
     String $desired_gw_version,
     String $current_gw_version,
     String $gw_exe_source,
-    String $gw_exe_path
+    String $gw_exe_path,
+    # HERE
+    String $init_file
+    # HERE
 ) {
 
     $ed25519private = "${generic_worker_dir}\\ed25519-private.key"
@@ -32,6 +35,14 @@ class win_taskcluster::generic_worker (
     # TODO: Add conditional language to profile based on OS version
     # To pass the correct source file name instead of hard code
     file { "${generic_worker_dir}\\task-user-init.cmd":
-        content   => file('win_taskcluster/task-user-init-win10.cmd'),
+        # HERE
+        content   => file($init_file),
     }
+    if $init_file == 'task-user-init-win11.cmd' {
+        # C:\generic-worker\task-user-init.ps1
+        file { "${generic_worker_dir}\\task-user-init.ps1":
+            content   => file('task-user-init-win11.cmd'),
+        }
+    }
+    # HERE
 }

@@ -39,6 +39,20 @@ class roles_profiles::profiles::windows_worker_runner {
             $implementation        = lookup('win-worker.taskcluster.worker_runner.implementation')
 
 
+            # HERE
+            case $facts['os']['release']['full'] {
+                'win 10', '2012 R2': {
+                    $init = 'task-user-init-win10.cmd'
+                }
+                'win 11': {
+                    $init = 'task-user-init-win11.cmd'
+                }
+                default: {
+                    $init = undef
+                }
+            }
+            # HERE
+
             case $provider {
                 'standalone': {
                     $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
@@ -70,6 +84,9 @@ class roles_profiles::profiles::windows_worker_runner {
                 desired_gw_version => $desired_gw_version,
                 current_gw_version => $facts['custom_win_genericworker_version'],
                 gw_exe_source      => "${ext_pkg_src_loc}/${desired_gw_version}/${gw_name}",
+                # Here
+                init_file          => $init,
+                # Here
                 gw_exe_path        => $gw_exe_path,
             }
             class { 'win_taskcluster::proxy':
