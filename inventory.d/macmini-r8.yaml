@@ -209,6 +209,7 @@ groups:
       - macmini-r8-217.test.releng.mdc1.mozilla.com
       - macmini-r8-222.test.releng.mdc1.mozilla.com
       - macmini-r8-223.test.releng.mdc1.mozilla.com
+      - macmini-r8-227.test.releng.mdc1.mozilla.com
       - macmini-r8-253.test.releng.mdc1.mozilla.com
       - macmini-r8-254.test.releng.mdc1.mozilla.com
       - macmini-r8-255.test.releng.mdc1.mozilla.com
