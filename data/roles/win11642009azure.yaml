@@ -50,6 +50,8 @@ win-worker:
     version: '464'
   git:
     version: '2.36.1'
+  gpu:
+    name: "472.39_grid_win11_win10_64bit_Azure-SWL"
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
