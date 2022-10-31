@@ -26,6 +26,17 @@ More information:
 - https://puppet.com/docs/puppet/6/designing_system_configs_roles_and_profiles.html
 - https://puppet.com/docs/puppet/6/the_roles_and_profiles_method.html#the_roles_and_profiles_method
 
+## converging hosts
+
+Many profiles run puppet at boot, but some only do on demand.
+
+### bolt
+
+```
+# setup bolt first, see https://mana.mozilla.org/wiki/display/ROPS/M1+and+R8+Catalina+Deployment
+bolt plan run deploy::apply -t macmini-r8-140.test.releng.mdc1.mozilla.com noop=false -v
+```
+
 ## testing
 
 ### vagrant
