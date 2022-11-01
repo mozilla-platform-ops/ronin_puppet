@@ -24,9 +24,8 @@ windows:
     papertrail: "logs.papertrailapp.com"
 
   # azure blob resources
-  #az:
-  #  ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
-  #  ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
+  ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
+  ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
 
   # S3 resources
   s3:
