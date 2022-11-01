@@ -9,7 +9,7 @@
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
         If ((test-path $env:systemdrive\ronin)) {
             Remove-Item -Recurse -Force $env:systemdrive\ronin
         }
@@ -35,4 +35,3 @@
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-  

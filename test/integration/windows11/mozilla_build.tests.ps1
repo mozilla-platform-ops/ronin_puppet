@@ -38,8 +38,8 @@ Describe "Mozilla Build" {
     }
     Context "HG Files" {
         BeforeAll {
-            $hgshared_acl = (Get-Acl -Path C:\hg-shared).Access | 
-            Where-Object { $PSItem.IdentityReference -eq "Everyone" } 
+            $hgshared_acl = (Get-Acl -Path C:\hg-shared).Access |
+            Where-Object { $PSItem.IdentityReference -eq "Everyone" }
         }
         It "HG Shared folder exists" {
             Test-Path "C:\Hg-Shared" | Should -Be $true
@@ -61,7 +61,7 @@ Describe "Mozilla Build" {
             $ENV:TOOLTOOL_CACHE | Should -Be "C:\builds\tooltool_cache"
         }
         It "ToolTool Cache Drive Permissions" {
-            ((Get-Acl -Path "C:\builds\tooltool_cache").Access | 
+            ((Get-Acl -Path "C:\builds\tooltool_cache").Access |
             Where-Object { $PSItem.IdentityReference -eq "Everyone" }).FileSystemRights |
             Should -Be "FullControl"
         }

@@ -117,7 +117,7 @@ Describe "Microsoft Tools" {
     }
     It "<_.DisplayName> is installed" -ForEach @(
         $sdkaddon
-    ) { 
+    ) {
         $_.DisplayName |  Should -Not -Be $Null
     }
     It "<_.DisplayName> is version 10.1.0.0" -ForEach @(

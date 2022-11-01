@@ -40,8 +40,8 @@ Set-ItemProperty -Path $Path1 -Name Enabled -Value 0
 #>
 
 ## Enable Scrollbars to always show
-if ($Null -eq (Get-ItemProperty -Path 'HKCU:\Control Panel\Accessibility').DynamicScrollbars) { 
-    New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 
+if ($Null -eq (Get-ItemProperty -Path 'HKCU:\Control Panel\Accessibility').DynamicScrollbars) {
+    New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0
 }
 
 ## Prepare Chrome Profile

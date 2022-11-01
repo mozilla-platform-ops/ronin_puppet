@@ -67,12 +67,12 @@ else {
     $os_version = $null
 }
 
-## Wait until explorer is set in the registry and then suppress notifications for firewall 
+## Wait until explorer is set in the registry and then suppress notifications for firewall
 while ($true) {
     $explorer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction SilentlyContinue
     if ($null -eq $explorer) {
         Start-Sleep -Seconds 3
-    } 
+    }
     else {
         ## Tested against windows 11
         cmd.exe /c 'netsh firewall set notifications mode = disable profile = all'
