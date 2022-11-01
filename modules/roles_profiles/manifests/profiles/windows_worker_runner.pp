@@ -38,20 +38,20 @@ class roles_profiles::profiles::windows_worker_runner {
             $provider              = lookup('win-worker.taskcluster.worker_runner.provider')
             $implementation        = lookup('win-worker.taskcluster.worker_runner.implementation')
 
-
-            # HERE
-            case $facts['os']['release']['full'] {
-                'win 10', '2012 R2': {
+            case $facts['custom_win_os_version'] {
+                'win_11_2009': {
+                    $init = 'task-user-init-win11.cmd'
+                }
+                'win_2012': {
                     $init = 'task-user-init-win10.cmd'
                 }
-                'win 11': {
-                    $init = 'task-user-init-win11.cmd'
+                'win_10_2004': {
+                    $init = 'task-user-init-win10.cmd'
                 }
                 default: {
                     $init = undef
-                }
+               }
             }
-            # HERE
 
             case $provider {
                 'standalone': {
