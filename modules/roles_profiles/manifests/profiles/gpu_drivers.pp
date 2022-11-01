@@ -7,7 +7,7 @@ class roles_profiles::profiles::gpu_drivers {
     ## Use https://docs.nvidia.com/grid/index.html & https://github.com/Azure/azhpc-extensions/blob/master/NvidiaGPU/resources.json as reference
     'win_11_2009':{
       class { 'win_packages::drivers::nvidia_grid':
-        driver_name => lookup('win-worker.gpu.name')
+        driver_name => lookup('win-worker.gpu.name'),
         srcloc      => lookup('windows.s3.ext_pkg_src'),
       }
     }
