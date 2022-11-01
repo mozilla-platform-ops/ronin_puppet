@@ -32,7 +32,7 @@ class win_taskcluster::generic_worker (
   # TODO: Add conditional language to profile based on OS version
   # To pass the correct source file name instead of hard code
   file { "${generic_worker_dir}\\task-user-init.cmd":
-    content   => file($init_file),
+    content   => file("win_taskcluster/${init_file}"),
   }
   if $init_file == 'task-user-init-win11.cmd' {
     # C:\generic-worker\task-user-init.ps1
