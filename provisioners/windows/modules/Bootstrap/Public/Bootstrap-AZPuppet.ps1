@@ -23,7 +23,7 @@
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       Set-Location $env:systemdrive\ronin
       If (!(test-path $logdir\old)) {
         New-Item -ItemType Directory -Force -Path $logdir\old
@@ -61,7 +61,7 @@
         Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
       }
       Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
-  
+
       # Setting Env variabes for PuppetFile install and Puppet run
       # The ssl variables are needed for R10k
       Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -76,13 +76,13 @@
       $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
       $env:USERNAME = "Administrator"
       $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
-  
+
       Write-Log -message  ('{0} :: Moving old logs.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
       Write-Log -message  ('{0} :: Running Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
       [int]$puppet_exit = $LastExitCode
-  
+
       if ($run_to_success -eq 'true') {
         if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
           if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
@@ -128,4 +128,3 @@
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
   }
-  

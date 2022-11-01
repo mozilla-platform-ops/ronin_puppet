@@ -10,7 +10,7 @@
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       remove-item $local_dir   -Recurse  -force
       New-Item -path $work_dir -ItemType "directory"
       Set-location -path $work_dir
@@ -19,12 +19,12 @@
       Read-Host "Enusre c:\bootstrap\secrets\vault.yam is present, and then press eneter to continue"
       Set-location -path $local_dir
       remove-item $work_dir   -Recurse  -force
-  
+
       Start-Process $local_dir\$git /verysilent -wait
       Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
       Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
       Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
-  
+
     }
     end {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
