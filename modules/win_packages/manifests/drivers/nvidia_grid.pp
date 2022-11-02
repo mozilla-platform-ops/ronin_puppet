@@ -46,7 +46,10 @@ class win_packages::drivers::nvidia_grid (
         }
       }
     }
-
+    exec { 'grid_unzip':
+      command => "${seven_zip} x ${src_file} -o${working_dir} -y",
+      creates => $setup_exe,
+    }
     exec { 'grid_install':
       command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
       subscribe   => Exec['grid_unzip'],
