@@ -4,6 +4,7 @@ forge "https://forgeapi.puppetlabs.com"
 # tip: keep sorted to avoid merge conflicts
 mod 'ipcrm-registry_acl', '0.0.6'
 mod 'jorten-timezone', '0.1.0'
+mod 'puppet-alternatives', '4.2.0'
 mod 'puppet-archive', '4.4.0'
 mod 'puppetlabs-acl', '4.0.0'
 mod 'puppetlabs-apt', '6.1.1'
