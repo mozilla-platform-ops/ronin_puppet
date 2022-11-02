@@ -4,7 +4,7 @@
 
 class linux_packages::py3 {
   case $facts['os']['name'] {
-    'Linux': {
+    'Ubuntu': {
       case $facts['os']['release']['major'] {
         '18.04': {
           # py3.6
@@ -76,15 +76,16 @@ class linux_packages::py3 {
             unless   => '/usr/bin/dpkg --list | /bin/grep python3.9 && /usr/bin/python3.9 -c "import distutils"',
           }
 
-          # configure alternatives with system default py3.6 (same as what's installed)
+          # configure alternatives
+          #
+          # system default py3.6 (what's installed by default)
           alternative_entry { '/usr/bin/python3':
             ensure   => present,
             altlink  => '/usr/bin/python3.6',
             altname  => 'python3',
             priority => 10,
           }
-
-          # set py3.9 as the default via alternatives
+          # set py3.9 as a higher level override
           alternative_entry { '/usr/bin/python3':
             ensure   => present,
             altlink  => '/usr/bin/python3.9',
@@ -106,7 +107,7 @@ class linux_packages::py3 {
       }
     }
     default: {
-        fail("${facts['os']['name']} not supported")
+      fail("${facts['os']['name']} not supported")
     }
   }
 }
