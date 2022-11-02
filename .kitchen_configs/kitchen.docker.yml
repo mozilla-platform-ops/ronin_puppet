@@ -5,6 +5,7 @@ driver:
   private_key: test/id_ed25519
   use_sudo: false
   privileged: true
+  docker_platform: linux/amd64
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
