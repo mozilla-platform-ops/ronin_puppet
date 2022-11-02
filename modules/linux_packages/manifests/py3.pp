@@ -79,20 +79,20 @@ class linux_packages::py3 {
           # configure alternatives
           #
           # system default py3.6 (what's installed by default)
-          alternative_entry { '/usr/bin/python3':
+          alternative_entry { '/usr/bin/python3.6':
             ensure   => present,
-            altlink  => '/usr/bin/python3.6',
+            altlink  => '/usr/bin/python3',
             altname  => 'python3',
             priority => 10,
           }
           # set py3.9 as a higher level override
-          alternative_entry { '/usr/bin/python3':
+          alternative_entry { '/usr/bin/python3.9':
             ensure   => present,
-            altlink  => '/usr/bin/python3.9',
+            altlink  => '/usr/bin/python3',
             altname  => 'python3',
             priority => 20,
             # require  => Package['gcc-4.4-multilib'],
-            require  => exec['install py39'],
+            require  => Exec['install py39'],
           }
 
           # remove old /opt/py3
