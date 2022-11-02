@@ -25,10 +25,28 @@ class win_packages::drivers::nvidia_grid (
     source => "${srcloc}/${zip_name}",
   }
   if $facts['custom_win_gpu'] == 'yes' {
-    exec { 'grid_unzip':
-      command => "${seven_zip} x ${src_file} -o${working_dir} -y",
-      creates => $setup_exe,
+    case $facts['custom_win_os_version'] {
+      'win_11_2009': {
+        exec { 'grid_unzip':
+          command  => "Expand-Archive -Path ${src_file} -DestinationPath ${working_dir}",
+          creates  => $setup_exe,
+          provider => powershell,
+        }
+      }
+      'win_10_2004': {
+        exec { 'grid_unzip':
+          command => "${seven_zip} x ${src_file} -o${working_dir} -y",
+          creates => $setup_exe,
+        }
+      }
+      default: {
+        exec { 'grid_unzip':
+          command => "${seven_zip} x ${src_file} -o${working_dir} -y",
+          creates => $setup_exe,
+        }
+      }
     }
+
     exec { 'grid_install':
       command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
       subscribe   => Exec['grid_unzip'],
