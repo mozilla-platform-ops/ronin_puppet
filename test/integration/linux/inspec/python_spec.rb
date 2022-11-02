@@ -66,3 +66,10 @@ end
 describe command('python3.9 -m pip check') do
   its(:exit_status) { should eq 0 }
 end
+
+# ensure /usr/bin/python3 is py3.9
+
+describe command('/usr/bin/python3') do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match /Python 3.9/ }
+end
