@@ -19,7 +19,7 @@ class roles_profiles::profiles::microsoft_tools {
           $purpose = 'builder'
         }
         default: {
-          fail("${$facts['os']['name']} not supported")
+          warning("${$facts['os']['name']} not supported")
         }
       }
 
