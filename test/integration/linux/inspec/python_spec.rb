@@ -13,18 +13,18 @@ end
 
 # py3.8
 
-describe package('python3.8-minimal'), :if => os[:family] == 'ubuntu' do
-  it { should be_installed }
-end
+# describe package('python3.8-minimal'), :if => os[:family] == 'ubuntu' do
+#   it { should be_installed }
+# end
 
-describe file('/usr/bin/python3.8') do
-  it { should exist }
-  it { should be_executable }
-end
+# describe file('/usr/bin/python3.8') do
+#   it { should exist }
+#   it { should be_executable }
+# end
 
-describe command('/usr/bin/python3.8 -c "import distutils"') do
-  its(:exit_status) { should eq 0 }
-end
+# describe command('/usr/bin/python3.8 -c "import distutils"') do
+#   its(:exit_status) { should eq 0 }
+# end
 
 # py3.9
 
@@ -59,9 +59,9 @@ describe command('python3 -m pip check') do
   its(:exit_status) { should eq 0 }
 end
 
-describe command('python3.8 -m pip check') do
-  its(:exit_status) { should eq 0 }
-end
+# describe command('python3.8 -m pip check') do
+#   its(:exit_status) { should eq 0 }
+# end
 
 describe command('python3.9 -m pip check') do
   its(:exit_status) { should eq 0 }
