@@ -56,14 +56,20 @@ class linux_packages::py3 {
           }
 
           $py39_urls = {
-            '/opt/relops_py39/libpython3.9-minimal_3.9.2-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-minimal_3.9.2-1%2Bbionic2_amd64.deb' },
-            '/opt/relops_py39/libpython3.9-stdlib_3.9.2-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-stdlib_3.9.2-1%2Bbionic2_amd64.deb' },
-            '/opt/relops_py39/python3.9-minimal_3.9.2-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-minimal_3.9.2-1%2Bbionic2_amd64.deb' },
-            '/opt/relops_py39/python3.9-distutils_3.9.2-1+bionic2_all.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-distutils_3.9.2-1%2Bbionic2_all.deb' },
-            '/opt/relops_py39/python3.9-lib2to3_3.9.2-1+bionic2_all.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-lib2to3_3.9.2-1%2Bbionic2_all.deb' },
+            # base
+            '/opt/relops_py39/python3.9_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9_3.9.15-1%2Bbionic1_amd64.deb' },
+            '/opt/relops_py39/libpython3.9_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9_3.9.15-1%2Bbionic1_amd64.deb' },
+            '/opt/relops_py39/libpython3.9-stdlib_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-stdlib_3.9.15-1%2Bbionic1_amd64.deb' },
+            '/opt/relops_py39/libpython3.9-minimal_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-minimal_3.9.15-1%2Bbionic1_amd64.deb' },
+            # optional
+            '/opt/relops_py39/python3.9-distutils_3.9.15-1+bionic1_all.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-distutils_3.9.15-1%2Bbionic1_all.deb' },
+            '/opt/relops_py39/python3.9-lib2to3_3.9.15-1+bionic1_all.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-lib2to3_3.9.15-1%2Bbionic1_all.deb' },
+            '/opt/relops_py39/python3.9-venv_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-venv_3.9.15-1%2Bbionic1_amd64.deb' },
+            # dev
+            '/opt/relops_py39/python3.9-dev_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-dev_3.9.15-1%2Bbionic1_amd64.deb' },
+            '/opt/relops_py39/libpython3.9-dev_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-dev_3.9.15-1%2Bbionic1_amd64.deb' },
           }
           # need python3-dev for psutil and zstandard compilation
-          # python3-setuptools to make `python3.8 -m pip check` happy?
 
           create_resources(file, $py39_urls, {
               owner => 'root',
@@ -72,11 +78,13 @@ class linux_packages::py3 {
           })
 
           exec { 'install py39':
-            command  => '/usr/bin/dpkg -i *.deb',
+            # note the version string
+            command  => '/usr/bin/dpkg -i *3.9.15*.deb',
             path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
             cwd      => '/opt/relops_py39/',
             provider => shell,
-            unless   => '/usr/bin/dpkg --list | /bin/grep python3.9 && /usr/bin/python3.9 -c "import distutils"',
+            # note the version string
+            unless   => '/usr/bin/dpkg --list | /bin/grep python3.9 | /bin/grep 3.9.15 && /usr/bin/python3.9 -c "import distutils"',
           }
 
           # configure alternatives
