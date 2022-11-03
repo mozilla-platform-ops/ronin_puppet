@@ -50,7 +50,7 @@ class roles_profiles::profiles::microsoft_tools {
         'tester': {
           case $facts['custom_win_os_version'] {
             'win_11_2009': {
-              include win_packages::vs_buildtools_2022
+              include win_packages::vs_buildtools
             }
             'win_10_2004': {
               include win_packages::vs_buildtools
