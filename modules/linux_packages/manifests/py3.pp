@@ -98,6 +98,16 @@ class linux_packages::py3 {
             require  => Exec['install py39'],
           }
 
+          # pip alternatives (for some reason this is pointing to py3)
+          alternative_entry { '/usr/bin/pip2':
+            ensure   => present,
+            altlink  => '/usr/bin/pip',
+            altname  => 'pip',
+            priority => 20,
+            # require  => Package['gcc-4.4-multilib'],
+            require  => Exec['install py39'],
+          }
+
           # update some pips that prevent other pip installations (psutil) from failing
           package { 'python3-pip-r2':
             ensure   => '22.3',
