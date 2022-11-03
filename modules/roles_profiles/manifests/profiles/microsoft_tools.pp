@@ -12,16 +12,10 @@ class roles_profiles::profiles::microsoft_tools {
       }
 
       case $facts['custom_win_os_version'] {
-        'win_10_2004': {
+        'win_10_2004','win_11_2009': {
           $purpose = 'tester'
         }
-        'win_11_2009': {
-          $purpose = 'tester'
-        }
-        'win_2012': {
-          $purpose = 'builder'
-        }
-        'win_2022_2009': {
+        'win_2012','win_2022_2009': {
           $purpose = 'builder'
         }
         default: {
