@@ -60,6 +60,7 @@ class linux_packages::py3 {
             '/opt/relops_py39/python3.9_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9_3.9.15-1%2Bbionic1_amd64.deb' },
             '/opt/relops_py39/libpython3.9_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9_3.9.15-1%2Bbionic1_amd64.deb' },
             '/opt/relops_py39/libpython3.9-stdlib_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-stdlib_3.9.15-1%2Bbionic1_amd64.deb' },
+            '/opt/relops_py39/python3.9-minimal_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-minimal_3.9.15-1%2Bbionic1_amd64.deb' },
             '/opt/relops_py39/libpython3.9-minimal_3.9.15-1+bionic1_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/libpython3.9-minimal_3.9.15-1%2Bbionic1_amd64.deb' },
             # optional
             '/opt/relops_py39/python3.9-distutils_3.9.15-1+bionic1_all.deb' => { source => 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/linux/public/common/py39/1804/python3.9-distutils_3.9.15-1%2Bbionic1_all.deb' },
