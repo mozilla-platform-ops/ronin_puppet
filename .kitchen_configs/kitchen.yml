@@ -1,9 +1,16 @@
 ---
+# m1/m2 notes:
+#   - virtualbox doesn't work on arm64.
+#   - qemu/libvirt providers are tricky to get working
+#     - image needs to support them
+#
 # from https://github.com/scoopex/puppet-kitchen_template
 driver:
   name: vagrant
   provider: virtualbox
   provision: true
+  public_key: test/id_ed25519.pub
+  private_key: test/id_ed25519
 
 provisioner:
   name: puppet_apply
@@ -55,7 +62,7 @@ busser:
 
 platforms:
   # vagrant automatically generates a hostname, if that exceeds 64 characters vbox fails, see bug #6
-  - name: ubuntu18
+  - name: ubuntu1804
     driver_plugin: vagrant
     driver_config:
       customize:
@@ -64,17 +71,19 @@ platforms:
       vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
       box: ubuntu/bionic64
       box_url: https://app.vagrantup.com/ubuntu/boxes/bionic64
-  # TODO: setup docker driver, get docker image with working systemd, and test on travis.
+  - name: ubuntu2204
+    driver_plugin: vagrant
+    driver:
+      vagrantfile_erb: vagrantfiles/Vagrantfile-debianoid.erb
+      box: "ubuntu/jammy64"
 suites:
   - name: linux
     provisioner:
       custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     includes:
-      - ubuntu18
+      - ubuntu1804
     attributes:
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
-    includes:
-      - ubuntu18
     attributes:

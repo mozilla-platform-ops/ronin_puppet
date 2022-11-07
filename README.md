@@ -65,7 +65,7 @@ The repo contains configurations for Test Kitchen to use Vagant, Docker, and Mac
 
 - ./bin/kitchen: Uses Vagrant and VirtualBox. Configured in .kitchen_configs/kitchen.yml.
 - ./bin/kitchen_docker: Uses Docker. Configured in .kitchen_configs/kitchen_docker.yml.
-- (no binary): Uses CircleCI Mac instances. Configured in .kitchen_configs/kitchen.macos.circleci.yml.
+- (no binary): Used by CircleCI tests. Configured in .kitchen_configs/kitchen.circleci.yml.
 
 We use Vagrant/VirutalBox and Docker for a few reasons:
 

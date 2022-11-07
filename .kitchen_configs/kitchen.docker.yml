@@ -1,6 +1,8 @@
 ---
 driver:
   name: docker
+  public_key: test/id_ed25519.pub
+  private_key: test/id_ed25519
   use_sudo: false
   privileged: true
   run_command: /bin/systemd
@@ -14,6 +16,8 @@ driver:
 
 provisioner:
   name: puppet_apply
+  # puppet_version: 7
+  puppet_omnibus_url: https://raw.githubusercontent.com/aerickson/puppet-install-shell/2204-jammy-support/install_puppet_7_agent.sh
   modules_path: modules:r10k_modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
@@ -58,6 +62,7 @@ provisioner:
 
 platforms:
   - name: ubuntu-18.04
+  - name: ubuntu-22.04
 
 verifier:
   name: inspec
@@ -70,6 +75,8 @@ suites:
     provisioner:
       custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     attributes:
+    includes:
+      - ubuntu-18.04  # no moonshot 2204 config yet
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'

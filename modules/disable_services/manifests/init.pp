@@ -2,78 +2,78 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class disable_services() {
-    case $::operatingsystem {
-        'Ubuntu': {
-            # These packages are required by ubuntu-desktop, so we can't uninstall them.
-            # Instead, install but disable them.
-            case $::operatingsystemrelease {
-                '18.04': {
-                    # acpi removed because it can't be disabled this way
-                    #   (never worked in build-puppet/16.04)
-                    $install_and_disable = [ 'cups', 'anacron',
-                        'whoopsie', 'modemmanager', 'apport',
-                        'avahi-daemon', 'network-manager' ]
-                    package {
-                        $install_and_disable:
-                            ensure => latest;
-                    }
-                    service {
-                        $install_and_disable:
-                            ensure   => stopped,
-                            provider => 'systemd',
-                            enable   => false,
-                            require  => Package[$install_and_disable];
-                    }
+class disable_services () {
+  case $facts['os']['name'] {
+    'Ubuntu': {
+      # These packages are required by ubuntu-desktop, so we can't uninstall them.
+      # Instead, install but disable them.
+      case $facts['os']['release']['full'] {
+        '18.04', '22.04': {
+          # acpi removed because it can't be disabled this way
+          #   (never worked in build-puppet/16.04)
+          $install_and_disable = ['cups', 'anacron',
+            'whoopsie', 'modemmanager', 'apport',
+          'avahi-daemon', 'network-manager']
+          package {
+            $install_and_disable:
+              ensure => latest;
+          }
+          service {
+            $install_and_disable:
+              ensure   => stopped,
+              provider => 'systemd',
+              enable   => false,
+              require  => Package[$install_and_disable];
+          }
 
-                    # disable apport via defaults also
-                    file {
-                        '/etc/default/apport':
-                            source => "puppet:///modules/${module_name}/apport";
-                    }
+          # disable apport via defaults also
+          file {
+            '/etc/default/apport':
+              source => "puppet:///modules/${module_name}/apport";
+          }
 
-                    # this package and service have different names
-                    package {
-                        'bluez':
-                            ensure => latest;
-                    }
-                    service {
-                        'bluetooth':
-                            ensure   => stopped,
-                            provider => 'systemd',
-                            enable   => false,
-                            require  => Package['bluez'];
-                    }
+          # this package and service have different names
+          package {
+            'bluez':
+              ensure => latest;
+          }
+          service {
+            'bluetooth':
+              ensure   => stopped,
+              provider => 'systemd',
+              enable   => false,
+              require  => Package['bluez'];
+          }
 
-                    # disable periodic apt actions
-                    file {
-                        '/etc/apt/apt.conf.d/10periodic':
-                          ensure => file,
-                          owner  => 'root',
-                          group  => 'root',
-                          source => "puppet:///modules/${module_name}/10periodic";
+          # disable periodic apt actions
+          file {
+            '/etc/apt/apt.conf.d/10periodic':
+              ensure => file,
+              owner  => 'root',
+              group  => 'root',
+              source => "puppet:///modules/${module_name}/10periodic";
 
-                        '/etc/apt/apt.conf.d/20auto-upgrades':
-                          ensure => file,
-                          owner  => 'root',
-                          group  => 'root',
-                          source => "puppet:///modules/${module_name}/20auto-upgrades";
-                    }
+            '/etc/apt/apt.conf.d/20auto-upgrades':
+              ensure => file,
+              owner  => 'root',
+              group  => 'root',
+              source => "puppet:///modules/${module_name}/20auto-upgrades";
+          }
 
-                    # stop 'unattended-upgrades' processes, disabled in /etc/apt/apt.conf.d/20auto-upgrades
-                    # but still showing up
-                    service { 'unattended-upgrades':
-                        ensure => stopped,
-                        enable => false,
-                    }
-                }
-                default: {
-                    fail("Unrecognized Ubuntu version ${::operatingsystemrelease}")
-                }
-            }
+          # stop 'unattended-upgrades' processes, disabled in /etc/apt/apt.conf.d/20auto-upgrades
+          # but still showing up
+          service { 'unattended-upgrades':
+            ensure => stopped,
+            enable => false,
+          }
         }
         default: {
-            fail("gui is not supported on ${::operatingsystem}")
+          fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
         }
+      }
     }
+    default: {
+      fail("gui is not supported on ${facts['os']['name']}")
+    }
+  }
 }

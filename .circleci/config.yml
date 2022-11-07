@@ -7,16 +7,17 @@ orbs:
 executors:
   docker-base:
     docker:
-      - image: cimg/base:2021.04
+      - image: cimg/base:2022.09
   docker-ruby:
     docker:
       - image: cimg/ruby:3.0
   ubuntu-2004-docker:
     docker:
+      # see https://github.com/mozilla-platform-ops/relops_infra_as_code/tree/master/docker/dockerfiles/circleci-ubuntu-2004
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
   ubuntu-2004:
     machine:
-      image: ubuntu-2004:202010-01
+      image: ubuntu-2004:2022.07.1
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
   macos-1014: &1014
     macos:
@@ -218,7 +219,7 @@ jobs:
       - store_test_results:
           path: rspec
     environment:
-      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:
 #          fail_only: false
@@ -247,7 +248,7 @@ jobs:
       - store_test_results:
           path: rspec
     environment:
-      KITCHEN_YAML: .kitchen_configs/kitchen.macos.circleci.yml
+      KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:
 #          fail_only: false
@@ -302,7 +303,7 @@ workflows:
       - linux_integration_tests:
           matrix:
             parameters:
-              kitchen_target: ["bitbar", "linux"]
+              kitchen_target: ["bitbar-ubuntu-1804", "bitbar-ubuntu-2204", "linux-ubuntu-1804"]
           requires:
             - pre_commit
             - r10k_install
