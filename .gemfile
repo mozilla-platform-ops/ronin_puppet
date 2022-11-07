@@ -4,6 +4,7 @@ gem 'puppet', '7.8.0', :require => false
 gem 'puppet-lint', '>= 2.4.2'
 gem 'test-kitchen', '>= 3.3.2'
 gem 'kitchen-inspec', '>= 2.6.1'
+gem "inspec", '>= 4.26'
 
 gem 'kitchen-verifier-serverspec'
 gem 'kitchen-docker'

@@ -6,6 +6,7 @@ driver:
   use_sudo: false
   privileged: true
   # if on mac m1/m2 with arm64, need this because our s3 install only has amd64
+  # fails on circleci if left enabled
   # docker_platform: linux/amd64
   run_command: /bin/systemd
   cap_add:
@@ -18,8 +19,6 @@ driver:
 
 provisioner:
   name: puppet_apply
-  # puppet_version: 7
-  puppet_omnibus_url: https://raw.githubusercontent.com/aerickson/puppet-install-shell/2204-jammy-support/install_puppet_7_agent.sh
   modules_path: modules:r10k_modules
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
@@ -53,6 +52,8 @@ provisioner:
   # explodes if specified, defaults to latest/6
   # https://github.com/petems/puppet-install-shell/issues/137
   # puppet_version: 6
+  # puppet_version: 7
+  puppet_omnibus_url: https://raw.githubusercontent.com/aerickson/puppet-install-shell/2204-jammy-support/install_puppet_7_agent.sh
   puppet_debug: true
   require_chef_for_busser: true
   require_puppet_omnibus: true
