@@ -21,7 +21,7 @@ workerConfig:
   ed25519SigningKeyLocation: "<%= @ed25519_signing_key %>"
   idleTimeoutSecs: <%= @idle_timeout_secs %>
   livelogExecutable: "/usr/local/bin/livelog"
-  numberOfTasksToRun: 0
+  numberOfTasksToRun: 1
   publicIP: "<%= @facts['networking']['ip'] %>"
   requiredDiskSpaceMegabytes: 10240
   sentryProject: "generic-worker"
