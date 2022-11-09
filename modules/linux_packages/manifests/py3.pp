@@ -103,26 +103,27 @@ class linux_packages::py3 {
             altlink  => '/usr/bin/python3',
             altname  => 'python3',
             priority => 20,
-            # require  => Package['gcc-4.4-multilib'],
             require  => Exec['install py39'],
           }
 
           # pip alternatives (for some reason this is pointing to py3)
+          #
+          # this does: `Debug: Executing: '/usr/bin/update-alternatives --install /usr/bin/pip pip /usr/bin/pip2 20'`
           alternative_entry { '/usr/bin/pip2':
             ensure   => present,
             altlink  => '/usr/bin/pip',
             altname  => 'pip',
             priority => 20,
-            # require  => Package['gcc-4.4-multilib'],
             require  => Exec['install py39'],
           }
 
-          # update some pips that prevent other pip installations (psutil) from failing
-          package { 'python3-pip-r2':
-            ensure   => '22.3',
-            name     => 'pip',
-            provider => pip3,
-            require  => Alternative_entry['/usr/bin/python3.9'],
+          # - /usr/bin/pip -> /usr/bin/pip2 (from system, vs pip3)
+          alternative_entry { '/usr/bin/pip':
+            ensure   => present,
+            altlink  => '/usr/bin/pip2',
+            altname  => 'pip',
+            priority => 20,
+            require  => Exec['install py39'],
           }
 
           package { 'python3-distlib':
