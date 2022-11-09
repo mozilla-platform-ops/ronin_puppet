@@ -15,7 +15,6 @@ class roles_profiles::profiles::linux_base {
             include ::roles_profiles::profiles::sudo
             include ::roles_profiles::profiles::securitize
 
-            include linux_mercurial
             include disable_services
             include grub
             # fix for ubuntu packaging bug

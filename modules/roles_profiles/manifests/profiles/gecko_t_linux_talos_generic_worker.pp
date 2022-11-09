@@ -31,6 +31,9 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             include linux_packages::tooltool
             require linux_packages::zstd
 
+            # moved from base to avoid ordering issues with py2/3
+            include linux_mercurial
+
             require linux_talos
 
             class { 'puppet::atboot':
