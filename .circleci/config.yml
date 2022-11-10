@@ -50,8 +50,8 @@ commands:
         default: "7.20.0"
       bolt_version:
         type: enum
-        enum: ["3.26.1"]
-        default: "3.26.1"
+        enum: ["3.22.1"]
+        default: "3.22.1"
     steps:
       - run:
           name: Install puppet agent and bolt
