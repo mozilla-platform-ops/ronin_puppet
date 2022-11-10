@@ -214,6 +214,10 @@ jobs:
             - run: echo "ruby-2.6.4" > ~/.ruby-version
       - gem_cache
       - install_macos_puppet
+      # try to handle issue not resolving mountpoints
+      #   "Resolving fact mountpoints, but got cannot load such file -- sys/filesystem"
+      #   - https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=264277
+      - run: sudo gem install sys-filesystem rexml
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:

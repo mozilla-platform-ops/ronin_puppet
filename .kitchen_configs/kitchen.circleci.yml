@@ -7,10 +7,6 @@ driver:
 
 provisioner:
   name: puppet_apply
-  # try to handle issue not resolving mountpoints
-  #   "Resolving fact mountpoints, but got cannot load such file -- sys/filesystem"
-  #   - https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=264277
-  custom_pre_install_command: sudo gem install sys-filesystem rexml
   modules_path: "modules:r10k_modules"
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
