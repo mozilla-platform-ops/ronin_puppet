@@ -120,10 +120,17 @@ class linux_packages::py3 {
 
           # update some pips that prevent other pip installations (psutil) from failing
           package { 'python3-pip-specific-version':
-            ensure   => '22.3',
+            ensure   => '22.3.1',
             name     => 'pip',
             provider => pip3,
             require  => Alternative_entry['/usr/bin/python3.9'],
+          }
+
+          # pip install above creates /usr/local/bin/pip (that points to py3), and messes with everything
+          # - remove it
+          file { '/usr/local/bin/pip':
+              ensure  => absent,
+              require => Package['python3-pip-specific-version'],
           }
 
           package { 'python3-distlib':
