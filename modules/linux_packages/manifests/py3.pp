@@ -15,37 +15,6 @@ class linux_packages::py3 {
             ensure   => present,
           }
 
-        # py3.8 is deprecated with 3.6 and 3.9 present
-          # py3.8, from deadsnakes ppa
-        #   file { '/opt/relops_py38/':
-        #     ensure => directory,
-        #     group  => 'root',
-        #     mode   => '0755',
-        #     owner  => 'root',
-        #   }
-
-        #   $py38_urls = {
-        #     '/opt/relops_py38/libpython3.8-minimal_3.8.8-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py38/1804/libpython3.8-minimal_3.8.8-1%2Bbionic2_amd64.deb' },
-        #     '/opt/relops_py38/libpython3.8-stdlib_3.8.8-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py38/1804/libpython3.8-stdlib_3.8.8-1%2Bbionic2_amd64.deb' },
-        #     '/opt/relops_py38/python3.8_3.8.8-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py38/1804/python3.8_3.8.8-1%2Bbionic2_amd64.deb' },
-        #     '/opt/relops_py38/python3.8-minimal_3.8.8-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py38/1804/python3.8-minimal_3.8.8-1%2Bbionic2_amd64.deb' },
-        #     '/opt/relops_py38/python3.8-venv_3.8.8-1+bionic2_amd64.deb' => { source => 'https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/linux/public/common/py38/1804/python3.8-venv_3.8.8-1%2Bbionic2_amd64.deb' },
-        #   }
-
-        #   create_resources(file, $py38_urls, {
-        #       owner => 'root',
-        #       group => 'root',
-        #       mode  => '0644',
-        #   })
-
-        #   exec { 'install py38':
-        #     command  => '/usr/bin/dpkg -i *.deb',
-        #     path     => '/bin:/usr/bin/:/sbin:/usr/sbin',
-        #     cwd      => '/opt/relops_py38/',
-        #     provider => shell,
-        #     unless   => '/usr/bin/dpkg --list | /bin/grep python3.8 && /usr/bin/python3.8 -c "import distutils"',
-        #   }
-
           # py3.9, from deadsnakes ppa
 
           file { '/opt/relops_py39/':
@@ -108,8 +77,6 @@ class linux_packages::py3 {
 
           # /usr/bin/pip ends up pointing at py3 after py3.9 install, fix that.
           #   /usr/bin/pip -> /usr/bin/pip2 (from system, vs pip3)
-          #
-          # this does: `Debug: Executing: '/usr/bin/update-alternatives --install /usr/bin/pip pip /usr/bin/pip2 20'`
           alternative_entry { '/usr/bin/pip2':
             ensure   => present,
             altlink  => '/usr/bin/pip',
@@ -119,18 +86,12 @@ class linux_packages::py3 {
           }
 
           # update some pips that prevent other pip installations (psutil) from failing
+
           package { 'python3-pip-specific-version':
             ensure   => '22.3.1',
             name     => 'pip',
             provider => pip3,
             require  => Alternative_entry['/usr/bin/python3.9'],
-          }
-
-          # pip install above creates /usr/local/bin/pip (that points to py3), and messes with everything
-          # - remove it
-          file { '/usr/local/bin/pip':
-              ensure  => absent,
-              require => Package['python3-pip-specific-version'],
           }
 
           package { 'python3-distlib':
@@ -147,8 +108,20 @@ class linux_packages::py3 {
             require  => Alternative_entry['/usr/bin/python3.9'],
           }
 
-          # remove old /opt/py3
+          # pip install above creates /usr/local/bin/pip (that points to py3), and messes with everything, so remove it.
+          file { '/usr/local/bin/pip':
+              ensure  => absent,
+              require => Package['python3-pip-specific-version'],
+          }
+
+          # remove old /opt/py3 dirs
+
           file { '/opt/relops_py3/':
+            ensure => absent,
+            force  => true,
+
+          }
+          file { '/opt/relops_py38/':
             ensure => absent,
             force  => true,
           }
