@@ -49,9 +49,7 @@ provisioner:
             quarantine_access_token: 'Q_TOKEN'
             bugzilla_api_key: 'BZ_KEY'
   puppet_verbose: true
-  # explodes if specified, defaults to latest/6
-  # https://github.com/petems/puppet-install-shell/issues/137
-  # puppet_version: 6
+  # explodes if version specified, see https://github.com/petems/puppet-install-shell/issues/137
   # puppet_version: 7
   puppet_omnibus_url: https://raw.githubusercontent.com/aerickson/puppet-install-shell/2204-jammy-support/install_puppet_7_agent.sh
   puppet_debug: true
