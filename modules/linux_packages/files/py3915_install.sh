@@ -5,7 +5,9 @@ set -e
 
 # TODO: check that this is run as root
 
-apt remove libpython3.9-minimal libpython3.9-stdlib -y
+# remove previous versions of these as they mess with installation
+# TODO: check exit code? 100 is ok - means not present...
+apt remove libpython3.9-minimal libpython3.9-stdlib -y || true
 
 # order matters
 #   created with https://github.com/starkandwayne/install-debs-in-order
