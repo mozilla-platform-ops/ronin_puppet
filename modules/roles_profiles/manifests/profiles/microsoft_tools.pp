@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# Installs vs build tools
+# Installs additional software based on whether it's a tester or builder
 class roles_profiles::profiles::microsoft_tools {
   case $facts['os']['name'] {
     'Windows': {
@@ -11,60 +13,22 @@ class roles_profiles::profiles::microsoft_tools {
         moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
       }
 
-      case $facts['custom_win_os_version'] {
-        'win_10_2004','win_11_2009': {
-          $purpose = 'tester'
+      case $facts['custom_win_purpose'] {
+        'builder':{
+          include win_packages::vs_buildtools
+          include win_packages::dxsdk_jun10
+          include win_packages::binscope
+          # Required by rustc (tooltool artefact)
+          include win_packages::vc_redist_x86
+          include win_packages::vc_redist_x64
         }
-        'win_2012','win_2022_2009': {
-          $purpose = 'builder'
-        }
-        default: {
-          warning("${$facts['os']['name']} not supported")
-        }
-      }
-
-      case $purpose {
-        'builder': {
-          case $facts['custom_win_os_version'] {
-            'win_2022_2009': {
-              include win_packages::vs_buildtools_2022
-            }
-            'win_2012':{
-              include win_packages::vs_buildtools
-              include win_packages::dxsdk_jun10
-              include win_packages::binscope
-              # Required by rustc (tooltool artefact)
-              include win_packages::vc_redist_x86
-              include win_packages::vc_redist_x64
-            }
-            default: {
-              include win_packages::vs_buildtools
-              include win_packages::dxsdk_jun10
-              include win_packages::binscope
-              # Required by rustc (tooltool artefact)
-              include win_packages::vc_redist_x86
-              include win_packages::vc_redist_x64
-            }
-          }
-        }
-        'tester': {
-          case $facts['custom_win_os_version'] {
-            'win_11_2009': {
-              include win_packages::vs_buildtools
-            }
-            'win_10_2004': {
-              include win_packages::vs_buildtools
-            }
-            default: {
-              include win_packages::vs_buildtools
-            }
-          }
-        }
-        default: {
+        'tester':{
           include win_packages::vs_buildtools
         }
+        default: {
+          fail("${$facts['custom_win_purpose']} not supported")
+        }
       }
-      # Bug List
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
     }
     default: {
