@@ -1,5 +1,6 @@
 BeforeDiscovery {
     . "$env:systemdrive\ronin\test\integration\windows11\Get-InstalledSoftware.ps1"
+    C:\mozilla-build\python3\python.exe -m pip freeze --all > C:\requirements.txt
 }
 
 Describe "Mozilla Build" {
@@ -11,12 +12,15 @@ Describe "Mozilla Build" {
         $mms = $software | Where-Object {
             $PSItem.DisplayName -like "Mozilla Maintenance Service*"
         }
-
+        $pip_packages = Get-Content C:\requirements.txt
         $Install_Path = "C:\mozilla-build"
     }
     Context "Installation" {
         It "Mozilla-Build Folder exists" {
             Test-Path $Install_Path | Should -Be $true
+        }
+        It "Mozilla-Build Version" {
+            Get-Content "C:\mozilla-build\VERSION" | Should -Be "4.0.2"
         }
         It "msys\bin\sh.exe exists" {
             Test-Path "$Install_Path\msys\bin\sh.exe" | Should -Be $true
@@ -28,6 +32,28 @@ Describe "Mozilla Build" {
             $mms.DisplayVersion | Should -Be "27.0a1"
         }
     }
+    Context "Pip" {
+        It "Certifi is installed" {
+            $certifi = (pip_packages | Where-Object {$psitem -Match "Certifi"}) -split "==" 
+            $certifi | Should -Not -Be $null
+        }
+        It "PSUtil is installed" {
+            $PSUtil = (pip_packages | Where-Object {$psitem -Match "PSUtil"}) -split "==" 
+            $PSUtil | Should -Not -Be $null
+        }
+        It "PSUtil version 5.9.4" {
+            $PSUtil = (pip_packages | Where-Object {$psitem -Match "PSUtil"}) -split "==" 
+            $PSUtil[1] | Should -Not -Be $null
+        }
+        It "ZStandard is installed" {
+            $ZStandard = (pip_packages | Where-Object {$psitem -Match "zstandard"}) -split "==" 
+            $ZStandard | Should -Not -Be $null
+        }
+        It "ZStandard version 0.15.2" {
+            $ZStandard = (pip_packages | Where-Object {$psitem -Match "zstandard"}) -split "==" 
+            $ZStandard[1] | Should -Be "0.15.2"
+        }
+    }
     Context "Mercurial" {
         It "Mercurial gets installed" {
             $mercurial.DisplayName | Should -Not -Be $Null
@@ -36,7 +62,7 @@ Describe "Mozilla Build" {
             $mercurial.DisplayVersion | Should -Be "5.9.3"
         }
     }
-    Context "HG Files" {
+    Context "HG Files" -Skip {
         BeforeAll {
             $hgshared_acl = (Get-Acl -Path C:\hg-shared).Access |
             Where-Object { $PSItem.IdentityReference -eq "Everyone" }
@@ -49,11 +75,11 @@ Describe "Mozilla Build" {
         }
     }
     Context "Python 3 Certificate" {
-        It "Certifiate exists" {
+        It "Certificate exists" {
             Test-Path "$Install_Path\python3\Lib\site-packages\certifi\cacert.pem" | Should -Be $true
         }
     }
-    Context "ToolTool" {
+    Context "ToolTool" -Skip {
         It "ToolTool Cache Folder Exists" {
             Test-Path "C:\builds\tooltool_cache" | Should -Be $true
         }
@@ -66,7 +92,7 @@ Describe "Mozilla Build" {
             Should -Be "FullControl"
         }
     }
-    Context "Modifications" {
+    Context "Modifications" -Skip {
         It "hg removed from mozbuild path" {
             Test-Path "$Install_Path\python3\Scripts\hg" | Should -Be $false
         }
@@ -98,10 +124,7 @@ Describe "Mozilla Build" {
             Get-ItemPropertyValue $hg_key -Name "IoPriority" | Should -Be 2
         }
     }
-    Context "Pip" -Skip {
-
-    }
-    Context "Symlink Access" {
+    Context "Symlink Access" -Skip {
         BeforeAll {
             . "$env:windir\System32\WindowsPowerShell\v1.0\Modules\Carbon\Import-Carbon"
             $everyone = Get-Privilege -Identity "everyone"
@@ -114,7 +137,7 @@ Describe "Mozilla Build" {
             $system | Should -Contain "SeCreateSymbolicLinkPrivilege"
         }
     }
-    Context "Install PSUtil" {
+    Context "Install PSUtil" -Skip {
         It "init.py path exists for python 3" {
             Test-Path "$Install_Path\python3\Lib\site-packages\psutil\__init__.py" | Should -Be $true
         }
