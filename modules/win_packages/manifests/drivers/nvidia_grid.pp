@@ -21,12 +21,14 @@ class win_packages::drivers::nvidia_grid (
   file { "${pkgdir}\\${zip_name}":
     source => "${srcloc}/${zip_name}",
   }
+
+  exec { 'grid_unzip':
+    command  => "Expand-Archive -Path ${src_file} -DestinationPath ${working_dir}",
+    creates  => $setup_exe,
+    provider => powershell,
+  }
+
   if $facts['custom_win_gpu'] == 'yes' {
-    exec { 'grid_unzip':
-      command  => "Expand-Archive -Path ${src_file} -DestinationPath ${working_dir}",
-      creates  => $setup_exe,
-      provider => powershell,
-    }
     exec { 'grid_install':
       command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
       subscribe   => Exec['grid_unzip'],
