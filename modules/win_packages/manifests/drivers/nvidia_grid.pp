@@ -6,11 +6,8 @@ class win_packages::drivers::nvidia_grid (
   String $driver_name,
   String $srcloc
 ) {
-  require win_packages::sevenzip
-
   $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
   $working_dir = "${facts['custom_win_systemdrive']}\\${driver_name}"
-  $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
   $zip_name    = "${driver_name}.zip"
   $pkgdir      = $facts['custom_win_temp_dir']
   $src_file    = "\"${pkgdir}\\${zip_name}\""
