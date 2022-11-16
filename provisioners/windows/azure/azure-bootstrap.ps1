@@ -236,9 +236,11 @@ function Apply-AzRoninPuppet {
         [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
         [string] $puppetfile = "$env:systemdrive\ronin\Puppetfile",
         [string] $logdir = "$env:systemdrive\logs",
+        [string] $ed_key = "$env:systemdrive\generic-worker\ed25519-private.key",
         [string] $datetime = (get-date -format yyyyMMdd-HHmm),
         [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
         [string] $ronnin_key = "$mozilla_key\ronin_puppet",
+        [string] $worker_pool = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id,
         [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
     )
     begin {
@@ -293,6 +295,15 @@ function Apply-AzRoninPuppet {
             Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
             Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Move-StrapPuppetLogs
+            if ($worker_pool -like *trusted*) {
+                if (Test-Path $ed_key = True) {
+                    Remove-Item  $ed_key -force
+                }
+                while (!(Test-Path $ed_key)) {
+                    Write-Log -message  ('{0} :: Waiting on human interaction to create Cot key' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                    Start-Sleep -seconds 15
+                }
+            }
             exit 0
         } else {
             Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
