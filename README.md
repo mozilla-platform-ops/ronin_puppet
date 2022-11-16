@@ -56,10 +56,9 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 ```
 
 
-### kitchen-puppet
+### test-kitchen
 
-[kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to
-automate running convergence and serverspec tests for each role.
+[test-kitchen](https://docs.chef.io/workstation/kitchen/) (with [kitchen-puppet](https://github.com/neillturner/kitchen-puppet) ) provides infrastructure to automate running Puppet convergence and InSpec tests for each role.
 
 The repo contains configurations for Test Kitchen to use Vagant, Docker, and Mac instances.
 
@@ -73,7 +72,7 @@ We use Vagrant/VirutalBox and Docker for a few reasons:
 - Some tests don't work with Docker (kernel module tests).
 - Docker is faster (~1 minute faster on a converge from a new image).
 
-[serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
+[InSpec](https://github.com/inspec/inspec) tests live in `tests/integration/SUITE/inspec/*_spec.rb`.
 
 #### converging and running tests
 
@@ -142,3 +141,13 @@ bundle install
 - refactor kitchen testing
   - rename linux kitchen env to base
   - create a talos kitchen env for non-base
+
+### production hosts
+
+#### InSpec tests
+
+The InSpec tests (see above) can be run on production hosts also.
+
+```bash
+inspec exec test/integration/linux/inspec/ -t ssh://t-linux64-ms-001.test.releng.mdc1.mozilla.com -i ~/.ssh/id_rsa --user=aerickson --sudo
+```
