@@ -39,11 +39,12 @@ win-worker:
   azure:
     vm_agent:
       version: '2.7.41491.1057_2205251057.fre'
-      name: "Windows Azure VM Agent - 2.7.41491.1057"
+      display_name: "Windows Azure VM Agent - 2.7.41491.1057"
   git:
     version: '2.36.1'
   gpu:
     name: "472.39_grid_win11_win10_64bit_Azure-SWL"
+    display_name: "NVIDIA Graphics Driver 472.39"
   hg:
     version: '6.2.1'
   nssm:
