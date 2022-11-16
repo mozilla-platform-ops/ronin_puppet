@@ -4,6 +4,7 @@
 
 class win_packages::drivers::nvidia_grid (
   String $driver_name,
+  String $display_name,
   String $srcloc
 ) {
   $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
@@ -25,10 +26,10 @@ class win_packages::drivers::nvidia_grid (
   }
 
   if $facts['custom_win_gpu'] == 'yes' {
-    exec { 'grid_install':
-      command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
-      subscribe   => Exec['grid_unzip'],
-      refreshonly => true,
+    package { $display_name :
+      ensure          => '472.39',
+      source          => $setup_exe,
+      install_options => ['-s','-noreboot'],
     }
   }
 }
