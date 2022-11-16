@@ -6,7 +6,7 @@ class roles_profiles::profiles::azure_vm_agent {
   case $facts['os']['name'] {
     'Windows': {
       $agent_version = lookup('win-worker.azure.vm_agent.version')
-      $package       = lookup('win-worker.azure.vm_agent.name')
+      $package       = lookup('win-worker.azure.vm_agent.display_name')
       $msi           = "WindowsAzureVmAgent.${agent_version}.msi"
 
       class { 'win_packages::azure_vm_agent':
