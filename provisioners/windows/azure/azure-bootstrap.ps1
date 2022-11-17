@@ -295,10 +295,15 @@ function Apply-AzRoninPuppet {
             Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
             Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Move-StrapPuppetLogs
+            Write-Log -message  ('{0} :: LOOK HERE' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Write-Log -message  ('{0} :: Worker-pool is: {1}' -f $($MyInvocation.MyCommand.Name),($worker_pool)) -severity 'DEBUG'
+
             if ($worker_pool -like "trusted*") {
-                if (Test-Path $ed_key = True) {
+                if (Test-Path -Path $ed_key) {
+                Write-Log -message  ('{0} :: Attempt to remove ED file' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                     Remove-Item  $ed_key -force
                 }
+
                 while (!(Test-Path $ed_key)) {
                     Write-Log -message  ('{0} :: Waiting on human interaction to create Cot key' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                     Start-Sleep -seconds 15
