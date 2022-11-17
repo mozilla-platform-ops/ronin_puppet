@@ -295,7 +295,7 @@ function Apply-AzRoninPuppet {
             Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
             Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Move-StrapPuppetLogs
-            if ($worker_pool -like *trusted*) {
+            if ($worker_pool -like "*trusted*") {
                 if (Test-Path $ed_key = True) {
                     Remove-Item  $ed_key -force
                 }
