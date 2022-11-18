@@ -3,6 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_disable_services::disable_windows_update {
+
+    # Portions of the MS tools need to be in place before updates are disabled.
+    require roles_profiles::profiles::microsoft_tools
+
   $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
   $win_update_au_key = "${win_update_key}\\AU"
   $win_au_key        = 'HKLM\SOFTWARE\Microsoft\Windows\Windows\AU'
@@ -17,7 +21,22 @@ class win_disable_services::disable_windows_update {
   }
 
   case $facts['custom_win_os_version'] {
-    'win_11_2009': {
+    'win_2012': {
+        # Using puppetlabs-registry
+        registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
+            type => dword,
+            data => '0',
+        }
+        registry_value { "${win_au_key}\\AUOptions":
+            type => dword,
+            data => '1',
+        }
+        registry_value { "${win_au_key}\\NoAutoUpdate":
+            type => dword,
+            data => '1',
+        }
+  }
+    'win_11_2009', 'win_2022_2009': {
       service { 'UsoSvc':
         ensure => stopped,
         name   => 'UsoSvc',

@@ -16,10 +16,11 @@ class win_packages::vs_buildtools {
             install_options_string => "--add ${vc_tools} --passive",
             creates                => "${tools_dir}\\NOTICE.txt",
         }
+        # This is the win 10 SDK. poor exe naming.
         win_packages::win_exe_pkg  { 'winsdksetup':
             pkg                    => 'winsdksetup.exe',
             install_options_string => '/q /norestart',
-            creates                => "${sdk_dir}\\SDKManifest",
+            creates                => "${sdk_dir}\\SDKManifest.xml",
         }
     } else {
         fail("${module_name} does not support ${$facts['os']['name']}")
