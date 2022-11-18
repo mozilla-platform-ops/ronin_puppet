@@ -1,5 +1,6 @@
 require_relative 'spec_helper'
 
+# check that some users exist
 describe 'users' do
   describe user('aerickson') do
     it { should exist }
@@ -15,7 +16,12 @@ describe 'users' do
 end
 
 describe file('/etc/group') do
-  its(:content) { should match /admin:x:[\d]+:jwatkins,dhouse,mcornmesser,jmoss,aerickson/ }
+  # check that relops users are in the admin group
+  its(:content) { should match /admin:x:[\d]+:.*mcornmesser.*/ }
+  its(:content) { should match /admin:x:[\d]+:.*dhouse.*/ }
+  its(:content) { should match /admin:x:[\d]+:.*jwatkins.*/ }
+  its(:content) { should match /admin:x:[\d]+:.*jmoss.*/ }
+  its(:content) { should match /admin:x:[\d]+:.*aerickson.*/ }
 end
 
 # root should have * pw
