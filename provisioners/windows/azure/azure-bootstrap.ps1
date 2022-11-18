@@ -301,7 +301,8 @@ function Apply-AzRoninPuppet {
                 while (!(Test-Path $ed_key)) {
                     Start-Sleep -seconds 15
                 }
-                Start-Sleep -seconds 15
+                # Provide a window for the file to be writen
+                Start-Sleep -seconds 30
             }
             Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             exit 0
