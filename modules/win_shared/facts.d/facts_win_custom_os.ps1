@@ -66,12 +66,7 @@ if ($os_caption -like "*windows_10*") {
 	$purpose = "tester"
 } elseif ($os_caption -like "*windows_11*") {
 	$os_version = (-join( "win_11_", $release_id))
-<<<<<<< HEAD
-} elseif ($os_caption -like "*2022*") {
-    $os_version = (-join( "win_2022_", $release_id))
-=======
 	$purpose = "tester"
->>>>>>> df8ef6e6591b458d9c5367b87e9c628733c081c8
 } elseif ($os_caption -like "*2012*") {
 	$os_version = "win_2012"
 	$purpose = 'builder'
@@ -93,7 +88,4 @@ Write-host "custom_win_firewall_status=$firewall_status"
 Write-host "custom_win_role=$role"
 write-host "custom_win_worker_pool_id=$worker_pool_id"
 write-host "custom_win_gpu=$gpu"
-<<<<<<< HEAD
-=======
 write-host "custom_win_purpose=$purpose"
->>>>>>> df8ef6e6591b458d9c5367b87e9c628733c081c8
