@@ -1,7 +1,7 @@
 ﻿function Wait-OnMDT {
     [CmdletBinding()]
     param (
-        
+
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

@@ -50,14 +50,14 @@ function Write-Log {
       [string] $nxlog_conf = "nxlog.conf",
       [string] $nxlog_pem  = "papertrail-bundle.pem",
       [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
-  
+
     )
     begin {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
       New-Item -ItemType Directory -Force -Path $local_dir
-  
+
       Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
       msiexec /i $local_dir\$nxlog_msi /passive
       while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
@@ -70,7 +70,7 @@ function Write-Log {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
   }
-  
+
   function Install-Prerequ {
     param (
       [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
@@ -83,19 +83,19 @@ function Write-Log {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       New-Item -path $work_dir -ItemType "directory"
       Set-location -path $work_dir
       Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
       Expand-Archive -path $work_dir\BootStrap.zip -DestinationPath $env:systemdrive\
       Set-location -path $local_dir
       remove-item $work_dir   -Recurse  -force
-  
+
       Start-Process $local_dir\$git /verysilent -wait
       Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
       Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
       Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
-  
+
     }
     end {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -115,7 +115,7 @@ function Write-Log {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       remove-item $local_dir   -Recurse  -force
       New-Item -path $work_dir -ItemType "directory"
       Set-location -path $work_dir
@@ -124,12 +124,12 @@ function Write-Log {
       Read-Host "Enusre c:\bootstrap\secrets\vault.yam is present, and then press eneter to continue"
       Set-location -path $local_dir
       remove-item $work_dir   -Recurse  -force
-  
+
       Start-Process $local_dir\$git /verysilent -wait
       Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
       Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
       Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
-  
+
     }
     end {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -152,7 +152,7 @@ function Write-Log {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       New-Item -path $work_dir -ItemType "directory"
       Set-location -path $work_dir
       Invoke-WebRequest -Uri  $ext_src/BootStrap.zip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
@@ -160,23 +160,23 @@ function Write-Log {
       Set-location -path $local_dir
       remove-item $work_dir   -Recurse  -force
       # Get-AppxPackage *windowsstore* | Remove-AppxPackage
-  
+
       Start-Process $local_dir\$git /verysilent -wait
       Write-Log -message  ('{0} :: Git installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$git")) -severity 'DEBUG'
       Start-Process  msiexec -ArgumentList "/i", "$local_dir\$puppet", "/passive" -wait
       Write-Log -message  ('{0} :: Puppet installed " {1}' -f $($MyInvocation.MyCommand.Name), ("$puppet")) -severity 'DEBUG'
-  
+
       # net stop $rdagent
       #net stop $azure_guest_agent
       #net stop $azure_telemetry
-  
+
       # sc delete $rdagent3
       #sc config "$azure_guest_agent" start= disabled
       #sc config "$azure_telemetry" start= disabled
-  
+
       #sc delete $azure_guest_agent
       #sc delete $azure_telemetry
-  
+
       # May not be needed. If not this can be removed in the future
       #Invoke-WebRequest -Uri  $ext_src/$vault_file  -UseBasicParsing -OutFile $local_dir\$vault_file
       #New-Item -ItemType Directory -Force -Path $local_dir\secrets
@@ -205,24 +205,24 @@ function Write-Log {
         New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
         New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
       }
-  
+
       New-Item -Path $ronnin_key -Name source –Force
       New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String
       New-ItemProperty -Path "$ronnin_key" -Name 'workerType' -Value "$workerType" -PropertyType String
       $role = $workerType -replace '-',''
       New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$role" -PropertyType String
       Write-Log -message  ('{0} :: Node workerType set to {1}' -f $($MyInvocation.MyCommand.Name), ($workerType)) -severity 'DEBUG'
-  
+
       New-ItemProperty -Path "$ronnin_key" -Name 'inmutable' -Value 'false' -PropertyType String
       New-ItemProperty -Path "$ronnin_key" -Name 'runtosuccess' -Value 'true' -PropertyType String
       New-ItemProperty -Path "$ronnin_key" -Name 'last_run_exit' -Value '0' -PropertyType Dword
       New-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'setup' -PropertyType String
-  
-  
+
+
       New-ItemProperty -Path "$source_key" -Name 'Organisation' -Value "$src_Organisation" -PropertyType String
       New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String
       New-ItemProperty -Path "$source_key" -Name 'Revision' -Value "$src_Revision" -PropertyType String
-  
+
     }
     end {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -239,7 +239,7 @@ function Write-Log {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       If((test-path $env:systemdrive\ronin)) {
           Remove-Item -Recurse -Force $env:systemdrive\ronin
       }
@@ -276,11 +276,11 @@ function Write-Log {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       # This will not really do anything for the Azure script but shouldn't hurt it
       # It is needed for hardware workers
       $role = $workerType -replace '-',''
-  
+
       Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
       Invoke-WebRequest https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_Revision/provisioners/windows/$image_provisioner/$role-bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\$role-bootstrap-src.ps1" -UseBasicParsing
       Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\$role-bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\$role-bootstrap.ps1
@@ -290,7 +290,7 @@ function Write-Log {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
   }
-  
+
   Function Ronin-PreRun {
     param (
       [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
@@ -305,15 +305,15 @@ function Write-Log {
       [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
       [string] $sourceRev = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Revision,
       [string] $winlogon = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
-  
+
     )
     begin {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       Clone-Ronin
-  
+
       if (!(Test-path $nodes_def)) {
         Copy-item -path $nodes_def_src -destination $nodes_def -force
         (Get-Content -path $nodes_def) -replace 'roles::role', "roles::$role" | Set-Content $nodes_def
@@ -321,10 +321,10 @@ function Write-Log {
       if (!(Test-path $secrets)) {
         Copy-item -path $secret_src -destination $secrets -recurse -force
       }
-  
+
       Set-ItemProperty -Path "$sentry_reg\SecurityHealthService" -name "start" -Value '4' -Type Dword
       Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
-  
+
     }
     end {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -354,7 +354,7 @@ function Write-Log {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       Set-Location $env:systemdrive\ronin
       If(!(test-path $logdir\old))  {
         New-Item -ItemType Directory -Force -Path $logdir\old
@@ -378,7 +378,7 @@ function Write-Log {
         }
       }
       Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
-  
+
       # Setting Env variabes for PuppetFile install and Puppet run
       # The ssl variables are needed for R10k
       Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -393,13 +393,13 @@ function Write-Log {
       $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
       $env:USERNAME = "Administrator"
       $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
-  
+
       Write-Log -message  ('{0} :: Moving old logs.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
       Write-Log -message  ('{0} :: Running Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
       [int]$puppet_exit = $LastExitCode
-  
+
       if ($run_to_success -eq 'true') {
         if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
           if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
@@ -461,7 +461,7 @@ function Write-Log {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
       Set-Location $env:systemdrive\ronin
       If(!(test-path $logdir\old))  {
         New-Item -ItemType Directory -Force -Path $logdir\old
@@ -497,7 +497,7 @@ function Write-Log {
         Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
       }
       Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
-  
+
       # Setting Env variabes for PuppetFile install and Puppet run
       # The ssl variables are needed for R10k
       Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -512,13 +512,13 @@ function Write-Log {
       $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
       $env:USERNAME = "Administrator"
       $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
-  
+
       Write-Log -message  ('{0} :: Moving old logs.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
       Write-Log -message  ('{0} :: Running Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=win_hiera.yaml --logdest $logdir\$datetime-bootstrap-puppet.log
       [int]$puppet_exit = $LastExitCode
-  
+
       if ($run_to_success -eq 'true') {
         if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
           if (($last_exit -eq 0) -or ($puppet_exit -eq 2)) {
@@ -574,12 +574,12 @@ function Write-Log {
     process {
       vssadmin delete shadows /all /quiet
       powershell.exe -Command Checkpoint-Computer -Description "default"
-  
+
       if(!(Test-Path $ronnin_key)) {
         New-Item -Path HKLM:\SOFTWARE -Name Mozilla –Force
         New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet –Force
       }
-  
+
       New-ItemProperty -Path "$ronnin_key" -name "restorable" -PropertyType  string -value yes
       New-ItemProperty -Path "$ronnin_key" -name "reboot_count" -PropertyType  Dword -value 0
       New-ItemProperty -Path "$ronnin_key" -name "last_restore_point" -PropertyType  string -value $date
@@ -597,7 +597,7 @@ function Write-Log {
       [int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
       [string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
       [string] $checkpoint_date = (Get-ItemProperty $ronin_key).last_restore_point
-  
+
     )
     begin {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -618,10 +618,10 @@ function Write-Log {
           }
           else {
               Write-Log -message  ('{0} :: Restore attempted for unknown reason. Restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
-  
+
           }
           Stop-ScheduledTask -TaskName maintain_system
-  
+
           Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           Stop-process -name generic-worker -force
           Remove-Item -Recurse -Force $env:systemdrive\generic-worker
@@ -638,7 +638,7 @@ function Write-Log {
           Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
           $RestoreNumber = (Get-ComputerRestorePoint | Where-Object {$_.Description -eq "default"})
           Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
-  
+
       } else {
           Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
@@ -720,7 +720,7 @@ function Write-Log {
   Function Bootstrap-CleanUp {
     param (
       [string] $bootstrapdir  = "$env:systemdrive\BootStrap\"
-  
+
     )
     begin {
       Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -729,7 +729,7 @@ function Write-Log {
     Write-Log -message  ('{0} :: Bootstrap has completed. Removing schedule task and directory' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Remove-Item -Recurse -Force $bootstrapdir
     Schtasks /delete /tn bootstrap /f
-  
+
     }
     end {
       Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -752,4 +752,3 @@ function Write-Log {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
       }
   }
-  

@@ -13,11 +13,7 @@ class roles_profiles::profiles::mozilla_build {
             # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
 
             if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-                if $facts['custom_win_y_drive'] == 'exists'{
-                    $cache_drive  = 'y:'
-                } else {
-                    $cache_drive  = $facts['custom_win_systemdrive']
-                }
+                $cache_drive  = 'y:'
             } else {
                 $cache_drive  = $facts['custom_win_systemdrive']
             }
@@ -36,13 +32,15 @@ class roles_profiles::profiles::mozilla_build {
                 default => lookup('tooltool_tok')
             }
 
-            #if $facts['custom_win_release_id'] == '2004'{
             if $facts['custom_win_mozbld_vesion'] == '3.2' {
                 $upgrade_python = true
             } else {
                 $upgrade_python = false
             }
 
+            #if $upgrade_python == true {
+            #    include win_packages::vs_buildtools
+            #}
 
             class { 'win_mozilla_build':
                 current_mozbld_ver        => $facts['custom_win_mozbld_vesion'],

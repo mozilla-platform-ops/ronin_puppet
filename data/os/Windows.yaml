@@ -23,6 +23,10 @@ windows:
     ntp: "0.pool.ntp.org"
     papertrail: "logs.papertrailapp.com"
 
+  # azure blob resources
+  ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
+  ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
+
   # S3 resources
   s3:
     ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"

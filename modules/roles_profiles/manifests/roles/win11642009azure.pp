@@ -3,6 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win11642009azure {
+
+  # Install MS tools earlier
+  include roles_profiles::profiles::microsoft_tools
   # System
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::suppress_dialog_boxes
@@ -24,9 +27,8 @@ class roles_profiles::roles::win11642009azure {
 
   # Worker
   include roles_profiles::profiles::git
-  include roles_profiles::profiles::mozilla_build
+  include roles_profiles::profiles::mozilla_build_new
   ## Had to re-run mozilla_maintenance_service twice when mozilla_build wasn't a pre-req
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_worker_runner
-  include roles_profiles::profiles::microsoft_tools
 }

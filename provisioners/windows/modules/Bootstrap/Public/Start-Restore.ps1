@@ -5,7 +5,7 @@
         [int32] $max_boots = (Get-ItemProperty $ronin_key).max_boots,
         [string] $restore_needed = (Get-ItemProperty $ronin_key).restore_needed,
         [string] $checkpoint_date = (Get-ItemProperty $ronin_key).last_restore_point
-  
+
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -26,10 +26,10 @@
             }
             else {
                 Write-Log -message  ('{0} :: Restore attempted for unknown reason. Restore key equals {1} .' -f $($MyInvocation.MyCommand.Name), ($restore_needed )) -severity 'DEBUG'
-  
+
             }
             Stop-ScheduledTask -TaskName maintain_system
-  
+
             Write-Log -message  ('{0} :: Removing Generic-worker directory .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Stop-process -name generic-worker -force
             Remove-Item -Recurse -Force $env:systemdrive\generic-worker
@@ -46,7 +46,7 @@
             Write-Log -message  ('{0} :: Initiating system restore from {1}.' -f $($MyInvocation.MyCommand.Name), ($checkpoint_date)) -severity 'DEBUG'
             $RestoreNumber = (Get-ComputerRestorePoint | Where-Object { $_.Description -eq 'default' })
             Restore-Computer -RestorePoint $RestoreNumber.SequenceNumber
-  
+
         }
         else {
             Write-Log -message  ('{0} :: Restore is not needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'

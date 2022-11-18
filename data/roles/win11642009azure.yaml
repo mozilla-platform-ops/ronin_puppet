@@ -26,11 +26,9 @@ win-worker:
 
   # Mozilla-build
   mozilla_build:
-    version: '3.2'
-    hg_version: '5.9.3'
-    py3_pip_version: '19.2.1'
-    py3_zstandard_version: '0.15.2'
-    psutil_version: '5.7.0'
+    version: '4.0.2'
+    zstandard_version: '0.15.2'
+    psutil_version: '5.9.4'
 
   # Mozilla profile
   mozilla_profile:
@@ -38,18 +36,21 @@ win-worker:
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
   # Applications
-  vnc_msi:  "UltraVnc_1223_X64.msi"
-  vnc_name:  "UltraVnc"
-  nssm:
-    version: '2.24'
   azure:
     vm_agent:
       version: '2.7.41491.1057_2205251057.fre'
-      name: "Windows Azure VM Agent - 2.7.41491.1057"
-  vac:
-    version: '464'
+      display_name: "Windows Azure VM Agent - 2.7.41491.1057"
   git:
     version: '2.36.1'
+  gpu:
+    name: "472.39_grid_win11_win10_64bit_Azure-SWL"
+    display_name: "NVIDIA Graphics Driver 472.39"
+  hg:
+    version: '6.2.1'
+  nssm:
+    version: '2.24'
+  vac:
+    version: '464'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
