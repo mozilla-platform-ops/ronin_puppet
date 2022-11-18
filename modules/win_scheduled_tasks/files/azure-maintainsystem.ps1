@@ -355,8 +355,6 @@ function Set-DriveLetters {
         $volume.DriveLetter = 'Z:'
         $volume.Put()
         Write-Log -message ('{0} :: drive Y: assigned new drive letter: Z:.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-        Write-Log -message ('{0} :: Opening permisions for Z:.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-        icacls.exe "Z:\" /grant "Everyone:(OI)(CI)F"
       }
     }
     $volumes = @(Get-WmiObject -Class Win32_Volume | Sort-Object { $_.Name })
