@@ -43,14 +43,14 @@ class roles_profiles::profiles::windows_worker_runner {
                     $init = 'task-user-init-win11.cmd'
                 }
                 'win_2012': {
-                    $init = 'task-user-init-win10.cmd'
+                    $init = 'task-user-init-win2012.cmd'
                 }
                 'win_10_2004': {
                     $init = 'task-user-init-win10.cmd'
                 }
                 default: {
                     $init = undef
-               }
+                }
             }
 
             case $provider {
