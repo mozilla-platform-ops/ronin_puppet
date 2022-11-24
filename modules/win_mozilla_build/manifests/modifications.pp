@@ -36,10 +36,16 @@ class win_mozilla_build::modifications {
             target => "${win_mozilla_build::system_drive}\\users",
         }
     }
+    # Some builds look for old mozilla-build dirs
+    # Should address thing 2022 migration
     if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
         file { "${mozbld}\\msys":
             ensure => link,
             target => "${mozbld}\\msys2",
+        }
+        file { "${mozbld}\\python":
+            ensure => link,
+            target => "${mozbld}\\python3",
         }
         # Test without. This link is proabably not possible.
         #file {  "${win_mozilla_build::system_drive}\\users":
