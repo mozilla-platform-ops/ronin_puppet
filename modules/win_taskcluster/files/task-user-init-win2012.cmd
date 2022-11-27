@@ -13,9 +13,4 @@ goto WaitForExplorerKey
 
 :Completed
 
-echo Looking for bash
-which bash
-echo Testing bash
-bash -c "hg clone -h"
-
 echo Completed task user initialisation.
