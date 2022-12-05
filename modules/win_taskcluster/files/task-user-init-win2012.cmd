@@ -12,5 +12,6 @@ ping -n 2 127.0.0.1 1>/nul
 goto WaitForExplorerKey
 
 :Completed
-
+:: Mark git repos on Z: as safe per Task user
+git config --system --add safe.directory z:/*
 echo Completed task user initialisation.
