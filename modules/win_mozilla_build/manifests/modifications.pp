@@ -7,7 +7,17 @@ class win_mozilla_build::modifications {
     require win_mozilla_build::install
     require win_mozilla_build::hg_install
 
-    $mozbld = $win_mozilla_build::install_path
+    $mozbld      = $win_mozilla_build::install_path
+    $source      = $win_mozilla_build::external_source
+    $mozmake_dir = "${mozbld}\\mozmake"
+
+    file { $mozmake_dir:
+        ensure => directory,
+    }
+    file { "${mozmake_dir}\\mozmake.exe":
+        source => "${source}/mozmake.exe",
+    }
+
 
     file { $win_mozilla_build::builds_dir:
         ensure => directory,
