@@ -105,8 +105,6 @@ switch ($os_version) {
         }
     }
     "win_2012" {
-        ## Mark git repos on Z drive safe
-        git config --system --add safe.directory z:/*
         ## Ensure strong encryption
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     }
