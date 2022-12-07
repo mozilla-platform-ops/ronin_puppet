@@ -13,5 +13,5 @@ goto WaitForExplorerKey
 
 :Completed
 :: Mark Z drive repos safe for task user
-git config --global --add safe.directory "z:\task*"
+powershell -file "C:\generic-worker\task-user-init.ps1"
 echo Completed task user initialisation.
