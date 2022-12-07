@@ -13,5 +13,5 @@ goto WaitForExplorerKey
 
 :Completed
 :: Mark Z drive repos safe for task user
-git config --global --add safe.directory "z:/task*"
+git config --global --add safe.directory "z:\task*"
 echo Completed task user initialisation.
