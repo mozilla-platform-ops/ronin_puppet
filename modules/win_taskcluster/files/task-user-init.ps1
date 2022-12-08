@@ -56,11 +56,8 @@ switch ($os_version) {
         Stop-Process -f -ProcessName explorer
     }
     "win_2012" {
-        ## Mark Git repos under Z $taskuser safe
-        $user = ((Get-WMIObject -ClassName Win32_ComputerSystem).Username)
-        $task_user = $user.split('\')[1]
-        $git_repo = ('Z:\{0}\*' -f ($task_user))
-        git config --global --add safe.directory $git_repo
+        ## prevent Git repos from being seen as unsafe after copied
+        git config --global --add safe.directory '*'
 
         ## Ensure strong encryption
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
