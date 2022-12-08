@@ -22,7 +22,7 @@ else {
     $os_version = $null
 }
 
-switch ($os_caption) {
+switch ($os_version) {
     "win_11_2009" {
         ## Disable windows security and maintenance notifications
         $Path1 = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\\Notifications\Settings\Windows.SystemToast.SecurityAndMaintenance'
