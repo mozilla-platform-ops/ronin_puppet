@@ -34,10 +34,8 @@ class win_taskcluster::generic_worker (
   file { "${generic_worker_dir}\\task-user-init.cmd":
     content   => file("win_taskcluster/${init_file}"),
   }
-  if $init_file == 'task-user-init-win11.cmd' {
     # C:\generic-worker\task-user-init.ps1
-    file { "${generic_worker_dir}\\task-user-init.ps1":
-      content   => file('win_taskcluster/task-user-init.ps1'),
-    }
+  file { "${generic_worker_dir}\\task-user-init.ps1":
+    content   => file('win_taskcluster/task-user-init.ps1'),
   }
 }
