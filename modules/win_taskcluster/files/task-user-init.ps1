@@ -63,8 +63,9 @@ switch ($os_caption) {
     "win_2012" {
         $user = ((Get-WMIObject -ClassName Win32_ComputerSystem).Username)
         $task_user = $user.split('\')[1]
-        $git_repo = ("Z:/{0}/build/src" -f ($task_user))
+        $git_repo = ("Z:/{0}/*" -f ($task_user))
         git config --global --add safe.directory $git_repo
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     }
     Default {}
 }
