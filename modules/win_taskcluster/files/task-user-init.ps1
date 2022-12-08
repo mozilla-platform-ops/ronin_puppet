@@ -58,9 +58,6 @@ switch ($os_version) {
     "win_2012" {
         ## prevent Git repos from being seen as unsafe after copied
         git config --global --add safe.directory '*'
-
-        ## Ensure strong encryption
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     }
     Default {}
 }

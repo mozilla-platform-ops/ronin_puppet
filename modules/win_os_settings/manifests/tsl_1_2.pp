@@ -7,6 +7,8 @@ class win_os_settings::tsl_1_2 {
     $tsl_key    = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.2"
     $client_key = "${tsl_key}\\Client"
     $server_key = "${tsl_key}\\Server"
+    $net4_32_key = "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\.NETFramework\\v4.0.30319"
+    $net4_64_key = "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319"
 
     registry_key { $tsl_key:
         ensure => present,
@@ -22,9 +24,42 @@ class win_os_settings::tsl_1_2 {
         type   => 'dword',
         data   => 0
     }
+    registry_value { "${client_key}\\enable":
+        ensure => present,
+        type   => 'dword',
+        data   => 0
+    }
     registry_value { "${server_key}\\DisabledByDefault":
         ensure => present,
         type   => 'dword',
         data   => 0
+    }
+    registry_value { "${server_key}\\enable":
+        ensure => present,
+        type   => 'dword',
+        data   => 1
+    }
+    registry_key { $net4_32_key:
+        ensure => present,
+    }
+    registry_value { "${net4_32_key}\\SystemDefaultTlsVersions":
+        ensure => present,
+        type   => 'dword',
+        data   => 0
+    }
+    registry_value { "${net4_32_key}\\SchUseStrongCrypto":
+        ensure => present,
+        type   => 'dword',
+        data   => 1
+    }
+    registry_value { "${net4_64_key}\\SystemDefaultTlsVersions":
+        ensure => present,
+        type   => 'dword',
+        data   => 0
+    }
+    registry_value { "${net4_64_key}\\SchUseStrongCrypto":
+        ensure => present,
+        type   => 'dword',
+        data   => 1
     }
 }
