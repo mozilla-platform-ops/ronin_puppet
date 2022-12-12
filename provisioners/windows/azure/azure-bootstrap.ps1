@@ -299,6 +299,7 @@ function Apply-AzRoninPuppet {
                     Remove-Item  $ed_key -force
                 }
                 while (!(Test-Path $ed_key)) {
+                     Write-Log -message  ('{0} :: Trusted image. Waiting on CoT key. Human intervention needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                     Start-Sleep -seconds 15
                 }
                 # Provide a window for the file to be writen
