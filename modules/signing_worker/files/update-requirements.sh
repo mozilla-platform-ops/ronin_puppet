@@ -22,13 +22,13 @@ cli_param=$1
 if [ -z "$cli_param" ]; then
     worker_types=()
     echo "Updating all requirement files"
-    for f in ${MY_DIR}/requirements.*; do
-        target=$(echo $f | awk -F '.' '{print $2}')
+    for f in "${MY_DIR}"/requirements.*; do
+        target=$(echo "$f" | awk -F '.' '{print $2}')
         echo "Found target: ${target}"
         worker_types+=("${target}")
     done
 else
-    worker_types=($cli_param)
+    worker_types=("$cli_param")
     echo "Updating single env: ${cli_param}"
 fi
 
@@ -94,8 +94,8 @@ EOF
         -v "$workdir:/workdir" \
         -w "/workdir" \
         pip-compile:latest \
-        pip-compile -q --generate-hashes -o $output_file -r requirements.in
-    
+        pip-compile -q --generate-hashes -o "$output_file" -r requirements.in
+
     cp "${workdir}/${output_file}" "${MY_DIR}/${output_file}"
     rm -f "${output_file}" "requirements.in"
 }
