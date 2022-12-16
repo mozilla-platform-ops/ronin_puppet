@@ -133,7 +133,7 @@ else
 fi
 
 # install puppet
-rm /var/tmp/puppet*.deb*
+rm -f /var/tmp/puppet*.deb*
 wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet7-release-$(lsb_release -c -s).deb"
 dpkg -i /var/tmp/*.deb
 apt-get update -y && apt-get install -y puppet-agent
