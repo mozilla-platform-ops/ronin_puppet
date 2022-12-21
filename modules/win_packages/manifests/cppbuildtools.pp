@@ -8,7 +8,7 @@ class win_packages::cppbuildtools {
     $sdk_dir = "${facts['custom_win_programfilesx86']}\\Microsoft SDKs"
 
     if $::operatingsystem == 'Windows' {
-        win_packages::win_exe_pkg  { 'visualcppbuildtools':
+        win_packages::win_exe_pkg  { 'visualcppbuildtools_full2015':
             pkg                    => 'visualcppbuildtools_full.exe',
             install_options_string => '/q',
             creates                =>

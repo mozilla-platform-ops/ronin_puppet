@@ -15,6 +15,7 @@ class roles_profiles::profiles::microsoft_tools {
 
       case $facts['custom_win_purpose'] {
         'builder':{
+          include win_packages::cppbuildtools
           include win_packages::vs_buildtools
           include win_packages::dxsdk_jun10
           include win_packages::binscope
