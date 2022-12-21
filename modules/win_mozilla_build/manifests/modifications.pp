@@ -106,9 +106,4 @@ class win_mozilla_build::modifications {
           ]:
     }
     }
-    # Windows find conflicts with Msys2 find command
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=1806073
-    file { "${system32}\\find.exe":
-        ensure => absent,
-    }
 }
