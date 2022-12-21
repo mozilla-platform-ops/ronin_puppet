@@ -109,7 +109,11 @@ switch ($os_version) {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         ## Windows find conflicts with Msys2 find command
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1806073
-        Remove-Item -Path C:\Windows\System32\find.exe -Force
+        $find = "C:\Windows\System32\find.exe"
+        if (Test-Path $find) {
+            icacls $find /t /grant Everyone:F
+            Remove-Item -Path C:\Windows\System32\find.exe -Force
+        }
     }
     Default {
         Write-Log -message  ('{0} :: Skipping at task user logon for {1}' -f $($MyInvocation.MyCommand.Name),$os_version) -severity 'DEBUG'
