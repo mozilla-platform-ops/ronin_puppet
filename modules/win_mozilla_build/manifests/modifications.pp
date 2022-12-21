@@ -10,6 +10,7 @@ class win_mozilla_build::modifications {
     $mozbld      = $win_mozilla_build::install_path
     $source      = $win_mozilla_build::external_source
     $mozmake_dir = "${mozbld}\\mozmake"
+    $system32    = $win_mozilla_build::system32
 
     file { $mozmake_dir:
         ensure => directory,
@@ -104,5 +105,10 @@ class win_mozilla_build::modifications {
               "${mozbld}\\msys\\local\\bin"
           ]:
     }
+    }
+    # Windows find conflicts with Msys2 find command
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1806073
+    file { "${system32}\\find.exe":
+        ensure => absent,
     }
 }
