@@ -29,9 +29,9 @@ win-worker:
   mozilla_build:
     version: '4.0.1'
     hg_version: '6.2.1'
-    py3_pip_version: '21.3.1'
-    py3_zstandard_version: '0.15.2'
-    psutil_version: '5.7.0'
+    py3_pip_version: '22.3.1'
+    py3_zstandard_version: '0.19.0'
+    psutil_version: '5.9.4'
 
   # Mozilla profile
   mozilla_profile:

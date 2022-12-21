@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_packages::vs_buildtools {
+class win_packages::win_10_sdk {
 
     $prog_dir = $facts['custom_win_programfilesx86']
     $tools_dir = "${prog_dir}\\Microsoft Visual Studio\\Installer"
