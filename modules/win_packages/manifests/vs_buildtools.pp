@@ -11,11 +11,11 @@ class win_packages::vs_buildtools {
     $sdk_dir   = "${prog_dir}\\Microsoft SDKs\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.19041.0"
 
     if $facts['os']['name'] == 'Windows' {
-        win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':
-            pkg                    => 'vs_buildtools__1552942004.1623183462.exe',
-            install_options_string => "--add ${vc_tools} --passive",
-            creates                => "${tools_dir}\\NOTICE.txt",
-        }
+        #win_packages::win_exe_pkg  { 'vs_buildtools__1552942004.1623183462':
+            #pkg                    => 'vs_buildtools__1552942004.1623183462.exe',
+            #install_options_string => "--add ${vc_tools} --passive",
+            #creates                => "${tools_dir}\\NOTICE.txt",
+        #}
         # This is the win 10 SDK. poor exe naming.
         win_packages::win_exe_pkg  { 'winsdksetup':
             pkg                    => 'winsdksetup.exe',
