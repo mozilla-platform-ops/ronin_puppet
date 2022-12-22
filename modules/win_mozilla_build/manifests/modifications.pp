@@ -105,4 +105,8 @@ class win_mozilla_build::modifications {
           ]:
     }
     }
+    exec { 'set_path':
+        command  => file('win_mozilla_build/set_path.ps1.'),
+        provider => powershell,
+    }
 }
