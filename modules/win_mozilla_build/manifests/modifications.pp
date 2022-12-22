@@ -11,6 +11,7 @@ class win_mozilla_build::modifications {
     $source      = $win_mozilla_build::external_source
     $mozmake_dir = "${mozbld}\\mozmake"
     $system32    = $win_mozilla_build::system32
+    $find        = "${system32}\\find.exe"
 
     file { $mozmake_dir:
         ensure => directory,
@@ -105,5 +106,19 @@ class win_mozilla_build::modifications {
               "${mozbld}\\msys\\local\\bin"
           ]:
     }
+    }
+    acl { $find:
+        target      => "${win_mozilla_build::cache_drive}\\hg-shared",
+        permissions => {
+            identity                   => 'everyone',
+            rights                     => ['full'],
+            perm_type                  => 'allow',
+            child_types                => 'all',
+            affects                    => 'all',
+            inherit_parent_permissions => true,
+        }
+    }
+    file { $find:
+        ensure => absent,
     }
 }
