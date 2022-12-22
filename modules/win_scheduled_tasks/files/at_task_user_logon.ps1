@@ -111,6 +111,7 @@ switch ($os_version) {
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1806073
         $find = "C:\Windows\System32\find.exe"
         if (Test-Path $find) {
+            takeown /f $find
             icacls $find /t /grant Everyone:F
             Remove-Item -Path C:\Windows\System32\find.exe -Force
         }
