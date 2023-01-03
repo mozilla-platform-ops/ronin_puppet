@@ -5,6 +5,7 @@
 # Installs mozilla build
 class roles_profiles::profiles::mozilla_build_new {
   include win_mozilla_build_new::install
+  include win_mozilla_build_new::modifications
   include win_mozilla_build_new::hg_install
   include win_mozilla_build_new::install_psutil
   include win_mozilla_build_new::install_zstandard
