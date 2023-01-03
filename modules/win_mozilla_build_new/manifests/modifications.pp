@@ -24,7 +24,7 @@ class win_mozilla_build_new::modifications {
   windows_env { "PATH=${mozbld}\\msys2\\usr\\bin": }
 
   exec { 'set_path':
-    command  => file('win_mozilla_build/set_path.ps1.'),
+    command  => file('win_mozilla_build_new/set_path.ps1.'),
     provider => powershell,
   }
 }
