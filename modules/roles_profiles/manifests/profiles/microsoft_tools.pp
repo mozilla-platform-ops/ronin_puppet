@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Installs vs build tools
 # Installs additional software based on whether it's a tester or builder
 class roles_profiles::profiles::microsoft_tools {
   case $facts['os']['name'] {
