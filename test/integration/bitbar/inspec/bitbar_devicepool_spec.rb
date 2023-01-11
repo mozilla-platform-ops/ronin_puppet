@@ -8,13 +8,6 @@ describe 'users' do
     end
   end
 
-  describe user('jwatkins') do
-    it { should exist }
-    %w(jwatkins wheel).each do |group|
-      its('groups') { should include group }
-    end
-  end
-
   describe user('dhouse') do
     it { should exist }
     %w(dhouse wheel).each do |group|
