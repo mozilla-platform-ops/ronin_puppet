@@ -2,6 +2,9 @@
 
 set -e
 
+# dockerfile specifies this dir as a bind mount for caching debs
+mkdir -p /tmp/docker/var/cache/apt
+
 # set CI=true so our spec_helper can disable problematic tests
 CI=TRUE \
 KITCHEN_YAML=".kitchen_configs/kitchen.yml" \
