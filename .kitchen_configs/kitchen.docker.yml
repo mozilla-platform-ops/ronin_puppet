@@ -81,4 +81,6 @@ suites:
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
+    includes:
+      - ubuntu-22.04  # no more 1804 bitbar
     attributes:
