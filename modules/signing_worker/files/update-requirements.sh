@@ -21,20 +21,20 @@ cli_param=$1
 if [ -z "$cli_param" ]; then
     worker_types=()
     echo "Updating all requirement files"
-    for f in ${MY_DIR}/requirements.*; do
-        target=$(echo $f | awk -F '.' '{print $2}')
+    for f in "${MY_DIR}"/requirements.*; do
+        target=$(basename "$f" | awk -F '.' '{print $2}')
         echo "Found target: ${target}"
         worker_types+=("${target}")
     done
 else
-    worker_types=($cli_param)
+    worker_types=("$cli_param")
     echo "Updating single env: ${cli_param}"
 fi
 
 # build Dockerfile with python pip-tools for pip-compile
 dockerfile="FROM ${python_docker_image}
 RUN --mount=type=cache,target=/root/.cache pip install pip-tools"
-echo "${dockerfile}" | docker build -q -t pip-compile - || exit
+echo "${dockerfile}" | DOCKER_BUILDKIT=1 docker build -q -t pip-compile - || exit
 
 
 # Set working directory back to current dir on exit
@@ -93,10 +93,10 @@ EOF
         -v "$workdir:/workdir" \
         -w "/workdir" \
         pip-compile:latest \
-        pip-compile -q --generate-hashes -o $output_file -r requirements.in
-    
+        pip-compile -q --generate-hashes -o "$output_file" -r requirements.in
+
     cp "${workdir}/${output_file}" "${MY_DIR}/${output_file}"
-    rm "${output_file}" "requirements.in"
+    rm -f "${output_file}" "requirements.in"
 }
 
 for wt in "${worker_types[@]}"; do
