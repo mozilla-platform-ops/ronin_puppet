@@ -29,7 +29,7 @@ class linux_vnc (
       show_diff => false;
   }
   case $::operatingsystemrelease {
-    '18.04': {
+    '18.04', '22.04': {
       file {
         '/lib/systemd/system/x11vnc.service':
           content => template("${module_name}/x11vnc.service.erb");

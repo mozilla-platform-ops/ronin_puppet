@@ -134,6 +134,41 @@ class linux_packages::py3 {
           }
           # TODO: cleanup relops_py39
         }
+        '22.04': {
+          # ships with py3.10
+          package { 'python3':
+            ensure   => present,
+          }
+          package { 'python3-pip':
+            ensure   => present,
+          }
+
+          # update some pips that prevent other pip installations (psutil) from failing
+
+          package { 'python3-pip-specific-version':
+            ensure   => '22.3.1',
+            name     => 'pip',
+            provider => pip3,
+          }
+
+          package { 'python3-distlib':
+            ensure   => '0.3.6',
+            name     => 'distlib',
+            provider => pip3,
+          }
+
+          package { 'python3-setuptools':
+            ensure   => '65.5.0',
+            name     => 'setuptools',
+            provider => pip3,
+          }
+
+          # pip install above creates /usr/local/bin/pip (that points to py3), and messes with everything, so remove it.
+          file { '/usr/local/bin/pip':
+              ensure  => absent,
+              require => Package['python3-pip-specific-version'],
+          }
+        }
         default: {
           fail("${facts['os']['release']['major']} not supported")
         }

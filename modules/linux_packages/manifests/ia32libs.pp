@@ -18,6 +18,27 @@ class linux_packages::ia32libs {
               ensure => 'latest';
           }
         }
+        '22.04': {
+          # from Michelle Goossens, 2022-01-20:
+          # lib32ncurses5 no longer exists in Ubuntu 22.04. I assume that
+          # we want libncurses5 in 32 bit, so we install the i386 variant.
+          exec {
+            'add i386 packages':
+                path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
+                user    => $::user,
+                command => 'sudo dpkg --add-architecture i386',
+          }
+          exec {
+            'apt update after adding i386':
+                path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
+                user    => $::user,
+                command => 'sudo apt update',
+          }
+          package {
+            'libncurses5:i386':
+              ensure => 'latest';
+          }
+        }
         default: {
           fail("Ubuntu ${::operatingsystemrelease} is not supported")
         }

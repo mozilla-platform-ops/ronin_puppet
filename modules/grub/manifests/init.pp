@@ -9,7 +9,7 @@ class grub (
     case $::operatingsystem {
         'Ubuntu': {
             case $::operatingsystemrelease {
-                '18.04': {
+                '18.04', '22.04': {
 
                     # 1804/lvm/efi has issues with setting a timeout.
                     # - we set GRUB_RECORDFAIL_TIMEOUT to work around this.

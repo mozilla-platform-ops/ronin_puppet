@@ -78,6 +78,12 @@ suites:
     attributes:
     includes:
       - ubuntu-18.04  # no moonshot 2204 config yet
+  - name: linux2204
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2204_talos"'
+    includes:
+      - ubuntu-22.04
+    attributes:
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'

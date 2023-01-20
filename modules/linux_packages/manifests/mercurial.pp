@@ -5,14 +5,30 @@
 class linux_packages::mercurial {
   case $::operatingsystem {
     'Ubuntu': {
-      include linux_packages::python2_mercurial
-      include linux_packages::python3_mercurial
+      case $::operatingsystemrelease {
+        '18.04': {
+          include linux_packages::python2_mercurial
+          include linux_packages::python3_mercurial
 
-      # the binary just calls the installed python module
+          # the binary just calls the installed python module
 
-      package {
-          'mercurial':
+          package {
+              'mercurial':
+                  ensure => present;
+          }
+        }
+        '22.04': {
+          include linux_packages::python3_mercurial
+
+          # the binary just calls the installed python module
+          package {
+            'mercurial':
               ensure => present;
+          }
+        }
+        default: {
+          fail("Ubuntu ${::operatingsystemrelease} is not supported")
+        }
       }
     }
     default: {

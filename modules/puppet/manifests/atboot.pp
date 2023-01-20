@@ -33,7 +33,7 @@ class puppet::atboot (
         }
         'Ubuntu': {
             case $::operatingsystemrelease {
-                '18.04': {
+                '18.04', '22.04': {
                     include linux_packages::puppet
 
                     # On Ubuntu 18.04 puppet runs by systemd and on successful result

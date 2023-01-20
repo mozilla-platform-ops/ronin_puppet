@@ -11,7 +11,7 @@ class linux_papertrail (
     case $::operatingsystem {
         'Ubuntu': {
             case $::operatingsystemrelease {
-                '18.04': {
+                '18.04', '22.04': {
                     # only configure if required variables are set
                     if (! $papertrail_host.empty) and ($papertrail_port != -1) {
 

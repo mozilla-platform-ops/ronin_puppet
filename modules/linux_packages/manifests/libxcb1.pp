@@ -6,7 +6,7 @@ class linux_packages::libxcb1 {
   case $::operatingsystem {
     'Ubuntu': {
       case $::operatingsystemrelease {
-        '18.04': {
+        '18.04', '22.04': {
           package {
             'libxcb1':
               ensure => 'latest';
