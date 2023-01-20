@@ -105,8 +105,11 @@ class win_mozilla_build::modifications {
           ]:
     }
     }
-    exec { 'set_path':
-        command  => file('win_mozilla_build/set_path.ps1.'),
-        provider => powershell,
+    # don't run on older mozilla build pkg
+    if $win_mozilla_build::needed_mozbld_ver != '3.2' {
+        exec { 'set_path':
+            command  => file('win_mozilla_build/set_path.ps1.'),
+            provider => powershell,
+        }
     }
 }
