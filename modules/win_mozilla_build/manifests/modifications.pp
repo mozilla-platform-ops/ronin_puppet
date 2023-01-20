@@ -31,14 +31,15 @@ class win_mozilla_build::modifications {
             }
         }
     }
-    if $facts['os']['release']['full'] == '2012 R2' {
-        if $win_mozilla_build::needed_mozbld_ver == '3.2' {
-            file { "${mozbld}\\python\\Scripts\\hg":
-                ensure => absent,
-                purge  => true,
-                force  => true,
-            }
+    file { "${mozbld}\\python\\Scripts\\hg":
+        ensure => absent,
+        purge  => true,
+        force  => true,
         }
+    file { "${mozbld}\\python\\Scripts\\hg.exe":
+        ensure => absent,
+        purge  => true,
+        force  => true,
     }
     # File resource fails when create symlink
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1544140
