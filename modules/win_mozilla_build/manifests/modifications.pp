@@ -10,6 +10,7 @@ class win_mozilla_build::modifications {
     $mozbld      = $win_mozilla_build::install_path
     $source      = $win_mozilla_build::external_source
     $mozmake_dir = "${mozbld}\\mozmake"
+    $pyp_string  = '-m pip install --upgrade pypiwin32==219'
 
     file { $mozmake_dir:
         ensure => directory,
@@ -28,6 +29,14 @@ class win_mozilla_build::modifications {
                 ensure => absent,
                 purge  => true,
                 force  => true,
+            }
+            # For NSS builds
+            # They still use Python 2
+            if $facts['os']['release']['full'] == '2012 R2' {
+                exec { 'install_pypiwin32':
+                    command => "${mozbld}\\python\\python.exe ${pyp_string}",
+                    creates => "${mozbld}\\python\\Lib\\site-packages\\pypiwin32",
+                }
             }
         }
     }
