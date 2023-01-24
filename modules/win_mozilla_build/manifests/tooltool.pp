@@ -16,6 +16,10 @@ class win_mozilla_build::tooltool {
     file { $tooltool_cache:
         ensure => directory,
     }
+    # Needed for NSS only
+    file { "${builds}\\tooltool.py":
+        source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
+    }
     # Resource from counsyl-windows
     windows::environment { 'TOOLTOOL_CACHE':
         value => $tooltool_cache,
