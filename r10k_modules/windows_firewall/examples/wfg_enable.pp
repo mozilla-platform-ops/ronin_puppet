@@ -1,4 +1,4 @@
 # @PDQTestWin
-windows_firewall_group { "File and Printer Sharing":
-  enabled => true,
+windows_firewall_group { 'File and Printer Sharing':
+  enabled => true;
 }

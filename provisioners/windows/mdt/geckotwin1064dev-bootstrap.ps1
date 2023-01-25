@@ -102,11 +102,11 @@ function Install-BootstrapModule {
 }
 
 $workerType = 'gecko-t-win10-64-dev'
-$src_Organisation = 'mozilla-platform-ops'
+$src_Organisation = 'markcor'
 $src_Repository = 'ronin_puppet'
-$src_Revision = 'master'
+$src_Revision = 'relops237_3'
 $image_provisioner = 'mdt'
-$max_boots = 200
+$max_boots = 8
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue

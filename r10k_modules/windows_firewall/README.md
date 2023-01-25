@@ -1,4 +1,4 @@
-![Build Status](https://ci.appveyor.com/api/projects/status/github/GeoffWilliams/puppet-windows_firewall?svg=true)
+![Build Status](https://ci.appveyor.com/api/projects/status/github/webalexeu/puppet-windows_firewall?svg=true)
 # windows_firewall
 
 #### Table of Contents

@@ -24,7 +24,7 @@ mod 'puppet-windows_env', '4.0.1'
 mod 'puppetlabs-yaml', '0.2.0'
 mod 'saz-rsyslog', '5.0.0'
 mod 'thekevjames-homebrew', '1.8.3'
-mod 'webalex-windows_firewall', '1.2.3'
+mod 'webalex-windows_firewall', '1.3.4'
 
 mod 'mac_profiles_handler',
   :git => "https://github.com/keeleysam/puppet-mac_profiles_handler.git",

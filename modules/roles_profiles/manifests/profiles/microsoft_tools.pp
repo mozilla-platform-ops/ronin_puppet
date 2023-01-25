@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::microsoft_tools {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             # These may chnage for diffrent versions of Windows
@@ -14,24 +14,40 @@ class roles_profiles::profiles::microsoft_tools {
             # In this case triggers the exec and adds to the local WMI repo each time
             # For now pulling from S3
 
-
             include win_os_settings::powershell_profile
-            if $facts['custom_win_release_id'] == '1803'{
-                include win_packages::vc_redist_x86
-                include win_packages::vc_redist_x64
-            } else {
-                include win_packages::vs_buildtools
-            }
 
             class { 'win_packages::performance_tool_kit':
                 moz_profile_source => lookup('win-worker.mozilla_profile.source'),
                 moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
             }
+
+            # This fact comes up as 2016 for 2022
+            if $facts['os']['release']['full'] == (('2012 R2') or ('2016')) {
+                $purpose = 'builder'
+            } else {
+                $purpose = 'tester'
+            }
+
+            case $purpose {
+                'builder': {
+                    include win_packages::cppbuildtools
+                    include win_packages::vs_buildtools
+                    include win_packages::dxsdk_jun10
+                    include win_packages::binscope
+                    # Required by rustc (tooltool artefact)
+                    include win_packages::vc_redist_x86
+                    include win_packages::vc_redist_x64
+                }
+                # testers
+                default: {
+                    include win_packages::vs_buildtools
+                }
+            }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

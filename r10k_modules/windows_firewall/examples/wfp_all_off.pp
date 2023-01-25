@@ -1,8 +1,8 @@
 # @PDQTestWin
 windows_firewall_profile { ['public', 'private']:
-  state => 'off',
+  state => 'off';
 }
 
 windows_firewall_profile { 'domain':
-  state => false,
+  state => false;
 }

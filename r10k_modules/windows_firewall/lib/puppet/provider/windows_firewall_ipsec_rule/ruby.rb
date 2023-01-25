@@ -4,8 +4,7 @@ require_relative '../../../puppet_x/windows_firewall_ipsec'
 Puppet::Type.type(:windows_firewall_ipsec_rule).provide(:windows_firewall_ipsec_rule, :parent => Puppet::Provider) do
   confine :osfamily => :windows
   mk_resource_methods
-  desc "Windows Firewall"
-
+  desc 'Windows Firewall'
 
   def self.prefetch(resources)
     instances.each do |prov|
@@ -14,18 +13,17 @@ Puppet::Type.type(:windows_firewall_ipsec_rule).provide(:windows_firewall_ipsec_
       end
     end
   end
-  
+
   def exists?
     @property_hash[:ensure] == :present
   end
 
-  def create()
+  def create
     PuppetX::WindowsFirewallIPSec.create_rule @resource
   end
 
-  def destroy()
-    # Delete only require firewall rule name to process
-    PuppetX::WindowsFirewallIPSec.delete_rule @resource[:name]
+  def destroy
+    PuppetX::WindowsFirewallIPSec.delete_rule @property_hash
   end
 
   def self.instances

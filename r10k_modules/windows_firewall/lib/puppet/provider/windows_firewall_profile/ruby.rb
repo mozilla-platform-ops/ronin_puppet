@@ -1,13 +1,12 @@
 require 'puppet_x'
-#require 'puppet_x/windows_firewall'
 require_relative '../../../puppet_x/windows_firewall'
 
 Puppet::Type.type(:windows_firewall_profile).provide(:windows_firewall_profile, :parent => Puppet::Provider) do
   confine :osfamily => :windows
   mk_resource_methods
-  desc "Windows Firewall profile"
+  desc 'Windows Firewall profile'
 
-  commands :cmd => "netsh"
+  commands :cmd => 'netsh'
 
   def self.prefetch(resources)
     instances.each do |prov|
@@ -19,17 +18,14 @@ Puppet::Type.type(:windows_firewall_profile).provide(:windows_firewall_profile, 
 
   # firewall groups always exist we can only enable/disable them
   def exists?
-    #@property_hash[:ensure] == :present
     true
   end
 
   # all work done in `flush()` method
-  def create()
-  end
+  def create; end
 
   # all work done in `flush()` method
-  def destroy()
-  end
+  def destroy; end
 
 
   def self.instances
