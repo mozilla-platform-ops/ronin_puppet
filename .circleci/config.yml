@@ -303,7 +303,7 @@ workflows:
       - linux_integration_tests:
           matrix:
             parameters:
-              kitchen_target: ["bitbar-ubuntu-2204", "linux-ubuntu-1804"]
+              kitchen_target: ["bitbar-ubuntu-2204", "linux-ubuntu-2204", "linux-ubuntu-1804"]
           requires:
             - pre_commit
             - r10k_install
