@@ -162,12 +162,6 @@ class linux_packages::py3 {
             name     => 'setuptools',
             provider => pip3,
           }
-
-          # pip install above creates /usr/local/bin/pip (that points to py3), and messes with everything, so remove it.
-          file { '/usr/local/bin/pip':
-              ensure  => absent,
-              require => Package['python3-pip-specific-version'],
-          }
         }
         default: {
           fail("${facts['os']['release']['major']} not supported")
