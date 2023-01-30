@@ -30,8 +30,11 @@ describe service('network-manager') do
   it { should_not be_enabled }
 end
 
-describe service('whoopsie') do
-  it { should_not be_enabled }
+# This check is broken on Ubuntu 22.04, even when the service is disabled.
+if os.family == 'ubuntu' && os.release == '18.04'
+  describe service('whoopsie') do
+    it { should_not be_enabled }
+  end
 end
 
 # bluez packages, but bluetooth service

@@ -36,7 +36,7 @@ class puppet::atboot (
                 '18.04', '22.04': {
                     include linux_packages::puppet
 
-                    # On Ubuntu 18.04 puppet runs by systemd and on successful result
+                    # On Ubuntu 18.04 and 22.04 puppet runs by systemd and on successful result
                     # notifies dependent services
                     file {
                         '/lib/systemd/system/run-puppet.service':
