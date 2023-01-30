@@ -37,6 +37,9 @@ class win_mozilla_build::modifications {
                     command => "${mozbld}\\python\\python.exe ${pyp_string}",
                     creates => "${mozbld}\\python\\Lib\\site-packages\\pypiwin32",
                 }
+                file { "%{facts.custom_win_system32}\\System32\\drivers\\etc\\hosts":
+                    content => file('win_mozilla_build/hosts'),
+                }
             }
         }
     }
