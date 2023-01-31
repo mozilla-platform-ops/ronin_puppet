@@ -50,7 +50,7 @@ win-worker:
   vac:
     version: '464'
   git:
-    version: '2.36.1'
+    version: '2.39.1'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
