@@ -7,7 +7,7 @@ driver:
   privileged: true
   # if on mac m1/m2 with arm64, need this because our s3 install only has amd64
   # fails on circleci if left enabled
-  # docker_platform: linux/amd64
+  docker_platform: linux/amd64
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
@@ -48,6 +48,13 @@ provisioner:
             quarantine_client_id: '3333'
             quarantine_access_token: 'Q_TOKEN'
             bugzilla_api_key: 'BZ_KEY'
+          gecko_t_linux_2204_talos:
+            taskcluster_client_id: '123'
+            taskcluster_access_token: 'foo'
+            livelog_secret: 'haha'
+            quarantine_client_id: '3333'
+            quarantine_access_token: 'Q_TOKEN'
+            bugzilla_api_key: 'BZ_KEY'
   puppet_verbose: true
   # explodes if version specified, see https://github.com/petems/puppet-install-shell/issues/137
   # puppet_version: 7
@@ -81,9 +88,9 @@ suites:
   - name: linux
     provisioner:
       custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2204_talos"'
+    attributes:
     includes:
       - ubuntu-22.04
-    attributes:
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'

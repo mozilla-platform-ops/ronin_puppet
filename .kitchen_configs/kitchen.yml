@@ -83,6 +83,12 @@ suites:
     includes:
       - ubuntu1804
     attributes:
+  - name: linux
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2204_talos"''
+    includes:
+      - ubuntu2204
+    attributes:
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'

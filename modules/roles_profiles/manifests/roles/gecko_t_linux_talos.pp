@@ -18,6 +18,15 @@ class roles_profiles::roles::gecko_t_linux_talos {
     #include ::fw::roles::linux_taskcluster_worker
 
     # talos stuff
-    include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
-
+    case $::operatingsystemrelease {
+        '18.04': {
+          include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
+        }
+        '22.04': {
+          include ::roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker
+        }
+        default: {
+          fail("Ubuntu ${::operatingsystemrelease} is not supported")
+        }
+    }
 }
