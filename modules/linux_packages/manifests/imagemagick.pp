@@ -6,7 +6,8 @@ class linux_packages::imagemagick {
   case $::operatingsystem {
     'Ubuntu': {
       case $::operatingsystemrelease {
-        '18.04', '22.04': {
+        '18.04': {
+
           # 6.9
           package { 'imagemagick':
             ensure   => present,
@@ -19,6 +20,12 @@ class linux_packages::imagemagick {
               type                => 'bin',
               file_destination    => '/usr/local/bin/magick',
               checksum            => '87431900e4446517630adb0bceef8f08634e6cd444513482f8f45c4b245b8c65',  # sha256
+          }
+        }
+        '22.04': {
+          # 6.9
+          package { 'imagemagick':
+            ensure   => present,
           }
         }
         default: {
