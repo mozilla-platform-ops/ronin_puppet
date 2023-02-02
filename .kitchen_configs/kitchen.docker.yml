@@ -7,7 +7,7 @@ driver:
   privileged: true
   # if on mac m1/m2 with arm64, need this because our s3 install only has amd64
   # fails on circleci if left enabled
-  docker_platform: linux/amd64
+  #docker_platform: linux/amd64
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
