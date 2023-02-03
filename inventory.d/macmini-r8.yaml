@@ -178,13 +178,6 @@ groups:
       - macmini-r8-176.test.releng.mdc1.mozilla.com
       - macmini-r8-177.test.releng.mdc1.mozilla.com
       - macmini-r8-178.test.releng.mdc1.mozilla.com
-      - macmini-r8-179.test.releng.mdc1.mozilla.com
-      - macmini-r8-180.test.releng.mdc1.mozilla.com
-      - macmini-r8-181.test.releng.mdc1.mozilla.com
-      - macmini-r8-182.test.releng.mdc1.mozilla.com
-      - macmini-r8-183.test.releng.mdc1.mozilla.com
-      - macmini-r8-184.test.releng.mdc1.mozilla.com
-      - macmini-r8-185.test.releng.mdc1.mozilla.com
       - macmini-r8-186.test.releng.mdc1.mozilla.com
       - macmini-r8-187.test.releng.mdc1.mozilla.com
       - macmini-r8-188.test.releng.mdc1.mozilla.com
@@ -296,3 +289,20 @@ groups:
       - macmini-r8-202.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_3_b_osx_1015
+
+  - name: mozillavpn-1-b-osx
+    targets:
+      - macmini-r8-179.test.releng.mdc1.mozilla.com
+      - macmini-r8-181.test.releng.mdc1.mozilla.com
+      - macmini-r8-183.test.releng.mdc1.mozilla.com
+      - macmini-r8-185.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mozillavpn_1_b_osx
+
+  - name: mozillavpn-3-b-osx
+    targets:
+      - macmini-r8-180.test.releng.mdc1.mozilla.com
+      - macmini-r8-182.test.releng.mdc1.mozilla.com
+      - macmini-r8-184.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mozillavpn_3_b_osx

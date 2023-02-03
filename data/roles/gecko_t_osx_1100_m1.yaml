@@ -1,13 +1,6 @@
 ---
 ntp_server: time.apple.org
 
-# Common worker metadata conveniently aliased to generic worker data from above
-worker_metadata:
-  workerId: "%{lookup('gw.worker_id')}"
-  workerGroup: "%{lookup('gw.worker_group')}"
-  workerType: "%{lookup('gw.worker_type')}"
-  provisionerId: "%{lookup('gw.provisioner_id')}"
-
 worker:
   taskcluster_version: 44.0.0
   provider_type: standalone
@@ -62,11 +55,6 @@ puppet_run_strategy: never
 
 # Firewall role to include
 #firewall_role: osx_taskcluster_worker
-
-# Override secrets with vault secrets
-telegraf:
-    user: "%{lookup('vault_secrets::telegraf.data.user')}"
-    password: "%{lookup('vault_secrets::telegraf.data.password')}"
 
 cltbld_user:
     password: "%{lookup('vault_secrets::cltbld_user.data.password')}"

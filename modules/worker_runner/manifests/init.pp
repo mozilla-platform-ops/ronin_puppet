@@ -9,6 +9,7 @@ class worker_runner (
     String $data_dir                                   = '/opt/worker',
     String $task_user                                  = 'cltbld',
     Enum['simple', 'multiuser'] $generic_worker_engine = 'multiuser',
+    String $taskcluster_proxy_host                     = 'taskcluster',
     # used by standalone
     Optional[String] $client_id                        = undef,
     Optional[String] $access_token                     = undef,
@@ -78,6 +79,15 @@ class worker_runner (
     $worker_runner_conf      = "${data_dir}/worker-runner-config.yaml"
     $ed25519_signing_key     = "${data_dir}/generic-worker.ed25519.signing.key"
 
+    macos_utils::logrotate { 'worker-stderr-logs':
+        mode => '666',
+        path => "${log_dir}/stderr.log",
+    }
+    macos_utils::logrotate { 'worker-stdout-logs':
+        mode => '666',
+        path => "${log_dir}/stdout.log",
+    }
+
     case $::operatingsystem {
         'Darwin': {
 
@@ -117,9 +127,17 @@ class worker_runner (
             }
 
             # Create tasks, caches, downloads and log dirs
-            file { [ $task_dir, $cache_dir, $downloads_dir, $log_dir ]:
+
+            file { [ $log_dir ]:
                 ensure => 'directory',
                 mode   => '0700',
+                owner  => $owner,
+                group  => $group,
+            }
+
+            file { [ $task_dir, $cache_dir, $downloads_dir ]:
+                ensure => 'directory',
+                mode   => '1777',
                 owner  => $owner,
                 group  => $group,
             }

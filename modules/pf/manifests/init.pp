@@ -3,16 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class pf {
-
+    $osx_ver = 'mojave'
     # The default /etc/pf.conf differs between major osx version
-    case $facts['os']['macosx']['version']['major'] {
-        '10.14': {
-            $osx_ver = 'mojave'
-        }
-        default: {
-            fail("OSX ${::macosx_productversion_major} is not supported")
-        }
-    }
+    #case $facts['os']['macosx']['version']['major'] {
+    #    '10.14': {
+    #        $osx_ver = 'mojave'
+    #    }
+    #    default: {
+    #        fail("OSX ${::macosx_productversion_major} is not supported")
+    #    }
+    #}
 
     # Default ethernet interface
     $iface    = 'en0'
