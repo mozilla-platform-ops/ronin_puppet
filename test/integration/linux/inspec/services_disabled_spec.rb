@@ -31,6 +31,7 @@ describe service('network-manager') do
 end
 
 # This check is broken on Ubuntu 22.04, even when the service is disabled.
+# Todo: fix the check.
 if os.family == 'ubuntu' && os.release == '18.04'
   describe service('whoopsie') do
     it { should_not be_enabled }
