@@ -70,7 +70,11 @@ provisioner:
 
 platforms:
   - name: ubuntu-18.04
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
   - name: ubuntu-22.04
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2204_talos"'
 
 verifier:
   name: inspec
@@ -80,16 +84,9 @@ busser:
 
 suites:
   - name: linux
-    provisioner:
-      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     attributes:
     includes:
       - ubuntu-18.04
-  - name: linux
-    provisioner:
-      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2204_talos"'
-    attributes:
-    includes:
       - ubuntu-22.04
   - name: bitbar
     provisioner:
