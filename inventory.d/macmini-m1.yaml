@@ -1,14 +1,9 @@
 ---
 name: macmini-m1
 groups:
-  - name: gecko-t-osx-1100-m1-dhouse
-    targets:
-      - macmini-m1-1.test.releng.mslv.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1100_m1_staging
-
   - name: gecko-t-osx-1100-m1-masterwayz
     targets:
+      - macmini-m1-1.test.releng.mslv.mozilla.com
       - macmini-m1-2.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1100_m1_loaner
