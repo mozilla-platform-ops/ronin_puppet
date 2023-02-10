@@ -35,7 +35,7 @@ win-worker:
 
   # Mozilla profile
   mozilla_profile:
-    source: "https://ronin-puppet-package-repo.s3-us-west-2.amazonaws.com/Windows/mozilla/mozprofilerprobe.mof"
+    source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
   # Applications

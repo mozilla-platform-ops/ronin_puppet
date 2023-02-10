@@ -44,7 +44,7 @@ function Write-Log {
   }
   function Setup-Logging {
     param (
-      [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+      [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
       [string] $local_dir = "$env:systemdrive\BootStrap",
       [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
       [string] $nxlog_conf = "nxlog.conf",
@@ -73,7 +73,7 @@ function Write-Log {
 
   function Install-Prerequ {
     param (
-      [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+      [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
       [string] $local_dir = "$env:systemdrive\BootStrap",
       [string] $work_dir = "$env:systemdrive\scratch",
       [string] $git = "Git-2.18.0-64-bit.exe",
@@ -105,7 +105,7 @@ function Write-Log {
   # In this case use Install-ZipPrerequ
   function Install-ZipPrerequ {
     param (
-      [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+      [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
       [string] $local_dir = "$env:systemdrive\BootStrap",
       [string] $work_dir = "$env:systemdrive\scratch",
       [string] $git = "Git-2.18.0-64-bit.exe",
@@ -137,7 +137,7 @@ function Write-Log {
   }
   function Install-AzPrerequ {
     param (
-      [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+      [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
       [string] $local_dir = "$env:systemdrive\BootStrap",
       [string] $work_dir = "$env:systemdrive\scratch",
       [string] $git = "Git-2.18.0-64-bit.exe",

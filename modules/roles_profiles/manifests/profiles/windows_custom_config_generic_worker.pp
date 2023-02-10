@@ -12,7 +12,7 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
             $tc_proxy_version         = lookup('win-worker.generic_worker.tc_proxy_version')
             $livelog_version          = lookup('win-worker.generic_worker.livelog_version')
             $livelogputport           = lookup('win-worker.generic_worker.live_log_put_port')
-            $ext_pkg_src_loc          = lookup('windows.s3.ext_pkg_src')
+            $ext_pkg_src_loc          = lookup('windows.ext_pkg_src')
             $generic_worker_dir       = "${facts['custom_win_systemdrive']}\\generic-worker"
             $generic_worker_exe       = "${generic_worker_dir}\\generic-worker.exe"
             $generic_worker_config    = "${generic_worker_dir}\\generic-worker.config"
