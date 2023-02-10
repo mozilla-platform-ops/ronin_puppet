@@ -21,7 +21,7 @@ class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
                 telegraf_user       => lookup('telegraf.user'),
                 telegraf_password   => lookup('telegraf.password'),
                 puppet_env          => 'dev',
-                puppet_repo         => 'https://github.com/davehouse/ronin_puppet.git',
+                puppet_repo         => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
                 puppet_branch       => 'bug1665379_mac-builders',
                 puppet_notify_email => 'dhouse@mozilla.com',
                 meta_data           => $meta_data,
