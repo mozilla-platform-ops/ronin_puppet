@@ -147,16 +147,16 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'signing-mac-v1'
-        scriptworker_revision: "b1fbfbaa8bd24350b6a8a0a0e51e9604df1018bb"
-        scriptworker_scripts_revision: "2c7212b0170ba0439748985e033d314c39c695b0"
+        scriptworker_revision: "3b40876b91546b36b529b245dfe3b6f9a0fff4d8"
+        scriptworker_scripts_revision: "e9fecded03a4ae9e6dbb223447969b37dbe5e884"
     tb-prod:
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'tb-signing-mac-v1'
-        scriptworker_revision: "b1fbfbaa8bd24350b6a8a0a0e51e9604df1018bb"
-        scriptworker_scripts_revision: "2c7212b0170ba0439748985e033d314c39c695b0"
+        scriptworker_revision: "3b40876b91546b36b529b245dfe3b6f9a0fff4d8"
+        scriptworker_scripts_revision: "e9fecded03a4ae9e6dbb223447969b37dbe5e884"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
@@ -165,16 +165,16 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
-        scriptworker_revision: "b1fbfbaa8bd24350b6a8a0a0e51e9604df1018bb"
-        scriptworker_scripts_revision: "2c7212b0170ba0439748985e033d314c39c695b0"
+        scriptworker_revision: "3b40876b91546b36b529b245dfe3b6f9a0fff4d8"
+        scriptworker_scripts_revision: "e9fecded03a4ae9e6dbb223447969b37dbe5e884"
     vpn:
         vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'mozillavpn-3-signing-mac'
-        scriptworker_revision: "b1fbfbaa8bd24350b6a8a0a0e51e9604df1018bb"
-        scriptworker_scripts_revision: "2c7212b0170ba0439748985e033d314c39c695b0"
+        scriptworker_revision: "3b40876b91546b36b529b245dfe3b6f9a0fff4d8"
+        scriptworker_scripts_revision: "e9fecded03a4ae9e6dbb223447969b37dbe5e884"
 
 poller_config:
     ff-prod:
