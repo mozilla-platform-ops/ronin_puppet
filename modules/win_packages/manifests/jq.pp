@@ -4,9 +4,11 @@
 
 class win_packages::jq {
   if $facts['os']['name'] == 'Windows' {
+    $pkg       = 'jq-win64.exe'
+    $pkg_source = lookup('windows.ext_pkg_src')
     file { "${facts['custom_win_system32']}\\jq.exe":
       ensure => file,
-      source => lookup('windows.ext_pkg_src')/'jq-win64.exe',
+      source => "${pkg_source}/${pkg}",
     }
   } else {
     fail("${module_name} does not support ${$facts['os']['name']}")
