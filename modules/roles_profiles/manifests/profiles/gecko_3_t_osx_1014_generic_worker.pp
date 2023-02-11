@@ -23,7 +23,7 @@ class roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker {
                 puppet_env          => 'dev',
                 puppet_repo         => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
                 puppet_branch       => 'master',
-                puppet_notify_email => 'relops@mozilla.com',
+                puppet_notify_email => 'relops-puppet-alerts@mozilla.com',
                 meta_data           => $meta_data,
             }
 
