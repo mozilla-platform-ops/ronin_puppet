@@ -122,13 +122,6 @@ groups:
       - macmini-r8-117.test.releng.mdc1.mozilla.com
       - macmini-r8-118.test.releng.mdc1.mozilla.com
       - macmini-r8-119.test.releng.mdc1.mozilla.com
-      - macmini-r8-120.test.releng.mdc1.mozilla.com
-      - macmini-r8-121.test.releng.mdc1.mozilla.com
-      - macmini-r8-122.test.releng.mdc1.mozilla.com
-      - macmini-r8-123.test.releng.mdc1.mozilla.com
-      - macmini-r8-124.test.releng.mdc1.mozilla.com
-      - macmini-r8-125.test.releng.mdc1.mozilla.com
-      - macmini-r8-126.test.releng.mdc1.mozilla.com
       - macmini-r8-130.test.releng.mdc1.mozilla.com
       - macmini-r8-131.test.releng.mdc1.mozilla.com
       - macmini-r8-132.test.releng.mdc1.mozilla.com
@@ -138,7 +131,6 @@ groups:
       - macmini-r8-136.test.releng.mdc1.mozilla.com
       - macmini-r8-137.test.releng.mdc1.mozilla.com
       - macmini-r8-138.test.releng.mdc1.mozilla.com
-      - macmini-r8-139.test.releng.mdc1.mozilla.com
       - macmini-r8-140.test.releng.mdc1.mozilla.com
       - macmini-r8-141.test.releng.mdc1.mozilla.com
       - macmini-r8-142.test.releng.mdc1.mozilla.com
@@ -265,13 +257,20 @@ groups:
 
   - name: gecko-t-osx-1015-r8-staging
     targets:
+      - macmini-r8-120.test.releng.mdc1.mozilla.com
+      - macmini-r8-121.test.releng.mdc1.mozilla.com
+      - macmini-r8-122.test.releng.mdc1.mozilla.com
+      - macmini-r8-123.test.releng.mdc1.mozilla.com
+      - macmini-r8-124.test.releng.mdc1.mozilla.com
+      - macmini-r8-125.test.releng.mdc1.mozilla.com
+      - macmini-r8-126.test.releng.mdc1.mozilla.com
       - macmini-r8-127.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8_staging
 
   - name: gecko-t-osx-1015-r8-loaner
     targets:
-      - macmini-r8-128.test.releng.mdc1.mozilla.com
+      - macmini-r8-128.test.releng.mdc1.mozilla.com # RELOPS-
       - macmini-r8-129.test.releng.mdc1.mozilla.com # Bug 1720937
     facts:
       puppet_role: gecko_t_osx_1015_r8_loaner
@@ -289,6 +288,7 @@ groups:
 
   - name: gecko-3-b-osx-1015
     targets:
+      - macmini-r8-139.test.releng.mdc1.mozilla.com
       - macmini-r8-198.test.releng.mdc1.mozilla.com
       - macmini-r8-199.test.releng.mdc1.mozilla.com
       - macmini-r8-200.test.releng.mdc1.mozilla.com
