@@ -18,6 +18,7 @@ user_groups:
     - mgoossens
   signing:
     - ahalberstadt
+    - bhearsum
     - gbrown
     - hneiva
     - jcristau
@@ -258,6 +259,9 @@ all_users:
 
   ahalberstadt:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDobzliCCDeAiMIIYD2IrNs1YYYy1jshn/9LKP+D3IM0+ArWiBW8yBaYyhI5Cv2PqxhLhrHyKSuIVRcGTqmugG0cz/iwhL/7Ruedo5Hn+gEtPMgX1Ju9Ya9wckZAtkluqzzBPTebOTh0jevUwNF7bvrQUZu7NTfrCUa3DVWQya65Z7WIwX2SaMOLxXMW+XgX1NUYobav3iamqbNLOGuSNzUpFsQy7yAOaOnMT34wqemNpMndzAEU3ZPM7/XRxDcUTxfbHlNCqzWI2mGqAQz9m4Ssvb59/R7b3+qXyvyKEAKqra/Mu5l5KmT7dH2NH1fTuznR7AjJ4pUlSmM7gNsOQhLmaAFiZ4jKdXvaB4CW162RfhmD7eJQb4sV6mLqRNvjvz14DpKlA+Z7izjuBDWZwZx+9xXSGfpwCaH92zCn09NKbsA6Ghscn1vzrf7a4CfrT8FDAf0Eiqr4DvymRL0OMuUdLg2EO65lMNaPKPcOHyWC9pDPWzD9iKhGyXAOROs0ak= ahal@DESKTOP-BF76SPQ
+
+  bhearsum:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOtBhVQFi++zDdhoDzh/eCVrnRwnuUAIzDa5LQr0LBjX bhearsum@mozilla.com
 
   gbrown:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7yH96JpXxkCkyPfn0HpJa8bd+tx+IlfhzxihdgBHLK gbrown@mozilla.com
