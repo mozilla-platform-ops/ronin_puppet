@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PUPPET_REPO=${PUPPET_REPO:-"https://github.com/davehouse/ronin_puppet.git"}
+PUPPET_REPO=${PUPPET_REPO:-"https://github.com/mozilla-platform-ops/ronin_puppet.git"}
 PUPPET_BRANCH=${PUPPET_BRANCH:-"bug1665379_mac-builders-test"}
 PUPPET_ROLE=${PUPPET_ROLE:-"gecko_1_b_osx_1015-beta"}
 
