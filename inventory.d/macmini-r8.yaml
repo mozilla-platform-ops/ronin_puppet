@@ -265,6 +265,7 @@ groups:
       - macmini-r8-125.test.releng.mdc1.mozilla.com
       - macmini-r8-126.test.releng.mdc1.mozilla.com
       - macmini-r8-127.test.releng.mdc1.mozilla.com
+      - macmini-r8-246.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8_staging
 
