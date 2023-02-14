@@ -270,8 +270,8 @@ groups:
 
   - name: gecko-t-osx-1015-r8-loaner
     targets:
-      - macmini-r8-128.test.releng.mdc1.mozilla.com # RELOPS-
-      - macmini-r8-129.test.releng.mdc1.mozilla.com # Bug 1720937
+      - macmini-r8-128.test.releng.mdc1.mozilla.com # Unknown, to be returned
+      - macmini-r8-129.test.releng.mdc1.mozilla.com # Bug 1729549
     facts:
       puppet_role: gecko_t_osx_1015_r8_loaner
 
