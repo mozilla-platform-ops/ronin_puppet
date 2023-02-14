@@ -67,6 +67,7 @@ platforms:
 
 verifier:
   name: inspec
+  color: <%= !ENV.include?('CI') %>
 
 busser:
   sudo: true
