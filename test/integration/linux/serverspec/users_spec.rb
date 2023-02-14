@@ -5,11 +5,7 @@ describe 'users' do
     it { should exist }
   end
 
-  describe user('jwatkins') do
-    it { should exist }
-  end
-
-  describe user('dhouse') do
+  describe user('mgoossens') do
     it { should exist }
   end
 end
