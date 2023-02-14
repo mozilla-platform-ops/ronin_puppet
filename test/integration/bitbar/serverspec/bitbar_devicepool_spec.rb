@@ -1,19 +1,11 @@
 require_relative 'spec_helper'
 
 describe 'users' do
-  describe user('bclary') do
-    it { should exist }
-  end
-
   describe user('aerickson') do
     it { should exist }
   end
 
-  describe user('jwatkins') do
-    it { should exist }
-  end
-
-  describe user('dhouse') do
+  describe user('mgoossens') do
     it { should exist }
   end
 
@@ -27,11 +19,7 @@ describe 'groups' do
     it { should belong_to_group 'wheel' }
   end
 
-  describe user('bclary') do
-    it { should belong_to_group 'wheel' }
-  end
-
-  describe user('jwatkins') do
+  describe user('mgoossens') do
     it { should belong_to_group 'wheel' }
   end
 end
