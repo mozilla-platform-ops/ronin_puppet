@@ -6,9 +6,9 @@ class win_mozilla_build_tester::hg_files {
   $mozbld      = "C:\\mozilla-build"
   # Reference  https://bugzilla.mozilla.org/show_bug.cgi?id=1305485#c5
   file { "${mozbld}\\robustcheckout.py":
-    content => file('win_mozilla_build/robustcheckout.py'),
+    content => file('win_mozilla_build_tester/robustcheckout.py'),
   }
   file { "${$facts['custom_win_programfiles']}\\mercurial\\mercurial.ini":
-    content => file('win_mozilla_build/mercurial.ini'),
+    content => file('win_mozilla_build_tester/mercurial.ini'),
   }
 }
