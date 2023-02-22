@@ -49,8 +49,8 @@ function Setup-Logging {
         [string] $local_dir = "$env:systemdrive\BootStrap",
         [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
         [string] $nxlog_conf = "nxlog.conf",
-        [string] $nxlog_pem  = "papertrail-bundle.pem",
-        [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
+        [string] $nxlog_pem = "papertrail-bundle.pem",
+        [string] $nxlog_dir = "$env:systemdrive\Program Files (x86)\nxlog"
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -87,7 +87,7 @@ function Set-RoninRegOptions {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        If(!( test-path "$ronnin_key")) {
+        If (!( test-path "$ronnin_key")) {
             New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
             New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet -force
         }
@@ -105,7 +105,7 @@ function Set-RoninRegOptions {
         New-ItemProperty -Path "$source_key" -Name 'Organisation' -Value "$src_Organisation" -PropertyType String -force
         New-ItemProperty -Path "$source_key" -Name 'Repository' -Value "$src_Repository" -PropertyType String -force
         New-ItemProperty -Path "$source_key" -Name 'Branch' -Value "$src_Branch" -PropertyType String -force
-  }
+    }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
@@ -124,8 +124,8 @@ function Install-AzPrerequ {
         [string] $azure_telemetry = "WindowsAzureTelemetryService",
         [string] $ps_ver_maj = $PSVersionTable.PSVersion.Major,
         [string] $ps_ver_min = $PSVersionTable.PSVersion.Minor,
-        [string] $ps_ver = ('{0}.{1}' -f $ps_ver_maj,$ps_ver_min),
-        [string] $wmf_5_1 ="Win8.1AndW2K12R2-KB3191564-x64.msu",
+        [string] $ps_ver = ('{0}.{1}' -f $ps_ver_maj, $ps_ver_min),
+        [string] $wmf_5_1 = "Win8.1AndW2K12R2-KB3191564-x64.msu",
         [string] $bootzip = "BootStrap_Azure_07-2022.zip"
     )
     begin {
@@ -162,7 +162,7 @@ function Install-AzPrerequ {
 Function Set-AzRoninRepo {
     param (
         [string] $ronin_repo = "$env:systemdrive\ronin",
-        [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
+        [string] $nodes_def_src = "$env:systemdrive\BootStrap\nodes.pp",
         [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes.pp",
         [string] $bootstrap_dir = "$env:systemdrive\BootStrap\",
         [string] $secret_src = "$env:systemdrive\BootStrap\secrets\",
@@ -173,28 +173,29 @@ Function Set-AzRoninRepo {
         [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
         [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
         [string] $sourceBranch = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Branch,
-        [string] $deploymentID = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('deploymentId') })[0].value
+        [string] $deploymentID = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq ('deploymentId') })[0].value
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        If(!(test-path $env:systemdrive\ronin)) {
+        If (!(test-path $env:systemdrive\ronin)) {
             git clone --single-branch --branch $sourceBranch https://github.com/$sourceOrg/$sourceRepo $ronin_repo
             $git_exit = $LastExitCode
-        if ($git_exit -eq 0) {
-            Write-Log -message  ('{0} :: Cloned from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceBranch)) -severity 'DEBUG'
-        } else {
-            Write-Log -message  ('{0} :: Git clone failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceBranch)) -severity 'DEBUG'
-            DO {
-            Start-Sleep -s 15
-            git clone  --single-branch --branch $sourceBranch https://github.com/$sourceOrg/$sourceRepo $ronin_repo
-            $git_exit = $LastExitCode
-            } Until ( $git_exit -eq 0)
-        }
-        Set-Location $ronin_repo
-        git checkout $deploymentID
-        Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
+            if ($git_exit -eq 0) {
+                Write-Log -message  ('{0} :: Cloned from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceBranch)) -severity 'DEBUG'
+            }
+            else {
+                Write-Log -message  ('{0} :: Git clone failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceBranch)) -severity 'DEBUG'
+                DO {
+                    Start-Sleep -s 15
+                    git clone  --single-branch --branch $sourceBranch https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+                    $git_exit = $LastExitCode
+                } Until ( $git_exit -eq 0)
+            }
+            Set-Location $ronin_repo
+            git checkout $deploymentID
+            Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
         }
         if (!(Test-path $nodes_def)) {
             Copy-item -path $nodes_def_src -destination $nodes_def -force
@@ -217,7 +218,7 @@ Function Set-AzRoninRepo {
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  	}
+    }
 }
 
 function Move-StrapPuppetLogs {
@@ -241,7 +242,7 @@ function Apply-AzRoninPuppet {
         [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
         [string] $ronnin_key = "$mozilla_key\ronin_puppet",
         [string] $worker_pool = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id,
-        [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+        [string] $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -249,7 +250,7 @@ function Apply-AzRoninPuppet {
     process {
 
         Set-Location $env:systemdrive\ronin
-        If(!(test-path $logdir\old))  {
+        If (!(test-path $logdir\old)) {
             New-Item -ItemType Directory -Force -Path $logdir\old
         }
         Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
@@ -283,13 +284,15 @@ function Apply-AzRoninPuppet {
                 Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
                 Move-StrapPuppetLogs
                 exit 0
-            } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
+            }
+            elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
                 Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
                 Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Move-StrapPuppetLogs
                 exit 1
             }
-        } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
+        }
+        elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
             Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
             Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
@@ -299,7 +302,7 @@ function Apply-AzRoninPuppet {
                     Remove-Item  $ed_key -force
                 }
                 while (!(Test-Path $ed_key)) {
-                     Write-Log -message  ('{0} :: Trusted image. Waiting on CoT key. Human intervention needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                    Write-Log -message  ('{0} :: Trusted image. Waiting on CoT key. Human intervention needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                     Start-Sleep -seconds 15
                 }
                 # Provide a window for the file to be writen
@@ -309,7 +312,8 @@ function Apply-AzRoninPuppet {
             }
             Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             exit 0
-        } else {
+        }
+        else {
             Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
             Start-sleep -s 300
@@ -319,33 +323,34 @@ function Apply-AzRoninPuppet {
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
+    }
 }
 
 # Ensuring scripts can run uninhibited
 # This is noisey but works
 # Powershell Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue > $null
 
-$worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('worker_pool_id') })[0].value
-$base_image = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('base_image') })[0].value
-$src_Organisation = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceOrganisation') })[0].value
-$src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceRepository') })[0].value
-$src_Branch = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceBranch') })[0].value
+$worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq ('worker_pool_id') })[0].value
+$base_image = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq ('base_image') })[0].value
+$src_Organisation = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq ('sourceOrganisation') })[0].value
+$src_Repository = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq ('sourceRepository') })[0].value
+$src_Branch = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq ('sourceBranch') })[0].value
 $image_provisioner = 'azure'
 
 Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
 Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerName).hostname)
 
-If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
-    $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+If (test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
+    $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
-If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+If (!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging -DisableNameChecking
     Install-AzPrerequ -DisableNameChecking
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     exit 0
 }
-If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
+If (($stage -eq 'setup') -or ($stage -eq 'inprogress')) {
     Set-AzRoninRepo -DisableNameChecking
     Apply-AzRoninPuppet -DisableNameChecking
     exit 0
+}
