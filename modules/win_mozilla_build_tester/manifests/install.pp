@@ -5,6 +5,10 @@
 class win_mozilla_build_tester::install {
   $mozbld_version = lookup('win-worker.mozilla_build.version')
 
+  file { 'C:\\mozilla-build':
+    ensure => directory,
+  }
+
   win_packages::win_exe_pkg { 'mozilla_build_new':
     pkg                    => "MozillaBuildSetup-${mozbld_version}.exe",
     install_options_string => '/S',
