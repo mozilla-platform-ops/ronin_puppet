@@ -343,11 +343,10 @@ Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerN
 If (test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
-If (!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+If ( -not (test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging -DisableNameChecking
     Install-AzPrerequ -DisableNameChecking
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
-    exit 0
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')) {
     Set-AzRoninRepo -DisableNameChecking
