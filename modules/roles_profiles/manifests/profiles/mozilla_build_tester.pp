@@ -6,7 +6,6 @@
 class roles_profiles::profiles::mozilla_build_tester {
   include win_mozilla_build_tester::install
   include win_mozilla_build_tester::modifications
-  include win_mozilla_build_tester::hg_install
   include win_mozilla_build_tester::hg_files
   include win_mozilla_build_tester::install_psutil
   include win_mozilla_build_tester::install_zstandard
