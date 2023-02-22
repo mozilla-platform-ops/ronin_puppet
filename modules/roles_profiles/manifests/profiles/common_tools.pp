@@ -11,6 +11,7 @@ class roles_profiles::profiles::common_tools {
             include win_packages::gpg4win
             include win_packages::sevenzip
             include win_packages::sublimetxt
+            include win_packages::mercurial
             if $facts['custom_win_location'] == 'aws' {
                 include win_packages::nircmd
             }
