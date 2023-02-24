@@ -30,10 +30,10 @@ win-worker:
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
     # Applications
-    vnc_msi:  "UltraVnc_1223_X64.msi"
-    vnc_name:  "UltraVnc"
-    git:
-      version: '2.36.1'
+  vnc_msi:  "UltraVnc_1223_X64.msi"
+  vnc_name:  "UltraVnc"
+  git:
+    version: '2.36.1'
 
   # Logging
   # Logging level options debug, verbose, or restricted.
