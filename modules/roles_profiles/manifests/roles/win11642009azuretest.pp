@@ -4,4 +4,5 @@
 
 class roles_profiles::roles::win11642009azuretest {
   include roles_profiles::profiles::microsoft_tools
+  include roles_profiles::profiles::disable_services
 }
