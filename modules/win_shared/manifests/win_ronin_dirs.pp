@@ -3,25 +3,27 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_shared::win_ronin_dirs {
-
-if $::operatingsystem == 'Windows' {
+  if $facts['os']['name'] == 'Windows' {
     $roninprogramdata  = $facts['custom_win_roninprogramdata']
     $semaphoredir      = $facts['custom_win_roninsemaphoredir']
     $logdir            = $facts['custom_win_roninslogdir']
 
-        # "$facts['custom_win_roninprogramdata']"
-        file { $roninprogramdata:
-            ensure => directory,
-        }
-        # $facts['custom_win_roninsemaphoredir']
-        file { $semaphoredir:
-            ensure => directory,
-        }
-        # $facts['custom_win_roninlogdir']
-        file { $logdir:
-            ensure => directory,
-        }
-    } else {
-        fail("class shared::win_ronin_dirs does not support ${::operatingsystem}")
+    # "$facts['custom_win_roninprogramdata']"
+    file { $roninprogramdata:
+      ensure => directory,
     }
+    file { "${$roninprogramdata}\\ronin":
+      ensure => directory,
+    }
+    # $facts['custom_win_roninsemaphoredir']
+    file { $semaphoredir:
+      ensure => directory,
+    }
+    # $facts['custom_win_roninlogdir']
+    file { $logdir:
+      ensure => directory,
+    }
+  } else {
+    fail("class shared::win_ronin_dirs does not support ${facts['facts['os']['name']']}")
+  }
 }
