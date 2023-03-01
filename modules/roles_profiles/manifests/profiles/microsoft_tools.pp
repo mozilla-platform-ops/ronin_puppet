@@ -7,6 +7,7 @@ class roles_profiles::profiles::microsoft_tools {
   case $facts['os']['name'] {
     'Windows': {
       include win_os_settings::powershell_profile
+      include win_shared::win_ronin_dirs
       class { 'win_packages::performance_tool_kit':
         moz_profile_source => lookup('win-worker.mozilla_profile.source'),
         moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
