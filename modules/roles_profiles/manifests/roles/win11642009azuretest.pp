@@ -7,4 +7,11 @@ class roles_profiles::roles::win11642009azuretest {
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
+  include roles_profiles::profiles::files_system_managment
+  include roles_profiles::profiles::firewall
+  include roles_profiles::profiles::network
+  include roles_profiles::profiles::ntp
+  include roles_profiles::profiles::power_management
+  include roles_profiles::profiles::scheduled_tasks
+  include roles_profiles::profiles::azure_vm_agent
 }
