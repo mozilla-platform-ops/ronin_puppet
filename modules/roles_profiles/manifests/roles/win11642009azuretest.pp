@@ -18,4 +18,5 @@ class roles_profiles::roles::win11642009azuretest {
   include roles_profiles::profiles::gpu_drivers
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::common_tools
+  include roles_profiles::profiles::git
 }
