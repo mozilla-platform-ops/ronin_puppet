@@ -27,19 +27,13 @@ windows:
   ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
   ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
 
-  # S3 resources
-  s3:
-    ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
-    ext_gpg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/gpg"
-    log_bucket: "arn:aws:s3:::ronin-windows-logs"
-
   # Taskcluster resources
   taskcluster:
     root_url: "https://firefox-ci-tc.services.mozilla.com"
     wstaudience: "firefoxcitc"
     wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
     package_source: "https://github.com/taskcluster/generic-worker/releases/download"
-    relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
+    relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
 
   # Windows KMS
   # KMS keys are publicly available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys

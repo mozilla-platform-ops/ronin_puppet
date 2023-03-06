@@ -14,7 +14,7 @@ class roles_profiles::profiles::virtual_drivers {
 
             class { 'win_packages::vac':
                 flags    => $flags,
-                srcloc   => lookup('windows.s3.ext_pkg_src'),
+                srcloc   => lookup('windows.ext_pkg_src'),
                 vac_dir  => $vac_dir,
                 version  => $version,
                 work_dir => $work_dir

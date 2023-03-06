@@ -59,7 +59,7 @@ class roles_profiles::profiles::mozilla_build {
                 psutil_ver                => lookup('win-worker.mozilla_build.psutil_version'),
                 tempdir                   => $facts['custom_win_temp_dir'],
                 system32                  => $facts['custom_win_system32'],
-                external_source           => lookup('windows.s3.ext_pkg_src'),
+                external_source           => lookup('windows.ext_pkg_src'),
                 builds_dir                => "${facts['custom_win_systemdrive']}\\builds",
                 tooltool_tok              => $tooltool_tok,
                 upgrade_python            => $upgrade_python,

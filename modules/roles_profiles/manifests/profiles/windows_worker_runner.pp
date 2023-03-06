@@ -16,7 +16,7 @@ class roles_profiles::profiles::windows_worker_runner {
             }
             $nssm_exe              =  "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
 
-            $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_s3')
+            $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_az')
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')

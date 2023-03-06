@@ -8,7 +8,7 @@ class roles_profiles::profiles::git {
         'Windows': {
 
         $git_version = lookup('win-worker.git.version')
-        $srcloc      = lookup('windows.s3.ext_pkg_src')
+        $srcloc      = lookup('windows.ext_pkg_src')
         $current     = $facts['custom_win_git_version']
         $pkgdir      = $facts['custom_win_temp_dir']
 

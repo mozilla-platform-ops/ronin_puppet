@@ -45,7 +45,7 @@ function Write-Log {
 
 function Setup-Logging {
     param (
-        [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+        [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
         [string] $local_dir = "$env:systemdrive\BootStrap",
         [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
         [string] $nxlog_conf = "nxlog.conf",
@@ -113,7 +113,7 @@ function Set-RoninRegOptions {
 
 function Install-AzPrerequ {
     param (
-        [string] $ext_src = "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/prerequisites",
+        [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
         [string] $local_dir = "$env:systemdrive\BootStrap",
         [string] $work_dir = "$env:systemdrive\scratch",
         [string] $git = "Git-2.36.1-64-bit.exe",
