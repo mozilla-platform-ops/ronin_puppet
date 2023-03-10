@@ -8,7 +8,7 @@ class win_mozilla_build_tester::hg_files {
   file { "${mozbld}\\robustcheckout.py":
     content => file('win_mozilla_build_tester/robustcheckout.py'),
   }
-  file { "${$facts['custom_win_programfiles']}\\mercurial\\mercurial.ini":
+  file { "${facts['custom_win_programfiles']}\\mercurial\\mercurial.ini":
     content => file('win_mozilla_build_tester/mercurial.ini'),
   }
 }
