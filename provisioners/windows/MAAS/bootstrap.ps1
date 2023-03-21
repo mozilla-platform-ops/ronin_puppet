@@ -282,39 +282,26 @@ function Apply-AzRoninPuppet {
                 Write-Log -message  ('{0} :: Puppet apply failed 1st run.  ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
                 Move-StrapPuppetLogs
-                exit 0
+                shutdown ('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
             } elseif (($last_exit -ne 0) -or ($puppet_exit -ne 2)) {
                 Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
                 Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Move-StrapPuppetLogs
-                exit 1
+                shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
             }
         } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
             Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
             Set-ItemProperty -Path "$ronnin_key" -Name 'bootstrap_stage' -Value 'complete'
             Move-StrapPuppetLogs
-            if ($worker_pool -like "trusted*") {
-                if (Test-Path -Path $ed_key) {
-                    Remove-Item  $ed_key -force
-                }
-                while (!(Test-Path $ed_key)) {
-                     Write-Log -message  ('{0} :: Trusted image. Waiting on CoT key. Human intervention needed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                    Start-Sleep -seconds 15
-                }
-                # Provide a window for the file to be writen
-                Start-Sleep -seconds 30
-                Write-Log -message  ('{0} :: Trusted image. Blocking livelog outbound access.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                New-NetFirewallRule -DisplayName "Block LiveLog" -Direction Outbound -Program "c:\generic-worker\livelog.exe" -Action block
-            }
             Write-Log -message  ('{0} :: Puppet apply successful. Waiting on Cloud-Image-Builder pickup' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            exit 0
+            shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap complete', '-f', '-d', '4:5')
         } else {
             Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $last_exit
             Start-sleep -s 300
             Move-StrapPuppetLogs
-            exit 1
+            shutdown @('-r', '-t', '0', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
         }
     }
     end {
@@ -343,12 +330,12 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Setup-Logging -DisableNameChecking
     Install-AzPrerequ -DisableNameChecking
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
-    exit 0
+    shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
     Set-AzRoninRepo -DisableNameChecking
     Apply-AzRoninPuppet -DisableNameChecking
-    exit 0
+    shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If ($stage -eq 'complete') {
     Write-Log -message  ('{0} ::Bootstrapping appears complete' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
