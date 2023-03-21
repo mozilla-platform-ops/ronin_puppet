@@ -41,7 +41,7 @@ function Write-Log {
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
 $win_os_build = [System.Environment]::OSVersion.Version.build
-$PatternSID = 'S-1-5-21-\d+-\d+\-\d+\-\d+$'
+$currentuser = whoami.exe
 
 # OS caption
 # Used to determine which KMS license for cloud workers
@@ -63,7 +63,7 @@ else {
 }
 
 ## Get the user that is to be provisioned
-Write-Log -Message ('{0} :: Executing task-user-init - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+Write-Log -Message ("{0} :: Executing task-user-init as $currentuser - {1:o}" -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
 
 try {
     $localuser = (Get-Content "C:\worker-runner\current-task-user.json" | ConvertFrom-Json -ErrorAction Stop).name
@@ -81,64 +81,27 @@ while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
 
 switch ($os_version) {
     "win_11_2009" {
-        
-        # Get Username, SID, and location of ntuser.dat for all users
-        $ProfileList = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | 
-        Where-Object { $_.PSChildName -match $PatternSID } | ForEach-Object {
-            [PSCustomObject]@{
-                SID      = $PSItem.PSChildName
-                UserHive = "$($PSItem.ProfileImagePath)\ntuser.dat"
-                UserName = $PSItem.ProfileImagePath -replace '^(.*[\\\/])', ''
+        ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
+        while ($true) {
+            $explorer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction SilentlyContinue
+            if ($null -eq $explorer) {
+                Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Explorer not available inside task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+                Start-Sleep -Seconds 3
+            }
+            else {
+                ## Tested against windows 11
+                cmd.exe /c 'netsh firewall set notifications mode = disable profile = all'
+                break
             }
         }
 
-        $LoadedHives = Get-ChildItem Registry::HKEY_USERS | 
-        Where-Object { $PSItem.PSChildname -match $PatternSID } | 
-        Select-Object @{name = "SID"; expression = { $PSItem.PSChildName } }
- 
-        # Get all users that are not currently logged
-        $UnloadedHives = Compare-Object $ProfileList.SID $LoadedHives.SID | 
-        Select-Object @{name = "SID"; expression = { $_.InputObject } }, UserHive, Username
+        ## Test for the value set in at_task_user_logon.ps1 step
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Checking if scrollbar was set in at_task_user_logon.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
 
-        $sid_localuser = $ProfileList | Where-Object { $psitem.Username -eq $localuser }
-
-        Foreach ($user in $sid_localuser) {
-            ## Load the ntuser.dat if it's not already loaded
-            if ($user.sid -in $UnloadedHives.SID) {
-                Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Loading registry hive for $localuser", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-                reg load HKU\$($Item.SID) $($Item.UserHive) | Out-Null
-                $regload = $true
-            }
-            else {
-                Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Registry hive already loaded for $localuser", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-                $regload = $false
-            }
-           
-            ## Enable Scrollbars to always show
-            Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-            ## Handle with care - https://stackoverflow.com/questions/25438409/reg-unload-and-new-key
-            $x = New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0
-            $x.handle.Close()
-
-            ## Prepare Chrome Profile
-            ## Not needed due to only being required for hardware gpu testers
-            if (test-path "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe") {
-                Start-Process chrome
-                Start-Sleep -s 30
-                taskkill /F /IM chrome.exe /T
-            }
-    
-            ## After all hkcu items are changed, restart explorer
-            Stop-Process -f -ProcessName explorer
-
-            if ($regload -eq $true) {
-                Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Unloading registry hive for $localuser", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-                reg unload HKU\$($Item.SID)
-                
-                Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Performing garbage collection", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-                ## Clean up handle(s)
-                [gc]::Collect()
-            }
+        $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
+        if ($d -ne 0) {
+            Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+            New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0
         }
     }
     "win_2012" {
