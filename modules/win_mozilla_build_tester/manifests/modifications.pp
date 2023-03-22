@@ -3,6 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::modifications {
+
+  require win_mozilla_build_tester::install
+
   $mozbld      = "C:\\mozilla-build"
 
   file { "${mozbld}\\python\\Scripts\\hg":

@@ -215,11 +215,15 @@ function Puppet-Run {
 
     # This is temporary and should be removed after the cloud_windows branch is merged
     # Hiera lookups will fail after the merge if this is not in place following the merge
+    <#
     if((test-path $env:systemdrive\ronin\win_hiera.yaml)) {
         $hiera = "win_hiera.yaml"
     } else {
         $hiera = "hiera.yaml"
     }
+    #>
+    # this will break Win 10 1803 if this is merged into the master brnach
+    $hiera = "hiera.yaml"
 
     Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
     R10k puppetfile install --moduledir=r10k_modules

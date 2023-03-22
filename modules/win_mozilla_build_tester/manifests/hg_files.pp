@@ -3,6 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::hg_files {
+
+  require win_mozilla_build_tester::install
+
   $mozbld      = "C:\\mozilla-build"
   # Reference  https://bugzilla.mozilla.org/show_bug.cgi?id=1305485#c5
   file { "${mozbld}\\robustcheckout.py":
