@@ -317,8 +317,8 @@ function Apply-DCRoninPuppet {
     }
   }
 
-$worker_pool_id = 'gecko-t-win11-64-2009-hw'
-$base_image = 'geckotwin11642009hw'
+$worker_pool_id = 'win11-64-2009-hw'
+$base_image = 'win11642009hw'
 $src_Organisation = 'markcor'
 $src_Repository = 'ronin_puppet'
 $src_Branch = 'cloud_windows'
