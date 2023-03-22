@@ -156,7 +156,7 @@ Function Set-DCRoninRepo {
         [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
         [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
         [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-        [string] $sourceBranch = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Branch,
+        [string] $sourceBranch = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Branch
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
