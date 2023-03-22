@@ -271,7 +271,7 @@ function Apply-DCRoninPuppet {
                 Set-ItemProperty -Path "$ronnin_key" -name last_run_exit -value $puppet_exit
                 Write-Log -message  ('{0} :: Puppet apply failed multiple times. Waiting 5 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Move-StrapPuppetLogs
-                shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+                shutdown @('-r', '-t', '1200', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
             }
         } elseif  (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
             Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
