@@ -61,7 +61,7 @@ class roles_profiles::profiles::windows_worker_runner {
                     $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
                     $ed25519signingkey     = "${generic_worker_dir}\\\\ed25519-private.key"
                     $idle_timeout          = lookup('win-worker.generic_worker.idle_timeout')
-                    $ip                    = facts['networking']['ip']
+                    $ip                    = "\"facts['networking']['ip']\""
                     $livelog_exe           = "${generic_worker_dir}\\\\livelog.exe"
                     $root_url              = lookup('windows.taskcluster.root_url')
                     $task_dir              = "${facts['custom_win_systemdrive']}\\\\Users"
