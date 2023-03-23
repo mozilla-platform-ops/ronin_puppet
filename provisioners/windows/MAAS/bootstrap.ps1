@@ -230,6 +230,9 @@ function Apply-DCRoninPuppet {
         [string] $mozilla_key = "HKLM:\SOFTWARE\Mozilla\",
         [string] $ronnin_key = "$mozilla_key\ronin_puppet",
         [string] $worker_pool = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id,
+        [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
+        [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
+        [string] $sourceBranch = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Branch,
         [string] $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
     )
     begin {
@@ -241,6 +244,7 @@ function Apply-DCRoninPuppet {
         If(!(test-path $logdir\old))  {
             New-Item -ItemType Directory -Force -Path $logdir\old
         }
+        git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
         Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($deploymentID)) -severity 'DEBUG'
 
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
