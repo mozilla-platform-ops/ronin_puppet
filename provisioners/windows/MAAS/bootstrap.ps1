@@ -197,12 +197,12 @@ Function Set-DCRoninRepo {
         if ($os_caption -notlike "*2012*") {
             Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
         }
-    }
-    # POC only
-    Write-Log -message  ('{0} ::Pausing for manual secret insertion.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    while (!(Test-Path $secret_file)) {
-        Start-Sleep -seconds 15
-        Write-Log -message  ('{0} ::Secrets not found.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        # Win 11 HW POC only. Remove after!
+        Write-Log -message  ('{0} ::Pausing for manual secret insertion.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        while (!(Test-Path $secret_file)) {
+            Start-Sleep -seconds 15
+            Write-Log -message  ('{0} ::Secrets not found.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
