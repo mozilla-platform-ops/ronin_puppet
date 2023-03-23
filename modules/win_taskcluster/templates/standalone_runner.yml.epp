@@ -1,3 +1,4 @@
+getSecrets: false
 provider:
     providerType: standalone
     rootURL: <%= $win_taskcluster::worker_runner::root_url %>
@@ -6,10 +7,31 @@ provider:
     workerPoolID: <%= $win_taskcluster::worker_runner::worker_pool_id %>
     workerGroup: <%= $win_taskcluster::worker_runner::worker_group %>
     workerID: <%= $win_taskcluster::worker_runner::worker_id %>
-    providerMetadata: {}
-    workerLocation: {}
+    workerLocation:
+        host:
 worker:
     implementation: generic-worker
     path: <%= $win_taskcluster::worker_runner::gw_exe_path %>
-    protocolPipe: \\.\pipe\generic-worker
     configPath: <%= $win_taskcluster::worker_runner::config_file %>
+workerConfig:
+  cachesDir: "<%= $win_taskcluster::worker_runner::cache_dir %>"
+  cleanUpTaskDirs: true
+  disableReboots: false
+  downloadsDir: "<%= $win_taskcluster::worker_runner::downloads_dir %>"
+  ed25519SigningKeyLocation: "<%= $win_taskcluster::worker_runner::ed25519signingkey %>"
+  idleTimeoutSecs: <%= $win_taskcluster::worker_runner::idle_timeout %>
+  livelogExecutable: "<%= $win_taskcluster::worker_runner::livelog_exe %>"
+  numberOfTasksToRun: 1
+  publicIP: "<%= facts['networking']['ip'] %>"
+  requiredDiskSpaceMegabytes: 10240
+  sentryProject: "generic-worker"
+  shutdownMachineOnIdle: false
+  shutdownMachineOnInternalError: false
+  taskclusterProxyExecutable: "<%= $win_taskcluster::worker_runner::taskcluster_proxy_exe %>"
+  taskclusterProxyPort: 8080
+  tasksDir: "<%= $win_taskcluster::worker_runner::task_dir %>"
+  wstAudience: "<%= $win_taskcluster::worker_runner::wstaudience %>"
+  wstServerURL: "<%= $win_taskcluster::worker_runner::wstserverurl %>"
+  workerTypeMetadata:
+    machine-setup:
+        config: "https://github.com/mozilla-platform-ops/ronin_puppet/tree/cloud_windows"

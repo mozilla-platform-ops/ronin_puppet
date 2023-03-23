@@ -55,21 +55,40 @@ class roles_profiles::profiles::windows_worker_runner {
 
             case $provider {
                 'standalone': {
-                    $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
-                    $client_id             = lookup('win-worker.taskcluster.client_id')
                     $access_token          = lookup('taskcluster_access_token')
-                    $worker_pool_id        = lookup('win-worker.taskcluster.worker_pool_id')
+                    $cache_dir             = "${facts['custom_win_systemdrive']}\\\\cache"
+                    $client_id             = lookup('win-worker.generic_worker.client_id')
+                    $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
+                    $ed25519signingkey     = "${generic_worker_dir}\\\\ed25519-private.key"
+                    $idle_timeout          = lookup('win-worker.generic_worker.idle_timeout')
+                    $livelog_exe           = "${generic_worker_dir}\\\\livelog.exe"
+                    $task_dir              = "${facts['custom_win_systemdrive']}\\\\Users"
+                    $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
+                    $taskcluster_proxy_exe = "${generic_worker_dir}\\\\taskcluster-proxy.exe"
+                    $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
+                    $worker_id             = $facts['networking']['hostname']
                     $worker_group          = lookup('win-worker.taskcluster.worker_group')
                     $worker_pool_id        = $facts['custom_win_worker_pool_id']
-                    $worker_id             = $facts['networking']['hostname']
+                    $wstaudience           = lookup('windows.taskcluster.wstaudience')
+                    $wstserverurl          = lookup('windows.taskcluster.wstserverurl')
                 }
                 default: {
-                    $taskcluster_root_url  = undef
-                    $client_id             = undef
                     $access_token          = undef
-                    $worker_pool_id        = undef
-                    $worker_group          = undef
+                    $cache_dir             = undef
+                    $client_id             = undef
+                    $downloads_dir         = undef
+                    $ed25519signingkey     = undef
+                    $idle_timeout          = undef
+                    $livelog_exe           = undef
+                    $task_dir              = undef
+                    $task_user_init_cmd    = undef
+                    $taskcluster_root_url  = undef
+                    $taskcluster_proxy_exe = undef
                     $worker_id             = undef
+                    $worker_group          = undef
+                    $worker_pool_id        = undef
+                    $wstaudience           = undef
+                    $wstserverurl          = undef
                 }
             }
 
@@ -84,9 +103,7 @@ class roles_profiles::profiles::windows_worker_runner {
                 desired_gw_version => $desired_gw_version,
                 current_gw_version => $facts['custom_win_genericworker_version'],
                 gw_exe_source      => "${ext_pkg_src_loc}/${desired_gw_version}/${gw_name}",
-                # Here
                 init_file          => $init,
-                # Here
                 gw_exe_path        => $gw_exe_path,
             }
             class { 'win_taskcluster::proxy':
@@ -114,12 +131,23 @@ class roles_profiles::profiles::windows_worker_runner {
                 # Runner yaml file
                 provider               => $provider,
                 implementation         => $implementation,
-                root_url               => $taskcluster_root_url,
+                # GW config
+                access_token           => $access_token,
+                cache_dir              => $cache_dir,
                 client_id              => $client_id,
-                worker_pool_id         => $worker_pool_id,
-                worker_group           => $worker_group,
+                downloads_dir          => $downloads_dir,
+                ed25519signingkey      => $ed25519signingkey,
+                idle_timeout           => $idle_timeout,
+                livelog_exe            => $livelog_exe,
+                task_dir               => $task_dir,
+                task_user_init_cmd     => $task_user_init_cmd,
+                taskcluster_proxy_exe  => $taskcluster_proxy_exe,
+                taskcluster_root_url   => $taskcluster_root_url,
                 worker_id              => $worker_id,
-                config_file            => "${generic_worker_dir}\\generic-worker.config",
+                worker_group           => $worker_group,
+                worker_pool_id         => $worker_pool_id,
+                wstaudience            => $wstaudience,
+                wstserverurl           => $wstserverurl,
             }
 
         }
