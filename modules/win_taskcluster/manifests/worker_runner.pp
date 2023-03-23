@@ -17,11 +17,11 @@ class win_taskcluster::worker_runner (
   String $runner_app_exit = 'Default Exit',
   $implementation = undef,
   $gw_exe_path    = undef,
-  $config_file    = undef,
   # GW config
   $access_token          = undef,
   $cache_dir             = undef,
   $client_id             = undef,
+  $config_file           = undef,
   $downloads_dir         = undef,
   $ed25519signingkey     = undef,
   $idle_timeout          = undef,

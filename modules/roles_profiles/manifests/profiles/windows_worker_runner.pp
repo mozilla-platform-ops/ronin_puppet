@@ -58,6 +58,7 @@ class roles_profiles::profiles::windows_worker_runner {
                     $access_token          = lookup('taskcluster_access_token')
                     $cache_dir             = "${facts['custom_win_systemdrive']}\\\\cache"
                     $client_id             = lookup('win-worker.generic_worker.client_id')
+                    $config_file            = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\generic-worker.config"
                     $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
                     $ed25519signingkey     = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key"
                     $idle_timeout          = lookup('win-worker.generic_worker.idle_timeout')
@@ -78,6 +79,7 @@ class roles_profiles::profiles::windows_worker_runner {
                     $access_token          = undef
                     $cache_dir             = undef
                     $client_id             = undef
+                    $config_file            = undef
                     $downloads_dir         = undef
                     $ed25519signingkey     = undef
                     $idle_timeout          = undef
@@ -137,6 +139,7 @@ class roles_profiles::profiles::windows_worker_runner {
                 access_token           => $access_token,
                 cache_dir              => $cache_dir,
                 client_id              => $client_id,
+                config_file            => $config_file,
                 downloads_dir          => $downloads_dir,
                 ed25519signingkey      => $ed25519signingkey,
                 idle_timeout           => $idle_timeout,
