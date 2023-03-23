@@ -26,6 +26,7 @@ class win_taskcluster::worker_runner (
   $ed25519signingkey     = undef,
   $idle_timeout          = undef,
   $livelog_exe           = undef,
+  $root_url              = undef,
   $task_dir              = undef,
   $task_user_init_cmd    = undef,
   $taskcluster_proxy_exe = undef,
