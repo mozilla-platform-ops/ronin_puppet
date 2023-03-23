@@ -22,7 +22,7 @@ workerConfig:
   idleTimeoutSecs: <%= $win_taskcluster::worker_runner::idle_timeout %>
   livelogExecutable: "<%= $win_taskcluster::worker_runner::livelog_exe %>"
   numberOfTasksToRun: 1
-  publicIP: "<%= facts['networking']['ip'] %>"
+  publicIP: <%= $win_taskcluster::worker_runner::ip %>
   requiredDiskSpaceMegabytes: 10240
   sentryProject: "generic-worker"
   shutdownMachineOnIdle: false
