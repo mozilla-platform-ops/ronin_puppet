@@ -11,7 +11,7 @@ win-worker:
     worker_runner:
         name: 'start-worker-windows-amd64'
         version: '44.13.6'
-        provider: "azure"
+        provider: "standalone"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
