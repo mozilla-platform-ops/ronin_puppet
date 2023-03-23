@@ -156,7 +156,8 @@ Function Set-DCRoninRepo {
         [string] $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role,
         [string] $sourceOrg = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Organisation,
         [string] $sourceRepo = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Repository,
-        [string] $sourceBranch = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Branch
+        [string] $sourceBranch = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet\source").Branch,
+        [string] $secret_file = "$env:systemdrive\ronin\data\secrets\vault.yaml"
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -196,6 +197,12 @@ Function Set-DCRoninRepo {
         if ($os_caption -notlike "*2012*") {
             Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
         }
+    }
+    # POC only
+    Write-Log -message  ('{0} ::Pausing for manual secret insertion.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    while (!(Test-Path $secret_file)) {
+        Start-Sleep -seconds 15
+        Write-Log -message  ('{0} ::Secrets not found.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
