@@ -26,7 +26,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input generic_worker_log>
   Module im_file
-  File 'C:/generic-worker/generic-worker.log'
+  File 'C:\generic-worker\generic-worker.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType multiline-gw-datetime-header
@@ -36,7 +36,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input generic_worker_wrapper_log>
   Module im_file
-  File 'C:/generic-worker/generic-worker-wrapper.log'
+  File 'C:\generic-worker\generic-worker-wrapper.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType LineBased
@@ -45,7 +45,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input generic_worker_service_log>
   Module im_file
-  File 'C:/generic-worker/generic-worker-service.log'
+  File 'C:\generic-worker\generic-worker-service.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType multiline-gw-datetime-header
@@ -55,7 +55,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input worker_runner_log>
   Module im_file
-  File 'C:/worker-runner/*.log'
+  File 'C:\worker-runner\*.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType multiline-gw-datetime-header
