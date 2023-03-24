@@ -66,7 +66,7 @@ class roles_profiles::profiles::windows_worker_runner {
                     $root_url              = lookup('windows.taskcluster.root_url')
                     $task_dir              = "${facts['custom_win_systemdrive']}\\\\Users"
                     $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
-                    $taskcluster_proxy_exe = "${generic_worker_dir}\\\\taskcluster-proxy.exe"
+                    $taskcluster_proxy_exe = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe"
                     $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
                     $worker_id             = $facts['networking']['hostname']
                     $worker_group          = lookup('win-worker.taskcluster.worker_group')
