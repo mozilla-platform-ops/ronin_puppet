@@ -110,32 +110,6 @@ function Check-RoninNodeOptions {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Check-RoninLock {
-  param (
-    [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock"
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    if (Test-Path $lock) {
-      ruby_process = Get-Process ruby -ErrorAction SilentlyContinue
-      if (ruby_process -eq $null) {
-        Remove-Item $lock
-        write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Lock file is present but Puppet is not running', '-f', '-d', '4:5')
-      } elseif (ruby_process -neq $null) {
-        Write-Log -message  ('{0} :: An instance of Puppet is currently running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        exit
-      } else {
-        New-Item -Path $lock -ItemType file -Force
-        Write-Log -message  ('{0} :: $lock created.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      }
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
 
 Function UpdateRonin {
   param (
@@ -153,7 +127,8 @@ Function UpdateRonin {
     $sourceBranch = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch').Revision } else { 'master' })
 
     Set-Location "$env:systemdrive\ronin"
-    git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
+    write-host git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
+    exit
     $git_exit = $LastExitCode
     if ($git_exit -eq 0) {
       $git_hash = (git rev-parse --verify HEAD)
@@ -195,7 +170,6 @@ function Puppet-Run {
   process {
 
     Check-RoninNodeOptions
-    Check-RoninLock
     UpdateRonin
 
     # Setting Env variabes for PuppetFile install and Puppet run
@@ -225,8 +199,6 @@ function Puppet-Run {
     # this will break Win 10 1803 if this is merged into the master brnach
     $hiera = "hiera.yaml"
 
-    Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
-    R10k puppetfile install --moduledir=r10k_modules
     # Needs to be removed from path or a wrong puppet file will be used
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
     If(!(test-path $fail_dir))  {
@@ -298,7 +270,7 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
 If ($bootstrap_stage -eq 'complete') {
   Run-MaintainSystem
   Puppet-Run
-  StartWorkerRunner
+  #StartWorkerRunner
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   Exit-PSSession
