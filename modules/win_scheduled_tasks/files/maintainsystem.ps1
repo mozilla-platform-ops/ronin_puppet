@@ -153,7 +153,7 @@ Function UpdateRonin {
     $sourceBranch = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch').Revision } else { 'master' })
 
     Set-Location "$env:systemdrive\ronin"
-    git pull https://github.com/$sourceOrg/$sourceRepo $sourceRev
+    git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
     $git_exit = $LastExitCode
     if ($git_exit -eq 0) {
       $git_hash = (git rev-parse --verify HEAD)
