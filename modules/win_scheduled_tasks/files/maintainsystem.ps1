@@ -270,7 +270,7 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
 If ($bootstrap_stage -eq 'complete') {
   Run-MaintainSystem
   Puppet-Run
-  #StartWorkerRunner
+  StartWorkerRunner
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   Exit-PSSession
