@@ -128,7 +128,6 @@ Function UpdateRonin {
 
     Set-Location "$env:systemdrive\ronin"
     git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
-    exit
     $git_exit = $LastExitCode
     if ($git_exit -eq 0) {
       $git_hash = (git rev-parse --verify HEAD)
