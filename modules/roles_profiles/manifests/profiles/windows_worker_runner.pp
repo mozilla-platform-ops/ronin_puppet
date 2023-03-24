@@ -63,6 +63,7 @@ class roles_profiles::profiles::windows_worker_runner {
                     $ed25519signingkey     = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key"
                     $idle_timeout          = lookup('win-worker.generic_worker.idle_timeout')
                     $livelog_exe           = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe"
+                    $location              = "${facts['custom_win_location']}-${facts['mozspace']}"
                     $root_url              = lookup('windows.taskcluster.root_url')
                     $task_dir              = "${facts['custom_win_systemdrive']}\\\\Users"
                     $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
@@ -83,6 +84,7 @@ class roles_profiles::profiles::windows_worker_runner {
                     $ed25519signingkey     = undef
                     $idle_timeout          = undef
                     $livelog_exe           = undef
+                    $location              = undef
                     $task_dir              = undef
                     $task_user_init_cmd    = undef
                     $taskcluster_root_url  = undef
@@ -143,6 +145,7 @@ class roles_profiles::profiles::windows_worker_runner {
                 ed25519signingkey      => $ed25519signingkey,
                 idle_timeout           => $idle_timeout,
                 livelog_exe            => $livelog_exe,
+                location               => $location,
                 root_url               => $root_url,
                 task_dir               => $task_dir,
                 task_user_init_cmd     => $task_user_init_cmd,
