@@ -8,7 +8,7 @@ provider:
     workerGroup: <%= $win_taskcluster::worker_runner::worker_group %>
     workerID: <%= $win_taskcluster::worker_runner::worker_id %>
     workerLocation:
-        host: "<%= $win_taskcluster::worker_runner::location %>"
+        host: "<%= $win_taskcluster::worker_runner::provisioner %>/<%= $win_taskcluster::worker_runner::location %>"
 worker:
     implementation: generic-worker
     path: <%= $win_taskcluster::worker_runner::gw_exe_path %>

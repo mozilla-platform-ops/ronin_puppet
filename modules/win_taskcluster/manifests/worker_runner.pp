@@ -27,6 +27,7 @@ class win_taskcluster::worker_runner (
   $idle_timeout          = undef,
   $livelog_exe           = undef,
   $location              = undef,
+  $provisioner           = undef,
   $root_url              = undef,
   $task_dir              = undef,
   $task_user_init_cmd    = undef,
