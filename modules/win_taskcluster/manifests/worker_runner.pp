@@ -25,7 +25,6 @@ class win_taskcluster::worker_runner (
   $downloads_dir         = undef,
   $ed25519signingkey     = undef,
   $idle_timeout          = undef,
-  $ip                    = undef,
   $livelog_exe           = undef,
   $root_url              = undef,
   $task_dir              = undef,
