@@ -55,7 +55,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input worker_runner_log>
   Module im_file
-  File 'C:\worker-runner\*.log'
+  File 'C:\worker-runner\\*.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType multiline-gw-datetime-header
