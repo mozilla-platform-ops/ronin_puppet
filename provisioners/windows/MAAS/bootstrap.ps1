@@ -149,7 +149,7 @@ Function Set-DCRoninRepo {
         [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
         [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes.pp",
         [string] $bootstrap_dir = "$env:systemdrive\BootStrap\",
-        [string] $secret_src = "$env:systemdrive\scratch\secrets\",
+        [string] $secret_src = "$env:systemdrive\programdata\secrets\",
         [string] $secrets = "$env:systemdrive\ronin\data\secrets\",
         [String] $sentry_reg = "HKLM:SYSTEM\CurrentControlSet\Services",
         [string] $workerType = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType,
@@ -184,6 +184,7 @@ Function Set-DCRoninRepo {
             (Get-Content -path $nodes_def) -replace 'roles::role', "roles::$role" | Set-Content $nodes_def
         }
         if (!(Test-path $secrets)) {
+            mkdir $secrets
             Copy-item -path $secret_src -destination $secrets -recurse -force
         }
         # Start to disable Windows defender here
