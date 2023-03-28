@@ -149,7 +149,7 @@ Function Set-DCRoninRepo {
         [string] $nodes_def_src  = "$env:systemdrive\BootStrap\nodes.pp",
         [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes.pp",
         [string] $bootstrap_dir = "$env:systemdrive\BootStrap\",
-        [string] $secret_src = "$env:systemdrive\BootStrap\secrets\",
+        [string] $secret_src = "$env:systemdrive\scratch\secrets\",
         [string] $secrets = "$env:systemdrive\ronin\data\secrets\",
         [String] $sentry_reg = "HKLM:SYSTEM\CurrentControlSet\Services",
         [string] $workerType = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType,
@@ -196,12 +196,6 @@ Function Set-DCRoninRepo {
         }
         if ($os_caption -notlike "*2012*") {
             Set-ItemProperty -Path "$sentry_reg\sense" -name "start" -Value '4' -Type Dword
-        }
-        # Win 11 HW POC only. Remove after!
-        Write-Log -message  ('{0} ::Pausing for manual secret insertion.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        while (!(Test-Path $secret_file)) {
-            Start-Sleep -seconds 15
-            Write-Log -message  ('{0} ::Secrets not found.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
     }
     end {
