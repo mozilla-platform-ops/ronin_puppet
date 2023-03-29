@@ -333,20 +333,18 @@ $image_provisioner = 'MAAS'
 Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
 Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerName).hostname)
 
-If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
-    $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-}
-If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-    $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like "bootstrap" }
-    if(!($taskExists)) {
+$taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like "bootstrap" }
+if(!($taskExists)) {
         Setup-Logging -DisableNameChecking
         Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
         shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap task is in place', '-f', '-d', '4:5')
     }
-    Setup-Logging -DisableNameChecking
+If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
+    $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+}
+If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     Install-DCPrerequ -DisableNameChecking
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
-    Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
     shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
