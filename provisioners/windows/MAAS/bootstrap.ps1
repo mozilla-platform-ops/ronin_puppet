@@ -337,7 +337,6 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-     bootstrap
     $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like bootstrap }
     if(!($taskExists)) {
         Setup-Logging -DisableNameChecking
