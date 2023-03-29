@@ -348,6 +348,14 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
+    # Occasionally git or puppet won't install
+    # Rerun Install-DCPrerequ if one is missing
+    $puppet = (get-command puppet -ErrorAction SilentlyContinue)
+    $git = (get-command git -ErrorAction SilentlyContinue)
+        if ((!($puppet)) -or (!($git))) {
+            Install-DCPrerequ -DisableNameChecking
+            shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
+        }
     Set-DCRoninRepo -DisableNameChecking
     Apply-DCRoninPuppet -DisableNameChecking
     shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
