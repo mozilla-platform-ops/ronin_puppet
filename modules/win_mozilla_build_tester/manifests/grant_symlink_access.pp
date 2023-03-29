@@ -3,10 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::grant_symlink_access {
-  require win_mozilla_build_tester::hg_install
-
-  $system32   = $win_mozilla_build::system32
-  $module_dir = "${system32}\\WindowsPowerShell\\v1.0\\Modules"
+  $module_dir = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules"
   # This a temporary work around to subscribe to file in a temp dir since
   # we are unable to susbscribe the windows::unzip resource
   $pkgdir = $facts['custom_win_temp_dir']
