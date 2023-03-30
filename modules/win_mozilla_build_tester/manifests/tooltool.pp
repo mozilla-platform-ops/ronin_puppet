@@ -12,10 +12,6 @@ class win_mozilla_build_tester::tooltool {
   file { $tooltool_cache:
     ensure => directory,
   }
-  # Needed for NSS only
-  file { "${builds}\\tooltool.py":
-    source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
-  }
 
   # Resource from counsyl-windows
   windows::environment { 'TOOLTOOL_CACHE':
@@ -34,12 +30,6 @@ class win_mozilla_build_tester::tooltool {
     inherit_parent_permissions => true,
   }
 
-  if $win_mozilla_build::tooltool_tok != undef {
-    file { "${builds}\\relengapi.tok":
-      content   => $win_mozilla_build::tooltool_tok,
-      show_diff => false,
-    }
-  }
   # This script will get the SSL Server Certificate for https://tooltool.mozilla-releng.net
   # and will add it to the local user store
   # Without the cert in the local user store tooltool will hit SSL errors when fetching a package
