@@ -21,7 +21,7 @@ workerConfig:
   ed25519SigningKeyLocation: "<%= $win_taskcluster::worker_runner::ed25519signingkey %>"
   idleTimeoutSecs: <%= $win_taskcluster::worker_runner::idle_timeout %>
   livelogExecutable: "<%= $win_taskcluster::worker_runner::livelog_exe %>"
-#  numberOfTasksToRun: 0
+  numberOfTasksToRun: 9999999
   publicIP: "<%= $facts['networking']['ip'] %>"
   requiredDiskSpaceMegabytes: 10240
   sentryProject: "generic-worker"
