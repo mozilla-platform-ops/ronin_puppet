@@ -40,7 +40,7 @@ class win_os_settings::power_scheme(
   if $guid == 'e9a42b02-d5df-448d-aa00-03f14749eb61' {
     $power_key = "HKLM\\\SYSTEM\\CurrentControlSet\\Control\\Power"
 
-    registry::value { 'HibernateEnabled' :
+    registry::value { 'PlatformAoAcOverride' :
       key  => $power_key,
       type => dword,
       data => '0',
