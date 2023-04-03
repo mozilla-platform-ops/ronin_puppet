@@ -36,14 +36,4 @@ class win_os_settings::power_scheme(
     unless   => template('windows/powercfg_check.ps1.erb'),
     provider => 'powershell',
   }
-  # Using puppetlabs-registry
-  if $guid == 'e9a42b02-d5df-448d-aa00-03f14749eb61' {
-    $power_key = "HKLM\\\SYSTEM\\CurrentControlSet\\Control\\Power"
-
-    registry::value { 'PlatformAoAcOverride' :
-      key  => $power_key,
-      type => dword,
-      data => '0',
-    }
-  }
 }
