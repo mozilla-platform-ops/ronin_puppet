@@ -14,6 +14,7 @@ class roles_profiles::profiles::power_management {
                     class { 'win_os_settings::power_scheme':
                         ensure => 'Ultimate Performance',
                     }
+                    include win_os_settings::no_sleep
                 }
                 default:  {
                     class { 'win_os_settings::power_scheme':
