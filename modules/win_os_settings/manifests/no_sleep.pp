@@ -7,4 +7,9 @@ class win_os_settings::no_sleep {
         type => dword,
         data => '0',
     }
+    registry::value { 'PlatformAoAcOverride' :
+        key  => $power_key,
+        type => dword,
+        data => '0',
+    }
 }
