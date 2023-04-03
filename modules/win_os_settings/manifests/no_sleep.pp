@@ -12,4 +12,9 @@ class win_os_settings::no_sleep {
         type => dword,
         data => '0',
     }
+    registry::value { 'CsEnabled' :
+        key  => $power_key,
+        type => dword,
+        data => '0',
+    }
 }
