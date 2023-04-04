@@ -8,7 +8,9 @@ class win_os_settings::no_sleep {
         type => dword,
         data => '0',
     }
-    registry::value { "${modern_sleep}\\EnableAction":
-        ensure => absent
+    ## TODO: Add a check to prevent unnessary runs
+    exec { 'disable_standby':
+        command  => 'powercfg.exe -x -standby-timeout-ac 0',
+        provider => powershell,
     }
 }
