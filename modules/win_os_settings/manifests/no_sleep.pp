@@ -14,7 +14,7 @@ class win_os_settings::no_sleep {
     registry_key { $ultimate_scheme_key:
         ensure => present,
     }
-    registry::value { 'DCSettingIndex' :
+    registry::value { 'ACSettingIndex' :
         key  => $ultimate_scheme_key,
         type => dword,
         data => '0',
