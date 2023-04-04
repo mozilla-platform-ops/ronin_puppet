@@ -6,6 +6,9 @@ class win_mozilla_build_tester::tooltool {
   $builds         = "${facts['custom_win_systemdrive']}\\builds"
   $tooltool_cache = "${builds}\\tooltool_cache"
 
+  file { $builds:
+    ensure => directory,
+  }
   file { "${facts['custom_win_systemdrive']}\\mozilla-build\\tooltool.py":
     source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
   }
