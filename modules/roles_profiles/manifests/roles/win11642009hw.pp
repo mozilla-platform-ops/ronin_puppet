@@ -16,6 +16,7 @@ class roles_profiles::roles::win11642009hw {
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::power_management
   include roles_profiles::profiles::scheduled_tasks
+  include roles_profiles::profiles::hardware
 
   # Adminstration
   include roles_profiles::profiles::logging
