@@ -14,7 +14,7 @@ class roles_profiles::profiles::hardware {
             }
         }
         'Windows': {
-            include win_os_settings::disable_monitor2
+            #include win_os_settings::disable_monitor2
         }
         default: {
             fail("${::operatingsystem} not supported")
