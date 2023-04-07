@@ -41,7 +41,7 @@ $Monitors = ((Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorBasicDisp
 
 if ($Monitors -eq 2) {
 	Write-Log -message ('{0} :: Two monitors detected. Disabling 2nd monitor' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-	C:\ControlMyMonitor\ControlMyMonitor.exe /SetValue "\\.\DISPLAY1\Monitor0" D
+	C:\ControlMyMonitor\ControlMyMonitor.exe /SetValue "\\.\DISPLAY1\Monitor2" D6 5
 	Start-Sleep -s 30
 	$Monitors2 = ((Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorBasicDisplayParams | where {$_.Active -like "True"}).Active.Count)
 	if ($Monitors -eq 2) {
