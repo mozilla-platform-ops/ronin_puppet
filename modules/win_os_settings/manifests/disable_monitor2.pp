@@ -5,8 +5,11 @@
 class win_os_settings::disable_monitor2 {
     win_packages::win_zip_pkg { 'controlmymonitor':
         pkg         => 'controlmymonitor.zip',
-        creates     => "${facts['custom_win_systemdrive']}\\controlmymonitor\\test.txt",
+        creates     => "${facts['custom_win_systemdrive']}\\controlmymonitor\\controlmymonitor.exe",
         destination => "${facts['custom_win_systemdrive']}\\controlmymonitor\\",
     }
-
+    exec { 'disable_monitor2':
+        command  => file('win_os_settings/disable_monitor2.ps1'),
+        provider => 'powershell',
+    }
 }
