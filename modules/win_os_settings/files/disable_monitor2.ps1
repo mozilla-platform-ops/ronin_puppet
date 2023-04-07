@@ -40,12 +40,12 @@ function Write-Log {
 $Monitors = ((Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorBasicDisplayParams | where {$_.Active -like "True"}).Active.Count)
 
 if ($Monitors -eq 2) {
-	Write-Log -message ('{0} :: Two monitors detected. Disabling monitor 2' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-	C:\ControlMyMonitor\ControlMyMonitor.exe /SetValue "\\.\DISPLAY2\Monitor0" D
+	Write-Log -message ('{0} :: Two monitors detected. Disabling 2nd monitor' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+	C:\ControlMyMonitor\ControlMyMonitor.exe /SetValue "\\.\DISPLAY1\Monitor0" D
 	Start-Sleep -s 30
 	$Monitors2 = ((Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorBasicDisplayParams | where {$_.Active -like "True"}).Active.Count)
 	if ($Monitors -eq 2) {
-		Write-Log -message ('{0} :: Disabling monitor 2 failed!!!' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+		Write-Log -message ('{0} :: Disabling 2nd monitor failed!!!' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
 		exit 99
 	}
 } elseif ($Monitors -eq 1) {
