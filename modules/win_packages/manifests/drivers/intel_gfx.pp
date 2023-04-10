@@ -10,7 +10,7 @@ class win_packages::drivers::intel_gfx (
 
     win_packages::win_exe_pkg  { $gfx_driver:
         pkg                    => "${gfx_driver}.exe",
-        install_options_string => '--passive',
+        install_options_string => '/p',
         creates                => "${facts['custom_win_programfiles']}\\intel\\Media",
     }
 }
