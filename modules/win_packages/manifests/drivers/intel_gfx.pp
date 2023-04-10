@@ -6,11 +6,17 @@ class win_packages::drivers::intel_gfx (
   String $version
 ) {
 
+    $srcloc     = lookup('windows.s3.ext_pkg_src')
+    $pkgdir     = $facts['custom_win_temp_dir']
     $gfx_driver = "gfx_win_${version}"
+    $gfx_exe    = "${gfx_driver}.exe"
 
-    win_packages::win_exe_pkg  { $gfx_driver:
-        pkg                    => "${gfx_driver}.exe",
-        install_options_string => '/p',
-        creates                => "${facts['custom_win_programfiles']}\\intel\\Media",
+
+    file { "${pkgdir}\\${gfx_exe}" :
+        source => "${srcloc}/${gfx_exe}",
+    }
+    exec { "${gfx_driver}_install":
+        command => "${pkgdir}\\${gfx_exe} ",
+        creates => "${facts['custom_win_programfiles']}\\intel\\Media",
     }
 }
