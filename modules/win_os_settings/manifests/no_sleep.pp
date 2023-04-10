@@ -13,4 +13,8 @@ class win_os_settings::no_sleep {
         command  => 'powercfg.exe -x -standby-timeout-ac 0',
         provider => powershell,
     }
+    exec { 'disable_monitor_timeout':
+        command  => 'powercfg.exe -x -monitor-timeout-ac 0',
+        provider => powershell,
+    }
 }
