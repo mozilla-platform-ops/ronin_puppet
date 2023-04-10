@@ -17,6 +17,7 @@ class roles_profiles::roles::win11642009hw {
   include roles_profiles::profiles::power_management
   include roles_profiles::profiles::scheduled_tasks
   include roles_profiles::profiles::hardware
+  include roles_profiles::profiles::intel_drivers
 
   # Adminstration
   include roles_profiles::profiles::logging
