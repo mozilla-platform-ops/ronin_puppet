@@ -16,7 +16,7 @@ class win_packages::drivers::intel_gfx (
         source => "${srcloc}/${gfx_exe}",
     }
     exec { "${gfx_driver}_install":
-        command => "${pkgdir}\\${gfx_exe} ",
+        command => "${pkgdir}\\${gfx_exe} --passive",
         creates => "${facts['custom_win_programfiles']}\\intel\\Media",
     }
 }
