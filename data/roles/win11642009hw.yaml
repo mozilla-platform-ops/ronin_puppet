@@ -56,7 +56,7 @@ win-worker:
     version: '464'
   driver:
     gfx:
-      ver: '101.4255'
+      version: '101.4255'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
