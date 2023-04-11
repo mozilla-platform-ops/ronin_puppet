@@ -16,7 +16,8 @@ class win_packages::drivers::intel_gfx (
         source => "${srcloc}/${gfx_exe}",
     }
     exec { "${gfx_driver}_install":
-        command => "${pkgdir}\\${gfx_exe} --silent",
-        creates => "${facts['custom_win_programfiles']}\\intel\\Media",
+        command  => "${pkgdir}\\${gfx_exe} --silent",
+        creates  => "${facts['custom_win_programfiles']}\\intel\\Media",
+        provider => powershell,
     }
 }
