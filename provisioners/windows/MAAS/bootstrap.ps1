@@ -360,6 +360,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
         Start-Sleep -s 60
         Write-Log -message  ('{0} :: Last reboot failed. Attempting again..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place and registry options have been set.', '-f', '-d', '4:5')
+    }
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
     Set-DCRoninRepo -DisableNameChecking
