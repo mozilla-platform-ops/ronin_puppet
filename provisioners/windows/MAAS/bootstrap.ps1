@@ -126,6 +126,9 @@ function Install-DCPrerequ {
     }
     process {
 
+        powercfg.exe -x -standby-timeout-ac 0
+        powercfg.exe -x -monitor-timeout-ac 0
+
         New-Item -path $work_dir -ItemType "directory" -ErrorAction SilentlyContinue
         Set-location -path $work_dir
         Invoke-WebRequest -Uri  $ext_src/$bootzip  -UseBasicParsing -OutFile $work_dir\BootStrap.zip
