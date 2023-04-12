@@ -163,6 +163,10 @@ Function Set-DCRoninRepo {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+
+        powercfg.exe -x -standby-timeout-ac 0
+        powercfg.exe -x -monitor-timeout-ac 0
+
         If(!(test-path $env:systemdrive\ronin)) {
             git clone --single-branch --branch $sourceBranch https://github.com/$sourceOrg/$sourceRepo $ronin_repo
             $git_exit = $LastExitCode
