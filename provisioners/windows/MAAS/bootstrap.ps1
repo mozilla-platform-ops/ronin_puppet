@@ -343,6 +343,7 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+    Start-Sleep -s 120
     $puppet = (get-command puppet -ErrorAction SilentlyContinue)
     $git = (get-command git -ErrorAction SilentlyContinue)
     if ((!($puppet)) -or (!($git))) {
