@@ -343,16 +343,18 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
+    # Waiting to let things settle out
+    Write-Log -message  ('{0} :: Bootstrap started. Waiting to allow OS installation to complete.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Start-Sleep -s 120
     $puppet = (get-command puppet -ErrorAction SilentlyContinue)
     $git = (get-command git -ErrorAction SilentlyContinue)
     if ((!($puppet)) -or (!($git))) {
         Install-DCPrerequ -DisableNameChecking
-        Write-Log -message  ('{0} :: Reboot; Prereques installed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup', '-f', '-d', '4:5')
+        #Write-Log -message  ('{0} :: Reboot; Prereques installed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        #shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup', '-f', '-d', '4:5')
     }
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
-    Write-Log -message  ('{0} :: Reboot;Registry options have been set.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Log -message  ('{0} :: Reboot; Prerequisites in place and registry options have been set.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     shutdown @('-r', '-t', '0', '-c', 'Reboot; registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
