@@ -351,7 +351,7 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
         shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup', '-f', '-d', '4:5')
     }
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
-    Write-Log -message  ('{0} :: Reboot;Registry options have been setup.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Log -message  ('{0} :: Reboot;Registry options have been set.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     shutdown @('-r', '-t', '0', '-c', 'Reboot; registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
