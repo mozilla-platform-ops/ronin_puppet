@@ -96,7 +96,7 @@ function Set-RoninRegOptions {
         New-ItemProperty -Path "$ronnin_key" -Name 'image_provisioner' -Value "$image_provisioner" -PropertyType String  -force
         New-ItemProperty -Path "$ronnin_key" -Name 'worker_pool_id' -Value "$worker_pool_id" -PropertyType String -force
         New-ItemProperty -Path "$ronnin_key" -Name 'role' -Value "$base_image" -PropertyType String -force
-        Write-Log -message  ('{0} :: Node workerType set to {1}' -f $($MyInvocation.MyCommand.Name), ($workerType)) -severity 'DEBUG'
+        Write-Log -message  ('{0} :: Node workerType set to {1}' -f $($MyInvocation.MyCommand.Name), ($worker_pool_id)) -severity 'DEBUG'
 
         New-ItemProperty -Path "$ronnin_key" -Name 'inmutable' -Value 'false' -PropertyType String -force
         New-ItemProperty -Path "$ronnin_key" -Name 'last_run_exit' -Value '0' -PropertyType Dword -force
@@ -344,8 +344,8 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     # Waiting to let things settle out
-    Write-Log -message  ('{0} :: Bootstrap started. Waiting to allow OS installation to complete.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Start-Sleep -s 120
+    #Write-Log -message  ('{0} :: Bootstrap started. Waiting to allow OS installation to complete.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    #Start-Sleep -s 120
     $puppet = (get-command puppet -ErrorAction SilentlyContinue)
     $git = (get-command git -ErrorAction SilentlyContinue)
     if ((!($puppet)) -or (!($git))) {
@@ -355,7 +355,11 @@ If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     }
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     Write-Log -message  ('{0} :: Reboot; Prerequisites in place and registry options have been set.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    shutdown @('-r', '-t', '0', '-c', 'Reboot; registry setup', '-f', '-d', '4:5')
+    shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place and registry options have been set.', '-f', '-d', '4:5')
+    while ($true) {
+        Start-Sleep -s 60
+        Write-Log -message  ('{0} :: Last reboot failed. Attempting again..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place and registry options have been set.', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
     Set-DCRoninRepo -DisableNameChecking
