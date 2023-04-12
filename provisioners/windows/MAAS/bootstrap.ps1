@@ -163,10 +163,6 @@ Function Set-DCRoninRepo {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-
-        powercfg.exe -x -standby-timeout-ac 0
-        powercfg.exe -x -monitor-timeout-ac 0
-
         If(!(test-path $env:systemdrive\ronin)) {
             git clone --single-branch --branch $sourceBranch https://github.com/$sourceOrg/$sourceRepo $ronin_repo
             $git_exit = $LastExitCode
@@ -347,19 +343,16 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
-    Install-DCPrerequ -DisableNameChecking
+    $puppet = (get-command puppet -ErrorAction SilentlyContinue)
+    $git = (get-command git -ErrorAction SilentlyContinue)
+    if ((!($puppet)) -or (!($git))) {
+        Install-DCPrerequ -DisableNameChecking
+        shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
+    }
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
 }
 If (($stage -eq 'setup') -or ($stage -eq 'inprogress')){
-    # Occasionally git or puppet won't install
-    # Rerun Install-DCPrerequ if one is missing
-    $puppet = (get-command puppet -ErrorAction SilentlyContinue)
-    $git = (get-command git -ErrorAction SilentlyContinue)
-        if ((!($puppet)) -or (!($git))) {
-            Install-DCPrerequ -DisableNameChecking
-            shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
-        }
     Set-DCRoninRepo -DisableNameChecking
     Apply-DCRoninPuppet -DisableNameChecking
     shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place, logging setup, and registry setup', '-f', '-d', '4:5')
