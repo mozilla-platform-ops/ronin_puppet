@@ -344,8 +344,8 @@ If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
 }
 If(!(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     # Waiting to let things settle out
-    Write-Log -message  ('{0} :: Bootstrap started. Waiting to allow OS installation to complete.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Start-Sleep -s 120
+    #Write-Log -message  ('{0} :: Bootstrap started. Waiting to allow OS installation to complete.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    #Start-Sleep -s 120
     $puppet = (get-command puppet -ErrorAction SilentlyContinue)
     $git = (get-command git -ErrorAction SilentlyContinue)
     if ((!($puppet)) -or (!($git))) {
