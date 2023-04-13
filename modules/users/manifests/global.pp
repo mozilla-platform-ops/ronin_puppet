@@ -12,4 +12,10 @@ class users::global {
             ensure  => 'present',
             content => 'export TMOUT=86400';  # Shells timeout after 1 day
     }
+
+    # disable login for departed users
+    User<| title == dhouse |> {
+      shell => '/usr/sbin/nologin',
+      groups => 'dhouse',
+    }
 }
