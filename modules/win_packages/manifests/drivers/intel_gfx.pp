@@ -15,9 +15,10 @@ class win_packages::drivers::intel_gfx (
     file { "${pkgdir}\\gfx.exe" :
         source => "${srcloc}/${gfx_exe}",
     }
-    exec { "${gfx_driver}_install":
-        command  => file('win_packages/gfx.ps1'),
-        creates  => "${facts['custom_win_programfiles']}\\intel\\Media",
-        provider => powershell,
+    if ($facts['custom_display_adpater'] == 'Intel(R) Iris(R) Xe Graphics') {
+        exec { "${gfx_driver}_install":
+            command  => file('win_packages/gfx.ps1'),
+            provider => powershell,
+        }
     }
 }
