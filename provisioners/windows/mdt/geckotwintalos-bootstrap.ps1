@@ -102,9 +102,9 @@ function Install-BootstrapModule {
 }
 
 $workerType = 'gecko-t-win-talos'
-$src_Organisation = 'markcor'
+$src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
-$src_Revision = 'talos_loaner'
+$src_Revision = 'bug1827471'
 $image_provisioner = 'mdt'
 $max_boots = 20000
 
