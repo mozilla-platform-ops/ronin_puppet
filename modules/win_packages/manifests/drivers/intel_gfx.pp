@@ -17,7 +17,8 @@ class win_packages::drivers::intel_gfx (
     }
     if ($facts['custom_display_adpater'] != 'Intel(R) Iris(R) Xe Graphics') {
         exec { "${gfx_driver}_install":
-            command  => file('win_packages/gfx.ps1'),
+            command  => 'C:\Windows\Temp\gfx.exe --passive',
+            #command  => file('win_packages/gfx.ps1'),
             provider => powershell,
         }
     }
