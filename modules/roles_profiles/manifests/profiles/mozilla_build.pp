@@ -29,7 +29,7 @@ class roles_profiles::profiles::mozilla_build {
             # Once worker-runner is fully implemented then this support can be removed
             $tooltool_tok = $facts['custom_win_location'] ? {
                 'azure' => undef,
-                default => undef
+                default => lookup('tooltool_tok')
             }
 
             if $facts['custom_win_mozbld_vesion'] == '3.2' {
