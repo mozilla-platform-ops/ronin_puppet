@@ -84,6 +84,7 @@ switch ($os_version) {
         ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
         while ($true) {
             $explorer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction SilentlyContinue
+            git config --system core.longpaths true
             git config --global --add safe.directory '*'
             if ($null -eq $explorer) {
                 Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Explorer not available inside task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
