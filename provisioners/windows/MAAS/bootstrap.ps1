@@ -338,10 +338,17 @@ Write-Output ("Processing {0}" -f [System.Net.Dns]::GetHostByName($env:computerN
 
 $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like "bootstrap" }
 if(!($taskExists)) {
-        Setup-Logging -DisableNameChecking
-        Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+    Write-Log -message  ('{0} :: Bootstrap started. Waiting to allow OS installation to complete.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Start-Sleep -s 120
+    Setup-Logging -DisableNameChecking
+    Bootstrap-schtasks -workerType $workerType -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
+    shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap task is in place', '-f', '-d', '4:5')
+    while ($true) {
+        Start-Sleep -s 60
+        Write-Log -message  ('{0} :: Last reboot failed. Attempting again..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap task is in place', '-f', '-d', '4:5')
     }
+}
 If(test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
     $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 }
