@@ -100,6 +100,7 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
+        explorer.exe shell:::{3080F90D-D7AD-11D9-BD98-0000947B0257} -Verb MinimizeAll
         $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
         if ($d -ne 0) {
             Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'

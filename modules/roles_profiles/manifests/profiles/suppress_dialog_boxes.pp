@@ -24,10 +24,6 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         'Windows': {
             include win_os_settings::disable_notifications
             include win_disable_services::disable_uac
-            # Not a dialog box but can cause issues like one.
-            if $facts['custom_win_os_version'] == 'win_11_2009' {
-              include win_os_settings::hide_start_menu
-            }
         # Bug list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1373551
