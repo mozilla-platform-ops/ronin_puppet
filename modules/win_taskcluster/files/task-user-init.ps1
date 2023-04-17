@@ -84,8 +84,6 @@ switch ($os_version) {
         ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
         while ($true) {
             $explorer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction SilentlyContinue
-            git config --global core.longpaths true
-            git config --global --add safe.directory '*'
             if ($null -eq $explorer) {
                 Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Explorer not available inside task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
                 Start-Sleep -Seconds 3
@@ -99,7 +97,11 @@ switch ($os_version) {
 
         ## Test for the value set in at_task_user_logon.ps1 step
         Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Checking if scrollbar was set in at_task_user_logon.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-
+        ## set git config
+        git config --global core.longpaths true
+        git config --global --add safe.directory '*'
+        ## hide start menu
+        New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_ShowClassicMode" -Value 1 -PropertyType DWord
         $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
         if ($d -ne 0) {
             Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
