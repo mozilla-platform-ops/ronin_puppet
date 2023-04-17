@@ -100,8 +100,6 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        ## hide start menu
-        New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_ShowClassicMode" -Value 1 -PropertyType DWord
         $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
         if ($d -ne 0) {
             Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
