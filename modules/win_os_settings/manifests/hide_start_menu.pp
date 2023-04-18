@@ -1,6 +1,6 @@
 class win_os_settings::hide_start_menu {
 
-    $explorer_key ="HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer"
+    $explorer_key ="HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"
     $start_pg_key ="${explorer_key}\\StartPage"
 
     registry::value { 'HideRecommendedSect':
