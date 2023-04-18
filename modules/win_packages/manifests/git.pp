@@ -20,5 +20,7 @@ class win_packages::git (
             command => "${local_pkg} /silent /norestart",
         }
     }
-
+    file { "${facts['custom_win_programfiles']}\\Git\\etc\\gitconfig":
+        content => file('win_packages/gitconfig'),
+    }
 }

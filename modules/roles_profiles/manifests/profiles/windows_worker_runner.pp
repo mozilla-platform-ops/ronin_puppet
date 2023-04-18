@@ -40,14 +40,7 @@ class roles_profiles::profiles::windows_worker_runner {
 
             case $facts['custom_win_os_version'] {
                 'win_11_2009': {
-                    case $facts['custom_win_location'] {
-                        'azure': {
-                            $init = 'task-user-init-win11.cmd'
-                        }
-                        default: {
-                            $init = 'task-user-init-win11HW.cmd'
-                        }
-                    }
+                    $init = 'task-user-init-win11.cmd'
                 }
                 'win_2012': {
                     $init = 'task-user-init-win2012.cmd'
