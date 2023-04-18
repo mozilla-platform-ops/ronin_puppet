@@ -271,6 +271,16 @@ If ($bootstrap_stage -eq 'complete') {
   Run-MaintainSystem
   Puppet-Run
   Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
+  ## Disable start menu. If shown can interfere with tests.
+  while ($true) {
+    $processname = "StartMenuExperienceHost"
+    $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
+    if ($process -ne $null) {
+      Stop-Process -Name $processName -force
+      break
+    }
+    Start-Sleep -Seconds 1
+  }
   StartWorkerRunner
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'

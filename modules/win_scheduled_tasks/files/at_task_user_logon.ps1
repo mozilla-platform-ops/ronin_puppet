@@ -86,16 +86,6 @@ $Accessibility = Get-ItemProperty -Path "HKCU:\Control Panel\Accessibility"
 ## Show scrollbars permanently
 switch ($os_version) {
     "win_11_2009" {
-        ## Disable start menu. If shown can interfere with tests.
-        while ($true) {
-            $processname = "StartMenuExperienceHost"
-            $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
-            if ($process -ne $null) {
-                Stop-Process -Name $processName -force
-                break
-            }
-            Start-Sleep -Seconds 1
-        }
         ## If it's not there already, create it
         if ($null -eq $Accessibility.DynamicScrollbars) {
             Try {
