@@ -18,6 +18,9 @@ class roles_profiles::profiles::files_system_managment {
         if $facts['custom_win_z_drive'] == 'exists' {
           include win_filesystem::grant_z_access
         }
+        if $facts['custom_win_os_version'] == 'win_11_2009'{
+            include enable_long_paths
+        }
       }
       # Bug List
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1515779
