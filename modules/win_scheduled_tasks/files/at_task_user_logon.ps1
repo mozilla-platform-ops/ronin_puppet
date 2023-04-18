@@ -103,7 +103,7 @@ switch ($os_version) {
                 continue
             }
         }
-        Get-Process -Name StartMenuExperienceHost.exe | Stop-Process -Force
+        Get-Process -Name Start.exe | Stop-Process -Force
     }
     "win_2012" {
         ## Ensure strong encryption
