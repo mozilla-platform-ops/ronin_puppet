@@ -103,8 +103,10 @@ switch ($os_version) {
                 continue
             }
         }
-        Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name Start_ShowClassicMode -Value 1
-        stop-process -name explorer –force
+        #Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name Start_ShowClassicMode -Value 1
+        #stop-process -name explorer –force
+        Get-Process -Name Start | Stop-Process -Force
+        Get-Process -Name StartMenuExperienceHost | Stop-Process -Force
     }
     "win_2012" {
         ## Ensure strong encryption

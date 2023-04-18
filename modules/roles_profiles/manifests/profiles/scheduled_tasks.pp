@@ -11,6 +11,7 @@ class roles_profiles::profiles::scheduled_tasks {
                 include win_scheduled_tasks::at_task_user_logon
             } else {
                 $startup_script = 'maintainsystem.ps1'
+                include win_scheduled_tasks::at_task_user_logon
             }
             class { 'win_scheduled_tasks::maintain_system':
                 startup_script => $startup_script,
