@@ -103,14 +103,6 @@ switch ($os_version) {
                 continue
             }
         }
-        ## Prevent start menu from popping up during tests
-        while ($true) {
-            start-sleep -s 5
-            $start_menu = (Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue)
-            if ($start_menu) {
-                Get-Process -Name StartMenuExperienceHost | Stop-Process -Force
-            }
-        }
     }
     "win_2012" {
         ## Ensure strong encryption
