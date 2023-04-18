@@ -103,7 +103,8 @@ switch ($os_version) {
                 continue
             }
         }
-        Get-Process -Name Start.exe | Stop-Process -Force
+        ## Prevent start menu from popping up during tests
+        Get-Process -Name StartMenuExperienceHost | Stop-Process -Force
     }
     "win_2012" {
         ## Ensure strong encryption
