@@ -5,9 +5,8 @@
 class win_os_settings::enable_long_paths {
 
   registry::value { 'LongPathsEnabled' :
-    ensure => present,
-    key    => 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem',
-    type   => dword,
-    data   => '1',
+    key  => 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem',
+    type => dword,
+    data => '1',
   }
 }
