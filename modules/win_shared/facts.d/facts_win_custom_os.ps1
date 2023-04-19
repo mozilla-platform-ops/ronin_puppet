@@ -49,7 +49,7 @@ if ($firewall_status -like "*off*") {
 }
 
 # Dispaly adapter
-$display_adapt = ((Get-WmiObject Win32_VideoController).Caption)
+$display_adapt = (((Get-WmiObject Win32_VideoController).Caption).Replace(" ", ""))
 
 # Base image ID
 #$role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
