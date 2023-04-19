@@ -273,7 +273,8 @@ If ($bootstrap_stage -eq 'complete') {
   Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
   ## Last catch if Puppet failed
   if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
-    shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+    #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+    exit
   }
   Write-Log -message  ('{0} :: Disabling Start Menu' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   ## Disable start menu. If shown can interfere with tests.
