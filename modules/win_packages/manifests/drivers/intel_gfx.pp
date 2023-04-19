@@ -15,7 +15,7 @@ class win_packages::drivers::intel_gfx (
     file { "${pkgdir}\\gfx.exe" :
         source => "${srcloc}/${gfx_exe}",
     }
-    if ($facts['custom_display_adpater'] != 'Intel(R) Iris(R) Xe Graphics') {
+    if ($facts['custom_display_adpater'] != 'Intel(R)Iris(R)XeGraphics') {
         exec { "${gfx_driver}_install":
             command  => 'C:\Windows\Temp\gfx.exe -s -f --noExtras',
             #command  => file('win_packages/gfx.ps1'),
