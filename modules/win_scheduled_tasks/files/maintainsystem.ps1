@@ -272,7 +272,7 @@ If ($bootstrap_stage -eq 'complete') {
   Puppet-Run
   Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
   ## Last catch if Puppet failed
-  if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
+  if (($puppet_exit -ne 0) -or ($puppet_exit -ne 2)) {
     #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
     exit
   }
