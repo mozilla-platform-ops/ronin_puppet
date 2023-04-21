@@ -3,6 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::hg_files {
+  require win_mozilla_build_tester::install
+
   $mozbld      = "${facts['custom_win_systemdrive']}\\mozilla-build"
   $msys_dir = "${facts['custom_win_systemdrive']}\\mozilla-build\\msys2"
 

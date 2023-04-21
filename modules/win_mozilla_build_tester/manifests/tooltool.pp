@@ -3,6 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::tooltool {
+  require win_mozilla_build_tester::install
+
   $builds         = "${facts['custom_win_systemdrive']}\\builds"
   $tooltool_cache = "${builds}\\tooltool_cache"
 
