@@ -289,6 +289,19 @@ If ($bootstrap_stage -eq 'complete') {
     Start-Sleep -Seconds 1
   }
   StartWorkerRunner
+  start-sleep -s 3600
+  while($true) {
+    $gw = (Get-process -name generic-worker -ErrorAction SilentlyContinue )
+    if ($gw -eq $null) {
+      # Wait to supress meesage if check is cuaght during a reboot.
+      start-sleep -s 45
+      Write-Log -message  ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      start-sleep -s 3
+      shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
+    } else {
+      start-sleep -s 120
+    }
+  }
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   Exit-PSSession
