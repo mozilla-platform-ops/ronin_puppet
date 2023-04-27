@@ -158,7 +158,8 @@ jobs:
     executor: python
     steps:
       - checkout
-      - tfutils/install
+      - tfutils/install:
+          tf_version: 'latest'
       - run:
           name: setup
           command: |
@@ -168,8 +169,6 @@ jobs:
           name: Run pre-commit
           command: |
             export PATH="$HOME/.tfenv/bin:$PATH"
-            tfenv install
-            # tfenv use 1.0.3
             pip install pre-commit
             pre-commit run --from-ref original/master --to-ref HEAD --verbose || true
             cat /home/circleci/.cache/pre-commit/pre-commit.log
