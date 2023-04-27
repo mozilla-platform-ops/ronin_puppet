@@ -172,6 +172,7 @@ jobs:
             pip install pre-commit
             pre-commit run --from-ref original/master --to-ref HEAD --verbose || true
             cat /home/circleci/.cache/pre-commit/pre-commit.log
+            exit 1
   r10k_install:
     executor: ubuntu-2004
     steps:
