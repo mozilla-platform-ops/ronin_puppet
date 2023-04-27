@@ -170,7 +170,7 @@ jobs:
             export PATH="$HOME/.tfenv/bin:$PATH"
             tfenv install 1.0.3
             tfenv use 1.0.3
-            pip install pre-commit==2.20.2
+            pip install pre-commit==2.20.0
             pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     executor: ubuntu-2004
