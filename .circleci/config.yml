@@ -165,14 +165,14 @@ jobs:
           command: |
             sudo apt update
             sudo apt install -y ruby-full
+      - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
+      - run: git fetch --all
       - run:
           name: Run pre-commit
           command: |
             export PATH="$HOME/.tfenv/bin:$PATH"
             pip install pre-commit
-            pre-commit run --from-ref original/master --to-ref HEAD --verbose || true
-            cat /home/circleci/.cache/pre-commit/pre-commit.log
-            exit 1
+            pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     executor: ubuntu-2004
     steps:
