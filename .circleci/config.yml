@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   slack: circleci/slack@3.4.2
   vault: jmingtan/hashicorp-vault@0.2.1
+  terraform: suzuki-shunsuke/terraform@0.2.8
 
 executors:
   docker-base:
@@ -151,23 +152,30 @@ jobs:
     executor: docker-ruby
     steps:
       - checkout
-      - run: apt-get update
-      - run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
+      - terraform/install_tflint:
+        install_dir: .orb-terraform/bin
       - run:
-        name: Install tfenv and terraform
-        command: |
-          git clone https://github.com/tfutils/tfenv.git ~/.tfenv
-          export PATH="$HOME/.tfenv/bin:$PATH"
-          tfenv install 1.0.3
-        #- run: pip3 install pre-commit
-#     - run: pre-commit run --all-files --verbose
-      - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
-      - run: git fetch --all
+          name: tfenv install
+          shell: /bin/bash -eu -o pipefail
+          command: |
+            tfenv install
+      # - run: apt-get update
+      # - run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
+      # - run:
+      #   name: Install tfenv and terraform
+      #   command: |
+      #     cd /tmp
+      #     git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+      #     export PATH="$HOME/.tfenv/bin:$PATH"
+      #     tfenv install 1.0.3
+      #     cd -
+      # - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
+      # - run: git fetch --all
       - run:
           name: Run pre-commit
           command: |
             export PATH="$HOME/.tfenv/bin:$PATH"
-            tfenv use 1.0.3
+            # tfenv use 1.0.3
             pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     executor: ubuntu-2004
