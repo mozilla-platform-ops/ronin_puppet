@@ -160,6 +160,11 @@ jobs:
       - checkout
       - tfutils/install
       - run:
+          name: setup
+          command: |
+            sudo apt update
+            sudo apt install -y ruby-full
+      - run:
           name: Run pre-commit
           command: |
             export PATH="$HOME/.tfenv/bin:$PATH"
