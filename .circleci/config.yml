@@ -151,14 +151,14 @@ jobs:
     executor: docker-ruby
     steps:
       - checkout
-        #- run: apt-get update
-        #- run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
-        #- run:
-        #  name: Install tfenv and terraform
-        #  command: |
-        #    git clone https://github.com/tfutils/tfenv.git ~/.tfenv
-        #    export PATH="$HOME/.tfenv/bin:$PATH"
-        #    tfenv install 1.0.3
+      - run: apt-get update
+      - run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
+      - run:
+        name: Install tfenv and terraform
+        command: |
+          git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+          export PATH="$HOME/.tfenv/bin:$PATH"
+          tfenv install 1.0.3
         #- run: pip3 install pre-commit
 #     - run: pre-commit run --all-files --verbose
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
