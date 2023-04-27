@@ -156,22 +156,11 @@ jobs:
     steps:
       - checkout
       - tfutils/install
-      # - run: apt-get update
-      # - run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
-      # - run:
-      #   name: Install tfenv and terraform
-      #   command: |
-      #     cd /tmp
-      #     git clone https://github.com/tfutils/tfenv.git ~/.tfenv
-      #     export PATH="$HOME/.tfenv/bin:$PATH"
-      #     tfenv install 1.0.3
-      #     cd -
-      # - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
-      # - run: git fetch --all
       - run:
           name: Run pre-commit
           command: |
-            #export PATH="$HOME/.tfenv/bin:$PATH"
+            export PATH="$HOME/.tfenv/bin:$PATH"
+            tfenv install 1.0.3
             tfenv use 1.0.3
             pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
