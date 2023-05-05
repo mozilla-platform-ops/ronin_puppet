@@ -13,6 +13,6 @@ Describe "Git" {
     }
 
     It "Git Version is 2.36.1" {
-        $Git.DisplayVersion | Should -Be "2.36.1"
+        $Git.DisplayVersion | Should -Be "2.37.3"
     }
 }
