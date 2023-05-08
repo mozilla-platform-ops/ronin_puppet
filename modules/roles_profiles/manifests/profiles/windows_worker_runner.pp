@@ -39,6 +39,9 @@ class roles_profiles::profiles::windows_worker_runner {
             $implementation        = lookup('win-worker.taskcluster.worker_runner.implementation')
 
             case $facts['custom_win_os_version'] {
+                'win_10_2009': {
+                    $init = 'task-user-init-win10-64-2009.cmd'
+                }
                 'win_11_2009': {
                     $init = 'task-user-init-win11.cmd'
                 }

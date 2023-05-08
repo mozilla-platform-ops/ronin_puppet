@@ -5,6 +5,13 @@
 class roles_profiles::profiles::gpu_drivers {
   case $facts['custom_win_os_version'] {
     ## Use https://docs.nvidia.com/grid/index.html & https://github.com/Azure/azhpc-extensions/blob/master/NvidiaGPU/resources.json as reference
+    'win_10_2009':{
+      class { 'win_packages::drivers::nvidia_grid':
+        display_name => lookup('win-worker.gpu.display_name'),
+        driver_name  => lookup('win-worker.gpu.name'),
+        srcloc       => lookup('windows.ext_pkg_src'),
+      }
+    }
     'win_11_2009':{
       class { 'win_packages::drivers::nvidia_grid':
         display_name => lookup('win-worker.gpu.display_name'),

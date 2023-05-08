@@ -3,8 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win10642009azure {
+  # Install MS tools earlier
+  include roles_profiles::profiles::microsoft_tools
   # System
   include roles_profiles::profiles::disable_services
+  include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
   include roles_profiles::profiles::firewall
@@ -17,16 +20,15 @@ class roles_profiles::roles::win10642009azure {
   ## *_drivers depends on 7zip which isn't installed until common_tools
   include roles_profiles::profiles::virtual_drivers
   include roles_profiles::profiles::gpu_drivers
-
+  
   # Adminstration
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::common_tools
 
   # Worker
   include roles_profiles::profiles::git
-  include roles_profiles::profiles::mozilla_build
+  include roles_profiles::profiles::mozilla_build_tester
   ## Had to re-run mozilla_maintenance_service twice when mozilla_build wasn't a pre-req
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_worker_runner
-  include roles_profiles::profiles::microsoft_tools
 }

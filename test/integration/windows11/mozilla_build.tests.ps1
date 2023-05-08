@@ -22,8 +22,8 @@ Describe "Mozilla Build" {
         It "Mozilla-Build Version" {
             Get-Content "C:\mozilla-build\VERSION" | Should -Be "4.0.2"
         }
-        It "msys\bin\sh.exe exists" {
-            Test-Path "$Install_Path\msys\bin\sh.exe" | Should -Be $true
+        It "msys2\bin\sh.exe exists" {
+            Test-Path "$Install_Path\msys2\usr\bin\sh.exe" | Should -Be $true
         }
         It "Mozilla Maintenance Service gets installed" {
             $mms.DisplayName | Should -Not -Be $Null
@@ -58,8 +58,8 @@ Describe "Mozilla Build" {
         It "Mercurial gets installed" {
             $mercurial.DisplayName | Should -Not -Be $Null
         }
-        It "Mercurial is 5.9.3" {
-            $mercurial.DisplayVersion | Should -Be "5.9.3"
+        It "Mercurial is 6.2.1" {
+            $mercurial.DisplayVersion | Should -Be "6.2.1"
         }
     }
     Context "HG Files" -Skip {

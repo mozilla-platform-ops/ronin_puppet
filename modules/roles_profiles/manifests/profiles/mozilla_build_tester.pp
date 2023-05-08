@@ -6,8 +6,11 @@
 class roles_profiles::profiles::mozilla_build_tester {
   include win_mozilla_build_tester::install
   include win_mozilla_build_tester::modifications
+  include win_mozilla_build_tester::install_py3_certs
+  include win_mozilla_build_tester::tooltool
   include win_mozilla_build_tester::hg_files
+  include win_mozilla_build_tester::grant_symlink_access
   include win_mozilla_build_tester::install_psutil
   include win_mozilla_build_tester::install_zstandard
-  include win_mozilla_build_tester::install_py3_certs
+  include win_mozilla_build_tester::pip
 }
