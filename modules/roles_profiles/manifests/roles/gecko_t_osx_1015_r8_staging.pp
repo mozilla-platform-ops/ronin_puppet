@@ -23,4 +23,5 @@ class roles_profiles::roles::gecko_t_osx_1015_r8_staging {
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::metrics
     include ::roles_profiles::profiles::worker
+    include ::roles_profiles::profiles::safaridriver
 }
