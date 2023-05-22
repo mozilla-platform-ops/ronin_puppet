@@ -8,7 +8,7 @@ class win_disable_dec22patch::disable {
   }
   registry_value { 'HKLM\SOFTWARE\.NETFramework\Windows Presentation Foundation\XPSAllowedTypes\DisableDec2022Patch':
     ensure => present,
-    type   => REG_SZ,
+    type   => string,
     data   => '*',
   }
 }
