@@ -3,10 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_disable_dec22patch::disable {
-  registry_key { 'HKLM\SOFTWARE\.NETFramework\Windows Presentation Foundation\XPSAllowedTypes':
+  registry_key { 'HKLM\SOFTWARE\Microsoft\.NETFramework\Windows Presentation Foundation\XPSAllowedTypes':
     ensure => present,
   }
-  registry_value { 'HKLM\SOFTWARE\.NETFramework\Windows Presentation Foundation\XPSAllowedTypes\DisableDec2022Patch':
+  registry_value { 'HKLM\SOFTWARE\Microsoft\.NETFramework\Windows Presentation Foundation\XPSAllowedTypes\DisableDec2022Patch':
     ensure => present,
     type   => string,
     data   => '*',
