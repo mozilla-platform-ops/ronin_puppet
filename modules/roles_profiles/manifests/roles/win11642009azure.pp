@@ -8,6 +8,7 @@ class roles_profiles::roles::win11642009azure {
   include roles_profiles::profiles::microsoft_tools
   # System
   include roles_profiles::profiles::disable_services
+  include roles_profiles::profiles::win_disable_dec22patch
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
