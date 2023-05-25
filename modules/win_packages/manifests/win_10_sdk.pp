@@ -20,7 +20,6 @@ class win_packages::win_10_sdk {
       pkg                    => 'winsdksetup.exe',
       install_options_string => '/q /norestart',
       creates                => "${sdk_dir}\\SDKManifest.xml",
-      timeout                => 600,
     }
   } else {
     fail("${module_name} does not support ${$facts['os']['name']}")
