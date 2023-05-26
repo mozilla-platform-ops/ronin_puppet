@@ -1,6 +1,11 @@
 # specify folder
 $folder = 'C:\Program Files (x86)\Mozilla Maintenance Service'
 
+do {
+    Start-Sleep -Seconds 5
+}
+while (-Not (Test-Path -Path $folder))
+
 # set the new ACL object
 $acl = Get-Acl $folder
 
