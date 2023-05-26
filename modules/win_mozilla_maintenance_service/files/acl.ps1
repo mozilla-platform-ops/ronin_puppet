@@ -23,10 +23,10 @@ if (-Not (Test-Path $folder)) {
 # set the ACL of this item
 Try {
     Set-Acl -Path $folder -AclObject $acl -ErrorAction "Stop"
+    Write-host "Set path"
     Exit 0
 }
 Catch {
     Write-Host "Unable to set permissions on $folder"
     exit 1
 }
-

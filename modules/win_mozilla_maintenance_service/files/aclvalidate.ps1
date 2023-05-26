@@ -1,10 +1,17 @@
 # specify folder
 $folder = 'C:\Program Files (x86)\Mozilla Maintenance Service'
 
+do {
+    Start-Sleep -Seconds 5
+}
+while (-Not (Test-Path -Path $folder))
+
 # set the new ACL object
 $acl = Get-Acl $folder
 
-foreach ($access in $acl.Access) {
+$everyone = $acl.Access | Where-Object {$PSItem.IdentityReference -eq "Everyone"}
+
+foreach ($access in $everyone) {
     if ($access.IdentityReference -eq "Everyone" -and 
         $access.FileSystemRights -eq "FullControl" -and 
         $access.InheritanceFlags -eq "ContainerInherit, ObjectInherit" -and 
