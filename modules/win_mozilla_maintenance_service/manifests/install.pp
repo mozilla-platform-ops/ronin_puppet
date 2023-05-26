@@ -19,6 +19,6 @@ class win_mozilla_maintenance_service::install {
     command   => file('win_mozilla_maintenance_service/acl.ps1'),
     onlyif    => file('win_mozilla_maintenance_service/aclvalidate.ps1'),
     provider  => powershell,
-    logoutput => true,
+    #logoutput => true,
   }
 }

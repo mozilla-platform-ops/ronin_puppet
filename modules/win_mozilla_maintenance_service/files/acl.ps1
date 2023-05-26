@@ -10,13 +10,18 @@ $permission = New-Object System.Security.AccessControl.FileSystemAccessRule("Eve
 # add this AccessRule to the ACL
 $acl.AddAccessRule($permission)
 
+if (-Not (Test-Path $folder)) {
+    Write-Host "Unable to find $folder"
+    exit 1
+}
+
 # set the ACL of this item
 Try {
     Set-Acl $folder $acl -ErrorAction "Stop"
     Exit 0
 }
 Catch {
-    Write-Error "Unable to set permissions on $folder"
+    Write-Host "Unable to set permissions on $folder"
     exit 1
 }
 
