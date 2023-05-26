@@ -22,7 +22,7 @@ if (-Not (Test-Path $folder)) {
 
 # set the ACL of this item
 Try {
-    Set-Acl $folder $acl -ErrorAction "Stop"
+    Set-Acl -Path $folder -AclObject $acl -ErrorAction "Stop"
     Exit 0
 }
 Catch {
