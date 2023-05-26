@@ -14,14 +14,11 @@ class win_mozilla_maintenance_service::install {
     creates                => "${facts['custom_win_programfilesx86']}\\Mozilla Maintenance Service\\uninstall.exe",
     require                => File[$local_exe],
   }
-  acl { "C:\\Program Files (x86)\\Mozilla Maintenance Service":
-    permissions                => {
-      identity    => 'everyone',
-      rights      => ['full'],
-      perm_type   => 'allow',
-      child_types => 'all',
-      affects     => 'all',
-    },
-    inherit_parent_permissions => true,
+  ## Fails without rebooting, possible workaround is to have a powershell exec
+  exec { 'mozilla_maintenance_acl':
+    command   => file('win_mozilla_maintenance_service/acl.ps1'),
+    onlyif    => file('win_mozilla_maintenance_service/aclvalidate.ps1'),
+    provider  => powershell,
+    logoutput => true,
   }
 }
