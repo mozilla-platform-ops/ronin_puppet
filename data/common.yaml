@@ -32,6 +32,8 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
         - mac_geckodriver
         - mac_single_file
       dmg_prefix: "dep1"
@@ -44,6 +46,8 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
         - mac_geckodriver
         - mac_single_file
       dmg_prefix: "dep2"
@@ -56,6 +60,8 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
         - mac_geckodriver
         - mac_single_file
       dmg_prefix: "tb"
@@ -79,6 +85,8 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
         - mac_geckodriver
         - mac_single_file
         - mac_notarize
@@ -106,6 +114,8 @@ scriptworker_users:
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
         - mac_geckodriver
         - mac_single_file
         - mac_notarize
