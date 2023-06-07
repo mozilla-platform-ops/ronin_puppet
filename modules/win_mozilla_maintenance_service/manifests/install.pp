@@ -8,7 +8,7 @@ class win_mozilla_maintenance_service::install {
     install_options_string => '/S',
     creates                => "C:\\Program Files (x86)\\Mozilla Maintenance Service\\Uninstall.exe",
   }
-  ## Fails without rebooting, possible workaround is to have a powershell exec
+  ## Puppet functions fails to apply without a reboot, hence the powershell exec step below
   exec { 'mozilla_maintenance_acl':
     command  => file('win_mozilla_maintenance_service/acl.ps1'),
     onlyif   => file('win_mozilla_maintenance_service/aclvalidate.ps1'),
