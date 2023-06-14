@@ -3,14 +3,21 @@ name: macmini-m1
 groups:
   - name: gecko-t-osx-1100-m1-masterwayz
     targets:
-      - macmini-m1-1.test.releng.mslv.mozilla.com
-      - macmini-m1-2.test.releng.mslv.mozilla.com
+#      - macmini-m1-1.test.releng.mslv.mozilla.com
+      - macmini-m1-50.test.releng.mslv.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1100_m1_loaner
+  - name: gecko-t-osx-1100-m1-aglavic
+    targets:
+      - macmini-m1-3.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1100_m1_loaner
 
   - name: gecko-t-osx-1100-m1-staging
     targets:
-      - macmini-m1-3.test.releng.mslv.mozilla.com
+      - macmini-m1-1.test.releng.mslv.mozilla.com
+      - macmini-m1-2.test.releng.mslv.mozilla.com
+#      - macmini-m1-3.test.releng.mslv.mozilla.com
       - macmini-m1-4.test.releng.mslv.mozilla.com
       - macmini-m1-5.test.releng.mslv.mozilla.com
       - macmini-m1-6.test.releng.mslv.mozilla.com
@@ -19,17 +26,17 @@ groups:
       - macmini-m1-9.test.releng.mslv.mozilla.com
       - macmini-m1-10.test.releng.mslv.mozilla.com
       - macmini-m1-11.test.releng.mslv.mozilla.com
-      - macmini-m1-12.test.releng.mslv.mozilla.com
+      - macmini-m1-17.test.releng.mslv.mozilla.com
+#      - macmini-m1-12.test.releng.mslv.mozilla.com
+#      - macmini-m1-13.test.releng.mslv.mozilla.com
+#      - macmini-m1-14.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1100_m1_staging
 
   - name: gecko-t-osx-1100-m1
     targets:
-      - macmini-m1-13.test.releng.mslv.mozilla.com
-      - macmini-m1-14.test.releng.mslv.mozilla.com
       - macmini-m1-15.test.releng.mslv.mozilla.com
       - macmini-m1-16.test.releng.mslv.mozilla.com
-      - macmini-m1-17.test.releng.mslv.mozilla.com
       - macmini-m1-18.test.releng.mslv.mozilla.com
       - macmini-m1-19.test.releng.mslv.mozilla.com
       - macmini-m1-20.test.releng.mslv.mozilla.com

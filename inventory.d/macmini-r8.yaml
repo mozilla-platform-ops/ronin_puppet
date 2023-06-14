@@ -52,7 +52,7 @@ groups:
       - macmini-r8-47.test.releng.mdc1.mozilla.com
       - macmini-r8-48.test.releng.mdc1.mozilla.com
       - macmini-r8-49.test.releng.mdc1.mozilla.com
-      #- macmini-r8-50.test.releng.mdc1.mozilla.com
+      - macmini-r8-50.test.releng.mdc1.mozilla.com
       - macmini-r8-51.test.releng.mdc1.mozilla.com
       - macmini-r8-52.test.releng.mdc1.mozilla.com
       - macmini-r8-53.test.releng.mdc1.mozilla.com
@@ -130,7 +130,6 @@ groups:
       - macmini-r8-135.test.releng.mdc1.mozilla.com
       - macmini-r8-136.test.releng.mdc1.mozilla.com
       - macmini-r8-137.test.releng.mdc1.mozilla.com
-      - macmini-r8-138.test.releng.mdc1.mozilla.com
       - macmini-r8-140.test.releng.mdc1.mozilla.com
       - macmini-r8-141.test.releng.mdc1.mozilla.com
       - macmini-r8-142.test.releng.mdc1.mozilla.com
@@ -170,13 +169,7 @@ groups:
       - macmini-r8-176.test.releng.mdc1.mozilla.com
       - macmini-r8-177.test.releng.mdc1.mozilla.com
       - macmini-r8-178.test.releng.mdc1.mozilla.com
-      - macmini-r8-179.test.releng.mdc1.mozilla.com
-      - macmini-r8-180.test.releng.mdc1.mozilla.com
       - macmini-r8-181.test.releng.mdc1.mozilla.com
-      - macmini-r8-182.test.releng.mdc1.mozilla.com
-      - macmini-r8-183.test.releng.mdc1.mozilla.com
-      - macmini-r8-184.test.releng.mdc1.mozilla.com
-      - macmini-r8-185.test.releng.mdc1.mozilla.com
       - macmini-r8-186.test.releng.mdc1.mozilla.com
       - macmini-r8-187.test.releng.mdc1.mozilla.com
       - macmini-r8-188.test.releng.mdc1.mozilla.com
@@ -184,6 +177,7 @@ groups:
       - macmini-r8-190.test.releng.mdc1.mozilla.com
       - macmini-r8-191.test.releng.mdc1.mozilla.com
       - macmini-r8-192.test.releng.mdc1.mozilla.com
+#      - macmini-r8-201.test.releng.mdc1.mozilla.com
       - macmini-r8-203.test.releng.mdc1.mozilla.com
       - macmini-r8-204.test.releng.mdc1.mozilla.com
       - macmini-r8-205.test.releng.mdc1.mozilla.com
@@ -218,7 +212,7 @@ groups:
       - macmini-r8-251.test.releng.mdc1.mozilla.com
       - macmini-r8-253.test.releng.mdc1.mozilla.com
       #- macmini-r8-254.test.releng.mdc1.mozilla.com
-      - macmini-r8-255.test.releng.mdc1.mozilla.com
+      #- macmini-r8-255.test.releng.mdc1.mozilla.com
       #- macmini-r8-256.test.releng.mdc1.mozilla.com
       - macmini-r8-257.test.releng.mdc1.mozilla.com
       #- macmini-r8-258.test.releng.mdc1.mozilla.com
@@ -258,8 +252,7 @@ groups:
   - name: gecko-t-osx-1015-r8-staging
     targets:
       - macmini-r8-120.test.releng.mdc1.mozilla.com
-      - macmini-r8-121.test.releng.mdc1.mozilla.com
-      - macmini-r8-122.test.releng.mdc1.mozilla.com
+#      - macmini-r8-121.test.releng.mdc1.mozilla.com
       - macmini-r8-123.test.releng.mdc1.mozilla.com
       - macmini-r8-124.test.releng.mdc1.mozilla.com
       - macmini-r8-125.test.releng.mdc1.mozilla.com
@@ -279,8 +272,7 @@ groups:
 
   - name: gecko-1-b-osx-1015
     targets:
-      - macmini-r8-193.test.releng.mdc1.mozilla.com
-      - macmini-r8-194.test.releng.mdc1.mozilla.com
+      - macmini-r8-138.test.releng.mdc1.mozilla.com
       - macmini-r8-195.test.releng.mdc1.mozilla.com
       - macmini-r8-196.test.releng.mdc1.mozilla.com
       - macmini-r8-197.test.releng.mdc1.mozilla.com
@@ -293,7 +285,38 @@ groups:
       - macmini-r8-198.test.releng.mdc1.mozilla.com
       - macmini-r8-199.test.releng.mdc1.mozilla.com
       - macmini-r8-200.test.releng.mdc1.mozilla.com
-      - macmini-r8-201.test.releng.mdc1.mozilla.com
-      - macmini-r8-202.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_3_b_osx_1015
+
+  - name: gecko-1-b-osx-1015-staging
+    targets:
+      - macmini-r8-194.test.releng.mdc1.mozilla.com
+      - macmini-r8-202.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_1_b_osx_1015_staging
+
+  - name: applicationservices-1-b-osx-1015
+    targets:
+      - macmini-r8-122.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: applicationservices_1_b_osx_1015
+
+  - name: applicationservices-3-b-osx-1015
+    targets:
+      - macmini-r8-193.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: applicationservices_3_b_osx_1015
+
+# Manual provisioning for testing
+# gecko-t-osx-1015-r8-bug1764901
+# - macmini-r8-126.test.releng.mdc1.mozilla.com <-- moved to gecko-t staging
+
+# mozillavpn-b-1-osx
+# - macmini-r8-179.test.releng.mdc1.mozilla.com
+# - macmini-r8-182.test.releng.mdc1.mozilla.com
+# - macmini-r8-183.test.releng.mdc1.mozilla.com
+# - macmini-r8-185.test.releng.mdc1.mozilla.com
+
+# mozillavpn-b-3-osx
+# - macmini-r8-180.test.releng.mdc1.mozilla.com
+# - macmini-r8-184.test.releng.mdc1.mozilla.com

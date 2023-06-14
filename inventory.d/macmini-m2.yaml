@@ -1,0 +1,14 @@
+---
+name: macmini-m2
+groups:
+  - name: gecko-1-osx-1300-m2-staging
+    targets:
+       - macmini-m2-2.test.releng.mslv.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1300_m2_staging
+
+  - name: gecko-t-osx-1300-m2
+    targets:
+      - macmini-m2-1.test.releng.mslv.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1300_m2
