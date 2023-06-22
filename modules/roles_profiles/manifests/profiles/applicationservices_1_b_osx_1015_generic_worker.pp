@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
-    $worker_type = 'gecko-3-b-osx-1015'
+class roles_profiles::profiles::applicationservices_1_b_osx_1015_generic_worker {
+    $worker_type = 'applicationservices-b-1-osx1015'
 
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
@@ -22,7 +22,7 @@ class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
                 telegraf_password   => lookup('telegraf.password'),
                 puppet_env          => 'dev',
                 puppet_repo         => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-                puppet_branch       => 'bug1665379_mac-builders',
+                puppet_branch       => 'master',
                 puppet_notify_email => 'relops-puppet-alerts@mozilla.com',
                 meta_data           => $meta_data,
             }
@@ -66,12 +66,12 @@ class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
                 user => 'cltbld',
             }
 
-            $taskcluster_client_id    = lookup('generic_worker_secrets.taskcluster_client_id')
-            $taskcluster_access_token = lookup('generic_worker_secrets.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker_secrets.livelog_secret')
-            $quarantine_client_id     = lookup('generic_worker_secrets.quarantine_client_id')
-            $quarantine_access_token  = lookup('generic_worker_secrets.quarantine_access_token')
-            $bugzilla_api_key         = lookup('generic_worker_secrets.bugzilla_api_key')
+            $taskcluster_client_id    = lookup('generic_worker.taskcluster_client_id')
+            $taskcluster_access_token = lookup('generic_worker.taskcluster_access_token')
+            $livelog_secret           = lookup('generic_worker.livelog_secret')
+            $quarantine_client_id     = lookup('generic_worker.quarantine_client_id')
+            $quarantine_access_token  = lookup('generic_worker.quarantine_access_token')
+            $bugzilla_api_key         = lookup('generic_worker.bugzilla_api_key')
 
             class { 'packages::zstandard':
                 version => '1.3.8',
@@ -98,13 +98,13 @@ class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
                 unless  => '/bin/test -d /builds || /bin/test -d /tools'
             }
             include dirs::tools
-            include dirs::build
+            include dirs::builds
 
             #include packages::google_chrome
-            file { '/var/opt/generic-worker':
-                ensure => 'directory',
-                mode   => '0755',
-            }
+            #file { '/var/opt/generic-worker':
+            #    ensure => 'directory',
+            #    mode   => '0755',
+            #}
 
             contain packages::nodejs
             #contain packages::wget

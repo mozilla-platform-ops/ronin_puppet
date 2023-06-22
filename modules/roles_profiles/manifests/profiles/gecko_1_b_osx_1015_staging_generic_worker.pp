@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
-    $worker_type = 'gecko-3-b-osx-1015'
+class roles_profiles::profiles::gecko_1_b_osx_1015_staging_generic_worker {
+    $worker_type = 'gecko-1-b-osx-1015-staging'
 
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
@@ -66,12 +66,12 @@ class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
                 user => 'cltbld',
             }
 
-            $taskcluster_client_id    = lookup('generic_worker_secrets.taskcluster_client_id')
-            $taskcluster_access_token = lookup('generic_worker_secrets.taskcluster_access_token')
-            $livelog_secret           = lookup('generic_worker_secrets.livelog_secret')
-            $quarantine_client_id     = lookup('generic_worker_secrets.quarantine_client_id')
-            $quarantine_access_token  = lookup('generic_worker_secrets.quarantine_access_token')
-            $bugzilla_api_key         = lookup('generic_worker_secrets.bugzilla_api_key')
+            $taskcluster_client_id    = lookup('generic_worker.datacenter_gecko_1_b_osx_1015.taskcluster_client_id')
+            $taskcluster_access_token = lookup('generic_worker.datacenter_gecko_1_b_osx_1015.taskcluster_access_token')
+            $livelog_secret           = lookup('generic_worker.datacenter_gecko_1_b_osx_1015.livelog_secret')
+            $quarantine_client_id     = lookup('generic_worker.datacenter_gecko_1_b_osx_1015.quarantine_client_id')
+            $quarantine_access_token  = lookup('generic_worker.datacenter_gecko_1_b_osx_1015.quarantine_access_token')
+            $bugzilla_api_key         = lookup('generic_worker.datacenter_gecko_1_b_osx_1015.bugzilla_api_key')
 
             class { 'packages::zstandard':
                 version => '1.3.8',
@@ -83,28 +83,27 @@ class roles_profiles::profiles::gecko_3_b_osx_1015_generic_worker {
                 worker_group              => $worker_group,
                 worker_type               => $worker_type,
                 data_dir                  => '/var/opt/generic-worker',
-                generic_worker_version    => 'v52.0.0',
-                generic_worker_sha256     => '9a25269cb998633d6ce1e959a480cde1723acaf17712fdfc38f640afa9e56232',
-                taskcluster_proxy_version => 'v52.0.0',
-                taskcluster_proxy_sha256  => '24d3879e85a923b71fb1d65950c16188eddd623a023c13f8e4b575b1a9cc0113',
-                livelog_version           => 'v52.0.0',
-                livelog_sha256            => 'fcd97d30d20d7e90498d91512560df104c82801879fd83d12cf9d1e94621372f',
+                generic_worker_version    => 'v38.0.4',
+                generic_worker_sha256     => '5b97f98d52b97e2114b29ac42a0fcefb7b90ef70d1e24a3bbd6572a7ee6d4807',
+                taskcluster_proxy_version => 'v38.0.4',
+                taskcluster_proxy_sha256  => 'dd3095ee5aaa8c5fc017207f85bcb49fd83d429a759b07d82f6c0cb1c1b23fd7',
+                livelog_version           => 'v38.0.4',
+                livelog_sha256            => '2aef4bfbc214f1bece2154ee5ec5eedf9e495b562476873a759b229e25c3b448',
                 user                      => 'root',
                 #gw_dir                    => '/etc/generic-worker',
             }
 
-            exec { 'writes_in_catalina':
-                command => '/sbin/mount -uw /',
-                unless  => '/bin/test -d /builds || /bin/test -d /tools'
-            }
-            include dirs::tools
-            include dirs::build
+            # exec { 'writes_in_catalina':
+            #     command => '/sbin/mount -uw /',
+            #     unless  => '/bin/test -d /builds || /bin/test -d /tools'
+            # }
+            #include dirs::tools
 
             #include packages::google_chrome
-            file { '/var/opt/generic-worker':
-                ensure => 'directory',
-                mode   => '0755',
-            }
+            #file { '/var/opt/generic-worker':
+            #    ensure => 'directory',
+            #    mode   => '0755',
+            #}
 
             contain packages::nodejs
             #contain packages::wget

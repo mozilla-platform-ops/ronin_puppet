@@ -32,7 +32,7 @@ exec 2> >(tee /var/log/genericworker/stderr.log >&2)
 exitstatus="${PIPESTATUS[0]}"
 
 # Remove semaphore file to ensure generic worker does not start before puppet
-rm -f "/var/tmp/semaphore/run-buildbot"
+#rm -f "/var/tmp/semaphore/run-buildbot"
 
 # If generic-worker considers that the host environment is in an invalid/corrupted
 # state (for example, it cannot write to disk), it will return the exit code 69.

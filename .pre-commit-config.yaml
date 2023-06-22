@@ -22,7 +22,8 @@ repos:
     - --fix
     - --fail-on-warnings
     - --no-documentation-check
-
+    - --no-slash_comments
+    - --no-unquoted_resource_title
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 3.0.0
   hooks:

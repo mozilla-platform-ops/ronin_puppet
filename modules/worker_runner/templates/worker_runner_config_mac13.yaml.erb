@@ -42,6 +42,7 @@ workerConfig:
     processor_count: "<%= @facts['system_profiler']['processors'] %>"
     processor_cores: "<%= @facts['system_profiler']['cores'] %>"
     disk_size: "<%= @facts['mountpoints']['/']['size'] %>"
+    # disk_size: "926 GiB"
     memory: "<%= @facts['system_profiler']['memory'] %>"
     model_identifier: "<%= @facts['system_profiler']['model_identifier'] %>"
     system_version: "<%= @facts['system_profiler']['system_version'] %>"
