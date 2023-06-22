@@ -14,7 +14,7 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_staging_generic_worker {
         workerId      => $facts['networking']['hostname'],
     }
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             class { 'puppet::atboot':
@@ -150,7 +150,7 @@ class roles_profiles::profiles::gecko_1_b_osx_1015_staging_generic_worker {
             include mercurial::ext::robustcheckout
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
