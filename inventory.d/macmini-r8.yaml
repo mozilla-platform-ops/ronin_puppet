@@ -1,4 +1,5 @@
 ---
+# Inventory sheet: https://docs.google.com/spreadsheets/d/10YeXSusmKGFNgPE1likHGqO1rz7KzxbHBrDGBsKhhyE/edit#gid=0
 name: macmini-r8
 groups:
   - name: gecko-t-osx-1015-r8
@@ -269,9 +270,9 @@ groups:
     facts:
       puppet_role: applicationservices_3_b_osx_1015
 
-# Manual provisioning for testing
-# gecko-t-osx-1015-r8-bug1764901
-# - macmini-r8-126.test.releng.mdc1.mozilla.com <-- moved to gecko-t staging
+
+# Getting the below pools moved is being tracked in
+# https://mozilla-hub.atlassian.net/browse/RELOPS-590
 
 # mozillavpn-b-1-osx
 # - macmini-r8-179.test.releng.mdc1.mozilla.com
