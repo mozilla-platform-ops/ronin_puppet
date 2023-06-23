@@ -10,7 +10,9 @@ class roles_profiles::profiles::cltbld_user {
             if member(['13'], $facts['os']['macosx']['version']['major']) {
                 $pw_info = str2saltedpbkdf2(
                     lookup('cltbld_user.password'),
-                    lookup('cltbld_user.salt'),
+                    # GROSS HACK FOR TESTING, DO NOT LAND
+                    # lookup('cltbld_user.salt'),
+                    'Use a s@lt h3r3 th@t is 32 byt3s',
                     lookup('cltbld_user.iterations')
                 )
                 $password = $pw_info['password_hex']
