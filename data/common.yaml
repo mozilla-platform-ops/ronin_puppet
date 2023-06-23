@@ -74,6 +74,8 @@ scriptworker_users:
       home: /builds/vpn-dep
       supported_behaviors:
         - mac_sign_and_pkg_vpn
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
       dmg_prefix: "vpn"
       worker_type_prefix: "vpn-"
       worker_id_suffix: "vpn"
@@ -144,6 +146,9 @@ scriptworker_users:
       home: /builds/scriptworker
       supported_behaviors:
         - mac_notarize_vpn
+        - mac_sign_and_pkg_vpn
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
       dmg_prefix: "prod"
       cot_product: "mozillavpn"
       keychain_filename: "mozilla.20220330.keychain"
