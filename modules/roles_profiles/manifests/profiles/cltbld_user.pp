@@ -13,7 +13,7 @@ class roles_profiles::profiles::cltbld_user {
                     # GROSS HACK FOR TESTING, DO NOT LAND
                     # lookup('cltbld_user.salt'),
                     'Use a s@lt h3r3 th@t is 32 byt3s',
-                    lookup('cltbld_user.iterations')
+                    Integer(lookup('cltbld_user.iterations'))
                 )
                 $password = $pw_info['password_hex']
                 $salt = $pw_info['salt_hex']
