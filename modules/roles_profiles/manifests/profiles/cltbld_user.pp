@@ -7,7 +7,7 @@ class roles_profiles::profiles::cltbld_user {
         'Darwin': {
             # OS X 13+ wants a salted SHA512 PBKDF2 password hash
             # see https://github.com/puppetlabs/puppetlabs-stdlib/blob/main/REFERENCE.md#str2saltedpbkdf2
-            if $facts['os']['macosx']['version']['major'] > 13 {
+            if member(['13'], $facts['os']['macosx']['version']['major']) {
                 $pw_info = str2saltedpbkdf2(
                     lookup('cltbld_user.password'),
                     lookup('cltbld_user.salt'),
