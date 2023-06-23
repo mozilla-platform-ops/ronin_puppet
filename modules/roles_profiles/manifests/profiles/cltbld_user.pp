@@ -3,12 +3,26 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::cltbld_user {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
-            $password     = lookup('cltbld_user.password')
-            $salt         = lookup('cltbld_user.salt')
-            $iterations   = lookup('cltbld_user.iterations')
-            $kcpassword   = lookup('cltbld_user.kcpassword')
+            # OS X 13+ wants a salted SHA512 PBKDF2 password hash
+            # see https://github.com/puppetlabs/puppetlabs-stdlib/blob/main/REFERENCE.md#str2saltedpbkdf2
+            if $facts['os']['macosx']['version']['major'] > 13 {
+                $pw_info = str2saltedpbkdf2(
+                    lookup('cltbld_user.password'),
+                    lookup('cltbld_user.salt'),
+                    lookup('cltbld_user.iterations')
+                )
+                $password = $pw_info['password_hex']
+                $salt = $pw_info['salt_hex']
+                $iterations = $pw_info['interations']
+                $kcpassword   = lookup('cltbld_user.kcpassword')
+            } else {
+                $password     = lookup('cltbld_user.password')
+                $salt         = lookup('cltbld_user.salt')
+                $iterations   = lookup('cltbld_user.iterations')
+                $kcpassword   = lookup('cltbld_user.kcpassword')
+            }
 
             # Create the cltbld user
             users::single_user { 'cltbld':
@@ -103,7 +117,7 @@ class roles_profiles::profiles::cltbld_user {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
