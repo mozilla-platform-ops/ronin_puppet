@@ -2,13 +2,13 @@
 #   - this only runs once and depends on SEMAPHOREPATH/updated-safari to not exist already
 #
 
-class macos_updatesafari(
+class macos_safariupdate(
   String $user_running_safari = 'cltbld'
 ) {
   $update_script = "/usr/local/bin/macos1015-safariupdate.sh"
 
   file { $update_script:
-    content => file('macos_safari_update/macos1015-safariupdate.sh'),
+    content => file('macos_safariupdate/macos1015-safariupdate.sh'),
     mode    => '0755',
   }
 
