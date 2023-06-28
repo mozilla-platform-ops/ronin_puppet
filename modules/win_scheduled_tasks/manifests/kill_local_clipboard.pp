@@ -6,7 +6,7 @@ class win_scheduled_tasks::kill_local_clipboard {
 
     $kill_localclip = "${facts['custom_win_roninprogramdata']}\\kill_local_clipboard.ps1"
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         file { $kill_localclip:
             content => file('win_scheduled_tasks/kill_local_clipboard.ps1'),
         }
@@ -24,6 +24,6 @@ class win_scheduled_tasks::kill_local_clipboard {
             user      => 'system',
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

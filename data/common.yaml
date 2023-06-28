@@ -12,13 +12,14 @@ apple_firmware_acceptance:
 
 user_groups:
   relops:
+    - jwatkins
+    - dhouse
     - mcornmesser
     - aerickson
     - jmoss
-    - mgoossens
   signing:
     - ahalberstadt
-    - bhearsum
+    - asasaki
     - gbrown
     - hneiva
     - jcristau
@@ -147,16 +148,16 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'signing-mac-v1'
-        scriptworker_revision: "3597108fe710dc23bcb39621c9c50c2b55ebd90b"
-        scriptworker_scripts_revision: "06c3685383e9b596b8c45967b4751a1d68a4eaef"
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
     tb-prod:
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'tb-signing-mac-v1'
-        scriptworker_revision: "3597108fe710dc23bcb39621c9c50c2b55ebd90b"
-        scriptworker_scripts_revision: "06c3685383e9b596b8c45967b4751a1d68a4eaef"
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
     dep:
         taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
@@ -165,16 +166,16 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'depsigning-mac-v1'
-        scriptworker_revision: "3597108fe710dc23bcb39621c9c50c2b55ebd90b"
-        scriptworker_scripts_revision: "06c3685383e9b596b8c45967b4751a1d68a4eaef"
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
     vpn:
         vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'mozillavpn-3-signing-mac'
-        scriptworker_revision: "3597108fe710dc23bcb39621c9c50c2b55ebd90b"
-        scriptworker_scripts_revision: "06c3685383e9b596b8c45967b4751a1d68a4eaef"
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
 
 poller_config:
     ff-prod:
@@ -247,6 +248,12 @@ signingworker_roles:
             langpack_url: 'n/a'
 
 all_users:
+  jwatkins:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC4L7XGxmrrQwZ6thiNih0Mmf9vylvZ3nnYpJyRISbjwRVQWcIOyw6xWJoayBIGwHF5/jeoWrQ3XpQv4Ub92u+Ck29JeQYVt8I6Q8auJipsivRMrsdLRwBgPrRUVcgIRq5O7LGuq8dP3MMcnYFGjkPwYJYkole/+d1uB8Zk6W7glpjOWH3m7bMmDUokS72gCjFCUgg/X8WF3RdYrAr4vlSJ0Gbk6Pi9QQJYzxKn7w9ju6W28q19A1iNNMSyJYjQ6ilpge8epRlutse7vxzpGFQaN6BfG5AFf08B3+PODNgmDmy8gnIMWT/EE1fnocxnE9UGggix7OxfVGWu5WbyIoO0pZqHIZy8xeQ0PEBkYVEs31SsCXBJpX7AqGPPxaomIMvCFGNoQgUfXku1SJwdp/2/PMQN5TcBJW8htZJWwDojBwv+i4jr59i+rFUXOJl0HSKvZxAlKk7OIgK+GcJhg2TfTgdE/WVVB63tJlH7QsoVpCjgL8R8j9wLTd2wdrL9V3wabI37s7mTZQ/nfUVqZYghGs1zXn9WzCk2NARHZlc/e4vvj6I1nGohwQdtDuFbrhspx3eTlbfTCe41uqyQiTw8FGZKO4t6BVL4ePx8DLAoq7w38eMufMYK6e1qgegEwfQC6g8VHEk1UQkh48sENVeyFA/LJSf7AqO5xXZIq0M60w== Mozilla_key_for_jwatkins
+
+  dhouse:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCfeLZeQj7V+K5XZA0YzxDHJiCt4iUvd6bkLFZR02fkVGsFt3639K955ycwspSoEDgqBHfO4UCv2cqBLQqI7EdYl0FcllVPeKL64XKvZA0cXqlzWmqfrnh9yw78Qw0XnYXTbTXVJDxYZC36VZaNFxUc28lr9r3BfMyrVJZ8v7Lz/2S4kYXtOgrqCbu/K2RiNiJ4uO0mAWivF+NsuWInlrH97YdohE/7kydslv0wGVf1rU1tQ0CYXNQBqir89+0Glshix2TtRdXn6HhNbFNFkkbja246fHt26W6COoF8t2R7Kh/Yvs0FLWLZe8xNWVmca2F+RDwpN9muydfVa0j+9iJu+GXBIsNbivqclcqhGHzTItM1GpGe9wgbugKtOMKQ02+OSGHmyAQhG4Fi675QG7yAz3gDH0DYiai/s032mMyqiOSH4JWFvq6dN32l/cbZMYfB/VMBJwbI0EJOb55Kqn6UDyYCaFZpfJq/w1gXEmpu7XtzuBbsFBum6c/248cGR+RtJ5N0EF098+3IRbDOq4t8cKcdy/rOu2O/iCIIfr3coBunFCUPVw6/r8I0qrFcLjCCKKjEBIpTrCv5ch1uj9P0BqJw+LWsalQsJeVQ/U71tHoUWqINrGXyjvVhHcTbeE22bALTq0iEqwZEPrZCusb5yqpow89zw+MqrT9SCz/S0w== dhouse.house
+
   mcornmesser:
     - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAgEAgl+gdJm/ugZQJhjWRldBMoijBAxX9aK4djspM+X+59SqdLidnHG7IyOyzniUVa5IgL8ak91v59zgTM4K9VmLdbH1EttiryJ2juYygBClFQC3p7NiHLhtuJOrrMbb7K53I6dJVxui8f3Rj58nV7Y3wvrdmoxKboVYGLNCWcVhEOFpfvr+RftMPfAgOTBgAXqWt3954OGmDLAPVCUruuNrZpFYZ4WBEVsZYFvljXz7eBZCS1HyeYtDDmNECGSKMvyR1C32kGpDfK+I8cngaZAdhUpEYVWJeIQmACUoilgx8A/K0GfPmnncfi3QJUrucFAmA8f87k4PczamTMszmdmOiXVzKCID2DtH/uunTtDe7toIuA2A0fCYeFGkvEgIUAIifhifduJdbvNuVJ/AmEcOAN9PIAzhGQh7WhPRagJeydgtB2hQihRSaVVQgSNUJA8trAQKAArB/cJSZgIu9PED6ZuRzUWpA3HPzVxyx9v73d/c0ZnacF8VP74ucOaqi+z/QUe3dPKg14x4kJQHthPJm8oVS04sWQjRVTyXgcEnHyYiEOhAq5XCd1Pss7hLICKuc9L4/AKMoKpzf2mqPuhfEHJ77MGHXfGFwY08rFpU54wRiO7tyX09w+S1CKImjoz3mjYZu42W6gIyLbCzxbMaV9aRK27Tn/A1j1NBcQvGEn0= rsa-key-20170619
     - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA1zBG1hfe9OgISQxo0tQgy9VfTWk81mIadB90aSowIfdUZdGg0qoDKY5JHKMxi1BOwzN/UnEO+PeS3pIRY/2Xr7ywMgnoqYo9mkF/Q0EHnjVwjJxWfza9eEvI0SoBpPu1FlCgk+unzedEaJTc0KzNKEjRxVL4/XXvIgV4U/BukYAEYAsPFWXIvkSNi9GrNrAkKRuXCVOItBQjYGP+hg9vbnGOAmzIzgAmxxxos/LH7+z/59H0Cmm4wgzgm5JCRyIIHueYkHJYswx1crr1KQTooghJf+mGV1Iif+ymVylk2nnsdfQLqYHgSte4BnXV9NZGa1PIGmA/+wHVUfaiXNtjOQ== rsa-key-20170620
@@ -260,8 +267,8 @@ all_users:
   ahalberstadt:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDobzliCCDeAiMIIYD2IrNs1YYYy1jshn/9LKP+D3IM0+ArWiBW8yBaYyhI5Cv2PqxhLhrHyKSuIVRcGTqmugG0cz/iwhL/7Ruedo5Hn+gEtPMgX1Ju9Ya9wckZAtkluqzzBPTebOTh0jevUwNF7bvrQUZu7NTfrCUa3DVWQya65Z7WIwX2SaMOLxXMW+XgX1NUYobav3iamqbNLOGuSNzUpFsQy7yAOaOnMT34wqemNpMndzAEU3ZPM7/XRxDcUTxfbHlNCqzWI2mGqAQz9m4Ssvb59/R7b3+qXyvyKEAKqra/Mu5l5KmT7dH2NH1fTuznR7AjJ4pUlSmM7gNsOQhLmaAFiZ4jKdXvaB4CW162RfhmD7eJQb4sV6mLqRNvjvz14DpKlA+Z7izjuBDWZwZx+9xXSGfpwCaH92zCn09NKbsA6Ghscn1vzrf7a4CfrT8FDAf0Eiqr4DvymRL0OMuUdLg2EO65lMNaPKPcOHyWC9pDPWzD9iKhGyXAOROs0ak= ahal@DESKTOP-BF76SPQ
 
-  bhearsum:
-    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOtBhVQFi++zDdhoDzh/eCVrnRwnuUAIzDa5LQr0LBjX bhearsum@mozilla.com
+  asasaki:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQClqul9yd93oK71/O+ADPnDoabci2lF2gUYaTEGl/y3MoWWE4Vw9ZZx9/T9GWZSYPVRoTfJ6Bkex0uZodQhphcNW4aDoCU1L21qqoC3AmTw/v475bGZLwa9CLT0UkNQXCTMnNPk8GGBLhvaV8EKnCV2rNGvwx2Squ6seTRB04Ah8UnA5xJnYozTcwp8h71zrbqifceu9XIyDB4EVdBfgV4xLAMUs5o1z8Hh3cGUag2ywS4S8MbI/U36ES285Ps+B25AmAm2TWhMulKPmdTDCPI5BYo5RFe7gcWKjWYItD9dqkChCgB0uUyiYucSBbHtSYDG7Odau8BYZavx7s/S+Wyg30+guc1YvmoGrYsBi6b6YMTC7Vx3hl7m2KCx2Q21ZKO8tpEFx7Wuadm3ydt/hFKZ9PfN2zN7ZuvTMecPqznZLTJ4ZiehgfmwhSoTNlg7DliTMD2rktXJ/eNxVUo30aDIZteW9Tk9MiKSN/sUAKREkmmhMtJOfZw1XeNF0BZbqAFpoFsRrw18kO1XV4+jf6QJ8+aMYC2WEMOhXIlENfL9BNIHgCK5kY+6VqJ4OlOLJu/YGwGd4UxSmm1XG8dz5+UhDAmm/4y6iKGOBwJLBqS3JTF0fimPYSg/yO126vIoLs3+TLACA8PQGMOlNW2k2Xm3JWUDhHBztOdMz3SJFq/IjQ== Mozilla_key_for_Aki_Sasaki
 
   gbrown:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7yH96JpXxkCkyPfn0HpJa8bd+tx+IlfhzxihdgBHLK gbrown@mozilla.com
@@ -274,10 +281,6 @@ all_users:
 
   jlorenzo:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgKAI4ewrAAfxgV1sE5cNwublsALzX3xYGWwU3RLoCa yubikey-mozilla-2022
-
-  mgoossens:
-    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC3sVXhUTEkO+aCuIX7TfIj2ecieAvE9sIr+k3GGTS12EGWf2qafbvbDm4XaZtJyBpQJhCjAkJIYF/0jw79kS6REK+BIu1KkwZkTUEUZEHG607GH8Xyyv33Tj+WAzg1K98DsxnoXu+WGBf8mHX1SnrUrP2dIqw+V1K8gkkbeUddO2SHXKtmU9r/uKMQR9kSO8cL81qdRJRloq42yWVWTPnbNxgSwH3/8WLk5pCplVOW4Bz8n7bmSIm49vDlLf0YZT0NQW7JlXJlkPH2y/puYBiF/XV5c5NakpOy5geopnwU3hYE/eU/2uHbq6AzUUh/nJB3scLjG0xewu71eLbRUOIMuIZKOn0bGYFawnV3/X6X1TLOeZdO7wl0Dm9f0nFF+V0VNu4sbalhqnS2dxGzjEszwFPm+g8uLdyKiDdynDZDlH8FPgOTSVp0HlPgxuQyE+v1JI4Ds1TGB4afQUTV8hzyaGt8vw/w/PdYyo3zWfV8XhoPPKxDjTyODPAyyq/L678= michellemoz
-    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDsrIZwueImmSOERVYfVdLa99WnNKVYJRVkPgF/f4S9hzXBSBu+vyINBY9S9dg/ZXpS+gLtHSbmAf5oUCWjPLQvmqWFyG49JtHkinYUbIxghp+/MTlsqP3JA/P1BWUKE1aACOgEENi7v6QG4CkrpYD7/jbBar2kPXe/jYm0gtKirIMVylejk1Kt6xdvCnAo57QXVHXm6HM7JAXH7YjE27i/XZICR2c2Uc8DxjyIfmRZZ3uacOJPXrxO6iq727Anu04gkr1ckhinUhkqwDLqLLJwUyBc0gsXE8bTiskPqCYaGNKR8YJKcrBCVhYAplYh2UNEVkzXW5uZE9PP0osGRB347St/y8BebkAEPlmPgrHFDtRbPc1qX592H6Xq5IcUB/18htgPcE2Jp+W4YywoYT14oYbhbtGW3OySmhOk58dR8Q+uAQBzAd4oOxK3shDGEJi1lWkClpZ4uhHHQWbeyaKq62oY0qSmzPjAZt1nt3Dd9h58R/X/s32hNlP55xPNgHQbroIYqAIERWUaaB9hRUCciKG3ZbJoTgsVOoEIj60Tt29J4vysddBc8Sha31ImM4wMGhMR75lJE4y9mFTNxkSl2q4PzIiar0xoIa0K57E8xrqNXWP3b4zLT6d/0qfeAFKdVbgJTGuaHGQ42L2Ri0RxLvroYjxiOY9zfOCW+7CrLQ== mozyubi01
 
   # from relops_common_keys_2020-09-08.yml
   relops:

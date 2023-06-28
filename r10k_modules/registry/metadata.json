@@ -1,39 +1,40 @@
 {
   "name": "puppetlabs-registry",
-  "version": "2.1.0",
-  "author": "Puppet Inc",
+  "version": "4.1.0",
+  "author": "puppetlabs",
   "summary": "This module provides a native type and provider to manage keys and values in the Windows Registry",
   "license": "Apache-2.0",
   "source": "git://github.com/puppetlabs/puppetlabs-registry.git",
-  "project_page": "http://links.puppet.com/registry-module",
-  "issues_url": "https://github.com/puppetlabs/puppetlabs-registry/issues",
+  "project_page": "https://github.com/puppetlabs/puppetlabs-registry",
+  "issues_url": "https://tickets.puppetlabs.com/browse/MODULES",
   "dependencies": [
-  
+
   ],
-  "data_provider": null,
   "operatingsystem_support": [
     {
       "operatingsystem": "Windows",
       "operatingsystemrelease": [
-        "Server 2008",
-        "Server 2008 R2",
-        "Server 2012",
-        "Server 2012 R2",
-        "Server 2016",
         "7",
         "8",
-        "10"
+        "10",
+        "2008",
+        "2008 R2",
+        "2012",
+        "2012 R2",
+        "2016",
+        "2019",
+        "2022"
       ]
     }
   ],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 4.7.0 < 7.0.0"
+      "version_requirement": ">= 6.0.0 < 8.0.0"
     }
   ],
   "description": "This module provides a native type and provider to manage keys and values in the Windows Registry",
-  "pdk-version": "1.6.0",
-  "template-url": "file://C:/Program Files/Puppet Labs/DevelopmentKit/share/cache/pdk-templates.git",
-  "template-ref": "1.6.0-0-gf5564c0"
+  "pdk-version": "2.4.0",
+  "template-url": "https://github.com/puppetlabs/pdk-templates.git#main",
+  "template-ref": "2.5.0-0-g806810b"
 }

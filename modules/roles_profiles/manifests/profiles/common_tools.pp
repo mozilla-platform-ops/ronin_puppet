@@ -4,13 +4,14 @@
 
 class roles_profiles::profiles::common_tools {
 
-    case $::operatingsystem {
+    case $facts['os']['name']  {
         'Windows': {
             include win_packages::process_debug
             include win_packages::jq
             include win_packages::gpg4win
             include win_packages::sevenzip
             include win_packages::sublimetxt
+            include win_packages::mercurial
             if $facts['custom_win_location'] == 'aws' {
                 include win_packages::nircmd
             }
@@ -20,7 +21,7 @@ class roles_profiles::profiles::common_tools {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1562042
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

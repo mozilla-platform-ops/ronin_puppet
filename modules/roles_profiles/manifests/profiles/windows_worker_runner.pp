@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::windows_worker_runner {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $nssm_dir              = lookup('windows.dir.nssm')
@@ -16,7 +16,7 @@ class roles_profiles::profiles::windows_worker_runner {
             }
             $nssm_exe              =  "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
 
-            $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_s3')
+            $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_az')
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')
@@ -38,6 +38,23 @@ class roles_profiles::profiles::windows_worker_runner {
             $provider              = lookup('win-worker.taskcluster.worker_runner.provider')
             $implementation        = lookup('win-worker.taskcluster.worker_runner.implementation')
 
+            case $facts['custom_win_os_version'] {
+                'win_10_2009': {
+                    $init = 'task-user-init-win10-64-2009.cmd'
+                }
+                'win_11_2009': {
+                    $init = 'task-user-init-win11.cmd'
+                }
+                'win_2012': {
+                    $init = 'task-user-init-win2012.cmd'
+                }
+                'win_10_2004': {
+                    $init = 'task-user-init-win10.cmd'
+                }
+                default: {
+                    $init = undef
+                }
+            }
 
             case $provider {
                 'standalone': {
@@ -70,6 +87,9 @@ class roles_profiles::profiles::windows_worker_runner {
                 desired_gw_version => $desired_gw_version,
                 current_gw_version => $facts['custom_win_genericworker_version'],
                 gw_exe_source      => "${ext_pkg_src_loc}/${desired_gw_version}/${gw_name}",
+                # Here
+                init_file          => $init,
+                # Here
                 gw_exe_path        => $gw_exe_path,
             }
             class { 'win_taskcluster::proxy':
@@ -107,7 +127,7 @@ class roles_profiles::profiles::windows_worker_runner {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

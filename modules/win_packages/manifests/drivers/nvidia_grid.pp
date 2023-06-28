@@ -3,37 +3,33 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::drivers::nvidia_grid (
-    String $driver_name,
-    String $srcloc
+  String $driver_name,
+  String $display_name,
+  String $srcloc
 ) {
+  $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
+  $zip_name    = "${driver_name}.zip"
+  $pkgdir      = $facts['custom_win_temp_dir']
+  $src_file    = "\"${pkgdir}\\${zip_name}\""
 
-    require win_packages::sevenzip
+  # copy the installtion file during image build
+  # only install if it is a gpu worker with gpu in the pool name
 
-    $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
-    $working_dir = "${facts['custom_win_systemdrive']}\\${driver_name}"
-    $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
-    $zip_name    = "${driver_name}.zip"
-    $pkgdir      = $facts['custom_win_temp_dir']
-    $src_file    = "\"${pkgdir}\\${zip_name}\""
+  file { "${pkgdir}\\${zip_name}":
+    source => "${srcloc}/${zip_name}",
+  }
 
-    # copy the installtion file during image build
-    # only install if it is a gpu worker with gpu in the pool name
+  exec { 'grid_unzip':
+    command  => "Expand-Archive -Path ${src_file} -DestinationPath ${facts['custom_win_systemdrive']}\\",
+    creates  => $setup_exe,
+    provider => powershell,
+  }
 
-    file { $working_dir:
-        ensure => directory,
+  if $facts['custom_win_gpu'] == 'yes' {
+    package { $display_name :
+      ensure          => '472.39',
+      source          => $setup_exe,
+      install_options => ['-s','-noreboot'],
     }
-    file { "${pkgdir}\\${zip_name}":
-        source => "${srcloc}/${zip_name}"
-    }
-    if $facts['custom_win_gpu'] == 'yes' {
-        exec { 'grid_unzip':
-            command => "${seven_zip} x ${src_file} -o${working_dir} -y",
-            creates => $setup_exe,
-        }
-        exec { 'grid_install':
-            command     => "${facts['custom_win_system32']}\\cmd.exe /c ${setup_exe} -s -noreboot",
-            subscribe   => Exec['grid_unzip'],
-            refreshonly => true,
-        }
-    }
+  }
 }

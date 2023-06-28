@@ -13,6 +13,9 @@ if $::operatingsystem == 'Windows' {
         file { $roninprogramdata:
             ensure => directory,
         }
+        file { "${$roninprogramdata}\\ronin":
+            ensure => directory,
+        }
         # $facts['custom_win_roninsemaphoredir']
         file { $semaphoredir:
             ensure => directory,

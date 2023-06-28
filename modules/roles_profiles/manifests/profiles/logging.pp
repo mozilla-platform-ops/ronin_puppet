@@ -18,7 +18,7 @@ class roles_profiles::profiles::logging (
     $stackdriver_key      = lookup("stackdriver.${stackdriver_project}.key", {'default_value' => ''})
     $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid", {'default_value' => ''})
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $log_aggregator  = lookup('windows.external.papertrail')
@@ -62,7 +62,7 @@ class roles_profiles::profiles::logging (
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

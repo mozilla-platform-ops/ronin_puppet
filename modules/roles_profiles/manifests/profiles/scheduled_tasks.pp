@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::scheduled_tasks {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             if ($facts['custom_win_location'] == 'azure') {
                 $startup_script = 'azure-maintainsystem.ps1'
@@ -17,7 +17,7 @@ class roles_profiles::profiles::scheduled_tasks {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }

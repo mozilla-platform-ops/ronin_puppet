@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::network {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             include ::macos_utils::wifi_disabled
             include ::macos_utils::bonjour_advertisements_disabled
@@ -18,6 +18,9 @@ class roles_profiles::profiles::network {
                 }
             }
             include win_network::disable_ipv6
+            if $facts['os']['release']['full'] == '2012 R2' {
+                include win_os_settings::tsl_1_2
+            }
             # Bug list
             # Network category
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1563287
@@ -25,7 +28,7 @@ class roles_profiles::profiles::network {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1671022
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 

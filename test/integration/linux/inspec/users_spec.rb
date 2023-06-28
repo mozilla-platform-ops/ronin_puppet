@@ -14,7 +14,12 @@ end
 describe file('/etc/group') do
   # check that relops users are in the admin group
   its(:content) { should match /admin:x:[\d]+:.*mcornmesser.*/ }
+<<<<<<< HEAD
   its(:content) { should match /admin:x:[\d]+:.*mgoossens.*/ }
+=======
+  its(:content) { should match /admin:x:[\d]+:.*dhouse.*/ }
+  its(:content) { should match /admin:x:[\d]+:.*jwatkins.*/ }
+>>>>>>> 2750b7cd5274186a5120d5eed85cdae7fa4aa446
   its(:content) { should match /admin:x:[\d]+:.*jmoss.*/ }
   its(:content) { should match /admin:x:[\d]+:.*aerickson.*/ }
 end

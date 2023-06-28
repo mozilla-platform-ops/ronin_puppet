@@ -4,11 +4,11 @@
 
 class win_filesystem::disable8dot3 {
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         win_shared::execonce { 'disable8dot3':
             command => "${facts[custom_win_system32]}\\fsutil.exe behavior set disable8dot3 1",
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${$facts['os']['name']}")
     }
 }

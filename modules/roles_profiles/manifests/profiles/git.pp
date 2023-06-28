@@ -4,11 +4,11 @@
 
 class roles_profiles::profiles::git {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
         $git_version = lookup('win-worker.git.version')
-        $srcloc      = lookup('windows.s3.ext_pkg_src')
+        $srcloc      = lookup('windows.ext_pkg_src')
         $current     = $facts['custom_win_git_version']
         $pkgdir      = $facts['custom_win_temp_dir']
 
@@ -20,7 +20,7 @@ class roles_profiles::profiles::git {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${$facts['os']['name']} not supported")
         }
     }
 }
