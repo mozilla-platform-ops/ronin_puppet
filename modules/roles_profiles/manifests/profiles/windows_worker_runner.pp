@@ -51,6 +51,9 @@ class roles_profiles::profiles::windows_worker_runner {
                 'win_10_2004': {
                     $init = 'task-user-init-win10.cmd'
                 }
+                'win_2022_2009': {
+                    $init = 'task-user-init-win2012.cmd'
+                }
                 default: {
                     $init = undef
                 }
