@@ -28,6 +28,7 @@ win-worker:
   mozilla_build:
     version: '4.0.2'
     zstandard_version: '0.15.2'
+    py3_pip_version: '22.3.1'
     psutil_version: '5.9.4'
     hg_version: '6.2.1'
 
