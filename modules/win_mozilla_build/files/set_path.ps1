@@ -4,8 +4,8 @@
 ## TODO: Pass the Msys dir value from the manifest to the script
 
 
-$find_loc = (which find)
-$ping_loc = (which ping)
+$find_loc = (C:\mozilla-build\msys2\usr\bin\which.exe find)
+$ping_loc = (C:\mozilla-build\msys2\usr\bin\which.exe ping)
 
 if ($find_loc -like "*system32*") {
 $msys_bin = "C:\mozilla-build\msys2\usr\bin"
