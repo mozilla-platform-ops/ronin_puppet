@@ -7,7 +7,7 @@ class roles_profiles::profiles::microsoft_tools {
   case $facts['os']['name'] {
     'Windows': {
       ## May not be needed. Start pahasing out with 2022
-      if $facts['os']['release']['full'] == '2016' {
+      if $facts['os']['release']['full'] != '2016' {
           include win_os_settings::powershell_profile
       }
       include win_shared::win_ronin_dirs
