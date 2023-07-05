@@ -19,6 +19,10 @@ class roles_profiles::profiles::files_system_managment {
           include win_filesystem::grant_z_access
         }
       }
+      ## Start phasing out Z: and replace with D:
+      if $facts['os']['release']['full'] != '2016' {
+        include win_filesystem::grant_d_access
+      }
       # Bug List
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1515779
       # Paging file
