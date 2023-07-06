@@ -16,6 +16,8 @@ class roles_profiles::profiles::mozilla_build {
                 'win_2022_2009': {
                     if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
                         $cache_drive  = 'd:'
+                    } else {
+                        $cache_drive  = $facts['custom_win_systemdrive']
                     }
                 }
                 default: {
