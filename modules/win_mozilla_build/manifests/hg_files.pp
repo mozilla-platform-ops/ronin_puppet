@@ -8,6 +8,7 @@ class win_mozilla_build::hg_files {
     require win_mozilla_build::hg_install
 
     $mozbld = $win_mozilla_build::install_path
+    $hg_cache = "${win_mozilla_build::cache_drive}\\hg-cache"
 
     $msys_dir = "${win_mozilla_build::install_path}\\msys2"
 
@@ -28,12 +29,6 @@ class win_mozilla_build::hg_files {
     # Resource from counsyl-windows
     windows::environment { 'HG_CACHE':
         value => "${win_mozilla_build::cache_drive}\\hg-cache",
-    }
-    if $facts['custom_win_d_drive'] == 'exists' {
-        file { 'Y:\hg-cache':
-            ensure => link,
-            target => "${win_mozilla_build::cache_drive}\\hg-cache"
-        }
     }
     # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::cache_drive}\\hg-shared":
