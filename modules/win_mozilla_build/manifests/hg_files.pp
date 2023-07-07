@@ -8,7 +8,7 @@ class win_mozilla_build::hg_files {
     require win_mozilla_build::hg_install
 
     $mozbld = $win_mozilla_build::install_path
-    $hg_cache = "${win_mozilla_build::cache_drive}\\hg-cache"
+    $hg_cache = "${win_mozilla_build::cache_drive}\\hg-shared"
 
     $msys_dir = "${win_mozilla_build::install_path}\\msys2"
 
@@ -23,16 +23,16 @@ class win_mozilla_build::hg_files {
     file { "${win_mozilla_build::program_files}\\mercurial\\mercurial.ini":
         content => file('win_mozilla_build/mercurial.ini'),
     }
-    file { "${win_mozilla_build::cache_drive}\\hg-shared":
+    file { $hg_cache:
         ensure => directory,
     }
     # Resource from counsyl-windows
     windows::environment { 'HG_CACHE':
-        value => "${win_mozilla_build::cache_drive}\\hg-cache",
+        value => $hg_cache,
     }
     # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::cache_drive}\\hg-shared":
-        target      => "${win_mozilla_build::cache_drive}\\hg-shared",
+        target      => $hg_cache,
         permissions => {
             identity                   => 'everyone',
             rights                     => ['full'],
