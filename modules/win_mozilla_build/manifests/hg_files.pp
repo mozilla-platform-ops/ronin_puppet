@@ -29,6 +29,12 @@ class win_mozilla_build::hg_files {
     windows::environment { 'HG_CACHE':
         value => "${win_mozilla_build::cache_drive}\\hg-cache",
     }
+    if $facts['custom_win_d_drive'] == 'exists' {
+        file { 'Y:\hg-cache':
+            ensure => link,
+            target => "${win_mozilla_build::cache_drive}\\hg-cache"
+        }
+    }
     # Resource from puppetlabs-acl
     acl { "${win_mozilla_build::cache_drive}\\hg-shared":
         target      => "${win_mozilla_build::cache_drive}\\hg-shared",
