@@ -255,7 +255,7 @@ function Test-VolumeExists {
   return (@($driveLetter | % { Get-WmiObject -Class Win32_Volume -Filter ('DriveLetter=''{0}:''' -f $_) -ErrorAction 'SilentlyContinue' }).Length -eq $driveLetter.Length)
 }
 ## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
-function LinkY2D {
+function LinkZY2D {
     param (
     )
     begin {
@@ -264,6 +264,9 @@ function LinkY2D {
     process {
         if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
             subst Y: D:\
+        }
+        if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
+            subst Z: D:\
         }
     }
     end {
