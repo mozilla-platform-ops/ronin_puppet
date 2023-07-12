@@ -225,8 +225,8 @@ acl { 'c:/tempperms':
   permissions                => [
    { identity => 'Administrators', rights => ['full'] }, #full is same as - 2032127 aka 0x1f01ff but you should use 'full'
    { identity => 'SYSTEM', rights => ['modify'] }, #modify is same as 1245631 aka 0x1301bf but you should use 'modify'
-   { identity => 'Users', rights => ['mask_specific'], mask => 1180073 }, #RX WA #0x1201a9
-   { identity => 'Administrator', rights => ['mask_specific'], mask => 1180032 }  #RA,S,WA,Rc #1180032  #0x120180
+   { identity => 'Users', rights => ['mask_specific'], mask => '1180073' }, #RX WA #0x1201a9
+   { identity => 'Administrator', rights => ['mask_specific'], mask => '1180032' }  #RA,S,WA,Rc #1180032  #0x120180
   ],
   inherit_parent_permissions => false,
 }
@@ -398,7 +398,7 @@ Valid identity formats:
  * `identity`: *Required.* Determines whose permissions to manage. If the specified identity doesn't exist on a node, Puppet creates it. Valid options: a user (e.g., 'Bob' or 'TheNet\Bob'), group (e.g., 'Administrators' or 'BUILTIN\Administrators'), or security ID (for example, 'S-1-5-18').
 
 
- * `mask`: *Required if `rights => 'mask_specific'` is set.* Indicates rights granted or denied to the trustee. If the `rights` element isn't set to 'mask_specific', the `mask` element has no effect. Valid options: an integer representing a [permissions mask](http://msdn.microsoft.com/en-us/library/aa394063(v=vs.85).aspx).
+ * `mask`: *Required if `rights => 'mask_specific'` is set.* Indicates rights granted or denied to the trustee. If the `rights` element isn't set to 'mask_specific', the `mask` element has no effect. Valid options: an integer (set as a string, for example '511'), representing a [permissions mask](http://msdn.microsoft.com/en-us/library/aa394063(v=vs.85).aspx).
 
   If you want more granular detail about `mask` values, we've provided an [ACL Mask Rights Addition spreadsheet](https://github.com/puppetlabs/puppetlabs-acl/blob/main/tools/ACL_Access_Rights_Mask_Addition.xlsx) in the acl module's `tools` directory.
 
@@ -442,7 +442,7 @@ To ensure that a specific set of permissions are absent from the ACL, set `purge
 
  * When using SIDs for identities, autorequire tries to match to users with fully qualified names (e.g., User[BUILTIN\Administrators]) in addition to SIDs (User[S-1-5-32-544]). However, it can't match against 'User[Administrators]', because that could cause issues if domain accounts and local accounts share the same name e.g., 'Domain\Bob' and 'LOCAL\Bob'.
 
- * When referring to accounts in the `APPLICATION PACKAGE AUTHORITY`, use either their SID values or their unqualified names. The Windows API has well documented bugs preventing the fully qualifed account names from being used.
+ * When referring to accounts in the `APPLICATION PACKAGE AUTHORITY`, with Puppet versions older than **6.22.0** or **7.5.0**, use either their SID values or their unqualified names. The Windows API has well documented bugs preventing the fully qualifed account names from being used.
 
     * `S-1-15-2-1` or `ALL APPLICATION PACKAGES`, but *not* `APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES`. This account may only be referenced on Windows 2012R2 (kernel 6.3) or newer.
     * `S-1-15-2-2` or `ALL RESTRICTED APPLICATION PACKAGES`, but *not* `APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES`. This account may only be referenced on Windows 2016 (kernel 10.0) or newer.

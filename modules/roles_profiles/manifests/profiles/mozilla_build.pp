@@ -12,12 +12,22 @@ class roles_profiles::profiles::mozilla_build {
 
             # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
 
-            if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-                $cache_drive  = 'y:'
-            } else {
-                $cache_drive  = $facts['custom_win_systemdrive']
+            case $facts['custom_win_os_version'] {
+                'win_2022_2009': {
+                    if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
+                        $cache_drive  = 'd:'
+                    } else {
+                        $cache_drive  = $facts['custom_win_systemdrive']
+                    }
+                }
+                default: {
+                    if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
+                        $cache_drive  = 'y:'
+                    } else {
+                        $cache_drive  = $facts['custom_win_systemdrive']
+                    }
+                }
             }
-
 
             #$cache_drive  = $facts['custom_win_location'] ? {
                 #'azure'   => 'y:',
@@ -33,6 +43,7 @@ class roles_profiles::profiles::mozilla_build {
             }
 
             if $facts['custom_win_mozbld_vesion'] == '3.2' {
+            #if $facts['custom_win_release_id'] == '2004'{
                 $upgrade_python = true
             } else {
                 $upgrade_python = false
