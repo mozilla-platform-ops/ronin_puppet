@@ -31,15 +31,15 @@ class win_mozilla_build::hg_files {
         value => $hg_cache,
     }
     # Resource from puppetlabs-acl
-    acl { "${win_mozilla_build::cache_drive}\\hg-shared":
-        target      => $hg_cache,
-        permissions => {
-            identity                   => 'everyone',
-            rights                     => ['full'],
-            perm_type                  => 'allow',
-            child_types                => 'all',
-            affects                    => 'all',
-            inherit_parent_permissions => true,
-        }
-    }
+#    acl { "${win_mozilla_build::cache_drive}\\hg-shared":
+#        target      => $hg_cache,
+#        permissions => {
+#            identity                   => 'everyone',
+#            rights                     => ['full'],
+#            perm_type                  => 'allow',
+#            child_types                => 'all',
+#            affects                    => 'all',
+#            inherit_parent_permissions => true,
+#        }
+#    }
 }
