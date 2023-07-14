@@ -13,9 +13,9 @@ $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -
 Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog-ce-2.10.2150.msi" -outfile "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" -UseBasicParsing
 msiexec /i "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" /passive
 while (!(Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
-Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$env:systemdrive\Program Files (x86)\nxlog\conf\$nxlog_conf" -UseBasicParsing
+Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog.conf" -outfile "$env:systemdrive\Program Files (x86)\nxlog\conf\nxlog.conf" -UseBasicParsing
 while (!(Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
-Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$env:systemdrive\Program Files (x86)\nxlog\cert\$nxlog_pem" -UseBasicParsing
+Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/papertrail-bundle.pem" -outfile "$env:systemdrive\Program Files (x86)\nxlog\cert\papertrail-bundle.pem" -UseBasicParsing
 Restart-Service -Name nxlog -force
 
 ## Download it
@@ -30,16 +30,15 @@ powercfg.exe -x -monitor-timeout-ac 0
 
 ## Download the bootstrap_azure_**.zip file to C:\scratch
 ## Download git, puppet, and nodes.pp
-Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi" -UseBasicParsing -OutFile "$env:systemdrive\$puppet"
-Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe" -UseBasicParsing -OutFile "$env:systemdrive\$git"
-Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nodes.pp" -UseBasicParsing -OutFile "$local_dir\$manifest"
+Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi" -UseBasicParsing -OutFile "$env:systemdrive\puppet-agent-6.28.0-x64.msi"
+Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe" -UseBasicParsing -OutFile "$env:systemdrive\Git-2.37.3-64-bit.exe"
+Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nodes.pp" -UseBasicParsing -OutFile "$env:systemdrive\bootstrap\nodes.pp"
 
 ## Install Git
-Start-Process "$env:systemdrive\$git" /verysilent -Wait
-Write-Host ('{0} :: Git installed :: {1}' -f $($MyInvocation.MyCommand.Name), $git)
+Start-Process "$env:systemdrive\Git-2.37.3-64-bit.exe" /verysilent -Wait
 
 ## Install Puppet
-Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\$puppet") -Wait
+Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\puppet-agent-6.28.0-x64.msi") -Wait
 Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet)
 if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
     Write-Host "Did not install puppet"
@@ -80,6 +79,6 @@ if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
 
 ## 
 Set-Location $env:systemdrive\ronin
-If (-Not (test-path $logdir\old)) {
-    New-Item -ItemType Directory -Force -Path $logdir\old
+If (-Not (test-path $env:systemdrive\logs\old)) {
+    New-Item -ItemType Directory -Force -Path $env:systemdrive\logs\old
 }
