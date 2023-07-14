@@ -3,7 +3,7 @@ $role = "win11642009hwref"
 $base_image = 'win11642009hwref'
 $src_Organisation = 'jwmoss'
 $src_Repository = 'ronin_puppet'
-$src_Branch = 'cloud_windows'
+$src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
 
 Start-Sleep -Seconds 120
@@ -66,6 +66,8 @@ New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Val
 ## Clone ronin puppet locally to C:\ronin
 git clone --single-branch --branch $src_Branch "https://github.com/$src_Organisation/$src_Repository" "$env:systemdrive\ronin"
 Set-Location "$env:systemdrive\ronin"
+git checkout -b $src_Branch
+git pull
 ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
 if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
     Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
@@ -98,6 +100,6 @@ $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
 $env:USERNAME = "Administrator"
 $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
-Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
+Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
 puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.log,$env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.json
 [int]$puppet_exit = $LastExitCode
