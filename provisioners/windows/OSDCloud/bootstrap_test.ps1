@@ -1,5 +1,6 @@
 $worker_pool_id = 'win11-64-2009-hw-ref-alpha'
-$base_image = 'win11642009hwrefalpha'
+$role = "win11642009hwref"
+$base_image = 'win11642009hwref'
 $src_Organisation = 'jwmoss'
 $src_Repository = 'ronin_puppet'
 $src_Branch = 'cloud_windows'
@@ -19,6 +20,66 @@ Restart-Service -Name nxlog -force
 
 ## Download it
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-Invoke-WebRequest https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_branch/provisioners/windows/$image_provisioner/bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
+Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap_test.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
 Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
-Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
+#Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
+
+## Install git, puppet, nodes.pp
+powercfg.exe -x -standby-timeout-ac 0
+powercfg.exe -x -monitor-timeout-ac 0
+
+## Download the bootstrap_azure_**.zip file to C:\scratch
+## Download git, puppet, and nodes.pp
+Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi" -UseBasicParsing -OutFile "$env:systemdrive\$puppet"
+Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe" -UseBasicParsing -OutFile "$env:systemdrive\$git"
+Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nodes.pp" -UseBasicParsing -OutFile "$local_dir\$manifest"
+
+## Install Git
+Start-Process "$env:systemdrive\$git" /verysilent -Wait
+Write-Host ('{0} :: Git installed :: {1}' -f $($MyInvocation.MyCommand.Name), $git)
+
+## Install Puppet
+Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\$puppet") -Wait
+Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet)
+if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
+    Write-Host "Did not install puppet"
+    exit 1
+}
+$env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
+
+## Set registry options
+If (!( test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")) {
+    New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
+    New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet -force
+}
+
+New-Item -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name source -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'image_provisioner' -Value $image_provisioner -PropertyType String  -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'worker_pool_id' -Value $worker_pool_id -PropertyType String -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'role' -Value $base_image -PropertyType String -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'inmutable' -Value 'false' -PropertyType String -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'last_run_exit' -Value '0' -PropertyType Dword -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'setup' -PropertyType String -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Organisation' -Value $src_Organisation -PropertyType String -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Repository' -Value $src_Repository -PropertyType String -force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Value $src_Branch -PropertyType String -force
+
+## Clone ronin puppet locally to C:\ronin
+git clone --single-branch --branch $src_Branch "https://github.com/$src_Organisation/$src_Repository" "$env:systemdrive\ronin"
+Set-Location "$env:systemdrive\ronin"
+## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
+if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
+    Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
+    (Get-Content -path "$env:systemdrive\ronin\manifests\nodes.pp") -replace 'roles::role', "roles::$role" | Set-Content "$env:systemdrive\ronin\manifests\nodes.pp"    
+}
+## Copy the secrets from the image (from osdcloud) to ronin data secrets
+if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
+    New-Item -Path "$env:systemdrive\ronin\data" -Name "secrets" -ItemType Directory -Force
+    Copy-item -path "$env:systemdrive\programdata\secrets\*" -destination "$env:systemdrive\ronin\data\secrets" -recurse -force
+}
+
+## 
+Set-Location $env:systemdrive\ronin
+If (-Not (test-path $logdir\old)) {
+    New-Item -ItemType Directory -Force -Path $logdir\old
+}
