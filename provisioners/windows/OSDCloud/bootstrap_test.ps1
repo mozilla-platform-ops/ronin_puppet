@@ -77,8 +77,27 @@ if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
     Copy-item -path "$env:systemdrive\programdata\secrets\*" -destination "$env:systemdrive\ronin\data\secrets" -recurse -force
 }
 
-## 
+## Set directory for logs
 Set-Location $env:systemdrive\ronin
 If (-Not (test-path $env:systemdrive\logs\old)) {
     New-Item -ItemType Directory -Force -Path $env:systemdrive\logs\old
 }
+
+## Run puppet
+Set-Location $env:systemdrive\ronin
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
+$env:path = "$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
+$env:SSL_CERT_FILE = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl\cert.pem"
+$env:SSL_CERT_DIR = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl"
+$env:FACTER_env_windows_installdir = "$env:programfiles\Puppet Labs\Puppet"
+$env:HOMEPATH = "\Users\Administrator"
+$env:HOMEDRIVE = "C:"
+$env:PL_BASEDIR = "$env:programfiles\Puppet Labs\Puppet"
+$env:PUPPET_DIR = "$env:programfiles\Puppet Labs\Puppet"
+$env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
+$env:USERNAME = "Administrator"
+$env:USERPROFILE = "$env:systemdrive\Users\Administrator"
+
+Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
+puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.log,$env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.json
+[int]$puppet_exit = $LastExitCode
