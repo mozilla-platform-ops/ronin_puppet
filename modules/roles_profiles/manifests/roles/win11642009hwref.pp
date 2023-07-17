@@ -30,5 +30,5 @@ class roles_profiles::roles::win11642009hwref {
   include roles_profiles::profiles::mozilla_build_tester
   #include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
-  #include roles_profiles::profiles::windows_worker_runner
+  include roles_profiles::profiles::windows_worker_runner
 }
