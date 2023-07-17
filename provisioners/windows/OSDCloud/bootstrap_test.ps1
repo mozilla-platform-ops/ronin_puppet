@@ -101,5 +101,8 @@ $env:USERNAME = "Administrator"
 $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
 Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
+Get-ChildItem -Path $env:systemdrive\logs\*.json -Recurse | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
+
 puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.log,$env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.json
 [int]$puppet_exit = $LastExitCode
+$puppet_exit
