@@ -57,3 +57,9 @@ describe command('/home/bitbar/android-tools/devicepool_last_started_alert/venv/
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3/ }
 end
+
+# telegraf
+
+describe package('telegraf') do
+  it { should be_installed }
+end
