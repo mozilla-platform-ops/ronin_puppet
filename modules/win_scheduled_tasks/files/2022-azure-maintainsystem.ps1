@@ -296,10 +296,10 @@ $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 # TODO: add json manifest location
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Check-AzVM-Name
-  LinkZY2D
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
+    LinkZY2D
   }
   StartWorkerRunner
   # wait and check if GW has started
