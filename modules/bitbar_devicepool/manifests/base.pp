@@ -66,7 +66,7 @@ class bitbar_devicepool::base {
       $desired_packages = ['vim', 'screen', 'git', 'python', 'python3', 'virtualenv']
     }
     '22.04': {
-      $desired_packages = ['vim', 'screen', 'git', 'python3', 'python3-virtualenv']
+      $desired_packages = ['vim', 'screen', 'git', 'python3', 'python3-virtualenv', 'pipx']
     }
     default: {
       fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
