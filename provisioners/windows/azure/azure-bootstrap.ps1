@@ -322,10 +322,6 @@ function Apply-AzRoninPuppet {
   }
 }
 
-# Ensuring scripts can run uninhibited
-# This is noisey but works
-# Powershell Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue > $null
-
 $worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('worker_pool_id') })[0].value
 $base_image = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('base_image') })[0].value
 $src_Organisation = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('sourceOrganisation') })[0].value
@@ -369,6 +365,10 @@ If ($stage -eq 'complete') {
 		Get-ChildItem *.tests* | ForEach-Object {
 			Invoke-RoninTest -Test $_.Fullname
 		}
+        ## clear NXlog buffer
+        Stop-Service nxlog
+        Set-Location -Path "C:\Program Files (x86)\nxlog\data"
+        Remove-Item -Path *.db -Force
 	}
 	exit 0
 }
