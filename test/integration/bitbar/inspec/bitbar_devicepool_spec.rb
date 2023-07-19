@@ -42,7 +42,7 @@ if os.family == 'debian' && os.release == '18.04'
   # TODO: else with echo stating we're not testing for this?
 end
 
-describe command('/home/bitbar/mozilla-bitbar-devicepool/venv/bin/python --version') do
+describe command('/home/bitbar/mozilla-bitbar-devicepool/.venv/bin/python --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3/ }
 end
@@ -56,4 +56,10 @@ end
 describe command('/home/bitbar/android-tools/devicepool_last_started_alert/venv/bin/python --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3/ }
+end
+
+# telegraf
+
+describe package('telegraf') do
+  it { should be_installed }
 end

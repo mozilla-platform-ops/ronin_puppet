@@ -66,11 +66,31 @@ class bitbar_devicepool::base {
       $desired_packages = ['vim', 'screen', 'git', 'python', 'python3', 'virtualenv']
     }
     '22.04': {
-      $desired_packages = ['vim', 'screen', 'git', 'python3', 'python3-virtualenv']
+      # python3-poetry is too old
+      $desired_packages = ['vim', 'screen', 'git', 'python3', 'python3-virtualenv', 'pipx']
     }
     default: {
       fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
     }
   }
   ensure_packages($desired_packages, { 'ensure' => 'present' })
+
+  case $facts['os']['release']['full'] {
+    '22.04': {
+      # ensure pipx paths are on path
+      exec { 'pipx ensurepath':
+        command => '/usr/bin/pipx ensurepath',
+        user    => 'bitbar',
+      }
+
+      #
+      exec { 'install poetry':
+        command => '/usr/bin/pipx install poetry',
+        user    => 'bitbar',
+      }
+    }
+    default: {
+      fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
+    }
+  }
 }
