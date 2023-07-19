@@ -18,7 +18,7 @@ $zstandard    = "$env:systemdrive\mozilla-build\python3\lib\site-packages\zstand
 if (Test-Path $mozbld_file) {
 	$mozbld_ver = (get-content $mozbld_file)
 } else {
-	$mozbld_ver = 0.0
+	$mozbld_ver = "0.0"
 }
 
 # Mercurial
@@ -27,7 +27,7 @@ if (Test-Path $hg_file) {
 	$hg_object = Get-WMIObject Win32_Product | Where-Object {$_.Name -Like  'Mercurial*'}
 	$hg_ver = $hg_object.version
 } else {
-    $hg_ver = 0.0
+    $hg_ver = "0.0"
 }
 
 # Python 3 Pip
@@ -35,7 +35,7 @@ if (Test-Path $python3_file) {
     $pip_version = (C:\mozilla-build\python3\python3.exe -m pip --version)
     $py3_pip_version = [regex]::Matches($pip_version, "(\d+\.\d+\.\d+)").value
 } else {
-    $py3_pip_version = 0.0.0
+    $py3_pip_version = "0.0.0"
 }
 
 # Pyhton 3 zstandard
@@ -43,7 +43,7 @@ if (Test-Path $python3_file) {
     $zstandard_info = (C:\mozilla-build\python3\python3.exe -m pip show zstandard)
     $zstandard_version = [regex]::Matches($zstandard_info, "(\d+\.\d+\.\d+)").value
 } else {
-    $zstandard_version = 0.0.0
+    $zstandard_version = "0.0.0"
 }
 
 write-host "custom_win_py3_pip_version=$py3_pip_version"
