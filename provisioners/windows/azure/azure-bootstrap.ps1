@@ -222,10 +222,9 @@ Function Set-AzRoninRepo {
 
 function Move-StrapPuppetLogs {
     param (
-        [string] $logdir = "$env:systemdrive\logs",
-        [string] $bootstraplogdir = "$logdir\bootstrap"
+        [string] $bootstraplogdir = "$env:systemdrive\bootstrap"
     )
-    New-Item -ItemType Directory -Force -Path $bootstraplogdir
+    New-Item -ItemType Directory -Force -Path $bootstraplogdir -ErrorAction SilentlyContinue
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $bootstraplogdir -ErrorAction SilentlyContinue
 }
 
