@@ -27,17 +27,17 @@ class win_mozilla_build::pip {
         ensure => directory,
     }
     # Resource from puppetlabs-acl
-    acl { "${win_mozilla_build::cache_drive}\\pip-cache":
-        target      => "${win_mozilla_build::cache_drive}\\pip-cache",
-        permissions => {
-            identity                   => 'everyone',
-            rights                     => ['full'],
-            perm_type                  => 'allow',
-            child_types                => 'all',
-            affects                    => 'all',
-            inherit_parent_permissions => true,
-        }
-    }
+#    acl { "${win_mozilla_build::cache_drive}\\pip-cache":
+#        target      => "${win_mozilla_build::cache_drive}\\pip-cache",
+#        permissions => {
+#            identity                   => 'everyone',
+#            rights                     => ['full'],
+#            perm_type                  => 'allow',
+#            child_types                => 'all',
+#            affects                    => 'all',
+#            inherit_parent_permissions => true,
+#        }
+#    }
     # Resource from counsyl-windows
     windows::environment{ 'PIP_DOWNLOAD_CACHE':
         value => "${win_mozilla_build::cache_drive}\\pip-cache",
