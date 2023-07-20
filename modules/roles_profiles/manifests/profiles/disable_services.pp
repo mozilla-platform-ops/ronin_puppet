@@ -38,7 +38,8 @@ class roles_profiles::profiles::disable_services {
         'Windows': {
             include win_disable_services::disable_puppet
             include win_disable_services::disable_windows_update
-            if $facts['os']['release']['full'] != '2012 R2' {
+            # if $facts['os']['release']['full'] != '2012 R2' {
+            if $facts['os']['release']['full'] != '2016' {
                 include win_disable_services::disable_wsearch
                 if ($facts['custom_win_location'] == 'azure') {
                     include win_scheduled_tasks::kill_local_clipboard
