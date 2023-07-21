@@ -5,7 +5,7 @@
 class win_packages::dxsdk_jun10 {
 
     $prog86x = $facts['custom_win_programfilesx86']
-    $sdk_dir = "Microsoft DirectX SDK (June 2010)\\\\system\\uninstall"
+    $sdk_dir = 'Microsoft DirectX SDK (June 2010)'
     $file    = 'DXSDK_Jun10.exe'
 
     windowsfeature { 'NET-Framework-Core':
@@ -15,9 +15,9 @@ class win_packages::dxsdk_jun10 {
     win_packages::win_exe_pkg  { 'dxsdk_jun10':
         pkg                    => 'DXSDK_Jun10.exe',
         install_options_string => '/U',
-        creates                => "${prog86x}\\${sdk_dir}\\${file}",
+        creates                => "${prog86x}\\${sdk_dir}\\include\\audiodefs.h",
     }
     windows::environment { 'DXSDK_DIR':
-        value => "${facts['custom_win_programfilesx86']}\\Microsoft DirectX SDK (June 2010)"
+        value => "${facts['custom_win_programfilesx86']}\\${sdk_dir}"
     }
 }
