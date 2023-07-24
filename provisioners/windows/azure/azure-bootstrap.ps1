@@ -364,10 +364,6 @@ If ($stage -eq 'complete') {
 		Get-ChildItem *.tests* | ForEach-Object {
 			Invoke-RoninTest -Test $_.Fullname
 		}
-        ## clear NXlog buffer
-        Stop-Service nxlog
-        Set-Location -Path "C:\Program Files (x86)\nxlog\data"
-        Remove-Item -Path *.db -Force
 	}
 	exit 0
 }

@@ -11,12 +11,12 @@ class roles_profiles::profiles::network {
         }
         'Windows': {
 
-#            $net_category = 'private'
-#            if $facts['custom_win_net_category'] != $net_category {
-#                win_network::set_network_category { 'private_network':
-#                    network_category => $net_category,
-#                }
-#            }
+            $net_category = 'private'
+            if $facts['custom_win_net_category'] != $net_category {
+                win_network::set_network_category { 'private_network':
+                    network_category => $net_category,
+                }
+            }
             include win_network::disable_ipv6
             if $facts['os']['release']['full'] == '2012 R2' {
                 include win_os_settings::tsl_1_2

@@ -14,7 +14,7 @@ class roles_profiles::roles::win2022642009azure {
     include roles_profiles::profiles::files_system_managment
     include roles_profiles::profiles::firewall
     include roles_profiles::profiles::network
-#    include roles_profiles::profiles::ntp
+    include roles_profiles::profiles::ntp
     include roles_profiles::profiles::power_management
     include roles_profiles::profiles::scheduled_tasks
     include roles_profiles::profiles::azure_vm_agent
