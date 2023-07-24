@@ -8,19 +8,19 @@ class macos_safariupdate () {
 
       file { $update_script:
         content => file('macos_safariupdate/update_safari.sh'),
-        mode => '0755',
+        mode    => '0755',
       }
 
       exec { 'execute safari update script':
         command => $update_script,
         require => File[$update_script],
-        user => 'root',
+        user    => 'root',
         # semaphore created in script
-        unless => "/bin/test -f /Users/cltbld/Library/Preferences/semaphore/safari-update-has-run",
+        unless  => '/bin/test -f /Users/cltbld/Library/Preferences/semaphore/safari-update-has-run',
       }
     }
-    'default': {
-      fail("${facts['os']['release']} not supported")
-    }
+  default: {
+    fail("${facts['os']['release']} not supported")
+  }
   }
 }
