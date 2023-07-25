@@ -222,10 +222,9 @@ Function Set-AzRoninRepo {
 
 function Move-StrapPuppetLogs {
     param (
-        [string] $logdir = "$env:systemdrive\logs",
-        [string] $bootstraplogdir = "$logdir\bootstrap"
+        [string] $bootstraplogdir = "$env:systemdrive\bootstrap"
     )
-    New-Item -ItemType Directory -Force -Path $bootstraplogdir
+    New-Item -ItemType Directory -Force -Path $bootstraplogdir -ErrorAction SilentlyContinue
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $bootstraplogdir -ErrorAction SilentlyContinue
 }
 
@@ -321,10 +320,6 @@ function Apply-AzRoninPuppet {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-
-# Ensuring scripts can run uninhibited
-# This is noisey but works
-# Powershell Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue > $null
 
 $worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('worker_pool_id') })[0].value
 $base_image = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('base_image') })[0].value

@@ -38,16 +38,16 @@ class roles_profiles::profiles::disable_services {
         'Windows': {
             include win_disable_services::disable_puppet
             include win_disable_services::disable_windows_update
-            if $facts['os']['release']['full'] != '2012 R2' {
+            if $facts['custom_win_purpose'] != builder {
                 include win_disable_services::disable_wsearch
                 if ($facts['custom_win_location'] == 'azure') {
                     include win_scheduled_tasks::kill_local_clipboard
                 }
-              if $facts['custom_win_release_id'] == '2004' or '2009'{
+                if $facts['custom_win_release_id'] == '2004' or '2009'{
                   include win_disable_services::disable_windows_defender_schtask
-              } else {
+                } else {
                   include win_disable_services::disable_windows_defender
-              }
+                }
             }
             if $facts['os']['release']['full'] == '10' {
                 include win_disable_services::disable_onedrive

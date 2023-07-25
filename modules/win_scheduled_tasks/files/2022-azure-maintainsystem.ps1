@@ -228,13 +228,13 @@ function Check-AzVM-Name {
     }
     process {
         $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
-        if ($instanceName -notlike $env:computername) {
+        if ($instanceName -notmatch $env:computername) {
             Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
             [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
             $env:COMPUTERNAME = $instanceName
             Rename-Computer -NewName $instanceName -force
-            # Don't waste time/money on rebooting to pick up name change
-            # shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
+            Write-Log -message  ('{0} :: Name changed to {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
+            shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
             return
         } else {
             Write-Log -message  ('{0} :: Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
@@ -296,10 +296,10 @@ $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 # TODO: add json manifest location
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Check-AzVM-Name
-  LinkZY2D
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
+    LinkZY2D
   }
   StartWorkerRunner
   # wait and check if GW has started
