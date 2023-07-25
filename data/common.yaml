@@ -16,6 +16,7 @@ user_groups:
     - aerickson
     - jmoss
     - mgoossens
+    - rcurran
   signing:
     - ahalberstadt
     - bhearsum
