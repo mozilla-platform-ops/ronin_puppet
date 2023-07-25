@@ -20,7 +20,7 @@ class roles_profiles::profiles::microsoft_tools {
         'builder':{
           include win_packages::win_10_sdk
           ## This class seems to timeout on the first run of a new VM
-          ## For now don't look for it.
+          ## For now don't look for it after bootstrap.
           if $facts['custom_win_bootstrap_stage'] != 'complete' {
             include win_packages::dxsdk_jun10
           }
