@@ -5,14 +5,14 @@
 class macos_utils::disable_bluetooth_setup {
 
     macos_utils::defaults { 'BluetoothAutoSeekKeyboard':
-        domain   => '/Library/Preferences/com.apple.Bluetooth',
+        domain   => '/Library/Preferences/com.apple.Bluetooth.plist',
         key      => 'BluetoothAutoSeekKeyboard',
         value    => '0',
         val_type => 'int',
     }
 
     macos_utils::defaults { 'BluetoothAutoSeekPointingDevice':
-        domain   => '/Library/Preferences/com.apple.Bluetooth',
+        domain   => '/Library/Preferences/com.apple.Bluetooth.plist',
         key      => 'BluetoothAutoSeekPointingDevice',
         value    => '0',
         val_type => 'int',
