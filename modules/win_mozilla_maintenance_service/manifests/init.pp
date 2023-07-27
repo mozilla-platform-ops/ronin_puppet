@@ -17,6 +17,7 @@ class win_mozilla_maintenance_service (
       fail("${$facts['os']['name']} not supported")
     }
   }
+}
 
 # Bug list
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
