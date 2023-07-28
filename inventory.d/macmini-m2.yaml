@@ -1,17 +1,17 @@
 ---
 name: macmini-m2
 groups:
-  - name: gecko-1-osx-1300-m2-staging
+  - name: gecko-1-osx-1300-m2-bug1840495
     targets:
-      - macmini-m2-2.test.releng.mslv.mozilla.com
-      - macmini-m2-3.test.releng.mslv.mozilla.com
-      - macmini-m2-4.test.releng.mslv.mozilla.com
-      - macmini-m2-5.test.releng.mslv.mozilla.com
+      - 207.254.46.11
     facts:
-      puppet_role: gecko_t_osx_1300_m2_staging
+      puppet_role: gecko_t_osx_1300_m2_bug1840495
 
   - name: gecko-t-osx-1300-m2
     targets:
       - macmini-m2-1.test.releng.mslv.mozilla.com
+      - macmini-m2-2.test.releng.mslv.mozilla.com
+      - macmini-m2-3.test.releng.mslv.mozilla.com
+      - macmini-m2-4.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1300_m2
