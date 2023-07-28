@@ -95,7 +95,7 @@ class roles_profiles::profiles::applicationservices_1_b_osx_1015_generic_worker 
 
             exec { 'writes_in_catalina':
                 command => '/sbin/mount -uw /',
-                unless  => '/bin/test -d /builds || /bin/test -d /tools'
+                unless  => '/bin/test -d /opt/builds || /bin/test -d /opt/tools'
             }
             include dirs::tools
             include dirs::builds
@@ -109,7 +109,7 @@ class roles_profiles::profiles::applicationservices_1_b_osx_1015_generic_worker 
             contain packages::nodejs
             #contain packages::wget
             contain packages::tooltool
-            file { '/tools/tooltool.py':
+            file { '/opt/tools/tooltool.py':
                 ensure  => 'link',
                 target  => '/usr/local/bin/tooltool.py',
                 require => Class['packages::tooltool'],
@@ -125,19 +125,19 @@ class roles_profiles::profiles::applicationservices_1_b_osx_1015_generic_worker 
             # }
 
             file {
-                '/tools/python':
+                '/opt/tools/python':
                     ensure  => 'link',
                     target  => '/usr/local/bin/python2',
                     require => Class['packages::python2'];
 
-                '/tools/python2':
+                '/opt/tools/python2':
                     ensure  => link,
                     target  => '/usr/local/bin/python2',
                     require => Class['packages::python2'];
             }
 
             contain packages::python3
-            file { '/tools/python3':
+            file { '/opt/tools/python3':
                     ensure  => 'link',
                     target  => '/usr/local/bin/python3',
                     require => Class['packages::python3'],

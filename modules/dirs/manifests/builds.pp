@@ -5,6 +5,7 @@
 class dirs::builds {
 
     $builds_dir = $facts['os']['macosx']['version']['major'] ? {
+        '13.5' => '/opt/builds',
         '13' => '/opt/builds',
         '11' => '/opt/builds',
         '10.15' => '/builds',

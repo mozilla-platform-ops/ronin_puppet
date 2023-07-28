@@ -4,7 +4,15 @@
 
 class dirs::tools {
 
-    file { '/tools':
+    $tools_dir = $facts['os']['macosx']['version']['major'] ? {
+        '13.5' => '/opt/tools',
+        '13' => '/opt/tools',
+        '11' => '/opt/tools',
+        '10.15' => '/tools',
+        default => '/opt/tools'
+    }
+
+    file { $tools_dir:
         ensure => directory,
         mode   => '0755',
     }
