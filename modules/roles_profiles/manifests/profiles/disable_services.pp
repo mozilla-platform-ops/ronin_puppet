@@ -54,6 +54,7 @@ class roles_profiles::profiles::disable_services {
             }
             ## 2016 == 2022
             if $facts['os']['release']['full'] != '2016' {
+                include win_disable_services::disable_windows_defender
                 include win_disable_services::uninstall_windows_defender
             }
             # May be needed for non-hardaware
