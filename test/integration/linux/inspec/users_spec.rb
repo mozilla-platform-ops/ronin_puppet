@@ -17,6 +17,7 @@ describe file('/etc/group') do
   its(:content) { should match /admin:x:[\d]+:.*mgoossens.*/ }
   its(:content) { should match /admin:x:[\d]+:.*jmoss.*/ }
   its(:content) { should match /admin:x:[\d]+:.*aerickson.*/ }
+  its(:content) { should match /admin:x:[\d]+:.*rcurran.*/ }
 end
 
 # root should have * pw
