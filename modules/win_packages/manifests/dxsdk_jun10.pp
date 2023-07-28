@@ -8,10 +8,8 @@ class win_packages::dxsdk_jun10 {
     $sdk_dir = 'Microsoft DirectX SDK (June 2010)'
     $file    = 'DXSDK_Jun10.exe'
 
-    if $facts['os']['release']['full'] != '2016' {
-        windowsfeature { 'NET-Framework-Core':
-            ensure => present,
-        }
+    windowsfeature { 'NET-Framework-Core':
+        ensure => present,
     }
 
     win_packages::win_exe_pkg  { 'dxsdk_jun10':
