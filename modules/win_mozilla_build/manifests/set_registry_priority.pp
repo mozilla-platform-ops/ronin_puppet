@@ -8,6 +8,7 @@ class win_mozilla_build::set_registry_priority {
     require win_mozilla_build::hg_install
 
     $py_key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions'
+    $py3_key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python3.exe\PerfOptions'
     $hg_key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions'
 
     # Resources from puppetlabs-registry
@@ -17,12 +18,12 @@ class win_mozilla_build::set_registry_priority {
     registry_value { "${py_key}\\CpuPriorityClass":
         ensure => present,
         type   => dword,
-        data   => '0x00000006',
+        data   => '0x00000003',
     }
     registry_value { "${py_key}\\IoPriority":
         ensure => present,
         type   => dword,
-        data   => '0x00000002',
+        data   => '0x00000006',
     }
 
     registry_key { $hg_key:
@@ -31,11 +32,24 @@ class win_mozilla_build::set_registry_priority {
     registry_value { "${hg_key}\\CpuPriorityClass":
         ensure => present,
         type   => dword,
-        data   => '0x00000006',
+        data   => '0x00000003',
     }
     registry_value { "${hg_key}\\IoPriority":
         ensure => present,
         type   => dword,
-        data   => '0x00000002',
+        data   => '0x00000006',
+    }
+    registry_key { $py3_key:
+        ensure => present,
+    }
+    registry_value { "${py3_key}\\CpuPriorityClass":
+        ensure => present,
+        type   => dword,
+        data   => '0x00000003',
+    }
+    registry_value { "${py3_key}\\IoPriority":
+        ensure => present,
+        type   => dword,
+        data   => '0x00000006',
     }
 }
