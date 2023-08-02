@@ -6,7 +6,9 @@
 
 # Configuration
 yq_docker_image=mikefarah/yq:4.28.2@sha256:473c4bc63c7b36793b4dbc980e183026d5422cb1ec6fe1f1cc12f1bc1b2e8be9
-python_docker_image=python:3.8.3-alpine3.12@sha256:6c1b18373c4f94353308097772e97ff4d0e596ac3d06cc4b00c3bdc52cd5e8b6
+# Note: Ultimately the Mac signers are going to install the resulting compiled requirements.
+#           If you're looking to update this image, make sure they can install it.
+python_docker_image=python:3.8.3-slim@sha256:938fd520a888e9dbac3de374b8ba495cc50fe96440030264a40f733052001895
 
 # Note that MY_DIR is the location of the script...
 pushd "$(dirname "$0")" &>/dev/null || exit
