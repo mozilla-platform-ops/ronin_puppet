@@ -9,8 +9,6 @@ class win_disable_services::disable_other_services {
                 'DsmSvc',
                 'fdPHost',
                 'FDResPub',
-                'NcbService',
-                'netprofm',
                 'nsi',
                 'lmhosts',
                 ]
