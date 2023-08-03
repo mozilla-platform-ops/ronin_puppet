@@ -10,7 +10,7 @@ class win_packages::imdisk (
     $creates     = "${install_dir}\\config.exe"
     $pkgdir      = $facts['custom_win_temp_dir']
     $loc_zip     = "${pkgdir}\\${zip_name}"
-    $imdisk_dir  = "${facts['custom_win_systemdrive']}\\ImDisk"
+    $imdisk_dir  = "${facts['custom_win_systemdrive']}\\ImDiskTk20220826"
     $bat         = "${imdisk_dir}\\install.bat"
 
     file { $imdisk_dir:
