@@ -273,6 +273,74 @@ function LinkZY2D {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Write-Log {
+  param (
+    [string] $message,
+    [string] $severity = 'INFO',
+    [string] $source = 'MaintainSystem',
+    [string] $logName = 'Application'
+  )
+  if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
+    New-EventLog -LogName $logName -Source $source
+  }
+  switch ($severity) {
+    'DEBUG' {
+      $entryType = 'SuccessAudit'
+      $eventId = 2
+      break
+    }
+    'WARN' {
+      $entryType = 'Warning'
+      $eventId = 3
+      break
+    }
+    'ERROR' {
+      $entryType = 'Error'
+      $eventId = 4
+      break
+    }
+    default {
+      $entryType = 'Information'
+      $eventId = 1
+      break
+    }
+  }
+  Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
+  if ([Environment]::UserInteractive) {
+    $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
+    Write-Host -object $message -ForegroundColor $fc
+  }
+}
+function Create-RAMDisk {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+		$bytes = (Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory
+		$total = $bytes / 1GB
+		$GB = ("{0:N2}" -f $total)
+		$RD_size = ([Math]::Round($total * 0.5))
+
+		if (!(Test-Path Z:)){
+			if (($RD_size) -lt (15)) {
+				Write-Log -message  ('{0} :: Less than 15 GB RAM available. Will not mount RAMDisk. .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+			} else {
+				Write-Log -message  ('{0} :: Mounting {1} GB RAMDisk .' -f $($MyInvocation.MyCommand.Name), ($RD_size)) -severity 'DEBUG'
+				write-host mount RAMDisk
+				imdisk -a -o awe -s ${RD_size}G -m Z: -p `"/fs:ntfs /q /y`"
+			}
+		} else {
+			$drive = (Get-PSDrive -Name Z)
+			$free = ($drive.Free / 1GB)
+			Write-Log -message  ('{0} :: Z drive present with {1} GB free .' -f $($MyInvocation.MyCommand.Name), ($free)) -severity 'DEBUG'
+		}
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
 $ronin_key = "$mozilla_key\ronin_puppet"
@@ -297,6 +365,7 @@ $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Check-AzVM-Name
   Run-MaintainSystem
+  Create-RAMDisk
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
     LinkZY2D
