@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win11642009hwref {
-
   # Install MS tools earlier
   include roles_profiles::profiles::microsoft_tools
   # System
@@ -19,16 +18,17 @@ class roles_profiles::roles::win11642009hwref {
   include roles_profiles::profiles::hardware
   include roles_profiles::profiles::intel_drivers
   include roles_profiles::profiles::virtual_drivers
+  include roles_profiles::profiles::windows_datacenter_administrator
 
   # Adminstration
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::common_tools
-  #include roles_profiles::profiles::vnc
+  include roles_profiles::profiles::vnc
 
   # Worker
   include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build_tester
-  #include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_worker_runner
+  include roles_profiles::profiles::windows_datacenter_administrator
 }
