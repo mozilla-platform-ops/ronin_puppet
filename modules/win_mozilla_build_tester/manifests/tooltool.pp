@@ -3,6 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::tooltool {
+  require win_mozilla_build_tester::install
+
   $builds         = "${facts['custom_win_systemdrive']}\\builds"
   $tooltool_cache = "${builds}\\tooltool_cache"
 
@@ -38,8 +40,8 @@ class win_mozilla_build_tester::tooltool {
   # Without the cert in the local user store tooltool will hit SSL errors when fetching a package
   # https://bugzilla.mozilla.org/show_bug.cgi?id=1546827
   # https://bugzilla.mozilla.org/show_bug.cgi?id=1548641
-  exec { 'install_tooltool_cert':
-    command  => file('win_mozilla_build_tester/tooltool_cert_install.ps1'),
-    provider => powershell,
-  }
+  #exec { 'install_tooltool_cert':
+  #  command  => file('win_mozilla_build_tester/tooltool_cert_install.ps1'),
+  #  provider => powershell,
+  #}
 }

@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::install_zstandard {
-
   require win_mozilla_build_tester::install
 
   $zstandard_version = lookup('win-worker.mozilla_build.zstandard_version')
