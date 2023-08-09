@@ -8,9 +8,13 @@ class roles_profiles::profiles::common_tools {
         'Windows': {
             include win_packages::process_debug
             include win_packages::jq
+            include win_packages::gpg4win
             include win_packages::sevenzip
             include win_packages::sublimetxt
-            include win_packages::mercurial
+            ## Is managed in the mozilla build module for builders
+            if $facts['custom_win_purpose'] != builder {
+                include win_packages::mercurial
+            }
             if $facts['custom_win_location'] == 'aws' {
                 include win_packages::nircmd
             }
