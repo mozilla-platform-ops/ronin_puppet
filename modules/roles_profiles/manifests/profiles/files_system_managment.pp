@@ -19,13 +19,17 @@ class roles_profiles::profiles::files_system_managment {
           include win_filesystem::grant_z_access
         }
       }
-      if $facts['custom_win_os_version'] == 'win_11_2009'{
-        include win_os_settings::enable_long_paths
+      case $facts['custom_win_os_version'] {
+        'win_10_2009':{
+          include win_os_settings::enable_long_paths
+        }
+        'win_11_2009':{
+          include win_os_settings::enable_long_paths
+        }
+        default: {
+          fail("${$facts['os']['name']} not supported")
+        }
       }
-      # Bug List
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1515779
-      # Paging file
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1562974
     }
     default: {
       fail("${$facts['os']['name']} not supported")
