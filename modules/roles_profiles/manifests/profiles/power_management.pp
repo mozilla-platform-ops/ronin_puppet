@@ -16,6 +16,12 @@ class roles_profiles::profiles::power_management {
                     }
                     include win_os_settings::no_sleep
                 }
+                'win_10_2009': {
+                    class { 'win_os_settings::power_scheme':
+                        ensure => 'Ultimate Performance',
+                    }
+                    include win_os_settings::no_sleep
+                }
                 default:  {
                     class { 'win_os_settings::power_scheme':
                         ensure => 'High performance',
