@@ -21,7 +21,7 @@ class win_disable_services::disable_uac {
       }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
         type => dword,
-        data => '1',
+        data => '0',
       }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableVirtualization':
         type => dword,
