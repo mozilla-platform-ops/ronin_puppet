@@ -64,9 +64,9 @@ New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Repository' 
 New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Value $src_Branch -PropertyType String -force
 
 ## Clone ronin puppet locally to C:\ronin
-git clone --single-branch --branch $src_Branch "https://github.com/$src_Organisation/$src_Repository" "$env:systemdrive\ronin"
+git clone "https://github.com/$src_Organisation/$src_Repository" "$env:systemdrive\ronin"
 Set-Location "$env:systemdrive\ronin"
-git checkout -b $src_Branch
+git checkout $src_Branch
 git pull
 ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
 if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
