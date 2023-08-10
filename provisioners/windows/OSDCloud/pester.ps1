@@ -17,3 +17,4 @@ Invoke-RoninTest -Test C:\worker-images\tests\win\common_tools.tests.ps1
 Invoke-RoninTest -Test C:\worker-images\tests\win\git.tests.ps1
 Invoke-RoninTest -Test C:\worker-images\tests\win\mozilla_build.tests.ps1
 Invoke-RoninTest -Test C:\worker-images\tests\win\mozilla_maintenance_service.tests.ps1
+Invoke-RoninTest -Test C:\worker-images\tests\win\windows_worker_runner.tests.ps1
