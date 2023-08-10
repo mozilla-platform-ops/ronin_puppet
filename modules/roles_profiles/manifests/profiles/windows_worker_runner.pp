@@ -42,6 +42,9 @@ class roles_profiles::profiles::windows_worker_runner {
                 'win_11_2009': {
                     $init = 'task-user-init-win11.cmd'
                 }
+                'win_10_2009': {
+                    $init = 'task-user-init-win10.cmd'
+                }
                 'win_2012': {
                     $init = 'task-user-init-win2012.cmd'
                 }
