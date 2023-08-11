@@ -6,7 +6,6 @@ class win_disable_services::uninstall_windows_defender {
 
     exec { 'uninstall_windows_defender':
         command  => 'Uninstall-WindowsFeature -Name Windows-Defender',
-        onlyif   => 'Get-MpComputerStatus',
         provider => powershell,
     }
 }
