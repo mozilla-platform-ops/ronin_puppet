@@ -6,7 +6,14 @@ class roles_profiles::profiles::visual_studio_build_tools {
 
   case $facts['os']['name'] {
     'Windows': {
-        include win_packages::vs_build_tools
+        case $facts['custom_win_os_version'] {
+            'win_2022_2009': {
+                include win_packages::vs_buildtools_2022
+            }
+            default: {
+                include win_packages::vs_build_tools
+            }
+        }
     }
     default: {
       fail("${$facts['os']['name']} not supported")
