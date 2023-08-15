@@ -47,7 +47,7 @@ class win_mozilla_build::post_boostrap (
 
     # Resource from counsyl-windows
     windows::environment { 'MOZILLABUILD':
-        value => $win_mozilla_build::install_path,
+        value => $install_path,
     }
     windows_env { "PATH=${mozbld}\\bin": }
     windows_env { "PATH=${mozbld}\\kdiff": }
