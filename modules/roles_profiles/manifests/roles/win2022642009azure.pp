@@ -11,7 +11,7 @@ class roles_profiles::roles::win2022642009azure {
             include roles_profiles::profiles::error_reporting
             include roles_profiles::profiles::files_system_managment
             include roles_profiles::profiles::logging
-            include roles_profiles::profiles::mozilla_build
+            include roles_profiles::profiles::mozbuild_post_boostrap
             include roles_profiles::profiles::network
             include roles_profiles::profiles::ntp
             include roles_profiles::profiles::windows_worker_runner
