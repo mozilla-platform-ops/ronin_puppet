@@ -36,7 +36,7 @@ packages_classes:
   - zstandard
 
 # Package class parameters
-packages::google_chrome::version: v88.0.4324.192
+packages::google_chrome::version: v115.0.5790.102
 packages::mercurial::version: 5.5.2
 packages::nodejs::version: 12.11.1
 packages::python2::version: 2.7.18
