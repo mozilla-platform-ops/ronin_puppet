@@ -34,7 +34,7 @@ executors:
       xcode: 12.5.1  # 8/15/23: os x 11.4.0, no older available
   macos-1100: &1100
     macos:
-      xcode: 12.5.1
+      xcode: 12.5.1  # 8/15/23: os x 11.4.0
 
 commands:
   early_return_for_forked_pull_requests:
