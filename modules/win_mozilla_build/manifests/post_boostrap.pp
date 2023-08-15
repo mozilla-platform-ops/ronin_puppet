@@ -60,7 +60,7 @@ class win_mozilla_build::post_boostrap (
         command  => file('win_mozilla_build/set_path.ps1.'),
         provider => powershell,
     }
-    file {"${win_mozilla_build::cache_drive}\\pip-cache":
+    file {"${cache_drive}\\pip-cache":
         ensure => directory,
     }
     # Resource from puppetlabs-acl
