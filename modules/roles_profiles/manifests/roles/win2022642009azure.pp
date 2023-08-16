@@ -14,7 +14,6 @@ class roles_profiles::roles::win2022642009azure {
             include roles_profiles::profiles::mozbuild_post_boostrap
             include roles_profiles::profiles::network
             include roles_profiles::profiles::ntp
-            include roles_profiles::profiles::windows_worker_runner
         }
         default: {
             # Needs to be applied before other Win Update is disabled

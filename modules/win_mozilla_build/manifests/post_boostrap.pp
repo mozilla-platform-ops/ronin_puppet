@@ -21,11 +21,14 @@ class win_mozilla_build::post_boostrap (
         command  => file('win_mozilla_build/grant_symlnk_access.ps1'),
         provider => powershell,
     }
+    file { $hg_cache:
+        ensure => directory,
+    }
     windows::environment { 'HG_CACHE':
         value => $hg_cache,
     }
     # Resource from puppetlabs-acl
-    acl { "${cache_drive}}\\hg-shared":
+    acl { $hg_cache:
         target      => $hg_cache,
         permissions => {
             identity                   => 'everyone',
