@@ -9,7 +9,7 @@ class macos_safaridriver (
     'Darwin': {
       case $facts['os']['release']['major'] {
         # 19 == OS X 10.15
-        '19': {
+        '19', '20': {
           $perm_script = '/usr/local/bin/add_tcc_perms.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
