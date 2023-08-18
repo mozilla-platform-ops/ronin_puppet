@@ -3,15 +3,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::git {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
-      package {
-          'git':
-              ensure => present;
-      }
+                  case $facts['os']['release']['full'] {
+                '18.04': {
+
+    package {
+              'git':
+                  ensure => present;
+          }
+                    }
+                    default: {
+                        fail("cannot install on ${facts['os']['release']['full']}")
+                    }
+                }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }
