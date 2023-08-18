@@ -57,7 +57,7 @@ function Run-MaintainSystem {
 }
 function Remove-OldTaskDirectories {
   param (
-    [string[]] $targets = @('D:\task_*', 'C:\Users\task_*')
+    [string[]] $targets = @('Z:\task_*', 'C:\Users\task_*')
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -104,6 +104,32 @@ function Check-RoninNodeOptions {
       Remove-Item -path $lock -ErrorAction SilentlyContinue
       write-host New-item -path $flagfile
       Exit-PSSession
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Check-RoninLock {
+  param (
+    [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock"
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (Test-Path $lock) {
+      ruby_process = Get-Process ruby -ErrorAction SilentlyContinue
+      if (ruby_process -eq $null) {
+        Remove-Item $lock
+        write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Lock file is present but Puppet is not running', '-f', '-d', '4:5')
+      } elseif (ruby_process -neq $null) {
+        Write-Log -message  ('{0} :: An instance of Puppet is currently running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        exit
+      } else {
+        New-Item -Path $lock -ItemType file -Force
+        Write-Log -message  ('{0} :: $lock created.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
     }
   }
   end {
@@ -207,6 +233,142 @@ function Puppet-Run {
   }
 }
 
+function Test-VolumeExists {
+  param (
+    [char[]] $driveLetter
+  )
+  if (Get-Command -Name 'Get-Volume' -ErrorAction 'SilentlyContinue') {
+    return (@(Get-Volume -DriveLetter $driveLetter -ErrorAction 'SilentlyContinue').Length -eq $driveLetter.Length)
+  }
+  # volume commandlets are unavailable on windows 7, so we use wmi to access volumes here.
+  return (@($driveLetter | % { Get-WmiObject -Class Win32_Volume -Filter ('DriveLetter=''{0}:''' -f $_) -ErrorAction 'SilentlyContinue' }).Length -eq $driveLetter.Length)
+}
+function AzMount-DiskTwo {
+# Starting with disk 2 for now
+# Azure packer images does have a disk 1 labled ad temp storage
+# Maybe use that in the future
+  param (
+    [string] $lock = 'C:\dsc\in-progress.lock'
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
+      Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+    } else {
+      $pagefileName = $false
+      Get-WmiObject Win32_PagefileSetting | ? { !$_.Name.StartsWith('c:') } | % {
+        $pagefileName = $_.Name
+        try {
+          $_.Delete()
+          Write-Log -message ('{0} :: page file: {1}, deleted.' -f $($MyInvocation.MyCommand.Name), $pagefileName) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to delete page file: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $pagefileName, $_.Exception.Message) -severity 'ERROR'
+        }
+      }
+      if (Get-Command -Name 'Clear-Disk' -errorAction SilentlyContinue) {
+        try {
+          Clear-Disk -Number 2 -RemoveData -Confirm:$false
+          # Clear-Disk -Number 1 -RemoveData -Confirm:$false
+          Write-Log -message ('{0} :: disk 1 partition table cleared.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to clear partition table on disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: partition table clearing skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if (Get-Command -Name 'Initialize-Disk' -errorAction SilentlyContinue) {
+        try {
+          Initialize-Disk -Number 2 -PartitionStyle MBR
+          # Initialize-Disk -Number 1 -PartitionStyle MBR
+          Write-Log -message ('{0} :: disk 1 initialized.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to initialize disk 1. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: disk initialisation skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+      if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
+        try {
+          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
+          # New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
+          Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
+          Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+        try {
+          New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
+          # New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
+          Format-Volume -FileSystem NTFS -NewFileSystemLabel task -DriveLetter Z -Confirm:$false
+          Write-Log -message ('{0} :: task drive Z: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to format task drive Z:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: partitioning skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
+    }
+  }
+}
+function Set-DriveLetters {
+  param (
+    [hashtable] $driveLetterMap = @{
+      'E:' = 'Y:';
+      'F:' = 'Z:'
+    }
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    $driveLetterMap.Keys | % {
+      $old = $_
+      $new = $driveLetterMap.Item($_)
+      if (Test-VolumeExists -DriveLetter @($old[0])) {
+        $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
+        if ($null -ne $volume) {
+          $volume.DriveLetter = $new
+          $volume.Put()
+          if ((Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$new'") -and (Test-VolumeExists -DriveLetter @($new[0]))) {
+            Write-Log -message ('{0} :: drive {1} assigned new drive letter: {2}.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'INFO'
+          } else {
+            Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using wmi, failed.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'WARN'
+            try {
+              Get-Partition -DriveLetter $old[0] | Set-Partition -NewDriveLetter $new[0]
+            } catch {
+              Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using get/set partition, failed. {3}' -f $($MyInvocation.MyCommand.Name), $old, $new, $_.Exception.Message) -severity 'ERROR'
+            }
+          }
+        }
+      }
+    }
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
+      $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
+      if ($null -ne $volume) {
+        $volume.DriveLetter = 'Z:'
+        $volume.Put()
+        Write-Log -message ('{0} :: drive Y: assigned new drive letter: Z:.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+      }
+    }
+    $volumes = @(Get-WmiObject -Class Win32_Volume | Sort-Object { $_.Name })
+    Write-Log -message ('{0} :: {1} volumes detected.' -f $($MyInvocation.MyCommand.Name), $volumes.length) -severity 'INFO'
+    foreach ($volume in $volumes) {
+      Write-Log -message ('{0} :: {1} {2}gb' -f $($MyInvocation.MyCommand.Name), $volume.Name.Trim('\'), [math]::Round($volume.Capacity/1GB,2)) -severity 'DEBUG'
+    }
+    $partitions = @(Get-WmiObject -Class Win32_DiskPartition | Sort-Object { $_.Name })
+    Write-Log -message ('{0} :: {1} disk partitions detected.' -f $($MyInvocation.MyCommand.Name), $partitions.length) -severity 'INFO'
+    foreach ($partition in $partitions) {
+      Write-Log -message ('{0} :: {1}: {2}gb' -f $($MyInvocation.MyCommand.Name), $partition.Name, [math]::Round($partition.Size/1GB,2)) -severity 'DEBUG'
+    }
+  }
+}
 function StartWorkerRunner {
     param (
     )
@@ -228,13 +390,13 @@ function Check-AzVM-Name {
     }
     process {
         $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
-        if ($instanceName -notmatch $env:computername) {
+        if ($instanceName -notlike $env:computername) {
             Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
             [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
             $env:COMPUTERNAME = $instanceName
             Rename-Computer -NewName $instanceName -force
-            Write-Log -message  ('{0} :: Name changed to {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
-            shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
+            # Don't waste time/money on rebooting to pick up name change
+            # shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
             return
         } else {
             Write-Log -message  ('{0} :: Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
@@ -244,35 +406,7 @@ function Check-AzVM-Name {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-function Test-VolumeExists {
-  param (
-    [char[]] $driveLetter
-  )
-  if (Get-Command -Name 'Get-Volume' -ErrorAction 'SilentlyContinue') {
-    return (@(Get-Volume -DriveLetter $driveLetter -ErrorAction 'SilentlyContinue').Length -eq $driveLetter.Length)
-  }
-  # volume commandlets are unavailable on windows 7, so we use wmi to access volumes here.
-  return (@($driveLetter | % { Get-WmiObject -Class Win32_Volume -Filter ('DriveLetter=''{0}:''' -f $_) -ErrorAction 'SilentlyContinue' }).Length -eq $driveLetter.Length)
-}
-## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
-function LinkZY2D {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
-            subst Y: D:\
-        }
-        if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
-            subst Z: D:\
-        }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
+
 $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
 $ronin_key = "$mozilla_key\ronin_puppet"
@@ -295,11 +429,14 @@ $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
+  if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
+    AzMount-DiskTwo
+    Set-DriveLetters
+  }
   Check-AzVM-Name
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
-    LinkZY2D
   }
   StartWorkerRunner
   # wait and check if GW has started
