@@ -15,8 +15,6 @@ class macos_safariupdate () {
         command => $update_script,
         require => File[$update_script],
         user    => 'root',
-        # semaphore created in script
-        unless  => '/bin/test -f /Users/cltbld/Library/Preferences/semaphore/safari-update-has-run',
       }
     }
   default: {
