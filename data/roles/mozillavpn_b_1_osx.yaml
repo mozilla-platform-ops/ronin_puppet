@@ -8,8 +8,7 @@ worker_metadata:
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
 worker:
-  # TODO: Make this actually overwrite the hardcoded worker version in the generic_worker profile file
-  taskcluster_version: 52.0.0
+  taskcluster_version: 54.4.1
   provider_type: standalone
   worker_pool_id: releng-hardware/mozillavpn-b-1-osx
   worker_group: mdc1

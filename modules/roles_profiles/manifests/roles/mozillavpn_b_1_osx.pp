@@ -22,7 +22,7 @@ class roles_profiles::roles::mozillavpn_b_1_osx {
     include ::roles_profiles::profiles::relops_users
     #include ::roles_profiles::profiles::homebrew
 
-    include ::roles_profiles::profiles::mozillavpn_b_1_osx_generic_worker
+    include ::roles_profiles::profiles::worker
     #include ::fw::roles::osx_taskcluster_worker_loaner
 
     #include ::macos_utils::uninstall_homebrew
