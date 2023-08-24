@@ -116,8 +116,16 @@ class worker_runner (
                 group  => $group,
             }
 
+            # Create task dir (requires 0777 permisisons for some chmod commands)
+            file { $task_dir:
+                ensure => 'directory',
+                mode   => '0777',
+                owner  => $owner,
+                group  => $group,
+            }
+
             # Create tasks, caches, downloads and log dirs
-            file { [ $task_dir, $cache_dir, $downloads_dir, $log_dir ]:
+            file { [ $cache_dir, $downloads_dir, $log_dir ]:
                 ensure => 'directory',
                 mode   => '0700',
                 owner  => $owner,
