@@ -57,7 +57,7 @@ function Run-MaintainSystem {
 }
 function Remove-OldTaskDirectories {
   param (
-    [string[]] $targets = @('D:\task_*', 'C:\Users\task_*')
+    [string[]] $targets = @('Z:\task_*', 'C:\Users\task_*')
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -104,6 +104,32 @@ function Check-RoninNodeOptions {
       Remove-Item -path $lock -ErrorAction SilentlyContinue
       write-host New-item -path $flagfile
       Exit-PSSession
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Check-RoninLock {
+  param (
+    [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock"
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (Test-Path $lock) {
+      ruby_process = Get-Process ruby -ErrorAction SilentlyContinue
+      if (ruby_process -eq $null) {
+        Remove-Item $lock
+        write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Lock file is present but Puppet is not running', '-f', '-d', '4:5')
+      } elseif (ruby_process -neq $null) {
+        Write-Log -message  ('{0} :: An instance of Puppet is currently running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        exit
+      } else {
+        New-Item -Path $lock -ItemType file -Force
+        Write-Log -message  ('{0} :: $lock created.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      }
     }
   }
   end {
@@ -207,118 +233,6 @@ function Puppet-Run {
   }
 }
 
-function StartWorkerRunner {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        Start-Service -Name worker-runner
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-function Check-AzVM-Name {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
-        if ($instanceName -notmatch $env:computername) {
-            Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
-            [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
-            $env:COMPUTERNAME = $instanceName
-            Rename-Computer -NewName $instanceName -force
-            Write-Log -message  ('{0} :: Name changed to {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
-            ## Avoid reboot to save time
-            #shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
-            return
-        } else {
-            Write-Log -message  ('{0} :: Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
-        }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
-function LinkZY2D {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
-            subst Y: D:\
-        }
-        #if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
-        #    subst Z: D:\
-        #}
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-function Create-RAMDisk {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-		$bytes = (Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory
-		$total = $bytes / 1GB
-		$GB = ("{0:N2}" -f $total)
-		$RD_size = ([Math]::Round($total * 0.5))
-
-		if (!(Test-Path Z:)){
-			if (($RD_size) -lt (15)) {
-				Write-Log -message  ('{0} :: Less than 15 GB RAM available. Will not mount RAMDisk. .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			} else {
-				Write-Log -message  ('{0} :: Mounting {1} GB RAMDisk .' -f $($MyInvocation.MyCommand.Name), ($RD_size)) -severity 'DEBUG'
-				write-host mount RAMDisk
-				imdisk -a -o awe -s ${RD_size}G -m Z: -p `"/fs:ntfs /q /y`"
-			}
-			$backup_loc = "C:\Zdrive\"
-			if ((Test-Path $backup_loc)) {
-				if ((Get-ChildItem -Path $backup_loc).Count -gt 0) {
-					Get-ChildItem -Path "${backup_loc}*" | Move-Item -Destination Z:\
-				}
-			}
-		} else {
-			$drive = (Get-PSDrive -Name Z)
-			$free = ($drive.Free / 1GB)
-			Write-Log -message  ('{0} :: Z drive present with {1} GB free .' -f $($MyInvocation.MyCommand.Name), ($free)) -severity 'DEBUG'
-		}
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-function Backup-RAMDisk {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-		if ((Test-Path Z:)){
-			$backup_loc = "C:\Zdrive"
-			if (!(Test-Path $backup_loc)){
-				New-Item -Path $backup_loc -ItemType Directory
-			}
-			Move-Item -Path "Z:\*" -Destination $backup_loc
-		}
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
 function Test-VolumeExists {
   param (
     [char[]] $driveLetter
@@ -340,7 +254,7 @@ function AzMount-DiskTwo {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if ((Test-VolumeExists -DriveLetter 'Z')) {
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
       Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
     } else {
       $pagefileName = $false
@@ -380,6 +294,15 @@ function AzMount-DiskTwo {
       }
       if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
         try {
+          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
+          # New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
+          Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
+          Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+        try {
           New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
           # New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
           Format-Volume -FileSystem NTFS -NewFileSystemLabel task -DriveLetter Z -Confirm:$false
@@ -397,7 +320,8 @@ function AzMount-DiskTwo {
 function Set-DriveLetters {
   param (
     [hashtable] $driveLetterMap = @{
-      'E:' = 'Z:'
+      'E:' = 'Y:';
+      'F:' = 'Z:'
     }
   )
   begin {
@@ -425,7 +349,7 @@ function Set-DriveLetters {
         }
       }
     }
-    if (!(Test-VolumeExists -DriveLetter 'Z')) {
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
       $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
       if ($null -ne $volume) {
         $volume.DriveLetter = 'Z:'
@@ -458,6 +382,30 @@ function StartWorkerRunner {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Check-AzVM-Name {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
+        if ($instanceName -notlike $env:computername) {
+            Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
+            [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
+            $env:COMPUTERNAME = $instanceName
+            Rename-Computer -NewName $instanceName -force
+            # Don't waste time/money on rebooting to pick up name change
+            # shutdown @('-r', '-t', '0', '-c', 'Reboot; Node renamed to match tags', '-f', '-d', '4:5')
+            return
+        } else {
+            Write-Log -message  ('{0} :: Name has not change and is {1}' -f $($MyInvocation.MyCommand.Name), ($env:computername)) -severity 'DEBUG'
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 
 $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
@@ -481,11 +429,14 @@ $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 # Hand_off_ready value is set by the packer manifest
 # TODO: add json manifest location
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
+  if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
+    AzMount-DiskTwo
+    Set-DriveLetters
+  }
   Check-AzVM-Name
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
-    LinkZY2D
   }
   StartWorkerRunner
   # wait and check if GW has started

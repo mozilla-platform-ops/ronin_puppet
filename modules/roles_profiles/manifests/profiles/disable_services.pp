@@ -52,6 +52,10 @@ class roles_profiles::profiles::disable_services {
             if $facts['os']['release']['full'] == '10' {
                 include win_disable_services::disable_onedrive
             }
+            ## 2016 == 2022
+            if $facts['os']['release']['full'] == '2016' {
+                include win_disable_services::uninstall_windows_defender
+            }
             # May be needed for non-hardaware
             # Commented out because this will break the auto restore
             # include win_disable_services::disable_vss

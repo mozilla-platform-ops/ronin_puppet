@@ -63,6 +63,9 @@ elseif ($os_caption -like "*windows_11*") {
 elseif ($os_caption -like "*2012*") {
     $os_version = "win_2012"
 }
+elseif ($os_caption -like "*2022*") {
+    $os_version = "win_2022"
+}
 else {
     $os_version = $null
 }
@@ -126,6 +129,10 @@ switch ($os_version) {
     "win_2012" {
         ## Ensure strong encryption
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    }
+    "win_2022" {
+        ## Disable Server Manager Dashboard
+        Get-ScheduledTask -TaskName ServerManager | Disable-ScheduledTask -Verbose
     }
     Default {
         Write-Log -message  ('{0} :: Skipping at task user logon for {1}' -f $($MyInvocation.MyCommand.Name),$os_version) -severity 'DEBUG'
