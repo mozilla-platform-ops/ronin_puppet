@@ -8,8 +8,6 @@ class win_nxlog::service {
 
   service { 'nxlog':
     ensure  => running,
-    #subscribe => File["${win_nxlog::nxlog_dir}\\conf\\nxlog.conf"],
-    restart => true,
     require => Package['NXLog-CE'],
   }
 }
