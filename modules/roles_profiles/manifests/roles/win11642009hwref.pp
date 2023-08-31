@@ -16,7 +16,7 @@ class roles_profiles::roles::win11642009hwref {
   include roles_profiles::profiles::power_management
   include roles_profiles::profiles::scheduled_tasks
   include roles_profiles::profiles::hardware
-  include roles_profiles::profiles::intel_drivers
+  #include roles_profiles::profiles::intel_drivers
   include roles_profiles::profiles::virtual_drivers
   include roles_profiles::profiles::windows_datacenter_administrator
 
