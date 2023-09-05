@@ -49,8 +49,8 @@ function Set-Logging {
         [string] $local_dir = "$env:systemdrive\BootStrap",
         [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
         [string] $nxlog_conf = "nxlog.conf",
-        [string] $nxlog_pem = "papertrail-bundle.pem",
-        [string] $nxlog_dir = "$env:systemdrive\Program Files (x86)\nxlog"
+        [string] $nxlog_pem  = "papertrail-bundle.pem",
+        [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
     )
     begin {
         Write-Host ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime())
@@ -325,7 +325,7 @@ Function Bootstrap-schtasks {
     }
     process {
         Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-        Invoke-WebRequest "https://raw.githubusercontent.com/$($src_Organisation)/$($src_Repository)/$($src_branch)/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
+        Invoke-WebRequest https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_branch/provisioners/windows/$image_provisioner/bootstrap.ps1 -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
         Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
         Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
     }
@@ -355,14 +355,11 @@ if (-Not ($taskExists)) {
     ## Creates C:\bootstrap, installs nxlog, nxlog conf file, and nxlog certificate
     Set-Logging
     Bootstrap-schtasks -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Revision $src_Revision -image_provisioner $image_provisioner
-    $check = Get-Content "$env:systemdrive\BootStrap\bootstrap.ps1"
-    if ($null -eq $check) {
-        Write-Log -message  ('{0} :: Failed to download bootstrap script.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Exit 1
-    }
-    else {
-        Start-Sleep -s 5
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap task is in place', '-f', '-d', '4:5')
+    shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap task is in place', '-f', '-d', '4:5')
+    while ($true) {
+        Start-Sleep -s 60
+        Write-Log -message  ('{0} :: Last reboot failed. Attempting again..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        #shutdown @('-r', '-t', '0', '-c', 'Reboot; Bootstrap task is in place', '-f', '-d', '4:5')
     }
 }
 If (-Not (test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
