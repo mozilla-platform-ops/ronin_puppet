@@ -102,7 +102,7 @@ if (-Not $prework) {
     if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
         Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on $ENV:COMPUTERNAME' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-        Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap_test.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
+        Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
         Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
         Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
     }
