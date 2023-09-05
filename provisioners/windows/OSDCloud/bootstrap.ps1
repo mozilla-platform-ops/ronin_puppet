@@ -47,7 +47,15 @@ $image_provisioner = 'OSDCloud'
 
 Write-host "Starting bootstrap using raw powershell scripts"
 
-if (-Not (Test-Path "$env:systemdrive\prework")) {
+$complete = Test-Path -Path "$env:systemdrive\complete"
+$prework = Test-Path "$env:systemdrive\prework"
+
+if ($complete) {
+    Write-Log -message  ('{0} :: Nothing to do!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    exit 0
+}
+
+if (-Not $prework) {
     ## Install modules
     Write-Log -message  ('{0} :: Installing modules' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
@@ -58,15 +66,12 @@ if (-Not (Test-Path "$env:systemdrive\prework")) {
         "ugit"
     ) | ForEach-Object {
         Install-Module -Name $PSItem -AllowClobber -Force -Confirm:$false
+        Import-Module -Name $PSItem -Force -PassThru
     }
-
-    Import-Module ugit -Force -PassThru
-    Import-Module Carbon -Force -PassThru
-    Import-Module PSWindowsUpdate -Force -PassThru
 
     ## Grant SeServiceLogonRight and reboot
     if (Get-CPrivilege -Identity "Administrator" -ne "SeServiceLogonRight") {
-        Write-Log -message  ('{0} :: Setting SeServiceLogonRight for Administrator' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Write-Log -message ('{0} :: Setting SeServiceLogonRight for Administrator' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Grant-CPrivilege -Identity "Administrator" -Privilege SeServiceLogonRight
     }
 
@@ -284,4 +289,6 @@ else {
             exit 1
         }
     }
+    New-Item -Path "$env:systemdrive" -Name "Complete" -ItemType File
+    Remove-Item "$env:systemdrive\prework" -Confirm:$false -Force
 }
