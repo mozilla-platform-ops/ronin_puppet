@@ -72,13 +72,13 @@ $complete = Test-Path -Path "$env:systemdrive\complete"
 $prework = Test-Path "$env:systemdrive\prework"
 
 if ($complete) {
-    Write-Log -message  ('{0} :: Nothing to do!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Log -message ('{0} :: Nothing to do!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     exit 0
 }
 
 if (-Not $prework) {
     ## Install modules
-    Write-Log -message  ('{0} :: Installing modules' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Log -message ('{0} :: Installing modules' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
     Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     @(
@@ -145,7 +145,7 @@ if (-Not $prework) {
         ) -Wait -NoNewWindow    
     }
 
-    New-Item -Path "$env:systemdrive" -Name "prework" -ItemType File
+    New-Item -Path "$env:systemdrive\" -Name "prework" -ItemType File
 
     Restart-Computer -Confirm:$false -Force
 }
