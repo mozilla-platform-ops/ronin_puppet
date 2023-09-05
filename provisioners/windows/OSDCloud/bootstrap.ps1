@@ -95,7 +95,7 @@ if (-Not $prework) {
     }
 
     ## Setup logging and create c:\bootstrap
-    Write-Log -message  ('{0} :: Setup logging and create c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)),ENV:COMPUTERNAME -severity 'DEBUG'
+    Write-Log -message  ('{0} :: Setup logging and create c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)), ENV:COMPUTERNAME -severity 'DEBUG'
 
     ## Check if C:\Bootstrap exists, and if it doesn't, create it
     if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
@@ -105,7 +105,7 @@ if (-Not $prework) {
 
     ## Setup scheduled task if not setup already
     if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
-        Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)),$ENV:COMPUTERNAME -severity 'DEBUG'
+        Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
         Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
         Invoke-WebRequest "https://raw.githubusercontent.com/$(src_Organisation)/$(src_Repository)/$(src_Branch)/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
         Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
@@ -206,7 +206,7 @@ else {
     ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
     if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
         Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
-    (Get-Content -path "$env:systemdrive\ronin\manifests\nodes.pp") -replace 'roles::role', "roles::$role" | Set-Content "$env:systemdrive\ronin\manifests\nodes.pp"    
+        (Get-Content -path "$env:systemdrive\ronin\manifests\nodes.pp") -replace 'roles::role', "roles::$role" | Set-Content "$env:systemdrive\ronin\manifests\nodes.pp"    
     }
     ## Copy the secrets from the image (from osdcloud) to ronin data secrets
     if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
