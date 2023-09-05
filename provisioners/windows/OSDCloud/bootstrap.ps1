@@ -37,6 +37,8 @@ function Write-Log {
     }
 }
 
+Write-host "Starting bootstrap using raw powershell scripts"
+
 $worker_pool_id = 'win11-64-2009-hw-ref-alpha'
 $role = "win11642009hwref"
 $base_image = 'win11642009hwref'
@@ -45,7 +47,19 @@ $src_Repository = 'ronin_puppet'
 $src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
 
-Write-host "Starting bootstrap using raw powershell scripts"
+Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
+
+## Check if logging exists through local directory and if it doesn't, set it up
+if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
+    Write-Log -message  ('{0} :: Setting up logging' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog-ce-2.10.2150.msi" -outfile "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" -UseBasicParsing
+    msiexec /i "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" /passive
+    while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
+    Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog.conf" -outfile "$env:systemdrive\Program Files (x86)\nxlog\conf\nxlog.conf" -UseBasicParsing
+    while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
+    Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/papertrail-bundle.pem" -outfile "$env:systemdrive\Program Files (x86)\nxlog\cert\papertrail-bundle.pem" -UseBasicParsing
+    Restart-Service -Name nxlog -force
+}
 
 $complete = Test-Path -Path "$env:systemdrive\complete"
 $prework = Test-Path "$env:systemdrive\prework"
@@ -82,18 +96,6 @@ if (-Not $prework) {
     if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
         Write-Log -message  ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue 
-    }
-
-    ## Check if logging exists through local directory and if it doesn't, set it up
-    if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
-        Write-Log -message  ('{0} :: Setting up logging' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog-ce-2.10.2150.msi" -outfile "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" -UseBasicParsing
-        msiexec /i "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" /passive
-        while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
-        Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog.conf" -outfile "$env:systemdrive\Program Files (x86)\nxlog\conf\nxlog.conf" -UseBasicParsing
-        while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
-        Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/papertrail-bundle.pem" -outfile "$env:systemdrive\Program Files (x86)\nxlog\cert\papertrail-bundle.pem" -UseBasicParsing
-        Restart-Service -Name nxlog -force
     }
 
     ## Setup scheduled task if not setup already
@@ -146,16 +148,18 @@ else {
     Import-Module Carbon -Force -PassThru
     Import-Module PSWindowsUpdate -Force -PassThru
 
-    ## Install Puppet using ServiceUI.exe to install as SYSTEM
-    Write-Log -Message ('{0} :: Installing puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\$puppet") -Wait
-    Write-Log -message  ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet) -severity 'DEBUG'
-    Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet)
-    if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
-        Write-Host "Did not install puppet"
-        exit 1
+    if (-Not ("C:\Program Files\Puppet Labs\Puppet\bin")) {
+        ## Install Puppet using ServiceUI.exe to install as SYSTEM
+        Write-Log -Message ('{0} :: Installing puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\$puppet") -Wait
+        Write-Log -message  ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet) -severity 'DEBUG'
+        Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet)
+        if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
+            Write-Host "Did not install puppet"
+            exit 1
+        }
+        $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
     }
-    $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
 
     ## Set registry options
     If (-Not ( test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")) {
@@ -226,8 +230,8 @@ else {
     $env:USERNAME = "Administrator"
     $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
-    Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
-    Get-ChildItem -Path $env:systemdrive\logs\*.json -Recurse | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
+    Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
+    Get-ChildItem -Path $env:systemdrive\logs\*.json -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
 
     puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.log, $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.json
     [int]$puppet_exit = $LastExitCode
