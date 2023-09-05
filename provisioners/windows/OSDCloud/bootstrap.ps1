@@ -49,6 +49,11 @@ $image_provisioner = 'OSDCloud'
 
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
+if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
+    Write-Log -message  ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue 
+}
+
 ## Check if logging exists through local directory and if it doesn't, set it up
 if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
     Write-Log -message  ('{0} :: Setting up logging' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
