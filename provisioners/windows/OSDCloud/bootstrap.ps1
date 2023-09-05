@@ -89,7 +89,8 @@ if (-Not $prework) {
     }
 
     ## Grant SeServiceLogonRight and reboot
-    if ((Get-CPrivilege -Identity "Administrator") -ne "SeServiceLogonRight") {
+    $logonrights = Get-CPrivilege -Identity "Administrator"
+    if ($logonrights -ne "SeServiceLogonRight") {
         Write-Log -message ('{0} :: Setting SeServiceLogonRight for Administrator' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Grant-CPrivilege -Identity "Administrator" -Privilege SeServiceLogonRight
     }
@@ -107,17 +108,15 @@ if (-Not $prework) {
     if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
         Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
         Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-        Invoke-WebRequest "https://raw.githubusercontent.com/$(src_Organisation)/$(src_Repository)/$(src_Branch)/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
+        Invoke-WebRequest "https://raw.githubusercontent.com/$($src_Organisation)/$($src_Repository)/$($src_Branch)/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
         Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
         Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
+        Write-Log -Message ('{0} :: Setup bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
     }
 
     ## Install git, puppet, nodes.pp
     powercfg.exe -x -standby-timeout-ac 0
     powercfg.exe -x -monitor-timeout-ac 0
-
-    ## Download the bootstrap_azure_**.zip file to C:\scratch
-    ## Download git, puppet, and nodes.pp
 
     ## Puppet
     If (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
@@ -188,7 +187,7 @@ else {
     ## Contents 
     if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
         Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
-        git clone "https://github.com/$src_Organisation/$src_Repository" "$env:systemdrive\ronin"
+        git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
     }
 
     Set-Location "$env:systemdrive\ronin"
