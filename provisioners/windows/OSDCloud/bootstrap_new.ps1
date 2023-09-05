@@ -6,12 +6,9 @@ $src_Repository = 'ronin_puppet'
 $src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
 
-Write-host "Starting bootstrap using raw powershell scripts"
-
 Start-Sleep -Seconds 120
 
 ## Setup logging and create c:\bootstrap
-Write-host "Setup logging and create c:\bootstrap on $ENV:COMPUTERNAME"
 $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue
 Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog-ce-2.10.2150.msi" -outfile "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" -UseBasicParsing
 msiexec /i "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" /passive
@@ -21,10 +18,7 @@ while (!(Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep
 Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/papertrail-bundle.pem" -outfile "$env:systemdrive\Program Files (x86)\nxlog\cert\papertrail-bundle.pem" -UseBasicParsing
 Restart-Service -Name nxlog -force
 
-pause
-
 ## Download it
-Write-host "Downloading bootstrap script to c:\bootstrap on $ENV:COMPUTERNAME"
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
 Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap_test.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
 Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
@@ -34,27 +28,16 @@ Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-Fi
 powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
-pause
-
 ## Download the bootstrap_azure_**.zip file to C:\scratch
 ## Download git, puppet, and nodes.pp
-Write-host "Downloading puppet, git, and nodes.pp"
 Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi" -UseBasicParsing -OutFile "$env:systemdrive\puppet-agent-6.28.0-x64.msi"
 Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe" -UseBasicParsing -OutFile "$env:systemdrive\Git-2.37.3-64-bit.exe"
 Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nodes.pp" -UseBasicParsing -OutFile "$env:systemdrive\bootstrap\nodes.pp"
 
-pause
-
 ## Install Git
-Write-host "Installing git.exe"
-Start-Process -FilePath "$env:systemdrive\Git-2.37.3-64-bit.exe" -ArgumentList @(
-    "/verysilent"
-) -Wait -NoNewWindow
-
-pause
+Start-Process "$env:systemdrive\Git-2.37.3-64-bit.exe" /verysilent -Wait
 
 ## Install Puppet
-Write-host "Installing puppet"
 Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\puppet-agent-6.28.0-x64.msi") -Wait
 Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet)
 if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
@@ -63,18 +46,12 @@ if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
 }
 $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
 
-pause
-
 ## Set registry options
 If (!( test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")) {
-    Write-host "Creating HKLM:\SOFTWARE\Mozilla\ronin_puppet"
     New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
     New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet -force
 }
 
-pause
-
-Write-host "Setting HKLM:\SOFTWARE\Mozilla\ronin_puppet values"
 New-Item -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name source -force
 New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'image_provisioner' -Value $image_provisioner -PropertyType String  -force
 New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'worker_pool_id' -Value $worker_pool_id -PropertyType String -force
@@ -86,8 +63,6 @@ New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Organisation
 New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Repository' -Value $src_Repository -PropertyType String -force
 New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Value $src_Branch -PropertyType String -force
 
-pause
-
 ## Clone ronin puppet locally to C:\ronin
 Start-Process "$env:programfiles\git\bin\git.exe" -ArgumentList @(
     "clone",
@@ -96,8 +71,6 @@ Start-Process "$env:programfiles\git\bin\git.exe" -ArgumentList @(
 ) -Wait -NoNewWindow
 
 Set-Location "$env:systemdrive\ronin"
-
-pause
 
 Start-Process "$env:programfiles\git\bin\git.exe" -ArgumentList @(
     "checkout",
@@ -161,5 +134,3 @@ Start-Process -FilePath "$env:programfiles\Puppet Labs\Puppet\bin\puppet.bat" -A
 #puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.log,$env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.json
 [int]$puppet_exit = $LastExitCode
 $puppet_exit
-
-pause
