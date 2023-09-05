@@ -338,7 +338,7 @@ $worker_pool_id = 'win11-64-2009-hw-ref-alpha'
 $base_image = 'win11642009hwrefalpha'
 $src_Organisation = 'jwmoss'
 $src_Repository = 'ronin_puppet'
-$src_Branch = 'cloud_windows'
+$src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
 
 Write-Output ("Processing {0}" -f $ENV:COMPUTERNAME)
