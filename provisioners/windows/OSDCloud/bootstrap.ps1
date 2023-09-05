@@ -37,6 +37,8 @@ function Write-Log {
     }
 }
 
+Start-Sleep -Seconds 30
+
 Write-host "Starting bootstrap using raw powershell scripts"
 
 $worker_pool_id = 'win11-64-2009-hw-ref-alpha'
