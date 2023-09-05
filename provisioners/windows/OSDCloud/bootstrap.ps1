@@ -376,7 +376,7 @@ If (-Not (test-path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet')) {
     #}
     Set-RoninRegOptions -DisableNameChecking -worker_pool_id $worker_pool_id -base_image $base_image -src_Organisation $src_Organisation -src_Repository $src_Repository -src_Branch $src_Branch -image_provisioner $image_provisioner
     Write-Log -message  ('{0} :: Reboot; Prerequisites in place and registry options have been set.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    # shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place and registry options have been set.', '-f', '-d', '4:5')
+    shutdown @('-r', '-t', '0', '-c', 'Reboot; Prerequisites in place and registry options have been set.', '-f', '-d', '4:5')
     # while ($true) {
     #     Start-Sleep -s 60
     #     Write-Log -message  ('{0} :: Last reboot failed. Attempting again..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
