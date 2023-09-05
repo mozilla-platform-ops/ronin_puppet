@@ -50,7 +50,7 @@ $image_provisioner = 'OSDCloud'
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
 if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
-    Write-Log -message  ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Log -message ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue 
 }
 
@@ -89,13 +89,13 @@ if (-Not $prework) {
     }
 
     ## Grant SeServiceLogonRight and reboot
-    if (Get-CPrivilege -Identity "Administrator" -ne "SeServiceLogonRight") {
+    if ((Get-CPrivilege -Identity "Administrator") -ne "SeServiceLogonRight") {
         Write-Log -message ('{0} :: Setting SeServiceLogonRight for Administrator' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Grant-CPrivilege -Identity "Administrator" -Privilege SeServiceLogonRight
     }
 
     ## Setup logging and create c:\bootstrap
-    Write-host "Setup logging and create c:\bootstrap on $ENV:COMPUTERNAME"
+    Write-Log -message  ('{0} :: Setup logging and create c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)),ENV:COMPUTERNAME -severity 'DEBUG'
 
     ## Check if C:\Bootstrap exists, and if it doesn't, create it
     if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
@@ -105,9 +105,9 @@ if (-Not $prework) {
 
     ## Setup scheduled task if not setup already
     if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
-        Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on $ENV:COMPUTERNAME' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)),$ENV:COMPUTERNAME -severity 'DEBUG'
         Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-        Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
+        Invoke-WebRequest "https://raw.githubusercontent.com/$(src_Organisation)/$(src_Repository)/$(src_Branch)/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
         Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
         Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
     }
@@ -138,7 +138,7 @@ if (-Not $prework) {
 
     ## Install Git
     if (-Not (Test-Path "$env:programfiles\git\bin\git.exe")) {
-        Write-host "Installing git.exe"
+        Write-Log -Message ('{0} :: Installing git.exe' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Start-Process -FilePath "$env:systemdrive\Git-2.37.3-64-bit.exe" -ArgumentList @(
             "/verysilent"
         ) -Wait -NoNewWindow    
