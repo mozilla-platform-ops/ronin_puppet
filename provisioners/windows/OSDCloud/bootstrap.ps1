@@ -93,14 +93,6 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     Import-Module -Name $PSItem -Force -PassThru
 }
 
-## Grant SeServiceLogonRight and reboot
-$logonrights = Get-CPrivilege -Identity "Administrator"
-if ($logonrights -ne "SeServiceLogonRight") {
-    Write-Log -message ('{0} :: Setting SeServiceLogonRight for Administrator' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Grant-CPrivilege -Identity "Administrator" -Privilege SeServiceLogonRight
-    Restart-Computer -Confirm:$false -Force
-}
-
 ## Setup logging and create c:\bootstrap
 Write-Log -message ('{0} :: Setup logging and create c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
 
@@ -118,6 +110,14 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
     Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
     Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
     Write-Log -Message ('{0} :: Setup bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
+}
+
+## Grant SeServiceLogonRight and reboot
+$logonrights = Get-CPrivilege -Identity "Administrator"
+if ($logonrights -ne "SeServiceLogonRight") {
+    Write-Log -message ('{0} :: Setting SeServiceLogonRight for Administrator' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Grant-CPrivilege -Identity "Administrator" -Privilege SeServiceLogonRight
+    Restart-Computer -Confirm:$false -Force
 }
 
 ## Install git, puppet, nodes.pp
