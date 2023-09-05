@@ -8,8 +8,6 @@ $image_provisioner = 'OSDCloud'
 
 Write-host "Starting bootstrap using raw powershell scripts"
 
-Start-Sleep -Seconds 120
-
 ## Setup logging and create c:\bootstrap
 Write-host "Setup logging and create c:\bootstrap on $ENV:COMPUTERNAME"
 $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue
