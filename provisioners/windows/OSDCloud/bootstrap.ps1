@@ -37,7 +37,7 @@ function Write-Log {
     }
 }
 
-Start-Sleep -Seconds 30
+Start-Sleep -Seconds 120
 
 Write-host "Starting bootstrap using raw powershell scripts"
 
@@ -110,7 +110,7 @@ if (-Not $prework) {
     if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
         Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
         Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-        Invoke-WebRequest "https://raw.githubusercontent.com/$($src_Organisation)/$($src_Repository)/$($src_Branch)/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
+        Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
         Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
         Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
         Write-Log -Message ('{0} :: Setup bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
@@ -142,7 +142,7 @@ if (-Not $prework) {
         Write-Log -Message ('{0} :: Installing git.exe' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Start-Process -FilePath "$env:systemdrive\Git-2.37.3-64-bit.exe" -ArgumentList @(
             "/verysilent"
-        ) -Wait -NoNewWindow    
+        ) -Wait -NoNewWindow
     }
 
     New-Item -Path "$env:systemdrive\" -Name "prework" -ItemType File
