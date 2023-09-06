@@ -204,7 +204,7 @@ New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Val
 ## Contents 
 if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
     Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
-    git config --global --add safe.directory "$env:systemdrive\ronin"
+    git config --global --add safe.directory "C:/ronin"
     git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
 }
 
@@ -216,6 +216,7 @@ $branch = git branch | Where-object { $PSItem.isCurrentBranch -eq $true }
 if ($branch -ne $src_branch) {
     git checkout $src_branch
     git pull
+    git config --global --add safe.directory "C:/ronin"
 }
 
 ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
