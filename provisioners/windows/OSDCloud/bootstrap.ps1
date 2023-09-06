@@ -250,35 +250,38 @@ $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
 $env:USERNAME = "Administrator"
 $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
-Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
+#Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
 Get-ChildItem -Path $env:systemdrive\logs\*.json -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
 
-puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.log, $env:systemdrive\logs\$(get-date -format yyyyMMdd-HHmm)-bootstrap-puppet.json
+$logDate = $(get-date -format yyyyMMdd-HHmm)
+
+puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$($logdate)-bootstrap-puppet.json
 [int]$puppet_exit = $LastExitCode
 Write-Log -Message ('{0} :: Puppet error code {1}' -f $($MyInvocation.MyCommand.Name)), $puppet_exit -severity 'DEBUG'
 switch ($puppet_exit) {
     0 {
         Write-Log -message  ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
         Write-Host ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
-        Set-ItemProperty -Path $ronnin_key -Name 'bootstrap_stage' -Value 'complete'
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
     }
     1 {
         Write-Log -message ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
         Write-Host ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
         Set-ItemProperty -Path $ronnin_key -name "last_run_exit" -value $puppet_exit
-        Add-Content "$logdir\$datetime-bootstrap-puppet.json" "`n]" | ConvertFrom-Json | Where-Object {
+        Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]" | ConvertFrom-Json | Where-Object {
             $psitem.Level -match "warning|err" 
         } | ForEach-Object {
-            Write-Output $psitem
+            $data = $psitem
+            Write-Log -message ('{0} :: Puppet warning or error log {1}' -f $($MyInvocation.MyCommand.Name), $data) -severity 'DEBUG'
         }
         exit 1
     }
     2 {
         Write-Log -message ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
         Write-Host ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
-        Set-ItemProperty -Path $ronnin_key -Name 'bootstrap_stage' -Value 'complete'
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
         exit 2
     }
     4 {
@@ -286,7 +289,7 @@ switch ($puppet_exit) {
         Write-Host ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
         Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
         ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
-        Add-Content "$logdir\$datetime-bootstrap-puppet.json" "`n]" | ConvertFrom-Json | Where-Object {
+        Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]" | ConvertFrom-Json | Where-Object {
             $psitem.Level -match "warning|err" 
         } | ForEach-Object {
             $data = $psitem
@@ -299,7 +302,7 @@ switch ($puppet_exit) {
         Write-Host ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
         Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
         ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
-        Add-Content "$logdir\$datetime-bootstrap-puppet.json" "`n]" | ConvertFrom-Json | Where-Object {
+        Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]" | ConvertFrom-Json | Where-Object {
             $psitem.Level -match "warning|err" 
         } | ForEach-Object {
             $data = $psitem
