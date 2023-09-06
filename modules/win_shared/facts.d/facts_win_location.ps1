@@ -10,6 +10,8 @@ if ($NVDomain -like "*bitbar*") {
     $location = "azure"
 } elseif ($DhcpDomain -like "*microsoft*") {
     $location = "azure"
+} elseif ($DhcpDomain -eq "localdomain") {
+    $location = "home"
 } else {
 	$location = "datacenter"
 }
