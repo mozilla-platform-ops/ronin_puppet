@@ -42,7 +42,7 @@ function Write-Log {
         Write-Host -object $message -ForegroundColor $fc
     }
 }
-  
+
 function Run-MaintainSystem {
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -113,7 +113,7 @@ function Check-RoninNodeOptions {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-  
+
 Function UpdateRonin {
     param (
         [string] $sourceOrg,
@@ -128,7 +128,7 @@ Function UpdateRonin {
         $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation').Organisation } else { 'mozilla-platform-ops' })
         $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository').Repository } else { 'ronin_puppet' })
         $sourceBranch = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch').Branch } else { 'master' })
-  
+
         Set-Location $ronin_repo
         git config --global --add safe.directory "C:/ronin"
         git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
@@ -172,10 +172,10 @@ function Puppet-Run {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-  
+
         Check-RoninNodeOptions
         UpdateRonin
-  
+
         # Setting Env variabes for PuppetFile install and Puppet run
         # The ssl variables are needed for R10k
         Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -190,7 +190,7 @@ function Puppet-Run {
         $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
         $env:USERNAME = "Administrator"
         $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
-  
+
         # This is temporary and should be removed after the cloud_windows branch is merged
         # Hiera lookups will fail after the merge if this is not in place following the merge
         <#
@@ -202,7 +202,7 @@ function Puppet-Run {
       #>
         # this will break Win 10 1803 if this is merged into the master brnach
         $hiera = "hiera.yaml"
-  
+
         # Needs to be removed from path or a wrong puppet file will be used
         $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
         If (!(test-path $fail_dir)) {
@@ -212,7 +212,7 @@ function Puppet-Run {
         Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=$hiera --logdest $logdir\$log_file
         [int]$puppet_exit = $LastExitCode
-  
+
         if ($run_to_success -eq 'true') {
             if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
                 if ($last_exit -eq 0) {
@@ -252,7 +252,7 @@ function Puppet-Run {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-  
+
 function StartWorkerRunner {
     param (
     )
@@ -266,7 +266,7 @@ function StartWorkerRunner {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-  
+
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet reboot_count -ErrorAction SilentlyContinue
 If ( $reboot_count_exists -ne $null) {
@@ -315,4 +315,4 @@ else {
     Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Exit-PSSession
 }
-  
+
