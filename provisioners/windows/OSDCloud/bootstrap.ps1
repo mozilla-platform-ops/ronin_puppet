@@ -68,6 +68,9 @@ if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
     Restart-Service -Name nxlog -force
 }
 
+## Wait for nxlog to send logs
+Start-Sleep -Seconds 15
+
 $complete = Test-Path -Path "$env:systemdrive\complete"
 #$prework = Test-Path "$env:systemdrive\prework"
 
@@ -104,12 +107,18 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
 
 ## Setup scheduled task if not setup already
 if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
-    Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
+    Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name),$ENV:COMPUTERNAME) -severity 'DEBUG'
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
     Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/$($image_provisioner)/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
     Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
     Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
-    Write-Log -Message ('{0} :: Setup bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
+    $check = Get-Content "$env:systemdrive\BootStrap\bootstrap.ps1"
+    if ($null -ne $check) {
+        Write-Log -Message ('{0} :: Setup bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name),$ENV:COMPUTERNAME) -severity 'DEBUG'
+    }
+    else {
+        Write-Log -Message ('{0} :: Unable to clone bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name),$ENV:COMPUTERNAME) -severity 'DEBUG'
+    }
 }
 
 ## Grant SeServiceLogonRight and reboot
