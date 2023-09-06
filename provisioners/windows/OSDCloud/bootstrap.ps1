@@ -87,7 +87,8 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 @(
     "Carbon",
     "PSWindowsUpdate",
-    "ugit"
+    "ugit",
+    "kbupdate"
 ) | ForEach-Object {
     $hit = Get-Module -Name $PSItem
     if ($null -eq $hit) {
