@@ -159,8 +159,6 @@ if (-Not (Test-Path "$env:programfiles\git\bin\git.exe")) {
     ) -Wait -NoNewWindow
 }
 
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
-
 #New-Item -Path "$env:systemdrive\" -Name "prework" -ItemType File
 if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
     ## Install Puppet using ServiceUI.exe to install as SYSTEM
@@ -174,6 +172,8 @@ if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
     }
     $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
 }
+
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
 
 ## Set registry options
 If (-Not ( test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")) {
