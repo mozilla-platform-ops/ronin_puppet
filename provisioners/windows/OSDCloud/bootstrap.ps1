@@ -130,6 +130,7 @@ if ($logonrights -ne "SeServiceLogonRight") {
 }
 
 ## Install git, puppet, nodes.pp
+Write-Log -message ('{0} :: Setting power settings with powercfg' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
@@ -161,12 +162,12 @@ if (-Not (Test-Path "$env:programfiles\git\bin\git.exe")) {
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
 
 #New-Item -Path "$env:systemdrive\" -Name "prework" -ItemType File
-if (-Not ("C:\Program Files\Puppet Labs\Puppet\bin")) {
+if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
     ## Install Puppet using ServiceUI.exe to install as SYSTEM
     Write-Log -Message ('{0} :: Installing puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\$puppet") -Wait
-    Write-Log -message  ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet) -severity 'DEBUG'
-    Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet)
+    Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\puppet-agent-6.28.0-x64.msi") -Wait
+    Write-Log -message  ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), "puppet-agent-6.28.0-x64.msi") -severity 'DEBUG'
+    Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), "puppet-agent-6.28.0-x64.msi")
     if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
         Write-Host "Did not install puppet"
         exit 1
@@ -196,6 +197,7 @@ New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Val
 ## Contents 
 if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
     Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
+    git config --global --add safe.directory "$env:systemdrive\ronin"
     git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
 }
 
