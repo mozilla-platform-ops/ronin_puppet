@@ -98,7 +98,7 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 }
 
 ## Setup logging and create c:\bootstrap
-Write-Log -message ('{0} :: Setup logging and create c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name)), $ENV:COMPUTERNAME -severity 'DEBUG'
+Write-Log -message ('{0} :: Setup logging and create c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
 
 ## Check if C:\Bootstrap exists, and if it doesn't, create it
 if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
