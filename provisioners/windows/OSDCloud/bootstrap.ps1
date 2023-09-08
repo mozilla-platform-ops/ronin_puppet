@@ -49,6 +49,13 @@ $src_Repository = 'ronin_puppet'
 $src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
 
+$complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage'
+
+if ($complete -eq "complete") {
+    Write-Log -message ('{0} :: Nothing to do!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    exit
+}
+
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
 if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
@@ -70,14 +77,6 @@ if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
 
 ## Wait for nxlog to send logs
 Start-Sleep -Seconds 15
-
-$complete = Test-Path -Path "$env:systemdrive\complete"
-#$prework = Test-Path "$env:systemdrive\prework"
-
-if ($complete) {
-    Write-Log -message ('{0} :: Nothing to do!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    exit 0
-}
 
 ## Check if modules are installed
 ## Install modules
