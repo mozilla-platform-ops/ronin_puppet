@@ -268,15 +268,9 @@ function StartWorkerRunner {
 }
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-$reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet reboot_count -ErrorAction SilentlyContinue
-If ( $reboot_count_exists -ne $null) {
-    $previous_boots = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").reboot_count
-    $new_count = $previous_boots + 1
-    Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name reboot_count -value $new_count -force
-}
 If ($bootstrap_stage -eq 'complete') {
     Run-MaintainSystem
-    Puppet-Run
+    <#  Puppet-Run
     Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
     ## Last catch if Puppet failed
     if (($puppet_exit -ne 0) -or ($puppet_exit -ne 2)) {
@@ -294,17 +288,17 @@ If ($bootstrap_stage -eq 'complete') {
             break
         }
         Start-Sleep -Seconds 1
-    }
+    } #>
     StartWorkerRunner
     start-sleep -s 3600
     while ($true) {
         $gw = (Get-process -name generic-worker -ErrorAction SilentlyContinue )
-        if ($gw -eq $null) {
+        if ($null -eq $gw) {
             # Wait to supress meesage if check is cuaght during a reboot.
             start-sleep -s 45
             Write-Log -message  ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             start-sleep -s 3
-            shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
+            #shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
         }
         else {
             start-sleep -s 120
@@ -315,4 +309,3 @@ else {
     Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Exit-PSSession
 }
-
