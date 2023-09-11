@@ -270,16 +270,16 @@ groups:
     facts:
       puppet_role: applicationservices_3_b_osx_1015
 
+  - name: mozillavpn-b-1-osx
+    targets:
+      - macmini-r8-179.test.releng.mdc1.mozilla.com
+      - macmini-r8-182.test.releng.mdc1.mozilla.com
+      - macmini-r8-183.test.releng.mdc1.mozilla.com
+      - macmini-r8-185.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mozillavpn_b_1_osx
 
-# Getting the below pools moved is being tracked in
-# https://mozilla-hub.atlassian.net/browse/RELOPS-590
-
-# mozillavpn-b-1-osx
-# - macmini-r8-179.test.releng.mdc1.mozilla.com
-# - macmini-r8-182.test.releng.mdc1.mozilla.com
-# - macmini-r8-183.test.releng.mdc1.mozilla.com
-# - macmini-r8-185.test.releng.mdc1.mozilla.com
-
-# mozillavpn-b-3-osx
-# - macmini-r8-180.test.releng.mdc1.mozilla.com
-# - macmini-r8-184.test.releng.mdc1.mozilla.com
+  - name: mozillavpn-b-3-osx
+    targets:
+      - macmini-r8-180.test.releng.mdc1.mozilla.com
+      - macmini-r8-184.test.releng.mdc1.mozilla.com

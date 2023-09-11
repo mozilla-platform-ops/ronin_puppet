@@ -78,7 +78,7 @@ class worker_runner (
     $worker_runner_conf      = "${data_dir}/worker-runner-config.yaml"
     $ed25519_signing_key     = "${data_dir}/generic-worker.ed25519.signing.key"
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             if $generic_worker_engine == 'multiuser' {
@@ -116,8 +116,16 @@ class worker_runner (
                 group  => $group,
             }
 
+            # Create task dir (requires 0777 permisisons for some chmod commands)
+            file { $task_dir:
+                ensure => 'directory',
+                mode   => '0777',
+                owner  => $owner,
+                group  => $group,
+            }
+
             # Create tasks, caches, downloads and log dirs
-            file { [ $task_dir, $cache_dir, $downloads_dir, $log_dir ]:
+            file { [ $cache_dir, $downloads_dir, $log_dir ]:
                 ensure => 'directory',
                 mode   => '0700',
                 owner  => $owner,
@@ -177,7 +185,7 @@ class worker_runner (
             }
         }
         default: {
-            fail("${module_name} is not supported on ${::operatingsystem}")
+            fail("${module_name} is not supported on ${facts['os']['release']}")
         }
     }
 

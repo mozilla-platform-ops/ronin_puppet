@@ -8,7 +8,7 @@ worker_metadata:
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
 worker:
-  taskcluster_version: 40.0.3
+  taskcluster_version: 54.4.1
   provider_type: standalone
   worker_pool_id: releng-hardware/applicationservices-3-b-osx1015
   worker_group: mdc1

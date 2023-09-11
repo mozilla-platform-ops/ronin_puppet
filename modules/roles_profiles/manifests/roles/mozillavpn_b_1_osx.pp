@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::applicationservices_1_b_osx_1015 {
+class roles_profiles::roles::mozillavpn_b_1_osx {
 
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::ntp

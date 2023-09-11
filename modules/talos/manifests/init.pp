@@ -8,10 +8,8 @@ class talos (
     case $facts['os']['name'] {
         'Darwin': {
             $builds_dir = $facts['os']['macosx']['version']['major'] ? {
-                '13.5' => '/opt/builds',
-                '13' => '/opt/builds',
-                '11' => '/opt/builds',
-                default => '/builds'
+                '10.15' => '/builds',
+                default => '/opt/builds'
             }
 
             include httpd
