@@ -7,12 +7,6 @@ class linux_packages::git {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
         '18.04': {
-          package {
-            'git':
-              ensure => present;
-          }
-        }
-        '22.04': {
           packages::linux_package_from_s3 { 'git_2.42.0-0ppa1~ubuntu18.04.1_amd64.deb':
             private             => false,
             os_version_specific => false,
