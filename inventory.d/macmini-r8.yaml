@@ -283,3 +283,5 @@ groups:
     targets:
       - macmini-r8-180.test.releng.mdc1.mozilla.com
       - macmini-r8-184.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: mozillavpn_b_3_osx
