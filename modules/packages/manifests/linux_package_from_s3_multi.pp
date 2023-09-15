@@ -87,8 +87,7 @@ define packages::linux_package_from_s3_multi (
 
   exec { "install package at ${temp_dir}" :
     command => "/usr/bin/apt install -f ${temp_dir}/*.deb -y",
-    # TODO: figure out an unless condition
-    # ISSUE: now named $file, not $destination above...
+    # require the first file to ensure each block files are present
     require => File[$packages_and_checksums.keys()[0]],
   }
 }
