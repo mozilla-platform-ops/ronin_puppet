@@ -48,6 +48,7 @@ $src_Organisation = 'jwmoss'
 $src_Repository = 'ronin_puppet'
 $src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
+$workerID = Resolve-DnsName (Get-NetIPAddress|?{$_.ipaddress -match "10."}).IPAddress
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 
@@ -87,7 +88,8 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     "Carbon",
     "PSWindowsUpdate",
     "ugit",
-    "kbupdate"
+    "kbupdate",
+    "OSDUpdate"
 ) | ForEach-Object {
     $hit = Get-Module -Name $PSItem
     if ($null -eq $hit) {
@@ -127,6 +129,20 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
     }
 }
 
+$updates_check = Get-ChildItem -Path "C:\" -Filter *windows11*
+
+if ($null -eq $updates_check) {
+    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5022497-x64-ndp481_92ce32e8d1d29d5b572e929f4ff90e85a012b4d6.msu" -OutFile "$env:systemdrive\kb5022497.msu"
+    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023360-x64_c468c54177d262cb0c1927283d807b8f9afe3046.cab" -OutFile "$env:systemdrive\kb5023360.cab"
+    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023527-x64_076cd9782ebb8aed56ad5d99c07201035d92e66a.cab" -OutFile "$env:systemdrive\kb5023527.cab"
+    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5026372-x64_d2e542ce70571b093d815adb9013ed467a3e0a85.msu" -OutFile "$env:systemdrive\kb5026372.msu"
+
+    Get-ChildItem -Path "C:\" -Filter *windows11* | ForEach-Object {
+        Install-KbUpdate -ComputerName "localhost" -FilePath $PSItem.fullname
+    } 
+
+}
+
 ## Grant SeServiceLogonRight and reboot
 $logonrights = Get-CPrivilege -Identity "Administrator"
 if ($logonrights -ne "SeServiceLogonRight") {
@@ -134,6 +150,11 @@ if ($logonrights -ne "SeServiceLogonRight") {
     Grant-CPrivilege -Identity "Administrator" -Privilege SeServiceLogonRight
     Restart-Computer -Confirm:$false -Force
 }
+
+$winVer = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+
+## output Windows build
+Write-Log -message ('{0} :: Windows Version {1}.{2}.{3}' -f $($MyInvocation.MyCommand.Name), $winVer.ReleaseID,$winVer.CurrentBuildNumber,$winVer.UBR ) -severity 'DEBUG'
 
 ## Install git, puppet, nodes.pp
 Write-Log -message ('{0} :: Setting power settings with powercfg' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
