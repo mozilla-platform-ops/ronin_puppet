@@ -149,7 +149,8 @@ if ($null -eq $updates_check) {
     Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023527-x64_076cd9782ebb8aed56ad5d99c07201035d92e66a.cab" -OutFile "$env:systemdrive\kb5023527.cab"
     Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5026372-x64_d2e542ce70571b093d815adb9013ed467a3e0a85.msu" -OutFile "$env:systemdrive\kb5026372.msu"
 
-    Get-ChildItem -Path "C:\" -Filter *windows11* | ForEach-Object {
+    Get-ChildItem -Path "C:\" -Filter *kb* | ForEach-Object {
+        Write-Log -message ('{0} :: Installing {1} on {2}' -f $($MyInvocation.MyCommand.Name), $PSItem.name, $ENV:COMPUTERNAME) -severity 'DEBUG'
         Install-KbUpdate -ComputerName "localhost" -FilePath $PSItem.fullname
     } 
 
