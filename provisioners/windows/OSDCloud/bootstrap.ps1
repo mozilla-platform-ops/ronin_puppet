@@ -85,13 +85,13 @@ if ($null -eq $winrm) {
     Enable-PSRemoting -Force
 }
 
-if ($null -eq $workerID) {
-    Rename-Computer -NewName "win11reftester01" -Force
+<# if ($null -eq $workerID) {
+    Rename-Computer -NewName "w11reftest01" -Force
 }
 else {
     Rename-Computer -NewName $workerID.NameHost -Force
 }
-
+ #>
 
 ## Check if modules are installed
 ## Install modules
