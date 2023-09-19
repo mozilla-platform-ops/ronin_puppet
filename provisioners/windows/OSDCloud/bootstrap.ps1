@@ -50,19 +50,6 @@ $src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
 $workerID = Resolve-DnsName (Get-NetIPAddress|Where-Object {$PSItem.ipaddress -match "10."}).IPAddress
 
-## WinRM
-$winrm = Test-WSMan -ErrorAction "SilentlyContinue"
-if ($null -eq $winrm) {
-    Enable-PSRemoting -Force
-}
-
-if ($null -eq $workerID) {
-    Rename-Computer -NewName "win11reftester01" -Force
-}
-else {
-    Rename-Computer -NewName $workerID.NameHost -Force
-}
-
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 
 if ($complete -eq "complete") {
@@ -91,6 +78,20 @@ if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
 
 ## Wait for nxlog to send logs
 Start-Sleep -Seconds 15
+
+## WinRM
+$winrm = Test-WSMan -ErrorAction "SilentlyContinue"
+if ($null -eq $winrm) {
+    Enable-PSRemoting -Force
+}
+
+if ($null -eq $workerID) {
+    Rename-Computer -NewName "win11reftester01" -Force
+}
+else {
+    Rename-Computer -NewName $workerID.NameHost -Force
+}
+
 
 ## Check if modules are installed
 ## Install modules
