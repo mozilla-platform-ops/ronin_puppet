@@ -86,7 +86,7 @@ if ($null -eq $winrm) {
 }
 
 <# if ($null -eq $workerID) {
-    Rename-Computer -NewName "w11reftest01" -Force
+    Rename-Computer -NewName "win11reftester01" -Force
 }
 else {
     Rename-Computer -NewName $workerID.NameHost -Force
