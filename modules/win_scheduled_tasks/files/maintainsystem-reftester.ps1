@@ -270,8 +270,7 @@ function StartWorkerRunner {
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
     Run-MaintainSystem
-    <#  Puppet-Run
-    Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
+    <#Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
     ## Last catch if Puppet failed
     if (($puppet_exit -ne 0) -or ($puppet_exit -ne 2)) {
         Write-Log -message  ('{0} :: BROKEN Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
@@ -279,16 +278,16 @@ If ($bootstrap_stage -eq 'complete') {
         #exit
     }
     Write-Log -message  ('{0} :: Disabling Start Menu' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    ## Disable start menu. If shown can interfere with tests.
+    ## Disable start menu. If shown can interfere with tests. #>
     while ($true) {
         $processname = "StartMenuExperienceHost"
         $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
-        if ($process -ne $null) {
-            Stop-Process -Name $processName -force
+        if ($null -ne $process) {
+            Stop-Process -Name $processname -force
             break
         }
         Start-Sleep -Seconds 1
-    } #>
+    }
     StartWorkerRunner
     start-sleep -s 3600
     while ($true) {
