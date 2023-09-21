@@ -79,6 +79,14 @@ if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
 ## Wait for nxlog to send logs
 Start-Sleep -Seconds 15
 
+## WinRM
+$profile = Get-NetAdapter | Where-Object {$psitem.name -match "Ethernet"}
+$network_category = Get-NetConnectionProfile -InterfaceAlias $profile.Name
+if ($network_category.NetworkCategory -ne "Private") {
+    Set-NetConnectionProfile -InterfaceAlias $profile.name -NetworkCategory "Private"
+    Enable-PSRemoting -Force
+}
+
 <# ## WinRM
 $winrm = Test-WSMan -ErrorAction "SilentlyContinue"
 if ($null -eq $winrm) {
@@ -145,7 +153,7 @@ $updates_check = Get-ChildItem -Path "C:\" -Filter *windows11*
 
 if ($null -eq $updates_check) {
     Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5022497-x64-ndp481_92ce32e8d1d29d5b572e929f4ff90e85a012b4d6.msu" -OutFile "$env:systemdrive\kb5022497.msu"
-    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023360-x64_c468c54177d262cb0c1927283d807b8f9afe3046.cab" -OutFile "$env:systemdrive\kb5023360.cab"
+    #Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023360-x64_c468c54177d262cb0c1927283d807b8f9afe3046.cab" -OutFile "$env:systemdrive\kb5023360.cab"
     Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023527-x64_076cd9782ebb8aed56ad5d99c07201035d92e66a.cab" -OutFile "$env:systemdrive\kb5023527.cab"
     Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5026372-x64_d2e542ce70571b093d815adb9013ed467a3e0a85.msu" -OutFile "$env:systemdrive\kb5026372.msu"
 
