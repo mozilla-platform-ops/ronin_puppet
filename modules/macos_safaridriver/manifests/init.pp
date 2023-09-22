@@ -38,7 +38,8 @@ class macos_safaridriver (
             #   - make a driver script that gets id of cltbld on each system?
             command => "/bin/launchctl asuser 36 sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
-            # semaphore created in script
+            cwd     => "/Users/${user_running_safari}",
+            # semaphore and semaphore dir are created in script
             unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
             # logoutput => true,
           }
