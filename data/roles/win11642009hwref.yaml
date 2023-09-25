@@ -25,7 +25,7 @@ win-worker:
         name: "livelog-windows-amd64"
         version: '54.4.1'
     client_id: "azure/gecko-t/win11-64-2009-hw-ref-alpha"
-    worker_group: "test"
+    worker_group: "Alpha"
 
   # Mozilla-build
   mozilla_build:
