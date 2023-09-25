@@ -279,7 +279,7 @@ If ($bootstrap_stage -eq 'complete') {
     }
     Write-Log -message  ('{0} :: Disabling Start Menu' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     ## Disable start menu. If shown can interfere with tests. #>
-    while ($true) {
+<#     while ($true) {
         $processname = "StartMenuExperienceHost"
         $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
         if ($null -ne $process) {
@@ -287,11 +287,16 @@ If ($bootstrap_stage -eq 'complete') {
             break
         }
         Start-Sleep -Seconds 1
-    }
+    } #>
     StartWorkerRunner
-    start-sleep -s 3600
+    start-sleep -s 30
     while ($true) {
         $gw = (Get-process -name generic-worker -ErrorAction SilentlyContinue )
+        $processname = "StartMenuExperienceHost"
+        $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
+        if ($null -ne $process) {
+            Stop-Process -Name $processname -force
+        }
         if ($null -eq $gw) {
             # Wait to supress meesage if check is cuaght during a reboot.
             start-sleep -s 45
