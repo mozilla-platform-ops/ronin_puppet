@@ -42,12 +42,8 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
     pnputil.exe /add-driver "$($_.FullName)" /install
 }
 
-## Setup driver path
-#Write-Host -ForegroundColor Green "Restarting in 20 seconds!"
-#Start-Sleep -Seconds 20
-
-## Get the DNS Name and set as the computername
-$ComputerName = "nuc-33431"
+## List the MAC Addresses and 
+$ComputerName = "nuc-33433"
 
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
