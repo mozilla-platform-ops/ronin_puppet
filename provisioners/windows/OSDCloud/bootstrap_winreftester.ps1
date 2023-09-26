@@ -43,7 +43,7 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
 }
 
 ## List the MAC Addresses and 
-$ComputerName = "nuc-33433"
+$ComputerName = "nuc-33424"
 
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
