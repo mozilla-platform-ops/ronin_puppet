@@ -42,8 +42,19 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
     pnputil.exe /add-driver "$($_.FullName)" /install
 }
 
-## List the MAC Addresses and 
-$ComputerName = "nuc-33429"
+## Get the network adapter
+$NetworkAdapter = Get-NetAdapter | Where-Object {$psitem.name -match "Ethernet"}
+## The interface will have ipv6 and ipv4, just grab the ipv4 address
+$IPAddress = (Get-NetIPAddress -InterfaceIndex $NetworkAdapter.ifIndex|Where-Object {$PSItem.IPAddress -match "\."}).IPAddress
+$ResolvedName = Resolve-DnsName $IPAddress
+## Set the computername
+$ComputerName = if ($ResolvedName.NameHost -match "\.") {
+    ($ResolvedName.NameHost -split "\.")[0]
+} else {
+    ## https://devblogs.microsoft.com/scripting/generate-random-letters-with-powershell/
+    $suffix = -join ((65..90) + (97..122) | Get-Random -Count 7 | ForEach-Object {[char]$_})
+    "DESKTOP-$suffix"
+}
 
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
