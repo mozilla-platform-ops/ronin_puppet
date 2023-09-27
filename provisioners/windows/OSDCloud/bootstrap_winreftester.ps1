@@ -45,8 +45,13 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
 ## Get the network adapter
 $NetworkAdapter = Get-NetAdapter | Where-Object {$psitem.name -match "Ethernet"}
 ## The interface will have ipv6 and ipv4, just grab the ipv4 address
-$IPAddress = (Get-NetIPAddress -InterfaceIndex $NetworkAdapter.ifIndex|Where-Object {$PSItem.IPAddress -match "\."}).IPAddress
+$IPAddress = (Get-NetIPAddress -InterfaceIndex $NetworkAdapter.ifIndex | Where-Object {$PSItem.IPAddress -match "\."}).IPAddress
 $ResolvedName = Resolve-DnsName $IPAddress
+Write-Output "Processing Namehost: $($resolvedname.namehost)"
+Write-Output "Processing IPAddress: $($IPAddress)"
+
+pause
+
 ## Set the computername
 $ComputerName = if ($ResolvedName.NameHost -match "\.") {
     ($ResolvedName.NameHost -split "\.")[0]
