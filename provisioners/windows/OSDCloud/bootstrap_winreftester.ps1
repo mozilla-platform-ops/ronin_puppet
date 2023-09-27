@@ -42,8 +42,14 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
     pnputil.exe /add-driver "$($_.FullName)" /install
 }
 
+## Interface
+$Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object {$_.name -match "ethernet"}
+
+## IP Address
+$IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-object {$_.AddressFamily -eq "InterNetwork"}).IPAddressToString
+
 ## Get the network adapter but use 
-$ResolvedName = ([System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName())).HostName
+$ResolvedName = ([System.Net.Dns]::GetHostEntry($IPAddress)).HostName
 ## Set the computername
 $ComputerName = if ($ResolvedName -match "\.") {
     ($ResolvedName -split "\.")[0]
