@@ -122,10 +122,16 @@ $UnattendXml = @"
             </UserAccounts>
             <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">
+                    <CommandLine>powershell.exe -Command &quot;Start-Sleep -Seconds 120&quot;</CommandLine>
+                    <RequiresUserInput>false</RequiresUserInput>
+                    <Order>1</Order>
+                    <Description>Sleep before bootstrap</Description>
+                </SynchronousCommand>               
+                <SynchronousCommand wcm:action="add">
                     <Description>RoninPuppet Bootstrap</Description>
                     <CommandLine>powershell.exe -Command &quot;&amp; {IEX (IRM &apos;https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1&apos;)}&quot;</CommandLine>
                     <RequiresUserInput>false</RequiresUserInput>
-                    <Order>1</Order>
+                    <Order>2</Order>
                 </SynchronousCommand>
             </FirstLogonCommands>
         </component>
