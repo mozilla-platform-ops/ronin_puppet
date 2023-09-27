@@ -53,6 +53,11 @@ $ComputerName = if ($ResolvedName -match "\.") {
     "DESKTOP-$suffix"
 }
 
+Write-Output "ResolvedName: $ResolvedName"
+Write-output "ComputerName: $ComputerName"
+
+pause
+
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
     New-Item -Path $PathPanther -ItemType Directory -Force | Out-Null
