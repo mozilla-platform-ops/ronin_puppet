@@ -42,21 +42,21 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
     pnputil.exe /add-driver "$($_.FullName)" /install
 }
 
-## Test the path directory
-$ComputerName_Exists = Test-Path "C:\ComputerName.txt"
+## Import dnsclient
+Import-Module "C:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 
-if ($ComputerName_Exists -eq $false) {
-    Write-Host "Unable to find Computername file"
-    pause
-}
-else {
-    Write-host "Found computername file, setting computername"
-    $ComputerName = Get-Content "C:\ComputerName.txt"
-}
+$Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object {$_.name -match "ethernet"}
 
-if ($ComputerName -notmatch "nuc") {
-    Write-host "Computername does not match nuc: $ComputerName"
-    pause
+$IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-object {$_.AddressFamily -eq "InterNetwork"}).IPAddressToString
+
+$ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
+
+$ComputerName = if ($ResolvedName -match "\.") {
+    ($ResolvedName -split "\.")[0]
+} else {
+    ## https://devblogs.microsoft.com/scripting/generate-random-letters-with-powershell/
+    $suffix = -join ((65..90) + (97..122) | Get-Random -Count 7 | ForEach-Object {[char]$_})
+    "DESKTOP-$suffix"
 }
 
 $PathPanther = 'C:\Windows\Panther'
