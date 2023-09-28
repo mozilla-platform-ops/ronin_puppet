@@ -54,6 +54,11 @@ else {
     $ComputerName = Get-Content "C:\ComputerName.txt"
 }
 
+if ($ComputerName -notmatch "nuc") {
+    Write-host "Computername does not match nuc: $ComputerName"
+    pause
+}
+
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
     New-Item -Path $PathPanther -ItemType Directory -Force | Out-Null
