@@ -5,7 +5,7 @@
 class puppet::atboot (
     String $telegraf_user,
     String $telegraf_password,
-    Optional[String] $puppet_env = 'production',
+    Optional[String] $puppet_env = 'aerickson',
     String $puppet_repo          = 'https://github.com/aerickson/ronin_puppet.git',
     String $puppet_branch        = 'git_update_aerickson_changes',
     String $puppet_notify_email  = 'rcurran@mozilla.com',
@@ -15,7 +15,7 @@ class puppet::atboot (
 
     include puppet::setup
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             file {
                 '/Library/LaunchDaemons/com.mozilla.atboot_puppet.plist':
@@ -32,7 +32,7 @@ class puppet::atboot (
             }
         }
         'Ubuntu': {
-            case $::operatingsystemrelease {
+            case $facts['os']['release']['full'] {
                 '18.04': {
                     include linux_packages::puppet
 
@@ -71,12 +71,12 @@ class puppet::atboot (
                     }
                 }
                 default: {
-                    fail("puppet::atboot support missing for ${::operatingsystemrelease}")
+                    fail("puppet::atboot support missing for ${facts['os']['release']['full']}")
                 }
             }
         }
         default: {
-            fail("${module_name} does not support ${::operatingsystem}")
+            fail("${module_name} does not support ${facts['os']['name']}")
         }
     }
 
