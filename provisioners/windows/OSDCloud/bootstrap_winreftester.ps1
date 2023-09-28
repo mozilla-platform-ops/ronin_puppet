@@ -56,6 +56,11 @@ if ($null -eq $ResolvedName) {
     pause
 }
 
+if ($ResolvedName -notmatch "nuc") {
+    write-host "Resolved name not match nuc: $resolvedname"
+    pause
+}
+
 $ComputerName = if ($ResolvedName -match "\.") {
     ($ResolvedName -split "\.")[0]
 } else {
