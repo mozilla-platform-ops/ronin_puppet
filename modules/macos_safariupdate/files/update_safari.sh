@@ -5,6 +5,9 @@ set -e
 semaphore_file="/Users/cltbld/Library/Preferences/semaphore/safari-update-has-run"
 semaphore_version="2"
 mkdir -p "$(dirname "$semaphore_file")"
+# this script runs as root, but other scripts write files to this dir
+#   and run as cltbld, so fix ownership
+chown cltbld "$(dirname "$semaphore_file")"
 touch "$semaphore_file"
 if [[ "$(cat "$semaphore_file")" == "$semaphore_version" ]]; then
   echo "$0: file indicates this version of the script has already run. exiting..."
