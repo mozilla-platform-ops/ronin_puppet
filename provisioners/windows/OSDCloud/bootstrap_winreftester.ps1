@@ -42,27 +42,17 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
     pnputil.exe /add-driver "$($_.FullName)" /install
 }
 
-## Interface
-$Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object {$_.name -match "ethernet"}
+## Test the path directory
+$ComputerName_Exists = Test-Path "C:\ComputerName.txt"
 
-## IP Address
-$IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-object {$_.AddressFamily -eq "InterNetwork"}).IPAddressToString
-
-## Get the network adapter but use 
-$ResolvedName = ([System.Net.Dns]::GetHostEntry($IPAddress)).HostName
-## Set the computername
-$ComputerName = if ($ResolvedName -match "\.") {
-    ($ResolvedName -split "\.")[0]
-} else {
-    ## https://devblogs.microsoft.com/scripting/generate-random-letters-with-powershell/
-    $suffix = -join ((65..90) + (97..122) | Get-Random -Count 7 | ForEach-Object {[char]$_})
-    "DESKTOP-$suffix"
+if ($ComputerName_Exists -eq $false) {
+    Write-Host "Unable to find Computername file"
+    pause
 }
-
-Write-Output "ResolvedName: $ResolvedName"
-Write-output "ComputerName: $ComputerName"
-
-pause
+else {
+    Write-host "Found computername file, setting computername"
+    $ComputerName = Get-Content "C:\ComputerName.txt"
+}
 
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
