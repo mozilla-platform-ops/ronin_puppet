@@ -8,7 +8,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
     $worker_type  = 'gecko-t-linux-talos-1804-staging'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             require roles_profiles::profiles::cltbld_user
 
@@ -37,14 +37,14 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_talos
 
             class { 'puppet::atboot':
-                telegraf_user     => lookup('telegraf.user'),
-                telegraf_password => lookup('telegraf.password'),
-                puppet_repo       => 'https://github.com/aerickson/ronin_puppet.git',
-                puppet_branch     => 'git_update_aerickson_changes',
+                telegraf_user       => lookup('telegraf.user'),
+                telegraf_password   => lookup('telegraf.password'),
+                puppet_repo         => 'https://github.com/aerickson/ronin_puppet.git',
+                puppet_branch       => 'git_update_aerickson_changes',
                 puppet_notify_email => 'rcurran@mozilla.com',
-                puppet_env        => 'aerickson',
+                puppet_env          => 'aerickson',
                 # Note the camelCase key names
-                meta_data         => {
+                meta_data           => {
                     workerType    => $worker_type,
                     workerGroup   => $worker_group,
                     provisionerId => 'releng-hardware',
@@ -86,7 +86,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
