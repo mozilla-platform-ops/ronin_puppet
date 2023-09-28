@@ -51,6 +51,11 @@ $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-objec
 
 $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
 
+if ($null -eq $ResolvedName) {
+    write-host "Computername did not resolve"
+    pause
+}
+
 $ComputerName = if ($ResolvedName -match "\.") {
     ($ResolvedName -split "\.")[0]
 } else {
