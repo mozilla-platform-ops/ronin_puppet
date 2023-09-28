@@ -39,8 +39,9 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
-                puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-                puppet_branch     => 'master',
+                puppet_repo       => 'https://github.com/aerickson/ronin_puppet.git',
+                puppet_branch     => 'git_update_aerickson_changes',
+                puppet_email      => 'rcurran@mozilla.com',
                 # Note the camelCase key names
                 meta_data         => {
                     workerType    => $worker_type,
