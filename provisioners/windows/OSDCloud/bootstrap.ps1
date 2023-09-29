@@ -48,12 +48,14 @@ $src_Organisation = 'jwmoss'
 $src_Repository = 'ronin_puppet'
 $src_Branch = 'win11'
 $image_provisioner = 'OSDCloud'
-#$workerID = Resolve-DnsName (Get-NetIPAddress | Where-Object {$PSItem.ipaddress -match "10."} ).IPAddress
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 
 if ($complete -eq "complete") {
     Write-Log -message ('{0} :: Nothing to do!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    if (Test-Path "C:\azcredentials.yaml") {
+        Remove-Item -Path "C:\azcredentials.yaml" -Confirm:$false -Force
+    }
     exit
 }
 
@@ -64,52 +66,14 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
     $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue 
 }
 
-## Check if logging exists through local directory and if it doesn't, set it up
-if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
-    Write-Log -message  ('{0} :: Setting up logging' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog-ce-2.10.2150.msi" -outfile "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" -UseBasicParsing
-    msiexec /i "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" /passive
-    while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
-    Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog.conf" -outfile "$env:systemdrive\Program Files (x86)\nxlog\conf\nxlog.conf" -UseBasicParsing
-    while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
-    Invoke-WebRequest "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/papertrail-bundle.pem" -outfile "$env:systemdrive\Program Files (x86)\nxlog\cert\papertrail-bundle.pem" -UseBasicParsing
-    Restart-Service -Name nxlog -force
-}
-
-## Wait for nxlog to send logs
-Start-Sleep -Seconds 15
-
-## WinRM
-$profile = Get-NetAdapter | Where-Object {$psitem.name -match "Ethernet"}
-$network_category = Get-NetConnectionProfile -InterfaceAlias $profile.Name
-if ($network_category.NetworkCategory -ne "Private") {
-    Set-NetConnectionProfile -InterfaceAlias $profile.name -NetworkCategory "Private"
-    Enable-PSRemoting -Force
-}
-
-<# ## WinRM
-$winrm = Test-WSMan -ErrorAction "SilentlyContinue"
-if ($null -eq $winrm) {
-    Enable-PSRemoting -Force
-}
- #>
-<# if ($null -eq $workerID) {
-    Rename-Computer -NewName "win11reftester01" -Force
-}
-else {
-    Rename-Computer -NewName $workerID.NameHost -Force
-}
- #>
-
-## Check if modules are installed
-## Install modules
 Write-Log -message ('{0} :: Checking modules' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 @(
     "Carbon"
     "ugit",
-    "kbupdate"
+    "kbupdate",
+    "Powershell-Yaml"
 ) | ForEach-Object {
     $hit = Get-Module -Name $PSItem
     if ($null -eq $hit) {
@@ -118,11 +82,69 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     Import-Module -Name $PSItem -Force -PassThru
 }
 
-## Setup logging and create c:\bootstrap
-Write-Log -message ('{0} :: Setup logging and create c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
+## Download azcopy locally
+if (-Not (Test-Path "$ENV:systemdrive\azcopy.exe")) {
+    Write-Log -message  ('{0} :: Installing azcopy' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Invoke-WebRequest "https://aka.ms/downloadazcopy-v10-windows" -OutFile "$env:systemdrive\azcopy.zip"
+    Write-host "Downloaded azcopy to $ENV:systemdrive\azcopy.zip"
+    Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
+    $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object {$PSItem.name -eq "azcopy.exe"}
+    Copy-Item $azcopy_path.FullName -Destination "$ENV:systemdrive\"
+    Remove-Item "$ENV:systemdrive\azcopy.zip"
+}
+
+## Check if logging exists through local directory and if it doesn't, set it up
+if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
+    Write-Log -message  ('{0} :: Setting up logging' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+    $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+    $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+    $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+    
+    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        "copy",
+        "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog-ce-2.10.2150.msi",
+        "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi"
+    ) -Wait -NoNewWindow
+
+    if (-Not (Test-Path "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi")) {
+        Write-Log -Message ('{0} :: nxlog failed to download' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    }
+
+    msiexec /i "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" /passive
+    while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
+
+    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        "copy",
+        "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog.conf",
+        "$env:systemdrive\Program Files (x86)\nxlog\conf\nxlog.conf"
+    ) -Wait -NoNewWindow
+
+    while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
+    
+    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        "copy",
+        "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/papertrail-bundle.pem",
+        "$env:systemdrive\Program Files (x86)\nxlog\cert\papertrail-bundle.pem"
+    ) -Wait -NoNewWindow
+
+    Restart-Service -Name nxlog -force
+}
+
+## Wait for nxlog to send logs
+Start-Sleep -Seconds 15
+
+## WinRM
+$adapter = Get-NetAdapter | Where-Object {$psitem.name -match "Ethernet"}
+$network_category = Get-NetConnectionProfile -InterfaceAlias $adapter.Name
+if ($network_category.NetworkCategory -ne "Private") {
+    Set-NetConnectionProfile -InterfaceAlias $adapter.name -NetworkCategory "Private"
+    Enable-PSRemoting -Force
+}
 
 ## Check if C:\Bootstrap exists, and if it doesn't, create it
 if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
+    ## Setup logging and create c:\bootstrap
     Write-Log -message  ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue 
 }
@@ -149,19 +171,14 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
     }
 }
 
-$updates_check = Get-ChildItem -Path "C:\" -Filter *windows11*
+## Check for windows update and install the latest
+$updates_check = Get-KbNeededUpdate -UseWindowsUpdate | Where-Object {
+    $PSItem.Title -notmatch "Preview"
+}
 
-if ($null -eq $updates_check) {
-    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5022497-x64-ndp481_92ce32e8d1d29d5b572e929f4ff90e85a012b4d6.msu" -OutFile "$env:systemdrive\kb5022497.msu"
-    #Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023360-x64_c468c54177d262cb0c1927283d807b8f9afe3046.cab" -OutFile "$env:systemdrive\kb5023360.cab"
-    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5023527-x64_076cd9782ebb8aed56ad5d99c07201035d92e66a.cab" -OutFile "$env:systemdrive\kb5023527.cab"
-    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/BootStrap/windows11.0-kb5026372-x64_d2e542ce70571b093d815adb9013ed467a3e0a85.msu" -OutFile "$env:systemdrive\kb5026372.msu"
-
-    Get-ChildItem -Path "C:\" -Filter *kb* | ForEach-Object {
-        Write-Log -message ('{0} :: Installing {1} on {2}' -f $($MyInvocation.MyCommand.Name), $PSItem.name, $ENV:COMPUTERNAME) -severity 'DEBUG'
-        Install-KbUpdate -ComputerName "localhost" -FilePath $PSItem.fullname
-    } 
-
+if ($null -ne $updates_check) {
+    Write-Log -message ('{0} :: Installing {1} on {2}' -f $($MyInvocation.MyCommand.Name), $PSItem.name, $ENV:COMPUTERNAME) -severity 'DEBUG'
+    $updates_check | Install-KbUpdate -Method "WindowsUpdate"
 }
 
 ## Grant SeServiceLogonRight and reboot
@@ -185,18 +202,53 @@ powercfg.exe -x -monitor-timeout-ac 0
 ## Puppet
 If (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
     Write-Log -Message ('{0} :: Downloading Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi" -UseBasicParsing -OutFile "$env:systemdrive\puppet-agent-6.28.0-x64.msi"
+    
+    $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+    $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+    $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+    $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+    
+    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        "copy",
+        "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi",
+        "$env:systemdrive\puppet-agent-6.28.0-x64.msi"
+    ) -Wait -NoNewWindow
+
+    if (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
+        Write-Log -Message ('{0} :: Puppet failed to download' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    }
 }
 
 ## Git
 If (-Not (Test-Path "$env:systemdrive\Git-2.37.3-64-bit.exe")) {
     Write-Log -Message ('{0} :: Downloading Git' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe" -UseBasicParsing -OutFile "$env:systemdrive\Git-2.37.3-64-bit.exe"
+    
+    $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+    $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+    $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+    $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+    
+    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        "copy",
+        "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe",
+        "$env:systemdrive\Git-2.37.3-64-bit.exe"
+    ) -Wait -NoNewWindow
+
 }
 
 If (-Not (Test-Path "$env:systemdrive\bootstrap\nodes.pp")) {
     Write-Log -Message ('{0} :: Downloading Nodes.pp' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Invoke-WebRequest -Uri "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nodes.pp" -UseBasicParsing -OutFile "$env:systemdrive\bootstrap\nodes.pp"
+    $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+    $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+    $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+    $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+    
+    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        "copy",
+        "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nodes.pp",
+        "$env:systemdrive\bootstrap\nodes.pp"
+    ) -Wait -NoNewWindow
+
 }
 
 ## Install Git
@@ -300,7 +352,12 @@ $logDate = $(get-date -format yyyyMMdd-HHmm)
 Write-Log -Message ('{0} :: Running Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$($logdate)-bootstrap-puppet.json
 [int]$puppet_exit = $LastExitCode
-Write-Log -Message ('{0} :: Puppet error code {1}' -f $($MyInvocation.MyCommand.Name)), $puppet_exit -severity 'DEBUG'
+Write-Log -Message ('{0} :: Puppet error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+
+if (Test-Path "C:\azcredentials.yaml") {
+    Remove-Item -Path "C:\azcredentials.yaml" -Confirm:$false -Force
+}
+
 switch ($puppet_exit) {
     0 {
         Write-Log -message  ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
