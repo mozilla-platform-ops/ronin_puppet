@@ -8,15 +8,21 @@ worker_metadata:
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
 worker:
-  taskcluster_version: 40.0.3
+  taskcluster_version: 55.3.0
   provider_type: standalone
-  worker_pool_id: releng-hardware/gecko-1-osx-1015-staging
+  worker_pool_id: releng-hardware/gecko-1-b-osx-1015-staging
   worker_group: mdc1
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
-  generic_worker_engine: simple
+  generic_worker_engine: multiuser
   idle_timeout_secs: 21600 # 6 hours
+
+packages::xcode_cmd_line_tools::version: '12.4'
+
+# Determines how puppet should be executed
+# ( atboot, cron, never )
+puppet_run_strategy: never
 
 # Override secrets with vault secrets
 telegraf:
