@@ -10,7 +10,7 @@ $Params = @{
     Firmware   = $false
 }
 
-Start-OSDCloud @Params
+Start-OSDCloud @Params -Verbose
 
 Write-Host -ForegroundColor Green "Create C:\Windows\Setup\Scripts\SetupComplete.cmd"
 $SetupCompleteCMD = @'
