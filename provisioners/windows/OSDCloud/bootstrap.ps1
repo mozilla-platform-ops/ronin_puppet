@@ -83,12 +83,14 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 }
 
 ## Download azcopy locally
+## https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10#use-in-a-script
 if (-Not (Test-Path "$ENV:systemdrive\azcopy.exe")) {
     Write-Log -message  ('{0} :: Installing azcopy' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Invoke-WebRequest "https://aka.ms/downloadazcopy-v10-windows" -OutFile "$env:systemdrive\azcopy.zip"
+    $LatestAzCopy = (Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-windows -MaximumRedirection 0 -ErrorAction SilentlyContinue).headers.location
+    Invoke-WebRequest $LatestAzCopy -OutFile "$env:systemdrive\azcopy.zip"
     Write-host "Downloaded azcopy to $ENV:systemdrive\azcopy.zip"
     Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
-    $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object {$PSItem.name -eq "azcopy.exe"}
+    $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
     Copy-Item $azcopy_path.FullName -Destination "$ENV:systemdrive\"
     Remove-Item "$ENV:systemdrive\azcopy.zip"
 }
@@ -101,11 +103,12 @@ if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
     $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
     $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
     
-    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
-        "copy",
+    $nxlog_azcopy = @(
         "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog-ce-2.10.2150.msi",
         "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi"
-    ) -Wait -NoNewWindow
+    )
+
+    & "$ENV:systemdrive\azcopy.exe" copy $nxlog_azcopy 
 
     if (-Not (Test-Path "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi")) {
         Write-Log -Message ('{0} :: nxlog failed to download' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -114,19 +117,21 @@ if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
     msiexec /i "$env:systemdrive\BootStrap\nxlog-ce-2.10.2150.msi" /passive
     while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
 
-    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
-        "copy",
+    $nxlogconf_azcopy = @(
         "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/nxlog.conf",
         "$env:systemdrive\Program Files (x86)\nxlog\conf\nxlog.conf"
-    ) -Wait -NoNewWindow
+    )
+
+    & "$ENV:systemdrive\azcopy.exe" copy $nxlogconf_azcopy
 
     while (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog\")) { Start-Sleep 10 }
     
-    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
-        "copy",
+    $papertrail_azcopy = @(
         "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/papertrail-bundle.pem",
         "$env:systemdrive\Program Files (x86)\nxlog\cert\papertrail-bundle.pem"
-    ) -Wait -NoNewWindow
+    )
+
+    & "$ENV:systemdrive\azcopy.exe" copy $papertrail_azcopy
 
     Restart-Service -Name nxlog -force
 }
@@ -135,7 +140,7 @@ if (-Not (Test-Path "$env:systemdrive\Program Files (x86)\nxlog")) {
 Start-Sleep -Seconds 15
 
 ## WinRM
-$adapter = Get-NetAdapter | Where-Object {$psitem.name -match "Ethernet"}
+$adapter = Get-NetAdapter | Where-Object { $psitem.name -match "Ethernet" }
 $network_category = Get-NetConnectionProfile -InterfaceAlias $adapter.Name
 if ($network_category.NetworkCategory -ne "Private") {
     Set-NetConnectionProfile -InterfaceAlias $adapter.name -NetworkCategory "Private"
@@ -151,12 +156,12 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
 
 ## Setup scheduled task if not setup already
 if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
-    Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name),$ENV:COMPUTERNAME) -severity 'DEBUG'
+    Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
     $url = "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1"
     $status = Invoke-WebRequest $url
     if ($status.StatusCode -ne 200) {
-        Write-Log -Message ('{0} :: Unable to query raw github script. Status: {1}' -f $($MyInvocation.MyCommand.Name),$status.StatusCode) -severity 'DEBUG'
+        Write-Log -Message ('{0} :: Unable to query raw github script. Status: {1}' -f $($MyInvocation.MyCommand.Name), $status.StatusCode) -severity 'DEBUG'
         exit 1
     }
     Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
@@ -164,10 +169,10 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
     Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
     $check = Get-Content "$env:systemdrive\BootStrap\bootstrap.ps1"
     if ($null -ne $check) {
-        Write-Log -Message ('{0} :: Setup bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name),$ENV:COMPUTERNAME) -severity 'DEBUG'
+        Write-Log -Message ('{0} :: Setup bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
     }
     else {
-        Write-Log -Message ('{0} :: Unable to clone bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name),$ENV:COMPUTERNAME) -severity 'DEBUG'
+        Write-Log -Message ('{0} :: Unable to clone bootstrap scheduled task on {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
     }
 }
 
@@ -192,7 +197,7 @@ if ($logonrights -ne "SeServiceLogonRight") {
 $winVer = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
 
 ## output Windows build
-Write-Log -message ('{0} :: Windows Version {1}.{2}.{3}' -f $($MyInvocation.MyCommand.Name), $winVer.ReleaseID,$winVer.CurrentBuildNumber,$winVer.UBR ) -severity 'DEBUG'
+Write-Log -message ('{0} :: Windows Version {1}.{2}.{3}' -f $($MyInvocation.MyCommand.Name), $winVer.ReleaseID, $winVer.CurrentBuildNumber, $winVer.UBR ) -severity 'DEBUG'
 
 ## Install git, puppet, nodes.pp
 Write-Log -message ('{0} :: Setting power settings with powercfg' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -273,7 +278,7 @@ if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
     $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
 }
 
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User") 
 
 ## Set registry options
 If (-Not ( test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")) {
@@ -364,6 +369,15 @@ switch ($puppet_exit) {
         Write-Host ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
+        ## Cleanup
+        @(
+            "LAN-Win11-1.1.3.34.zip",
+            "puppet-agent-6.28.0-x64.msi",
+            "Git-2.37.3-64-bit.exe",
+            "azcopy.exe"
+        ) | ForEach-Object {
+            Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
+        }
         Restart-Computer -Confirm:$false -Force
     }
     1 {
@@ -383,6 +397,15 @@ switch ($puppet_exit) {
         Write-Host ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
+        ## Cleanup
+        @(
+            "LAN-Win11-1.1.3.34.zip",
+            "puppet-agent-6.28.0-x64.msi",
+            "Git-2.37.3-64-bit.exe",
+            "azcopy.exe"
+        ) | ForEach-Object {
+            Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
+        }
         Restart-Computer -Confirm:$false -Force
     }
     4 {
