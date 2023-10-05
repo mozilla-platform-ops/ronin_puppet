@@ -378,6 +378,8 @@ switch ($puppet_exit) {
         ) | ForEach-Object {
             Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
         }
+        slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
+        slmgr.vbs -ato
         Restart-Computer -Confirm:$false -Force
     }
     1 {
@@ -413,6 +415,8 @@ switch ($puppet_exit) {
         ) | ForEach-Object {
             Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
         }
+        slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
+        slmgr.vbs -ato
         Restart-Computer -Confirm:$false -Force
     }
     4 {
