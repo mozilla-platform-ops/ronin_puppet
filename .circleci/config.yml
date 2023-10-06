@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  slack: circleci/slack@3.4.2
+  # slack: circleci/slack@3.4.2
   vault: jmingtan/hashicorp-vault@0.2.1
   tfutils: ukslee/tfutils@0.0.5
 
@@ -280,7 +280,7 @@ workflows:
               os: [macos-1014]
               suite: ["mac-v3-signing"]
               role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
@@ -290,7 +290,7 @@ workflows:
               os: [macos-1015]
               suite: ["default"]
               role: ["gecko_t_osx_1015_r8"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
@@ -300,7 +300,7 @@ workflows:
               os: [macos-1100]
               suite: ["default"]
               role: ["gecko_t_osx_1100_m1"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
