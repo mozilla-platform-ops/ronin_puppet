@@ -153,7 +153,7 @@ $UnattendXml = @"
                 </SynchronousCommand>               
                 <SynchronousCommand wcm:action="add">
                     <Description>RoninPuppet Bootstrap</Description>
-                    <CommandLine>powershell.exe -Command &quot;&amp; {IEX (IRM &apos;https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1&apos;)}&quot;</CommandLine>
+                    <CommandLine>powershell.exe -Command &quot;&amp; {IEX (IRM &apos;https://raw.githubusercontent.com/mozilla-platform-ops/ronin_puppet/win11ref/provisioners/windows/OSDCloud/bootstrap.ps1&apos;)}&quot;</CommandLine>
                     <RequiresUserInput>false</RequiresUserInput>
                     <Order>2</Order>
                 </SynchronousCommand>
