@@ -127,7 +127,7 @@ Function UpdateRonin {
     $sourceBranch = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch').Branch } else { 'master' })
 
     Set-Location $ronin_repo
-    git config --global --add safe.directory $ronin_repo
+    git config --global --add safe.directory "C:/ronin"
     git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
     $git_exit = $LastExitCode
     if ($git_exit -eq 0) {
@@ -140,7 +140,7 @@ Function UpdateRonin {
      Write-Log -message  ('{0} :: Deleting old repository and cloning repository .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 	 Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
 	 Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
-	 Remove-Item -Recurse -Force $ronin_repo
+	 #Remove-Item -Recurse -Force $ronin_repo
 	 Start-Sleep -s 2
 	 git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
 	 Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp

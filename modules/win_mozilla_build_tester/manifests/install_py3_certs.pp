@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::install_py3_certs {
-
   require win_mozilla_build_tester::install
 
   exec { 'install_py3_certi':

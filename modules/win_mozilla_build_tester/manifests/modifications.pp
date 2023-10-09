@@ -3,12 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::modifications {
-
   require win_mozilla_build_tester::install
 
   $mozbld      = "C:\\mozilla-build"
 
-  file { "${mozbld}\\python\\Scripts\\hg":
+  file { "${mozbld}\\python3\\Scripts\\hg":
     ensure => absent,
     purge  => true,
     force  => true,
@@ -20,9 +19,8 @@ class win_mozilla_build_tester::modifications {
   }
   # Resource from counsyl-windows
   windows_env { "PATH=${mozbld}\\bin": }
-  windows_env { "PATH=${mozbld}\\kdiff": }
+  windows_env { "PATH=${mozbld}\\kdiff3": }
   windows_env { "PATH=${mozbld}\\msys2": }
   windows_env { "PATH=${mozbld}\\python3": }
-  windows_env { "PATH=${mozbld}\\mozmake": }
   windows_env { "PATH=${mozbld}\\msys2\\usr\\bin": }
 }

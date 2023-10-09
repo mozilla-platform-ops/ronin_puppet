@@ -107,6 +107,33 @@ switch ($os_version) {
             New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0
         }
     }
+    "win_10_2009" {
+        ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
+        while ($true) {
+            $explorer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction SilentlyContinue
+            if ($null -eq $explorer) {
+                Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Explorer not available inside task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+                Start-Sleep -Seconds 3
+            }
+            else {
+                ## Tested against windows 11
+                cmd.exe /c 'netsh firewall set notifications mode = disable profile = all'
+                break
+            }
+        }
+
+        ## Test for the value set in at_task_user_logon.ps1 step
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Checking if scrollbar was set in at_task_user_logon.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        ## set git config
+        git config --global core.longpaths true
+        git config --global --add safe.directory '*'
+        explorer.exe shell:::{3080F90D-D7AD-11D9-BD98-0000947B0257} -Verb MinimizeAll
+        $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
+        if ($d -ne 0) {
+            Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+            New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0
+        }
+    }
     "win_2012" {
         ## prevent Git repos from being seen as unsafe after copied
         git config --global --add safe.directory '*'

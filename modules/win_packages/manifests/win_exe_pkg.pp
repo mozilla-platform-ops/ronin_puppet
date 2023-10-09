@@ -18,6 +18,7 @@ define win_packages::win_exe_pkg (
     exec { "${title}install":
         command => "${pkgdir}\\${pkg} ${install_options_string}",
         creates => $creates,
+        timeout => 600,
     }
 }
 
