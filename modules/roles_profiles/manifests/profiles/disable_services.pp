@@ -56,11 +56,6 @@ class roles_profiles::profiles::disable_services {
           include win_disable_services::disable_onedrive
         }
       }
-      if ($facts['custom_win_location'] == 'home') {
-        if ($facts['custom_win_purpose'] == 'tester') {
-          include win_disable_services::disable_onedrive
-        }
-      }
       # May be needed for non-hardaware
       # Commented out because this will break the auto restore
       # include win_disable_services::disable_vss
