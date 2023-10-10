@@ -72,7 +72,7 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 @(
     "Carbon"
     "ugit",
-    "kbupdate",
+    #"kbupdate",
     "Powershell-Yaml"
 ) | ForEach-Object {
     $hit = Get-Module -Name $PSItem
