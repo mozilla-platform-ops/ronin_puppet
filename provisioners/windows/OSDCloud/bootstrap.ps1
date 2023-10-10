@@ -176,7 +176,7 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
     }
 }
 
-## Check for windows update and install the latest
+<# ## Check for windows update and install the latest
 $updates_check = Get-KbNeededUpdate -UseWindowsUpdate | Where-Object {
     $PSItem.Title -notmatch "Preview"
 }
@@ -184,7 +184,7 @@ $updates_check = Get-KbNeededUpdate -UseWindowsUpdate | Where-Object {
 if ($null -ne $updates_check) {
     Write-Log -message ('{0} :: Installing {1} on {2}' -f $($MyInvocation.MyCommand.Name), $PSItem.name, $ENV:COMPUTERNAME) -severity 'DEBUG'
     $updates_check | Install-KbUpdate -Method "WindowsUpdate"
-}
+} #>
 
 ## Grant SeServiceLogonRight and reboot
 $logonrights = Get-CPrivilege -Identity "Administrator"
