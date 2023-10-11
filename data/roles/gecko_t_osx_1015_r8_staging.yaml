@@ -8,7 +8,7 @@ worker_metadata:
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
 worker:
-  taskcluster_version: 54.4.1
+  taskcluster_version: 55.3.4
   provider_type: standalone
   worker_pool_id: releng-hardware/gecko-t-osx-1015-r8-staging
   worker_group: mdc1
