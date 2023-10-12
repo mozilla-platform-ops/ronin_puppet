@@ -158,13 +158,13 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
 if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
     Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
     Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue
-    $url = "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1"
+    $url = ("https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/{3}/bootstrap.ps1" -f $src_Organisation,$src_Repository,$src_Branch,$image_provisioner)
     $status = Invoke-WebRequest $url
     if ($status.StatusCode -ne 200) {
         Write-Log -Message ('{0} :: Unable to query raw github script. Status: {1}' -f $($MyInvocation.MyCommand.Name), $status.StatusCode) -severity 'DEBUG'
         exit 1
     }
-    Invoke-WebRequest "https://raw.githubusercontent.com/jwmoss/ronin_puppet/win11/provisioners/windows/OSDCloud/bootstrap.ps1" -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
+    Invoke-WebRequest $url -OutFile "$env:systemdrive\BootStrap\bootstrap-src.ps1" -UseBasicParsing
     Get-Content -Encoding UTF8 $env:systemdrive\BootStrap\bootstrap-src.ps1 | Out-File -Encoding Unicode $env:systemdrive\BootStrap\bootstrap.ps1
     Schtasks /create /RU system /tn bootstrap /tr "powershell -file $env:systemdrive\BootStrap\bootstrap.ps1" /sc onstart /RL HIGHEST /f
     $check = Get-Content "$env:systemdrive\BootStrap\bootstrap.ps1"
