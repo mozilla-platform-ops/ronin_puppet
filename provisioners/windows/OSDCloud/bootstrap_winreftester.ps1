@@ -1,10 +1,10 @@
 Set-ExecutionPolicy Unrestricted -Force
 
 ## Clean up disks
-<# $c = Get-CimInstance -ClassName Win32_Volume -Filter "DriveLetter = 'C:'"
+$c = Get-CimInstance -ClassName Win32_Volume -Filter "DriveLetter = 'C:'"
 if ($null -ne $c) {
     $c | Set-CimInstance -Property @{DriveLetter = 'Z:'}
-} #>
+}
 
 $Params = @{
     OSVersion  = "Windows 11"
