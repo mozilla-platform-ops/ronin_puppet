@@ -55,6 +55,55 @@ class linux_packages::puppet {
           }
 
         }
+        '22.04':  {
+
+          include apt
+
+          $packages_to_purge = [
+                                # there can only be one puppet*-release package installed
+                                # remove unversioned repo package
+                                'puppet-release',
+                                # remove older versioned release packages
+                                'puppet5-release', 'puppet6-release',
+                                # older packages that could be present?
+                                'puppet5-agent',
+                                # we don't need the full package and it conflicts with puppet-agent
+                                'puppet'
+                                ]
+
+          package { $packages_to_purge:
+              ensure => purged,
+          }
+
+          # fetch and install the new repo deb
+          $deb_name = 'puppet7-release-jammy.deb'
+          file { 'puppet_repo_deb':
+              ensure    => 'file',
+              path      => "/tmp/${deb_name}",
+              mode      => 'a+r',
+              source    => "https://apt.puppetlabs.com/${deb_name}",
+              subscribe => Package[$packages_to_purge],
+          }
+          package { 'puppet repo deb':
+            ensure    => installed,
+            provider  => dpkg,
+            source    => "/tmp/${deb_name}",
+            notify    => Exec['apt_update'],
+            subscribe => File['puppet_repo_deb']
+          }
+
+          # install latest puppet-agent
+          package { 'install puppet agent':
+            # 1. if changing version, also ensure this is in sync with
+            # provisioners/linux/bootstrap_linux.sh
+            # 2. if upgrading, make sure to purge the old versioned release deb (see above)
+            ensure    => '7.21.0-1jammy',
+            name      => 'puppet-agent',
+            require   => Exec['apt_update'],
+            subscribe => Package['puppet repo deb']
+          }
+
+        }
         default: {
           fail("Ubuntu ${::operatingsystemrelease} is not supported")
         }

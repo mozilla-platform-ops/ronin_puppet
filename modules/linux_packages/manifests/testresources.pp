@@ -11,13 +11,26 @@
 class linux_packages::testresources {
   case $::operatingsystem {
     'Ubuntu': {
-      package {
-        'python-testresources':
-          ensure => present;
-      }
-      package {
-        'python3-testresources':
-          ensure => present;
+      case $::operatingsystemrelease {
+        '18.04': {
+          package {
+            'python-testresources':
+              ensure => present;
+          }
+          package {
+            'python3-testresources':
+              ensure => present;
+          }
+        }
+        '22.04': {
+          package {
+            'python3-testresources':
+              ensure => present;
+          }
+        }
+        default: {
+          fail("Ubuntu ${::operatingsystemrelease} is not supported")
+        }
       }
     }
     default: {

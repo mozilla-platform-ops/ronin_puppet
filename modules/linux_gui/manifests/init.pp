@@ -121,7 +121,7 @@ class linux_gui(
             }
 
             case $::operatingsystemrelease {
-                '18.04': {
+                '18.04', '22.04': {
                     $gpu_bus_id = 'PCI:0:02:0'
                     file {
                         '/etc/X11/xorg.conf':

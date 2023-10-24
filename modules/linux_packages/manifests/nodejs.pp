@@ -6,7 +6,7 @@ class linux_packages::nodejs {
   case $::operatingsystem {
     'Ubuntu': {
       case $::operatingsystemrelease {
-        '18.04':  {
+        '18.04', '22.04':  {
           package {
             'nodejs':
               ensure => latest;
