@@ -9,6 +9,8 @@ class roles_profiles::roles::win11642009azure {
       include roles_profiles::profiles::error_reporting
       ## Keep it in here to disable 8dot3 and disablelastaccess
       include roles_profiles::profiles::files_system_managment
+      ## gpu drivers are needed for gpu images
+      include roles_profiles::profiles::gpu_drivers
       ## Change log level from verbose to whatever hiera lookup is
       include roles_profiles::profiles::logging
       ## Set network to private
