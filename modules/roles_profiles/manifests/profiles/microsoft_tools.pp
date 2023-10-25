@@ -30,7 +30,7 @@ class roles_profiles::profiles::microsoft_tools {
           include win_packages::vc_redist_x64
         }
         'tester':{
-          include win_packages::win_11_sdk
+          include win_packages::win_10_sdk
         }
         default: {
           fail("${$facts['custom_win_purpose']} not supported")
