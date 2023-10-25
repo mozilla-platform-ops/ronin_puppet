@@ -18,6 +18,9 @@ date > $last_premature_end
 # Removing the tasks-resolved-count.txt allows the worker to exit properly when numberOfTasksToRun is reached
 rm <%= @data_dir %>/tasks-resolved-count.txt
 
+# Clear up previous task dirs
+rm -rf /opt/worker/tasks/task_*
+
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/start-worker "$@"
