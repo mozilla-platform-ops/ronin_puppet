@@ -23,4 +23,5 @@ class roles_profiles::roles::gecko_t_osx_1300_m2 {
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
+    include ::roles_profiles::profiles::pipconf
 }
