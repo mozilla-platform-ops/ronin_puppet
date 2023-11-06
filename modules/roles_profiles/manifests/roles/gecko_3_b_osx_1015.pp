@@ -20,9 +20,8 @@ class roles_profiles::roles::gecko_3_b_osx_1015 {
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::relops_users
-
     include ::roles_profiles::profiles::worker
     #include ::fw::roles::osx_taskcluster_worker_loaner
-
     #include ::macos_utils::uninstall_homebrew
+    include ::roles_profiles::profiles::pipconf
 }

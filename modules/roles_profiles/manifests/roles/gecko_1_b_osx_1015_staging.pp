@@ -20,9 +20,8 @@ class roles_profiles::roles::gecko_1_b_osx_1015_staging {
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::relops_users
-
     include ::roles_profiles::profiles::worker
     #include ::fw::roles::osx_taskcluster_worker_loaner
-
     #include ::macos_utils::uninstall_homebrew
+    include ::roles_profiles::profiles::pipconf
 }

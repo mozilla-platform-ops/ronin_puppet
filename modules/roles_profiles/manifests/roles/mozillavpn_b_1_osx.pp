@@ -21,9 +21,8 @@ class roles_profiles::roles::mozillavpn_b_1_osx {
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::relops_users
     #include ::roles_profiles::profiles::homebrew
-
     include ::roles_profiles::profiles::worker
     #include ::fw::roles::osx_taskcluster_worker_loaner
-
     #include ::macos_utils::uninstall_homebrew
+    include ::roles_profiles::profiles::pipconf
 }
