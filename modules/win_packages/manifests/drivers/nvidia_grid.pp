@@ -27,7 +27,7 @@ class win_packages::drivers::nvidia_grid (
 
   if $facts['custom_win_gpu'] == 'yes' {
     package { $display_name :
-      ensure          => '472.39',
+      ensure          => 'present',
       source          => $setup_exe,
       install_options => ['-s','-noreboot'],
     }
