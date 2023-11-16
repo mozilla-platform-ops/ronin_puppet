@@ -33,6 +33,7 @@ groups:
       - macmini-r8-27.test.releng.mdc1.mozilla.com
       - macmini-r8-28.test.releng.mdc1.mozilla.com
       - macmini-r8-29.test.releng.mdc1.mozilla.com
+      - macmini-r8-30.test.releng.mdc1.mozilla.com
       - macmini-r8-31.test.releng.mdc1.mozilla.com
       - macmini-r8-32.test.releng.mdc1.mozilla.com
       - macmini-r8-33.test.releng.mdc1.mozilla.com
@@ -52,6 +53,7 @@ groups:
       - macmini-r8-47.test.releng.mdc1.mozilla.com
       - macmini-r8-48.test.releng.mdc1.mozilla.com
       - macmini-r8-49.test.releng.mdc1.mozilla.com
+      - macmini-r8-50.test.releng.mdc1.mozilla.com
       - macmini-r8-51.test.releng.mdc1.mozilla.com
       - macmini-r8-52.test.releng.mdc1.mozilla.com
       - macmini-r8-53.test.releng.mdc1.mozilla.com
@@ -74,11 +76,15 @@ groups:
       - macmini-r8-70.test.releng.mdc1.mozilla.com
       - macmini-r8-71.test.releng.mdc1.mozilla.com
       - macmini-r8-72.test.releng.mdc1.mozilla.com
+      - macmini-r8-73.test.releng.mdc1.mozilla.com
+      - macmini-r8-74.test.releng.mdc1.mozilla.com
       - macmini-r8-75.test.releng.mdc1.mozilla.com
       - macmini-r8-76.test.releng.mdc1.mozilla.com
       - macmini-r8-77.test.releng.mdc1.mozilla.com
       - macmini-r8-78.test.releng.mdc1.mozilla.com
       - macmini-r8-79.test.releng.mdc1.mozilla.com
+      - macmini-r8-80.test.releng.mdc1.mozilla.com
+      - macmini-r8-81.test.releng.mdc1.mozilla.com
       - macmini-r8-82.test.releng.mdc1.mozilla.com
       - macmini-r8-83.test.releng.mdc1.mozilla.com
       - macmini-r8-84.test.releng.mdc1.mozilla.com
@@ -243,6 +249,10 @@ groups:
       - macmini-r8-286.test.releng.mdc1.mozilla.com
       - macmini-r8-287.test.releng.mdc1.mozilla.com
       - macmini-r8-288.test.releng.mdc1.mozilla.com
+      - macmini-r8-381.test.releng.mdc1.mozilla.com
+      - macmini-r8-382.test.releng.mdc1.mozilla.com
+      - macmini-r8-383.test.releng.mdc1.mozilla.com
+      - macmini-r8-384.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8
 
