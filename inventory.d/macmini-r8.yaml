@@ -327,7 +327,7 @@ groups:
       - macmini-r8-184.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: mozillavpn_b_3_osx
-  
+
   - name: nss-1-b-osx-1015
     targets:
       - macmini-r8-368.test.releng.mdc1.mozilla.com
