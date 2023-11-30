@@ -330,6 +330,6 @@ groups:
   
   - name: nss-1-b-osx-1015
     targets:
-      - macmini-r8-368.test.releng.mdc1.mozilla.com  
+      - macmini-r8-368.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: nss_1_b_osx_1015
