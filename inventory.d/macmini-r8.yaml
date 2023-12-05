@@ -333,3 +333,10 @@ groups:
       - macmini-r8-368.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: nss_1_b_osx_1015
+
+  - name: gecko-t-osx-1400-r8-staging
+    targets:
+      - macmini-r8-373.test.releng.mdc1.mozilla.com
+      - macmini-r8-374.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1400_r8_staging
