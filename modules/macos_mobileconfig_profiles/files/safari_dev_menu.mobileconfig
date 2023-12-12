@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>IncludeDevelopMenu</key>
+			<true/>
+			<key>PayloadDisplayName</key>
+			<string>Safari</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.Safari.F4D5BB0F-4C5E-43EA-A2D8-9D3845CA36EB</string>
+			<key>PayloadType</key>
+			<string>com.apple.Safari</string>
+			<key>PayloadUUID</key>
+			<string>F4D5BB0F-4C5E-43EA-A2D8-9D3845CA36EB</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>PayloadDisplayName</key>
+			<string>Safari Developer</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.Safari.SandboxBroker.D0041020-0BA1-4526-BAD4-A2B41493E093</string>
+			<key>PayloadType</key>
+			<string>com.apple.Safari.SandboxBroker</string>
+			<key>PayloadUUID</key>
+			<string>D0041020-0BA1-4526-BAD4-A2B41493E093</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>ShowDevelopMenu</key>
+			<true/>
+		</dict>
+	</array>
+	<key>PayloadDisplayName</key>
+	<string>Safari - Developer Menu</string>
+	<key>PayloadIdentifier</key>
+	<string>Ryans-MacBook-Pro.DA287EA6-F234-4B9D-9086-3DC6EE1D15B9</string>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>90CE3BE5-7F46-4F6F-8F6E-288A788B34F7</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>
