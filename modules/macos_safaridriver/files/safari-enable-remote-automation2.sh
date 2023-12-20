@@ -36,7 +36,7 @@ if csrutil status | grep -q 'disabled'; then
         tell process "Safari"
           set frontmost to true
           delay 5
-          click menu item "Settings" of menu 1 of menu bar item "Safari" of menu bar 1
+          click menu item "Settings…" of menu 1 of menu bar item "Safari" of menu bar 1
           delay 5
           click button "Advanced" of toolbar 1 of window 1
           delay 5

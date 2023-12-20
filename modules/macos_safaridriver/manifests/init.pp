@@ -92,7 +92,7 @@ class macos_safaridriver (
           exec { 'execute enable remote automation script':
             # TODO: don't hardcode user id of cltbld
             #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 36 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser 35 sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
             cwd     => "/Users/${user_running_safari}",
             # semaphore and semaphore dir are created in script
