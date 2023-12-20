@@ -10,7 +10,6 @@ if [ "$EUID" -eq 0 ]; then
   exit 1
 fi
 
-# test comment
 current_user=$(id -u -n)
 semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
 semaphore_version="1"
@@ -37,7 +36,7 @@ if csrutil status | grep -q 'disabled'; then
         tell process "Safari"
           set frontmost to true
           delay 5
-          click menu item "Preferences…" of menu 1 of menu bar item "Safari" of menu bar 1
+          click menu item "Settings…" of menu 1 of menu bar item "Safari" of menu bar 1
           delay 5
           click button "Advanced" of toolbar 1 of window 1
           delay 5
