@@ -43,6 +43,11 @@ class bitbar_devicepool::base {
     groups => 'bclary',
   }
 
+  User<| title == mgoossens |> {
+    shell => '/usr/sbin/nologin',
+    groups => 'mgoossens',
+  }
+
   # add users to groups:
   # - wheel: sudo without password
   # - bitbar: to access devicepool stuff
