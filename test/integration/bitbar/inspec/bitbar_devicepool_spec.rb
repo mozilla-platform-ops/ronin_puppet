@@ -10,8 +10,8 @@ describe 'users' do
 
   describe user('bitbar') do
     it { should exist }
+    end
   end
-end
 
 describe 'git repo' do
   describe bash("sudo -u bitbar bash -c 'cd /home/bitbar/mozilla-bitbar-devicepool && git status'") do
