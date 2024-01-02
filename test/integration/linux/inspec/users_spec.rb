@@ -4,6 +4,7 @@ require_relative 'spec_helper'
 describe 'users' do
   describe user('aerickson') do
     it { should exist }
+  end
 end
 
 describe file('/etc/group') do
