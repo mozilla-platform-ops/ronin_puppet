@@ -5,9 +5,9 @@ packages::vault::version: 1.7.3
 
 # Override secrets with vault secrets
 
-papertrail:
-  host: "%{lookup('vault_secrets::papertrail.data.host')}"
-  port: "%{lookup('vault_secrets::papertrail.data.port')}"
-
-notarization:
-  password: "%{lookup('vault_secrets::notarization.data.password')}"
+#papertrail:
+#  host: "%{lookup('vault_secrets::papertrail.data.host')}"
+#  port: "%{lookup('vault_secrets::papertrail.data.port')}"
+#
+#notarization:
+#  password: "%{lookup('vault_secrets::notarization.data.password')}"
