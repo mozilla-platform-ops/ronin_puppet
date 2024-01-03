@@ -24,4 +24,5 @@ class roles_profiles::roles::gecko_t_osx_1100_m1 {
     include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
     include ::roles_profiles::profiles::pipconf
+    include ::roles_profiles::profiles::macos_people_remover
 }
