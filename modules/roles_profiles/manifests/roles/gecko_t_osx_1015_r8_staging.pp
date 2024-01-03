@@ -27,4 +27,5 @@ class roles_profiles::roles::gecko_t_osx_1015_r8_staging {
     include ::roles_profiles::profiles::safariupdate
     include macos_utils::disable_bluetooth_setup
     include ::roles_profiles::profiles::pipconf
+    include ::roles_profiles::profiles::macos_people_remover
 }

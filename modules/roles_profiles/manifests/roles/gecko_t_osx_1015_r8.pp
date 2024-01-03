@@ -27,4 +27,5 @@ class roles_profiles::roles::gecko_t_osx_1015_r8 {
     include ::roles_profiles::profiles::safaridriver
     include macos_utils::disable_bluetooth_setup
     include ::roles_profiles::profiles::pipconf
+    include ::roles_profiles::profiles::macos_people_remover
 }

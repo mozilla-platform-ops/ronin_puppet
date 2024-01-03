@@ -24,4 +24,5 @@ class roles_profiles::roles::gecko_1_b_osx_1015_staging {
     #include ::fw::roles::osx_taskcluster_worker_loaner
     #include ::macos_utils::uninstall_homebrew
     include ::roles_profiles::profiles::pipconf
+    include ::roles_profiles::profiles::macos_people_remover
 }
