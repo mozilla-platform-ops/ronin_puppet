@@ -1,5 +1,5 @@
 # @summary removes people that have exited relops
-#   
+#
 #
 class macos_people_remover (
   Boolean $enabled = true,
