@@ -19,5 +19,9 @@ $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInter
 $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-object {$_.AddressFamily -eq "InterNetwork"}).IPAddressToString
 $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
 
+$index = $string.IndexOf('.')
+$shortname = $ResolvedName.Substring(0, $index)
+
 Write-Host $IPAddress
 Write-Host $ResolvedName
+Write-Host $shortname
