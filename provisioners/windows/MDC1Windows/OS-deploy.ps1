@@ -16,7 +16,7 @@ net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentacc
 $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object {$_.name -match "ethernet"}
 $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-object {$_.AddressFamily -eq "InterNetwork"}).IPAddressToString
 $NodeEntry = [System.Net.Dns]::GetHostEntry($IPAddress)
-$NodeName = $hostEntry.HostName
+$NodeName = $NodeEntry.HostName
 
 Write-Host $IPAddress
 Write-Host $NodeName
