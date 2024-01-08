@@ -313,12 +313,15 @@ groups:
   - name: applicationservices-1-b-osx-1015
     targets:
       - macmini-r8-122.test.releng.mdc1.mozilla.com
+      - macmini-r8-254.test.releng.mdc1.mozilla.com
+      - macmini-r8-273.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: applicationservices_1_b_osx_1015
 
   - name: applicationservices-3-b-osx-1015
     targets:
       - macmini-r8-193.test.releng.mdc1.mozilla.com
+      - macmini-r8-201.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: applicationservices_3_b_osx_1015
 
