@@ -54,3 +54,5 @@ foreach ($pool in $YAML.pools) {
         }
     }
 }
+write-host "contents of Z:"
+dir Z:\
