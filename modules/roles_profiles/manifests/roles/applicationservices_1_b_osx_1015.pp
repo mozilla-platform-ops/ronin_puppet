@@ -26,4 +26,5 @@ class roles_profiles::roles::applicationservices_1_b_osx_1015 {
     #include ::macos_utils::uninstall_homebrew
     include ::roles_profiles::profiles::pipconf
     include ::roles_profiles::profiles::macos_people_remover
+    include ::roles_profiles::profiles::packages_installed
 }
