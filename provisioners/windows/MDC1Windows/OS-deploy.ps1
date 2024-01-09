@@ -35,3 +35,13 @@ Write-Host $shortname
 
 # assumes files is in the same dir
 $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
+
+foreach ($pool in $YAML.pools) {
+    foreach ($node in $pool.nodes) {
+        if ($node -eq $shortname) {
+            $associatedImage = $pool.image
+            Write-Output "The associated image for $shortname is: $associatedImage"
+            break
+        }
+    }
+}
