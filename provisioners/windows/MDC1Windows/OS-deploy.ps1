@@ -47,7 +47,7 @@ foreach ($pool in $YAML.pools) {
         if ($found) {
             break
         } else {
-            $defaultPool = $yamlObject.pools | Where-Object { $_.name -eq "Default" }
+            $defaultPool = $YAML.pools | Where-Object { $_.name -eq "Default" }
             $neededImage = $defaultImage
             Write-Output = "Node not found. defualting"
             Write-Output "The image for the 'Default' pool is: $defaultImage"
