@@ -3,7 +3,7 @@ pools:
   - name: "DEV"
     image: "win11-DEV"
     nodes:
-      - nuc-33432A
+      - nuc-33432
   - name: "win11-64-2009-hw-ref"
     image: "win11-64-2009"
     nodes:
