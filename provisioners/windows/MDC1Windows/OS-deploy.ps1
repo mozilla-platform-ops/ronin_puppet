@@ -39,9 +39,18 @@ $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
 foreach ($pool in $YAML.pools) {
     foreach ($node in $pool.nodes) {
         if ($node -eq $shortname) {
-            $associatedImage = $pool.image
-            Write-Output "The associated image for $shortname is: $associatedImage"
+            $neededImage = $pool.image
+            Write-Output "The associated image for $shortname is: $neededImage"
+            $found = $true
             break
+        }
+        if ($found) {
+            break
+        } else {
+            $defaultPool = $yamlObject.pools | Where-Object { $_.name -eq "Default"
+            $neededImage = $defaultImage
+            Write-Output = "Node not found. defualting"
+            Write-Output "The image for the 'Default' pool is: $defaultImage"
         }
     }
 }
