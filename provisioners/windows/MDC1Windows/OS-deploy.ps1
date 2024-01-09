@@ -3,7 +3,7 @@ param(
     [string]$deploymentaccess
 )
 
-Set-Location X:\scripts
+Set-Location X:\working
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
 
@@ -23,7 +23,7 @@ $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInter
 $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-object {$_.AddressFamily -eq "InterNetwork"}).IPAddressToString
 $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
 
-$index = $string.IndexOf('.')
+$index = $ResolvedName.IndexOf('.')
 $shortname = $ResolvedName.Substring(0, $index)
 
 Write-Host $IPAddress
