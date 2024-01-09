@@ -25,3 +25,9 @@ $shortname = $ResolvedName.Substring(0, $index)
 Write-Host $IPAddress
 Write-Host $ResolvedName
 Write-Host $shortname
+
+## Get data
+Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
+
+# assumes files is in the same dir
+$YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
