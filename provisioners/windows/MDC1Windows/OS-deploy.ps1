@@ -59,4 +59,4 @@ foreach ($pool in $YAML.pools) {
 dir Z:\
 
 $setup = "Z:\Images\" + $neededImage + "\setup.exe"
-& $setup
+$setup
