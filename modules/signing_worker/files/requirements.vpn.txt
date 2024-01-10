@@ -82,15 +82,15 @@ aiohttp==3.9.1 \
     --hash=sha256:f800164276eec54e0af5c99feb9494c295118fc10a11b997bbb1348ba1a52065 \
     --hash=sha256:ffcd828e37dc219a72c9012ec44ad2e7e3066bec6ff3aaa19e7d435dbf4032ca
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/notarization_poller/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/scriptworker_client/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
     #   taskcluster
 aiomemoizettl==0.0.3 \
     --hash=sha256:07a6becac60f6cd2604b9f2b73bcd9a50079a0b7b55e2a4e45b1eec5a3ea9659 \
     --hash=sha256:0a80d2dc765e545263f515363b6700ec8cf86fa3968b529f56390b28e34f743d
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 aiosignal==1.3.1 \
     --hash=sha256:54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc \
     --hash=sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17
@@ -103,21 +103,21 @@ arrow==1.3.0 \
     --hash=sha256:c728b120ebc00eb84e01882a6f5e7927a53960aa990ce7dd2b10f39005a67f80 \
     --hash=sha256:d4540617648cb5f895730f1ad8c82a65f2dad0166f57b75f3ca54759c4d67a85
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/notarization_poller/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 async-timeout==4.0.3 \
     --hash=sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f \
     --hash=sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/notarization_poller/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/notarization_poller/requirements/base.in
     #   aiohttp
     #   taskcluster
 attrs==23.2.0 \
     --hash=sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30 \
     --hash=sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
     #   aiohttp
     #   jsonschema
     #   referencing
@@ -296,13 +296,13 @@ cryptography==41.0.7 \
     --hash=sha256:e3114da6d7f95d2dee7d3f4eec16dacff819740bbab931aff8648cb13c5ff5e7 \
     --hash=sha256:f983596065a18a2183e7f79ab3fd4c475205b839e02cbc0efbbf9666c4b3083d
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
     #   -r requirements.in
     #   pyjwt
 dictdiffer==0.9.0 \
     --hash=sha256:17bacf5fbfe613ccf1b6d512bd766e6b21fb798822a133aa86098b8ac9997578 \
     --hash=sha256:442bfc693cfcadaf46674575d2eba1c53b42f5e404218ca2c2ff549f2df56595
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 frozenlist==1.4.1 \
     --hash=sha256:04ced3e6a46b4cfffe20f9ae482818e34eba9b5fb0ce4056e4cc9b6e212d09b7 \
     --hash=sha256:0633c8d5337cb5c77acbccc6357ac49a1770b8c487e5b3505c57b949b4b82e98 \
@@ -387,7 +387,7 @@ frozenlist==1.4.1 \
 github3-py==4.0.1 \
     --hash=sha256:30d571076753efc389edc7f9aaef338a4fcb24b54d8968d5f39b1342f45ddd36 \
     --hash=sha256:a89af7de25650612d1da2f0609622bcdeb07ee8a45a1c06b2d16a05e4234e753
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 idna==3.6 \
     --hash=sha256:9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca \
     --hash=sha256:c05567e9c24a6b9faaa835c4821bad0590fbb9d5779e7caa6e1cc4978e7eb24f
@@ -398,9 +398,9 @@ immutabledict==4.1.0 \
     --hash=sha256:93d100ccd2cd09a1fd3f136b9328c6e59529ba341de8bb499437f6819159fe8a \
     --hash=sha256:c176e99aa90aedb81716ad35218bb2055d049b549626db4523dbe011cf2f32ac
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/notarization_poller/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/scriptworker_client/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 importlib-resources==6.1.1 \
     --hash=sha256:3893a00122eafde6894c59914446a512f728a0c1a45f9bb9b63721b6bacf0b4a \
     --hash=sha256:e8bf90d8213b486f428c9c39714b920041cb02c184686a3dee24905aaa8105d6
@@ -413,13 +413,13 @@ jsmin==3.0.1 \
 json-e==4.6.0 \
     --hash=sha256:2ec3796a6fb40097642a0cc17ba1a0c08b637a76d32f27633fa4cd9def1e77f8 \
     --hash=sha256:c5fd5c7d98b9394fbc9041c380134f4ed8b055c487f2607ee4f306383ab4d8b8
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 jsonschema==4.20.0 \
     --hash=sha256:4f614fd46d8d61258610998997743ec5492a648b33cf478c1ddc23ed4598a5fa \
     --hash=sha256:ed6231f0429ecf966f5bc8dfef245998220549cbbcf140f913b7464c52c3b6b3
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/scriptworker_client/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 jsonschema-specifications==2023.12.1 \
     --hash=sha256:48a76787b3e70f5ed53f1160d2b81f586e4ca6d1548c5de7085d1682674764cc \
     --hash=sha256:87e4fdf3a94858b8a2ba2778d9ba57d8a9cafca7c7489c46ba0d30a8bc6a9c3c
@@ -428,7 +428,7 @@ macholib==1.16.3 \
     --hash=sha256:07ae9e15e8e4cd9a788013d81f5908b3609aa76f9b1421bae9c4d7606ec86a30 \
     --hash=sha256:0e315d7583d38b8c77e815b1ecbdbf504a8258d8b3e17b61165c6feb60d18f2c
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
     #   -r requirements.in
 mohawk==1.1.0 \
     --hash=sha256:3ed296a30453d0b724679e0fd41e4e940497f8e461a9a9c3b7f36e43bab0fa09 \
@@ -521,11 +521,11 @@ multidict==6.0.4 \
 packaging==23.2 \
     --hash=sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5 \
     --hash=sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
 pexpect==4.9.0 \
     --hash=sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523 \
     --hash=sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
 pkgutil-resolve-name==1.3.10 \
     --hash=sha256:357d6c9e6a755653cfd78893817c0853af365dd51ec97f3d358a819373bbd174 \
     --hash=sha256:ca27cc078d25c5ad71a9de0a7a330146c4e014c2462d9af19c6b828280649c5e
@@ -603,8 +603,8 @@ pyyaml==6.0.1 \
     --hash=sha256:fd1592b3fdf65fff2ad0004b5e363300ef59ced41c2e6b3a99d4089fa8c5435d \
     --hash=sha256:fd66fc5d0da6d9815ba2cebeb4205f95818ff4b79c3ebe268e75d961704af52f
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/scriptworker_client/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/scriptworker_client/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 referencing==0.32.1 \
     --hash=sha256:3c57da0513e9563eb7e203ebe9bb3a1b509b042016433bd1e45a2853466c3dd3 \
     --hash=sha256:7e4dc12271d8e15612bfe35792f5ea1c40970dadf8624602e33db2758f7ee554
@@ -621,7 +621,7 @@ requests==2.31.0 \
 requests-hawk==1.2.1 \
     --hash=sha256:ad9205042c94bdb15afaa19b0780e11077b24d9e5cffac1fb3d26cb08aa435b7 \
     --hash=sha256:afe8add3c72a21405543a07464b62e36a5f378585e5cf3b54b1307e884f67324
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
+    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
 rpds-py==0.16.2 \
     --hash=sha256:0474df4ade9a3b4af96c3d36eb81856cb9462e4c6657d4caecfd840d2a13f3c9 \
     --hash=sha256:071980663c273bf3d388fe5c794c547e6f35ba3335477072c713a3176bf14a60 \
@@ -729,7 +729,7 @@ six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
     #   mohawk
     #   mozfile
     #   python-dateutil
@@ -741,9 +741,9 @@ taskcluster==60.0.0 \
     --hash=sha256:78ea9f5b236b0d91295d0e3d02557a9e0d2cf4d09d9b504626b6d06c1f654c8e \
     --hash=sha256:e2bdf43e18f8e7130729d0d14f94f90f2790ae961ddfa895b9be5cc62aa96cfe
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/iscript/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/7e84434ba956d4b288c8470a0eb07018f4b59fd8/notarization_poller/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/19c4e02f2faac8798f66d2ac63ccbeff78ab596d/requirements.txt
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/iscript/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/b5e0a40328cda0b4bdbb3c151771397761a9b57a/notarization_poller/requirements/base.in
+    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/329531223dba0e5111ed8c716f6b4fa56423bd6c/requirements.txt
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \
     --hash=sha256:b25e122ecec249c4299ac7b20b08db76e3e2025bdaeb699a9d444556de5fd367 \
