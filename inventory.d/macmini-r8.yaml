@@ -348,6 +348,12 @@ groups:
     facts:
       puppet_role: nss_1_b_osx_1015
 
+  - name: nss-3-b-osx-1015
+    targets:
+      - macmini-r8-370.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: nss_3_b_osx_1015
+
   - name: gecko-t-osx-1400-r8-staging
     targets:
       - macmini-r8-373.test.releng.mdc1.mozilla.com
