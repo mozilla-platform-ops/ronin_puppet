@@ -58,5 +58,5 @@ foreach ($pool in $YAML.pools) {
 ## It seems like the Z: drive needs to be access before script exits to presists
 dir Z:\
 
-$setup = "Z:\Images" + $neededImage + "\setup.exe"
+$setup = "Z:\Images\" + $neededImage + "\setup.exe"
 & $setup
