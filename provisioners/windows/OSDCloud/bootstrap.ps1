@@ -41,12 +41,12 @@ Start-Sleep -Seconds 120
 
 Write-host "Starting bootstrap using raw powershell scripts"
 
-$worker_pool_id = 'win11-64-2009-hw-ref'
+$worker_pool_id = 'win11-64-2009-hw-ref-alpha'
 $role = "win11642009hwref"
 $base_image = 'win11642009hwref'
 $src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
-$src_Branch = 'win11ref'
+$src_Branch = 'win11refdev'
 $image_provisioner = 'OSDCloud'
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
