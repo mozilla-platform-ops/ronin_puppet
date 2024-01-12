@@ -3,6 +3,22 @@ param(
     [string]$deploymentaccess
 )
 
+$diskPartScript = @'
+    select disk 0
+    create partition primary size=15000
+    create partition primary
+    select partition 1
+    format quick fs=ntfs label="Partition1"
+    assign letter=Y
+    select partition 2
+    format quick fs=ntfs label="Partition2"
+    assign letter=C
+    exit
+'@
+
+$diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
+Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
+
 Set-Location X:\working
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
