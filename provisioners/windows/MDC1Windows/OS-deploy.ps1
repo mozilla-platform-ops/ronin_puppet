@@ -6,7 +6,27 @@ param(
 Set-Location X:\working
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
-Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\Storage"
+#Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\Storage"
+
+# Get all partitions
+$partitions = Get-Partition
+
+# Check if there are no partitions
+if ($partitions.Count -eq 0) {
+    # Get available disk space if no partitions exist
+    $availableSpace = Get-Disk | Where-Object { $_.OperationalStatus -eq 'Online' } | Measure-Object -Property Size -Sum
+    Write-Host "No partitions found. Available Disk Space: $($availableSpace.Sum / 1GB) GB"
+}
+else {
+    # Display information about each partition
+    foreach ($partition in $partitions) {
+        Write-Host "Partition $($partition.DriveLetter):"
+        Write-Host "   File System: $($partition.FileSystem)"
+        Write-Host "   Capacity: $($partition.Size / 1GB) GB"
+        Write-Host "   Free Space: $($partition.SizeRemaining / 1GB) GB"
+        Write-Host ""
+    }
+}
 
 $diskPartScript = @'
     select disk 0
