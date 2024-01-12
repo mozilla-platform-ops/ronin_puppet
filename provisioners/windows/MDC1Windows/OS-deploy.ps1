@@ -25,7 +25,7 @@ if ($partitions.Count -eq 0) {
     Write-Host "Primary partition size is $primary_size MB"
     Write-Host "Local Install Partition is $local_files_size MB"
 
-    $diskPartScript = @'
+    $diskPartScript = @"
         select disk 0
         create partition primary size=$primary_size
         create partition primary
@@ -36,7 +36,7 @@ if ($partitions.Count -eq 0) {
         format quick fs=ntfs label="Partition2"
         assign letter=C
         exit
-    '@
+    "@
 
     $diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
     Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
