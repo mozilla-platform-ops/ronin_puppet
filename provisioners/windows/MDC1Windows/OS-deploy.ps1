@@ -18,8 +18,8 @@ if ($partitions.Count -eq 0) {
     Write-Host "No partitions found. Available Disk Space: $($availableSpace.Sum / 1MB) MB"
 
     $local_files_size = 20480
-    $all_space = $($availableSpace.Sum / 1MB)
-    $primary_size = ($availableSpace.Sum - $local_files_size)
+    $all_space = [math]::Floor($availableSpace.Sum / 1MB)
+    $primary_size = ($all_space - $local_files_size)
 
     Write-Host "Primary partition size is $($primary_size / 1MB) MB"
 
