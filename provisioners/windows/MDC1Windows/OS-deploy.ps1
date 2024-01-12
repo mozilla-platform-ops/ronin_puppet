@@ -3,6 +3,11 @@ param(
     [string]$deploymentaccess
 )
 
+Set-Location X:\working
+Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
+Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
+Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\Storage"
+
 $diskPartScript = @'
     select disk 0
     create partition primary size=15000
@@ -17,11 +22,8 @@ $diskPartScript = @'
 '@
 
 $diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
-Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
+write-host Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
 
-Set-Location X:\working
-Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
-Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
 
 ## Mount Deployment share
 ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
