@@ -103,5 +103,12 @@ foreach ($pool in $YAML.pools) {
 ## It seems like the Z: drive needs to be access before script exits to presists
 dir Z:\
 
-$setup = "Z:\Images\" + $neededImage + "\setup.exe"
+$source_install = "Z:\Images\" + $neededImage
+$local_install = "Y:\"
+$setup = $local_install + + $neededImage + "\setup.exe"
+
+Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
+
+dir $local_install
+
 $setup
