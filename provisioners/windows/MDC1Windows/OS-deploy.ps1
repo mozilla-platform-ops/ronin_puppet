@@ -15,14 +15,15 @@ $partitions = Get-Partition
 if ($partitions.Count -eq 0) {
     # Get available disk space if no partitions exist
     $availableSpace = Get-Disk | Where-Object { $_.OperationalStatus -eq 'Online' } | Measure-Object -Property Size -Sum
-    Write-Host "No partitions found. Available Disk Space: $($availableSpace.Sum / 1MB) MB"
+    Write-Host "No partitions found."
 
     $local_files_size = 20480
     $all_space = [math]::Floor($availableSpace.Sum / 1MB)
     $primary_size = ($all_space - $local_files_size)
 
-    Write-Host "Primary partition size is $($primary_size / 1MB) MB"
-
+    Write-Host "Avilable space $all_space MB"
+    Write-Host "Primary partition size is $primary_size MB"
+    Write-Host "Local Install Partition is $local_files_size MB"
 }
 else {
     # Display information about each partition
