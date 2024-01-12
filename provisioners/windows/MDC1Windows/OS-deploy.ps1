@@ -105,7 +105,7 @@ dir Z:\
 
 $source_install = "Z:\Images\" + $neededImage
 $local_install = "Y:\"
-$setup = $local_install + + $neededImage + "\setup.exe"
+$setup = $local_install + $neededImage + "\setup.exe"
 
 Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
 
