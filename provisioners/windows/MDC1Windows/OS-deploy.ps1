@@ -61,6 +61,8 @@ $credential = New-Object System.Management.Automation.PSCredential($deployuser, 
 
 net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
 
+dir Z:\
+
 ## Get node name
 #Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 
