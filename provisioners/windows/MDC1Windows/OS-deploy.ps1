@@ -24,6 +24,22 @@ if ($partitions.Count -eq 0) {
     Write-Host "Avilable space $all_space MB"
     Write-Host "Primary partition size is $primary_size MB"
     Write-Host "Local Install Partition is $local_files_size MB"
+
+    $diskPartScript = @'
+        select disk 0
+        create partition primary size=$primary_size
+        create partition primary
+        select partition 1
+        format quick fs=ntfs label="Partition1"
+        assign letter=Y
+        select partition 2
+        format quick fs=ntfs label="Partition2"
+        assign letter=C
+        exit
+    '@
+
+    $diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
+    Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
 }
 else {
     # Display information about each partition
@@ -35,23 +51,6 @@ else {
         Write-Host ""
     }
 }
-
-$diskPartScript = @'
-    select disk 0
-    create partition primary size=15000
-    create partition primary
-    select partition 1
-    format quick fs=ntfs label="Partition1"
-    assign letter=Y
-    select partition 2
-    format quick fs=ntfs label="Partition2"
-    assign letter=C
-    exit
-'@
-
-$diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
-write-host Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
-
 
 ## Mount Deployment share
 ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
