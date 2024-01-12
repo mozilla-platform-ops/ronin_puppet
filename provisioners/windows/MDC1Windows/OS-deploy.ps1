@@ -31,12 +31,12 @@ if ($partitions.Count -eq 0) {
         create partition primary
         select partition 1
         format quick fs=ntfs label="Partition1"
-        assign letter=Y
+        assign letter=C
         select partition 2
         format quick fs=ntfs label="Partition2"
-        assign letter=C
+        assign letter=Y
         exit
-    "@
+"@
 
     $diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
     Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
