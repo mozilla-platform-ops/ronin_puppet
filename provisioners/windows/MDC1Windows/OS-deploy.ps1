@@ -34,7 +34,7 @@ if ($partitions.Count -eq 0) {
         assign letter=C
         select partition 2
         format quick fs=ntfs label="Partition2"
-        assign letter=Y
+        assign letter=E
         exit
 "@
 
@@ -106,10 +106,25 @@ foreach ($pool in $YAML.pools) {
 dir Z:\
 
 $source_install = "Z:\Images\" + $neededImage
-$local_install = "Y:\"
+$local_install = "E:\"
 $setup = $local_install + $neededImage + "\setup.exe"
 
-Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
+if (-not (Test-Path $setup)) {
+    ## Mount Deployment share
+    ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
+    ## net use will presist
+    $deploypw = ConvertTo-SecureString -String $deploymentaccess -AsPlainText -Force
+    $credential = New-Object System.Management.Automation.PSCredential($deployuser, $deploypw)
+    #New-PSDrive -Name Z -PSProvider FileSystem -Root \\mdt2022.ad.mozilla.com\deployments  -Credential $credential -Persist
+
+    net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
+
+    dir Z:\
+
+    Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
+
+    net use Z: /delete
+}
 
 dir $local_install
 
