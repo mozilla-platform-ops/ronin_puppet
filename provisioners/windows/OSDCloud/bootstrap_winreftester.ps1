@@ -48,6 +48,7 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
     pnputil.exe /add-driver "$($_.FullName)" /install
 }
 
+<# 
 ## Import dnsclient
 Import-Module "C:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 
@@ -57,7 +58,7 @@ $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-objec
 
 $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
 
-<# if ($null -eq $ResolvedName) {
+if ($null -eq $ResolvedName) {
     write-host "Computername did not resolve"
     pause
 }
@@ -66,7 +67,7 @@ if ($ResolvedName -notmatch "nuc") {
     write-host "Resolved name not match nuc: $resolvedname"
     pause
 }
- #>
+
 $ComputerName = if ($ResolvedName -match "\.") {
     ($ResolvedName -split "\.")[0]
 } else {
@@ -74,6 +75,7 @@ $ComputerName = if ($ResolvedName -match "\.") {
     $suffix = -join ((65..90) + (97..122) | Get-Random -Count 7 | ForEach-Object {[char]$_})
     "DESKTOP-$suffix"
 }
+ #>
 
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
