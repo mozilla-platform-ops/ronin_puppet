@@ -20,7 +20,7 @@ groups:
       - macmini-m2-4.test.releng.mslv.mozilla.com
     facts:
       puppet_role: pgo_1_t_osx
-  
+
   - name: pgo-3-b-osx
     targets:
       - ec2-52-35-152-252.us-west-2.compute.amazonaws.com
