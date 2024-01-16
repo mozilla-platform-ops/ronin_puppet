@@ -24,7 +24,7 @@ class roles_profiles::roles::applicationservices_3_b_osx_1015 {
     include ::roles_profiles::profiles::worker
     #include ::fw::roles::osx_taskcluster_worker_loaner
     #include ::macos_utils::uninstall_homebrew
-    include ::roles_profiles::profiles::pipconf
+    #include ::roles_profiles::profiles::pipconf
     include ::roles_profiles::profiles::macos_people_remover
     include ::roles_profiles::profiles::packages_installed
 }
