@@ -13,7 +13,7 @@ groups:
       - macmini-m2-2.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1300_m2
-  
+
   - name: pgo-1-t-osx
     targets:
       - macmini-m2-3.test.releng.mslv.mozilla.com
