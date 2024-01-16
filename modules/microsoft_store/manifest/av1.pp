@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class microsoft_store::av1 {
-  require microsoft_store::init
+  #require microsoft_store::init
   ## Puppet functions fails to apply without a reboot, hence the powershell exec step below
   exec { 'microsoft_store':
     command  => file('microsoft_store/install.ps1'),
