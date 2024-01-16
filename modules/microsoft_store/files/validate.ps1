@@ -1,8 +1,8 @@
 $check = Get-AppxPackage | Where-Object {$psitem.name -eq "Microsoft.AV1VideoExtension"}
 
-if (-not ([string]::IsNullOrEmpty($check))) {
-    exit 0
+if ($null -eq $check) {
+    exit 1
 }
 else {
-    exit 1
+    exit 0
 }
