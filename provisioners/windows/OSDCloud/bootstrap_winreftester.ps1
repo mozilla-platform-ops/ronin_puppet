@@ -48,7 +48,6 @@ Get-ChildItem -Path "C:\Drivers\NUCDrivers" -Recurse | ForEach-Object {
     pnputil.exe /add-driver "$($_.FullName)" /install
 }
 
-<# 
 ## Import dnsclient
 Import-Module "C:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 
@@ -75,7 +74,6 @@ $ComputerName = if ($ResolvedName -match "\.") {
     $suffix = -join ((65..90) + (97..122) | Get-Random -Count 7 | ForEach-Object {[char]$_})
     "DESKTOP-$suffix"
 }
- #>
 
 $PathPanther = 'C:\Windows\Panther'
 if (-NOT (Test-Path $PathPanther)) {
@@ -161,7 +159,7 @@ $UnattendXml = @"
                 </SynchronousCommand>               
                 <SynchronousCommand wcm:action="add">
                     <Description>RoninPuppet Bootstrap</Description>
-                    <CommandLine>powershell.exe -Command &quot;&amp; {IEX (IRM &apos;https://raw.githubusercontent.com/mozilla-platform-ops/ronin_puppet/win11refdev/provisioners/windows/OSDCloud/bootstrap.ps1&apos;)}&quot;</CommandLine>
+                    <CommandLine>powershell.exe -Command &quot;&amp; {IEX (IRM &apos;https://raw.githubusercontent.com/mozilla-platform-ops/ronin_puppet/win11ref/provisioners/windows/OSDCloud/bootstrap.ps1&apos;)}&quot;</CommandLine>
                     <RequiresUserInput>false</RequiresUserInput>
                     <Order>2</Order>
                 </SynchronousCommand>
