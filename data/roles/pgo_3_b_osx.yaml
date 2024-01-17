@@ -11,7 +11,7 @@ worker_metadata:
 worker:
   taskcluster_version: 55.3.4
   provider_type: standalone
-  worker_pool_id: releng-hardware/gpo-3-b-osx
+  worker_pool_id: releng-hardware/pgo-3-b-osx
   worker_group: macstadium-vegas
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"

@@ -23,7 +23,7 @@ class roles_profiles::roles::pgo_3_b_osx {
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
-    include ::roles_profiles::profiles::pipconf
+    #include ::roles_profiles::profiles::pipconf
     include ::roles_profiles::profiles::macos_people_remover
-    include ::roles_profiles::profiles::macos_tcc_perms
+    #include ::roles_profiles::profiles::macos_tcc_perms
 }
