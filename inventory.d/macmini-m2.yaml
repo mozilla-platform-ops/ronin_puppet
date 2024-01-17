@@ -11,7 +11,19 @@ groups:
     targets:
       - macmini-m2-1.test.releng.mslv.mozilla.com
       - macmini-m2-2.test.releng.mslv.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1300_m2
+
+  - name: gecko-1-b-osx-arm64
+    targets:
       - macmini-m2-3.test.releng.mslv.mozilla.com
       - macmini-m2-4.test.releng.mslv.mozilla.com
     facts:
-      puppet_role: gecko_t_osx_1300_m2
+      puppet_role: gecko_1_b_osx_arm64
+
+  - name: gecko-3-b-osx-arm64
+    targets:
+      - ec2-52-35-152-252.us-west-2.compute.amazonaws.com
+      - ec2-54-203-62-146.us-west-2.compute.amazonaws.com
+    facts:
+      puppet_role: gecko_3_b_osx_arm64
