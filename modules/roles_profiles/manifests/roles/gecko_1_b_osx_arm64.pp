@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::pgo_1_t_osx{
+class roles_profiles::roles::gecko_1_b_osx_arm64{
 
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::ntp
