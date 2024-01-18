@@ -404,7 +404,8 @@ switch ($puppet_exit) {
             "LAN-Win11-1.1.3.34.zip",
             "puppet-agent-6.28.0-x64.msi",
             "Git-2.37.3-64-bit.exe",
-            "azcopy.exe"
+            "azcopy.exe",
+            "Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
         ) | ForEach-Object {
             Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
         }
@@ -441,7 +442,8 @@ switch ($puppet_exit) {
             "LAN-Win11-1.1.3.34.zip",
             "puppet-agent-6.28.0-x64.msi",
             "Git-2.37.3-64-bit.exe",
-            "azcopy.exe"
+            "azcopy.exe",
+            "Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
         ) | ForEach-Object {
             Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
         }
