@@ -278,6 +278,31 @@ if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
     $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
 }
 
+## Install microsoft store extension
+If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle")) {
+    Write-Log -Message ('{0} :: Downloading av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+    $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+    $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+    $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+    
+    Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        "copy",
+        "https://roninpuppetassets.blob.core.windows.net/binaries/Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle",
+        "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
+    ) -Wait -NoNewWindow
+
+}
+
+$av1 = Get-AppxPackage | Where-Object {$psitem.name -eq "Microsoft.AV1VideoExtension"}
+
+if ($null -eq $av1) {
+    Add-AppxPackage -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
+}
+else {
+    Continuie
+}
+
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User") 
 
 ## Set registry options
