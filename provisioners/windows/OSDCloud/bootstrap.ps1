@@ -293,16 +293,16 @@ If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_ne
     ) -Wait -NoNewWindow
     Write-Log -Message ('{0} :: Downloaded av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-}
+    try {
+        Add-AppxPackage -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
+        Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Remove-Item -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -Force -Confirm:$false
+    }
+    catch {
+        Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name),$_) -severity 'DEBUG'
+    }
 
-$av1 = Get-AppxPackage | Where-Object {$psitem.name -eq "Microsoft.AV1VideoExtension"}
-
-if ([string]::IsNullOrEmpty($av1)) {
-    Add-AppxPackage -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
-    Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-}
-else {
-    Continue
 }
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User") 
@@ -404,8 +404,7 @@ switch ($puppet_exit) {
             "LAN-Win11-1.1.3.34.zip",
             "puppet-agent-6.28.0-x64.msi",
             "Git-2.37.3-64-bit.exe",
-            "azcopy.exe",
-            "Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
+            "azcopy.exe"
         ) | ForEach-Object {
             Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
         }
@@ -442,8 +441,7 @@ switch ($puppet_exit) {
             "LAN-Win11-1.1.3.34.zip",
             "puppet-agent-6.28.0-x64.msi",
             "Git-2.37.3-64-bit.exe",
-            "azcopy.exe",
-            "Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
+            "azcopy.exe"
         ) | ForEach-Object {
             Remove-Item -Path "$ENV:SystemDrive\$PSItem" -Confirm:$false -Force
         }
