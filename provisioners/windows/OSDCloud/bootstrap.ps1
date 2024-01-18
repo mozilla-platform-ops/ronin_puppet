@@ -297,7 +297,7 @@ If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_ne
 
 $av1 = Get-AppxPackage | Where-Object {$psitem.name -eq "Microsoft.AV1VideoExtension"}
 
-if ($null -eq $av1) {
+if ([string]::IsNullOrEmpty($av1)) {
     Add-AppxPackage -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
     Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 }
