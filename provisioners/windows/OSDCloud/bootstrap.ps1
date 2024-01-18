@@ -294,6 +294,7 @@ If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_ne
     Write-Log -Message ('{0} :: Downloaded av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
     try {
+        Write-Log -Message ('{0} :: Installing av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Add-AppxPackage -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
         Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Remove-Item -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -Force -Confirm:$false
