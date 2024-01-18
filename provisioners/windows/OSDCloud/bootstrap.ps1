@@ -291,6 +291,7 @@ If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_ne
         "https://roninpuppetassets.blob.core.windows.net/binaries/Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle",
         "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
     ) -Wait -NoNewWindow
+    Write-Log -Message ('{0} :: Downloaded av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
 }
 
@@ -301,7 +302,7 @@ if ($null -eq $av1) {
     Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 }
 else {
-    Continuie
+    Continue
 }
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User") 
@@ -341,6 +342,9 @@ if ($branch -ne $src_branch) {
     git checkout $src_branch
     git pull
     git config --global --add safe.directory "C:/ronin"
+}
+else {
+    git pull
 }
 
 ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
