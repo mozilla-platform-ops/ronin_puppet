@@ -61,17 +61,6 @@ else {
     }
 }
 
-## Mount Deployment share
-## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
-## net use will presist
-$deploypw = ConvertTo-SecureString -String $deploymentaccess -AsPlainText -Force
-$credential = New-Object System.Management.Automation.PSCredential($deployuser, $deploypw)
-#New-PSDrive -Name Z -PSProvider FileSystem -Root \\mdt2022.ad.mozilla.com\deployments  -Credential $credential -Persist
-
-net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
-
-dir Z:\
-
 ## Get node name
 #Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 
@@ -112,12 +101,11 @@ foreach ($pool in $YAML.pools) {
 }
 
 ## It seems like the Z: drive needs to be access before script exits to presists
-dir Z:\
 
 $source_install = "Z:\Images\" + $neededImage
 $local_install = "Y:\"
 $setup = $local_install + $neededImage + "\setup.exe"
-<#
+
 if (-not (Test-Path $setup)) {
     ## Mount Deployment share
     ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
@@ -126,15 +114,33 @@ if (-not (Test-Path $setup)) {
     $credential = New-Object System.Management.Automation.PSCredential($deployuser, $deploypw)
     #New-PSDrive -Name Z -PSProvider FileSystem -Root \\mdt2022.ad.mozilla.com\deployments  -Credential $credential -Persist
 
-    net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
+    $maxRetries = 20
+    $retryInterval = 30
+
+    Write-Host Mounting Deployment Share
+    for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
+        try
+            net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
+            break
+        }
+        catch {
+            Write-Host Unable to mount Deployment Share
+            Start-Sleep -Seconds $retryInterval
+        }
+    }
+    if ($retryCount -gt $maxRetries) {
+        Write-Host Failed to mount Deployment Share
+        exit 99
+    }
 
     dir Z:\
 
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
 
-    net use Z: /delete
+    #net use Z: /delete
 }
-#>
+
+dir Z:\
 dir $local_install
 
 $setup
