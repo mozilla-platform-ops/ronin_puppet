@@ -24,6 +24,7 @@ workerConfig:
   numberOfTasksToRun: 9999999
   publicIP: "<%= $facts['networking']['ip'] %>"
   requiredDiskSpaceMegabytes: 10240
+  runAfterUserCreation: "C:\\generic-worker\\task-user-init.cmd"
   sentryProject: "generic-worker"
   shutdownMachineOnIdle: false
   shutdownMachineOnInternalError: false
