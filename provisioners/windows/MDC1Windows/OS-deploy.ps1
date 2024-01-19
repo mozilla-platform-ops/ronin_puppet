@@ -112,7 +112,7 @@ if (!(Test-Path $setup)) {
     Write-Host Will resync
     if ((Get-ChildItem -Path $local_install -Force).Count -gt 0) {
         Write-Host Wrong install files - REMOVING
-        Remove-Item -Path "${local_install}:\*" -Recurse -Force
+        Remove-Item -Path "${local_install}*" -Recurse -Force
     }
     ## Mount Deployment share
     ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
