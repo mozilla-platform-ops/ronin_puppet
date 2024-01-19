@@ -154,7 +154,7 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
     $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue 
 }
 
-## Check if C:\Bootstrap exists, and if it doesn't, create it
+## Check if C:\RelSRE exists, and if it doesn't, create it
 if (-Not (Test-Path "$env:systemdrive\RelSRE")) {
     ## Setup logging and create c:\bootstrap
     Write-Log -message  ('{0} :: Create C:\RelSRE' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
