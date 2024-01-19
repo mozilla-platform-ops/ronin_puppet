@@ -107,7 +107,7 @@ $local_install = "Y:\"
 $OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
 
-if ((!(Test-Path $setup)) {
+if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
     Write-Host Will resync
     if ((Get-ChildItem -Path $local_install -Force).Count -gt 0) {
