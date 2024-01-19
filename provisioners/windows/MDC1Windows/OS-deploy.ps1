@@ -121,7 +121,7 @@ foreach ($pool in $YAML.pools) {
 dir Z:\
 
 $source_install = "Z:\Images\" + $neededImage
-$local_install = "E:\"
+$local_install = "Y:\"
 $setup = $local_install + $neededImage + "\setup.exe"
 <#
 if (-not (Test-Path $setup)) {
