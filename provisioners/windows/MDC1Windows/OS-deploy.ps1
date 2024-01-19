@@ -42,30 +42,15 @@ if ($partitions.Count -eq 0) {
     Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
 }
 else {
-    # Display information about each partition
-    $volumes = Get-Volume
+    $part1 = Get-Partition -PartitionNumber 1
+    $part2 = Get-Partition -PartitionNumber 2
 
-    foreach ($volume in $volumes) {
-        # Get the partition number
-        $partitionNumber = $volume.Path.Split('\')[-1]
-
-        # Check if it's Partition 1
-        if ($partitionNumber -eq 'Partition1') {
-            if ($volume.DriveLetter -ne 'C') {
-                $errorOccurred = $true
-                Write-Error "Error: Partition 1 should have drive letter 'C', but it is $($volume.DriveLetter)"
-            }
-        }
-        # Check if it's Partition 2
-        elseif ($partitionNumber -eq 'Partition2') {
-            # Check if Partition 2 is not 'Y'
-            if ($volume.DriveLetter -ne 'Y') {
-                $newDriveLetter = 'Y'
-                Rename-Partition -DriveLetter $volume.DriveLetter -NewDriveLetter $newDriveLetter -Confirm:$false
-
-                Write-Host "Renamed volume $($volume.FileSystemLabel) from $($volume.DriveLetter) to $newDriveLetter"
-            }
-        }
+    if ($part1.DriveLetter -ne 'C') {
+        write-host OS disk is wrong
+    }
+    if ($part2.DriveLetter -ne 'Y') {
+        Rename-Partition -PartitionNumber 2 -NewDriveLetter 'Y'
+        Write-Host Relabeling partition 2 to Y
     }
     foreach ($partition in $partitions) {
         Write-Host "Partition $($partition.DriveLetter):"
