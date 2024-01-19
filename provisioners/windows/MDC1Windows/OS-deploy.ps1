@@ -34,7 +34,7 @@ if ($partitions.Count -eq 0) {
         assign letter=C
         select partition 2
         format quick fs=ntfs label="Partition2"
-        assign letter=E
+        assign letter=Y
         exit
 "@
 
@@ -43,6 +43,21 @@ if ($partitions.Count -eq 0) {
 }
 else {
     # Display information about each partition
+
+    $volumes = Get-Volume
+
+    foreach ($volume in $volumes) {
+        if ($volume.DriveLetter -ne 'Y' -and $volume.DriveLetter) {
+            $partitionNumber = $volume.Path.Split('\')[-1]
+
+            if ($partitionNumber -eq 'Partition2') {
+                $newDriveLetter = 'Y'
+                Rename-Partition -DriveLetter $volume.DriveLetter -NewDriveLetter $newDriveLetter -Confirm:$false
+
+                Write-Host "Renamed volume $($volume.FileSystemLabel) from $($volume.DriveLetter) to $newDriveLetter"
+            }
+        }
+    }
     foreach ($partition in $partitions) {
         Write-Host "Partition $($partition.DriveLetter):"
         Write-Host "   File System: $($partition.FileSystem)"
