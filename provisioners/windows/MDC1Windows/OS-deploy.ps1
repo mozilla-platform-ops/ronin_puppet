@@ -49,7 +49,7 @@ else {
         write-host OS disk is wrong
     }
     if ($part2.DriveLetter -ne 'Y') {
-        Rename-Partition -PartitionNumber 2 -NewDriveLetter 'Y'
+        Set-Partition -DriveLetter 'Y' -PartitionNumber 2
         Write-Host Relabeling partition 2 to Y
     }
     foreach ($partition in $partitions) {
