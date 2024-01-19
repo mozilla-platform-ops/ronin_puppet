@@ -53,6 +53,7 @@ else {
             if ($partitionNumber -eq 'Partition2') {
                 $newDriveLetter = 'Y'
                 Rename-Partition -DriveLetter $volume.DriveLetter -NewDriveLetter $newDriveLetter -Confirm:$false
+                Write-Host Rename-Partition -DriveLetter $volume.DriveLetter -NewDriveLetter $newDriveLetter -Confirm:$false
 
                 Write-Host "Renamed volume $($volume.FileSystemLabel) from $($volume.DriveLetter) to $newDriveLetter"
             }
