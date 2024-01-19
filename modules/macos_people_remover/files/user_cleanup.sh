@@ -1,6 +1,6 @@
 #!/bin/bash
 
-peopleToRemove=("dhouse" "jwatkins" "mgoossens" "rthijssen")
+peopleToRemove=("dhouse" "jwatkins" "mgoossens" "rthijssen" "andrej")
 
 for value in "${peopleToRemove[@]}"
 do
