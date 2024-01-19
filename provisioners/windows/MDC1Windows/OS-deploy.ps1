@@ -43,17 +43,25 @@ if ($partitions.Count -eq 0) {
 }
 else {
     # Display information about each partition
-
     $volumes = Get-Volume
 
     foreach ($volume in $volumes) {
-        if ($volume.DriveLetter -ne 'Y' -and $volume.DriveLetter) {
-            $partitionNumber = $volume.Path.Split('\')[-1]
+        # Get the partition number
+        $partitionNumber = $volume.Path.Split('\')[-1]
 
-            if ($partitionNumber -eq 'Partition2') {
+        # Check if it's Partition 1
+        if ($partitionNumber -eq 'Partition1') {
+            if ($volume.DriveLetter -ne 'C') {
+                $errorOccurred = $true
+                Write-Error "Error: Partition 1 should have drive letter 'C', but it is $($volume.DriveLetter)"
+            }
+        }
+        # Check if it's Partition 2
+        elseif ($partitionNumber -eq 'Partition2') {
+            # Check if Partition 2 is not 'Y'
+            if ($volume.DriveLetter -ne 'Y') {
                 $newDriveLetter = 'Y'
                 Rename-Partition -DriveLetter $volume.DriveLetter -NewDriveLetter $newDriveLetter -Confirm:$false
-                Write-Host Rename-Partition -DriveLetter $volume.DriveLetter -NewDriveLetter $newDriveLetter -Confirm:$false
 
                 Write-Host "Renamed volume $($volume.FileSystemLabel) from $($volume.DriveLetter) to $newDriveLetter"
             }
