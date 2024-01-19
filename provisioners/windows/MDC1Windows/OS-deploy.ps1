@@ -108,7 +108,7 @@ dir Z:\
 $source_install = "Z:\Images\" + $neededImage
 $local_install = "E:\"
 $setup = $local_install + $neededImage + "\setup.exe"
-
+#>
 if (-not (Test-Path $setup)) {
     ## Mount Deployment share
     ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
@@ -125,7 +125,7 @@ if (-not (Test-Path $setup)) {
 
     net use Z: /delete
 }
-
+#>
 dir $local_install
 
 $setup
