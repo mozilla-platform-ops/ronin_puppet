@@ -104,9 +104,11 @@ foreach ($pool in $YAML.pools) {
 
 $source_install = "Z:\Images\" + $neededImage
 $local_install = "Y:\"
+$OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
 
-if (-not (Test-Path $setup)) {
+if ((!(Test-Path $setup)) {
+    Remove-Item -Path "$local_install:\*" -Recurse -Force
     ## Mount Deployment share
     ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
     ## net use will presist
