@@ -154,6 +154,15 @@ if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
     $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue 
 }
 
+## Check if C:\Bootstrap exists, and if it doesn't, create it
+if (-Not (Test-Path "$env:systemdrive\RelSRE")) {
+    ## Setup logging and create c:\bootstrap
+    Write-Log -message  ('{0} :: Create C:\RelSRE' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\RelSRE" -ErrorAction SilentlyContinue 
+    icacls "C:\RelSRE" /grant 'Users:(OI)(CI)R'
+    icacls 'C:\RelSRE' /grant 'Administrators:(OI)(CI)F'
+}
+
 ## Setup scheduled task if not setup already
 if (-Not (Test-Path "$env:systemdrive\BootStrap\bootstrap.ps1")) {
     Write-Log -Message ('{0} :: Downloading bootstrap script to c:\bootstrap on {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
@@ -279,7 +288,7 @@ if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
 }
 
 ## Install microsoft store extension
-If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle")) {
+If (-Not (Test-Path "$env:systemdrive\RelSRE\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle")) {
     Write-Log -Message ('{0} :: Downloading av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
     $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
@@ -289,11 +298,11 @@ If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_ne
     Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
         "copy",
         "https://roninpuppetassets.blob.core.windows.net/binaries/Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle",
-        "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
+        "$env:systemdrive\RelSRE\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
     ) -Wait -NoNewWindow
     Write-Log -Message ('{0} :: Downloaded av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-    try {
+<#     try {
         Write-Log -Message ('{0} :: Installing av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Add-AppxPackage -Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
         Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -302,7 +311,7 @@ If (-Not (Test-Path "$env:systemdrive\Microsoft.AV1VideoExtension_1.1.62361.0_ne
     catch {
         Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name),$_) -severity 'DEBUG'
-    }
+    } #>
 
 }
 

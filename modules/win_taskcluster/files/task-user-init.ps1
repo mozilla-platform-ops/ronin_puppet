@@ -48,6 +48,7 @@ $currentuser = whoami.exe
 $caption = ((Get-WmiObject Win32_OperatingSystem).caption)
 $caption = $caption.ToLower()
 $os_caption = $caption -replace ' ', '_'
+$base_image = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name "role"
 
 if ($os_caption -like "*windows_10*") {
     $os_version = ( -join ( "win_10_", $release_id))
@@ -100,7 +101,7 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell:::{3080F90D-D7AD-11D9-BD98-0000947B0257} -Verb MinimizeAll
+        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
         $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
         if ($d -ne 0) {
             Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -127,7 +128,7 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell:::{3080F90D-D7AD-11D9-BD98-0000947B0257} -Verb MinimizeAll
+        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
         $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
         if ($d -ne 0) {
             Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -139,4 +140,23 @@ switch ($os_version) {
         git config --global --add safe.directory '*'
     }
     Default {}
+}
+
+## do stuff based on the role
+switch ($base_image) {
+    "win11642009hwref" {
+        ## Install appx package for av1 extension
+        try {
+            Write-Log -Message ('{0} :: Installing av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Add-AppxPackage -Path "$env:systemdrive\RelSRE\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
+            Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+        catch {
+            Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
+        } 
+    }
+    default {
+        continue
+    }
 }
