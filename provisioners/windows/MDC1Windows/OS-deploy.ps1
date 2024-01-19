@@ -119,7 +119,7 @@ if (-not (Test-Path $setup)) {
 
     Write-Host Mounting Deployment Share
     for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
-        try
+        try {
             net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
             break
         }
