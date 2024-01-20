@@ -147,7 +147,6 @@ if (!(Test-Path $setup)) {
     #net use Z: /delete
 }
 
-dir Z:\
 dir $local_install
 
 $setup
