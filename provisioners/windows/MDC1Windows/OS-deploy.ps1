@@ -144,7 +144,8 @@ if (!(Test-Path $setup)) {
 
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
 
-    #net use Z: /delete
+    Write-Host Disconecting Deployment Share
+    net use Z: /delete
 }
 
 dir $local_install
