@@ -13,6 +13,9 @@ fi
 current_user=$(id -u -n)
 semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
 semaphore_version="1"
+# Get current version of Safari.app
+x='/usr/libexec/PlistBuddy -c "print :CFBundleShortVersionString" /Applications/Safari.app/Contents/Info.plist'
+y=$(eval "$x")
 mkdir -p "$(dirname "$semaphore_file")"
 touch "$semaphore_file"
 if [[ "$(cat "$semaphore_file")" == "$semaphore_version" ]]; then
@@ -22,13 +25,15 @@ else
   echo "$0: running..."
 fi
 
-if csrutil status | grep -q 'disabled'; then
+if csrutil status | grep -q 'disabled' && $y < 17.0; then
     # TCC DB changes moved elsewhere
 
     # issue: code below will disable/enable 'allow remote automation'
     #   - no way to 'enable' only 'click'
     #      see '(click menu item "Allow Remote Automation")' below
     #   - current solution: semaphore above
+
+     # Tested against Safari 16.5 on macOS Ventura 13.4
     osascript -e '
       tell application "System Events"
         tell application "Safari" to activate
@@ -48,6 +53,45 @@ if csrutil status | grep -q 'disabled'; then
           delay 5
           click menu item "Allow Remote Automation" of menu 1 of menu bar item "Develop" of menu bar 1
           delay 5
+        end tell
+      end tell'
+
+    # `sudo safaridriver --enable` enable done somewhere else
+
+fi
+
+if csrutil status | grep -q 'disabled' && $y > 17.0; then
+    # TCC DB changes moved elsewhere
+
+    # issue: code below will disable/enable 'allow remote automation'
+    #   - no way to 'enable' only 'click'
+    #      see '(click menu item "Allow Remote Automation")' below
+    #   - current solution: semaphore above
+
+      # Tested against Safari 17.2.1 on macOS Ventura 13.6.3
+
+    osascript -e '
+      tell application "System Events"
+        tell application "Safari" to activate
+        delay 15
+        tell process "Safari"
+          set frontmost to true
+          delay 5
+          click menu item "Settings…" of menu 1 of menu bar item "Safari" of menu bar 1
+          delay 5
+          click button "Advanced" of toolbar 1 of window 1
+          delay 5
+          tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
+            if value is 0 then click it
+            delay 5
+          end tell
+          delay 5
+          click button "Developer" of toolbar 1 of window 1
+          delay 5
+          tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
+            if value is 0 then click it
+            delay 5
+          end tell
         end tell
       end tell'
 
