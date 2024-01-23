@@ -150,5 +150,5 @@ if (!(Test-Path $setup)) {
 }
 
 dir $local_install
-
+Set-Location -Path $OS_files
 Start-Process -FilePath $setup -ArgumentList "/unattend:autounattend.xml"
