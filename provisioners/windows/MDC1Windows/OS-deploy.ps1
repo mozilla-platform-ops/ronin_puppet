@@ -26,17 +26,19 @@ if ($partitions.Count -eq 0) {
     Write-Host "Local Install Partition is $local_files_size MB"
 
     $diskPartScript = @"
-        select disk 0
-        convert gpt
-        create partition primary size=$primary_size
-        create partition primary
-        select partition 1
-        format quick fs=ntfs label="Partition1"
-        assign letter=C
-        select partition 2
-        format quick fs=ntfs label="Partition2"
-        assign letter=Y
-        exit
+    "select disk $diskNumber",
+    "clean",
+    "convert gpt",
+    "create partition efi size=100",
+    "format fs=fat32 label=EFI",
+    "assign letter=S",
+    "create partition msr size=16",
+    "create partition primary size=$primary_size",,
+    "format fs=ntfs quick",
+    "assign letter=C",
+    "create partition primary size=20480",
+    "format fs=ntfs quick label=Y",
+    "assign letter=Y"
 "@
 
     $diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
