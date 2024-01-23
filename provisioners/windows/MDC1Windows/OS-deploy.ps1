@@ -106,6 +106,7 @@ $source_install = "Z:\Images\" + $neededImage
 $local_install = "Y:\"
 $OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
+Set-Location -Path $OS_files
 
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
@@ -150,4 +151,4 @@ if (!(Test-Path $setup)) {
 
 dir $local_install
 
-$setup
+$setup /unattend:autounattend.xml
