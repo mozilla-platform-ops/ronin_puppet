@@ -46,8 +46,8 @@ if ($partitions.Count -eq 0) {
     Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
 }
 else {
-    $part1 = Get-Partition -PartitionNumber 1
-    $part2 = Get-Partition -PartitionNumber 2
+    $part1 = Get-Partition -PartitionNumber 3
+    $part2 = Get-Partition -PartitionNumber 4
 
     if ($part1.DriveLetter -ne 'C') {
         write-host OS disk is wrong
