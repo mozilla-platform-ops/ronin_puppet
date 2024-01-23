@@ -37,7 +37,8 @@ if ($partitions.Count -eq 0) {
         format fs=ntfs quick
         assign letter=C
         create partition primary size=20480
-        format fs=ntfs quick label=Y
+        format fs=ntfs quick
+        assign letter=Y
         exit
 "@
 
