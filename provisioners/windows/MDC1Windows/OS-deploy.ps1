@@ -28,6 +28,7 @@ if ($partitions.Count -eq 0) {
     $diskPartScript = @"
         select disk 0
         create partition primary size=$primary_size
+        convert gpt
         create partition primary
         select partition 1
         format quick fs=ntfs label="Partition1"
