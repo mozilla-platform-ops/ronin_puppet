@@ -17,7 +17,7 @@ if ($partitions.Count -eq 0) {
     $availableSpace = Get-Disk | Where-Object { $_.OperationalStatus -eq 'Online' } | Measure-Object -Property Size -Sum
     Write-Host "No partitions found."
 
-    $local_files_size = 20480
+    $local_files_size = 21480
     $all_space = [math]::Floor($availableSpace.Sum / 1MB)
     $primary_size = ($all_space - $local_files_size)
 
@@ -26,7 +26,7 @@ if ($partitions.Count -eq 0) {
     Write-Host "Local Install Partition is $local_files_size MB"
 
     $diskPartScript = @"
-        select disk $diskNumber,
+        select disk 0,
         clean,
         convert gpt,
         create partition efi size=100,
