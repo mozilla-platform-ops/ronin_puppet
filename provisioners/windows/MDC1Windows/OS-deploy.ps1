@@ -155,5 +155,5 @@ if (!(Test-Path $setup)) {
 
 dir $local_install
 Set-Location -Path $OS_files
-write-host Start-Process -FilePath $setup -ArgumentList "/unattend:autounattend.xml"
-Start-Process -FilePath $setup -ArgumentList "/unattend:autounattend.xml", "/imageindex 5"
+write-host Start-Process -FilePath $setup -ArgumentList "/unattend:autounattend.xml", "/imageindex 5"
+write-host cmd /c $setup /unattend:autounattend.xml /imageindex 5
