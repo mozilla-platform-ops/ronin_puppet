@@ -86,10 +86,10 @@ Write-Host $shortname
 $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
 
 foreach ($pool in $YAML.pools) {
-    $WorkerPool = $pool.name
     foreach ($node in $pool.nodes) {
         if ($node -eq $shortname) {
             $neededImage = $pool.image
+            $WorkerPool = $pool.name
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
             break
@@ -99,6 +99,7 @@ foreach ($pool in $YAML.pools) {
         } else {
             $defaultPool = $YAML.pools | Where-Object { $_.name -eq "Default" }
             $neededImage = $defaultPool.image
+            $WorkerPool = $pool.name
             Write-Output = "Node not found. defualting"
             Write-Output "The image for the 'Default' pool is: $neededImage"
         }
