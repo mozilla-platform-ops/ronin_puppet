@@ -90,6 +90,9 @@ foreach ($pool in $YAML.pools) {
         if ($node -eq $shortname) {
             $neededImage = $pool.image
             $WorkerPool = $pool.name
+            $src_Organisation = $pool.src_Organisation
+            $src_Repository = $pool.src_Repository
+            $src_Branch = $pool.src_Branch
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
             break
