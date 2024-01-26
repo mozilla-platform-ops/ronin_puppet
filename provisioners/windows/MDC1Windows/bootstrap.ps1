@@ -44,7 +44,7 @@ param (
     [string] $src_Organisation,
     [string] $src_Repository,
     [string] $src_Branch,
-    [string] $image_provisioner = 'OSDCloud'
+    [string] $image_provisioner = 'MDC1Windows'
 )
 
 Start-Sleep -Seconds 120

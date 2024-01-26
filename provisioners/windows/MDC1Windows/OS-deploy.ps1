@@ -108,15 +108,19 @@ foreach ($pool in $YAML.pools) {
 
 ## It seems like the Z: drive needs to be access before script exits to presists
 
-$source_install = "Z:\Images\" + $neededImage
+$source_dir = "Z:\"
 $local_install = "D:\"
+$source_install = $source_dir + "Images\" + $neededImage
 $OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
 $secret_dir = $local_install + "secrets"
 $secret_file = $secret_dir + "\vault.yaml"
-$source_secrets = "Z:\secrets\" + $WorkerPool + ".yaml"
-$source_AZsecrets = "Z:\secrets\" + $WorkerPool + "azcredentials.yaml"
+$source_secrets = $source_dir + "secrets\" + $WorkerPool + ".yaml"
+$source_AZsecrets = $source_dir + "secrets\" + $WorkerPool + "azcredentials.yaml"
 $AZsecret_file = $secret_dir + "\azcredentials.yaml"
+$source_scripts = $source_dir + "scripts\"
+$local_scripts = $local_install + "scripts\"
+
 
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
@@ -157,6 +161,7 @@ if (!(Test-Path $setup)) {
     New-Item -ItemType Directory $secret_dir
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
+    Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
 
 
     Write-Host Disconecting Deployment Share
