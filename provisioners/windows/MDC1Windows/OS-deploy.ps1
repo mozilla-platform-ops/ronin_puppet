@@ -112,7 +112,7 @@ $source_install = "Z:\Images\" + $neededImage
 $local_install = "Y:\"
 $OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
-$secret_dir = $local_instal + "secrets"
+$secret_dir = $local_install + "secrets"
 $secret_file = $secret_dir + "\vault.yaml"
 $source_secrets = "Z:\secrets\" + $WorkerPool + ".yaml"
 
