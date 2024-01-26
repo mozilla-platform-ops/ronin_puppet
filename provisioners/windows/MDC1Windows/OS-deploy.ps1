@@ -151,9 +151,9 @@ if (!(Test-Path $setup)) {
 
     dir Z:\
 
-    write-host Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
-    write-host New-Item -ItemType Directory $secret_dir
-    write-host Copy-Item -Path $source_secrets -Destination $secret_file -Force
+    Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
+    New-Item -ItemType Directory $secret_dir
+    Copy-Item -Path $source_secrets -Destination $secret_file -Force
 
 
     Write-Host Disconecting Deployment Share
