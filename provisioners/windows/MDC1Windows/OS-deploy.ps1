@@ -110,7 +110,9 @@ $source_install = "Z:\Images\" + $neededImage
 $local_install = "Y:\"
 $OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
-#Set-Location -Path $OS_files
+$secret_dir = $local_instal + "secrets"
+$secret_file = $secret_dir + "\vault.yaml"
+$source_secrets = "Z:\secrets\" + $pool + ".yaml"
 
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
@@ -148,6 +150,9 @@ if (!(Test-Path $setup)) {
     dir Z:\
 
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
+    New-Item -ItemType Directory $secret_dir
+    Copy-Item -Path $source_secrets -Destination $secret_file -Force
+
 
     Write-Host Disconecting Deployment Share
     net use Z: /delete
