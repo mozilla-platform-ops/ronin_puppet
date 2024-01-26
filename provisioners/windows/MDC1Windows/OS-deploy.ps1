@@ -52,9 +52,9 @@ else {
     if ($part1.DriveLetter -ne 'C') {
         write-host OS disk is wrong
     }
-    if ($part2.DriveLetter -ne 'Y') {
+    if ($part2.DriveLetter -ne 'D') {
         Set-Partition -DriveLetter $part2.DriveLetter -NewDriveLetter Y
-        Write-Host Relabeling partition 2 to Y
+        Write-Host Relabeling partition 2 to D
     }
     foreach ($partition in $partitions) {
         Write-Host "Partition $($partition.DriveLetter):"
@@ -109,7 +109,7 @@ foreach ($pool in $YAML.pools) {
 ## It seems like the Z: drive needs to be access before script exits to presists
 
 $source_install = "Z:\Images\" + $neededImage
-$local_install = "Y:\"
+$local_install = "D:\"
 $OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
 $secret_dir = $local_install + "secrets"
