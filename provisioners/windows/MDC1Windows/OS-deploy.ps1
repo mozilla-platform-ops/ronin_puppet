@@ -90,6 +90,7 @@ foreach ($pool in $YAML.pools) {
         if ($node -eq $shortname) {
             $neededImage = $pool.image
             $WorkerPool = $pool.name
+            $role = $WorkerPool -replace "-", ""
             $src_Organisation = $pool.src_Organisation
             $src_Repository = $pool.src_Repository
             $src_Branch = $pool.src_Branch
@@ -103,6 +104,11 @@ foreach ($pool in $YAML.pools) {
             $defaultPool = $YAML.pools | Where-Object { $_.name -eq "Default" }
             $neededImage = $defaultPool.image
             $WorkerPool = $pool.name
+            $WorkerPool = $pool.name
+            $role = $WorkerPool -replace "-", ""
+            $src_Organisation = $pool.src_Organisation
+            $src_Repository = $pool.src_Repository
+            $src_Branch = $pool.src_Branch
             Write-Output = "Node not found. defualting"
             Write-Output "The image for the 'Default' pool is: $neededImage"
         }
@@ -165,7 +171,22 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
+    $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
+    $replacements = @(
+        @{ OldString = "WorkerPoolId"; NewString = "NewString1" },
+        @{ OldString = "1Role"; NewString = "NewString2" },
+        @{ OldString = "SRCOrganisation"; NewString = "NewString2" },
+        @{ OldString = "SRCRepository"; NewString = "NewString2" },
+        @{ OldString = "SRCBranch"; NewString = "NewString2" }
+)
+
+    $content = Get-Content -Path
+    foreach ($replacement in $replacements) {
+        $content = $content -replace $replacement.OldString, $replacement.NewString
+    }
+
+    Set-Content -Path $Get_Bootstrap  -Value $content
 
     Write-Host Disconecting Deployment Share
     net use Z: /delete
