@@ -115,6 +115,8 @@ $setup = $local_install + $neededImage + "\setup.exe"
 $secret_dir = $local_install + "secrets"
 $secret_file = $secret_dir + "\vault.yaml"
 $source_secrets = "Z:\secrets\" + $WorkerPool + ".yaml"
+$source_AZsecrets = "Z:\secrets\" + $WorkerPool + "azcredentials.yaml"
+$AZsecret_file = $secret_dir + "\azcredentials.yaml"
 
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
@@ -154,6 +156,7 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
     New-Item -ItemType Directory $secret_dir
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
+    Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
 
 
     Write-Host Disconecting Deployment Share
