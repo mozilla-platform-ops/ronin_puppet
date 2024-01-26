@@ -86,12 +86,12 @@ Write-Host $shortname
 $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
 
 foreach ($pool in $YAML.pools) {
+    $WorkerPool = $pool.name
     foreach ($node in $pool.nodes) {
         if ($node -eq $shortname) {
             $neededImage = $pool.image
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
-            $WorkerPool = $pool.name
             break
         }
         if ($found) {
@@ -150,9 +150,9 @@ if (!(Test-Path $setup)) {
 
     dir Z:\
 
-    Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
-    New-Item -ItemType Directory $secret_dir
-    Copy-Item -Path $source_secrets -Destination $secret_file -Force
+    write-host Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
+    write-host New-Item -ItemType Directory $secret_dir
+    write-host Copy-Item -Path $source_secrets -Destination $secret_file -Force
 
 
     Write-Host Disconecting Deployment Share
