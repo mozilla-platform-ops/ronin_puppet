@@ -91,7 +91,7 @@ foreach ($pool in $YAML.pools) {
             $neededImage = $pool.image
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
-            $worker-pool = $pool.name
+            $WorkerPool = $pool.name
             break
         }
         if ($found) {
@@ -113,7 +113,7 @@ $OS_files = $local_install + $neededImage
 $setup = $local_install + $neededImage + "\setup.exe"
 $secret_dir = $local_instal + "secrets"
 $secret_file = $secret_dir + "\vault.yaml"
-$source_secrets = "Z:\secrets\" + $worker-pool + ".yaml"
+$source_secrets = "Z:\secrets\" + $WorkerPool + ".yaml"
 
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
