@@ -174,11 +174,11 @@ if (!(Test-Path $setup)) {
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
     $replacements = @(
-        @{ OldString = "WorkerPoolId"; NewString = "NewString1" },
-        @{ OldString = "1Role"; NewString = "NewString2" },
-        @{ OldString = "SRCOrganisation"; NewString = "NewString2" },
-        @{ OldString = "SRCRepository"; NewString = "NewString2" },
-        @{ OldString = "SRCBranch"; NewString = "NewString2" }
+        @{ OldString = "WorkerPoolId"; NewString = $WorkerPool },
+        @{ OldString = "1Role"; NewString = $role },
+        @{ OldString = "SRCOrganisation"; NewString = $src_Organisation },
+        @{ OldString = "SRCRepository"; NewString = $src_Repository },
+        @{ OldString = "SRCBranch"; NewString = $src_Branch }
 )
 
     $content = Get-Content -Path $Get_Bootstrap
