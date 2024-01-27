@@ -5,7 +5,7 @@ pools:
     image: "win11-2009-NUC-01-25-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
-    src_Branch: " win11hardware"
+    src_Branch: "win11hardware"
     nodes:
     - nuc-33432
   - name: "win11-64-2009-hw-ref"

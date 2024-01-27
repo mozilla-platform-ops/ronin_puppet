@@ -181,8 +181,6 @@ if (!(Test-Path $setup)) {
         @{ OldString = "ImageProvisioner"; NewString = "MDC1Windows" },
         @{ OldString = "SRCBranch"; NewString = $src_Branch }
 )
-write-host CEHCK HERE
-write-host $replacements
     $content = Get-Content -Path $Get_Bootstrap
     foreach ($replacement in $replacements) {
         $content = $content -replace $replacement.OldString, $replacement.NewString
