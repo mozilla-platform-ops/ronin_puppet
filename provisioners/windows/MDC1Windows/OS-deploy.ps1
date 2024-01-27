@@ -178,6 +178,7 @@ if (!(Test-Path $setup)) {
         @{ OldString = "1Role"; NewString = $role },
         @{ OldString = "SRCOrganisation"; NewString = $src_Organisation },
         @{ OldString = "SRCRepository"; NewString = $src_Repository },
+        @{ OldString = "ImageProvisioner"; NewString = "MDC1Windows" },
         @{ OldString = "SRCBranch"; NewString = $src_Branch }
 )
 
