@@ -181,7 +181,7 @@ if (!(Test-Path $setup)) {
         @{ OldString = "SRCBranch"; NewString = "NewString2" }
 )
 
-    $content = Get-Content -Path
+    $content = Get-Content -Path $Get_Bootstrap
     foreach ($replacement in $replacements) {
         $content = $content -replace $replacement.OldString, $replacement.NewString
     }
