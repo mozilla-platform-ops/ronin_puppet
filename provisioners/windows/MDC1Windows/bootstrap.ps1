@@ -37,7 +37,7 @@ function Write-Log {
     }
 }
 
-param (
+param(
     [string] $worker_pool_id,
     [string] $role,
     [string] $src_Organisation,
