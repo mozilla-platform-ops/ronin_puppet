@@ -73,6 +73,7 @@ function Setup-Logging {
 				if (Test-Path $nxlog_dir) {
                     Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
                     Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
+                    break
 				}
 			}
 		}
