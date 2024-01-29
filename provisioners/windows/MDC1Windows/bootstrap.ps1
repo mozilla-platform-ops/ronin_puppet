@@ -45,7 +45,7 @@ function Write-Log {
         Write-Host  -object $message -ForegroundColor $fc
     }
 }
-exit
+
 function Setup-Logging {
     param (
         [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
@@ -96,7 +96,7 @@ function Setup-Logging {
 			[System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
 			exit 99
 		}
-
+pause
 		Restart-Service -Name nxlog -force
 	}
     end {
