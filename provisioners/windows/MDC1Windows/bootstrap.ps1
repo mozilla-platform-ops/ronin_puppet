@@ -50,7 +50,7 @@ function Setup-Logging {
     param (
         [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/",
         [string] $local_dir = "$env:systemdrive\BootStrap",
-        [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
+        [string] $nxlog_msi = "nxlog-ce-3.2.2329.msi",
         [string] $nxlog_conf = "nxlog.conf",
         [string] $nxlog_pem  = "papertrail-bundle.pem",
         [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
@@ -70,11 +70,13 @@ function Setup-Logging {
 				} elseif (!(Test-Path $nxlog_dir\)) {
 					msiexec /i $local_dir\$nxlog_msi /passive
 				}
-				if (!(Test-Path $nxlog_dir\conf\$nxlog_conf)) {
-					Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
-				}
-				if (!(Test-Path $nxlog_dir\cert\$nxlog_pem)) {
-					Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
+				if (Test-Path $nxlog_dir) {
+					if (!(Test-Path $nxlog_dir\conf\$nxlog_conf)) {
+						Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
+					}
+					if (!(Test-Path $nxlog_dir\cert\$nxlog_pem)) {
+						Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
+					}
 				}
 			}
 		}
