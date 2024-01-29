@@ -360,3 +360,10 @@ groups:
       - macmini-r8-374.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_r8_staging
+
+  - name: gecko-t-osx-1300-r8
+    targets:
+      - macmini-r8-375.test.releng.mdc1.mozilla.com
+      - macmini-r8-376.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1300_r8
