@@ -48,7 +48,7 @@ function Write-Log {
 
 function Setup-Logging {
     param (
-        [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/",
+        [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
         [string] $local_dir = "$env:systemdrive\BootStrap",
         [string] $nxlog_msi = "nxlog-ce-3.2.2329.msi",
         [string] $nxlog_conf = "nxlog.conf",
