@@ -76,7 +76,6 @@ function Setup-Logging {
 				if (!(Test-Path $nxlog_dir\cert\$nxlog_pem)) {
 					Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
 				}
-				Restart-Service -Name nxlog -force
 			}
 		}
 		catch {
@@ -84,11 +83,12 @@ function Setup-Logging {
 			Write-Host "Retrying in ${retryInterval} seconds..."
 			Start-Sleep -Seconds $retryInterval
 		}
-	}
-	if ($retryCount -gt $maxRetries) {
-		Add-Type -AssemblyName System.Windows.Forms
-		[System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-		exit 99
+		if ($retryCount -gt $maxRetries) {
+			Add-Type -AssemblyName System.Windows.Forms
+			[System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+			exit 99
+		}
+		Restart-Service -Name nxlog -force
 	}
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
