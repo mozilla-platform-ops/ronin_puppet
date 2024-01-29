@@ -13,7 +13,7 @@ class win_disable_services::disable_windows_update {
     ensure  => stopped,
     name    => 'wuauserv',
     enable  => false,
-    timeout => 60,
+    timeout => 120,
   }
 
   registry_key { $win_au_key:
