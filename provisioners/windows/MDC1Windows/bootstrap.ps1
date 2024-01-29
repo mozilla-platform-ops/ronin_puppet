@@ -45,7 +45,7 @@ function Write-Log {
         Write-Host  -object $message -ForegroundColor $fc
     }
 }
-
+exit
 function Setup-Logging {
     param (
         [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
