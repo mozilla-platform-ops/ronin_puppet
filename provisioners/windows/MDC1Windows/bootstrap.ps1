@@ -53,7 +53,7 @@ function Setup-Logging {
         [string] $nxlog_msi = "nxlog-ce-3.2.2329.msi",
         [string] $nxlog_conf = "nxlog.conf",
         [string] $nxlog_pem  = "papertrail-bundle.pem",
-        [string] $nxlog_dir   = "$env:systemdrive\Program` Files\nxlog"
+        [string] $nxlog_dir   = "$env:ProgramFiles\nxlog"
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
