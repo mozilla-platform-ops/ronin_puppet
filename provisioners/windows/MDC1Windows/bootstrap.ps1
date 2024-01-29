@@ -147,6 +147,8 @@ if (-Not (Test-Path "$ENV:systemdrive\azcopy.exe")) {
     Remove-Item "$ENV:systemdrive\azcopy.zip"
 }
 
+Pause
+
 ## Wait for nxlog to send logs
 Start-Sleep -Seconds 15
 
