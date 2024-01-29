@@ -98,6 +98,7 @@ function Setup-Logging {
 }
 
 Setup-Logging
+pause
 Write-host "Starting bootstrap using raw powershell scripts"
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
