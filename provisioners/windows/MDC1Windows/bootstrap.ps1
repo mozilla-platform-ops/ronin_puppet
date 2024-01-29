@@ -71,12 +71,8 @@ function Setup-Logging {
 					msiexec /i $local_dir\$nxlog_msi /passive
 				}
 				if (Test-Path $nxlog_dir) {
-					if (!(Test-Path $nxlog_dir\conf\$nxlog_conf)) {
-						Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
-					}
-					if (!(Test-Path $nxlog_dir\cert\$nxlog_pem)) {
-						Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
-					}
+                    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
+                    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
 				}
 			}
 		}
