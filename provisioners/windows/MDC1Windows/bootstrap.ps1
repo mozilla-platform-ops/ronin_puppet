@@ -67,9 +67,18 @@ function Setup-Logging {
 			for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
 				if (!(Test-Path $local_dir\$nxlog_msi)) {
 					Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
-				} elseif (!(Test-Path $nxlog_dir\)) {
-					msiexec /i $local_dir\$nxlog_msi /passive
-				}
+                    break
+                }
+            }
+        }
+        catch {
+            Write-Host "Attempt ${retryCount}: An error occurred - $_"
+            Write-Host "Retrying in ${retryInterval} seconds..."
+            Start-Sleep -Seconds $retryInterval
+        }
+        msiexec /i $local_dir\$nxlog_msi /passive
+        try {
+            for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
 				if (Test-Path $nxlog_dir) {
                     Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
                     Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
@@ -87,6 +96,7 @@ function Setup-Logging {
 			[System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
 			exit 99
 		}
+
 		Restart-Service -Name nxlog -force
 	}
     end {
