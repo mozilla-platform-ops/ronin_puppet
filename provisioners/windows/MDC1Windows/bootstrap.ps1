@@ -63,11 +63,13 @@ function Setup-Logging {
 
         $maxRetries = 20
 		$retryInterval = 3
-		try {
-			for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
-				if (!(Test-Path $local_dir\$nxlog_msi)) {
-					Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
-                    break
+        if (!(Test-Path $nxlog_dir\nxlog.exe)) {
+		    try {
+			    for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
+				    if (!(Test-Path $local_dir\$nxlog_msi)) {
+					    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
+                        break
+                    }
                 }
             }
         }
