@@ -72,11 +72,11 @@ function Setup-Logging {
                     }
                 }
             }
-        }
-        catch {
-            Write-Host "Attempt ${retryCount}: An error occurred - $_"
-            Write-Host "Retrying in ${retryInterval} seconds..."
-            Start-Sleep -Seconds $retryInterval
+            catch {
+                Write-Host "Attempt ${retryCount}: An error occurred - $_"
+                Write-Host "Retrying in ${retryInterval} seconds..."
+                Start-Sleep -Seconds $retryInterval
+            }
         }
         msiexec /i $local_dir\$nxlog_msi /passive
         try {
