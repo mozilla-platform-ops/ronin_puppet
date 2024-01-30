@@ -94,6 +94,9 @@ function Setup-Logging {
 			Write-Host "Retrying in ${retryInterval} seconds..."
 			Start-Sleep -Seconds $retryInterval
 		}
+        write-host times $retryCount
+        write-host out of MAX $maxRetries
+        pause
 		if ($retryCount -gt $maxRetries) {
 			Add-Type -AssemblyName System.Windows.Forms
 			[System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
