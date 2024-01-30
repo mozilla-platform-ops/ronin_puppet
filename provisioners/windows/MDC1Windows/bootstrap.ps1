@@ -50,10 +50,10 @@ function Setup-Logging {
     param (
         [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
         [string] $local_dir = "$env:systemdrive\BootStrap",
-        [string] $nxlog_msi = "nxlog-ce-3.2.2329.msi",
+        [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
         [string] $nxlog_conf = "nxlog.conf",
         [string] $nxlog_pem  = "papertrail-bundle.pem",
-        [string] $nxlog_dir   = "$env:ProgramFiles\nxlog"
+        [string] $nxlog_dir   = "ProgramFiles(x86)\nxlog"
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
