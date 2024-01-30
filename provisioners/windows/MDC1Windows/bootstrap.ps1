@@ -80,6 +80,7 @@ function Setup-Logging {
         }
         msiexec /i $local_dir\$nxlog_msi /passive
         try {
+            $retryCount = 0
             for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
 				if (Test-Path $nxlog_dir) {
                     Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
