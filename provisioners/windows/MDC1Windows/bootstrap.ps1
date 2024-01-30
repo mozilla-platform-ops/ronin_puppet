@@ -84,8 +84,8 @@ function Setup-Logging {
             for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
 				if (Test-Path $nxlog_dir) {
                     write-host number try $retryCount
-                    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
-                    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
+                    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile `"$nxlog_dir\conf\$nxlog_conf`" -UseBasicParsing
+                    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile `"$nxlog_dir\cert\$nxlog_pem`" -UseBasicParsing
                     break
 				}
 			}
@@ -95,8 +95,8 @@ function Setup-Logging {
 			Write-Host "Retrying in ${retryInterval} seconds..."
 			Start-Sleep -Seconds $retryInterval
 		}
-        write-host Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
-        write-host Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
+        write-host Invoke-WebRequest  $ext_src/$nxlog_conf -outfile `"$nxlog_dir\conf\$nxlog_conf`" -UseBasicParsing
+        write-host Invoke-WebRequest  $ext_src/$nxlog_pem -outfile `"$nxlog_dir\cert\$nxlog_pem`" -UseBasicParsing
         write-host times $retryCount
         write-host out of MAX $maxRetries
         pause
