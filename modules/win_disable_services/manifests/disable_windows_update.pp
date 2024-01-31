@@ -10,11 +10,8 @@ class win_disable_services::disable_windows_update {
   $win_update_au_key = "${win_update_key}\\AU"
   $win_au_key        = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
 
-  ## wuauserv would not stop even with a timeout.
-  ## added a powershell script 
-  registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
-    type => dword,
-    data => '4',
+  registry_key { $win_au_key:
+    ensure => present,
   }
 
   exec { 'disable_windows_update':
@@ -29,8 +26,11 @@ class win_disable_services::disable_windows_update {
     timeout  => 300,
   }
 
-  registry_key { $win_au_key:
-    ensure => present,
+  ## wuauserv would not stop even with a timeout.
+  ## added a powershell script 
+  registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
+    type => dword,
+    data => '4',
   }
 
   case $facts['custom_win_os_version'] {
