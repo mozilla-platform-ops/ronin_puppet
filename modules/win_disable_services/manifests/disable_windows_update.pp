@@ -8,12 +8,25 @@ class win_disable_services::disable_windows_update {
 
   $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
   $win_update_au_key = "${win_update_key}\\AU"
-  $win_au_key        = 'HKLM\SOFTWARE\Microsoft\Windows\Windows\AU'
-  service { 'wuauserv':
-    ensure  => stopped,
-    name    => 'wuauserv',
-    enable  => false,
-    timeout => 120,
+  $win_au_key        = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+
+  ## wuauserv would not stop even with a timeout.
+  ## added a powershell script 
+  registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
+    type => dword,
+    data => '4',
+  }
+
+  exec { 'disable_windows_update':
+    command  => file('win_disable_services/disable_wu.ps1'),
+    provider => powershell,
+    timeout  => 300,
+  }
+
+  exec { 'disable_windows_update_task':
+    command  => file('win_disable_services/disable_wu_task.ps1'),
+    provider => powershell,
+    timeout  => 300,
   }
 
   registry_key { $win_au_key:
@@ -55,61 +68,15 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '1',
       }
+      registry_value { "${win_update_key}\\DoNotConnectToWindowsUpdateInternetLocations":
+        type => dword,
+        data => '1',
+      }
+      registry_value { "${win_update_key}\\DisableWindowsUpdateAccess":
+        type => dword,
+        data => '1',
+      }
     } # Windows 11
-    'win_10_2004': {
-      # Using puppetlabs-registry
-      registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
-        type => dword,
-        data => '0',
-      }
-
-      registry_value { "${win_au_key}\\AUOptions":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_au_key}\\NoAutoUpdate":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_au_key}\\NoAutoUpdate":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_au_key}\\AUOptions":
-        type => dword,
-        data => '2',
-      }
-      registry_value { "${win_update_key}\\DeferUpgrade":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_key}\\DeferUpgradePeriod":
-        type => dword,
-        data => '8',
-      }
-      registry_value { "${win_update_key}\\DeferUpdatePeriod":
-        type => dword,
-        data => '4',
-      }
-      registry_value { "${win_update_au_key}\\NoAutoRebootWithLoggedOnUsers":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_au_key}\\ScheduledInstallDay":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_au_key}\\ScheduledInstallTime":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_au_key}\\AutomaticMaintenanceEnabled":
-        type => dword,
-        data => '0',
-      }
-      registry_value { "${win_update_au_key}\\MaintenanceDisabled":
-      } # Windows 10 20h2
-    }
     'win_10_2009': {
       # Using puppetlabs-registry
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
