@@ -27,3 +27,10 @@ groups:
       - ec2-54-203-62-146.us-west-2.compute.amazonaws.com
     facts:
       puppet_role: gecko_3_b_osx_arm64
+
+  - name: gecko-t-osx-1300-m2-vms
+    targets:
+      - macstudio-m2pro-vm-1.local
+      - macstudio-m2pro-vm-2.local
+    facts:
+      puppet_role: gecko_t_osx_1300_m2_vms
