@@ -1,6 +1,7 @@
 ## Disable wuauserv
 $servicesToDisable = @(
-    'wuauserv'
+    'wuauserv',
+    'usosvc'
 ) | Get-Service -ErrorAction SilentlyContinue
 Stop-Service $servicesToDisable
 $servicesToDisable.WaitForStatus('Stopped', "00:01:00")
