@@ -6,6 +6,6 @@ $servicesToDisable = @(
     'WaaSMedicSvc'
 ) | Get-Service -ErrorAction SilentlyContinue
 
-Stop-Service $servicesToDisable
-$servicesToDisable.WaitForStatus('Stopped', "00:01:00")
+Stop-Service $servicesToDisable -Force
+$servicesToDisable.WaitForStatus('Stopped', "00:02:00")
 $servicesToDisable | Set-Service -StartupType Disabled
