@@ -7,8 +7,7 @@ class win_disable_services::disable_windows_update {
   require roles_profiles::profiles::microsoft_tools
 
   $win_update_key    = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate"
-  $win_update_au_key = "${win_update_key}\\AU"
-  $win_au_key        = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+  $win_au_key        = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\AU"
 
   registry_key { $win_au_key:
     ensure => present,
@@ -92,14 +91,6 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '1',
       }
-      registry_value { "${win_update_au_key}\\NoAutoUpdate":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_au_key}\\AUOptions":
-        type => dword,
-        data => '2',
-      }
       registry_value { "${win_update_key}\\DeferUpgrade":
         type => dword,
         data => '1',
@@ -112,24 +103,24 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '4',
       }
-      registry_value { "${win_update_au_key}\\NoAutoRebootWithLoggedOnUsers":
+      registry_value { "${win_au_key}\\NoAutoRebootWithLoggedOnUsers":
         type => dword,
         data => '1',
       }
-      registry_value { "${win_update_au_key}\\ScheduledInstallDay":
+      registry_value { "${win_au_key}\\ScheduledInstallDay":
         type => dword,
         data => '1',
       }
-      registry_value { "${win_update_au_key}\\ScheduledInstallTime":
+      registry_value { "${win_au_key}\\ScheduledInstallTime":
         type => dword,
         data => '1',
       }
-      registry_value { "${win_update_au_key}\\AutomaticMaintenanceEnabled":
+      registry_value { "${win_au_key}\\AutomaticMaintenanceEnabled":
         type => dword,
         data => '0',
       }
-      registry_value { "${win_update_au_key}\\MaintenanceDisabled":
-      } # Windows 10 21h2
+      registry_value { "${win_au_key}\\MaintenanceDisabled":
+      }
     }
     default: {
       fail("${module_name} does not support ${$facts['custom_win_os_version']}")
