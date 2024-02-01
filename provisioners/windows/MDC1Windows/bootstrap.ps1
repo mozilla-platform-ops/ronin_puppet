@@ -79,11 +79,11 @@ function Setup-Logging {
             }
         }
         msiexec /i $local_dir\$nxlog_msi /passive
+        start-sleep -seconds 20
         try {
             $retryCount = 0
             for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
 				if (Test-Path $nxlog_dir) {
-                    write-host number try $retryCount
                     Invoke-WebRequest  $ext_src/$nxlog_conf -outfile `"$nxlog_dir\conf\$nxlog_conf`" -UseBasicParsing
                     Invoke-WebRequest  $ext_src/$nxlog_pem -outfile `"$nxlog_dir\cert\$nxlog_pem`" -UseBasicParsing
                     break
@@ -95,18 +95,13 @@ function Setup-Logging {
 			Write-Host "Retrying in ${retryInterval} seconds..."
 			Start-Sleep -Seconds $retryInterval
 		}
-        write-host Invoke-WebRequest  $ext_src/$nxlog_conf -outfile `"$nxlog_dir\conf\$nxlog_conf`" -UseBasicParsing
-        write-host Invoke-WebRequest  $ext_src/$nxlog_pem -outfile `"$nxlog_dir\cert\$nxlog_pem`" -UseBasicParsing
-        write-host times $retryCount
-        write-host out of MAX $maxRetries
-        pause
 		if ($retryCount -gt $maxRetries) {
 			Add-Type -AssemblyName System.Windows.Forms
 			[System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
 			exit 99
 		}
-pause
 		Restart-Service -Name nxlog -force
+        pause
 	}
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
