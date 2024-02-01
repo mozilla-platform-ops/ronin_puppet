@@ -13,25 +13,6 @@ class win_disable_services::disable_windows_update {
     ensure => present,
   }
 
-  exec { 'disable_windows_update':
-    command  => file('win_disable_services/disable_wu.ps1'),
-    provider => powershell,
-    timeout  => 300,
-  }
-
-  exec { 'disable_windows_update_task':
-    command  => file('win_disable_services/disable_wu_task.ps1'),
-    provider => powershell,
-    timeout  => 300,
-  }
-
-  ## wuauserv would not stop even with a timeout.
-  ## added a powershell script 
-  registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
-    type => dword,
-    data => '4',
-  }
-
   case $facts['custom_win_os_version'] {
     'win_2012': {
       # Using puppetlabs-registry
@@ -49,12 +30,26 @@ class win_disable_services::disable_windows_update {
       }
     }
     'win_11_2009', 'win_2022_2009': {
-      service { 'UsoSvc':
-        ensure => stopped,
-        name   => 'UsoSvc',
-        enable => false,
+      ## wuauserv would not stop even with a timeout.
+      ## added a powershell script + additional reg paths
+      exec { 'disable_windows_update':
+        command  => file('win_disable_services/disable_wu.ps1'),
+        provider => powershell,
+        timeout  => 300,
       }
-
+      exec { 'disable_windows_update_task':
+        command  => file('win_disable_services/disable_wu_task.ps1'),
+        provider => powershell,
+        timeout  => 300,
+      }
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
+        type => dword,
+        data => '4',
+      }
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc\Start':
+        type => dword,
+        data => '4',
+      }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
         type => dword,
         data => '0',

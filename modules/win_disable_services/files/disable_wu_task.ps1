@@ -1,6 +1,11 @@
 # Disable scheduled tasks
 $allTasksInTaskPath = @(
-    "\Microsoft\Windows\WindowsUpdate\"
+    "\Microsoft\Windows\InstallService\*",
+    "\Microsoft\Windows\UpdateOrchestrator\*",
+    "\Microsoft\Windows\UpdateAssistant\*",
+    "\Microsoft\Windows\WaaSMedic\*",
+    "\Microsoft\Windows\WindowsUpdate\*",
+    "\Microsoft\WindowsUpdate\*"
 )
 
 $allTasksInTaskPath | ForEach-Object {
