@@ -32,6 +32,10 @@ class win_disable_services::disable_windows_update {
     'win_11_2009', 'win_2022_2009': {
       ## wuauserv would not stop even with a timeout.
       ## added a powershell script + additional reg paths
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
+        type => dword,
+        data => '4',
+      }
       exec { 'disable_windows_update':
         command  => file('win_disable_services/disable_wu.ps1'),
         provider => powershell,
@@ -41,10 +45,6 @@ class win_disable_services::disable_windows_update {
         command  => file('win_disable_services/disable_wu_task.ps1'),
         provider => powershell,
         timeout  => 300,
-      }
-      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
-        type => dword,
-        data => '4',
       }
       registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc\Start':
         type => dword,
