@@ -53,7 +53,7 @@ function Setup-Logging {
         [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
         [string] $nxlog_conf = "nxlog.conf",
         [string] $nxlog_pem  = "papertrail-bundle.pem",
-        [string] $nxlog_dir   = "C:\Program Files (x86)\nxlog"
+        [string] $nxlog_dir  = "$env:systemdrive\Program Files (x86)\nxlog"
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -83,10 +83,10 @@ function Setup-Logging {
         try {
             $retryCount = 0
             for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
-				if (Test-Path $nxlog_dir) {
-                    Invoke-WebRequest  $ext_src/$nxlog_conf -outfile `"$nxlog_dir\conf\$nxlog_conf`" -UseBasicParsing
-                    Invoke-WebRequest  $ext_src/$nxlog_pem -outfile `"$nxlog_dir\cert\$nxlog_pem`" -UseBasicParsing
-                    break
+                while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+                Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
+                while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+                Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
 				}
 			}
 		}
