@@ -29,13 +29,33 @@ class win_disable_services::disable_windows_update {
         data => '1',
       }
     }
-    'win_11_2009', 'win_2022_2009': {
+    'win_11_2009', 'win_2022_2009', 'win_10_2009': {
       ## wuauserv would not stop even with a timeout.
       ## added a powershell script + additional reg paths
       registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
         type => dword,
         data => '4',
       }
+      ## Scheduled task to kill windows update/windows update-related scheduled tasks
+      $disable_wu_ps = "${facts['custom_win_roninprogramdata']}\\disable_wu.ps1"
+
+      file { $disable_wu_ps:
+        content => file('win_disable_services/disable_wu.ps1'),
+      }
+      # Resource from puppetlabs-scheduled_task
+      scheduled_task { 'disable_wu':
+        ensure    => 'present',
+        command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
+        arguments => "-executionpolicy bypass -File ${disable_wu_ps}",
+        enabled   => true,
+        trigger   => [{
+            'schedule'         => 'boot',
+            'minutes_interval' => '0',
+            'minutes_duration' => '0'
+        }],
+        user      => 'system',
+      }
+
       exec { 'disable_windows_update':
         command  => file('win_disable_services/disable_wu.ps1'),
         provider => powershell,
@@ -69,52 +89,6 @@ class win_disable_services::disable_windows_update {
       registry_value { "${win_update_key}\\DisableWindowsUpdateAccess":
         type => dword,
         data => '1',
-      }
-    } # Windows 11
-    'win_10_2009': {
-      # Using puppetlabs-registry
-      registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
-        type => dword,
-        data => '0',
-      }
-
-      registry_value { "${win_au_key}\\AUOptions":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_au_key}\\NoAutoUpdate":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_key}\\DeferUpgrade":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_update_key}\\DeferUpgradePeriod":
-        type => dword,
-        data => '8',
-      }
-      registry_value { "${win_update_key}\\DeferUpdatePeriod":
-        type => dword,
-        data => '4',
-      }
-      registry_value { "${win_au_key}\\NoAutoRebootWithLoggedOnUsers":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_au_key}\\ScheduledInstallDay":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_au_key}\\ScheduledInstallTime":
-        type => dword,
-        data => '1',
-      }
-      registry_value { "${win_au_key}\\AutomaticMaintenanceEnabled":
-        type => dword,
-        data => '0',
-      }
-      registry_value { "${win_au_key}\\MaintenanceDisabled":
       }
     }
     default: {
