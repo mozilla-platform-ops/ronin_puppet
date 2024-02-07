@@ -87,7 +87,6 @@ function Setup-Logging {
                 Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
                 while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
                 Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
-				}
 			}
 		}
 		catch {
