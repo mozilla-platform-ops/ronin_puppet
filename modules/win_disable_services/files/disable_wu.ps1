@@ -39,3 +39,5 @@ $allTasksInTaskPath = @(
 $allTasksInTaskPath | ForEach-Object {
     Get-ScheduledTask -TaskPath $_ -ErrorAction Ignore | Disable-ScheduledTask -ErrorAction Ignore
 } | Out-Null
+
+Exit 0
