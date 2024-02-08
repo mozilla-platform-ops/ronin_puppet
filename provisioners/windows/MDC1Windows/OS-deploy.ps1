@@ -198,7 +198,10 @@ if (!(Test-Path $setup)) {
     $secret_YAML = Convertfrom-Yaml (Get-Content $secret_file -raw)
 
     write-host Show yaml
-    write-host  $secret_YAML
+    foreach ($property in $secret_YAML.PSObject.Properties) {
+        Write-Host "$($property.Name): $($property.Value)"
+    }
+
 
     Write-Host updating autounattend.xml
 }
