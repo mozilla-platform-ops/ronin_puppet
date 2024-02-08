@@ -37,16 +37,16 @@ class win_disable_services::disable_windows_update {
         data => '4',
       }
       ## Scheduled task to kill windows update/windows update-related scheduled tasks
-      $disable_wu_ps = "${facts['custom_win_roninprogramdata']}\\disable_wu.ps1"
+      $disable_wu_task_ps = "${facts['custom_win_roninprogramdata']}\\disable_wu_task.ps1"
 
-      file { $disable_wu_ps:
-        content => file('win_disable_services/disable_wu.ps1'),
+      file { $disable_wu_task_ps:
+        content => file('win_disable_services/disable_wu_task.ps1'),
       }
       # Resource from puppetlabs-scheduled_task
       scheduled_task { 'disable_wu':
         ensure    => 'present',
         command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
-        arguments => "-executionpolicy bypass -File ${disable_wu_ps}",
+        arguments => "-executionpolicy bypass -File ${disable_wu_task_ps}",
         enabled   => true,
         trigger   => [{
             'schedule'         => 'boot',
