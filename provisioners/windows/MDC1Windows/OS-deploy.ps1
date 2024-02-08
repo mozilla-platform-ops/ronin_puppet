@@ -173,6 +173,8 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
+    write-host Updating Get-Bootstrap.ps1
+
     $replacements = @(
         @{ OldString = "WorkerPoolId"; NewString = $WorkerPool },
         @{ OldString = "1Role"; NewString = $role },
@@ -192,6 +194,13 @@ if (!(Test-Path $setup)) {
     net use Z: /delete
 
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/base-autounattend.xml  -OutFile $unattend
+
+    $secret_YAML = Convertfrom-Yaml (Get-Content $secret_file -raw)
+
+    write-host Show yaml
+    write-host  $secret_YAML
+
+    Write-Host updating autounattend.xml
 }
 
 dir $local_install
