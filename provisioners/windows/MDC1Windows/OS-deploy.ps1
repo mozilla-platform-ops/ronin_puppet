@@ -191,7 +191,7 @@ if (!(Test-Path $setup)) {
     Write-Host Disconecting Deployment Share
     net use Z: /delete
 
-    Invoke-WebRequest -Uri https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_Branch/provisioners/windows/ImageProvisioner/base-autounattend.xml  -OutFile $unattend
+    Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/base-autounattend.xml  -OutFile $unattend
 }
 
 dir $local_install
