@@ -56,11 +56,6 @@ class win_disable_services::disable_windows_update {
         user      => 'system',
       }
 
-      exec { 'disable_windows_update':
-        command  => file('win_disable_services/disable_wu.ps1'),
-        provider => powershell,
-        timeout  => 300,
-      }
       registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc\Start':
         type => dword,
         data => '4',
