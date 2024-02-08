@@ -3,17 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::visual_studio_build_tools {
-
   case $facts['os']['name'] {
     'Windows': {
-        case $facts['custom_win_os_version'] {
-            'win_2022_2009': {
-                include win_packages::vs_buildtools_2022
-            }
-            default: {
-                include win_packages::vs_build_tools
-            }
+      case $facts['custom_win_os_version'] {
+        'win_2022_2009','win_11_2009': {
+          include win_packages::vs_buildtools_2022
         }
+        default: {
+          include win_packages::vs_build_tools
+        }
+      }
     }
     default: {
       fail("${$facts['os']['name']} not supported")

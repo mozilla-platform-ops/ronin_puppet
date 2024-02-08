@@ -23,6 +23,8 @@ class roles_profiles::roles::win11642009azure {
     default: {
       # Install MS tools earlier
       include roles_profiles::profiles::microsoft_tools
+      # Install separately to resolve mozbuild 4.1 w/ python 3.11 update
+      include roles_profiles::profiles::visual_studio_build_tools
 
       # System
       include roles_profiles::profiles::disable_services
