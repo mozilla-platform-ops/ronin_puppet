@@ -121,7 +121,7 @@ $source_dir = "Z:\"
 $local_install = "D:\"
 $source_install = $source_dir + "Images\" + $neededImage
 $OS_files = $local_install + $neededImage
-$setup = $local_install + $neededImage + "\setup.exe"
+$setup = $OS_files + "\setup.exe"
 $secret_dir = $local_install + "secrets"
 $secret_file = $secret_dir + "\vault.yaml"
 $source_secrets = $source_dir + "secrets\" + $WorkerPool + ".yaml"
@@ -129,7 +129,7 @@ $source_AZsecrets = $source_dir + "secrets\" + "azcredentials.yaml"
 $AZsecret_file = $secret_dir + "\azcredentials.yaml"
 $source_scripts = $source_dir + "scripts\"
 $local_scripts = $local_install + "scripts\"
-
+$unattend = $OS_files + autounattend.xml
 
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
@@ -190,10 +190,12 @@ if (!(Test-Path $setup)) {
 
     Write-Host Disconecting Deployment Share
     net use Z: /delete
+
+    Invoke-WebRequest -Uri https://raw.githubusercontent.com/$src_Organisation/$src_Repository/$src_Branch/provisioners/windows/ImageProvisioner/base-autounattend.xml  -OutFile $unattend
 }
 
 dir $local_install
 Set-Location -Path $OS_files
-write-host Start-Process -FilePath $setup -ArgumentList "/unattend:autounattend.xml"
+write-host Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
 #Start-Process -FilePath $setup -ArgumentList "/unattend:autounattend.xml"
 write-host cmd /c $setup /unattend:autounattend.xml /imageindex 5
