@@ -129,7 +129,7 @@ $source_AZsecrets = $source_dir + "secrets\" + "azcredentials.yaml"
 $AZsecret_file = $secret_dir + "\azcredentials.yaml"
 $source_scripts = $source_dir + "scripts\"
 $local_scripts = $local_install + "scripts\"
-$unattend = $OS_files + autounattend.xml
+$unattend = $OS_files + "\autounattend.xml"
 
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
