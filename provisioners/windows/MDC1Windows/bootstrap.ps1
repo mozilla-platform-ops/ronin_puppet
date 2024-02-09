@@ -76,6 +76,11 @@ function Setup-Logging {
                 Write-Host "Attempt ${retryCount}: An error occurred - $_"
                 Write-Host "Retrying in ${retryInterval} seconds..."
                 Start-Sleep -Seconds $retryInterval
+                if ($retryCount -gt $maxRetries) {
+                    Add-Type -AssemblyName System.Windows.Forms
+                    [System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                    exit 99
+                }
             }
         }
         msiexec /i $local_dir\$nxlog_msi /passive
@@ -93,11 +98,11 @@ function Setup-Logging {
 			Write-Host "Attempt ${retryCount}: An error occurred - $_"
 			Write-Host "Retrying in ${retryInterval} seconds..."
 			Start-Sleep -Seconds $retryInterval
-		}
-		if ($retryCount -gt $maxRetries) {
-			Add-Type -AssemblyName System.Windows.Forms
-			[System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-			exit 99
+            if ($retryCount -gt $maxRetries) {
+                Add-Type -AssemblyName System.Windows.Forms
+                [System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                exit 99
+            }
 		}
 		Restart-Service -Name nxlog -force
         pause
