@@ -203,9 +203,15 @@ if (!(Test-Path $setup)) {
     Write-Host updating autounattend.xml
     $replacethese = @(
         @{ OldString = "THIS-IS-A-NAME"; NewString = $shortname },
-        @{ OldString = "1Role"; NewString = $role }
+        @{ OldString = "NotARealPassword"; NewString = $secret_YAML.win_adminpw }
 )
 
+    $content2 = Get-Content -Path $unattend
+    foreach ($replacethese in $replacements) {
+        $content2 = $content2 -replace $replacement.OldString, $replacement.NewString
+    }
+
+    Set-Content -Path $Get_Bootstrap  -Value $content
 
 }
 

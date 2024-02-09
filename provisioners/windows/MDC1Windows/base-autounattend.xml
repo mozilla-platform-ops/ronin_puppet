@@ -19,7 +19,7 @@
 					<WillShowUI>Never</WillShowUI>
 				</ProductKey>
 				<AcceptEula>true</AcceptEula>
-			</UserData>			
+			</UserData>
             <ImageInstall>
                 <OSImage>
                     <InstallFrom>
@@ -31,10 +31,10 @@
 					<InstallTo>
 						<DiskID>0</DiskID>
 						<PartitionID>3</PartitionID>
-					</InstallTo>					
+					</InstallTo>
                     <WillShowUI>OnError</WillShowUI>
                 </OSImage>
-            </ImageInstall>			
+            </ImageInstall>
 			<RunSynchronous>
 				<RunSynchronousCommand wcm:action="add">
 					<Order>1</Order>
@@ -73,9 +73,9 @@
 				<RunSynchronousCommand wcm:action="add">
 					<Order>1</Order>
 					<Path>reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" /v BypassNRO /t REG_DWORD /d 1 /f</Path>
-				</RunSynchronousCommand>				
+				</RunSynchronousCommand>
 			</RunSynchronous>
-		</component>		
+		</component>
 	</settings>
 	<settings pass="auditSystem"></settings>
 	<settings pass="auditUser"></settings>
@@ -93,7 +93,7 @@
 						<Name>Admin</Name>
 						<Group>Administrators</Group>
 						<Password>
-							<Value>password</Value>
+							<Value>NotARealPassword</Value>
 							<PlainText>true</PlainText>
 						</Password>
 					</LocalAccount>
@@ -101,7 +101,7 @@
 						<Name>User</Name>
 						<Group>Users</Group>
 						<Password>
-							<Value>password</Value>
+							<Value>NotARealPassword</Value>
 							<PlainText>true</PlainText>
 						</Password>
 					</LocalAccount>
@@ -137,7 +137,7 @@
 				<SynchronousCommand wcm:action="add">
 					<Order>4</Order>
 					<CommandLine>powershell.exe  -ExecutionPolicy Bypass -File D:\scripts\Get-Bootstrap.ps1 </CommandLine>
-				</SynchronousCommand>				
+				</SynchronousCommand>
 			</FirstLogonCommands>
 		</component>
 	</settings>
