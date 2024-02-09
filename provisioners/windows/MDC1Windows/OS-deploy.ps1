@@ -201,6 +201,12 @@ if (!(Test-Path $setup)) {
     write-host $secret_YAML.win_adminpw
 
     Write-Host updating autounattend.xml
+    $replacethese = @(
+        @{ OldString = "THIS-IS-A-NAME"; NewString = $shortname },
+        @{ OldString = "1Role"; NewString = $role }
+)
+
+
 }
 
 dir $local_install
