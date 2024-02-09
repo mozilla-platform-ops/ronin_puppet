@@ -211,7 +211,7 @@ if (!(Test-Path $setup)) {
         $content2 = $content2 -replace $replacement.OldString, $replacement.NewString
     }
 
-    Set-Content -Path $Get_Bootstrap  -Value $content
+    Set-Content -Path $unattend -Value $content
 
 }
 
