@@ -208,7 +208,7 @@ if (!(Test-Path $setup)) {
 
     $content2 = Get-Content -Path $unattend
     foreach ($replacethese in $replacetheses) {
-        $content2 = $content2 -replace $replacetheses.OldString, $replacetheses.NewString
+        $content2 = $content2 -replace $replacethese.OldString, $replacethese.NewString
     }
 
     Set-Content -Path $unattend -Value $content2
