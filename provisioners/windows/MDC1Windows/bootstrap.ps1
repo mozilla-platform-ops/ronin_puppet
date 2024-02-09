@@ -89,7 +89,7 @@ function Setup-Logging {
             $retryCount = 0
             for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
                 while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-                Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
+                Invoke-WebRequest  $ext_src/deploy_nxlog.conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
                 while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
                 Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
 			}
