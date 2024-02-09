@@ -105,33 +105,59 @@ function Setup-Logging {
             }
 		}
 		Restart-Service -Name nxlog -force
-        pause
 	}
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Get-AzCopy {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        if (-Not (Test-Path "$ENV:systemdrive\azcopy.exe")) {
+            Write-Log -message  ('{0} :: Downloading latest azcopy' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            $LatestAzCopy = (Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-windows -MaximumRedirection 0 -ErrorAction SilentlyContinue).headers.location
+            Invoke-WebRequest $LatestAzCopy -OutFile "$env:systemdrive\azcopy.zip"
+            if (-Not (Test-Path "$ENV:systemdrive\azcopy.zip")) {
+                Write-Log -message  ('{0} :: Download FAILED!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                exit 98
+            }
+            Write-Log -message  ('{0} :: Extracting azcopy zip file' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
+                $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
+                Copy-Item $azcopy_path.FullName -Destination "$ENV:systemdrive\"
+                Remove-Item "$ENV:systemdrive\azcopy.zip"
+            }
 
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+
+
+
+Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 Setup-Logging
-pause
-Write-host "Starting bootstrap using raw powershell scripts"
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 
-if ($complete -eq "complete") {
-    Write-Log -message ('{0} :: Nothing to do!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    if (Test-Path "C:\ootstrap\azcredentials.yaml") {
-        Remove-Item -Path "C:\Bootstrap\azcredentials.yaml" -Confirm:$false -Force
-    }
-    exit
-}
+Get-AzCopy
 
-Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
+pause
+Write-host "Starting bootstrap using raw powershell scripts"
 
-if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
-    Write-Log -message ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue
-}
+
+
+## Assume that the this dir is present. most likely delet this
+#if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
+#    Write-Log -message ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+#    $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue
+#}
 
 Write-Log -message ('{0} :: Checking modules' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
