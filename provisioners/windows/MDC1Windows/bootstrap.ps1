@@ -119,8 +119,7 @@ function Get-AzCopy {
     process {
         if (-Not (Test-Path "$ENV:systemdrive\azcopy.exe")) {
             Write-Log -message  ('{0} :: Downloading latest azcopy' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            $LatestAzCopy = (Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-windows -MaximumRedirection 0 -ErrorAction SilentlyContinue).headers.location
-            Invoke-WebRequest $LatestAzCopy -OutFile "$env:systemdrive\azcopy.zip"
+            Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy_windows_amd64_10.23.0.zip -OutFile "$env:systemdrive\azcopy.zip"
             if (-Not (Test-Path "$ENV:systemdrive\azcopy.zip")) {
                 Write-Log -message  ('{0} :: Download FAILED!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 exit 98
