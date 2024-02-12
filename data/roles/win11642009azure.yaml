@@ -43,8 +43,8 @@ win-worker:
   git:
     version: '2.37.3'
   gpu:
-    name: "537.13_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
-    display_name: "NVIDIA Graphics Driver 537.13"
+    name: "472.39_grid_win11_win10_64bit_Azure-SWL"
+    display_name: "NVIDIA Graphics Driver 472.39"
   hg:
     version: '6.2.1'
   nssm:
