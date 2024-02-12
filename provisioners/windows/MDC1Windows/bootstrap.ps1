@@ -132,7 +132,7 @@ function Get-AzCopy {
                 Remove-Item  $azcopy_path -Recurse -force
             }
             Write-Log -message  ('{0} :: Ingest azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+            $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
 
 
     }
