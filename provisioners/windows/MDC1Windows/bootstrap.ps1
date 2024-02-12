@@ -127,9 +127,13 @@ function Get-AzCopy {
             Write-Log -message  ('{0} :: Extracting azcopy zip file' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
                 $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
-                Copy-Item $azcopy_path.FullName -Destination "$ENV:systemdrive\"
-                Remove-Item "$ENV:systemdrive\azcopy.zip"
+                Copy-Item $azcopy_path.FullName -Destination "$ENV:SystemRoot\system32"
+                Remove-Item "$ENV:systemdrive\azcopy.zip" -force
+                Remove-Item  $azcopy_path -Recurse -force
             }
+            Write-Log -message  ('{0} :: Ingest azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+
 
     }
     end {
@@ -137,7 +141,19 @@ function Get-AzCopy {
     }
 }
 
-
+function Get-PreRequ {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        Start-Service -Name worker-runner
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 
 
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
@@ -152,12 +168,17 @@ Write-host "Starting bootstrap using raw powershell scripts"
 
 
 
-## Assume that the this dir is present. most likely delet this
+## Assume that the this dir is present. most likely delete this
 #if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
 #    Write-Log -message ('{0} :: Create C:\Bootstrap' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 #    $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\BootStrap" -ErrorAction SilentlyContinue
 #}
 
+## is this needed for bootstrapping?
+##  Powershell modules
+##  winrm
+## if not needed, move into Puppet
+<#
 Write-Log -message ('{0} :: Checking modules' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 Get-PackageProvider -Name Nuget -ForceBootstrap | Out-Null
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
@@ -174,20 +195,6 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     Import-Module -Name $PSItem -Force -PassThru
 }
 
-## Download azcopy locally
-## https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10#use-in-a-script
-if (-Not (Test-Path "$ENV:systemdrive\azcopy.exe")) {
-    Write-Log -message  ('{0} :: Installing azcopy' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    $LatestAzCopy = (Invoke-WebRequest -Uri https://aka.ms/downloadazcopy-v10-windows -MaximumRedirection 0 -ErrorAction SilentlyContinue).headers.location
-    Invoke-WebRequest $LatestAzCopy -OutFile "$env:systemdrive\azcopy.zip"
-    Write-host "Downloaded azcopy to $ENV:systemdrive\azcopy.zip"
-    Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
-    $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
-    Copy-Item $azcopy_path.FullName -Destination "$ENV:systemdrive\"
-    Remove-Item "$ENV:systemdrive\azcopy.zip"
-}
-
-Pause
 
 ## Wait for nxlog to send logs
 Start-Sleep -Seconds 15
@@ -199,7 +206,7 @@ if ($network_category.NetworkCategory -ne "Private") {
     Set-NetConnectionProfile -InterfaceAlias $adapter.name -NetworkCategory "Private"
     Enable-PSRemoting -Force
 }
-
+#>
 ## Check if C:\Bootstrap exists, and if it doesn't, create it
 if (-Not (Test-Path "$env:systemdrive\BootStrap")) {
     ## Setup logging and create c:\bootstrap
