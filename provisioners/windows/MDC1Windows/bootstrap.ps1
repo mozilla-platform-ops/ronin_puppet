@@ -125,13 +125,13 @@ function Get-PSModules {
             $hit = Get-Module -Name $PSItem
             Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name,  $PSItem)) -severity 'DEBUG'
             if ($null -eq $hit) {
-                Install-Module -Name $PSItem -AllowClobber -Force -Confirm:$false
-                if (-not (Get-Module -Name $PSItem -ListAvailable)) {
-                    Write-Log -message  ('{0} :: {1} module did not install' -f $($MyInvocation.MyCommand.Name,  $PSItem)) -severity 'DEBUG'
+                Install-Module -Name $module -AllowClobber -Force -Confirm:$false
+                if (-not (Get-Module -Name $module -ListAvailable)) {
+                    Write-Log -message  ('{0} :: {1} module did not install' -f $($MyInvocation.MyCommand.Name,  $module)) -severity 'DEBUG'
                     write-host exit 3
                 }
             }
-            Import-Module -Name $PSItem -Force -PassThru
+            Import-Module -Name $module -Force -PassThru
         }
     }
     end {
