@@ -185,12 +185,9 @@ function Get-PreRequ {
 
 
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
-Install-Module -Name powershell-yaml -Force
 
 Setup-Logging
 Get-PSModules
-
-
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 
