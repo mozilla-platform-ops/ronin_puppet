@@ -110,6 +110,34 @@ function Setup-Logging {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Get-PSModules {
+    param (
+       [array]$modules = @(
+                    "ugit",
+                    "Powershell-Yaml"
+                    )
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        foreach ($module in $modules) {
+            $hit = Get-Module -Name $PSItem
+            Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name,  $PSItem)) -severity 'DEBUG'
+            if ($null -eq $hit) {
+                Install-Module -Name $PSItem -AllowClobber -Force -Confirm:$false
+                if (-not (Get-Module -Name $PSItem -ListAvailable)) {
+                    Write-Log -message  ('{0} :: {1} module did not install' -f $($MyInvocation.MyCommand.Name,  $PSItem)) -severity 'DEBUG'
+                    write-host exit 3
+                }
+            }
+            Import-Module -Name $PSItem -Force -PassThru
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 function Get-AzCopy {
     param (
     )
@@ -160,6 +188,9 @@ Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 Install-Module -Name powershell-yaml -Force
 
 Setup-Logging
+
+
+
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 
