@@ -121,6 +121,8 @@ function Get-PSModules {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+        Install-PackageProvider -Name NuGet -Force -Confirm:$false
+
         foreach ($module in $modules) {
             $hit = Get-Module -Name $PSItem
             Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name,  $PSItem)) -severity 'DEBUG'
