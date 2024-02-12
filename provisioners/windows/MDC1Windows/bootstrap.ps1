@@ -188,7 +188,7 @@ Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 Install-Module -Name powershell-yaml -Force
 
 Setup-Logging
-
+Get-PSModules
 
 
 
