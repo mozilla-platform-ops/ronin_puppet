@@ -158,16 +158,17 @@ function Get-AzCopy {
                 Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
                 $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
                 write-host $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
-                pause
                 Copy-Item $azcopy_path.FullName -Destination "$ENV:SystemRoot\system32"
                 write-host Copy-Item $azcopy_path.FullName -Destination "$ENV:SystemRoot\system32"
-                pause
                 Remove-Item "$ENV:systemdrive\azcopy.zip" -force
                 Remove-Item  $azcopy_path -Recurse -force
             }
             Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
-
+            $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+            $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+            $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+            pause
 
     }
     end {
