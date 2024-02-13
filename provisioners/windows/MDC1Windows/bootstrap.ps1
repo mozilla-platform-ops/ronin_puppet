@@ -181,7 +181,7 @@ function Get-PreRequ {
         If (-Not (Test-Path "$env:systemdrive\Git-2.37.3-64-bit.exe")) {
             Write-Log -Message ('{0} :: Downloading Git' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-            Start-Process -FilePath  -ArgumentList @(
+            Start-Process -FilePath $azcopy_exe -ArgumentList @(
             "copy",
             "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe",
             "$env:systemdrive\Git-2.37.3-64-bit.exe"
