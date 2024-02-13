@@ -148,7 +148,7 @@ function Get-PreRequ {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        $azcopy_exe = $env:systemdrive\azcopy\azcopy.exe
+        $azcopy_exe = "$env:systemdrive\azcopy\azcopy.exe"
         If (-Not (Test-Path $azcopy_exe)) {
             Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
         }
