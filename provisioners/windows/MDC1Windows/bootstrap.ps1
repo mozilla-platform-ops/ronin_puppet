@@ -158,7 +158,7 @@ function Get-AzCopy {
                 Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
                 $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
                 write-host $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
-                Copy-Item $azcopy_path.FullName -Destination $ENV:SystemRoot\system32\
+                powrshell Copy-Item $azcopy_path.FullName -Destination "$ENV:SystemRoot\system32"
                 write-host Copy-Item $azcopy_path.FullName -Destination "$ENV:SystemRoot\system32"
                 Remove-Item "$ENV:systemdrive\azcopy.zip" -force
                 Remove-Item  $azcopy_path -Recurse -force
