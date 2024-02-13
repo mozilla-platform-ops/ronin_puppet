@@ -150,6 +150,7 @@ function Get-PreRequ {
     process {
         $azcopy_exe = "$env:systemdrive\azcopy\azcopy.exe"
         If (-Not (Test-Path $azcopy_exe)) {
+            New-Item -ItemType Directory -Path "$env:systemdrive\azcopy"
             Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
         }
         Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
