@@ -140,41 +140,6 @@ function Get-PSModules {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-function Get-AzCopy {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        if (-Not (Test-Path "$ENV:systemdrive\azcopy.exe")) {
-            Write-Log -message  ('{0} :: Downloading latest azcopy' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy_windows_amd64_10.23.0.zip -OutFile "$env:systemdrive\azcopy.zip"
-            if (-Not (Test-Path "$ENV:systemdrive\azcopy.zip")) {
-                Write-Log -message  ('{0} :: Download FAILED!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                exit 98
-            }
-            Write-Log -message  ('{0} :: Extracting azcopy zip file' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                Expand-Archive -Path "$ENV:systemdrive\azcopy.zip" -DestinationPath "$ENV:systemdrive\azcopy"
-                $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
-                write-host $azcopy_path = Get-ChildItem "$ENV:systemdrive\azcopy" -Recurse | Where-Object { $PSItem.name -eq "azcopy.exe" }
-                powrshell Copy-Item $azcopy_path.FullName -Destination "$ENV:systemdrive\azcopy"
-                write-host Copy-Item $azcopy_path.FullName -Destination "$ENV:SystemRoot\system32"
-                Remove-Item "$ENV:systemdrive\azcopy.zip" -force
-                Remove-Item  $azcopy_path -Recurse -force
-            }
-            Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
-            $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
-            $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
-            $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
-            pause
-
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
 
 function Get-PreRequ {
     param (
@@ -183,6 +148,16 @@ function Get-PreRequ {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+        $azcopy_exe = $env:systemdrive\azcopy\azcopy.exe"
+        If (-Not (Test-Path $azcopy_exe)) {
+            Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
+        }
+        Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
+        $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+        $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+        $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+
         If (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
             Write-Log -Message ('{0} :: Downloading Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
@@ -191,7 +166,7 @@ function Get-PreRequ {
             #$ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
             #$ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
 
-            Start-Process -FilePath "$ENV:SystemRoot\system32\azcopy.exe" -ArgumentList @(
+            Start-Process -FilePath $azcopy_exe -ArgumentList @(
                 "copy",
                 "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi",
                 "$env:systemdrive\puppet-agent-6.28.0-x64.msi"
@@ -204,12 +179,7 @@ function Get-PreRequ {
         If (-Not (Test-Path "$env:systemdrive\Git-2.37.3-64-bit.exe")) {
             Write-Log -Message ('{0} :: Downloading Git' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-            $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
-            #$ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
-            #$ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
-            #$ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
-
-            Start-Process -FilePath "$ENV:SystemRoot\system32\azcopy.exe" -ArgumentList @(
+            Start-Process -FilePath  -ArgumentList @(
             "copy",
             "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe",
             "$env:systemdrive\Git-2.37.3-64-bit.exe"
@@ -230,7 +200,6 @@ Get-PSModules
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 
-Get-AzCopy
 Get-PreRequ
 pause
 Write-host "Starting bootstrap using raw powershell scripts"
