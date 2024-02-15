@@ -189,6 +189,24 @@ function Get-PreRequ {
 
         }
     }
+    if (-Not (Test-Path "$env:programfiles\git\bin\git.exe")) {
+        Write-Log -Message ('{0} :: Installing git.exe' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Start-Process -FilePath "$env:systemdrive\Git-2.37.3-64-bit.exe" -ArgumentList @(
+            "/verysilent"
+        ) -Wait -NoNewWindow
+    }
+    if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
+        ## Install Puppet using ServiceUI.exe to install as SYSTEM
+        Write-Log -Message ('{0} :: Installing puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\puppet-agent-6.28.0-x64.msi") -Wait
+        Write-Log -message  ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), "puppet-agent-6.28.0-x64.msi") -severity 'DEBUG'
+        Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), "puppet-agent-6.28.0-x64.msi")
+        if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
+            Write-Host "Did not install puppet"
+            exit 1
+        }
+        $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
+    }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
