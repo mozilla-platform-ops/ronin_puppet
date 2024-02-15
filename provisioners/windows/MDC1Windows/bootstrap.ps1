@@ -124,7 +124,7 @@ function Get-PSModules {
         Install-PackageProvider -Name NuGet -Force -Confirm:$false
 
         foreach ($module in $modules) {
-            $hit = Get-Module -Name $modules
+            $hit = Get-Module -Name $module
             Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name,  $PSItem)) -severity 'DEBUG'
             if ($null -eq $hit) {
                 Install-Module -Name $module -AllowClobber -Force -Confirm:$false
