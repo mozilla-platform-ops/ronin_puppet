@@ -133,6 +133,8 @@ $local_yaml_dir = $local_install + "yaml"
 $local_yaml =  $local_install + "yaml\pools.yaml"
 $unattend = $OS_files + "\autounattend.xml"
 
+New-Item -ItemType Directory -Path $local_yaml_dir -force
+
 if (!(Test-Path $setup)) {
     Write-Host Install files wrong or missing
     Write-Host Will resync
@@ -199,7 +201,6 @@ if (!(Test-Path $setup)) {
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile $local_yaml
 
     write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/base-autounattend.xml  -OutFile $unattend
-    New-Item -ItemType Directory -Path $local_yaml_dir
     write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile $local_yaml
     $secret_YAML = Convertfrom-Yaml (Get-Content $secret_file -raw)
 
