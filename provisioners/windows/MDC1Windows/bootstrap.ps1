@@ -202,7 +202,7 @@ function Get-PreRequ {
             Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), "puppet-agent-6.28.0-x64.msi")
             if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
                 Write-Host "Did not install puppet"
-                exit 1
+                write-host exit 1
             }
             $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
         }
