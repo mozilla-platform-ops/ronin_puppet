@@ -223,8 +223,10 @@ function Set-Ronin-Registry {
         New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
         New-Item -Path HKLM:\SOFTWARE\Mozilla -name ronin_puppet -force
     }
-
-    $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
+    ## Maybe get a copy of pools.yaml
+    #$local_pools = C:\bootstrap\pools.yml
+    #Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile $local_pools
+    #$YAML = Convertfrom-Yaml (Get-Content $local_pools -raw)
 
     Write-Log -Message ('{0} :: Setting HKLM:\SOFTWARE\Mozilla\ronin_puppet values' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     New-Item -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name source -force
@@ -249,7 +251,7 @@ Get-PSModules
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 Get-PreRequ
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile C:\bootstrap\pools.yml
+Set-Ronin-Registry
 pause
 Write-host "Starting bootstrap using raw powershell scripts"
 
