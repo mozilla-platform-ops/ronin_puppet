@@ -243,13 +243,57 @@ function Set-Ronin-Registry {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-function Run-Puppet {
+function Get-Ronin {
     param (
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+        if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
+            Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
+            git config --global --add safe.directory "C:/ronin"
+            git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
+        }
+
+        Set-Location "$env:systemdrive\ronin"
+
+        ## ugit convert git output to pscustomobject
+        $branch = git branch | Where-object { $PSItem.isCurrentBranch -eq $true }
+
+        if ($branch -ne $src_branch) {
+            git checkout $src_branch
+            git pull
+            git config --global --add safe.directory "C:/ronin"
+        }
+
+        ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
+        if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
+            Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
+            (Get-Content -path "$env:systemdrive\ronin\manifests\nodes.pp") -replace 'roles::role', "roles::$role" | Set-Content "$env:systemdrive\ronin\manifests\nodes.pp"
+        }
+        ## Copy the secrets from the image (from osdcloud) to ronin data secrets
+        if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
+            New-Item -Path "$env:systemdrive\ronin\data" -Name "secrets" -ItemType Directory -Force
+            Copy-item -path "$env:systemdrive\programdata\secrets\*" -destination "$env:systemdrive\ronin\data\secrets" -recurse -force
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+function Run-Ronin-Run {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+
+        Set-Location $env:systemdrive\ronin
+        If (-Not (test-path $env:systemdrive\logs\old)) {
+            New-Item -ItemType Directory -Force -Path $env:systemdrive\logs\old
+        }
         Set-Location $env:systemdrive\ronin
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
         $env:path = "$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
@@ -370,7 +414,8 @@ Get-PSModules
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 Get-PreRequ
 Set-Ronin-Registry
-Run-Puppet
+Get-Ronin
+Run-Ronin-Run
 pause
 Write-host "Starting bootstrap using raw powershell scripts"
 
