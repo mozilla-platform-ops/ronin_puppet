@@ -29,8 +29,8 @@ win-worker:
 
   # Mozilla-build
   mozilla_build:
-    version: '4.0.2'
-    zstandard_version: '0.15.2'
+    version: '4.1'
+    zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
 
   # Mozilla profile
