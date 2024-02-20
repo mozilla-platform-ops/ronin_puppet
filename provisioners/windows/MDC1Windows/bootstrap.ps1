@@ -243,7 +243,125 @@ function Set-Ronin-Registry {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Run-Puppet {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        Set-Location $env:systemdrive\ronin
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'inprogress'
+        $env:path = "$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
+        $env:SSL_CERT_FILE = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl\cert.pem"
+        $env:SSL_CERT_DIR = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl"
+        $env:FACTER_env_windows_installdir = "$env:programfiles\Puppet Labs\Puppet"
+        $env:HOMEPATH = "\Users\Administrator"
+        $env:HOMEDRIVE = "C:"
+        $env:PL_BASEDIR = "$env:programfiles\Puppet Labs\Puppet"
+        $env:PUPPET_DIR = "$env:programfiles\Puppet Labs\Puppet"
+        $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
+        $env:USERNAME = "Administrator"
+        $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
+        #Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
+        Get-ChildItem -Path $env:systemdrive\logs\*.json -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
+
+        $logDate = $(get-date -format yyyyMMdd-HHmm)
+
+        Write-Log -Message ('{0} :: Running Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $env:systemdrive\logs\$($logdate)-bootstrap-puppet.json
+        [int]$puppet_exit = $LastExitCode
+        Write-Log -Message ('{0} :: Puppet error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+
+
+        switch ($puppet_exit) {
+            0 {
+                Write-Log -message  ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+                Write-Host ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
+                slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
+                slmgr.vbs -ato
+                Restart-Computer -Confirm:$false -Force
+            }
+            1 {
+                Write-Log -message ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+                Write-Host ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
+                Set-ItemProperty -Path $ronnin_key -name "last_run_exit" -value $puppet_exit
+                ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
+                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]"
+                $log = Get-Content "$logdir\$logdate-bootstrap-puppet.json" | ConvertFrom-Json
+                $log | Where-Object {
+                    $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
+                } | ForEach-Object {
+                    $data = $psitem
+                    Write-Log -message ('{0} :: Puppet File {1}' -f $($MyInvocation.MyCommand.Name), $data.file) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Message {1}' -f $($MyInvocation.MyCommand.Name), $data.message) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Level {1}' -f $($MyInvocation.MyCommand.Name), $data.level) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
+                }
+                exit 1
+            }
+            2 {
+                Write-Log -message ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+                Write-Host ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
+                slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
+                slmgr.vbs -ato
+                Restart-Computer -Confirm:$false -Force
+            }
+            4 {
+                Write-Log -message ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+                Write-Host ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
+                Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
+                ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
+                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]"
+                $log = Get-Content "$logdir\$logdate-bootstrap-puppet.json" | ConvertFrom-Json
+                $log | Where-Object {
+                    $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
+                } | ForEach-Object {
+                    $data = $psitem
+                    Write-Log -message ('{0} :: Puppet File {1}' -f $($MyInvocation.MyCommand.Name), $data.file) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Message {1}' -f $($MyInvocation.MyCommand.Name), $data.message) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Level {1}' -f $($MyInvocation.MyCommand.Name), $data.level) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
+                }
+                exit 4
+            }
+            6 {
+                Write-Log -message ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+                Write-Host ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
+                Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
+                ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
+                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]"
+                $log = Get-Content "$logdir\$logdate-bootstrap-puppet.json" | ConvertFrom-Json
+                $log | Where-Object {
+                    $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
+                } | ForEach-Object {
+                    $data = $psitem
+                    Write-Log -message ('{0} :: Puppet File {1}' -f $($MyInvocation.MyCommand.Name), $data.file) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Message {1}' -f $($MyInvocation.MyCommand.Name), $data.message) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Level {1}' -f $($MyInvocation.MyCommand.Name), $data.level) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
+                    Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
+                }
+                exit 6
+            }
+            Default {
+                Write-Log -message  ('{0} :: Unable to determine state post Puppet apply :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
+                Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $last_exit
+                exit 1
+            }
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
 Setup-Logging
@@ -252,6 +370,7 @@ Get-PSModules
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
 Get-PreRequ
 Set-Ronin-Registry
+Run-Puppet
 pause
 Write-host "Starting bootstrap using raw powershell scripts"
 
