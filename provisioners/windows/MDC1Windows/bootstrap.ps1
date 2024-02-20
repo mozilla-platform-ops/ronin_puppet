@@ -248,8 +248,8 @@ Setup-Logging
 Get-PSModules
 
 $complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
-write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile C:\bootstrap\pools.yml
 Get-PreRequ
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile C:\bootstrap\pools.yml
 pause
 Write-host "Starting bootstrap using raw powershell scripts"
 
