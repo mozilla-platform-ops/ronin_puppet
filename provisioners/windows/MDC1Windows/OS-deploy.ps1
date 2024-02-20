@@ -198,9 +198,9 @@ if (!(Test-Path $setup)) {
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yaml -OutFile $local_yaml
 
     write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/base-autounattend.xml  -OutFile $unattend
-#    write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yaml -OutFile $local_yaml
+    write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yaml -OutFile $local_yaml
 #    Copy-Item -path "X:\working\pools.yml" -Destination $local_yaml -force
-     Start-Process Copy-Item -ArgumentList "-path "X:\working\pools.yml" -Destination $local_yaml -force" -Wait
+#     Start-Process Copy-Item -ArgumentList "-path "X:\working\pools.yml" -Destination $local_yaml -force" -Wait
     $secret_YAML = Convertfrom-Yaml (Get-Content $secret_file -raw)
 
     write-host Show yaml
