@@ -151,11 +151,10 @@ function Get-PreRequ {
         $azcopy_exe = "$env:systemdrive\azcopy\azcopy.exe"
         If (-Not (Test-Path $azcopy_exe)) {
             New-Item -ItemType Directory -Path "$env:systemdrive\azcopy"
-            write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
-            write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
+        #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
+        #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
             Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
-            Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
-            pause
+        #    Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
         }
         Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
