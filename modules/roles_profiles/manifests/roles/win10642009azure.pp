@@ -29,4 +29,5 @@ class roles_profiles::roles::win10642009azure {
   include roles_profiles::profiles::mozilla_build_tester
   ## Had to re-run mozilla_maintenance_service twice when mozilla_build wasn't a pre-req
   include roles_profiles::profiles::mozilla_maintenance_service
-  include roles_profiles::profiles::windows_worker_runner}
+  include roles_profiles::profiles::windows_worker_runner
+}
