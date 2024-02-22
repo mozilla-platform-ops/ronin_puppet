@@ -10,7 +10,7 @@ class roles_profiles::profiles::cltbld_user {
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
-      $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '#{salt}', '-6', '-rounds', '#{iterations}', '#{account_password}']).read.chomp %>")
+      # $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '#{salt}', '-6', '-rounds', '#{iterations}', '#{account_password}']).read.chomp %>")
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {
@@ -22,16 +22,21 @@ class roles_profiles::profiles::cltbld_user {
             iterations => $iterations,
           }
         }
-        '22': {
+        '22', '23': {
           exec { 'create_home_directory':
             command => "/bin/mkdir -p /Users/${account_username}",
             unless  => "/bin/test -d /Users/${account_username}",
           }
 
           exec { 'create_macos_user':
-            command => "/usr/sbin/sysadminctl -addUser ${account_username} -fullName '${account_username}' -password '${password_hash}' -home /Users/${account_username}",
+            command => "/usr/sbin/sysadminctl -addUser ${account_username} -fullName '${account_username}' -password '${password}' -home /Users/${account_username}",
             unless  => '/usr/bin/dscl . -read /Users/cltbld',
           }
+
+          # exec { 'set_auto_login':
+          #   command => "/usr/sbin/sysadminctl -autologin set -userName '${account_username}' -password 'password1'",
+          #   # unless  => '/usr/bin/dscl . -read /Users/cltbld',
+          # }
         }
         default: {
           fail("${facts['os']['release']} not supported")
