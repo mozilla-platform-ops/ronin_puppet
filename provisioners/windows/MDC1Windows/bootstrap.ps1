@@ -202,6 +202,7 @@ function Get-PreRequ {
                 write-host exit 1
             }
             $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
+            [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Machine)
         }
     }
     end {
