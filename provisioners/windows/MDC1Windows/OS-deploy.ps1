@@ -177,7 +177,7 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
-    New-Item -ItemType Directory $app_dir
+    New-Item -ItemType Directory $local_app
     Copy-Item -Path $source_app $local_app -Recurse -Force
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
