@@ -132,6 +132,8 @@ $local_scripts = $local_install + "scripts\"
 $local_yaml_dir = $local_install + "yaml"
 $local_yaml =  $local_install + "yaml\pools.yaml"
 $unattend = $OS_files + "\autounattend.xml"
+$source_app = $source_dir + "applications"
+$local_app  +  $local_install + "applications"
 
 #New-Item -ItemType Directory -Path $local_yaml_dir -force
 
@@ -175,6 +177,8 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
+    New-Item -ItemType Directory $app_dir
+    Copy-Item -Path $source_app $local_app -Recurse -Force
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
     write-host Updating Get-Bootstrap.ps1

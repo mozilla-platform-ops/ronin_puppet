@@ -148,13 +148,13 @@ function Get-PreRequ {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        $azcopy_exe = "$env:systemdrive\azcopy\azcopy.exe"
+        $azcopy_exe = "D:\applications\azcopy.exe"
         If (-Not (Test-Path $azcopy_exe)) {
-            New-Item -ItemType Directory -Path "$env:systemdrive\azcopy"
+        #    New-Item -ItemType Directory -Path "$env:systemdrive\azcopy"
         #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
         #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
-            Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
-            Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
+        #    Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
+        #    Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
         }
         Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
@@ -165,10 +165,10 @@ function Get-PreRequ {
         If (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
             Write-Log -Message ('{0} :: Downloading Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-            #$creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
-            #$ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
-            #$ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
-            #$ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+            $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
+            $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+            $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+            $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
 
             Start-Process -FilePath $azcopy_exe -ArgumentList @(
                 "copy",
