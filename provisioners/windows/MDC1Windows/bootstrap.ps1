@@ -279,7 +279,7 @@ function Get-Ronin {
         node default {
             include roles_profiles::roles::geckotwin10641803hw
         }
-        "@
+"@
         Set-Content -Path "$env:systemdrive\ronin\manifests\nodes.pp" -Value $content
         #if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
         #    Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
