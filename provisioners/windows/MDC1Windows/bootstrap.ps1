@@ -190,8 +190,8 @@ function Get-PreRequ {
             Start-Process -FilePath "$env:systemdrive\Git-2.37.3-64-bit.exe" -ArgumentList @(
                 "/verysilent"
             ) -Wait #-NoNewWindow
+            $env:PATH += ";C:\Program Files\git\bin"
         }
-        pause
         if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
             ## Install Puppet using ServiceUI.exe to install as SYSTEM
             Write-Log -Message ('{0} :: Installing puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -205,6 +205,7 @@ function Get-PreRequ {
             $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\bin"
             [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Machine)
         }
+        [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Machine)
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
