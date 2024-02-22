@@ -2,7 +2,7 @@
 pools:
   - name: "win11-64-2009-hw-ref-alpha"
     Description: "Pool Description"
-    image: "win11-2009-NUC-01-25-2024"
+    image: "win11-2009-NUC-02-22-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
