@@ -271,10 +271,16 @@ function Get-Ronin {
         }
 
         ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
-        if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
-            Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
-            (Get-Content -path "$env:systemdrive\ronin\manifests\nodes.pp") -replace 'roles::role', "roles::$role" | Set-Content "$env:systemdrive\ronin\manifests\nodes.pp"
+        $content = @"
+        node default {
+            include roles_profiles::roles::geckotwin10641803hw
         }
+        "@
+        Set-Content -Path "$env:systemdrive\ronin\manifests\nodes.pp" -Value $content
+        #if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
+        #    Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
+        #    (Get-Content -path "$env:systemdrive\ronin\manifests\nodes.pp") -replace 'roles::role', "roles::$role" | Set-Content "$env:systemdrive\ronin\manifests\nodes.pp"
+        #}
         ## Copy the secrets from the image (from osdcloud) to ronin data secrets
         if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
             New-Item -Path "$env:systemdrive\ronin\data" -Name "secrets" -ItemType Directory -Force
