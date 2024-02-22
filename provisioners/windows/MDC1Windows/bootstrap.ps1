@@ -348,7 +348,7 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path $ronnin_key -name "last_run_exit" -value $puppet_exit
                 ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
-                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]"
+                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "]"
                 $log = Get-Content "$logdir\$logdate-bootstrap-puppet.json" | ConvertFrom-Json
                 $log | Where-Object {
                     $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
@@ -376,7 +376,7 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
                 ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
-                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]"
+                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "]"
                 $log = Get-Content "$logdir\$logdate-bootstrap-puppet.json" | ConvertFrom-Json
                 $log | Where-Object {
                     $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
@@ -395,7 +395,7 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
                 ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
-                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "`n]"
+                Add-Content "$logdir\$logdate-bootstrap-puppet.json" "]"
                 $log = Get-Content "$logdir\$logdate-bootstrap-puppet.json" | ConvertFrom-Json
                 $log | Where-Object {
                     $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
