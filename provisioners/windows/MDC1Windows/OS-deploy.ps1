@@ -133,7 +133,7 @@ $local_yaml_dir = $local_install + "yaml"
 $local_yaml =  $local_install + "yaml\pools.yaml"
 $unattend = $OS_files + "\autounattend.xml"
 $source_app = $source_dir + "applications"
-$local_app  +  $local_install + "applications"
+$local_app  = $local_install + "applications"
 
 #New-Item -ItemType Directory -Path $local_yaml_dir -force
 
