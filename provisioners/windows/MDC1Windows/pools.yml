@@ -7,7 +7,7 @@ pools:
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
     nodes:
-    - nuc-33432
+    - t-nuc12-010
   - name: "win11-64-2009-hw-ref"
     image: "win11-64-2009"
     nodes:
