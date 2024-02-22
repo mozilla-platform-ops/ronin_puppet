@@ -320,6 +320,8 @@ function Run-Ronin-Run {
         $env:USERNAME = "Administrator"
         $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
+        $ronnin_key  =  "HKLM:\SOFTWARE\Mozilla\ronin_puppet"
+
         #Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
         Get-ChildItem -Path $env:systemdrive\logs\*.json -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
 
