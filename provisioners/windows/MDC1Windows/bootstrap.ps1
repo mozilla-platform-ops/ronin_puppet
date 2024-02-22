@@ -260,7 +260,6 @@ function Get-Ronin {
             write-host git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
             git config --global --add safe.directory "C:/ronin"
             git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
-            pause
         }
 
         Set-Location "$env:systemdrive\ronin"
@@ -288,7 +287,7 @@ function Get-Ronin {
         ## Copy the secrets from the image (from osdcloud) to ronin data secrets
         if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
             New-Item -Path "$env:systemdrive\ronin\data" -Name "secrets" -ItemType Directory -Force
-            Copy-item -path "$env:systemdrive\programdata\secrets\*" -destination "$env:systemdrive\ronin\data\secrets" -recurse -force
+            Copy-item -path "D:\secrets\vault.yaml" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
         }
     }
     end {
