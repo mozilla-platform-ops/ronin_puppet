@@ -189,7 +189,7 @@ function Get-PreRequ {
             Write-Log -Message ('{0} :: Installing git.exe' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Start-Process -FilePath "$env:systemdrive\Git-2.37.3-64-bit.exe" -ArgumentList @(
                 "/verysilent"
-            ) -Wait -NoNewWindow
+            ) -Wait #-NoNewWindow
         }
         if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
             ## Install Puppet using ServiceUI.exe to install as SYSTEM
