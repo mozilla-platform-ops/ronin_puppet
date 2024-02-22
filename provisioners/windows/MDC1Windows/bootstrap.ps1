@@ -251,7 +251,9 @@ function Get-Ronin {
     }
     process {
         if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
-            Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
+            #Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
+            write-host git config --global --add safe.directory "C:/ronin"
+            write-host git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
             git config --global --add safe.directory "C:/ronin"
             git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
         }
