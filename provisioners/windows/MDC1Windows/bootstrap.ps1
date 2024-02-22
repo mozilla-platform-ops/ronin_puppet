@@ -256,6 +256,7 @@ function Get-Ronin {
             write-host git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
             git config --global --add safe.directory "C:/ronin"
             git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
+            pause
         }
 
         Set-Location "$env:systemdrive\ronin"
