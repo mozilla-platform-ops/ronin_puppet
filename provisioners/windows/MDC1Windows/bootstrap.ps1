@@ -321,6 +321,7 @@ function Run-Ronin-Run {
         $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
         $ronnin_key  =  "HKLM:\SOFTWARE\Mozilla\ronin_puppet"
+        $logdir = "$env:systemdrive\logs"
 
         #Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
         Get-ChildItem -Path $env:systemdrive\logs\*.json -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
@@ -396,8 +397,8 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
                 ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
-                write-host Add-Content -Path "$logdir\$logdate-bootstrap-puppet.json" "]"
-                pause
+                Add-Content -Path "$logdir\$logdate-bootstrap-puppet.json" "]"
+
                 $log = Get-Content "$logdir\$logdate-bootstrap-puppet.json" | ConvertFrom-Json
                 $log | Where-Object {
                     $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
