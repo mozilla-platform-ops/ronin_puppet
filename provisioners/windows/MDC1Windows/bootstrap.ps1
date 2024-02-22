@@ -191,6 +191,7 @@ function Get-PreRequ {
                 "/verysilent"
             ) -Wait #-NoNewWindow
         }
+        pause
         if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
             ## Install Puppet using ServiceUI.exe to install as SYSTEM
             Write-Log -Message ('{0} :: Installing puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
