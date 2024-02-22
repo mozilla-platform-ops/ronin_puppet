@@ -165,11 +165,6 @@ function Get-PreRequ {
         If (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
             Write-Log -Message ('{0} :: Downloading Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-            $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "C:\azcredentials.yaml" -Raw)
-            $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
-            $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
-            $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
-
             Start-Process -FilePath $azcopy_exe -ArgumentList @(
                 "copy",
                 "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi",
