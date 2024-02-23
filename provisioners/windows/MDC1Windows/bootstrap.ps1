@@ -275,9 +275,9 @@ function Get-Ronin {
 
         ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
         $content = @"
-        node default {
-            include roles_profiles::roles::$role
-        }
+node default {
+    include roles_profiles::roles::$role
+}
 "@
         Set-Content -Path "$env:systemdrive\ronin\manifests\nodes.pp" -Value $content
         #if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
