@@ -18,6 +18,7 @@ class roles_profiles::roles::win11642009hwref {
   include roles_profiles::profiles::hardware
   #include roles_profiles::profiles::intel_drivers
   include roles_profiles::profiles::virtual_drivers
+  #include roles_profiles::profiles::microsoft_store
   include roles_profiles::profiles::windows_datacenter_administrator
 
   # Adminstration
