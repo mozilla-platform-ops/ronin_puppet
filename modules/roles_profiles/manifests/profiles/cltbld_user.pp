@@ -27,9 +27,6 @@ class roles_profiles::profiles::cltbld_user {
             user       => 'cltbld',
             kcpassword => $kcpassword,
           }
-          file { '/Users/cltbld/Library/':
-            ensure => directory,
-          }
           macos_utils::clean_appstate { 'cltbld':
             user  => 'cltbld',
             group => 'staff',
