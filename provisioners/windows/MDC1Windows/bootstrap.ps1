@@ -445,15 +445,16 @@ Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 
 If ($stage -ne 'complete') {
-Setup-Logging
-Set-SCHTask
-Get-PSModules
+    Setup-Logging
+    Set-SCHTask
+    Get-PSModules
 
-$complete = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -ErrorAction "SilentlyContinue"
-Get-PreRequ
-Set-Ronin-Registry
-Get-Ronin
-Run-Ronin-Run
+    Get-PreRequ
+    Set-Ronin-Registry
+    Get-Ronin
+    Run-Ronin-Run
+}
+exit
 pause
 Write-host "Starting bootstrap using raw powershell scripts"
 
