@@ -442,6 +442,9 @@ function Set-SCHTask {
 }
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
+$stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+
+If ($stage -ne 'complete') {
 Setup-Logging
 Set-SCHTask
 Get-PSModules
