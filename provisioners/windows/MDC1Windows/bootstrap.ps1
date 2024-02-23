@@ -343,7 +343,7 @@ function Run-Ronin-Run {
                 ## this should be in Puppet
                 slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
                 slmgr.vbs -ato
-                write-host Restart-Computer -Confirm:$false -Force
+                Restart-Computer -Confirm:$false -Force
             }
             1 {
                 Write-Log -message ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -362,7 +362,8 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                write-host exit 1
+                Restart-Computer -Confirm:$false -Force
+                exit 1
             }
             2 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -371,7 +372,7 @@ function Run-Ronin-Run {
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
                 slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
                 slmgr.vbs -ato
-                write-host Restart-Computer -Confirm:$false -Force
+                Restart-Computer -Confirm:$false -Force
             }
             4 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -390,7 +391,8 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                write-host exit 4
+                Restart-Computer -Confirm:$false -Force
+                exit 4
             }
             6 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -410,12 +412,14 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                write-host exit 6
+                Restart-Computer -Confirm:$false -Force
+                exit 6
             }
             Default {
                 Write-Log -message  ('{0} :: Unable to determine state post Puppet apply :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
                 Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $last_exit
-                write-host exit 1
+                Restart-Computer -Confirm:$false -Force
+                exit 1
             }
         }
     }
