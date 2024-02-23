@@ -14,10 +14,6 @@
 		</component>
 		<component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
 			<UserData>
-				<ProductKey>
-					<Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key>
-					<WillShowUI>Never</WillShowUI>
-				</ProductKey>
 				<AcceptEula>true</AcceptEula>
 			</UserData>
             <ImageInstall>
