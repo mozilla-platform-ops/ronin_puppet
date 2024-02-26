@@ -3,6 +3,116 @@ param(
     [string]$deploymentaccess
 )
 
+## prevent standby and monitor timeout during bootstrap
+powercfg.exe -x -standby-timeout-ac 0
+powercfg.exe -x -monitor-timeout-ac 0
+
+function Write-Log {
+    param (
+        [string] $message,
+        [string] $severity = 'INFO',
+        [string] $source = 'BootStrap',
+        [string] $logName = 'Application'
+    )
+    if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
+        New-EventLog -LogName $logName -Source $source
+    }
+    switch ($severity) {
+        'DEBUG' {
+            $entryType = 'SuccessAudit'
+            $eventId = 2
+            break
+        }
+        'WARN' {
+            $entryType = 'Warning'
+            $eventId = 3
+            break
+        }
+        'ERROR' {
+            $entryType = 'Error'
+            $eventId = 4
+            break
+        }
+        default {
+            $entryType = 'Information'
+            $eventId = 1
+            break
+        }
+    }
+    Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
+    if ([Environment]::UserInteractive) {
+        $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
+        Write-Host  -object $message -ForegroundColor $fc
+    }
+}
+
+function Setup-Logging {
+    param (
+        [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
+        [string] $local_dir = "$env:systemdrive\BootStrap",
+        [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
+        [string] $nxlog_conf = "nxlog.conf",
+        [string] $nxlog_pem  = "papertrail-bundle.pem",
+        [string] $nxlog_dir  = "$env:systemdrive\Program Files (x86)\nxlog"
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        New-Item -ItemType Directory -Force -Path $local_dir -ErrorAction SilentlyContinue
+
+        $maxRetries = 20
+		$retryInterval = 3
+        if (!(Test-Path $nxlog_dir\nxlog.exe)) {
+		    try {
+			    for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
+				    if (!(Test-Path $local_dir\$nxlog_msi)) {
+					    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
+                        break
+                    }
+                }
+            }
+            catch {
+                Write-Host "Attempt ${retryCount}: An error occurred - $_"
+                Write-Host "Retrying in ${retryInterval} seconds..."
+                Start-Sleep -Seconds $retryInterval
+                if ($retryCount -gt $maxRetries) {
+                    Add-Type -AssemblyName System.Windows.Forms
+                    [System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                    exit 99
+                }
+            }
+        }
+        msiexec /i $local_dir\$nxlog_msi /passive
+        start-sleep -seconds 20
+        try {
+            $retryCount = 0
+            for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
+                while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+                Invoke-WebRequest  $ext_src/deploy_nxlog.conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
+                while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+                Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
+			}
+		}
+		catch {
+			Write-Host "Attempt ${retryCount}: An error occurred - $_"
+			Write-Host "Retrying in ${retryInterval} seconds..."
+			Start-Sleep -Seconds $retryInterval
+            if ($retryCount -gt $maxRetries) {
+                Add-Type -AssemblyName System.Windows.Forms
+                [System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                exit 99
+            }
+		}
+		Restart-Service -Name nxlog -force
+	}
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+Setup-Logging
+
 Set-Location X:\working
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
