@@ -7,7 +7,7 @@ class roles_profiles::profiles::cltbld_user {
     'Darwin': {
       $account_username = 'cltbld'
       $password     = lookup('cltbld_user.password')
-      $password_unhashed    = lookup('cltbld_user.unhasedpassword')
+      $password_unhashed    = lookup('cltbld_user.unhashedpassword')
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
