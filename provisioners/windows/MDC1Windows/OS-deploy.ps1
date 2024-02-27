@@ -213,9 +213,12 @@ if (!(Test-Path $setup)) {
 
     Set-Content -Path $unattend -Value $content2
 
-} else {
-    Write-Host "Local installation files are good. No further action needed.”
 }
+
+#else {
+#    Write-Host "Local installation files are good. No further action needed.”
+#}
+
 if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
     Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
