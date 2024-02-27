@@ -220,9 +220,10 @@ if (!(Test-Path $setup)) {
     Set-Content -Path $unattend -Value $content2
 
 }
-
-Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire
-write-host Format-Volume -DriveLetter C -FileSystem NTFS -Force
+if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
+    Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
+    write-host Format-Volume -DriveLetter C -FileSystem NTFS -Force
+}
 
 dir $local_install
 Set-Location -Path $OS_files
