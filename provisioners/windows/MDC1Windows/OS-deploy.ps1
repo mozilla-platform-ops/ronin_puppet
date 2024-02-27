@@ -57,7 +57,7 @@ if ($part2.DriveLetter -ne 'D') {
     Write-Host "Relabeling partition 2 to D."
 }
 ## Show if needed
-<#
+#<#
 foreach ($partition in $partitions) {
     Write-Host "Partition $($partition.DriveLetter):"
     Write-Host "   File System: $($partition.FileSystem)"
@@ -65,7 +65,7 @@ foreach ($partition in $partitions) {
     Write-Host "   Free Space: $($partition.SizeRemaining / 1GB) GB"
     Write-Host ""
 }
-#>
+##>
 ## Get node name
 
 $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object {$_.name -match "ethernet"}
@@ -164,13 +164,13 @@ if (!(Test-Path $setup)) {
         Write-Host Failed to mount Deployment Share
         exit 99
     }
-
+    Write-Host "Copying needed files"
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
-    New-Item -ItemType Directory $secret_dir
+    New-Item -ItemType Directory $secret_dir  | Out-Null
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
-    New-Item -ItemType Directory $local_app
+    New-Item -ItemType Directory $local_app  | Out-Null
     Copy-Item -Path $source_app\* $local_app -Recurse -Force
 
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
