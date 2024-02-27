@@ -221,7 +221,8 @@ if (!(Test-Path $setup)) {
 
 }
 
-write-host Format-Volume -DriveLetter C -FileSystem NTFS -Force -Confirm:$false
+Format-Volume -DriveLetter C -FileSystem NTFS -Force -Confirm:false
+write-host Format-Volume -DriveLetter C -FileSystem NTFS -Force -Confirm:false
 
 dir $local_install
 Set-Location -Path $OS_files
