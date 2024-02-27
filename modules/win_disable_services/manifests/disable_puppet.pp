@@ -3,11 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_disable_services::disable_puppet {
-
-    if $::operatingsystem == 'Windows' {
-        win_disable_services::disable_service { 'puppet':
-        }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+  if $facts['os']['name'] == 'Windows' {
+    win_disable_services::disable_service { 'puppet':
     }
+  } else {
+    fail("${module_name} does not support ${facts['os']['name']}")
+  }
 }
