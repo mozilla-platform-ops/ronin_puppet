@@ -7,7 +7,6 @@ Write-Host "Preparing local environment."
 Set-Location X:\working
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
-#Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\Storage"
 
 # Get all partitions
 $partitions = Get-Partition
@@ -57,6 +56,8 @@ if ($part2.DriveLetter -ne 'D') {
     Set-Partition -DriveLetter $part2.DriveLetter -NewDriveLetter Y
     Write-Host "Relabeling partition 2 to D."
 }
+## Show if needed
+<#
 foreach ($partition in $partitions) {
     Write-Host "Partition $($partition.DriveLetter):"
     Write-Host "   File System: $($partition.FileSystem)"
@@ -64,7 +65,7 @@ foreach ($partition in $partitions) {
     Write-Host "   Free Space: $($partition.SizeRemaining / 1GB) GB"
     Write-Host ""
 }
-
+#>
 ## Get node name
 
 $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object {$_.name -match "ethernet"}
@@ -174,6 +175,7 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
     New-Item -ItemType Directory $local_app
     Copy-Item -Path $source_app\* $local_app -Recurse -Force
+
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
     write-host Updating Get-Bootstrap.ps1
@@ -197,10 +199,7 @@ if (!(Test-Path $setup)) {
     net use Z: /delete
 
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/base-autounattend.xml  -OutFile $unattend
-    #Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile $local_yaml
 
-    write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/base-autounattend.xml  -OutFile $unattend
-    #write-host Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/pools.yml -OutFile $local_yaml
     $secret_YAML = Convertfrom-Yaml (Get-Content $secret_file -raw)
 
     write-host Show yaml
@@ -221,11 +220,10 @@ if (!(Test-Path $setup)) {
 
 }
 if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
+    write-host "Previous installation detected. Formatting OS disk."
     Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
-    write-host Format-Volume -DriveLetter C -FileSystem NTFS -Force
 }
 
-dir $local_install
 Set-Location -Path $OS_files
 write-host Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
 #Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
