@@ -149,7 +149,7 @@ if (!(Test-Path $setup)) {
     $maxRetries = 20
     $retryInterval = 30
 
-    Write-Host Mounting Deployment Share
+    Write-Host "Mounting Deployment Share."
     for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
         try {
             net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
@@ -214,7 +214,7 @@ if (!(Test-Path $setup)) {
     Set-Content -Path $unattend -Value $content2
 
 } else {
-    Write-Host "Local installation files are good. No further action needed”
+    Write-Host "Local installation files are good. No further action needed.”
 }
 if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
