@@ -213,11 +213,9 @@ if (!(Test-Path $setup)) {
 
     Set-Content -Path $unattend -Value $content2
 
+} else {
+    Write-Host "Local installation files are good. No further action needed."
 }
-
-#else {
-#    Write-Host "Local installation files are good. No further action needed.”
-#}
 
 if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
@@ -227,5 +225,5 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
 Set-Location -Path $OS_files
 Write-Host "Initializing OS installation."
 Write-Host Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
-Write-Host "Have a good day."
+Write-Host "Have a good day!"
 #Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
