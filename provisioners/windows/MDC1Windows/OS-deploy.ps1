@@ -134,8 +134,8 @@ $local_app  = $local_install + "applications"
 #New-Item -ItemType Directory -Path $local_yaml_dir -force
 
 if (!(Test-Path $setup)) {
-    Write-Host Install files wrong or missing
-    Write-Host Will resync
+    Write-Host "Install files wrong or missing."
+    Write-Host "Will resync files."
     if ((Get-ChildItem -Path $local_install -Force).Count -gt 0) {
         Write-Host Wrong install files - REMOVING
         Remove-Item -Path "${local_install}*" -Recurse -Force
@@ -145,7 +145,6 @@ if (!(Test-Path $setup)) {
     ## net use will presist
     $deploypw = ConvertTo-SecureString -String $deploymentaccess -AsPlainText -Force
     $credential = New-Object System.Management.Automation.PSCredential($deployuser, $deploypw)
-    #New-PSDrive -Name Z -PSProvider FileSystem -Root \\mdt2022.ad.mozilla.com\deployments  -Credential $credential -Persist
 
     $maxRetries = 20
     $retryInterval = 30
@@ -165,8 +164,6 @@ if (!(Test-Path $setup)) {
         Write-Host Failed to mount Deployment Share
         exit 99
     }
-
-    dir Z:\
 
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
     New-Item -ItemType Directory $secret_dir
@@ -195,17 +192,15 @@ if (!(Test-Path $setup)) {
 
     Set-Content -Path $Get_Bootstrap  -Value $content
 
-    Write-Host Disconecting Deployment Share
+    Write-Host "Disconecting Deployment Share."
     net use Z: /delete
 
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/${src_Organisation}/${src_Repository}/${src_Branch}/provisioners/windows/MDC1Windows/base-autounattend.xml  -OutFile $unattend
 
     $secret_YAML = Convertfrom-Yaml (Get-Content $secret_file -raw)
 
-    write-host Show yaml
-    write-host $secret_YAML.win_adminpw
+    Write-Host "Updating autounattend.xml."
 
-    Write-Host updating autounattend.xml
     $replacetheses = @(
         @{ OldString = "THIS-IS-A-NAME"; NewString = $shortname },
         @{ OldString = "NotARealPassword"; NewString = $secret_YAML.win_adminpw }
@@ -218,6 +213,8 @@ if (!(Test-Path $setup)) {
 
     Set-Content -Path $unattend -Value $content2
 
+} else {
+    Write-Host "Local installation files are good. No further action needed”
 }
 if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
@@ -225,5 +222,7 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
 }
 
 Set-Location -Path $OS_files
-write-host Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
+Write-Host "Initializing OS installation."
+Write-Host Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
+Write-Host "Have a good day."
 #Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
