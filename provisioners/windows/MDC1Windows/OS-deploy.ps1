@@ -3,6 +3,7 @@ param(
     [string]$deploymentaccess
 )
 
+Write-Host "Preparing local environment."
 Set-Location X:\working
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
@@ -15,7 +16,7 @@ $partitions = Get-Partition
 if ($partitions.Count -eq 0) {
     # Get available disk space if no partitions exist
     $availableSpace = Get-Disk | Where-Object { $_.OperationalStatus -eq 'Online' } | Measure-Object -Property Size -Sum
-    Write-Host "No partitions found."
+    Write-Host "No partitions found. Partitioning disk."
 
     $local_files_size = 21480
     $all_space = [math]::Floor($availableSpace.Sum / 1MB)
@@ -45,28 +46,26 @@ if ($partitions.Count -eq 0) {
     $diskPartScript | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
     Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
 }
-else {
-    $part1 = Get-Partition -PartitionNumber 3
-    $part2 = Get-Partition -PartitionNumber 4
+## Check labels
+$part1 = Get-Partition -PartitionNumber 3
+$part2 = Get-Partition -PartitionNumber 4
 
-    if ($part1.DriveLetter -ne 'C') {
-        write-host OS disk is wrong
-    }
-    if ($part2.DriveLetter -ne 'D') {
-        Set-Partition -DriveLetter $part2.DriveLetter -NewDriveLetter Y
-        Write-Host Relabeling partition 2 to D
-    }
-    foreach ($partition in $partitions) {
-        Write-Host "Partition $($partition.DriveLetter):"
-        Write-Host "   File System: $($partition.FileSystem)"
-        Write-Host "   Capacity: $($partition.Size / 1GB) GB"
-        Write-Host "   Free Space: $($partition.SizeRemaining / 1GB) GB"
-        Write-Host ""
-    }
+if ($part1.DriveLetter -ne 'C') {
+    write-host “OS Disk incorrectly labeled. Re-labeling to C.”
+}
+if ($part2.DriveLetter -ne 'D') {
+    Set-Partition -DriveLetter $part2.DriveLetter -NewDriveLetter Y
+    Write-Host "Relabeling partition 2 to D."
+}
+foreach ($partition in $partitions) {
+    Write-Host "Partition $($partition.DriveLetter):"
+    Write-Host "   File System: $($partition.FileSystem)"
+    Write-Host "   Capacity: $($partition.Size / 1GB) GB"
+    Write-Host "   Free Space: $($partition.SizeRemaining / 1GB) GB"
+    Write-Host ""
 }
 
 ## Get node name
-#Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
 
 $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object {$_.name -match "ethernet"}
 $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses.Address | Where-object {$_.AddressFamily -eq "InterNetwork"}).IPAddressToString
@@ -75,14 +74,10 @@ $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHo
 $index = $ResolvedName.IndexOf('.')
 $shortname = $ResolvedName.Substring(0, $index)
 
-Write-Host $IPAddress
-Write-Host $ResolvedName
-Write-Host $shortname
+Write-Host "Host name set to be $ResolvedName"
 
 ## Get data
-#Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\powershell-yaml"
-
-# assumes files is in the same dir
+## Assumes files is in the same dir
 $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
 
 foreach ($pool in $YAML.pools) {
@@ -225,6 +220,23 @@ if (!(Test-Path $setup)) {
     Set-Content -Path $unattend -Value $content2
 
 }
+<#
+$diskPartScript2 = @"
+    select volume 0
+    clean
+    create partition primary size=$primary_size
+    format fs=ntfs quick
+    assign letter=C
+    exit
+"@
+
+$diskPartScript2 | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
+Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
+#>
+
+
+
+
 
 dir $local_install
 Set-Location -Path $OS_files
