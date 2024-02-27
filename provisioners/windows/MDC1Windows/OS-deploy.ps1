@@ -228,7 +228,6 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
 
 Set-Location -Path $OS_files
 Write-Host "Initializing OS installation."
-#Write-Host Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
+Write-Host Running: Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
 Write-Host "Have a nice day! :)"
 Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
-Write-Host "Running: $^"
