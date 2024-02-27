@@ -6,8 +6,8 @@ class win_packages::performance_tool_kit (
   String $moz_profile_source,
   String $moz_profile_file,
 ) {
-  case $facts['custom_win_os_version'] {
-    'win_11_2009', 'win_2022_2009', 'win_10_2009': {
+  case $facts['os']['name'] {
+    'Windows': {
       win_packages::win_msi_pkg { 'WPTx64':
         pkg             => 'WPTx64-x86_en-us.msi',
         install_options => ['/quiet'],
@@ -22,7 +22,7 @@ class win_packages::performance_tool_kit (
       }
     }
     default: {
-      fail("${module_name} does not support ${$facts['custom_win_os_version']}")
+      fail("${module_name} does not support ${$facts['os']['name']}")
     }
   }
 }

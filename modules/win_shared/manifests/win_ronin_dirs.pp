@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_shared::win_ronin_dirs {
-  case $facts['custom_win_os_version'] {
-    'win_11_2009', 'win_2022_2009', 'win_10_2009': {
+  case $facts['os']['name'] {
+    'Windows': {
       $roninprogramdata  = $facts['custom_win_roninprogramdata']
       $semaphoredir      = $facts['custom_win_roninsemaphoredir']
       $logdir            = $facts['custom_win_roninslogdir']
@@ -26,7 +26,7 @@ class win_shared::win_ronin_dirs {
       }
     }
     default: {
-      fail("${module_name} does not support ${$facts['custom_win_os_version']}")
+      fail("${module_name} does not support ${$facts['os']['name']}")
     }
   }
 }
