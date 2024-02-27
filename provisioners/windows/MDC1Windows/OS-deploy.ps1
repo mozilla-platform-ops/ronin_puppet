@@ -131,6 +131,7 @@ $unattend = $OS_files + "\autounattend.xml"
 $source_app = $source_dir + "applications"
 $local_app  = $local_install + "applications"
 
+
 #New-Item -ItemType Directory -Path $local_yaml_dir -force
 
 if (!(Test-Path $setup)) {
@@ -165,13 +166,16 @@ if (!(Test-Path $setup)) {
         exit 99
     }
     Write-Host "Copying needed files"
-    Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
     New-Item -ItemType Directory $secret_dir  | Out-Null
+    New-Item -ItemType Directory $local_app  | Out-Null
+    New-Item -ItemType Directory $local_yaml_dir  | Out-Null
+
+    Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
-    New-Item -ItemType Directory $local_app  | Out-Null
     Copy-Item -Path $source_app\* $local_app -Recurse -Force
+    Copy-Item -Path pools.yml  $local_yaml -Force
 
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
