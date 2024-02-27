@@ -220,23 +220,8 @@ if (!(Test-Path $setup)) {
     Set-Content -Path $unattend -Value $content2
 
 }
-<#
-$diskPartScript2 = @"
-    select volume 0
-    clean
-    create partition primary size=$primary_size
-    format fs=ntfs quick
-    assign letter=C
-    exit
-"@
 
-$diskPartScript2 | Out-File -FilePath "$env:TEMP\diskpart_script.txt" -Encoding ASCII
-Start-Process "diskpart.exe" -ArgumentList "/s $env:TEMP\diskpart_script.txt" -Wait
-#>
-
-
-
-
+write-host Format-Volume -DriveLetter C -FileSystem NTFS -Force -Confirm:$false
 
 dir $local_install
 Set-Location -Path $OS_files
