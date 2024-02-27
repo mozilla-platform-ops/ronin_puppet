@@ -3,24 +3,26 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::performance_tool_kit (
-    String $moz_profile_source,
-    String $moz_profile_file,
-){
-
-    if $::operatingsystem == 'Windows' {
-        win_packages::win_msi_pkg  { 'WPTx64':
-            pkg             => 'WPTx64-x86_en-us.msi',
-            install_options => ['/quiet'],
-        }
-        file { $moz_profile_file:
-            source  => $moz_profile_source,
-        }
-        exec { 'install_moz_profile':
-            command     => "${facts[custom_win_system32]}\\wbem\\mofcomp.exe ${moz_profile_file}",
-            subscribe   => File[$moz_profile_file],
-            refreshonly => true,
-        }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+  String $moz_profile_source,
+  String $moz_profile_file,
+) {
+  case $facts['custom_win_os_version'] {
+    'win_11_2009', 'win_2022_2009', 'win_10_2009': {
+      win_packages::win_msi_pkg { 'WPTx64':
+        pkg             => 'WPTx64-x86_en-us.msi',
+        install_options => ['/quiet'],
+      }
+      file { $moz_profile_file:
+        source  => $moz_profile_source,
+      }
+      exec { 'install_moz_profile':
+        command     => "${facts[custom_win_system32]}\\wbem\\mofcomp.exe ${moz_profile_file}",
+        subscribe   => File[$moz_profile_file],
+        refreshonly => true,
+      }
     }
+    default: {
+      fail("${module_name} does not support ${$facts['custom_win_os_version']}")
+    }
+  }
 }
