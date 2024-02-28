@@ -40,7 +40,6 @@ provisioner:
           password: 'abc123'
           salt: 'h3hhahchahah'
           iterations: '3'
-          unhashedpassword: 'cltbld'
         generic_worker:
           gecko_t_linux_talos:
             taskcluster_client_id: '123'
