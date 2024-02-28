@@ -125,7 +125,7 @@ function Get-PSModules {
 
         foreach ($module in $modules) {
             $hit = Get-Module -Name $module
-            Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name,  $PSItem)) -severity 'DEBUG'
+            Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name,  $module)) -severity 'DEBUG'
             if ($null -eq $hit) {
                 Install-Module -Name $module -AllowClobber -Force -Confirm:$false
                 if (-not (Get-Module -Name $module -ListAvailable)) {
