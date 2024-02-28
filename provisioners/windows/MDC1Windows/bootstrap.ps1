@@ -7,10 +7,6 @@ param(
     [string] $image_provisioner = 'MDC1Windows'
 )
 
-## prevent standby and monitor timeout during bootstrap
-powercfg.exe -x -standby-timeout-ac 0
-powercfg.exe -x -monitor-timeout-ac 0
-
 function Write-Log {
     param (
         [string] $message,
@@ -441,6 +437,10 @@ function Set-SCHTask {
     }
 }
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
+
+## prevent standby and monitor timeout during bootstrap
+powercfg.exe -x -standby-timeout-ac 0
+powercfg.exe -x -monitor-timeout-ac 0
 
 $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 
