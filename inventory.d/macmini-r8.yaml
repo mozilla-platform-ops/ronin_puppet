@@ -288,6 +288,7 @@ groups:
   - name: gecko-1-b-osx-1015
     targets:
       - macmini-r8-138.test.releng.mdc1.mozilla.com
+      - macmini-r8-194.test.releng.mdc1.mozilla.com
       - macmini-r8-195.test.releng.mdc1.mozilla.com
       - macmini-r8-196.test.releng.mdc1.mozilla.com
       - macmini-r8-197.test.releng.mdc1.mozilla.com
@@ -305,7 +306,6 @@ groups:
 
   - name: gecko-1-b-osx-1015-staging
     targets:
-      - macmini-r8-194.test.releng.mdc1.mozilla.com
       - macmini-r8-202.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_1_b_osx_1015_staging
