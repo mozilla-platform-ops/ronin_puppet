@@ -358,7 +358,8 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                Restart-Computer -Confirm:$false -Force
+                write-host Restart-Computer -Confirm:$false -Force
+                pause
                 #exit 1
             }
             2 {
