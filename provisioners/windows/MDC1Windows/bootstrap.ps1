@@ -377,7 +377,8 @@ function Run-Ronin-Run {
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
                 slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
                 slmgr.vbs -ato
-                Restart-Computer -Confirm:$false -Force
+                write-host Restart-Computer -Confirm:$false -Force
+                pause
             }
             4 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
