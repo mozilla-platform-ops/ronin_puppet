@@ -11,8 +11,8 @@ class roles_profiles::profiles::microsoft_network_services {
         'Windows': {
             include win_kms
             if $facts['custom_win_kms_activated'] != 'activated' {
-                $server = lookup('kms.server.mdc1_ip')
-                $key = lookup("kms.key.${facts['custom_win_os_caption']}")
+                $server = lookup('windows.datacenter.kms.server.mdc1_ip')
+                $key = lookup("windows.kms.key.${facts['custom_win_os_caption']}")
 
                 class { 'win_kms::force_activation':
                     server => $server,
