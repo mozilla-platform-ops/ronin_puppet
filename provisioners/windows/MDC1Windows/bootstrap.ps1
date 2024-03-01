@@ -82,9 +82,9 @@ function Setup-Logging {
                     exit 99
                 }
             }
+            msiexec /i $local_dir\$nxlog_msi /passive
         }
-        msiexec /i $local_dir\$nxlog_msi /passive
-        start-sleep -seconds 20
+        start-sleep -seconds 3
         try {
             $retryCount = 0
             for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
@@ -121,7 +121,13 @@ function Get-PSModules {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        Install-PackageProvider -Name NuGet -Force -Confirm:$false
+        $nugetProvider = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
+        if ($nugetProvider -eq $null) {
+           Write-Log -message  ('{0} :: Installing NuGet Package Provider' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+           Install-PackageProvider -Name NuGet -Force
+        } else {
+           Write-Log -message  ('{0} :: NuGet is present.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
 
         foreach ($module in $modules) {
             $hit = Get-Module -Name $module
@@ -132,6 +138,8 @@ function Get-PSModules {
                     Write-Log -message  ('{0} :: {1} module did not install' -f $($MyInvocation.MyCommand.Name,  $module)) -severity 'DEBUG'
                     write-host exit 3
                 }
+            } else {
+                Write-Log -message  ('{0} :: {1} module is present' -f $($MyInvocation.MyCommand.Name,  $module)) -severity 'DEBUG'
             }
             Import-Module -Name $module -Force -PassThru
         }
