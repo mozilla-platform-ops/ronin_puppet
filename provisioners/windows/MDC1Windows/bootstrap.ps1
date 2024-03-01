@@ -121,7 +121,7 @@ function Get-PSModules {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        $nugetProvider = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
+        $nugetProvider = Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue
         if ($nugetProvider -eq $null) {
            Write-Log -message  ('{0} :: Installing NuGet Package Provider' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
            Install-PackageProvider -Name NuGet -Force -Confirm:$false
