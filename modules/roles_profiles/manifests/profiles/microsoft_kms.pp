@@ -8,7 +8,9 @@ class roles_profiles::profiles::microsoft_kms {
         'Windows': {
             if $facts['custom_win_kms_activated'] != 'activated' {
                 $key = lookup("windows.kms.key.${facts['custom_win_os_caption']}")
-                include win_kms::set_key
+                class {  'win_kms::set_key':
+                    key => $key,
+                }
             }
         }
         default: {
