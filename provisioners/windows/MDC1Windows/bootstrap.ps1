@@ -277,7 +277,7 @@ function Get-Ronin {
             git config --global --add safe.directory "C:/ronin"
         }
 
-        ## Set nodes.pp to point to win11642009hwref.yaml file with ronin puppet
+        ## Set nodes.pp
         $content = @"
 node default {
     include roles_profiles::roles::$role
@@ -345,8 +345,8 @@ function Run-Ronin-Run {
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
                 ## this should be in Puppet
-                slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
-                slmgr.vbs -ato
+                #slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
+                #slmgr.vbs -ato
                 Restart-Computer -Confirm:$false -Force
             }
             1 {
@@ -366,8 +366,7 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                write-host Restart-Computer -Confirm:$false -Force
-                pause
+                Restart-Computer -Confirm:$false -Force
                 #exit 1
             }
             2 {
@@ -375,10 +374,9 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
-                slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
-                slmgr.vbs -ato
-                write-host Restart-Computer -Confirm:$false -Force
-                pause
+                #slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
+                #slmgr.vbs -ato
+                Restart-Computer -Confirm:$false -Force
             }
             4 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
