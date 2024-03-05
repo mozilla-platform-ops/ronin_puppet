@@ -20,7 +20,7 @@ class roles_profiles::roles::win10642009azure {
       include roles_profiles::profiles::network
       ## set UTC
       include roles_profiles::profiles::ntp
-      ## errors if we don't have this, adding this 
+      ## errors if we don't have this, adding this
       include roles_profiles::profiles::mozilla_maintenance_service
     }
     default: {
