@@ -206,7 +206,7 @@ if (!(Test-Path $setup)) {
     Write-Host "Updating autounattend.xml."
 
     $replacetheses = @(
-        @{ OldString = "THIS-IS-A-NAME"; NewString = $ResolvedName },
+        @{ OldString = "THIS-IS-A-NAME"; NewString = $shortname },
         @{ OldString = "NotARealPassword"; NewString = $secret_YAML.win_adminpw }
 )
 
