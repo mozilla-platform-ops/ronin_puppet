@@ -130,12 +130,8 @@
 					<Order>3</Order>
 					<CommandLine>powershell.exe  Copy-Item -Path D:\secrets\vault.yaml -Destination C:\bootstrap -Force </CommandLine>
 				</SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <Order>4</Order>
-                    <CommandLine>reg ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" /v "NV Domain" /d DOMAINNAME /f </CommandLine>
-                </SynchronousCommand>
 				<SynchronousCommand wcm:action="add">
-					<Order>5</Order>
+					<Order>4</Order>
 					<CommandLine>powershell.exe  -ExecutionPolicy Bypass -File D:\scripts\Get-Bootstrap.ps1 </CommandLine>
 				</SynchronousCommand>
 			</FirstLogonCommands>

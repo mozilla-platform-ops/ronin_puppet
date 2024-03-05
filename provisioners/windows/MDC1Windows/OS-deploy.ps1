@@ -209,7 +209,6 @@ if (!(Test-Path $setup)) {
 
     $replacetheses = @(
         @{ OldString = "THIS-IS-A-NAME"; NewString = $shortname },
-        @{ OldString = "DOMAINNAME"; NewString = $YAML.defaults.NV_domain },
         @{ OldString = "NotARealPassword"; NewString = $secret_YAML.win_adminpw }
 )
 
