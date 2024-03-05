@@ -15,3 +15,5 @@ pools:
     - nuc-33430
   - name: "Default"
     image: "win11-64-2009"
+defaults:
+  NV_domain: "mdc1.mozilla.com"
