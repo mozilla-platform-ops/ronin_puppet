@@ -75,6 +75,8 @@ $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHo
 $index = $ResolvedName.IndexOf('.')
 $shortname = $ResolvedName.Substring(0, $index)
 
+$DomainSuffix = $ResolvedName -replace '^[^.]*\.', ''
+
 Write-Host "Host name set to be $ResolvedName"
 
 ## Get data
@@ -207,6 +209,7 @@ if (!(Test-Path $setup)) {
 
     $replacetheses = @(
         @{ OldString = "THIS-IS-A-NAME"; NewString = $shortname },
+        @{ OldString = "DOMAINNAME"; NewString = $DomainSuffix },
         @{ OldString = "NotARealPassword"; NewString = $secret_YAML.win_adminpw }
 )
 
