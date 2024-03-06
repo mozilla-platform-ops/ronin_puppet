@@ -369,8 +369,7 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                Restart-Computer -Confirm:$false -Force
-                #exit 1
+                Handle-Failure
             }
             2 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -398,8 +397,7 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                Restart-Computer -Confirm:$false -Force
-                #exit 4
+                Handle-Failure
             }
             6 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -419,8 +417,7 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                Restart-Computer -Confirm:$false -Force
-                #exit 6
+                Handle-Failure
             }
             Default {
                 Write-Log -message  ('{0} :: Unable to determine state post Puppet apply :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -488,6 +485,27 @@ function Set-PXE {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Handle-Failure {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        If (!(test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet\failure")) {
+			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 1 of 2. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+			New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'failure' -Value "yes" -PropertyType String -force
+			Restart-Computer -Force
+		} else {
+			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 2 of 2.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+			Set-PXE
+		}
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
 ## prevent standby and monitor timeout during bootstrap
