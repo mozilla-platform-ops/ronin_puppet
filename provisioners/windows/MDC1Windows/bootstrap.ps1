@@ -502,6 +502,7 @@ function Handle-Failure {
 		} else {
 			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 2 of 2.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 			write-host Set-PXE
+            pause
 		}
     }
     end {
