@@ -495,6 +495,7 @@ function Handle-Failure {
         If (!(test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet\failure")) {
 			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 1 of 2. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 			New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'failure' -Value "yes" -PropertyType String -force
+            Start-Sleep -s 10
 			Restart-Computer -Force
 		} else {
 			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 2 of 2.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
