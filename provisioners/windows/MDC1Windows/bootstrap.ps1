@@ -459,7 +459,7 @@ function Set-PXE {
 
 		bcdedit /enum firmware > $temp_dir\firmware.txt
 
-		$fwbootmgr = Select-String -Path "$FolderName\firmware.txt" -Pattern "{fwbootmgr}"
+		$fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
 		if (!$fwbootmgr){
 			Write-Log -message  ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 			Exit 999
@@ -468,7 +468,7 @@ function Set-PXE {
 			# Get the line of text with the GUID for the PXE boot option.
 			# IPV4 = most PXE boot options
 			# EFI Network = Hyper-V PXE boot option
-			$FullLine = (( Get-Content $FolderName\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop ).context.precontext)[0]
+			$FullLine = (( Get-Content $temp_dir\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop ).context.precontext)[0]
 
 			# Remove all text but the GUID
 			$GUID = '{' + $FullLine.split('{')[1]
