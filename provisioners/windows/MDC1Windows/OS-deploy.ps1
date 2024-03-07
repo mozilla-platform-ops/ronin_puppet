@@ -92,6 +92,7 @@ foreach ($pool in $YAML.pools) {
             $src_Organisation = $pool.src_Organisation
             $src_Repository = $pool.src_Repository
             $src_Branch = $pool.src_Branch
+            $hash = $pool.hash
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
             break
@@ -189,7 +190,8 @@ if (!(Test-Path $setup)) {
         @{ OldString = "SRCOrganisation"; NewString = $src_Organisation },
         @{ OldString = "SRCRepository"; NewString = $src_Repository },
         @{ OldString = "ImageProvisioner"; NewString = "MDC1Windows" },
-        @{ OldString = "SRCBranch"; NewString = $src_Branch }
+        @{ OldString = "SRCBranch"; NewString = $src_Branch },
+        @{ OldString = "1HASH"; NewString = $hash }
 )
     $content = Get-Content -Path $Get_Bootstrap
     foreach ($replacement in $replacements) {
