@@ -3,8 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win11642009hwrefalpha {
-  # Install MS tools earlier
+  ## Install before Widnows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
+  include roles_profiles::profiles::ssh
   # System
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
@@ -20,7 +21,6 @@ class roles_profiles::roles::win11642009hwrefalpha {
   include roles_profiles::profiles::virtual_drivers
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::microsoft_kms
-  #include roles_profiles::profiles::ssh
 
   # Adminstration
   include roles_profiles::profiles::logging

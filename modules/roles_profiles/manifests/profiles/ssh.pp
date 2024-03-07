@@ -7,28 +7,18 @@ class roles_profiles::profiles::ssh {
     case $::operatingsystem {
         'Windows': {
 
-            $pwrshl_run_script    = lookup('win_pwrshl_run_script')
-            $ssh_program_data     = "${facts['custom_win_programdata']}\\ssh"
-            $programfiles         = $facts['custom_win_programfiles']
             $firewall_port        = lookup('windows.datacenter.ports.ssh')
             $firewall_rule_name   = 'SSH'
 
-            # Needs to be reworked for non datacenter windows workers workers
-            # if $facts['custom_win_location'] == 'azure' :
-                # class { 'win_openssh':
-                    # programfiles      => $programfiles,
-                    # pwrshl_run_script => $pwrshl_run_script,
-                    # ssh_program_data  => $ssh_program_data,
-                # }
-            # }
 
             $relops_key = lookup('windows.winaudit_ssh')
+
+            include win_openssh::add_openssh
 
             class { 'win_users::administrator::authorized_keys':
                 relops_key => $relops_key,
             }
 
-            # For datacenter workers OpenSSH is enabled during deployment
             if $facts['custom_win_location'] == 'datacenter' {
                 if $facts['custom_win_sshd'] == 'installed' {
                     include win_openssh::service
