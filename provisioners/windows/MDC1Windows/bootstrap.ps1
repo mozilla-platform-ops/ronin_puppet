@@ -4,6 +4,7 @@ param(
     [string] $src_Organisation,
     [string] $src_Repository,
     [string] $src_Branch,
+    [string] $hash,
     [string] $image_provisioner = 'MDC1Windows'
 )
 
@@ -261,12 +262,18 @@ function Get-Ronin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+
+        $ronin_repo = "$env:systemdrive\ronin"
+
         if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
-            #Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
-            write-host git config --global --add safe.directory "C:/ronin"
-            write-host git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
-            git config --global --add safe.directory "C:/ronin"
-            git clone "https://github.com/$($src_Organisation)/$($src_Repository)" "$env:systemdrive\ronin"
+            Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
+            git config --global --add safe.directory $ronin_repo
+            git clone "https://github.com/$($src_Organisation)/$($src_Repository)" $ronin_repo
+
+            Set-Location $ronin_repo
+            git checkout $hash
+
+            Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
         }
 
         Set-Location "$env:systemdrive\ronin"
