@@ -6,7 +6,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "bb3c92e"
+    hash: "3dff4a0"
     nodes:
     - t-nuc12-010
   - name: "win11-64-2009-hw-ref"
