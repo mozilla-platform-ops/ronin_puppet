@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::disable_services {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             service {
                 [ 'com.apple.apsd',
@@ -62,7 +62,7 @@ class roles_profiles::profiles::disable_services {
             # include win_disable_services::disable_system_restore
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 

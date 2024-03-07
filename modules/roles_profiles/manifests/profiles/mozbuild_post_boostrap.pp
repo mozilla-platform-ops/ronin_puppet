@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::mozbuild_post_boostrap {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
@@ -48,7 +48,7 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
