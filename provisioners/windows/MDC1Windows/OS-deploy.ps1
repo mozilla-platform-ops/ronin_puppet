@@ -178,7 +178,6 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
     Copy-Item -Path $source_app\* $local_app -Recurse -Force
-    Copy-Item -Path pools.yml  $local_yaml -Force
 
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
 
@@ -229,6 +228,8 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
     Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
 }
+## Update yaml files with recent changes
+Copy-Item -Path pools.yml  $local_yaml -Force
 
 Set-Location -Path $OS_files
 Write-Host "Initializing OS installation."
