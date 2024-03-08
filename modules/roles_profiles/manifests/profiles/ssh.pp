@@ -7,10 +7,6 @@ class roles_profiles::profiles::ssh {
     case $::operatingsystem {
         'Windows': {
 
-            $firewall_port        = lookup('windows.datacenter.ports.ssh')
-            $firewall_rule_name   = 'SSH'
-
-
             $relops_key = lookup('windows.winaudit_ssh')
 
             include win_openssh::add_openssh
@@ -19,18 +15,13 @@ class roles_profiles::profiles::ssh {
                 relops_key => $relops_key,
             }
 
-            if $facts['custom_win_location'] == 'datacenter' {
-                if $facts['custom_win_sshd'] == 'installed' {
-                    include win_openssh::service
-                }
-                win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc1":
-                    port            => $firewall_port,
-                    reciprocal      => true,
-                    fw_display_name => "${firewall_rule_name}_mdc1",
-                }
+            include win_openssh::service
+
+            win_firewall::open_local_port { 'allow_SSH':
+                port            => 22,
+                reciprocal      => true,
+                fw_display_name => 'Allow port 22',
             }
-            # Bug List
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1524440
         }
         default: {
             fail("${::operatingsystem} not supported")
