@@ -9,12 +9,11 @@ class roles_profiles::profiles::ssh {
 
             $relops_key = lookup('windows.winaudit_ssh')
 
-            include win_openssh::add_openssh
-
             class { 'win_users::administrator::authorized_keys':
                 relops_key => $relops_key,
             }
 
+            include win_openssh::add_openssh
             include win_openssh::service
 
             win_firewall::open_local_port { 'allow_SSH':
