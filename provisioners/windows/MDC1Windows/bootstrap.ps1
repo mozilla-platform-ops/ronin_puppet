@@ -264,19 +264,19 @@ function Get-Ronin {
     process {
 
         $ronin_repo = "$env:systemdrive\ronin"
+        Set-Location $ronin_repo
 
         if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
             Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
             git config --global --add safe.directory $ronin_repo
             git clone "https://github.com/$($src_Organisation)/$($src_Repository)" $ronin_repo
 
-            Set-Location $ronin_repo
-            git checkout $hash
+            ## comment out during testing
+            #git checkout $hash
 
             Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
         }
 
-        Set-Location "$env:systemdrive\ronin"
 
         ## ugit convert git output to pscustomobject
         $branch = git branch | Where-object { $PSItem.isCurrentBranch -eq $true }
@@ -285,7 +285,9 @@ function Get-Ronin {
             git checkout $src_branch
             git pull
             git config --global --add safe.directory "C:/ronin"
+            git checkout $hash
         }
+
 
         ## Set nodes.pp
         $content = @"
