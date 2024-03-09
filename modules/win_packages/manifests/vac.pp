@@ -10,19 +10,22 @@ class win_packages::vac (
     String $work_dir
 ) {
 
+
     $zip_name    = "vac${version}.zip"
     $exe_name    = "${work_dir}\\setup64.exe"
     $pkgdir      = $facts['custom_win_temp_dir']
     $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
     $src_file    = "\"${pkgdir}\\${zip_name}\""
 
-
     file { $vac_dir:
         ensure => directory,
     }
-    file {  "${pkgdir}\\${zip_name}":
-        source => "${srcloc}/${zip_name}"
+    win_packages::azcopy { 'get_vac':
+        pkg => $zip_name,
     }
+    #file {  "${pkgdir}\\${zip_name}":
+    #    source => "${srcloc}/${zip_name}"
+    #}
     exec {  'vac_unzip':
         command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
         creates  => $exe_name,
