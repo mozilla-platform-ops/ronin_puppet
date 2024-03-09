@@ -230,6 +230,7 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
 }
 ## Update yaml files with recent changes
 Copy-Item -Path pools.yml  $local_yaml -Force
+Copy-Item -Path $source_secrets -Destination $secret_file -Force
 
 Set-Location -Path $OS_files
 Write-Host "Initializing OS installation."
