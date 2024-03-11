@@ -21,7 +21,6 @@ class roles_profiles::roles::win11642009hwrefalpha {
   include roles_profiles::profiles::virtual_drivers
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::microsoft_kms
-  include win_packages::azcopy_script
 
   # Adminstration
   include roles_profiles::profiles::logging
