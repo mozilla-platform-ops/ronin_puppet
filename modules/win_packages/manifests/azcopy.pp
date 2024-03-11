@@ -18,7 +18,7 @@ define win_packages::azcopy (
 
 
     exec { "azcopy_${pkg}":
-        command  => "${azcopy} -pkg ${pkg}  -pkgdir  ${pkgdir} ",
+        command  => "${azcopy} -pkg ${pkg}  -pkgdir  ${pkgdir}; if ($\{lastExitCode\} -ne 0) \{ exit 99 \} ",
         provider => powershell,
         creates  => "${pkgdir}\\${pkg}",
     }
