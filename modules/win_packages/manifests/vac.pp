@@ -20,12 +20,18 @@ class win_packages::vac (
     file { $vac_dir:
         ensure => directory,
     }
-    win_packages::azcopy { 'get_vac':
-        pkg => $zip_name,
+    case $facts['custom_win_location'] {
+        'datacenter': {
+            win_packages::azcopy { 'get_vac':
+                pkg => $zip_name,
+            }
+        }
+        default: {
+            file {  "${pkgdir}\\${zip_name}":
+                source => "${srcloc}/${zip_name}"
+            }
+        }
     }
-    #file {  "${pkgdir}\\${zip_name}":
-    #    source => "${srcloc}/${zip_name}"
-    #}
     exec {  'vac_unzip':
         command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
         creates  => $exe_name,
