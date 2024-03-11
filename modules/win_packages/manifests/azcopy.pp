@@ -12,6 +12,7 @@ define win_packages::azcopy (
     $app_id = lookup('azcopy_app_id')
     $secret = lookup('azcopy_app_client_secret')
     $tenant = lookup('azcopy_tenant_id')
+    ## Assume that azcopy.exe is present from bootstrap
     $azcopy = 'D:\applications\azcopy.exe'
 
     windows::environment { 'AZCOPY_SPA_APPLICATION_ID':
