@@ -21,9 +21,6 @@ class win_packages::azcopy_script {
         value => $tenant,
     }
 
-    windows::environment { 'AZCOPY_SPA_APPLICATION_ID':
-        value => $app_id,
-    }
     file { 'D:\applications\azcopy.ps1':
         content => epp('win_packages/azcopy_pkg.ps1.epp'),
     }
