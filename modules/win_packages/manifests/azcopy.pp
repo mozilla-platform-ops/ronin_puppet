@@ -15,15 +15,6 @@ define win_packages::azcopy (
     ## Assume that azcopy.exe is present from bootstrap
     $azcopy = 'D:\applications\azcopy.exe'
 
-    windows::environment { 'AZCOPY_SPA_APPLICATION_ID':
-        value => $app_id,
-    }
-    windows::environment { 'AZCOPY_SPA_CLIENT_SECRET':
-        value => $secret,
-    }
-    windows::environment { 'AZCOPY_TENANT_ID':
-        value => $tenant,
-    }
 
     exec { "azcopy_${pkg}":
         command  => "${azcopy} copy ${srcloc}/${pkg} ${pkgdir}\\${pkg}",
