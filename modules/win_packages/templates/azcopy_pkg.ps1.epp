@@ -49,6 +49,7 @@ function Get-AzCopy-Pkg {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+        Write-Log -Message ('{0} :: Downloading {1}' -f $($MyInvocation.MyCommand.Name), $pkg) -severity 'DEBUG'
         <%= $win_packages::azcopy_script::azcopy %> copy  <%= $win_packages::azcopy_script::srcloc %>/$pkg  "$pkgdir %>\\$pkg"
 		}
     }

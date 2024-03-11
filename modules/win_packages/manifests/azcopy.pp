@@ -8,16 +8,17 @@ define win_packages::azcopy (
     String $pkgdir = $facts['custom_win_temp_dir']
 ){
 
+    require win_packages::azcopy_script
+
     $srcloc = lookup('windows.ext_pkg_src')
     $app_id = lookup('azcopy_app_id')
     $secret = lookup('azcopy_app_client_secret')
     $tenant = lookup('azcopy_tenant_id')
-    ## Assume that azcopy.exe is present from bootstrap
-    $azcopy = 'D:\applications\azcopy.exe'
+    $azcopy = 'D:\applications\azcopy.ps1'
 
 
     exec { "azcopy_${pkg}":
-        command  => "${azcopy} copy ${srcloc}/${pkg} ${pkgdir}\\${pkg}",
+        command  => "${azcopy} -pkg ${pkg}  -pkgdir  ${pkgdir} ",
         provider => powershell,
         creates  => "${pkgdir}\\${pkg}",
     }
