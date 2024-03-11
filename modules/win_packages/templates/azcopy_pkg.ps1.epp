@@ -42,26 +42,13 @@ function Write-Log {
     }
 }
 
-function Get-AzCopy-Pkg {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        Write-Log -Message ('{0} :: Downloading {1}' -f $($MyInvocation.MyCommand.Name), $pkg) -severity 'DEBUG'
-        <%= $win_packages::azcopy_script::azcopy %> copy  <%= $win_packages::azcopy_script::srcloc %>/$pkg  "$pkgdir %>\\$pkg"
-        if (!(Test-Path -Path "$pkgdir %>\\$pkg")) {
-            exit 99
-        }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-
 $ENV:AZCOPY_SPA_APPLICATION_ID = "<%= $win_packages::azcopy_script::app_id %>"
 $ENV:AZCOPY_SPA_CLIENT_SECRET = "<%= $win_packages::azcopy_script::secret %>"
 $ENV:AZCOPY_TENANT_ID = "<%= $win_packages::azcopy_script::tenant %>"
 
-Get-AzCopy-Pkg
+
+Write-Log -Message ('{0} :: Downloading {1}' -f $($MyInvocation.MyCommand.Name), $pkg) -severity 'DEBUG'
+<%= $win_packages::azcopy_script::azcopy %> copy  <%= $win_packages::azcopy_script::srcloc %>/$pkg  "$pkgdir %>\\$pkg"
+if (!(Test-Path -Path "$pkgdir %>\\$pkg")) {
+    exit 99
+}
