@@ -9,9 +9,9 @@ define win_packages::azcopy (
 ){
 
     $srcloc = lookup('windows.ext_pkg_src')
-    $app_id = lookup('azcopy.app_id', String)
-    $secret = lookup('azcopy.app_client_secret', String)
-    $tenant = lookup('azcopy.tenant_id', String)
+    $app_id = lookup('azcopy_app_id')
+    $secret = lookup('azcopy_app_client_secret')
+    $tenant = lookup('azcopy_tenant_id')
     $azcopy = 'D:\applications\azcopy.exe'
 
     windows::environment { 'AZCOPY_SPA_APPLICATION_ID':
