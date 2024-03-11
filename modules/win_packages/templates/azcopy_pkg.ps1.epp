@@ -1,6 +1,6 @@
-$ENV:AZCOPY_SPA_APPLICATION_ID = "<%= $win_packages::azcopy::app_id %>"
-$ENV:AZCOPY_SPA_CLIENT_SECRET = "<%= $win_packages::azcopy::secret %>"
-$ENV:AZCOPY_TENANT_ID = "<%= $win_packages::azcopy::tenant %>"
+$ENV:AZCOPY_SPA_APPLICATION_ID = "<%= $win_packages::azcopy_script::app_id %>"
+$ENV:AZCOPY_SPA_CLIENT_SECRET = "<%= $win_packages::azcopy_script::secret %>"
+$ENV:AZCOPY_TENANT_ID = "<%= win_packages::azcopy_script::tenant %>"
 
 
-<%= $win_packages::azcopy::azcopy %> copy  <%= $win_packages::azcopy::srcloc %>/<%= $win_packages::azcopy::pkg %> <%= $win_packages::azcopy::pkgdir %>\\<%= $win_packages::azcopy::pkg %>
+<%= $win_packages::azcopy_script::azcopy %> copy  <%= $win_packages::azcopy_script::srcloc %>/<%= $win_packages::azcopy::pkg %> <%= $win_packages::azcopy_script::pkgdir %>\\<%= $win_packages::azcopy::pkg %>
