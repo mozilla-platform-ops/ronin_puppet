@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::python3 (
-  Pattern[/^3\.\d+\.\d+$/] $version = '3.7.4',
+  Pattern[/^\d+\.\d+\.\d+_?\d*$/] $version = '3.7.4',
 ) {
 #    # As of puppet 7.0.0, facts.os.architecture still reports the M1 arm64 hardware as x86_64
 #    # therfore, we check the mac model instead
