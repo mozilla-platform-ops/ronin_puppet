@@ -15,13 +15,13 @@ define win_packages::azcopy (
     $azcopy = 'D:\applications\azcopy.exe'
 
     windows::environment { 'AZCOPY_SPA_APPLICATION_ID':
-        value => lookup('azcopy.app_id'),
+        value => $app_id,
     }
     windows::environment { 'AZCOPY_SPA_CLIENT_SECRET':
-        value => lookup('azcopy.app_client_secret'),
+        value => $secret,
     }
     windows::environment { 'AZCOPY_TENANT_ID':
-        value => lookup('azcopy.tenant_id'),
+        value => $tenant,
     }
 
     exec { "azcopy_${pkg}":
