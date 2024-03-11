@@ -15,6 +15,10 @@ define win_packages::azcopy (
     ## Assume that azcopy.exe is present from bootstrap
     $azcopy = 'D:\applications\azcopy.exe'
 
+    file { 'D:\applications\azcopy.ps1':
+        content => epp('win_packages/azcopy_pkg.ps1.epp'),
+    }
+
     windows::environment { 'AZCOPY_SPA_APPLICATION_ID':
         value => $app_id,
     }
