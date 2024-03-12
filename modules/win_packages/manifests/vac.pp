@@ -26,10 +26,11 @@ class win_packages::vac (
                 pkg => $zip_name,
             }
             exec {  'vac_unzip_azcopy':
-                command     => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
-                subscribe   => Exec["azcopy_${zip_name}"],
-                refreshonly => true,
-                provider    => powershell,
+                command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
+                ## the creates flag doesn't work
+                ## this will need to be fixed
+                ##creates  => $exe_name,
+                provider => powershell,
             }
         }
         default: {
@@ -37,9 +38,9 @@ class win_packages::vac (
                 source => "${srcloc}/${zip_name}"
             }
             exec {  'vac_unzip':
-                command   => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
-                subscribe => File["${pkgdir}\\${zip_name}"],
-                creates   => $exe_name
+                command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
+                creates  => $exe_name,
+                provider => powershell,
             }
         }
     }
