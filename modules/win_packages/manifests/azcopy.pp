@@ -23,8 +23,8 @@ define win_packages::azcopy (
         creates  => "${pkgdir}\\${pkg}",
     }
     exec { "verify_${pkg}":
-        command  => "Test-Path -path ${pkgdir}\\${pkg}",
-        provider => powershell,
-        creates  => "${pkgdir}\\${pkg}",
+        command   => "Test-Path -path ${pkgdir}\\${pkg}",
+        provider  => powershell,
+        subscribe => Exec["verify_${pkg}"],
     }
 }
