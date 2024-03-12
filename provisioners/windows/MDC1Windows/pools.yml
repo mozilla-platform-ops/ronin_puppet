@@ -16,5 +16,23 @@ pools:
     - nuc-33430
   - name: "Default"
     image: "win11-64-2009"
+  - name: "win11-64-2009-hw"
+    Description: "Pool Description"
+    image: "win11-2009-NUC-02-22-2024"
+    src_Organisation: "mozilla-platform-ops"
+    src_Repository: "ronin_puppet"
+    src_Branch: "win11hardware"
+    hash: "00da5a7"
+    nodes:
+    - t-nuc13-001
+  - name: "win11-64-2009-hw-alpha"
+    Description: "Pool Description"
+    image: "win11-2009-NUC-02-22-2024"
+    src_Organisation: "mozilla-platform-ops"
+    src_Repository: "ronin_puppet"
+    src_Branch: "win11hardware"
+    hash: "00da5a7"
+    nodes:
+    - t-nuc13-010
 defaults:
   NV_domain: "mdc1.mozilla.com"
