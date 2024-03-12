@@ -12,7 +12,7 @@ class win_packages::vac (
 
 
     #$zip_name    = "vac${version}.zip"
-    $zip_name    = 'vac66.zip'
+    $zip_name    = 'vac66909.zip'
     $exe_name    = "${work_dir}\\setup64.exe"
     $pkgdir      = $facts['custom_win_temp_dir']
     $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
