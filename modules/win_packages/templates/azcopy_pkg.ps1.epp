@@ -48,7 +48,7 @@ $ENV:AZCOPY_TENANT_ID = "<%= $win_packages::azcopy_script::tenant %>"
 
 
 Write-Log -Message ('{0} :: Downloading {1}' -f $($MyInvocation.MyCommand.Name), $pkg) -severity 'DEBUG'
-<%= $win_packages::azcopy_script::azcopy %> copy  <%= $win_packages::azcopy_script::srcloc  %>/$pkg  \$pkgdir\\\$pkg
+<%= $win_packages::azcopy_script::azcopy %> copy  <%= $win_packages::azcopy_script::srcloc  %>/$pkg  $pkgdir\$pkg
 if (!(Test-Path -Path "$pkgdir\\$pkg")) {
     exit 99
 }
