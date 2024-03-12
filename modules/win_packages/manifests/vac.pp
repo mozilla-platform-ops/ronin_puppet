@@ -34,7 +34,7 @@ class win_packages::vac (
     }
     exec {  'vac_unzip':
         command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
-        creates  => $exe_name,
+        #creates  => $exe_name,
         provider => powershell,
     }
     exec { 'vac_install':
