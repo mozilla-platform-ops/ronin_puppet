@@ -51,7 +51,7 @@ class win_packages::vac (
     #}
     exec { 'vac_install':
         command     => "${facts['custom_win_system32']}\\cmd.exe /c ${exe_name} ${flags}",
-        subscribe   => Exec['vac_unzip'],
+        #subscribe   => Exec['vac_unzip'],
         refreshonly => true,
     }
 }
