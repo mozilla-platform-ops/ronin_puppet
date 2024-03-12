@@ -25,7 +25,7 @@ class win_packages::vac (
             win_packages::azcopy { 'get_vac':
                 pkg => $zip_name,
             }
-            exec {  'vac_unzip_azcopy':
+            exec {  'vac_unzip':
                 command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
                 ## the creates flag doesn't work
                 ## this will need to be fixed
@@ -51,7 +51,7 @@ class win_packages::vac (
     #}
     exec { 'vac_install':
         command     => "${facts['custom_win_system32']}\\cmd.exe /c ${exe_name} ${flags}",
-        #subscribe   => Exec['vac_unzip'],
+        subscribe   => Exec['vac_unzip'],
         refreshonly => true,
     }
 }
