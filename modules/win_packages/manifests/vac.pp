@@ -25,7 +25,7 @@ class win_packages::vac (
             win_packages::azcopy { 'get_vac':
                 pkg => $zip_name,
             }
-            exec {  'vac_unzip':
+            exec {  'vac_unzip_azcopy':
                 command     => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
                 subscribe   => Exec["azcopy_${zip_name}"],
                 refreshonly => true,
