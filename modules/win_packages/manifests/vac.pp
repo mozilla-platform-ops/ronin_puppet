@@ -37,18 +37,17 @@ class win_packages::vac (
                 source => "${srcloc}/${zip_name}"
             }
             exec {  'vac_unzip':
-                command     => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
-                subscribe   => File["${pkgdir}\\${zip_name}"],
-                refreshonly => true,
-                provider    => powershell,
+                command   => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
+                subscribe => File["${pkgdir}\\${zip_name}"],
+                creates   => $exe_name
             }
         }
     }
-    exec {  'vac_unzip':
-        command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
+    #exec {  'vac_unzip':
+        #command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
         #creates  => $exe_name,
-        provider => powershell,
-    }
+        #provider => powershell,
+    #}
     exec { 'vac_install':
         command     => "${facts['custom_win_system32']}\\cmd.exe /c ${exe_name} ${flags}",
         subscribe   => Exec['vac_unzip'],
