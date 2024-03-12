@@ -25,10 +25,22 @@ class win_packages::vac (
             win_packages::azcopy { 'get_vac':
                 pkg => $zip_name,
             }
+            exec {  'vac_unzip':
+                command     => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
+                subscribe   => Exec["azcopy_${zip_name}"],
+                refreshonly => true,
+                provider    => powershell,
+            }
         }
         default: {
             file {  "${pkgdir}\\${zip_name}":
                 source => "${srcloc}/${zip_name}"
+            }
+            exec {  'vac_unzip':
+                command     => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
+                subscribe   => File["${pkgdir}\\${zip_name}"],
+                refreshonly => true,
+                provider    => powershell,
             }
         }
     }
