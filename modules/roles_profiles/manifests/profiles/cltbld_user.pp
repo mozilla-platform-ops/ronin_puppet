@@ -7,7 +7,8 @@ class roles_profiles::profiles::cltbld_user {
     'Darwin': {
       $account_username = 'cltbld'
       $password     = lookup('cltbld_user.password')
-      $password_unhashed    = lookup('cltbld_user.unhashedpassword')
+      # lookup('cltbld_user.unhashedpassword') does not work for some reason. Hard coding for now
+      $password_unhashed    = 'cltbld'
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
@@ -36,20 +37,15 @@ class roles_profiles::profiles::cltbld_user {
           }
         }
         '22', '23': {
-          # Account creation on macOS 13+
-          exec { 'create_home_directory':
-            command => "/bin/mkdir -p /Users/${account_username}",
-            unless  => "/bin/test -d /Users/${account_username}",
-          }
           exec { 'create_macos_user':
-            command => "/usr/sbin/sysadminctl -addUser ${account_username} -fullName '${account_username}' -UID 35 -password '${password_hash}' -home /Users/${account_username}",
+            command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 36 -password '${password_hash}'",
             unless  => '/usr/bin/dscl . -read /Users/cltbld',
           }
           class { 'macos_utils::autologin_user':
             user       => $account_username,
             kcpassword => $password_unhashed,
           }
-          macos_utils::clean_appstate2_13_plus { 'cltbld':
+          macos_utils::clean_appstate_13_plus { 'cltbld':
             user  => 'cltbld',
             group => 'staff',
           }
