@@ -13,7 +13,8 @@ class packages::python3 (
 #        $pkg_name = "python-${version}-macosx10.9.pkg"
 #    }
 
-  $short_version = $version.split('.')[0,2].join('.')
+  $split_arr = split(String($version), '[.]')
+  $short_version = $split_arr[0,2].join('.')
 
   $pkg_name = "python-${version}-macosx10.9.pkg"
   packages::macos_package_from_s3 { $pkg_name:
