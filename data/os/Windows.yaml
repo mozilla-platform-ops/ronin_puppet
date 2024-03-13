@@ -36,6 +36,7 @@ windows:
     wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
     package_source: "https://github.com/taskcluster/generic-worker/releases/download"
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
+    relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
 
   # Windows KMS
   # KMS keys are publicly available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
