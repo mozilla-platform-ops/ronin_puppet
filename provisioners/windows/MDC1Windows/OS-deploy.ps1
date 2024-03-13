@@ -93,7 +93,7 @@ foreach ($pool in $YAML.pools) {
         write-host $node
         write-host $node eq $shortname
         pause
-        if ($node -eq $shortname) {
+        if ($node -like $shortname) {
             $neededImage = $pool.image
             $WorkerPool = $pool.name
             $role = $WorkerPool -replace "-", ""
