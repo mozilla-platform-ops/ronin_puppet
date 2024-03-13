@@ -530,6 +530,7 @@ If ($stage -ne 'complete') {
     Setup-Logging
     Set-SCHTask
     Get-PSModules
+    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
 
     Get-PreRequ
     Set-Ronin-Registry
