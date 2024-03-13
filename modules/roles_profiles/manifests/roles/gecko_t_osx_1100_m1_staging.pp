@@ -23,4 +23,8 @@ class roles_profiles::roles::gecko_t_osx_1100_m1_staging {
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
+    include ::roles_profiles::profiles::pipconf
+    include ::roles_profiles::profiles::macos_people_remover
+    include ::roles_profiles::profiles::macos_tcc_perms
+    #include ::roles_profiles::profiles::safaridriver
 }

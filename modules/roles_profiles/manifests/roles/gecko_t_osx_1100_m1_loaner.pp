@@ -22,4 +22,5 @@ class roles_profiles::roles::gecko_t_osx_1100_m1_loaner {
     include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::worker
+    include ::roles_profiles::profiles::macos_people_remover
 }

@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v5.4.1](https://github.com/puppetlabs/puppetlabs-inifile/tree/v5.4.1) (2023-04-06)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-inifile/compare/v5.4.0...v5.4.1)
+
+### Fixed
+
+- pdksync - \(CONT-189\) Remove support for RedHat6 / OracleLinux6 / Scientific6 [\#492](https://github.com/puppetlabs/puppetlabs-inifile/pull/492) ([david22swan](https://github.com/david22swan))
+- pdksync - \(CONT-130\) - Dropping Support for Debian 9 [\#489](https://github.com/puppetlabs/puppetlabs-inifile/pull/489) ([jordanbreen28](https://github.com/jordanbreen28))
+
+## [v5.4.0](https://github.com/puppetlabs/puppetlabs-inifile/tree/v5.4.0) (2022-10-03)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-inifile/compare/v5.3.0...v5.4.0)
+
+### Added
+
+- pdksync - \(GH-cat-11\) Certify Support for Ubuntu 22.04 [\#484](https://github.com/puppetlabs/puppetlabs-inifile/pull/484) ([david22swan](https://github.com/david22swan))
+- pdksync - \(GH-cat-12\) Add Support for Redhat 9 [\#480](https://github.com/puppetlabs/puppetlabs-inifile/pull/480) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \(MAINT\) Drop support for Solaris 10, Windows Server 2008 R2, and AIX 5.3 and 6.1 [\#485](https://github.com/puppetlabs/puppetlabs-inifile/pull/485) ([jordanbreen28](https://github.com/jordanbreen28))
+- Fix broken idempotency with empty sections [\#483](https://github.com/puppetlabs/puppetlabs-inifile/pull/483) ([kajinamit](https://github.com/kajinamit))
+
+## [v5.3.0](https://github.com/puppetlabs/puppetlabs-inifile/tree/v5.3.0) (2022-05-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-inifile/compare/v5.2.0...v5.3.0)
+
+### Added
+
+- pdksync - \(FM-8922\) - Add Support for Windows 2022 [\#468](https://github.com/puppetlabs/puppetlabs-inifile/pull/468) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1753\) - Add Support for AlmaLinux 8 [\#463](https://github.com/puppetlabs/puppetlabs-inifile/pull/463) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1751\) - Add Support for Rocky 8 [\#462](https://github.com/puppetlabs/puppetlabs-inifile/pull/462) ([david22swan](https://github.com/david22swan))
+- match section names containing prefix character \(normally \[\) [\#457](https://github.com/puppetlabs/puppetlabs-inifile/pull/457) ([tja523](https://github.com/tja523))
+
+### Fixed
+
+- pdksync - \(GH-iac-334\) Remove Support for Ubuntu 14.04/16.04 [\#471](https://github.com/puppetlabs/puppetlabs-inifile/pull/471) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1787\) Remove Support for CentOS 6 [\#466](https://github.com/puppetlabs/puppetlabs-inifile/pull/466) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1598\) - Remove Support for Debian 8 [\#461](https://github.com/puppetlabs/puppetlabs-inifile/pull/461) ([david22swan](https://github.com/david22swan))
+
+## [v5.2.0](https://github.com/puppetlabs/puppetlabs-inifile/tree/v5.2.0) (2021-08-26)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-inifile/compare/v5.1.0...v5.2.0)
+
+### Added
+
+- pdksync - \(IAC-1709\) - Add Support for Debian 11 [\#458](https://github.com/puppetlabs/puppetlabs-inifile/pull/458) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \(IAC-1741\) Allow stdlib v8.0.0 [\#459](https://github.com/puppetlabs/puppetlabs-inifile/pull/459) ([david22swan](https://github.com/david22swan))
+
+## [v5.1.0](https://github.com/puppetlabs/puppetlabs-inifile/tree/v5.1.0) (2021-06-28)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-inifile/compare/v5.0.1...v5.1.0)
+
+### Added
+
+- Accept Datatype Sensitive [\#454](https://github.com/puppetlabs/puppetlabs-inifile/pull/454) ([cocker-cc](https://github.com/cocker-cc))
+
 ## [v5.0.1](https://github.com/puppetlabs/puppetlabs-inifile/tree/v5.0.1) (2021-03-29)
 
 [Full Changelog](https://github.com/puppetlabs/puppetlabs-inifile/compare/v5.0.0...v5.0.1)
@@ -50,7 +110,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
-- Finish API conversion of `create_ini_settings` [\#387](https://github.com/puppetlabs/puppetlabs-inifile/pull/387) ([alexjfisher](https://github.com/alexjfisher))
+- Finish API conversion of `create\_ini\_settings` [\#387](https://github.com/puppetlabs/puppetlabs-inifile/pull/387) ([alexjfisher](https://github.com/alexjfisher))
 
 ## [v4.1.0](https://github.com/puppetlabs/puppetlabs-inifile/tree/v4.1.0) (2020-01-15)
 
@@ -96,6 +156,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - FM-7779 - Cleanup Inifile [\#328](https://github.com/puppetlabs/puppetlabs-inifile/pull/328) ([lionce](https://github.com/lionce))
+- \(MODULES-6714\) - inifile: ensure absent not working with refreshonly = true [\#313](https://github.com/puppetlabs/puppetlabs-inifile/pull/313) ([Lavinia-Dan](https://github.com/Lavinia-Dan))
 
 ## [2.5.0](https://github.com/puppetlabs/puppetlabs-inifile/tree/2.5.0) (2018-12-28)
 
@@ -109,7 +170,6 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - pdksync - \(FM-7655\) Fix rubygems-update for ruby \< 2.3 [\#320](https://github.com/puppetlabs/puppetlabs-inifile/pull/320) ([tphoney](https://github.com/tphoney))
-- \(MODULES-6714\) - inifile: ensure absent not working with refreshonly = true [\#313](https://github.com/puppetlabs/puppetlabs-inifile/pull/313) ([Lavinia-Dan](https://github.com/Lavinia-Dan))
 - \(FM-7483\) - update module to the latest version [\#310](https://github.com/puppetlabs/puppetlabs-inifile/pull/310) ([lionce](https://github.com/lionce))
 - \(FM-7331\)-Fix japanese test [\#308](https://github.com/puppetlabs/puppetlabs-inifile/pull/308) ([lionce](https://github.com/lionce))
 
