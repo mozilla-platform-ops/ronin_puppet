@@ -75,6 +75,10 @@ $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHo
 $index = $ResolvedName.IndexOf('.')
 $shortname = $ResolvedName.Substring(0, $index)
 
+write-host checking name
+write-host $ResolvedName
+write-host $shortname
+
 $DomainSuffix = $ResolvedName -replace '^[^.]*\.', ''
 
 Write-Host "Host name set to be $ResolvedName"
