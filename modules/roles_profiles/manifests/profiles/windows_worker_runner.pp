@@ -16,8 +16,6 @@ class roles_profiles::profiles::windows_worker_runner {
             }
             $nssm_exe              =  "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
 
-            $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_az')
-
             case $facts['custom_win_location'] {
                 'datacenter': {
                     $ext_pkg_src_loc = lookup('windows.s3.ext_pkg_src')
