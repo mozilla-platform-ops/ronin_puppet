@@ -14,8 +14,6 @@ pools:
     nodes:
     - nuc-33431
     - nuc-33430
-  - name: "Default"
-    image: "win11-64-2009"
   - name: "win11-64-2009-hw"
     Description: "Pool Description"
     image: "win11-2009-NUC-02-22-2024"
