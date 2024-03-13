@@ -13,6 +13,8 @@ class packages::python3 (
 #        $pkg_name = "python-${version}-macosx10.9.pkg"
 #    }
 
+  $short_version = $version.split('.')[0,2].join('.')
+
   $pkg_name = "python-${version}-macosx10.9.pkg"
   packages::macos_package_from_s3 { $pkg_name:
     private             => false,
@@ -23,9 +25,9 @@ class packages::python3 (
   # Install certifi's set of CAs to override the system set
   exec {
     'install python3 certs':
-      command => "\"/Applications/Python ${version[0,3]}/Install Certificates.command\"",
+      command => "\"/Applications/Python ${short_version}/Install Certificates.command\"",
       path    => ['/usr/bin', '/usr/sbin', '/bin'],
-      unless  => "test -L /Library/Frameworks/Python.framework/Versions/${version[0,3]}/etc/openssl/cert.pem",
+      unless  => "test -L /Library/Frameworks/Python.framework/Versions/${short_version}/etc/openssl/cert.pem",
       require => Packages::Macos_package_from_s3[$pkg_name],
   }
 }
