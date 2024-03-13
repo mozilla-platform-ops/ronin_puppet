@@ -18,6 +18,15 @@ class roles_profiles::profiles::windows_worker_runner {
 
             $ext_pkg_src_loc       = lookup('windows.taskcluster.relops_az')
 
+            case $facts['custom_win_location'] {
+                'datacenter': {
+                    $ext_pkg_src_loc = lookup('windows.s3.ext_pkg_src')
+                }
+                default: {
+                    $ext_pkg_src_loc = lookup('windows.ext_pkg_src')
+                }
+            }
+
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')
             $desired_gw_version    = lookup('win-worker.generic_worker.version')
