@@ -91,7 +91,7 @@ $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
 foreach ($pool in $YAML.pools) {
     foreach ($node in $pool.nodes) {
         write-host $node
-        write-host if ($node -eq $shortname) {
+        write-host $node -eq $shortname
         pause
         if ($node -eq $shortname) {
             $neededImage = $pool.image
