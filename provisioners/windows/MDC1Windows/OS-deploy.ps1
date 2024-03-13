@@ -78,7 +78,7 @@ $shortname = $ResolvedName.Substring(0, $index)
 write-host checking name
 write-host $ResolvedName
 write-host $shortname
-pause
+#pause
 
 $DomainSuffix = $ResolvedName -replace '^[^.]*\.', ''
 
