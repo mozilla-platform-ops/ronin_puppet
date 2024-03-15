@@ -87,9 +87,9 @@ class linux_packages::py3 {
           }
 
           # make python3.11 available on path
-          alternative_entry { 'ae /usr/bin/python3.11':
+          alternative_entry { '/opt/python/3.11.8/bin/python3.11':
             ensure   => present,
-            altlink  => '/opt/python/3.11.8/bin/python3.11',
+            altlink  => '/usr/bin/python3.11',
             altname  => 'python3.11',
             priority => 30,
             # require  => Class['packages::linux_package_from_s3_multi'],
@@ -114,7 +114,7 @@ class linux_packages::py3 {
             require  => Exec['install py39'],
           }
           # set py3.11 as a higher level override
-          alternative_entry { '/opt/python/3.11.8/bin/python3.11':
+          alternative_entry { '/opt/python/3.11.8/bin/python3':
             ensure   => present,
             altlink  => '/usr/bin/python3',
             altname  => 'python3',
