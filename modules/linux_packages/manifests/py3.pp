@@ -68,14 +68,32 @@ class linux_packages::py3 {
           #   - pysnakes ppa: no longer publishing bionic debs
 
           $temp_dir = '/tmp/py3118'
-
           $pkgs_and_chksums_hash = {
           'python-3.11.8_1_amd64.deb' => 'f83e52a7e57ba7c7d3f783c9168b125e04e510c9c43212baa98eaa614470d611' }
-
           packages::linux_package_from_s3_multi { 'install py_3118' :
             packages_and_checksums => $pkgs_and_chksums_hash,
             temp_dir               => $temp_dir,
             os_version_specific    => false,
+          }
+
+          # need a symlink for the lsb_release module
+          # ln -s /usr/lib/python3/dist-packages/lsb_release.py /opt/python/3.11.8/lib/python3.11/site-packages/lsb_release.py
+          #
+          # from https://stackoverflow.com/questions/46752279/lsb-release-not-working-after-install-python-3-6-3-from-source
+          file { '/opt/python/3.11.8/lib/python3.11/site-packages/lsb_release.py':
+            ensure  => link,
+            target  => '/usr/lib/python3/dist-packages/lsb_release.py',
+            require => Packages::Linux_package_from_s3_multi['install py_3118'],
+          }
+
+          # make python3.11 available on path
+          alternative_entry { 'ae /usr/bin/python3.11':
+            ensure   => present,
+            altlink  => '/opt/python/3.11.8/bin/python3.11',
+            altname  => 'python3.11',
+            priority => 30,
+            # require  => Class['packages::linux_package_from_s3_multi'],
+            require  => Packages::Linux_package_from_s3_multi['install py_3118'],
           }
 
           # configure alternatives
@@ -101,7 +119,8 @@ class linux_packages::py3 {
             altlink  => '/usr/bin/python3',
             altname  => 'python3',
             priority => 30,
-            require  => Exec['install py_3118'],
+            # require  => Class['packages::linux_package_from_s3_multi'],
+            require  => Packages::Linux_package_from_s3_multi['install py_3118'],
           }
 
           # /usr/bin/pip ends up pointing at py3 after py3.9 install, fix that.
@@ -113,6 +132,9 @@ class linux_packages::py3 {
             priority => 20,
             require  => Exec['install py39'],
           }
+
+          # note: pip3 (/usr/local/bin/pip3, from the 39 install?) automatically
+          #   uses `python3` so this works fine (no alternative entry needed).
 
           # update some pips that prevent other pip installations (psutil) from failing
 
