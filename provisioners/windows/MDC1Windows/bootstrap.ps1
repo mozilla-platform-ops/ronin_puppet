@@ -265,6 +265,10 @@ function Get-Ronin {
 
         $ronin_repo = "$env:systemdrive\ronin"
 
+        if (Test-Path $ronin_repo) {
+            Remove-Item $ronin_repo  -Force -Recurse
+        }
+
         if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
             Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name)), "$src_Organisation/$src_Repository" -severity 'DEBUG'
             git config --global --add safe.directory $ronin_repo
