@@ -291,6 +291,7 @@ function Get-Ronin {
 
 
         ## Set nodes.pp
+        $role = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
         $content = @"
 node default {
     include roles_profiles::roles::$role
