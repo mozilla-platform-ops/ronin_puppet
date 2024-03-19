@@ -280,7 +280,7 @@ function Get-Ronin {
             git clone --single-branch --branch $src_Branch git://github.com/$src_Organisation/$src_Repository.git $ronin_repo
 
             write-host git clone --single-branch --branch $src_Branch https://github.com/$src_Organisation/$src_Repository $ronin_repo
-            write-host git clone --single-branch --branch $src_Branch git://github.com/$src_Organisation/$src_Repository.git $ronin_repo
+            write-host git clone --single-branch --branch $src_Branch git://github.git/$src_Organisation/$src_Repository $ronin_repo
             pause
             ## comment out during testing
             Set-Location $ronin_repo
