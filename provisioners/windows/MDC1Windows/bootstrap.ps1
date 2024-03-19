@@ -263,8 +263,8 @@ function Get-Ronin {
     process {
 
         $src_Branch = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Branch
-        $src_Organisation = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Repository
-        $src_Repository = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Organisation
+        $src_Organisation = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Organisation
+        $src_Repository = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Repository
         $role = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
 
         $ronin_repo = "$env:systemdrive\ronin"
@@ -276,8 +276,8 @@ function Get-Ronin {
         if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
             Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name), "$src_Organisation/$src_Repository") -severity 'DEBUG'
             git config --global --add safe.directory $ronin_repo
-            #git clone --single-branch --branch $src_Branch https://github.com/$src_Organisation/$src_Repository $ronin_repo
-            git clone --single-branch --branch $src_Branch git://github.com/$src_Organisation/$src_Repository.git $ronin_repo
+            git clone --single-branch --branch $src_Branch https://github.com/$src_Organisation/$src_Repository $ronin_repo
+            #git clone --single-branch --branch $src_Branch git://github.com/$src_Organisation/$src_Repository.git $ronin_repo
 
             write-host git clone --single-branch --branch $src_Branch https://github.com/$src_Organisation/$src_Repository $ronin_repo
             write-host git clone --single-branch --branch $src_Branch git://github.git/$src_Organisation/$src_Repository $ronin_repo
