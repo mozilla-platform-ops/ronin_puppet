@@ -276,7 +276,8 @@ function Get-Ronin {
         if (-Not (Test-Path "$env:systemdrive\ronin\LICENSE")) {
             Write-Log -Message ('{0} :: Cloning {1}' -f $($MyInvocation.MyCommand.Name), "$src_Organisation/$src_Repository") -severity 'DEBUG'
             git config --global --add safe.directory $ronin_repo
-            git clone --single-branch --branch $src_Branch https://github.com/$src_Organisation/$src_Repository $ronin_repo
+            #git clone --single-branch --branch $src_Branch https://github.com/$src_Organisation/$src_Repository $ronin_repo
+            git clone --single-branch --branch $src_Branch git://github.com/$src_Organisation/$src_Repository.git $ronin_repo
 
             ## comment out during testing
             Set-Location $ronin_repo
