@@ -102,13 +102,9 @@
 						</Password>
 					</LocalAccount>
 				</LocalAccounts>
-                <AdministratorPassword>
-                    <Value>NotARealPassword</Value>
-                    <PlainText>true</PlainText>
-                </AdministratorPassword>
 			</UserAccounts>
 			<AutoLogon>
-				<Username>Administrator</Username>
+				<Username>Admin</Username>
 				<Enabled>true</Enabled>
 				<LogonCount>1</LogonCount>
 				<Password>
