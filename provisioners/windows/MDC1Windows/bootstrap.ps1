@@ -548,6 +548,7 @@ If ($stage -ne 'complete') {
     Get-PreRequ
     Set-Ronin-Registry
     Get-Ronin
+    pause
     Run-Ronin-Run
 }
 exit
