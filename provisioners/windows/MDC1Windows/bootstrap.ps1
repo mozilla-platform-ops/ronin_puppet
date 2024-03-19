@@ -262,6 +262,8 @@ function Get-Ronin {
     }
     process {
 
+        $src_Branch = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Branch
+
         $ronin_repo = "$env:systemdrive\ronin"
 
         if (Test-Path $ronin_repo) {
