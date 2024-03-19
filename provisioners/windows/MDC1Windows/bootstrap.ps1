@@ -263,8 +263,8 @@ function Get-Ronin {
     process {
 
         $src_Branch = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Branch
-        $src_Organisation = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
-        $src_Repository = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet")
+        $src_Organisation = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Repository
+        $src_Repository = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Organisation
         $role = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
 
         $ronin_repo = "$env:systemdrive\ronin"
