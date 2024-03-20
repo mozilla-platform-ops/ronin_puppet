@@ -16,7 +16,7 @@ pools:
     - nuc-33430
   - name: "win11-64-2009-hw"
     Description: "Pool Description"
-    image: "win11-2009-NUC-02-22-2024"
+    image: "win11-2009-NUC-03-20-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
@@ -164,7 +164,7 @@ pools:
     - nuc13-160
   - name: "win11-64-2009-hw-alpha"
     Description: "Pool Description"
-    image: "win11-2009-NUC-02-22-2024"
+    image: "win11-2009-NUC-03-20-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
