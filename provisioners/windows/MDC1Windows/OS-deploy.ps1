@@ -114,8 +114,6 @@ foreach ($pool in $YAML.pools) {
             $src_Organisation = $pool.src_Organisation
             $src_Repository = $pool.src_Repository
             $src_Branch = $pool.src_Branch
-            Write-Output = "Node not found. defualting"
-            Write-Output "The image for the 'Default' pool is: $neededImage"
         }
     }
 }
