@@ -79,3 +79,4 @@ function Set-PXE {
 }
 
 Set-PXE
+exit
