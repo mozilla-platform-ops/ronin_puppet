@@ -19,7 +19,7 @@ class roles_profiles::profiles::ssh {
             }
             include win_openssh::add_openssh
 
-            include win_openssh::service
+            #include win_openssh::service
             win_firewall::open_local_port { "allow_${firewall_rule_name}_mdc1":
                 port            => $firewall_port,
                 reciprocal      => true,
