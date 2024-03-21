@@ -544,9 +544,9 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
         Write-Log -Message ('{0} :: Azure VM Maintenance started. Status code: {1}' -f $($MyInvocation.MyCommand.Name),$scheduled_event_post.status_code) -severity 'DEBUG'
       }
       # Wait to supress meesage if check is cuaght during a reboot.
-      start-sleep -s 45
+      #start-sleep -s 45
       Write-Log -message ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      start-sleep -s 3
+      #start-sleep -s 3
       shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
     } else {
       start-sleep -s 120
