@@ -7,12 +7,13 @@ class roles_profiles::profiles::nuc_management {
     case $::operatingsystem {
         'Windows': {
             if ($facts['custom_win_location'] == 'datacenter') {
-                $script_dir = "${facts['custom_win_roninprogramdata']}\\scripts"
+                #$script_dir = "${facts['custom_win_roninprogramdata']}\\scripts"
+                $script_dir = "c:\scripts"
 
-                class { 'win_maintenance::force_pxe_install':
+                class { 'win_maintenance::maintenance_script_dir':
                     script_dir => $script_dir,
                 }
-                class { 'win_maintenance::maintenance_script_dir':
+                class { 'win_maintenance::force_pxe_install':
                     script_dir => $script_dir,
                 }
             } else {
