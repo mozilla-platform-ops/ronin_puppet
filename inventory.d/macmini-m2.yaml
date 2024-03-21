@@ -3,7 +3,7 @@ name: macmini-m2
 groups:
   - name: gecko-t-osx-1300-m2
     targets:
-      - macmini-m2-2.test.releng.mslv.mozilla.com
+      #- macmini-m2-2.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1300_m2
 
@@ -16,6 +16,7 @@ groups:
   - name: gecko-t-osx-1400-m2
     targets:
       - macmini-m2-1.test.releng.mslv.mozilla.com
+      - macmini-m2-2.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_m2
 
