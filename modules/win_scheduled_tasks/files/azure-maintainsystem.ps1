@@ -522,7 +522,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Start-WorkerRunner
   # wait and check if GW has started
   # Followed by additional checks to ensure VM is productive if up
-  Start-Sleep -Seconds 900
+  Start-Sleep -Seconds 10
   ## if it doesn't start at this point, we need to figure out what's going on
   ## TODO: Check worker-runner-service logs
   while($true) {
