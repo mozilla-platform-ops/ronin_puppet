@@ -248,8 +248,6 @@ if (!(Test-Path $setup)) {
     Write-Host "Disconecting Deployment Share."
     net use Z: /delete
     Update-GetBoot
-}
-
 } else {
     Write-Host "Local installation files are good. No further action needed."
 
