@@ -244,7 +244,9 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
 } elseif (!(Test-Path $secret_file)) {
     Get-ChildItem -Path $secret_dir | Remove-Item -Recurse
     Mount-ZDrive
+    Write-host Updating secret file.
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
+    write-host Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     net use Z: /delete
 }
