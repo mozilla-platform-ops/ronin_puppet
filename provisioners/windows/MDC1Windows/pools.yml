@@ -7,6 +7,7 @@ pools:
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
     hash: "00da5a7"
+    secret_date: "03-22-2024"
     nodes:
     - nuc12-010
   - name: "win11-64-2009-hw-ref"
@@ -21,6 +22,7 @@ pools:
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
     hash: "00da5a7"
+    secret_date: "03-22-2024"
     nodes:
     - nuc13-021
     - nuc13-022
@@ -169,6 +171,7 @@ pools:
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
     hash: "00da5a7"
+    secret_date: "03-22-2024"
     nodes:
     - nuc13-001
     - nuc13-002
