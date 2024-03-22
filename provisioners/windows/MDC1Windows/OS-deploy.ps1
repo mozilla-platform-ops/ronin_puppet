@@ -246,13 +246,10 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     Mount-ZDrive
     Write-host Updating secret file.
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
-    write-host Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     net use Z: /delete
 }
 
-write-host Test-Path $secret_file
-write-host Copy-Item -Path $source_secrets -Destination $secret_file -Force
 
 ## Update yaml files with recent changes
 Copy-Item -Path pools.yml  $local_yaml -Force
@@ -261,4 +258,4 @@ Set-Location -Path $OS_files
 Write-Host "Initializing OS installation."
 Write-Host Running: Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
 Write-Host "Have a nice day! :)"
-# Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
+Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
