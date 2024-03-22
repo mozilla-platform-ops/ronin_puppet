@@ -249,6 +249,7 @@ function Set-Ronin-Registry {
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Organisation' -Value $src_Organisation -PropertyType String -force
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Repository' -Value $src_Repository -PropertyType String -force
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Value $src_Branch -PropertyType String -force
+        New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'GITHASH' -Value $src_Branch -PropertyType String -force
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -266,6 +267,7 @@ function Get-Ronin {
         $src_Organisation = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Organisation
         $src_Repository = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Repository
         $role = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
+        $hash = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").GITHASH
 
         $ronin_repo = "$env:systemdrive\ronin"
 
@@ -281,9 +283,13 @@ function Get-Ronin {
 
             ## comment out during testing
             Set-Location $ronin_repo
-            #git checkout $hash
+            if ($debug) {
+                Write-Log -message  ('{0} ::Debugging set; pulling latest repo version .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
+            } else {
+                git checkout $hash
+                Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
+            }
 
-            Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
         }
 
 
@@ -483,7 +489,6 @@ function Set-PXE {
 		Try{
 			# Get the line of text with the GUID for the PXE boot option.
 			# IPV4 = most PXE boot options
-			# EFI Network = Hyper-V PXE boot option
 			$FullLine = (( Get-Content $temp_dir\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop ).context.precontext)[0]
 
 			# Remove all text but the GUID
@@ -511,6 +516,10 @@ function Handle-Failure {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+        if ($debug) {
+            exit
+            Write-Log -message  ('{0} :: Debug set; exiting on failure. ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
         $failure = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").failure
         If (!($failure)) {
 			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 1 of 2. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -519,14 +528,17 @@ function Handle-Failure {
 			Restart-Computer -Force
 		} else {
 			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 2 of 2.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			write-host Set-PXE
-            pause
+			Set-PXE
 		}
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+
+## If debug will prevent git hash locking, some reboots and PXE boot fall back
+$debug = $true
+# $debug = $false
 
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
