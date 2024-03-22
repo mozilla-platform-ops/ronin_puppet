@@ -242,7 +242,6 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
     Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
 } elseif (!(Test-Path $secret_file)) {
-    $secret_dir
     Get-ChildItem -Path $secret_dir | Remove-Item -Recurse
     Mount-ZDrive
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
