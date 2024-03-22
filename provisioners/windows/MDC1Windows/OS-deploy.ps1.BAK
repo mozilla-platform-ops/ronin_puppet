@@ -3,35 +3,6 @@ param(
     [string]$deploymentaccess
 )
 
-function Mount-ZDrive {
-    param(
-    )
-    ## Mount Deployment share
-    ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
-    ## net use will presist
-    $deploypw = ConvertTo-SecureString -String $deploymentaccess -AsPlainText -Force
-    $credential = New-Object System.Management.Automation.PSCredential($deployuser, $deploypw)
-
-    $maxRetries = 20
-    $retryInterval = 30
-
-    Write-Host "Mounting Deployment Share."
-    for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
-        try {
-            net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
-            break
-        }
-        catch {
-            Write-Host Unable to mount Deployment Share
-            Start-Sleep -Seconds $retryInterval
-        }
-    }
-    if ($retryCount -gt $maxRetries) {
-        Write-Host Failed to mount Deployment Share
-        exit 99
-    }
-}
-
 Write-Host "Preparing local environment."
 Set-Location X:\working
 Import-Module "X:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient"
@@ -143,7 +114,6 @@ foreach ($pool in $YAML.pools) {
             $src_Organisation = $pool.src_Organisation
             $src_Repository = $pool.src_Repository
             $src_Branch = $pool.src_Branch
-            $secret_date = $pool.secret_date
         }
     }
 }
@@ -156,9 +126,8 @@ $source_install = $source_dir + "Images\" + $neededImage
 $OS_files = $local_install + $neededImage
 $setup = $OS_files + "\setup.exe"
 $secret_dir = $local_install + "secrets"
-$secret_file_name = $WorkerPool + "-" + $secret_date + ".yaml"
-$secret_file = $secret_dir + $secret_file_name
-$source_secrets = $source_dir + "secrets\" + $secret_file_name
+$secret_file = $secret_dir + "\vault.yaml"
+$source_secrets = $source_dir + "secrets\" + $WorkerPool + ".yaml"
 $source_AZsecrets = $source_dir + "secrets\" + "azcredentials.yaml"
 $AZsecret_file = $secret_dir + "\azcredentials.yaml"
 $source_scripts = $source_dir + "scripts\"
@@ -170,6 +139,8 @@ $source_app = $source_dir + "applications"
 $local_app  = $local_install + "applications"
 
 
+#New-Item -ItemType Directory -Path $local_yaml_dir -force
+
 if (!(Test-Path $setup)) {
     Write-Host "Install files wrong or missing."
     Write-Host "Will resync files."
@@ -177,9 +148,30 @@ if (!(Test-Path $setup)) {
         Write-Host Wrong install files - REMOVING
         Remove-Item -Path "${local_install}*" -Recurse -Force
     }
+    ## Mount Deployment share
+    ## PSDrive is will unmount when the Powershell sessions ends. Ultimately maybe OK.
+    ## net use will presist
+    $deploypw = ConvertTo-SecureString -String $deploymentaccess -AsPlainText -Force
+    $credential = New-Object System.Management.Automation.PSCredential($deployuser, $deploypw)
 
-    Mount-ZDrive
+    $maxRetries = 20
+    $retryInterval = 30
 
+    Write-Host "Mounting Deployment Share."
+    for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
+        try {
+            net use Z: \\mdt2022.ad.mozilla.com\deployments /user:$deployuser $deploymentaccess /persistent:yes
+            break
+        }
+        catch {
+            Write-Host Unable to mount Deployment Share
+            Start-Sleep -Seconds $retryInterval
+        }
+    }
+    if ($retryCount -gt $maxRetries) {
+        Write-Host Failed to mount Deployment Share
+        exit 99
+    }
     Write-Host "Copying needed files"
     New-Item -ItemType Directory $secret_dir  | Out-Null
     New-Item -ItemType Directory $local_app  | Out-Null
@@ -202,14 +194,12 @@ if (!(Test-Path $setup)) {
         @{ OldString = "SRCRepository"; NewString = $src_Repository },
         @{ OldString = "ImageProvisioner"; NewString = "MDC1Windows" },
         @{ OldString = "SRCBranch"; NewString = $src_Branch },
-        @{ OldString = "1HASH"; NewString = $hash },
-        @{ OldString = "1secret_date"; NewString = $secret_date }
+        @{ OldString = "1HASH"; NewString = $hash }
 )
     $content = Get-Content -Path $Get_Bootstrap
     foreach ($replacement in $replacements) {
         $content = $content -replace $replacement.OldString, $replacement.NewString
     }
-
 
     Set-Content -Path $Get_Bootstrap  -Value $content
 
@@ -241,15 +231,7 @@ if (!(Test-Path $setup)) {
 if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
     Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
-} elseif (!(Test-Path $secret_file)) {
-    $secret_dir
-    Get-ChildItem -Path $secret_dir | Remove-Item -Recurse
-    Mount-ZDrive
-    Copy-Item -Path $source_secrets -Destination $secret_file -Force
-    Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
-    net use Z: /delete
 }
-
 ## Update yaml files with recent changes
 Copy-Item -Path pools.yml  $local_yaml -Force
 

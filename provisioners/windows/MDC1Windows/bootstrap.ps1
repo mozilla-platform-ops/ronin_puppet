@@ -5,6 +5,7 @@ param(
     [string] $src_Repository,
     [string] $src_Branch,
     [string] $hash,
+    [string] $secret_date,
     [string] $image_provisioner = 'MDC1Windows'
 )
 
@@ -250,6 +251,7 @@ function Set-Ronin-Registry {
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Repository' -Value $src_Repository -PropertyType String -force
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Value $src_Branch -PropertyType String -force
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'GITHASH' -Value $src_Branch -PropertyType String -force
+        New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'secret_date' -Value $secret_date -PropertyType String -force
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -312,15 +314,9 @@ node default {
 }
 "@
         Set-Content -Path "$env:systemdrive\ronin\manifests\nodes.pp" -Value $content
-        #if (-not (Test-path "$env:systemdrive\ronin\manifests\nodes.pp")) {
-        #    Copy-item -Path "$env:systemdrive\BootStrap\nodes.pp" -Destination "$env:systemdrive\ronin\manifests\nodes.pp" -force
-        #    (Get-Content -path "$env:systemdrive\ronin\manifests\nodes.pp") -replace 'roles::role', "roles::$role" | Set-Content "$env:systemdrive\ronin\manifests\nodes.pp"
-        #}
-        ## Copy the secrets from the image (from osdcloud) to ronin data secrets
-        if (-Not (Test-path "$env:systemdrive\ronin\data\secrets")) {
-            New-Item -Path "$env:systemdrive\ronin\data" -Name "secrets" -ItemType Directory -Force
-            Copy-item -path "D:\secrets\vault.yaml" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
-        }
+
+        $secrets_name = $worker_pool_id + "-" + $secret_date + ".yaml"
+        Copy-item -path "D:\secrets\$secrets_name" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
