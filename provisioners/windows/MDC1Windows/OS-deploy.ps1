@@ -31,6 +31,31 @@ function Mount-ZDrive {
         exit 99
     }
 }
+function Update-GetBoot {
+    param(
+    )
+    $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
+
+    write-host Updating Get-Bootstrap.ps1
+
+    $replacements = @(
+        @{ OldString = "WorkerPoolId"; NewString = $WorkerPool },
+        @{ OldString = "1Role"; NewString = $role },
+        @{ OldString = "SRCOrganisation"; NewString = $src_Organisation },
+        @{ OldString = "SRCRepository"; NewString = $src_Repository },
+        @{ OldString = "ImageProvisioner"; NewString = "MDC1Windows" },
+        @{ OldString = "SRCBranch"; NewString = $src_Branch },
+        @{ OldString = "1HASH"; NewString = $hash },
+        @{ OldString = "1secret_date"; NewString = $secret_date }
+)
+    $content = Get-Content -Path $Get_Bootstrap
+    foreach ($replacement in $replacements) {
+        $content = $content -replace $replacement.OldString, $replacement.NewString
+    }
+
+
+    Set-Content -Path $Get_Bootstrap  -Value $content
+}
 
 Write-Host "Preparing local environment."
 Set-Location X:\working
@@ -191,27 +216,7 @@ if (!(Test-Path $setup)) {
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
     Copy-Item -Path $source_app\* $local_app -Recurse -Force
 
-    $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
-
-    write-host Updating Get-Bootstrap.ps1
-
-    $replacements = @(
-        @{ OldString = "WorkerPoolId"; NewString = $WorkerPool },
-        @{ OldString = "1Role"; NewString = $role },
-        @{ OldString = "SRCOrganisation"; NewString = $src_Organisation },
-        @{ OldString = "SRCRepository"; NewString = $src_Repository },
-        @{ OldString = "ImageProvisioner"; NewString = "MDC1Windows" },
-        @{ OldString = "SRCBranch"; NewString = $src_Branch },
-        @{ OldString = "1HASH"; NewString = $hash },
-        @{ OldString = "1secret_date"; NewString = $secret_date }
-)
-    $content = Get-Content -Path $Get_Bootstrap
-    foreach ($replacement in $replacements) {
-        $content = $content -replace $replacement.OldString, $replacement.NewString
-    }
-
-
-    Set-Content -Path $Get_Bootstrap  -Value $content
+    Update-GetBoot
 
     Write-Host "Disconecting Deployment Share."
     net use Z: /delete
@@ -233,21 +238,25 @@ if (!(Test-Path $setup)) {
     }
 
     Set-Content -Path $unattend -Value $content2
-
-} else {
-    Write-Host "Local installation files are good. No further action needed."
-}
-
-if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
-    write-host "Previous installation detected. Formatting OS disk."
-    Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
 } elseif (!(Test-Path $secret_file)) {
     Get-ChildItem -Path $secret_dir | Remove-Item -Recurse
     Mount-ZDrive
     Write-host Updating secret file.
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
+    Copy-Item -Path $source_scripts\Get-Bootstrap.ps1 $local_scripts\Get-Bootstrap.ps1 -Recurse -Force
+    Write-Host "Disconecting Deployment Share."
     net use Z: /delete
+    Update-GetBoot
+}
+
+} else {
+    Write-Host "Local installation files are good. No further action needed."
+
+    if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
+        write-host "Previous installation detected. Formatting OS disk."
+        Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
+    }
 }
 
 
@@ -258,4 +267,4 @@ Set-Location -Path $OS_files
 Write-Host "Initializing OS installation."
 Write-Host Running: Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
 Write-Host "Have a nice day! :)"
-Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
+#Start-Process -FilePath $setup -ArgumentList "/unattend:$unattend"
