@@ -541,7 +541,11 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
         ## There could be multiple events, so just pick the eventId of the first one
         $scheduled_event_post = Set-AzureInstanceMetadataScheduledEvents -EventID ($events.events.EventId|Select-Object -First 1)
         ## Check to see if it actually started
-        Write-Log -Message ('{0} :: Azure VM Maintenance started. Status code: {1}' -f $($MyInvocation.MyCommand.Name),$scheduled_event_post.status_code) -severity 'DEBUG'
+        foreach ($r in $scheduled_event_post) {
+          if ($null -ne $r) {
+            Write-Log -Message ('{0} :: Azure VM Maintenance started. Event status: {1}' -f $($MyInvocation.MyCommand.Name),$r.events.eventstatus) -severity 'DEBUG'
+          }
+        }
       }
       # Wait to supress meesage if check is cuaght during a reboot.
       #start-sleep -s 45
