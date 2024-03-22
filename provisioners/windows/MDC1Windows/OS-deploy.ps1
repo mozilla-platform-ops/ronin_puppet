@@ -251,6 +251,9 @@ if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     net use Z: /delete
 }
 
+write-host Test-Path $secret_file
+write-host Copy-Item -Path $source_secrets -Destination $secret_file -Force
+
 ## Update yaml files with recent changes
 Copy-Item -Path pools.yml  $local_yaml -Force
 
