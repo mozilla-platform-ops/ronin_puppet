@@ -316,6 +316,7 @@ node default {
         Set-Content -Path "$env:systemdrive\ronin\manifests\nodes.pp" -Value $content
 
         $secrets_name = $worker_pool_id + "-" + $secret_date + ".yaml"
+        New-Item -ItemType Directory -Path "$env:systemdrive\ronin\data\secrets"
         Copy-item -path "D:\secrets\$secrets_name" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
     }
     end {
