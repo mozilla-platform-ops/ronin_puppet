@@ -8,10 +8,12 @@ pools:
     src_Branch: "win11hardware"
     hash: "cb69032"
     secret_date: "03-22-2024"
+    domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
     - nuc12-010
   - name: "win11-64-2009-hw-ref"
     image: "win11-64-2009"
+    domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
     - nuc-33431
     - nuc-33430
@@ -23,6 +25,7 @@ pools:
     src_Branch: "win11hardware"
     hash: "00da5a7"
     secret_date: "03-22-2024"
+    domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
     - nuc13-021
     - nuc13-022
@@ -172,6 +175,7 @@ pools:
     src_Branch: "win11hardware"
     hash: "cb69032"
     secret_date: "03-22-2024"
+    domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
     - nuc13-001
     - nuc13-002
