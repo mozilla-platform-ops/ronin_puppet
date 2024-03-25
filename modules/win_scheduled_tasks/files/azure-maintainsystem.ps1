@@ -89,7 +89,7 @@ function Run-MaintainSystem {
 }
 function Remove-OldTaskDirectories {
   param (
-    [string[]] $targets = @('Z:\task_*', 'C:\Users\task_*')
+    [string[]] $targets = @('D:\task_*', 'C:\Users\task_*')
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -286,7 +286,7 @@ function AzMount-DiskTwo {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
+    if ((Test-VolumeExists -DriveLetter 'Z')) {
       Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
     } else {
       $pagefileName = $false
@@ -325,15 +325,6 @@ function AzMount-DiskTwo {
         Write-Log -message ('{0} :: disk initialisation skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
       if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
-        try {
-          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
-          # New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
-          Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
-          Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-        }
-        catch {
-          Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
-        }
         try {
           New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
           # New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
@@ -481,6 +472,23 @@ function Set-AzureInstanceMetadataScheduledEvents {
   Invoke-RestMethod @splat
 }
 
+## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
+function LinkZY2D {
+  param (
+  )
+  begin {
+      Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+      if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
+          subst Y: D:\
+      }
+  }
+  end {
+      Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
 ## Get the tags from azure imds
 $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
 
@@ -489,7 +497,6 @@ $managed_by = ($imds_tags | Where-object {$psitem.name -eq "managed-by"}).Value
 
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
 $ronin_key = "$mozilla_key\ronin_puppet"
-$bootstrap_stage =  (Get-ItemProperty -path "$ronin_key").bootstrap_stage
 ## This value gets set in packer at the very end right before sysprep
 $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
 ## This value should always be yes if we're running this after packer
@@ -506,17 +513,13 @@ If ($hand_off_ready -eq 'yes') {
 
 ## If the managed-by tag is set to taskcluster and the packer hand off is complete
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
-  ## We use a second data disk with 2 partitions, if that doesn't exist, mount the disk and set the drive letters
-  if (-Not (Test-VolumeExists -DriveLetter 'Y') -and -Not (Test-VolumeExists -DriveLetter 'Z')) {
-    AzMount-DiskTwo
-    Set-DriveLetters
-  }
   ## Set the VM the name that taskcluster gave it, if it's not already set
   Set-AzVMName
-  ## Clean the Z:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
+  ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
+    LinkZY2D
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
