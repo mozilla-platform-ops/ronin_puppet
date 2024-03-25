@@ -533,8 +533,8 @@ function Handle-Failure {
 }
 
 ## If debug will prevent git hash locking, some reboots and PXE boot fall back
-$debug = $true
-# $debug = $false
+# $debug = $true
+$debug = $false
 
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 

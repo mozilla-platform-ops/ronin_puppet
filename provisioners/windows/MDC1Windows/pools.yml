@@ -6,7 +6,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "00da5a7"
+    hash: "cb69032"
     secret_date: "03-22-2024"
     nodes:
     - nuc12-010
@@ -170,7 +170,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "00da5a7"
+    hash: "cb69032"
     secret_date: "03-22-2024"
     nodes:
     - nuc13-001
