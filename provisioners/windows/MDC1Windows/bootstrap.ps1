@@ -235,6 +235,7 @@ function Set-Ronin-Registry {
             $src_Repository = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Repository
             $src_Branch = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Branch
             $image_provisioner = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").image_provisioner
+            $secret_date = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").secret_date
         }
         Write-Log -Message ('{0} :: Creating HKLM:\SOFTWARE\Mozilla\ronin_puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
@@ -542,6 +543,9 @@ Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 ## prevent standby and monitor timeout during bootstrap
 powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
+
+## Enable OpenSSH
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
 
 $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 
