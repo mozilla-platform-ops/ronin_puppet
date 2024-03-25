@@ -513,8 +513,8 @@ function Handle-Failure {
     }
     process {
         if ($debug) {
-            exit
-            Write-Log -message  ('{0} :: Debug set; exiting on failure. ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            pause
+            Write-Log -message  ('{0} :: Debug set; pausing on failure. ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
         $failure = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").failure
         If (!($failure)) {
