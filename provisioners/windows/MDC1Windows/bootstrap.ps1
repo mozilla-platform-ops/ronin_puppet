@@ -236,6 +236,7 @@ function Set-Ronin-Registry {
             $src_Branch = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").Branch
             $image_provisioner = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").image_provisioner
             $secret_date = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").secret_date
+            $hash = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").GITHASH
         }
         Write-Log -Message ('{0} :: Creating HKLM:\SOFTWARE\Mozilla\ronin_puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         New-Item -Path HKLM:\SOFTWARE -Name Mozilla -force
@@ -251,7 +252,7 @@ function Set-Ronin-Registry {
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Organisation' -Value $src_Organisation -PropertyType String -force
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Repository' -Value $src_Repository -PropertyType String -force
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'Branch' -Value $src_Branch -PropertyType String -force
-        New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'GITHASH' -Value $src_Branch -PropertyType String -force
+        New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'GITHASH' -Value $hash -PropertyType String -force
         New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'secret_date' -Value $secret_date -PropertyType String -force
     }
     end {
@@ -531,7 +532,6 @@ function Handle-Failure {
 
 ## If debug will prevent git hash locking, some reboots and PXE boot fall back
 #$debug = $true
-#$debug = $false
 
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
