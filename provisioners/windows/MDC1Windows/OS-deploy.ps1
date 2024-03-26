@@ -200,7 +200,7 @@ if (!(Test-Path $setup)) {
     Write-Host "Will resync files."
     if ((Get-ChildItem -Path $local_install -Force).Count -gt 0) {
         Write-Host Wrong install files - REMOVING
-        Remove-Item -Path "${local_install}*" -Recurse -Force
+        Remove-Item -Path "${local_install}*" -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     Mount-ZDrive
