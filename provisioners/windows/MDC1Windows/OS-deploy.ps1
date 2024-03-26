@@ -141,8 +141,7 @@ $YAML = Convertfrom-Yaml (Get-Content "pools.yml" -raw)
 
 foreach ($pool in $YAML.pools) {
     foreach ($node in $pool.nodes) {
-        ## FIX THIS! like used for initial install only!
-        if ($node -like $shortname) {
+        if ($node -match $shortname) {
             $neededImage = $pool.image
             $WorkerPool = $pool.name
             $role = $WorkerPool -replace "-", ""
