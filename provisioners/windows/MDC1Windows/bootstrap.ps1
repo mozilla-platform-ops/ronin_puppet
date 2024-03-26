@@ -370,9 +370,6 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
-                ## this should be in Puppet
-                #slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
-                #slmgr.vbs -ato
                 Restart-Computer -Confirm:$false -Force
             }
             1 {
@@ -399,8 +396,6 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
-                #slmgr.vbs -skms "KMS02.ad.mozilla.com:1688"
-                #slmgr.vbs -ato
                 Restart-Computer -Confirm:$false -Force
             }
             4 {
@@ -545,6 +540,9 @@ powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
 ## Enable OpenSSH
+## Installation through Puppet is is intermittent.
+## It works here, but ultimately should be done through Puppet.
+Write-Log -message  ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
 
 $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
