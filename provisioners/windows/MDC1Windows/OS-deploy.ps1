@@ -250,12 +250,12 @@ if (!(Test-Path $setup)) {
     Update-GetBoot
 } else {
     Write-Host "Local installation files are good. No further action needed."
-
-    if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
-        write-host "Previous installation detected. Formatting OS disk."
-        Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
-    }
 }
+if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
+    write-host "Previous installation detected. Formatting OS disk."
+    Format-Volume -DriveLetter C -FileSystem NTFS -Force -ErrorAction Inquire | Out-Null
+}
+
 
 
 ## Update yaml files with recent changes
