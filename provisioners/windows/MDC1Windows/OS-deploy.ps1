@@ -1,23 +1,3 @@
-$timeout = New-TimeSpan -Seconds 10
-$sw = [System.Diagnostics.Stopwatch]::StartNew()
-
-do {
-    $timeLeft = $timeout - $sw.Elapsed
-    if ($timeLeft -lt 0) { $timeLeft = New-TimeSpan }
-
-    Write-Host -NoNewline "Time left: $($timeLeft.ToString("hh\:mm\:ss"))`r"
-    Start-Sleep -Milliseconds 100
-
-    if ($Host.UI.RawUI.KeyAvailable) {
-        $key = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown').Character
-        # Handle key press if needed
-        break  # Exit loop if key is pressed
-    }
-} while ($sw.Elapsed -lt $timeout)
-
-# Continue with the script here
-Write-Host "Timeout reached. Continuing with the script..."
-
 param(
     [string]$deployuser,
     [string]$deploymentaccess
