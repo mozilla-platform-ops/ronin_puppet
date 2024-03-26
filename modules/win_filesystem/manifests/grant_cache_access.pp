@@ -4,7 +4,7 @@
 
 class win_filesystem::grant_cache_access {
   if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-    $cache_drive  = 'y:'
+    $cache_drive  = 'D:'
   } else {
     $cache_drive  = $facts['custom_win_systemdrive']
   }

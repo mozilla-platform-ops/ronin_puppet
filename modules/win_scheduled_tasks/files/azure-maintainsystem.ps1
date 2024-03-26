@@ -43,6 +43,38 @@ function Write-Log {
   }
 }
 
+function Get-AzureInstanceMetadata {
+  [CmdletBinding()]
+  param (
+    [String]
+    $ApiVersion = '2021-12-13',
+    [String]
+    $Endpoint = 'instance',
+    [String]
+    $Query
+  )
+
+  $uri = switch ($Query) {
+    "tags" {
+      ("http://169.254.169.254/metadata/{0}/{1}/?api-version={2}" -f $Endpoint,"compute/tagsList",$ApiVersion)
+    }
+    "compute" {
+      ("http://169.254.169.254/metadata/{0}/{1}?api-version={2}" -f $Endpoint,"compute",$ApiVersion)
+    }
+    Default {
+      ("http://169.254.169.254/metadata/{0}?api-version={1}" -f $Endpoint,$ApiVersion)
+    }
+  }
+
+  $splat = @{
+    Headers = @{Metadata = "true"}
+    Method = "Get"
+    URI = $uri
+  }
+
+  Invoke-RestMethod @splat
+}
+
 function Run-MaintainSystem {
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -57,7 +89,7 @@ function Run-MaintainSystem {
 }
 function Remove-OldTaskDirectories {
   param (
-    [string[]] $targets = @('Z:\task_*', 'C:\Users\task_*')
+    [string[]] $targets = @('D:\task_*', 'C:\Users\task_*')
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -254,7 +286,7 @@ function AzMount-DiskTwo {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
+    if ((Test-VolumeExists -DriveLetter 'Z')) {
       Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
     } else {
       $pagefileName = $false
@@ -293,15 +325,6 @@ function AzMount-DiskTwo {
         Write-Log -message ('{0} :: disk initialisation skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
       if (Get-Command -Name 'New-Partition' -errorAction SilentlyContinue) {
-        try {
-          New-Partition -DiskNumber 2 -Size 20GB -DriveLetter Y
-          # New-Partition -DiskNumber 1 -Size 20GB -DriveLetter Y
-          Format-Volume -FileSystem NTFS -NewFileSystemLabel cache -DriveLetter Y -Confirm:$false
-          Write-Log -message ('{0} :: cache drive Y: formatted.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-        }
-        catch {
-          Write-Log -message ('{0} :: failed to format cache drive Y:. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
-        }
         try {
           New-Partition -DiskNumber 2 -UseMaximumSize -DriveLetter Z
           # New-Partition -DiskNumber 1 -UseMaximumSize -DriveLetter Z
@@ -369,7 +392,7 @@ function Set-DriveLetters {
     }
   }
 }
-function StartWorkerRunner {
+function Start-WorkerRunner {
     param (
     )
     begin {
@@ -382,14 +405,15 @@ function StartWorkerRunner {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-function Check-AzVM-Name {
+function Set-AzVMName {
     param (
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        $instanceName = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri 'http://169.254.169.254/metadata/instance?api-version=2019-06-04').Content) | ConvertFrom-Json).compute.name
+        $compute = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "compute"
+        $instanceName = $compute.name
         if ($instanceName -notlike $env:computername) {
             Write-Log -message  ('{0} :: The Azure VM name is {1}' -f $($MyInvocation.MyCommand.Name), ($instanceName)) -severity 'DEBUG'
             [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceName", "Machine")
@@ -407,51 +431,132 @@ function Check-AzVM-Name {
     }
 }
 
-$managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
+function Get-AzureInstanceMetadataScheduledEvents {
+  [CmdletBinding()]
+  param (
+    [String]
+    $ApiVersion = '2020-07-01'
+  )
+
+  $splat = @{
+    Headers = @{Metadata = "true"}
+    Method = "Get"
+    URI = ("http://169.254.169.254/metadata/{0}?api-version={1}" -f "scheduledevents",$ApiVersion)
+  }
+
+  Invoke-RestMethod @splat
+}
+
+function Set-AzureInstanceMetadataScheduledEvents {
+  [CmdletBinding()]
+  param (
+    [String]
+    $ApiVersion = '2020-07-01',
+    [String]
+    $EventID
+  )
+
+  $splat = @{
+    Headers = @{Metadata = "true" }
+    Method  = "Post"
+    Body    = @{
+      StartRequests = @(
+        @{
+          EventId = $EventID
+        }
+      )
+    }
+    URI     = ("http://169.254.169.254/metadata/{0}?api-version={1}" -f "scheduledevents", $ApiVersion)
+  }
+
+  Invoke-RestMethod @splat
+}
+
+## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
+function LinkZY2D {
+  param (
+  )
+  begin {
+      Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+      if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
+          subst Y: D:\
+      }
+  }
+  end {
+      Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
+## Get the tags from azure imds
+$imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
+
+## Get the managed-by tag value
+$managed_by = ($imds_tags | Where-object {$psitem.name -eq "managed-by"}).Value
+
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
 $ronin_key = "$mozilla_key\ronin_puppet"
-$bootstrap_stage =  (Get-ItemProperty -path "$ronin_key").bootstrap_stage
+## This value gets set in packer at the very end right before sysprep
 $hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
-
+## This value should always be yes if we're running this after packer
 If ($hand_off_ready -eq 'yes') {
-    While ($managed_by -eq $null) {
-        Write-Log -message  ('{0} :: Waiting for metadata availability ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    While ($null -eq $managed_by) {
+        Write-Log -message ('{0} :: Waiting for metadata availability ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         Start-Sleep -Seconds 5
-        $managed_by = ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList| ? { $_.name -eq ('managed-by') })[0].value
+        ## Get the tags from azure imds
+        $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
+        ## Get the managed-by tag value
+        $managed_by = ($imds_tags | Where-object {$psitem.name -eq "managed-by"}).Value
     }
 }
 
-$mozilla_key = "HKLM:\SOFTWARE\Mozilla"
-$ronin_key = "$mozilla_key\ronin_puppet"
-$bootstrap_stage =  (Get-ItemProperty -path "$ronin_key").bootstrap_stage
-$hand_off_ready = (Get-ItemProperty -path "$ronin_key").hand_off_ready
-
-# Hand_off_ready value is set by the packer manifest
-# TODO: add json manifest location
+## If the managed-by tag is set to taskcluster and the packer hand off is complete
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
-  if (!(Test-VolumeExists -DriveLetter 'Y') -and !(Test-VolumeExists -DriveLetter 'Z')) {
-    AzMount-DiskTwo
-    Set-DriveLetters
-  }
-  Check-AzVM-Name
+  ## Set the VM the name that taskcluster gave it, if it's not already set
+  Set-AzVMName
+  ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
+    LinkZY2D
   }
-  StartWorkerRunner
+  ## Start worker runner, which starts generic-worker
+  Start-WorkerRunner
   # wait and check if GW has started
   # Followed by additional checks to ensure VM is productive if up
-  start-sleep -s 900
+  Start-Sleep -Seconds 10
+  ## if it doesn't start at this point, we need to figure out what's going on
+  ## TODO: Check worker-runner-service logs
   while($true) {
-    $gw = (Get-process -name generic-worker -ErrorAction SilentlyContinue )
-    if ($gw -eq $null) {
+    $gw = (Get-process -name "generic-worker" -ErrorAction SilentlyContinue )
+    if ($null -eq $gw) {
+      ## check to see if there are any scheduled events
+      ## https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events
+      $events = Get-AzureInstanceMetadataScheduledEvents -ApiVersion "2020-07-01"
+      ## if there are scheduled events, log it here
+      if ($null -ne $events.events) {
+        foreach ($thing in $events.events) {
+          Write-Log -Message ('{0} :: Azure VM Maintenance identified: {1}' -f $($MyInvocation.MyCommand.Name),$thing.eventtype) -severity 'DEBUG'
+        }
+        ## Start the Azure VM Maintenance event
+        ## https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events#start-an-event
+        ## There could be multiple events, so just pick the eventId of the first one
+        $scheduled_event_post = Set-AzureInstanceMetadataScheduledEvents -EventID ($events.events.EventId|Select-Object -First 1)
+        ## Check to see if it actually started
+        foreach ($r in $scheduled_event_post) {
+          if ($null -ne $r) {
+            Write-Log -Message ('{0} :: Azure VM Maintenance started. Event status: {1}' -f $($MyInvocation.MyCommand.Name),$r.events.eventstatus) -severity 'DEBUG'
+          }
+        }
+      }
       # Wait to supress meesage if check is cuaght during a reboot.
-      start-sleep -s 45
-      Write-Log -message  ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      start-sleep -s 3
+      #start-sleep -s 45
+      Write-Log -message ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      #start-sleep -s 3
       shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
     } else {
-      start-sleep -s 120
+      Start-Sleep -Seconds 1
     }
   }
 } else {
