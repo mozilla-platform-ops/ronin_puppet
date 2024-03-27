@@ -199,3 +199,7 @@ pools:
     - nuc13-020
 defaults:
   NV_domain: "mdc1.mozilla.com"
+Validate:
+    hw_class:
+        - "t-nuc12"
+        - "nuc13"
