@@ -35,6 +35,15 @@ function Update-GetBoot {
     param(
     )
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
+    $Template_Get_Bootstrap =  $local_scripts + "Template_Get-Bootstrap.ps1"
+
+    if (Test-Path $Get_Bootstrap) {
+        Remove-Item $Get_Bootstrap -Force
+    }
+    if (!(Test-Path $Template_Get_Bootstrap)) {
+        Mount-ZDrive
+        Copy-Item -Path $source_scripts\Template_Get-Bootstrap.ps1 $local_scripts\Template_Get-Bootstrap.ps1 -Force
+    }
 
     write-host Updating Get-Bootstrap.ps1
 
@@ -48,7 +57,7 @@ function Update-GetBoot {
         @{ OldString = "1HASH"; NewString = $hash },
         @{ OldString = "1secret_date"; NewString = $secret_date }
 )
-    $content = Get-Content -Path $Get_Bootstrap
+    $content = Get-Content -Path $Template_Get_Bootstrap
     foreach ($replacement in $replacements) {
         $content = $content -replace $replacement.OldString, $replacement.NewString
     }
