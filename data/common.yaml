@@ -98,7 +98,7 @@ scriptworker_users:
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
-      keychain_filename: "mozilla.20220330.keychain"
+      keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
       notarization_users:
         - notary1
@@ -129,7 +129,7 @@ scriptworker_users:
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
-      keychain_filename: "mozilla.20220330.keychain"
+      keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
       notarization_users:
         - notary1
@@ -152,7 +152,7 @@ scriptworker_users:
         - mac_sign_and_pkg_hardened
       dmg_prefix: "prod"
       cot_product: "mozillavpn"
-      keychain_filename: "mozilla.20220330.keychain"
+      keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
 
 scriptworker_config:
