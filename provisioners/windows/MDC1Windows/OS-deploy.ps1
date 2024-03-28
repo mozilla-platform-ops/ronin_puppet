@@ -255,6 +255,7 @@ if (!(Test-Path $setup)) {
     Update-GetBoot
 } else {
     Write-Host "Local installation files are good. No further action needed."
+    Update-GetBoot
 }
 if ((Get-ChildItem -Path C:\ -Force) -ne $null) {
     write-host "Previous installation detected. Formatting OS disk."
