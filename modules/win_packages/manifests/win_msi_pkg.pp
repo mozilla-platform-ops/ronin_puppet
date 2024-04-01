@@ -7,7 +7,7 @@ define win_packages::win_msi_pkg (
   Array $install_options,
   String $package=$title
 ) {
-  require win_download
+  require win_download::init
 
   $pkgdir = $facts['custom_win_temp_dir']
   $srcloc = lookup('windows.ext_pkg_src')
