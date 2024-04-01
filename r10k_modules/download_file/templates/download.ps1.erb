@@ -43,7 +43,7 @@ if ($proxyAddress -ne '') {
 <%= '$webclient.Headers.Add([System.Net.HttpRequestHeader]::Cookie, "' + @cookie_string + '")' %>
 <% end %>
 
-$interval = 30
+$interval = 2
 $downloadStartTime = Get-Date
 for ($retries = 20; $retries -gt 0; $retries--) {
     try {
