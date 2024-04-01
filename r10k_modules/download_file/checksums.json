@@ -1,0 +1,22 @@
+{
+  "CHANGELOG.md": "e6f9ecc346b8cf744c4df0ea43f98164",
+  "Gemfile": "abe4f834992db2124eecfe094eb4cc06",
+  "HISTORY.md": "e05aa7a460a9b9e838b5f8d979cde8c7",
+  "LICENSE": "5d1d67d2ed40d59b127333aa755e7087",
+  "README.md": "04e2d9642d0b58e4013b495a80f96aa0",
+  "Rakefile": "90f5e04fcf98664dfce089ec2dae2109",
+  "manifests/init.pp": "35f2c33f663ce5f3101f3fe50ad615b3",
+  "metadata.json": "cd0c9a03a74d4a575819724b3d61c605",
+  "spec/acceptance/download_file_spec.rb": "e372fa18bd34a8abbfb556e0b6070af9",
+  "spec/acceptance/nodesets/archlinux-2-x64.yml": "daafcfcb4c8c8766856f52cec6ae5e86",
+  "spec/acceptance/nodesets/ec2/amazonlinux-2016091.yml": "b3dc2d81918fcc6d56855c88ba5b7ce8",
+  "spec/acceptance/nodesets/ec2/image_templates.yaml": "516f9c4c3407993a100090ce9e1a643c",
+  "spec/acceptance/nodesets/ec2/rhel-73-x64.yml": "e74670a1cb8eea32afc879a5d786f9bd",
+  "spec/acceptance/nodesets/ec2/sles-12sp2-x64.yml": "2506efcc9fb420132edc37bf88d6e21d",
+  "spec/acceptance/nodesets/ec2/ubuntu-1604-x64.yml": "87efd97ff1b073c3448f429a8ffc5a7c",
+  "spec/acceptance/nodesets/ec2/windows-2016-base-x64.yml": "e9db4dd16c60c52b433694130c2583a0",
+  "spec/defines/download_file_spec.rb": "dfc26fddbf863836fcc6b5b7f11c63f8",
+  "spec/spec_helper.rb": "a66b643907fe4d911e659943ed920d26",
+  "spec/spec_helper_acceptance.rb": "d3243b85964f880b3632c78891e0951a",
+  "templates/download.ps1.erb": "b4a99716e2d5fff97900ad7011bfd2ac"
+}

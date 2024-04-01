@@ -1,0 +1,74 @@
+<% if @security_protocol -%>
+[Net.ServicePointManager]::Expect100Continue = 'true';
+[Net.ServicePointManager]::SecurityProtocol = '<%= @security_protocol %>';
+<% end -%>
+$webclient = New-Object System.Net.WebClient
+$user = '<%= @user %>'
+$password = '<%= @password %>'
+$proxyAddress = '<%= @proxy_address %>'
+$proxyUser = '<%= @proxy_user %>'
+$proxyPassword = '<%= @proxy_password %>'
+<% if @user_agent %>
+$webclient.Headers['User-Agent'] = '<%= @user_agent %>'
+<% end %>
+# This is potentially not secure if not using ssl
+if (($user -ne '') -and ($password -ne '')) {
+  # Basic authentication encoding.
+  $basic = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($user + ":" + $password));
+  # Set Authorization HTTP header with Basic authentication information.
+  $webclient.Headers["Authorization"] = "Basic $basic"
+}
+
+if ($proxyAddress -ne '') {
+  if (!($proxyAddress.StartsWith('http://') -or $proxyAddress.StartsWith('https://'))) {
+    $proxyAddress = 'http://' + $proxyAddress
+  }
+
+  $proxy = new-object System.Net.WebProxy
+  $proxy.Address = $proxyAddress
+  if (($proxyPassword -ne '') -and ($proxyUser -ne '')) {
+  
+    <% if @is_password_secure %>
+    $password = ConvertTo-SecureString -string $proxyPassword
+    <% else %>
+    $password = ConvertTo-SecureString "$proxyPassword" -AsPlainText -Force
+    <% end %>
+    
+    $proxy.Credentials = New-Object System.Management.Automation.PSCredential($proxyUser, $password)
+    $webclient.UseDefaultCredentials = $true
+  }
+  $webclient.proxy = $proxy
+}
+<% if @cookies %>
+<%= '$webclient.Headers.Add([System.Net.HttpRequestHeader]::Cookie, "' + @cookie_string + '")' %>
+<% end %>
+
+$interval = 30
+$downloadStartTime = Get-Date
+for ($retries = 20; $retries -gt 0; $retries--) {
+    try {
+        $attemptStartTime = Get-Date
+        $webclient.DownloadFile('<%= @url %>', '<%= @destination_directory %>\<%= @filename %>')
+        $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+        Write-Host "Package downloaded in $attemptSeconds seconds"
+        break
+    } catch {
+        $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+        Write-Host "Package download failed in $attemptSeconds seconds"
+        Write-Host $_.Exception.Message
+
+        if ($_.Exception.InnerException.Response.StatusCode -eq [System.Net.HttpStatusCode]::NotFound) {
+            Write-host "Request returned 404 Not Found. Aborting download."
+            $retries = 0
+            throw $_.Exception
+        }
+    }
+        
+    if ($retries -eq 0) {
+        $totalSeconds = [math]::Round(($(Get-Date) - $downloadStartTime).TotalSeconds, 2)
+        throw "Package download failed after $totalSeconds seconds"
+    }
+
+    Write-Warning "Waiting $interval seconds before retrying (retries left: $retries)..."
+    Start-Sleep -Seconds $interval
+}

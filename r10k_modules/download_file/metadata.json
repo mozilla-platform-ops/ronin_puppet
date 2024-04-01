@@ -1,0 +1,43 @@
+{
+  "name": "puppet-download_file",
+  "version": "4.0.0",
+  "author": "Vox Pupuli",
+  "summary": "A module that will download files for use on Windows servers. Requires the server to have PowerShell 2.0 and above",
+  "license": "MIT",
+  "source": "https://github.com/voxpupuli/puppet-download_file",
+  "project_page": "https://github.com/voxpupuli/puppet-download_file",
+  "issues_url": "https://github.com/voxpupuli/puppet-download_file/issues",
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.13.1 < 7.0.0"
+    },
+    {
+      "name": "puppetlabs/powershell",
+      "version_requirement": ">= 1.1.1 < 3.0.0"
+    }
+  ],
+  "data_provider": null,
+  "tags": [
+    "windows",
+    "utility"
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "windows",
+      "operatingsystemrelease": [
+        "2008R2",
+        "2012",
+        "2012R2",
+        "7",
+        "8"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 5.5.8 < 7.0.0"
+    }
+  ]
+}
