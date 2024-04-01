@@ -61,7 +61,7 @@
 #      timeout               => 30000,
 #    }
 #
-define download_file(
+define download_file (
   Stdlib::HTTPUrl $url,
   String $destination_directory,
   Optional[String] $destination_file                                          = undef,
@@ -76,7 +76,6 @@ define download_file(
   Optional[Array[String]] $cookies                                            = undef,
   Optional[String] $user_agent                                                = undef
 ) {
-
   if $destination_file {
     $filename = $destination_file
   } else {
@@ -94,7 +93,7 @@ define download_file(
   $file_path = "${destination_directory}\\download-${filename}.ps1"
 
   file { "download-${filename}.ps1":
-    ensure  => present,
+    ensure  => file,
     path    => $file_path,
     content => template('download_file/download.ps1.erb'),
   }
