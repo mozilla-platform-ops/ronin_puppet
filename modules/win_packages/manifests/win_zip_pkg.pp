@@ -15,7 +15,7 @@ define win_packages::win_zip_pkg (
   $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
   $source      = "\"${pkgdir}\\${pkg}\""
 
-  download_file { $pkg :
+  download_file { $package :
     url                   => "${$srcloc}/${pkg}",
     destination_directory => $pkgdir,
     destination_file      => $pkg,
