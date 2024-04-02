@@ -13,10 +13,16 @@ define win_packages::win_zip_pkg (
   $pkgdir      = $facts['custom_win_temp_dir']
   $srcloc      = lookup('windows.ext_pkg_src')
   $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
-  $source      = "\"${pkgdir}\\${pkg}\""
+  $source      = "${pkgdir}\\${pkg}"
+  $url         = "${srcloc}/${pkg}"
+
+  notify { 'url':
+    withpath => true,
+    name     => "URL is ${url}",
+  }
 
   download_file { $package :
-    url                   => "${$srcloc}/${pkg}",
+    url                   => $url,
     destination_directory => $pkgdir,
     destination_file      => $pkg,
   }
