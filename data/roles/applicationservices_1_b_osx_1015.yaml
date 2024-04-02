@@ -27,7 +27,7 @@ generic_worker:
   bugzilla_api_key: "%{lookup('vault_secrets::generic_worker.data.bugzilla_api_key')}"
 
 packages_classes:
-  - google_chrome
+  #- google_chrome
   - mercurial
   - nodejs
   - python2
@@ -44,7 +44,7 @@ packages_classes:
   - zstandard
 
 # Package class parameters
-packages::google_chrome::version: v115.0.5790.102
+# packages::google_chrome::version: v115.0.5790.102
 packages::mercurial::version: 5.5.2
 packages::nodejs::version: 12.11.1
 packages::python2::version: 2.7.18
