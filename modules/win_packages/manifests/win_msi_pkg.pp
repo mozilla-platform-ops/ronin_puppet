@@ -20,10 +20,12 @@ define win_packages::win_msi_pkg (
     destination_directory => $pkgdir,
     destination_file      => $pkg,
   }
+
   package { $title :
-    ensure => installed,
-    source => "${pkgdir}\\${pkg}",
-    #require => File["${pkgdir}\\${pkg}"],
+    ensure          => installed,
+    source          => "${pkgdir}\\${pkg}",
+    require         => File["${pkgdir}\\${pkg}"],
+    install_options => $install_options,
   }
 }
 
