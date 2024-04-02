@@ -16,16 +16,12 @@ define win_packages::win_zip_pkg (
   $source      = "${pkgdir}\\${pkg}"
   $url         = "${srcloc}/${pkg}"
 
-  notify { 'url':
-    withpath => true,
-    name     => "URL is ${url}",
-  }
-
   download_file { $package :
     url                   => $url,
     destination_directory => $pkgdir,
     destination_file      => $pkg,
   }
+
   file { $destination:
     ensure => directory,
   }
