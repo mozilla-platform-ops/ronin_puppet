@@ -9,7 +9,6 @@ mod 'puppet-archive', '4.4.0'
 mod 'puppetlabs-acl', '5.0.0'
 mod 'puppetlabs-apt', '6.1.1'
 mod 'puppetlabs-concat', '5.1.0'
-mod 'puppet-download_file', '4.0.0'
 mod 'puppetlabs-facts', '1.4.0'
 mod 'puppetlabs-firewall', '1.14.0'
 mod 'puppetlabs-inifile', '5.0.1'
@@ -28,6 +27,10 @@ mod 'puppetlabs-yaml', '0.2.0'
 mod 'saz-rsyslog', '5.0.0'
 mod 'thekevjames-homebrew', '1.8.3'
 mod 'webalex-windows_firewall', '1.2.3'
+
+mod 'download_file',
+  :git => "https://github.com/voxpupuli/puppet-download_file.git",
+  :commit => 'b48c3dce9bb0d116fe28a0ca336a4de90a6579cf'
 
 mod 'mac_profiles_handler',
   :git => "https://github.com/keeleysam/puppet-mac_profiles_handler.git",
