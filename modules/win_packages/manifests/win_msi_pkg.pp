@@ -11,7 +11,11 @@ define win_packages::win_msi_pkg (
   $srcloc = lookup('windows.ext_pkg_src')
   $url = "${srcloc}/${pkg}"
 
-  download_file { $package :
+  notify { "${package} download message":
+    message => "Downloading ${pkg} from ${url} to ${pkgdir}",
+  }
+
+  download_file { "${package} download" :
     url                   => $url,
     destination_directory => $pkgdir,
     destination_file      => $pkg,

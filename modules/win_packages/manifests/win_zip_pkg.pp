@@ -16,7 +16,11 @@ define win_packages::win_zip_pkg (
   $source      = "${pkgdir}\\${pkg}"
   $url         = "${srcloc}/${pkg}"
 
-  download_file { $package :
+  notify { "${package} download message":
+    message => "Downloading ${pkg} from ${url} to ${pkgdir}",
+  }
+
+  download_file { "${package} download" :
     url                   => $url,
     destination_directory => $pkgdir,
     destination_file      => $pkg,
