@@ -16,10 +16,11 @@ define win_packages::win_exe_pkg (
     message => "Downloading ${pkg} from ${url} to ${pkgdir}",
   }
 
-  download_file { "${package} download" :
+  class { 'win_download':
     url                   => $url,
     destination_directory => $pkgdir,
     destination_file      => $pkg,
+    pkgname               => $title,
   }
 
   exec { "${title}install":

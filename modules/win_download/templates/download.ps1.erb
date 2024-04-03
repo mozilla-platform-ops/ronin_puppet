@@ -1,0 +1,13 @@
+$webclient = New-Object System.Net.WebClient
+$url = '<%= @url %>'
+$destination_directory = '<%= @destination_directory %>'
+
+try {
+  $webclient.DownloadFile($url,$destination_directory)
+}
+catch [Exception] {
+  write-host $_.Exception.GetType().FullName
+  write-host $_.Exception.Message
+  write-host $_.Exception.InnerException.Message
+  throw $_.Exception
+}

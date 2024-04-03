@@ -15,10 +15,11 @@ define win_packages::win_msi_pkg (
     message => "Downloading ${pkg} from ${url} to ${pkgdir}",
   }
 
-  download_file { "${package} download" :
+  class { 'win_download':
     url                   => $url,
     destination_directory => $pkgdir,
-    #destination_file      => $pkg,
+    destination_file      => $pkg,
+    pkgname               => $title,
   }
 
   package { $title :
