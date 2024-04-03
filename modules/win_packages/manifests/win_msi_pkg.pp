@@ -15,17 +15,18 @@ define win_packages::win_msi_pkg (
     message => "Downloading ${pkg} from ${url} to ${pkgdir}",
   }
 
-  class { 'win_download':
-    url                   => $url,
-    destination_directory => $pkgdir,
-    destination_file      => $pkg,
-    pkgname               => $title,
+  archive { $title:
+    ensure  => 'present',
+    source  => $url,
+    path    => "${pkgdir}\\${pkg}",
+    creates => "${pkgdir}\\${pkg}",
+    cleanup => false,
+    extract => false,
   }
 
   package { $title :
     ensure          => installed,
     source          => "${pkgdir}\\${pkg}",
-    require         => File["${pkgdir}\\${pkg}"],
     install_options => $install_options,
   }
 }

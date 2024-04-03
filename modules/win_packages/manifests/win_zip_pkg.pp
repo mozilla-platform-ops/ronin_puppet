@@ -20,11 +20,13 @@ define win_packages::win_zip_pkg (
     message => "Downloading ${pkg} from ${url} to ${pkgdir}",
   }
 
-  class { 'win_download':
-    url                   => $url,
-    destination_directory => $pkgdir,
-    destination_file      => $pkg,
-    pkgname               => $title,
+  archive { $title:
+    ensure  => 'present',
+    source  => $url,
+    path    => "${pkgdir}\\${pkg}",
+    creates => "${pkgdir}\\${pkg}",
+    cleanup => false,
+    extract => false,
   }
 
   file { $destination:

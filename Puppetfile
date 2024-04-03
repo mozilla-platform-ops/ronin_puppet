@@ -5,7 +5,6 @@ forge "https://forgeapi.puppetlabs.com"
 mod 'ipcrm-registry_acl', '0.0.6'
 mod 'jorten-timezone', '0.1.0'
 mod 'puppet-alternatives', '4.2.0'
-mod 'puppet-archive', '4.4.0'
 mod 'puppetlabs-acl', '5.0.0'
 mod 'puppetlabs-apt', '6.1.1'
 mod 'puppetlabs-concat', '5.1.0'
@@ -28,9 +27,9 @@ mod 'saz-rsyslog', '5.0.0'
 mod 'thekevjames-homebrew', '1.8.3'
 mod 'webalex-windows_firewall', '1.2.3'
 
-mod 'download_file',
-  :git => "https://github.com/voxpupuli/puppet-download_file.git",
-  :commit => 'b48c3dce9bb0d116fe28a0ca336a4de90a6579cf'
+mod 'archive',
+  :git => "https://github.com/voxpupuli/puppet-archive.git",
+  :commit => 'c21deed3301c7972bad2c452c266ff7bee6858f9'
 
 mod 'mac_profiles_handler',
   :git => "https://github.com/keeleysam/puppet-mac_profiles_handler.git",

@@ -1,13 +1,11 @@
-require_relative 'spec_helper'
+# frozen_string_literal: true
 
-describe :assemble_nexus_url do # rubocop:disable RSpec/DescribeSymbol
-  before :all do # rubocop:disable RSpec/BeforeAfterAll
-    Puppet::Parser::Functions.autoloader.loadall
-  end
+require 'spec_helper'
 
-  let(:scope) { PuppetlabsSpec::PuppetInternals.scope }
+describe 'archive::assemble_nexus_url' do
+  let(:nexus_url) { 'http://nexus.local' }
 
-  nexus_url = 'http://nexus.local'
+  it { is_expected.not_to be_nil }
 
   it 'builds url correctly' do
     expected_url = 'http://nexus.local/service/local/artifact/maven/content?g=com.test&a=test&v=1.0.0&r=binary-staging&p=ear'
@@ -20,7 +18,7 @@ describe :assemble_nexus_url do # rubocop:disable RSpec/DescribeSymbol
       'p' => 'ear'
     }
 
-    expect(scope.function_assemble_nexus_url([nexus_url, parameters])).to eq expected_url
+    expect(subject).to run.with_params(nexus_url, parameters).and_return(expected_url)
   end
 
   it 'builds url with version containing "+" sign correctly' do
@@ -34,6 +32,6 @@ describe :assemble_nexus_url do # rubocop:disable RSpec/DescribeSymbol
       'p' => 'ear'
     }
 
-    expect(scope.function_assemble_nexus_url([nexus_url, parameters])).to eq expected_url
+    expect(subject).to run.with_params(nexus_url, parameters).and_return(expected_url)
   end
 end

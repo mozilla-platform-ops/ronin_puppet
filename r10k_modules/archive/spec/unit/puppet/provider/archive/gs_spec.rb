@@ -13,24 +13,24 @@ RSpec.describe ruby_provider do
     let(:resource_properties) do
       {
         name: name,
-        source: 's3://home.lan/example.zip'
+        source: 'gs://home.lan/example.zip'
       }
     end
     let(:resource) { Puppet::Type::Archive.new(resource_properties) }
     let(:provider) { ruby_provider.new(resource) }
 
-    let(:s3_download_options) do
-      ['s3', 'cp', 's3://home.lan/example.zip', String]
+    let(:gs_download_options) do
+      ['cp', 'gs://home.lan/example.zip', String]
     end
 
     before do
-      allow(provider).to receive(:aws)
+      allow(provider).to receive(:gsutil)
     end
 
     context 'default resource property' do
-      it '#s3_download' do
-        provider.s3_download(name)
-        expect(provider).to have_received(:aws).with(s3_download_options)
+      it '#gs_download' do
+        provider.gs_download(name)
+        expect(provider).to have_received(:gsutil).with(gs_download_options)
       end
 
       it '#extract nothing' do
@@ -87,48 +87,19 @@ RSpec.describe ruby_provider do
       let(:resource_properties) do
         {
           name: name,
-          source: 's3://home.lan/example.zip',
-          download_options: ['--region', 'eu-central-1']
+          source: 'gs://home.lan/example.zip',
+          download_options: []
         }
       end
 
       context 'default resource property' do
-        it '#s3_download' do
-          provider.s3_download(name)
-          expect(provider).to have_received(:aws).with(s3_download_options << '--region' << 'eu-central-1')
+        it '#gs_download' do
+          provider.gs_download(name)
+          expect(provider).to have_received(:gsutil).with(gs_download_options)
         end
-      end
-    end
-
-    describe 'checksum match' do
-      let(:resource_properties) do
-        {
-          name: name,
-          source: '/dev/null',
-          checksum: 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-          checksum_type: 'sha1',
-        }
-      end
-
-      it 'does not raise an error' do
-        provider.transfer_download(name)
-      end
-    end
-
-    describe 'checksum mismatch' do
-      let(:resource_properties) do
-        {
-          name: name,
-          source: '/dev/null',
-          checksum: '9edf7cd9dfa0d83cd992e5501a480ea502968f15109aebe9ba2203648f3014db',
-          checksum_type: 'sha1',
-        }
-      end
-
-      it 'raises PuppetError (Download file checksum mismatch)' do
-        expect { provider.transfer_download(name) }.to raise_error(Puppet::Error, %r{Download file checksum mismatch})
       end
     end
   end
 end
+
 # rubocop:enable RSpec/MultipleMemoizedHelpers

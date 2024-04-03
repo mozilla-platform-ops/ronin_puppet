@@ -7,22 +7,18 @@
 #
 #   [1] http://support.microsoft.com/kb/137890
 #
-# @param ensure 
-#   Ensures the presence or absence of a registry key. Valid values: 'present', 'absent', 'UNSET'.
-#
+# @param ensure[ present, absent ]
 # @param display_name
-#   The Display Name of the service.  Defaults to the title of the resource.
-#
+#   The Display Name of the service.  Defaults to the title of
+#   the resource.
 # @param description
-#   A description of the service. String value set to 'UNSET' by default.
-#
+#   A description of the service
 # @param command
-#   The command to execute. Set to 'UNSET' by default.
-#
+#   The command to execute
 # @param start
 #   The starting mode of the service.  (Note, the native service
 #   resource can also be used to manage this setting.)
-#   Valid values: 'automatic', 'manual', 'disabled'
+#   [ automatic, manual, disabled ]
 #
 #
 # Manages the values in the key HKLM\System\CurrentControlSet\Services\$name\
@@ -32,21 +28,22 @@
 #     ensure       => present,
 #     display_name => 'Puppet Agent',
 #     description  => 'Periodically fetches and applies
-#                      configurations from a Puppet Server.',
+#                   configurations from a Puppet Server.',
 #     command      => 'C:\PuppetLabs\Puppet\service\daemon.bat',
 #   }
 #
 define registry::service (
-  Enum['present', 'absent', 'UNSET'] $ensure              = 'UNSET',
-  String[1] $display_name                                 = 'UNSET',
-  String[1] $description                                  = 'UNSET',
-  String[1] $command                                      = 'UNSET',
-  Enum['automatic', 'manual', 'disabled', 'UNSET'] $start = 'UNSET'
+  $ensure       = 'UNSET',
+  $display_name = 'UNSET',
+  $description  = 'UNSET',
+  $command      = 'UNSET',
+  $start        = 'UNSET'
 ) {
   $ensure_real = $ensure ? {
     'UNSET'  => present,
-    'present' => present,
-    'absent'  => absent,
+    undef   => present,
+    present => present,
+    absent  => absent,
   }
 
   $display_name_real = $display_name ? {
@@ -67,9 +64,9 @@ define registry::service (
 
   # Map descriptive names to flags.
   $start_real = $start ? {
-    'automatic' => 2,
-    'manual'    => 3,
-    'disabled'  => 4,
+    automatic => 2,
+    manual    => 3,
+    disabled  => 4,
   }
 
   # Variable to hold the base key path.

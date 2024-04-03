@@ -1,4 +1,6 @@
-require_relative 'spec_helper'
+# frozen_string_literal: true
+
+require 'spec_helper'
 
 describe 'archive' do
   context 'RHEL' do
@@ -30,6 +32,18 @@ describe 'archive' do
       it { is_expected.to contain_archive('awscli-bundle.zip') }
       it { is_expected.to contain_exec('install_aws_cli') }
     end
+
+    context 'with archives' do
+      let(:params) do
+        {
+          archives: {
+            '/tmp/foo.tar.gz' => { 'ensure' => 'present' }
+          }
+        }
+      end
+
+      it { is_expected.to contain_archive('/tmp/foo.tar.gz') }
+    end
   end
 
   describe 'Windows' do
@@ -49,11 +63,12 @@ describe 'archive' do
       end
 
       it do
-        is_expected.to contain_package('7zip').with(
+        expect(subject).to contain_package('7zip').with(
           name: '7zip',
           provider: 'chocolatey'
         )
       end
+
       it { is_expected.not_to contain_archive('awscli-bundle.zip') }
     end
 
@@ -73,7 +88,7 @@ describe 'archive' do
       end
 
       it do
-        is_expected.to contain_package('7zip').with(
+        expect(subject).to contain_package('7zip').with(
           name: '7-Zip 9.20 (x64 edition)',
           source: 'C:/Windows/Temp/7z920-x64.msi',
           provider: 'windows'
@@ -95,6 +110,24 @@ describe 'archive' do
       end
 
       it { is_expected.not_to contain_package('7zip') }
+    end
+
+    context 'with archives' do
+      let(:facts) do
+        {
+          archive_windir: 'C:/staging'
+        }.merge(default_facts)
+      end
+
+      let(:params) do
+        {
+          archives: {
+            'C:/staging/foo.zip' => { 'ensure' => 'present' }
+          }
+        }
+      end
+
+      it { is_expected.to contain_archive('C:/staging/foo.zip') }
     end
   end
 end
