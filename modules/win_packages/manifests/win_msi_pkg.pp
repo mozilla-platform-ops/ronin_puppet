@@ -18,7 +18,7 @@ define win_packages::win_msi_pkg (
   download_file { "${package} download" :
     url                   => $url,
     destination_directory => $pkgdir,
-    destination_file      => $pkg,
+    #destination_file      => $pkg,
   }
 
   package { $title :
