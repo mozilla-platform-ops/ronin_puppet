@@ -276,13 +276,6 @@ groups:
     facts:
       puppet_role: gecko_t_osx_1015_r8_staging
 
-  - name: gecko-t-osx-1015-r8-loaner
-    targets:
-      - macmini-r8-129.test.releng.mdc1.mozilla.com # Bug 1729549
-    facts:
-      puppet_role: gecko_t_osx_1015_r8_loaner
-
-
   - name: gecko-1-b-osx-1015
     targets:
       - macmini-r8-138.test.releng.mdc1.mozilla.com

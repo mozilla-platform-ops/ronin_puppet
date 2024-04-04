@@ -15,9 +15,6 @@ groups:
       - macmini-m1-10.test.releng.mslv.mozilla.com
       - macmini-m1-11.test.releng.mslv.mozilla.com
       - macmini-m1-17.test.releng.mslv.mozilla.com
-#      - macmini-m1-12.test.releng.mslv.mozilla.com
-#      - macmini-m1-13.test.releng.mslv.mozilla.com
-#      - macmini-m1-14.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1100_m1_staging
 
