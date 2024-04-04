@@ -58,6 +58,7 @@ class roles_profiles::profiles::mozilla_build {
                 needed_mozbld_ver         => lookup('win-worker.mozilla_build.version'),
                 current_hg_ver            => $facts['custom_win_hg_version'],
                 needed_hg_ver             => lookup('win-worker.mozilla_build.hg_version'),
+                current_py3_pip_ver       => $facts['custom_win_py3_pip_version'],
                 needed_py3_pip_ver        => lookup('win-worker.mozilla_build.py3_pip_version'),
                 current_py3_zstandard_ver => $facts['custom_win_py3_zstandard_version'],
                 needed_py3_zstandard_ver  => lookup('win-worker.mozilla_build.py3_zstandard_version'),
