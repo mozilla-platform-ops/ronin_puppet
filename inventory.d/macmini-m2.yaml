@@ -28,9 +28,8 @@ groups:
     facts:
       puppet_role: gecko_3_b_osx_arm64
 
-  - name: gecko-t-osx-1300-m2-vms
+  - name: gecko-t-osx-1400-m2-vms-staging
     targets:
-      - macstudio-m2pro-vm-1.local
-      - macstudio-m2pro-vm-2.local
+      - moz-runner-1.local
     facts:
-      puppet_role: gecko_t_osx_1300_m2_vms
+      puppet_role: gecko_t_osx_1400_m2_vms_staging
