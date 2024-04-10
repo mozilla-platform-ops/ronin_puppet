@@ -23,8 +23,7 @@ class roles_profiles::roles::gecko_t_osx_1400_r8_staging {
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::metrics
     include ::roles_profiles::profiles::worker
-    # Disabling for now
-    #include ::roles_profiles::profiles::safaridriver
+    include ::roles_profiles::profiles::safaridriver
     include ::roles_profiles::profiles::safariupdate
     include macos_utils::disable_bluetooth_setup
     include ::roles_profiles::profiles::pipconf
