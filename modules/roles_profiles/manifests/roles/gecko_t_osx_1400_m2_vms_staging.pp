@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::gecko_t_osx_1300_m2_vms {
+class roles_profiles::roles::gecko_t_osx_1400_m2_vms_staging {
 
     include ::roles_profiles::profiles::timezone
     include ::roles_profiles::profiles::ntp
@@ -23,7 +23,7 @@ class roles_profiles::roles::gecko_t_osx_1300_m2_vms {
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
-    # include ::roles_profiles::profiles::pipconf
+    include ::roles_profiles::profiles::pipconf
     include ::roles_profiles::profiles::macos_people_remover
-    # include ::roles_profiles::profiles::safaridriver
+    include ::roles_profiles::profiles::safaridriver
 }
