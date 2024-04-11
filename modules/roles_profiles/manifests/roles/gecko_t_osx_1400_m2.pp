@@ -19,11 +19,11 @@ class roles_profiles::roles::gecko_t_osx_1400_m2 {
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::relops_users
-    #include ::roles_profiles::profiles::cltbld_user
+    include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
     include ::roles_profiles::profiles::pipconf
     include ::roles_profiles::profiles::macos_people_remover
-    #include ::roles_profiles::profiles::safaridriver
+    include ::roles_profiles::profiles::safaridriver
 }
