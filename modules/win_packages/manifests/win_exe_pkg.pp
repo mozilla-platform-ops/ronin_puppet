@@ -3,23 +3,33 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_packages::win_exe_pkg (
-    String $pkg,
-    String $creates,
-    String $install_options_string,
-    String $package=$title
-){
+  String $pkg,
+  String $creates,
+  String $install_options_string,
+  String $package=$title
+) {
+  $pkgdir       = $facts['custom_win_temp_dir']
+  $srcloc       = lookup('windows.ext_pkg_src')
+  $url         = "${srcloc}/${pkg}"
 
-    $pkgdir       = $facts['custom_win_temp_dir']
-    $srcloc       = lookup('windows.ext_pkg_src')
+  notify { "${package} download message":
+    message => "Downloading ${pkg} from ${url} to ${pkgdir}",
+  }
 
-    file { "${pkgdir}\\${pkg}" :
-        source => "${srcloc}/${pkg}",
-    }
-    exec { "${title}install":
-        command => "${pkgdir}\\${pkg} ${install_options_string}",
-        creates => $creates,
-        timeout => 600,
-    }
+  archive { $title:
+    ensure  => 'present',
+    source  => $url,
+    path    => "${pkgdir}\\${pkg}",
+    creates => "${pkgdir}\\${pkg}",
+    cleanup => false,
+    extract => false,
+  }
+
+  exec { "${title}install":
+    command => "${pkgdir}\\${pkg} ${install_options_string}",
+    creates => $creates,
+    timeout => 600,
+  }
 }
 
 # Bug list
