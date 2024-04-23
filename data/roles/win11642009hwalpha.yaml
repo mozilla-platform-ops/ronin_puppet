@@ -5,32 +5,32 @@ win-worker:
   generic_worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
-    version: '60.3.4'
-    client_id: "project/releng/generic-worker/win11-64-2009-hw-ref-alpha"
-    idle_timeout: 604800
+    version: '64.2.5'
+    client_id: "project/releng/generic-worker/win11-64-2009-hw-alpha"
+    idle_timeout: 0
 
   taskcluster:
     worker_runner:
         provisionerId: 'releng-hardware'
         name: 'start-worker-windows-amd64'
-        version: '60.3.4'
+        version: '64.2.5'
         provider: "standalone"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
-        version: '60.3.4'
+        version: '64.2.5'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
     livelog:
         name: "livelog-windows-amd64"
-        version: '60.3.4'
-    client_id: "azure/gecko-t/win11-64-2009-hw-ref-alpha"
+        version: '64.2.5'
+    client_id: "azure/gecko-t/win11-64-2009-hw-ref"
     worker_group: "mdc1"
 
   # Mozilla-build
   mozilla_build:
-    version: '4.0.2'
-    zstandard_version: '0.15.2'
+    version: '4.1'
+    zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
 
   # Mozilla profile
@@ -47,9 +47,6 @@ win-worker:
     version: '2.24'
   vac:
     version: '464'
-  # driver:
-  #   gfx:
-  #     version: '101.4255'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:

@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-class roles_profiles::roles::win11642009hwref {
-  # Install MS tools earlier
+class roles_profiles::roles::win11642009hwalpha {
+  ## Install before Widnows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
@@ -19,13 +19,14 @@ class roles_profiles::roles::win11642009hwref {
   include roles_profiles::profiles::hardware
   #include roles_profiles::profiles::intel_drivers
   include roles_profiles::profiles::virtual_drivers
-  #include roles_profiles::profiles::microsoft_store
   include roles_profiles::profiles::windows_datacenter_administrator
+  include roles_profiles::profiles::microsoft_kms
 
   # Adminstration
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::common_tools
   #include roles_profiles::profiles::vnc
+  include roles_profiles::profiles::nuc_management
 
   # Worker
   include roles_profiles::profiles::git

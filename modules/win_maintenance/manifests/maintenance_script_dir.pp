@@ -2,12 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_openssh::service {
+class win_maintenance::maintenance_script_dir (
+    String $script_dir
+) {
 
-    require win_openssh::add_openssh
-
-    service { 'sshd':
-        ensure => running,
-        enable => true,
+    file { $script_dir:
+        ensure => directory,
     }
 }

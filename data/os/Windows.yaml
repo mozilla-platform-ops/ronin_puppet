@@ -27,6 +27,8 @@ windows:
   ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
   ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
 
+  s3:
+    ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
   # Taskcluster resources
   taskcluster:
     root_url: "https://firefox-ci-tc.services.mozilla.com"
@@ -34,12 +36,15 @@ windows:
     wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"
     package_source: "https://github.com/taskcluster/generic-worker/releases/download"
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
+    relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
 
   # Windows KMS
   # KMS keys are publicly available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
   kms:
     key:
       microsoft_windows_10_pro: "W269N-WFGWX-YVC9B-4J6C9-T83GX"
+      microsoft_windows_11_enterprise: "NPPR9-FWDCX-D2C8J-H872K-2YT43"
+
 
   # Common dirs across all Windows platforms
   dir:
