@@ -29,12 +29,15 @@ executors:
   macos-1014: &1014
     macos:
       xcode: 12.5.1  # 8/15/23: os x 11.4.0, no older available
+    resource_class: macos.m1.medium.gen1
   macos-1015: &1015
     macos:
       xcode: 12.5.1  # 8/15/23: os x 11.4.0, no older available
+    resource_class: macos.m1.medium.gen1
   macos-1100: &1100
     macos:
       xcode: 12.5.1  # 8/15/23: os x 11.4.0
+    resource_class: macos.m1.medium.gen1
 
 commands:
   early_return_for_forked_pull_requests:
