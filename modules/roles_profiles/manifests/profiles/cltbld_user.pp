@@ -16,7 +16,7 @@ class roles_profiles::profiles::cltbld_user {
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {
-        '19', '20': {
+        '19', '20', '21': {
           users::single_user { 'cltbld':
             # Bug 1122875 - cltld needs to be in this group for debug tests
             password   => $password,
@@ -36,7 +36,7 @@ class roles_profiles::profiles::cltbld_user {
             ensure => directory,
           }
         }
-        '21', '22', '23': {
+        '22', '23': {
           exec { 'create_macos_user':
             # UID needs to be > 501 for LaunchAgents to function
             command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password_hash}'",
