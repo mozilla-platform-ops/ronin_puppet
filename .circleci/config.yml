@@ -223,7 +223,7 @@ jobs:
       #       - run: echo "ruby-2.6.4" > ~/.ruby-version
       - run: brew install gpg
       - ruby/install:
-          version: '3'
+          version: '3.0'
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
