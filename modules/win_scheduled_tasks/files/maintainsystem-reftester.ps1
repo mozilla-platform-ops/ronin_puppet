@@ -273,6 +273,7 @@ function StartWorkerRunner {
         if ($events) {
             Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Restart-Computer -Force
+            exit
         }
         Start-Service -Name worker-runner
     }
