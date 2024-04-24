@@ -2,21 +2,39 @@
 pools:
   - name: "win11-64-2009-hw-ref-alpha"
     Description: "Pool Description"
-    image: "win11-2009-NUC-02-22-2024"
+    image: "win11-2009-NUC-03-22-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "cb69032"
+    hash: "16d55f1"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
+    - nuc12-006
     - nuc12-010
   - name: "win11-64-2009-hw-ref"
-    image: "win11-64-2009"
+    Description: "Pool Description"
+    image: "win11-2009-NUC-03-22-2024"
+    src_Organisation: "mozilla-platform-ops"
+    src_Repository: "ronin_puppet"
+    src_Branch: "win11hardware"
+    hash: "16d55f1"
+    secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
-    - nuc-33431
-    - nuc-33430
+    - nuc12-001
+    - nuc12-002
+    - nuc12-003
+    - nuc12-004
+    - nuc12-005
+    - nuc12-007
+    - nuc12-008
+    - nuc12-009
+    - nuc12-011
+    - nuc12-012
+    - nuc12-013
+    - nuc12-014
+    - nuc12-015
   - name: "win11-64-2009-hw"
     Description: "Pool Description"
     image: "win11-2009-NUC-03-20-2024"
