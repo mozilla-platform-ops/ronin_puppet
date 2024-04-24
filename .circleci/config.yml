@@ -221,9 +221,9 @@ jobs:
       #       equal: [ *1014, << parameters.os >> ]
       #     steps:
       #       - run: echo "ruby-2.6.4" > ~/.ruby-version
-      - run: brew install gpg
-      - ruby/install:
-          version: '3.0'
+      # - run: brew install gpg
+      # - ruby/install:
+      #     version: '3.0'
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
