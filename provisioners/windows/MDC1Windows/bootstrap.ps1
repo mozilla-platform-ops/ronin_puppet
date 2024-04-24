@@ -594,6 +594,18 @@ function Set-RemoteConnectivity {
 ## If debug will prevent git hash locking, some reboots and PXE boot fall back
 #$debug = $true
 
+## Write out the variables
+Write-Host "Worker Pool ID: $worker_pool_id"
+Write-Host "Role: $role"
+Write-Host "Source Organisation: $src_Organisation"
+Write-Host "Source Repository: $src_Repository"
+Write-host "Source Branch: $src_Branch"
+Write-Host "Hash: $hash"
+Write-host "Secret Date: $secret_date"
+Write-Host "Image Provisioner: $image_provisioner"
+
+pause
+
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
 ## prevent standby and monitor timeout during bootstrap
@@ -605,7 +617,8 @@ powercfg.exe -x -monitor-timeout-ac 0
 ## It works here, but ultimately should be done through Puppet.
 Set-RemoteConnectivity
 
-$stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+## This is not being set yet, so it won't find the ronin_puppet registry entry
+$stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 
 If ($stage -ne 'complete') {
     Setup-Logging
