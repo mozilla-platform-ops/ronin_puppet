@@ -182,7 +182,10 @@ foreach ($pool in $YAML.pools) {
 
 $source_dir = "Z:\"
 $local_install = "D:\"
+Write-host "Source_dir is $source_dir"
+Write-host "Needed image is $neededImage"
 $source_install = $source_dir + "Images\" + $neededImage
+Write-host "Source install is $source_install"
 $OS_files = $local_install + $neededImage
 $setup = $OS_files + "\setup.exe"
 $secret_dir = $local_install + "secrets"
