@@ -604,7 +604,8 @@ Write-Host "Hash: $hash"
 Write-host "Secret Date: $secret_date"
 Write-Host "Image Provisioner: $image_provisioner"
 
-pause
+## Add a 10 second delay to view the variables above
+Start-sleep -Seconds 10
 
 Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 
