@@ -216,14 +216,14 @@ jobs:
       - checkout
       - setup_vault:
           role: << parameters.role >>
-      - when:
-          condition:
-            equal: [ *1014, << parameters.os >> ]
-          steps:
-            - run: echo "ruby-2.6.4" > ~/.ruby-version
+      # - when:
+      #     condition:
+      #       equal: [ *1014, << parameters.os >> ]
+      #     steps:
+      #       - run: echo "ruby-2.6.4" > ~/.ruby-version
       - run: brew install gpg
       - ruby/install:
-          version: '2.6.4'
+          version: '2.7'
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
