@@ -218,8 +218,7 @@ if (!(Test-Path $setup)) {
     New-Item -ItemType Directory $local_app  | Out-Null
     New-Item -ItemType Directory $local_yaml_dir  | Out-Null
 
-    Write-host "Copying $source_install to $local_install."
-    pause
+    Write-host "Copying $source_install to $local_install"
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
