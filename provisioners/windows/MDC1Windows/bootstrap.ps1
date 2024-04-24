@@ -560,7 +560,7 @@ function Set-WinHwRef {
         
         Write-Log -Message ('{0} :: Downloading av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-        Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+        Start-Process -FilePath "D:\applications\azcopy.exe" -ArgumentList @(
             "copy",
             "https://roninpuppetassets.blob.core.windows.net/binaries/Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle",
             "$env:systemdrive\RelSRE\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
