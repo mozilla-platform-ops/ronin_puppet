@@ -132,6 +132,7 @@ commands:
         type: string
     steps:
       - vault/install:
+          arch: arm64
           verify: false
       - run: vault version
       - run:
