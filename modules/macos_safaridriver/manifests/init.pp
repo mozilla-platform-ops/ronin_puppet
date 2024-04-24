@@ -123,7 +123,8 @@ class macos_safaridriver (
           }
         }
         # # 22 == OS X 13
-        '22': {
+        #    - 21 is only for CircleCI Testing, might not work, but test applying at least
+        '21', '22': {
           $perm_script = '/usr/local/bin/add_tcc_perms_os11_13.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation3.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
