@@ -531,6 +531,66 @@ function Handle-Failure {
     }
 }
 
+function Set-WinHwRef {
+    [CmdletBinding()]
+    param (
+        
+    )
+    
+    ## TODO: This is a temporary workaround until this is moved to puppet.
+
+    ## Check if C:\RelSRE exists, and if it doesn't, create it
+    if (-Not (Test-Path "$env:systemdrive\RelSRE")) {
+        ## Create the directory to store the files/binaries that will be used in the task-user-init script
+        Write-Log -message  ('{0} :: Create C:\RelSRE' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\RelSRE" -ErrorAction SilentlyContinue 
+        ## Set permissions for the generic worker task users to read from that directory
+        icacls "C:\RelSRE" /grant 'Users:(OI)(CI)R'
+        icacls 'C:\RelSRE' /grant 'Administrators:(OI)(CI)F'
+    }
+
+    ## Download the Microsoft Store AV1 Plugin locally
+    ## Install microsoft store extension
+    If (-Not (Test-Path "$env:systemdrive\RelSRE\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle")) {
+        Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
+        $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
+        $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
+        $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
+        
+        Write-Log -Message ('{0} :: Downloading av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+
+        Start-Process -FilePath "$ENV:systemdrive\azcopy.exe" -ArgumentList @(
+            "copy",
+            "https://roninpuppetassets.blob.core.windows.net/binaries/Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle",
+            "$env:systemdrive\RelSRE\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle"
+        ) -Wait -NoNewWindow
+        Write-Log -Message ('{0} :: Downloaded av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    }
+}
+
+function Set-RemoteConnectivity {
+    [CmdletBinding()]
+    param (
+        
+    )
+    
+    ## OpenSSH
+    Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+    ## WinRM
+    Write-Log -message ('{0} :: Enabling WinRM.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $adapter = Get-NetAdapter | Where-Object { $psitem.name -match "Ethernet" }
+    $network_category = Get-NetConnectionProfile -InterfaceAlias $adapter.Name
+    ## WinRM only works on the the active network interface if it is set to private
+    if ($network_category.NetworkCategory -ne "Private") {
+        Set-NetConnectionProfile -InterfaceAlias $adapter.name -NetworkCategory "Private"
+        Enable-PSRemoting -Force
+    }
+
+}
+
 ## If debug will prevent git hash locking, some reboots and PXE boot fall back
 #$debug = $true
 
@@ -540,11 +600,10 @@ Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
-## Enable OpenSSH
+## Enable OpenSSH and WinRM
 ## Installation through Puppet is is intermittent.
 ## It works here, but ultimately should be done through Puppet.
-Write-Log -message  ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+Set-RemoteConnectivity
 
 $stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 
@@ -552,7 +611,16 @@ If ($stage -ne 'complete') {
     Setup-Logging
     Set-SCHTask
     Get-PSModules
-
+    ## TODO: Figure out a way to install binaries/files as taskuser without defaulting to task-user-init
+    switch ($role) {
+        "win11642009hwref" {
+            Write-Log -message  ('{0} :: Setting puppet role {1} bootstrap steps' -f $($MyInvocation.MyCommand.Name), $role) -severity 'DEBUG'
+            Set-WinHwRef
+        }
+        Default {
+            Write-Log -message  ('{0} :: Skipping puppet role specific bootstrap steps' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+    }
     Get-PreRequ
     Set-Ronin-Registry
     Get-Ronin

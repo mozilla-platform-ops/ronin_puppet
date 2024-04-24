@@ -142,6 +142,7 @@ switch ($os_version) {
     Default {}
 }
 
+## TODO: Figure out a way to install binaries/files as taskuser without defaulting to task-user-init
 ## do stuff based on the role
 switch ($base_image) {
     "win11642009hwref" {
