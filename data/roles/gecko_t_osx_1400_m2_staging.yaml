@@ -31,6 +31,7 @@ packages_classes:
   - python3_psutil
   - python3_zstandard
 #  - rosetta_2
+  - safari_preview
   - scres
   - tooltool
   - virtualenv
