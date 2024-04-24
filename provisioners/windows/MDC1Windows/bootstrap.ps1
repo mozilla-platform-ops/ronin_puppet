@@ -537,6 +537,8 @@ function Set-WinHwRef {
         
     )
     
+    ## TODO: This is a temporary workaround until this is moved to puppet.
+
     ## Check if C:\RelSRE exists, and if it doesn't, create it
     if (-Not (Test-Path "$env:systemdrive\RelSRE")) {
         ## Create the directory to store the files/binaries that will be used in the task-user-init script
