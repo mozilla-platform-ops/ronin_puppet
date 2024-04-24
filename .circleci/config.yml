@@ -83,7 +83,9 @@ commands:
             hdiutil mount "puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
             sudo -E installer -pkg "/Volumes/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}/puppet-agent-${PUPPET_VER}-1-installer.pkg" -target /
             # Install bolt
-            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/arm64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            # not working on arm64 (no build for arm64 yet)
+            # curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/arm64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            curl -s -O https://downloads.puppet.com/mac/puppet-tools/12/x86_64/puppet-bolt-latest.dmg
             hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
             sudo -E installer -pkg "/Volumes/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}/puppet-bolt-${BOLT_VER}-1-installer.pkg" -target /
             # Install gems needed for hiera vault
