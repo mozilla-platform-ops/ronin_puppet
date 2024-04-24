@@ -221,6 +221,7 @@ jobs:
             equal: [ *1014, << parameters.os >> ]
           steps:
             - run: echo "ruby-2.6.4" > ~/.ruby-version
+      - run: brew install gpg
       - ruby/install:
           version: '2.6.4'
       - gem_cache
