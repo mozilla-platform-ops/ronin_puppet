@@ -630,6 +630,10 @@ If ($stage -ne 'complete') {
             Write-Log -message  ('{0} :: Setting puppet role {1} bootstrap steps' -f $($MyInvocation.MyCommand.Name), $role) -severity 'DEBUG'
             Set-WinHwRef
         }
+        "win11642009hwrefalpha" {
+            Write-Log -message  ('{0} :: Setting puppet role {1} bootstrap steps' -f $($MyInvocation.MyCommand.Name), $role) -severity 'DEBUG'
+            Set-WinHwRef
+        }
         Default {
             Write-Log -message  ('{0} :: Skipping puppet role specific bootstrap steps' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
