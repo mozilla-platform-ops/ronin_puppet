@@ -158,6 +158,7 @@ foreach ($pool in $YAML.pools) {
             $src_Repository = $pool.src_Repository
             $src_Branch = $pool.src_Branch
             $hash = $pool.hash
+            $secret_date = $pool.secret_date
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
             break
@@ -190,6 +191,7 @@ $OS_files = $local_install + $neededImage
 $setup = $OS_files + "\setup.exe"
 $secret_dir = $local_install + "secrets"
 $secret_file_name = $WorkerPool + "-" + $secret_date + ".yaml"
+Write-Host "Secret file name is $secret_file_name"
 $secret_file = $secret_dir + "\" + $secret_file_name
 $source_secrets = $source_dir + "secrets\" + $secret_file_name
 Write-host "Source secrets is $source_secrets"
