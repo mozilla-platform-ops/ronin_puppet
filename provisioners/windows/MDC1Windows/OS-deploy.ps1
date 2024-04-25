@@ -192,6 +192,7 @@ $secret_dir = $local_install + "secrets"
 $secret_file_name = $WorkerPool + "-" + $secret_date + ".yaml"
 $secret_file = $secret_dir + "\" + $secret_file_name
 $source_secrets = $source_dir + "secrets\" + $secret_file_name
+Write-host "Source secrets is $source_secrets"
 $source_AZsecrets = $source_dir + "secrets\" + "azcredentials.yaml"
 $AZsecret_file = $secret_dir + "\azcredentials.yaml"
 $source_scripts = $source_dir + "scripts\"
@@ -257,7 +258,7 @@ if (!(Test-Path $setup)) {
 } elseif (!(Test-Path $secret_file)) {
     Get-ChildItem -Path $secret_dir | Remove-Item -Recurse
     Mount-ZDrive
-    Write-host Updating secret file.
+    Write-host "Updating secret file."
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts\Get-Bootstrap.ps1 $local_scripts\Get-Bootstrap.ps1 -Recurse -Force
