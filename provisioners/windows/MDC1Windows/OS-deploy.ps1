@@ -158,6 +158,7 @@ foreach ($pool in $YAML.pools) {
             $src_Repository = $pool.src_Repository
             $src_Branch = $pool.src_Branch
             $hash = $pool.hash
+            $secret_date = $pool.secret_date
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
             break
@@ -182,13 +183,18 @@ foreach ($pool in $YAML.pools) {
 
 $source_dir = "Z:\"
 $local_install = "D:\"
+Write-host "Source_dir is $source_dir"
+Write-host "Needed image is $neededImage"
 $source_install = $source_dir + "Images\" + $neededImage
+Write-host "Source install is $source_install"
 $OS_files = $local_install + $neededImage
 $setup = $OS_files + "\setup.exe"
 $secret_dir = $local_install + "secrets"
 $secret_file_name = $WorkerPool + "-" + $secret_date + ".yaml"
+Write-Host "Secret file name is $secret_file_name"
 $secret_file = $secret_dir + "\" + $secret_file_name
 $source_secrets = $source_dir + "secrets\" + $secret_file_name
+Write-host "Source secrets is $source_secrets"
 $source_AZsecrets = $source_dir + "secrets\" + "azcredentials.yaml"
 $AZsecret_file = $secret_dir + "\azcredentials.yaml"
 $source_scripts = $source_dir + "scripts\"
@@ -211,14 +217,22 @@ if (!(Test-Path $setup)) {
     Mount-ZDrive
 
     Write-Host "Copying needed files"
+    Write-Host "Creating $secret_dir"
     New-Item -ItemType Directory $secret_dir  | Out-Null
+    Write-Host "Creating $local_app"
     New-Item -ItemType Directory $local_app  | Out-Null
+    Write-Host "Creating $local_yaml_dir"
     New-Item -ItemType Directory $local_yaml_dir  | Out-Null
 
+    Write-host "Copying $source_install to $local_install"
     Copy-Item -Path $source_install -Destination $local_install -Recurse -Force
+    Write-Host "Copying $source_secrets to $secret_file"
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
+    Write-Host "Copying $source_AZsecrets to $AZsecret_file"
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
+    Write-host "Copying $source_scripts to $local_scripts"
     Copy-Item -Path $source_scripts $local_scripts -Recurse -Force
+    Write-host "Copying $source_app\* to $local_app"
     Copy-Item -Path $source_app\* $local_app -Recurse -Force
 
     Update-GetBoot
@@ -246,7 +260,7 @@ if (!(Test-Path $setup)) {
 } elseif (!(Test-Path $secret_file)) {
     Get-ChildItem -Path $secret_dir | Remove-Item -Recurse
     Mount-ZDrive
-    Write-host Updating secret file.
+    Write-host "Updating secret file."
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
     Copy-Item -Path $source_scripts\Get-Bootstrap.ps1 $local_scripts\Get-Bootstrap.ps1 -Recurse -Force
