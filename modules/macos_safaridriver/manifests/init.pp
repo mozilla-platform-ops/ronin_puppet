@@ -183,6 +183,7 @@ class macos_safaridriver (
         '23': {
           $perm_script = '/usr/local/bin/add_tcc_perms_os14.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation3.sh'
+          $enable_script_preview = '/usr/local/bin/safari-enable-remote-automation_tech_preview.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
 
           file { $perm_script:
@@ -192,6 +193,11 @@ class macos_safaridriver (
 
           file { $enable_script:
             content => file('macos_safaridriver/safari-enable-remote-automation3.sh'),
+            mode    => '0755',
+          }
+
+          file { $enable_script_preview:
+            content => file('macos_safaridriver/safari-enable-remote-automation_tech_preview.sh'),
             mode    => '0755',
           }
 
@@ -213,6 +219,16 @@ class macos_safaridriver (
             # semaphore and semaphore dir are created in script
             unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
             # logoutput => true,
+          }
+
+          ## Execute remote automation script here for Safari Technology Preview?
+
+          exec { 'execute enable remote automation script tech preview':
+            command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script_preview}",
+            require => File[$enable_script_preview], # Dependency only on $enable_script_preview
+            unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run",
+            onlyif  => "/bin/test -d '/Applications/Safari Technology Preview.app'", # Condition to check if directory exists
+            cwd     => "/Users/${user_running_safari}",
           }
 
           exec { 'enable safari driver':
