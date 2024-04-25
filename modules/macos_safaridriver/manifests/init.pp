@@ -221,8 +221,6 @@ class macos_safaridriver (
             # logoutput => true,
           }
 
-          ## Execute remote automation script here for Safari Technology Preview?
-
           exec { 'execute enable remote automation script tech preview':
             command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script_preview}",
             require => File[$enable_script_preview], # Dependency only on $enable_script_preview
