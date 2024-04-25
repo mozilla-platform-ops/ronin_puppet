@@ -16,7 +16,7 @@ class roles_profiles::profiles::cltbld_user {
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {
-        '19', '20': {
+        '19', '20', '21': {
           users::single_user { 'cltbld':
             # Bug 1122875 - cltld needs to be in this group for debug tests
             password   => $password,
