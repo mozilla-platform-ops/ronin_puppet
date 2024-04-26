@@ -55,7 +55,8 @@ function Update-GetBoot {
         @{ OldString = "ImageProvisioner"; NewString = "MDC1Windows" },
         @{ OldString = "SRCBranch"; NewString = $src_Branch },
         @{ OldString = "1HASH"; NewString = $hash },
-        @{ OldString = "1secret_date"; NewString = $secret_date }
+        @{ OldString = "1secret_date"; NewString = $secret_date },
+        @{ OldString = "1puppet_version"; NewString = $puppet_version }
 )
     $content = Get-Content -Path $Template_Get_Bootstrap
     foreach ($replacement in $replacements) {
@@ -159,6 +160,7 @@ foreach ($pool in $YAML.pools) {
             $src_Branch = $pool.src_Branch
             $hash = $pool.hash
             $secret_date = $pool.secret_date
+            $puppet_version = $pool.puppet_version
             Write-Output "The associated image for $shortname is: $neededImage"
             $found = $true
             break
@@ -175,6 +177,7 @@ foreach ($pool in $YAML.pools) {
             $src_Repository = $pool.src_Repository
             $src_Branch = $pool.src_Branch
             $secret_date = $pool.secret_date
+            $puppet_version = "6.28.0"
         }
     }
 }

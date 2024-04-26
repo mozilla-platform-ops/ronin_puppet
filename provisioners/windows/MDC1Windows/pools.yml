@@ -1,6 +1,7 @@
 ---
 pools:
   - name: "win11-64-2009-hw-ref-alpha"
+    puppet_version: "8.5.1"
     Description: "Pool Description"
     image: "win11-2009-NUC-03-20-2024"
     src_Organisation: "mozilla-platform-ops"
@@ -13,6 +14,7 @@ pools:
     - t-nuc12-006
     - t-nuc12-010
   - name: "win11-64-2009-hw-ref"
+    puppet_version: "8.5.1"
     Description: "Pool Description"
     image: "win11-2009-NUC-03-20-2024"
     src_Organisation: "mozilla-platform-ops"

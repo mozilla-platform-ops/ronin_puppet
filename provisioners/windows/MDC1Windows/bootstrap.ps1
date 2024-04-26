@@ -6,6 +6,7 @@ param(
     [string] $src_Branch,
     [string] $hash,
     [string] $secret_date,
+    [string] $puppet_version,
     [string] $image_provisioner = 'MDC1Windows'
 )
 
@@ -153,6 +154,10 @@ function Get-PSModules {
 
 function Get-PreRequ {
     param (
+        [string] 
+        $puppet_version,
+        [string]
+        $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites"
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -172,16 +177,23 @@ function Get-PreRequ {
         $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
         $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
 
-        If (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
+        if ([string]::IsNullOrEmpty($puppet_version)) {
+            $puppet = "puppet-agent-6.28.0-x64.msi"
+        }
+        else {
+            $puppet = ("puppet-agent-{0}-x64.msi") -f $puppet_version
+        }
+
+        If (-Not (Test-Path "$env:systemdrive\$puppet")) {
             Write-Log -Message ('{0} :: Downloading Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
             Start-Process -FilePath $azcopy_exe -ArgumentList @(
                 "copy",
-                "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/puppet-agent-6.28.0-x64.msi",
-                "$env:systemdrive\puppet-agent-6.28.0-x64.msi"
+                "$ext_src/$puppet",
+                "$env:systemdrive\$puppet"
             ) -Wait -NoNewWindow
 
-            if (-Not (Test-Path "$env:systemdrive\puppet-agent-6.28.0-x64.msi")) {
+            if (-Not (Test-Path "$env:systemdrive\$puppet")) {
                 Write-Log -Message ('{0} :: Puppet failed to download' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             }
         }
@@ -190,7 +202,7 @@ function Get-PreRequ {
 
             Start-Process -FilePath $azcopy_exe -ArgumentList @(
             "copy",
-            "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/Git-2.37.3-64-bit.exe",
+            "$ext_src/Git-2.37.3-64-bit.exe",
             "$env:systemdrive\Git-2.37.3-64-bit.exe"
             ) -Wait -NoNewWindow
 
@@ -205,9 +217,9 @@ function Get-PreRequ {
         if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
             ## Install Puppet using ServiceUI.exe to install as SYSTEM
             Write-Log -Message ('{0} :: Installing puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\puppet-agent-6.28.0-x64.msi") -Wait
-            Write-Log -message  ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), "puppet-agent-6.28.0-x64.msi") -severity 'DEBUG'
-            Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), "puppet-agent-6.28.0-x64.msi")
+            Start-Process msiexec -ArgumentList @("/qn", "/norestart", "/i", "$env:systemdrive\$puppet") -Wait
+            Write-Log -message  ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet) -severity 'DEBUG'
+            Write-Host ('{0} :: Puppet installed :: {1}' -f $($MyInvocation.MyCommand.Name), $puppet)
             if (-Not (Test-Path "C:\Program Files\Puppet Labs\Puppet\bin")) {
                 Write-Host "Did not install puppet"
                 write-host exit 1
@@ -639,7 +651,7 @@ If ($stage -ne 'complete') {
             Write-Log -message  ('{0} :: Skipping puppet role specific bootstrap steps' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
     }
-    Get-PreRequ
+    Get-PreRequ -puppet_version $puppet_version
     Set-Ronin-Registry
     Get-Ronin
     Run-Ronin-Run
