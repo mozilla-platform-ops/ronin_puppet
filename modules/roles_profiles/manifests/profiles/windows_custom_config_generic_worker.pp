@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::windows_custom_config_generic_worker {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             # Installation data
@@ -82,7 +82,7 @@ class roles_profiles::profiles::windows_custom_config_generic_worker {
         }
 
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
