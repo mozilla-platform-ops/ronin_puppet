@@ -331,8 +331,13 @@ node default {
         Set-Content -Path "$env:systemdrive\ronin\manifests\nodes.pp" -Value $content
 
         $secrets_name = $worker_pool_id + "-" + $secret_date + ".yaml"
-        New-Item -ItemType Directory -Path "$env:systemdrive\ronin\data\secrets"
-
+        New-Item -ItemType Directory -Path "$env:systemdrive\ronin\data\secrets" -Force
+        if (Test-Path "$env:systemdrive\ronin\data\secrets") {
+            Write-Log -message ('{0} :: Created c:\ronin\data\secrets directory - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        }
+        else {
+            Write-Log -message ('{0} :: Unable to create c:\ronin\data\secrets directory - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        }
         ## Copy the secrets from the D:\
         New-Item -Path "$env:systemdrive\ronin\data\secrets" -Name "vault.yaml" -ItemType File -Force
         $secrets = Get-Content -Path "D:\secrets\$secrets_name"
