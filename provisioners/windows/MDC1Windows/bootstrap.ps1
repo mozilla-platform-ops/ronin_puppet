@@ -301,10 +301,10 @@ function Get-Ronin {
             ## comment out during testing
             Set-Location $ronin_repo
             if ($debug) {
-                Write-Log -message  ('{0} ::Debugging set; pulling latest repo version .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
+                Write-Log -message  ('{0} :: Debugging set; pulling latest repo version .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
             } else {
                 git checkout $hash
-                Write-Log -message  ('{0} ::Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
+                Write-Log -message  ('{0} :: Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
             }
 
         }
@@ -343,6 +343,9 @@ node default {
         #$secrets = Get-Content -Path "D:\secrets\$secrets_name"
         #Set-Content -Path "$env:systemdrive\ronin\data\secrets\vault.yaml" -Value $secrets
         Copy-item -path "D:\secrets\$secrets_name" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
+        if (Test-Path "$env:systemdrive\ronin\data\secrets\vault.yaml") {
+            Write-Log -message ('{0} :: vault.yml has been created - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        }
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
