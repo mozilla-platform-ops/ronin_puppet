@@ -83,7 +83,7 @@ class roles_profiles::profiles::cltbld_user {
         # require => User['cltbld'],
       }
 
-      $sudo_commands = ['/sbin/reboot']
+      $sudo_commands = ['/sbin/reboot', '/usr/sbin/softwareupdate']
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',
