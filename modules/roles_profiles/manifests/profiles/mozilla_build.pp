@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::mozilla_build {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             # C++ libraries need to be in place before Python bits
@@ -77,7 +77,7 @@ class roles_profiles::profiles::mozilla_build {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

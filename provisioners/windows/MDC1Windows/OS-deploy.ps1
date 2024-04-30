@@ -37,15 +37,23 @@ function Update-GetBoot {
     $Get_Bootstrap =  $local_scripts + "Get-Bootstrap.ps1"
     $Template_Get_Bootstrap =  $local_scripts + "Template_Get-Bootstrap.ps1"
 
+    ## Remove existing Get-Bootstrap.ps1 with latest values
+
     if (Test-Path $Get_Bootstrap) {
         Remove-Item $Get_Bootstrap -Force
     }
-    if (!(Test-Path $Template_Get_Bootstrap)) {
-        Mount-ZDrive
-        Copy-Item -Path $source_scripts\Template_Get-Bootstrap.ps1 $local_scripts\Template_Get-Bootstrap.ps1 -Force
+    if (Test-Path $Template_Get_Bootstrap) {
+        Remove-Item $Template_Get_Bootstrap -Force
     }
 
-    write-host Updating Get-Bootstrap.ps1
+    $bootstrapSplat = @{
+        URI = "https://raw.githubusercontent.com/{0}/{1}/{2}/provisioners/windows/MDC1Windows/Template_Get-Bootstrap.ps1" -f $src_Organisation, $src_Repository, $src_Branch
+        OutFile = $Template_Get_Bootstrap
+    }
+
+    Invoke-WebRequest @bootstrapSplat
+
+    Write-Host "Updating Get-Bootstrap.ps1"
 
     $replacements = @(
         @{ OldString = "WorkerPoolId"; NewString = $WorkerPool },
@@ -63,8 +71,7 @@ function Update-GetBoot {
         $content = $content -replace $replacement.OldString, $replacement.NewString
     }
 
-
-    Set-Content -Path $Get_Bootstrap  -Value $content
+    Set-Content -Path $Get_Bootstrap -Value $content
 }
 
 Write-Host "Preparing local environment."
