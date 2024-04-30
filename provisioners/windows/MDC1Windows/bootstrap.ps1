@@ -339,10 +339,10 @@ node default {
             Write-Log -message ('{0} :: Unable to create c:\ronin\data\secrets directory - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
         }
         ## Copy the secrets from the D:\
-        New-Item -Path "$env:systemdrive\ronin\data\secrets" -Name "vault.yaml" -ItemType File -Force
-        $secrets = Get-Content -Path "D:\secrets\$secrets_name"
-        Set-Content -Path "$env:systemdrive\ronin\data\secrets\vault.yaml" -Value $secrets
-        #Copy-item -path "D:\secrets\$secrets_name" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
+        #New-Item -Path "$env:systemdrive\ronin\data\secrets" -Name "vault.yaml" -ItemType File -Force
+        #$secrets = Get-Content -Path "D:\secrets\$secrets_name"
+        #Set-Content -Path "$env:systemdrive\ronin\data\secrets\vault.yaml" -Value $secrets
+        Copy-item -path "D:\secrets\$secrets_name" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
