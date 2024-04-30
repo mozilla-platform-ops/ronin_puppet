@@ -332,7 +332,12 @@ node default {
 
         $secrets_name = $worker_pool_id + "-" + $secret_date + ".yaml"
         New-Item -ItemType Directory -Path "$env:systemdrive\ronin\data\secrets"
-        Copy-item -path "D:\secrets\$secrets_name" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
+
+        ## Copy the secrets from the D:\
+        New-Item -Path "$env:systemdrive\ronin\data\secrets" -Name "vault.yaml" -ItemType File -Force
+        $secrets = Get-Content -Path "D:\secrets\$secrets_name"
+        Set-Content -Path "$env:systemdrive\ronin\data\secrets\vault.yaml" -Value $secrets
+        #Copy-item -path "D:\secrets\$secrets_name" -destination "$env:systemdrive\ronin\data\secrets\vault.yaml" -force
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
