@@ -10,6 +10,88 @@ param(
     [string] $image_provisioner = 'MDC1Windows'
 )
 
+# Copied from https://github.com/actions/runner-images
+function Invoke-DownloadWithRetry {
+    <#
+    .SYNOPSIS
+        Downloads a file from a given URL with retry functionality.
+
+    .DESCRIPTION
+        The Invoke-DownloadWithRetry function downloads a file from the specified URL
+        to the specified path. It includes retry functionality in case the download fails.
+
+    .PARAMETER Url
+        The URL of the file to download.
+
+    .PARAMETER Path
+        The path where the downloaded file will be saved. If not provided, a temporary path
+        will be used.
+
+    .EXAMPLE
+        Invoke-DownloadWithRetry -Url "https://example.com/file.zip" -Path "C:\Downloads\file.zip"
+        Downloads the file from the specified URL and saves it to the specified path.
+
+    .EXAMPLE
+        Invoke-DownloadWithRetry -Url "https://example.com/file.zip"
+        Downloads the file from the specified URL and saves it to a temporary path.
+    
+    .OUTPUTS
+        The path where the downloaded file is saved.
+    #>
+
+    Param
+    (
+        [Parameter(Mandatory)]
+        [string] $Url,
+        [Alias("Destination")]
+        [string] $Path
+    )
+
+    if (-not $Path) {
+        $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
+        $re = "[{0}]" -f [RegEx]::Escape($invalidChars)
+        $fileName = [IO.Path]::GetFileName($Url) -replace $re
+
+        if ([String]::IsNullOrEmpty($fileName)) {
+            $fileName = [System.IO.Path]::GetRandomFileName()
+        }
+        $Path = Join-Path -Path "${env:Temp}" -ChildPath $fileName
+    }
+
+    Write-Host "Downloading package from $Url to $Path..."
+
+    $interval = 30
+    $downloadStartTime = Get-Date
+    for ($retries = 20; $retries -gt 0; $retries--) {
+        try {
+            $attemptStartTime = Get-Date
+            (New-Object System.Net.WebClient).DownloadFile($Url, $Path)
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Host "Package downloaded in $attemptSeconds seconds"
+            break
+        } catch {
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Warning "Package download failed in $attemptSeconds seconds"
+            Write-Warning $_.Exception.Message
+
+            if ($_.Exception.InnerException.Response.StatusCode -eq [System.Net.HttpStatusCode]::NotFound) {
+                Write-Warning "Request returned 404 Not Found. Aborting download."
+                $retries = 0
+            }
+        }
+            
+        if ($retries -eq 0) {
+            $totalSeconds = [math]::Round(($(Get-Date) - $downloadStartTime).TotalSeconds, 2)
+            throw "Package download failed after $totalSeconds seconds"
+        }
+
+        Write-Warning "Waiting $interval seconds before retrying (retries left: $retries)..."
+        Start-Sleep -Seconds $interval
+    }
+
+    return $Path
+}
+
 function Write-Log {
     param (
         [string] $message,
@@ -49,70 +131,36 @@ function Write-Log {
     }
 }
 
-function Setup-Logging {
+function Set-Logging {
     param (
         [string] $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites",
         [string] $local_dir = "$env:systemdrive\BootStrap",
         [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
         [string] $nxlog_conf = "nxlog.conf",
         [string] $nxlog_pem  = "papertrail-bundle.pem",
-        [string] $nxlog_dir  = "$env:systemdrive\Program Files (x86)\nxlog"
+        [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
     )
     begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        Write-Host ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime())
     }
     process {
-        New-Item -ItemType Directory -Force -Path $local_dir -ErrorAction SilentlyContinue
-
-        $maxRetries = 20
-		$retryInterval = 3
-        if (!(Test-Path $nxlog_dir\nxlog.exe)) {
-		    try {
-			    for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
-				    if (!(Test-Path $local_dir\$nxlog_msi)) {
-					    Invoke-WebRequest  $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
-                        break
-                    }
-                }
-            }
-            catch {
-                Write-Host "Attempt ${retryCount}: An error occurred - $_"
-                Write-Host "Retrying in ${retryInterval} seconds..."
-                Start-Sleep -Seconds $retryInterval
-                if ($retryCount -gt $maxRetries) {
-                    Add-Type -AssemblyName System.Windows.Forms
-                    [System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-                    exit 99
-                }
-            }
-            msiexec /i $local_dir\$nxlog_msi /passive
-        }
-        start-sleep -seconds 3
-        try {
-            $retryCount = 0
-            for ($retryCount = 1; $retryCount -le $maxRetries; $retryCount++) {
-                while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-                Invoke-WebRequest  $ext_src/deploy_nxlog.conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
-                while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
-                Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
-			}
-		}
-		catch {
-			Write-Host "Attempt ${retryCount}: An error occurred - $_"
-			Write-Host "Retrying in ${retryInterval} seconds..."
-			Start-Sleep -Seconds $retryInterval
-            if ($retryCount -gt $maxRetries) {
-                Add-Type -AssemblyName System.Windows.Forms
-                [System.Windows.Forms.MessageBox]::Show("Logging Set Up Failed!!!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-                exit 99
-            }
-		}
-		Restart-Service -Name nxlog -force
-	}
+        $null = New-Item -ItemType Directory -Force -Path $local_dir -ErrorAction SilentlyContinue
+        Invoke-DownloadWithRetry $ext_src/$nxlog_msi -Path $local_dir\$nxlog_msi 
+        #Invoke-WebRequest $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
+        msiexec /i $local_dir\$nxlog_msi /passive
+        while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+        Invoke-DownloadWithRetry -Url $ext_src/$nxlog_conf -Path "$nxlog_dir\conf\$nxlog_conf"
+        #Invoke-WebRequest  $ext_src/$nxlog_conf -outfile "$nxlog_dir\conf\$nxlog_conf" -UseBasicParsing
+        while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
+        Invoke-DownloadWithRetry -Url $ext_src/$nxlog_pem -Path "$nxlog_dir\cert\$nxlog_pem"
+        #Invoke-WebRequest  $ext_src/$nxlog_pem -outfile "$nxlog_dir\cert\$nxlog_pem" -UseBasicParsing
+        Restart-Service -Name nxlog -force
+    }
     end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        Write-Host ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime())
     }
 }
+
 function Get-PSModules {
     param (
        [array]$modules = @(
@@ -187,11 +235,7 @@ function Get-PreRequ {
         If (-Not (Test-Path "$env:systemdrive\$puppet")) {
             Write-Log -Message ('{0} :: Downloading Puppet' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-            Start-Process -FilePath $azcopy_exe -ArgumentList @(
-                "copy",
-                "$ext_src/$puppet",
-                "$env:systemdrive\$puppet"
-            ) -Wait -NoNewWindow
+            Invoke-DownloadWithRetry "$ext_src/$puppet" -Path "$env:systemdrive\$puppet"
 
             if (-Not (Test-Path "$env:systemdrive\$puppet")) {
                 Write-Log -Message ('{0} :: Puppet failed to download' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -200,11 +244,7 @@ function Get-PreRequ {
         If (-Not (Test-Path "$env:systemdrive\Git-2.37.3-64-bit.exe")) {
             Write-Log -Message ('{0} :: Downloading Git' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-            Start-Process -FilePath $azcopy_exe -ArgumentList @(
-            "copy",
-            "$ext_src/Git-2.37.3-64-bit.exe",
-            "$env:systemdrive\Git-2.37.3-64-bit.exe"
-            ) -Wait -NoNewWindow
+            Invoke-DownloadWithRetry "$ext_src/Git-2.37.3-64-bit.exe" -Path "$env:systemdrive\Git-2.37.3-64-bit.exe"
 
         }
         if (-Not (Test-Path "$env:programfiles\git\bin\git.exe")) {
@@ -397,6 +437,7 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded with no changes or failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
+                Start-sleep -Seconds 120
                 Restart-Computer -Confirm:$false -Force
             }
             1 {
@@ -416,6 +457,7 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
+                Start-sleep -Seconds 120
                 Handle-Failure
             }
             2 {
@@ -423,6 +465,7 @@ function Run-Ronin-Run {
                 Write-Host ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -name last_run_exit -value $puppet_exit
                 Set-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'bootstrap_stage' -Value 'complete'
+                Start-sleep -Seconds 120
                 Restart-Computer -Confirm:$false -Force
             }
             4 {
@@ -442,6 +485,7 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
+                Start-sleep -Seconds 120
                 Handle-Failure
             }
             6 {
@@ -462,11 +506,13 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
+                Start-sleep -Seconds 120
                 Handle-Failure
             }
             Default {
                 Write-Log -message  ('{0} :: Unable to determine state post Puppet apply :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
                 Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $last_exit
+                Start-sleep -Seconds 120
                 Restart-Computer -Confirm:$false -Force
                 exit 1
             }
@@ -647,7 +693,7 @@ Set-RemoteConnectivity
 $stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 
 If ($stage -ne 'complete') {
-    Setup-Logging
+    Set-Logging
     Set-SCHTask
     Get-PSModules
     ## TODO: Figure out a way to install binaries/files as taskuser without defaulting to task-user-init
