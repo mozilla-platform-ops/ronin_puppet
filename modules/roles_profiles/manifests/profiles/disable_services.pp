@@ -43,8 +43,6 @@ class roles_profiles::profiles::disable_services {
           include win_scheduled_tasks::kill_local_clipboard
         }
         if $facts['custom_win_release_id'] == '2004' or '2009' {
-          include win_disable_services::disable_windows_defender_schtask
-        } else {
           include win_disable_services::disable_windows_defender
         }
       }
