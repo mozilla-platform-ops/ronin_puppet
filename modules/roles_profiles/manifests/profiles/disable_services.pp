@@ -44,6 +44,8 @@ class roles_profiles::profiles::disable_services {
         }
         if $facts['custom_win_release_id'] == '2004' or '2009' {
           include win_disable_services::disable_windows_defender
+          ## testing
+          include win_disable_services::disable_real_time_protection
         }
       }
       if $facts['os']['release']['full'] == '10' {

@@ -34,7 +34,7 @@ function Invoke-DownloadWithRetry {
     .EXAMPLE
         Invoke-DownloadWithRetry -Url "https://example.com/file.zip"
         Downloads the file from the specified URL and saves it to a temporary path.
-    
+
     .OUTPUTS
         The path where the downloaded file is saved.
     #>
@@ -84,7 +84,7 @@ function Invoke-DownloadWithRetry {
                 $retries = 0
             }
         }
-            
+
         if ($retries -eq 0) {
             $totalSeconds = [math]::Round(($(Get-Date) - $downloadStartTime).TotalSeconds, 2)
             throw "Package download failed after $totalSeconds seconds"
@@ -151,7 +151,7 @@ function Set-Logging {
     }
     process {
         $null = New-Item -ItemType Directory -Force -Path $local_dir -ErrorAction SilentlyContinue
-        Invoke-DownloadWithRetry $ext_src/$nxlog_msi -Path $local_dir\$nxlog_msi 
+        Invoke-DownloadWithRetry $ext_src/$nxlog_msi -Path $local_dir\$nxlog_msi
         #Invoke-WebRequest $ext_src/$nxlog_msi -outfile $local_dir\$nxlog_msi -UseBasicParsing
         msiexec /i $local_dir\$nxlog_msi /passive
         while (!(Test-Path "$nxlog_dir\conf\")) { Start-Sleep 10 }
@@ -208,7 +208,7 @@ function Get-PSModules {
 
 function Get-PreRequ {
     param (
-        [string] 
+        [string]
         $puppet_version,
         [string]
         $ext_src = "https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites"
@@ -587,6 +587,7 @@ function Handle-Failure {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+        pause
         if ($debug) {
             pause
             Write-Log -message  ('{0} :: Debug set; pausing on failure. ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -610,16 +611,16 @@ function Handle-Failure {
 function Set-WinHwRef {
     [CmdletBinding()]
     param (
-        
+
     )
-    
+
     ## TODO: This is a temporary workaround until this is moved to puppet.
 
     ## Check if C:\RelSRE exists, and if it doesn't, create it
     if (-Not (Test-Path "$env:systemdrive\RelSRE")) {
         ## Create the directory to store the files/binaries that will be used in the task-user-init script
         Write-Log -message  ('{0} :: Create C:\RelSRE' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\RelSRE" -ErrorAction SilentlyContinue 
+        $null = New-Item -ItemType Directory -Force -Path "$env:systemdrive\RelSRE" -ErrorAction SilentlyContinue
         ## Set permissions for the generic worker task users to read from that directory
         icacls "C:\RelSRE" /grant 'Users:(OI)(CI)R'
         icacls 'C:\RelSRE' /grant 'Administrators:(OI)(CI)F'
@@ -633,7 +634,7 @@ function Set-WinHwRef {
         $ENV:AZCOPY_SPA_APPLICATION_ID = $creds.azcopy_app_id
         $ENV:AZCOPY_SPA_CLIENT_SECRET = $creds.azcopy_app_client_secret
         $ENV:AZCOPY_TENANT_ID = $creds.azcopy_tenant_id
-        
+
         Write-Log -Message ('{0} :: Downloading av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
         Start-Process -FilePath "D:\applications\azcopy.exe" -ArgumentList @(
@@ -648,9 +649,9 @@ function Set-WinHwRef {
 function Set-RemoteConnectivity {
     [CmdletBinding()]
     param (
-        
+
     )
-    
+
     ## OpenSSH
     Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
