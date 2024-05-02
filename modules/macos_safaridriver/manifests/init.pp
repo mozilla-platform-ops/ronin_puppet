@@ -186,6 +186,7 @@ class macos_safaridriver (
           $enable_script = '/usr/local/bin/safari-enable-remote-automation3.sh'
           $enable_script_preview = '/usr/local/bin/safari-enable-remote-automation_tech_preview.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
+          $safari_update_script = '/usr/local/bin/install_safari_softwareupdate_updates.py'
 
           file { $perm_script:
             content => file('macos_safaridriver/add_tcc_perms_os14.sh'),
@@ -199,6 +200,11 @@ class macos_safaridriver (
 
           file { $enable_script_preview:
             content => file('macos_safaridriver/safari-enable-remote-automation_tech_preview.sh'),
+            mode    => '0755',
+          }
+
+          file { $safari_update_script:
+            content => file('macos_safaridriver/install_safari_softwareupdate_updates.py'),
             mode    => '0755',
           }
 
@@ -228,6 +234,11 @@ class macos_safaridriver (
             unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run",
             onlyif  => "/bin/test -d '/Applications/Safari Technology Preview.app'", # Condition to check if directory exists
             cwd     => "/Users/${user_running_safari}",
+          }
+
+          sudo::custom { 'allow_safari_updates':
+            user    => 'cltbld',
+            command => '/usr/local/bin/install_safari_softwareupdates.py',
           }
 
           exec { 'enable safari driver':
