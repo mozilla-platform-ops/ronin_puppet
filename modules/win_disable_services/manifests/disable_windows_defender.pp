@@ -13,12 +13,12 @@ class win_disable_services::disable_windows_defender {
     }
 
     ## Taken from https://github.com/mozilla-platform-ops/worker-images/blob/main/scripts/windows/CustomFunctions/Bootstrap/Public/Disable-AntiVirus.ps1
-    registry_value { 'HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Windows Advanced Threat Protection':
+    registry_value { 'HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Advanced Threat Protection':
       ensure => present,
     }
 
     ## Taken from https://github.com/mozilla-platform-ops/worker-images/blob/main/scripts/windows/CustomFunctions/Bootstrap/Public/Disable-AntiVirus.ps1
-    registry_value { 'HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Windows Advanced Threat Protection\\ForceDefenderPassiveMode':
+    registry_value { 'HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Advanced Threat Protection\\ForceDefenderPassiveMode':
       ensure => present,
       type   => dword,
       data   => '1',
