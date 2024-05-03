@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::nuc_management {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             if ($facts['custom_win_location'] == 'datacenter') {
                 #$script_dir = "${facts['custom_win_roninprogramdata']}\\scripts"
