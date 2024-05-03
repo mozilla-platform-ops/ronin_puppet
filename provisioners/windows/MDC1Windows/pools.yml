@@ -7,11 +7,11 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "d881665"
+    hash: "0486f8b"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
-    - t-nuc12-004
+    - t-nuc12-005
     - t-nuc12-006
     - t-nuc12-010
   - name: "win11-64-2009-hw-ref"
@@ -21,14 +21,14 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "d881665"
+    hash: "0486f8b"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
     - t-nuc12-001
     - t-nuc12-002
     - t-nuc12-003
-    - t-nuc12-005
+    - t-nuc12-004
     - t-nuc12-007
     - t-nuc12-008
     - t-nuc12-009
