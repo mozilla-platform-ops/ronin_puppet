@@ -38,7 +38,7 @@ pools:
     - t-nuc12-014
     - t-nuc12-015
   - name: "win11-64-2009-hw"
-    puppet_version: "6.28.0"
+    puppet_version: "8.5.1"
     Description: "Pool Description"
     image: "win11-2009-NUC-03-20-2024"
     src_Organisation: "mozilla-platform-ops"
@@ -189,7 +189,7 @@ pools:
     - nuc13-159
     - nuc13-160
   - name: "win11-64-2009-hw-alpha"
-    puppet_version: "6.28.0"
+    puppet_version: "8.5.1"
     Description: "Pool Description"
     image: "win11-2009-NUC-03-20-2024"
     src_Organisation: "mozilla-platform-ops"
