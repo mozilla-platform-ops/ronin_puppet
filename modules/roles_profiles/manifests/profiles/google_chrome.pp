@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::google_chrome {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         # Bug  list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1570767
         'Windows': {
