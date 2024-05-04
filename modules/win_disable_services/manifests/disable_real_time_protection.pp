@@ -17,6 +17,12 @@ class win_disable_services::disable_real_time_protection {
         data   => '1',
     }
     ## Disable Cloud Delivery
+    registry::value { 'DisableAntiSpyware' :
+        key  => $win_defend_policy_key,
+        type => dword,
+        data => '0',
+    }
+    ## Disable Cloud Delivery
     registry::value { 'SpynetReporting' :
         key  => "${win_defend_policy_key}\\Spynet",
         type => dword,
