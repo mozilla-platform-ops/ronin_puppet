@@ -35,4 +35,8 @@ class win_disable_services::disable_real_time_protection {
         type   => dword,
         data   => '0',
     }
+    exec { 'disable_real_time_protection':
+        command  => 'Set-MpPreference -DisableRealtimeMonitoring $true',
+        provider => powershell,
+    }
 }
