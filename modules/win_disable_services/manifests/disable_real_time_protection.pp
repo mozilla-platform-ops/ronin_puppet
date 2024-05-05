@@ -2,6 +2,7 @@ class win_disable_services::disable_real_time_protection {
 
     $win_defend_policy_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
     $win_defend_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
+    $win_defend_feature_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Features'
     #$win_defend_key = 'HKLM\SOFTWARE\Microsoft\Windows Defender'
 
 #    registry_key { $win_defend_policy_key:
@@ -9,6 +10,12 @@ class win_disable_services::disable_real_time_protection {
 #    }
     registry_key { $win_defend_key:
         ensure => present,
+    }
+    registry_value { "${win_defend_feature_key}\\TamperProtection" :
+        #key  => "${win_defend_key}\\Real-Time Protection",
+        ensure => present,
+        type   => dword,
+        data   => '0',
     }
     registry_value { "${win_defend_key}\\DisableRealtimeMonitoring" :
         #key  => "${win_defend_key}\\Real-Time Protection",
