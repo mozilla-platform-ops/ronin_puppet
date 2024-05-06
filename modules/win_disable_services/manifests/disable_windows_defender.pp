@@ -5,12 +5,12 @@
 class win_disable_services::disable_windows_defender {
   if $facts['os']['name'] == 'Windows' {
     ## Taken from https://github.com/mozilla-platform-ops/worker-images/blob/main/scripts/windows/CustomFunctions/Bootstrap/Public/Disable-AntiVirus.ps1 
-    exec { 'disable_windows_defender':
-      command  => file('win_disable_services/windows_defender/set.ps1'),
-      onlyif   => file('win_disable_services/windows_defender/validate.ps1'),
-      provider => powershell,
-      timeout  => 300,
-    }
+    #exec { 'disable_windows_defender':
+    #  command  => file('win_disable_services/windows_defender/set.ps1'),
+    #  onlyif   => file('win_disable_services/windows_defender/validate.ps1'),
+    #  provider => powershell,
+    #  timeout  => 300,
+    #}
 
     ## Taken from https://github.com/mozilla-platform-ops/worker-images/blob/main/scripts/windows/CustomFunctions/Bootstrap/Public/Disable-AntiVirus.ps1
     registry_value { 'HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Advanced Threat Protection':
