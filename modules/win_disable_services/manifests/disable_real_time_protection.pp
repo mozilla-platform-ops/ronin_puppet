@@ -1,6 +1,5 @@
 class win_disable_services::disable_real_time_protection {
 
-    if $::operatingsystem == 'Windows' {
 
         $win_defend_key       = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender"
         $services_key         = "HKLM\\SYSTEM\\CurrentControlSet\\Services"
@@ -50,7 +49,4 @@ class win_disable_services::disable_real_time_protection {
             type   => dword,
             data   => '4',
         }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
-    }
 }
