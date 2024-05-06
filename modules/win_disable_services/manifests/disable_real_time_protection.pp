@@ -1,55 +1,56 @@
 class win_disable_services::disable_real_time_protection {
 
-    $win_defend_policy_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
-    $win_defend_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
-    $win_defend_feature_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Features'
-    #$win_defend_key = 'HKLM\SOFTWARE\Microsoft\Windows Defender'
+    if $::operatingsystem == 'Windows' {
 
-#    registry_key { $win_defend_policy_key:
-#        ensure => present,
-#    }
-    registry_key { $win_defend_key:
-        ensure => present,
-    }
-    registry_value { "${win_defend_feature_key}\\TamperProtection" :
-        #key  => "${win_defend_key}\\Real-Time Protection",
-        ensure => present,
-        type   => dword,
-        data   => '0',
-    }
-    registry_value { "${win_defend_key}\\DisableRealtimeMonitoring" :
-        #key  => "${win_defend_key}\\Real-Time Protection",
-        ensure => present,
-        type   => dword,
-        data   => '1',
-    }
-    ## Disable Cloud Delivery
-    registry::value { 'DisableAntiSpyware' :
-        key  => $win_defend_policy_key,
-        type => dword,
-        data => '0',
-    }
-    ## Disable Cloud Delivery
-    registry::value { 'SpynetReporting' :
-        key  => "${win_defend_policy_key}\\Spynet",
-        type => dword,
-        data => '0',
-    }
-    ## Disable Sample submission
-    registry::value { 'SubmitSamplesConsent' :
-        key  => "${win_defend_policy_key}\\Spynet",
-        type => dword,
-        data => '0',
-    }
-    ## Disable TamperProtection
-    registry_value { "${win_defend_key}\\TamperProtection" :
-        #key  => "${win_defend_key}\\Features",
-        ensure => present,
-        type   => dword,
-        data   => '0',
-    }
-    exec { 'disable_real_time_protection':
-        command  => 'Set-MpPreference -DisableRealtimeMonitoring $true',
-        provider => powershell,
+        $win_defend_key       = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender"
+        $services_key         = "HKLM\\SYSTEM\\CurrentControlSet\\Services"
+        $acl_services_key     = "hklm:SYSTEM\\CurrentControlSet\\Services"
+        $diabled_start_value  = [
+                                "${services_key}\\wscsvc\\start",
+                                "${services_key}\\SecurityHealthService\\start",
+                                "${services_key}\\Sense\\start",
+                                "${services_key}\\WdBoot\\start",
+                                "${services_key}\\WdFilter\\start",
+                                "${services_key}\\WdNisDrv\\start",
+                                "${services_key}\\WdNisSvc\\start",
+                                "${services_key}\\WinDefend\\start"
+                                ]
+        $acl_reg_values       = [
+                                "${acl_services_key}\\wscsvc\\start",
+                                "${acl_services_key}\\SecurityHealthService\\start",
+                                "${acl_services_key}\\Sense\\start",
+                                "${acl_services_key}\\WdBoot\\start",
+                                "${acl_services_key}\\WdFilter\\start",
+                                "${acl_services_key}\\WdNisDrv\\start",
+                                "${acl_services_key}\\WdNisSvc\\start",
+                                "${acl_services_key}\\WinDefend\\start"
+                                ]
+
+        # This will prevent the service from starting on next boot.
+        # see below bug
+        # Using puppetlabs-registry
+        registry::value { 'DisableConfig' :
+            key  => $win_defend_key,
+            type => dword,
+            data => '1',
+        }
+        registry::value { 'DisableAntiSpyware' :
+            key  => $win_defend_key,
+            type => dword,
+            data => '1',
+        }
+
+        # Windows defender supporting services
+        # This will fail on first run and will need a reboot
+        # SecurityHealthService and sense actively watch the registry values of the other services,
+        # and there start registry value needs to be changed and then the node needs rebooted
+        # Also note this will fail on Windows 7
+        registry_value { $diabled_start_value:
+            ensure => present,
+            type   => dword,
+            data   => '4',
+        }
+    } else {
+        fail("${module_name} does not support ${::operatingsystem}")
     }
 }
