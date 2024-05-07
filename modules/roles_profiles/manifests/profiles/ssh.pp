@@ -21,10 +21,10 @@ class roles_profiles::profiles::ssh {
       include win_openssh::service
       windows_firewall::exception { "allow_${firewall_rule_name}_mdc1":
         ensure       => present,
-        direction    => 'inbound',
+        direction    => 'in',
         action       => 'allow',
         enabled      => true,
-        protocol     => 'tcp',
+        protocol     => 'TCP',
         local_port   => $firewall_port,
         remote_port  => 'any',
         display_name => "${firewall_rule_name}_mdc1",

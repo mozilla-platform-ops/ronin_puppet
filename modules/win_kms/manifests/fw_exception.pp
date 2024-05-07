@@ -7,10 +7,10 @@ class win_kms::fw_exception {
     # Resources from puppet-windows_firewall
     windows_firewall::exception { 'KMS_in':
       ensure       => present,
-      direction    => 'inbound',
+      direction    => 'in',
       action       => 'allow',
       enabled      => true,
-      protocol     => 'tcp',
+      protocol     => 'TCP',
       local_port   => 1688,
       remote_port  => 'any',
       display_name => 'Allow KMS in',
@@ -18,10 +18,10 @@ class win_kms::fw_exception {
     }
     windows_firewall::exception { 'KMS_out':
       ensure       => present,
-      direction    => 'outbound',
+      direction    => 'in',
       action       => 'allow',
       enabled      => true,
-      protocol     => 'tcp',
+      protocol     => 'TCP',
       local_port   => 1688,
       remote_port  => 'any',
       display_name => 'Allow KMS out',
