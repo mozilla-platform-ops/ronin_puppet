@@ -71,13 +71,13 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Nam
 $pathsToDelete = @(
     "C:\ProgramData\Windows\Windows Defender Advanced Threat Protection\",
     "C:\ProgramData\Windows\Windows Defender\",
-    "C:\Windows\System32\drivers\wd\",
-    "HKLM:\SYSTEM\CurrentControlSet\Services\WdNisSvc",
-    "HKLM:\SYSTEM\CurrentControlSet\Services\WinDefend",
-    "HKLM:\SYSTEM\CurrentControlSet\Services\Sense",
-    "HKLM:\SYSTEM\CurrentControlSet\Services\WdnisDrv",
-    "HKLM:\SYSTEM\CurrentControlSet\Services\wdfilter",
-    "HKLM:\SYSTEM\CurrentControlSet\Services\wdboot"
+    "C:\Windows\System32\drivers\wd\"
+    #"HKLM:\SYSTEM\CurrentControlSet\Services\WdNisSvc",
+    #"HKLM:\SYSTEM\CurrentControlSet\Services\WinDefend",
+    #"HKLM:\SYSTEM\CurrentControlSet\Services\Sense",
+    #"HKLM:\SYSTEM\CurrentControlSet\Services\WdnisDrv",
+    #"HKLM:\SYSTEM\CurrentControlSet\Services\wdfilter",
+    #"HKLM:\SYSTEM\CurrentControlSet\Services\wdboot"
 )
 
 $pathsToDelete | ForEach-Object {
