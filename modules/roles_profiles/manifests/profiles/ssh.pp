@@ -18,12 +18,17 @@ class roles_profiles::profiles::ssh {
 
       include win_openssh::add_openssh
       include win_openssh::configuration
-
       include win_openssh::service
       windows_firewall::exception { "allow_${firewall_rule_name}_mdc1":
-        port            => $firewall_port,
-        reciprocal      => true,
-        fw_display_name => "${firewall_rule_name}_mdc1",
+        ensure       => present,
+        direction    => 'inbound',
+        action       => 'allow',
+        enabled      => true,
+        protocol     => 'tcp',
+        local_port   => $firewall_port,
+        remote_port  => 'any',
+        display_name => "${firewall_rule_name}_mdc1",
+        description  => "${firewall_rule_name}_mdc1",
       }
     }
     default: {
