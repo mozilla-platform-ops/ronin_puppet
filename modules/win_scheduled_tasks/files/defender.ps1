@@ -1,11 +1,15 @@
 ## Taken from https://wirediver.com/disable-windows-defender-in-powershell/
 
-## Disable all paths and processes for defender
-67..90 | foreach-object {
-    $drive = [char]$_
-    Add-MpPreference -ExclusionPath "$($drive):\" -ErrorAction SilentlyContinue
-    Add-MpPreference -ExclusionProcess "$($drive):\*" -ErrorAction SilentlyContinue
-}
+## Disable all paths and processes for defender 
+## Did not work, excluding mozillabuild now
+#67..90 | foreach-object {
+#    $drive = [char]$_
+#    Add-MpPreference -ExclusionPath "$($drive):\" -ErrorAction SilentlyContinue
+#    Add-MpPreference -ExclusionProcess "$($drive):\*" -ErrorAction SilentlyContinue
+#}
+
+## Exclude mozilla build
+Add-MpPreference -ExclusionPath "C:\mozilla-build" -ErrorAction SilentlyContinue
 
 ## Disable scanning engines
 Set-MpPreference -DisableArchiveScanning $true -ErrorAction SilentlyContinue
@@ -31,6 +35,10 @@ foreach ($svc in $svc_list) {
             Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$svc" -Name Start -Value 4
         }
     }
+    else {
+        New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$svc" -Force
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$svc" -Name Start -Value 4
+    }
 }
 
 ## Disable drivers
@@ -40,6 +48,10 @@ foreach ($drv in $drv_list) {
         if ($(Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$drv").Start -ne 4) {
             Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$drv" -Name Start -Value 4
         }
+    }
+    else {
+        New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$svc" -Force
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$svc" -Name Start -Value 4
     }
 }
 
