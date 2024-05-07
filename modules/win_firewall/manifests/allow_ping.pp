@@ -8,7 +8,7 @@ class win_firewall::allow_ping {
     direction    => 'in',
     action       => 'allow',
     enabled      => true,
-    protocol     => 'icmpv4:8,any',
+    protocol     => 'ICMPv4',
     display_name => 'ICMP Allow incoming V4 echo request',
     description  => 'Allow ICMP',
   }
