@@ -14,9 +14,9 @@ class roles_profiles::profiles::scheduled_tasks {
         #    $startup_script = 'azure-maintainsystem.ps1'
         #  }
         #}
-        ## Temp change for new 2012 image. 
-        #$startup_script = 'azure-maintainsystem.ps1'
-        $startup_script = '2012-azure-maintainsystem.ps1'
+        $startup_script = 'azure-maintainsystem.ps1'
+        ## Temp change for new 2012 image.
+        #$startup_script = '2012-azure-maintainsystem.ps1'
         include win_scheduled_tasks::at_task_user_logon
       } else {
         $startup_script = 'maintainsystem.ps1'
