@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::scheduled_tasks {
   include win_scheduled_tasks::at_task_user_logon
-
+  include win_scheduled_tasks::defender
   case $facts['os']['name'] {
     'Windows': {
       case $facts['custom_win_location'] {
