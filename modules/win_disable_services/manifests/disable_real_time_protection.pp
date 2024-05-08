@@ -3,6 +3,10 @@ class win_disable_services::disable_real_time_protection {
     $win_defend_key = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender"
     $sys_service_key = "HKLM:\\SYSTEM\CurrentControlSet\\Services"
 
+    exec { 'sense_owner':
+        command  => file('win_disable_services/take-own-sense.ps1'),
+        provider => powershell,
+    }
 
     registry_value { "${sys_service_key}\\Sense\\start" :
         ensure => present,
