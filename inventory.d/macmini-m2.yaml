@@ -4,6 +4,7 @@ groups:
   - name: gecko-t-osx-1400-m2-staging
     targets:
       - macmini-m2-8.test.releng.mslv.mozilla.com
+      - macmini-m2-13.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_m2_staging
 
@@ -11,6 +12,8 @@ groups:
     targets:
       - macmini-m2-6.test.releng.mslv.mozilla.com
       - macmini-m2-7.test.releng.mslv.mozilla.com
+      - macmini-m2-11.test.releng.mslv.mozilla.com
+      - macmini-m2-12.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_m2
 
