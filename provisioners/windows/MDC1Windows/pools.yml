@@ -189,7 +189,7 @@ pools:
     - nuc13-159
     - nuc13-160
   - name: "win11-64-2009-hw-alpha"
-    puppet_version: "93de4b9"
+    puppet_version: "8.5.1"
     Description: "Pool Description"
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
