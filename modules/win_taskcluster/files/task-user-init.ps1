@@ -157,6 +157,18 @@ switch ($base_image) {
             Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
         } 
     }
+    "win11642009hwrefalpha" {
+        ## Install appx package for av1 extension
+        try {
+            Write-Log -Message ('{0} :: Installing av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Add-AppxPackage -Path "$env:systemdrive\RelSRE\Microsoft.AV1VideoExtension_1.1.62361.0_neutral_~_8wekyb3d8bbwe.AppxBundle" -ErrorAction "Stop"
+            Write-Log -Message ('{0} :: Installed av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+        catch {
+            Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
+        } 
+    }
     default {
         continue
     }
