@@ -46,11 +46,6 @@ class roles_profiles::profiles::disable_services {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
 
-          ## win11 ref with mdt deployment
-          ## include win_disable_services::disable_windows_defender
-          ## include win_disable_services::disable_real_time_protection
-
-          #include win_disable_services::disable_windows_defender_schtask
         }
       }
       if $facts['os']['release']['full'] == '10' {
