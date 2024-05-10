@@ -13,7 +13,6 @@ pools:
     nodes:
     - t-nuc12-005
     - t-nuc12-006
-    - t-nuc12-010
   - name: "win11-64-2009-hw-ref"
     puppet_version: "8.5.1"
     Description: "Pool Description"
@@ -32,6 +31,7 @@ pools:
     - t-nuc12-007
     - t-nuc12-008
     - t-nuc12-009
+    - t-nuc12-010
     - t-nuc12-011
     - t-nuc12-012
     - t-nuc12-013
