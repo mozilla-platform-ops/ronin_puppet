@@ -4,6 +4,11 @@
 
 class win_disable_services::disable_wsearch {
   if $facts['os']['name'] == 'Windows' {
+    exec { 'disable_wsearch':
+      command  => file('win_disable_services/files/wsearch/disable.ps1'),
+      provider => powershell,
+      timeout  => 300,
+    }
     win_disable_services::disable_service { 'wsearch':
     }
   } else {
