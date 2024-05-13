@@ -273,7 +273,7 @@ if (!(Test-Path $setup)) {
     Write-host "Updating secret file."
     Copy-Item -Path $source_secrets -Destination $secret_file -Force
     Copy-Item -Path $source_AZsecrets -Destination $AZsecret_file -Force
-    Copy-Item -Path $source_scripts\Get-Bootstrap.ps1 $local_scripts\Get-Bootstrap.ps1 -Recurse -Force
+    #Copy-Item -Path $source_scripts\Get-Bootstrap.ps1 $local_scripts\Get-Bootstrap.ps1 -Recurse -Force
     Write-Host "Disconecting Deployment Share."
     net use Z: /delete
     Update-GetBoot
