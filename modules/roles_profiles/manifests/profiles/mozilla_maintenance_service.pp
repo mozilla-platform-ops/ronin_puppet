@@ -19,8 +19,9 @@ class roles_profiles::profiles::mozilla_maintenance_service {
             win_mozilla_maintenance_service::certificate_install { 'MozFakeCA':
                 cert_key        => '0',
                 registry_name   => 'Mozilla Corporation',
-                registry_issuer => 'Thawte Code Signing CA - G2',
+                registry_issuer => 'DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1',
             }
+            ## Bug1896540 https://bugzilla.mozilla.org/show_bug.cgi?id=1896540
             win_mozilla_maintenance_service::certificate_install { 'MozFakeCA_2017-10-13':
                 cert_key        => '1',
                 registry_name   => 'Mozilla Fake SPC',
