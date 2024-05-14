@@ -14,7 +14,7 @@ class roles_profiles::profiles::google_chrome {
             include linux_packages::google_chrome
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
