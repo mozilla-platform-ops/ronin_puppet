@@ -1,5 +1,3 @@
-require_relative 'spec_helper'
-
 # files
 
 describe file('/tmp/funtimes.xyz') do
