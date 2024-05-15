@@ -83,16 +83,12 @@ class roles_profiles::profiles::cltbld_user {
         # require => User['cltbld'],
       }
 
-      $sudo_commands = ['/sbin/reboot', '/sbin/haha']
+      $sudo_commands = ['/sbin/reboot']
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',
           command => $command,
         }
-      }
-      sudo::custom { 'funtimes':
-        user    => 'cltbld',
-        command => '/bin/hahah2222',
       }
     }
     'Ubuntu': {
@@ -123,21 +119,10 @@ class roles_profiles::profiles::cltbld_user {
           ensure => absent;
       }
 
-      $sudo_commands = ['/sbin/reboot', '/sbin/haha', '/bin/chacha']
-      $sudo_commands.each |String $command| {
-        sudo::custom { "allow_cltbld_${command}":
-          user    => 'cltbld',
-          command => $command,
-        }
-      }
-      sudo::custom { 'futimes':
+      sudo::custom { 'allow_cltbld_reboot':
         user    => 'cltbld',
-        command => '/bin/hahah2222',
+        command => '/sbin/reboot',
       }
-      # sudo::custom { 'allow_cltbld_reboot':
-      #   user    => 'cltbld',
-      #   command => '/sbin/reboot',
-      # }
     }
     default: {
       fail("${facts['os']['name']} not supported")
