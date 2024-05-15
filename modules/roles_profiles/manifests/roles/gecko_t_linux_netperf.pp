@@ -11,9 +11,9 @@ class roles_profiles::roles::gecko_t_linux_netperf {
   # include roles_profiles::profiles::vnc
   # include roles_profiles::profiles::gui
   # include roles_profiles::profiles::google_chrome
-  # talos stuff
-  # include roles_profiles::profiles::gecko_t_linux_talos_generic_worker
 
   # TODO: add new role_profile with netperf specific stuff
+  #   - should be similar to roles_profiles::profiles::gecko_t_linux_talos_generic_worker
+  #        (modules/roles_profiles/manifests/profiles/gecko_t_linux_talos_generic_worker.pp)
   # include roles_profiles::profiles::gecko_t_linux_netperf_worker
 }
