@@ -39,23 +39,6 @@ bolt plan run deploy::apply -t macmini-r8-140.test.releng.mdc1.mozilla.com noop=
 
 ## testing
 
-### vagrant
-
-[Vagrant](https://www.vagrantup.com/) is useful for testing the full masterless bootstrapping process (test-kitchen handles this normally).
-
-Vagrant mounts this directory at /vagrant.
-
-#### bitbar_devicepool role
-
-```
-gem install bundler
-bundle install  ## .bundle/config sets the gemfile to .gemfile
-vagrant up bionic-bare
-vagrant ssh bionic-bare
-sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
-```
-
-
 ### test-kitchen
 
 [test-kitchen](https://docs.chef.io/workstation/kitchen/) (with [kitchen-puppet](https://github.com/neillturner/kitchen-puppet) ) provides infrastructure to automate running Puppet convergence and InSpec tests for each role.
@@ -101,26 +84,6 @@ bundle install
 #### creating a new suite
 
 1. Edit `.kitchen.docker.yml`. Set the appropriate details.
-1. Create a new manifest dir for the suite.
-
-  ```bash
-  cd manifests-kitchen
-  mkdir <suite_name>
-  cd <suite_name>
-  ln -s ../../manifests/site.pp .
-  touch z-<suite_name>.pp
-  vim z-<suite_name>.pp
-  ```
-
-  We need our pp file to be run after the site.pp, that's why it starts with a z.
-
-1. Include your desired role
-
-  In the recently created `z-<suite_name>.pp`:
-
-  ```puppet
-  include roles_profiles::roles::your_favorite_role
-  ```
 
 1. (optional) Write spec tests.
 
@@ -134,13 +97,7 @@ bundle install
 
     See `.circleci/config.yml`.
 
-#### test-kitchen TODOS
-
-- refactor kitchen testing
-  - rename linux kitchen env to base
-  - create a talos kitchen env for non-base
-
-### production hosts
+### verifying production hosts
 
 #### InSpec tests
 
@@ -149,6 +106,23 @@ The InSpec tests (see above) can be run on production hosts also.
 ```bash
 inspec exec test/integration/linux/inspec/ -t ssh://t-linux64-ms-001.test.releng.mdc1.mozilla.com -i ~/.ssh/id_rsa --user=aerickson --sudo
 ```
+
+### vagrant
+
+[Vagrant](https://www.vagrantup.com/) is useful for testing the full masterless bootstrapping process (test-kitchen handles this normally).
+
+Vagrant mounts this directory at /vagrant.
+
+#### bitbar_devicepool role
+
+```
+gem install bundler
+bundle install  ## .bundle/config sets the gemfile to .gemfile
+vagrant up bionic-bare
+vagrant ssh bionic-bare
+sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
+```
+
 
 ## documentation
 
