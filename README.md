@@ -49,7 +49,7 @@ test-kitchen in called via `./bin/kitchen_docker` (the binary tells test-kitchen
 
 [InSpec](https://github.com/inspec/inspec) tests live in `tests/integration/SUITE/inspec/*_spec.rb`.
 
-#### test-kitchen history
+##### test-kitchen history
 
 In the past we used `./bin/kitchen` (which used Vagrant and VirtualBox, and was configured in .kitchen_configs/kitchen.yml). `.kitchen_configs/kitchen.circleci.yml` was used for CircleCI (but it now uses the Docker config).
 
@@ -84,18 +84,13 @@ bundle install
 #### creating a new suite
 
 1. Edit `.kitchen.docker.yml`. Set the appropriate details.
-
 1. (optional) Write spec tests.
-
-    Convergence is somewhat tolerant of failures. Write tests to ensure that the
+  - Convergence is somewhat tolerant of failures. Write tests to ensure that the
     system is in the desired state. Tests help ensure that refactoring doesn't
     break things also.
-
-  See `tests/integration`.
-
+  - See `tests/integration`.
 1. Add the new suite to CircleCI.
-
-    See `.circleci/config.yml`.
+  - See `.circleci/config.yml`.
 
 ### verifying production hosts
 
