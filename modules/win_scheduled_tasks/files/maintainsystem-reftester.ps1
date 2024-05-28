@@ -282,6 +282,15 @@ function StartWorkerRunner {
     }
 }
 
+function Get-LoggedInUser {
+    [CmdletBinding()]
+    param (
+        
+    )
+    
+    @(((query user) -replace '\s{20,39}', ',,') -replace '\s{2,}', ',' | ConvertFrom-Csv)
+}
+
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
     Run-MaintainSystem
@@ -303,6 +312,30 @@ If ($bootstrap_stage -eq 'complete') {
         }
         Start-Sleep -Seconds 1
     } #>
+
+    ## We're getting user profile corruption errors, so let's check that the user is logged in using quser.exe
+    for ($i = 0; $i -lt 3; $i++) {
+        if (Test-Path "C:\worker-runner\current-task-user.json") {
+            $localuser = (Get-Content "C:\worker-runner\current-task-user.json" | ConvertFrom-Json -ErrorAction Stop).name
+            $loggedInUser = (Get-LoggedInUser).UserName -replace ">"
+            if ($loggedInUser.USERNAME -ne $localuser) {
+                Write-Log -message  ('{0} :: User logged in is not the same as the user in worker-runner' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Write-Log -message  ('{0} :: User logged in: {1}' -f $($MyInvocation.MyCommand.Name), $loggedInUser.USERNAME) -severity 'DEBUG'
+                Write-Log -message  ('{0} :: User in worker-runner: {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'DEBUG'
+                Start-Sleep -Seconds 10
+            }
+            else {
+                Write-Log -message  ('{0} :: User logged in is the same as the user in worker-runner' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Write-Log -message  ('{0} :: User logged in: {1}' -f $($MyInvocation.MyCommand.Name), $loggedInUser.USERNAME) -severity 'DEBUG'
+                Write-Log -message  ('{0} :: User in worker-runner: {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'DEBUG'
+                break
+            }
+        }
+        if ($null -ne $loggedInUser) {
+            break
+        }
+    }
+
     StartWorkerRunner
     start-sleep -s 30
     while ($true) {
