@@ -113,15 +113,17 @@ class linux_packages::py3 {
             priority => 20,
             require  => Exec['install py39'],
           }
+
+          ### this breaks 18.04 (apt update starts to fail). tests will have to call python3.11.
           # set py3.11 as a higher level override
-          alternative_entry { '/opt/python/3.11.8/bin/python3':
-            ensure   => present,
-            altlink  => '/usr/bin/python3',
-            altname  => 'python3',
-            priority => 30,
-            # require  => Class['packages::linux_package_from_s3_multi'],
-            require  => Packages::Linux_package_from_s3_multi['install py_3118'],
-          }
+          # alternative_entry { '/opt/python/3.11.8/bin/python3':
+          #   ensure   => present,
+          #   altlink  => '/usr/bin/python3',
+          #   altname  => 'python3',
+          #   priority => 30,
+          #   # require  => Class['packages::linux_package_from_s3_multi'],
+          #   require  => Packages::Linux_package_from_s3_multi['install py_3118'],
+          # }
 
           # /usr/bin/pip ends up pointing at py3 after py3.9 install, fix that.
           #   /usr/bin/pip -> /usr/bin/pip2 (from system, vs pip3)
