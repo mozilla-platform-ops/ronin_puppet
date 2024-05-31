@@ -6,8 +6,10 @@
 class roles_profiles::profiles::microsoft_tools {
   case $facts['os']['name'] {
     'Windows': {
-      ## powershell profile may not be needed
-      #include win_os_settings::powershell_profile
+      ## May not be needed. Start pahasing out with 2022
+      if $facts['os']['release']['full'] != '2016' {
+          include win_os_settings::powershell_profile
+      }
       include win_shared::win_ronin_dirs
       class { 'win_packages::performance_tool_kit':
         moz_profile_source => lookup('win-worker.mozilla_profile.source'),
@@ -16,8 +18,12 @@ class roles_profiles::profiles::microsoft_tools {
 
       case $facts['custom_win_purpose'] {
         'builder':{
-          include win_packages::win_10_sdk
-          include win_packages::dxsdk_jun10
+          ## This class seems to timeout on the first run of a new VM
+          ## For now don't look for it after bootstrap.
+          if $facts['custom_win_bootstrap_stage'] != 'complete' {
+            include win_packages::dxsdk_jun10
+            include win_packages::win_10_sdk
+          }
           include win_packages::binscope
           # Required by rustc (tooltool artefact)
           include win_packages::vc_redist_x86
