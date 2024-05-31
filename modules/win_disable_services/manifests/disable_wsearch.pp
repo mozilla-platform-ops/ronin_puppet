@@ -4,7 +4,10 @@
 
 class win_disable_services::disable_wsearch {
   if $facts['os']['name'] == 'Windows' {
-    win_disable_services::disable_service { 'wsearch':
+    exec { 'disable_wsearch':
+      command  => file('win_disable_services/wsearch/disable.ps1'),
+      provider => powershell,
+      timeout  => 300,
     }
   } else {
     fail("${module_name} does not support ${facts['os']['name']}")
