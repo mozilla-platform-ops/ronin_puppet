@@ -4,7 +4,14 @@
 
 class win_mozilla_build_tester::pip {
   if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-    $cache_drive  = 'y:'
+    case $facts['custom_win_os_version'] {
+      'win_2012': {
+        $cache_drive = 'y:'
+      }
+      default: {
+        $cache_drive = 'd:'
+      }
+    }
   } else {
     $cache_drive  = $facts['custom_win_systemdrive']
   }
@@ -13,7 +20,7 @@ class win_mozilla_build_tester::pip {
     ensure => directory,
   }
   file { "${$facts['custom_win_programdata']}\\pip\\pip.ini":
-    content => file('win_mozilla_build/pip.conf'),
+    content   => epp('win_mozilla_build_tester/pip.conf.epp'),
   }
   file { "${cache_drive}\\pip-cache":
     ensure => directory,
