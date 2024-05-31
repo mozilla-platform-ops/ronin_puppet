@@ -14,6 +14,7 @@ class roles_profiles::profiles::scheduled_tasks {
           } else {
             $startup_script = 'azure-maintainsystem.ps1'
           }
+          include win_scheduled_tasks::at_task_user_logon
         }
         'datacenter': {
           $startup_script = 'maintainsystem-reftester.ps1'
