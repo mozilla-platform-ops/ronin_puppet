@@ -10,19 +10,19 @@ define win_packages::win_zip_pkg (
 ) {
   require win_packages::sevenzip
 
-  $pkgdir      = $facts['custom_win_temp_dir']
-  $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
-  $source      = "\"${pkgdir}\\${pkg}\""
-  $url         = "${srcloc}/${pkg}"
-
   case $facts['custom_win_location'] {
     'datacenter': {
-      $srcloc       = lookup('windows.s3.ext_pkg_src')
+      $srcloc = lookup('windows.s3.ext_pkg_src')
     }
     default: {
       $srcloc = lookup('windows.ext_pkg_src')
     }
   }
+
+  $pkgdir      = $facts['custom_win_temp_dir']
+  $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
+  $source      = "\"${pkgdir}\\${pkg}\""
+  $url         = "${srcloc}/${pkg}"
 
   # Use https://github.com/voxpupuli/puppet-archive instead of built-in file resource type to download files
   archive { $title:
