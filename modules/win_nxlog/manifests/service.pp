@@ -10,7 +10,7 @@ class win_nxlog::service {
     ensure  => running,
     #subscribe => File["${win_nxlog::nxlog_dir}\\conf\\nxlog.conf"],
     restart => true,
-    require => Package['NXLog-CE'],
+    #require => Package['NXLog-CE'],
   }
 }
 # Bug List
