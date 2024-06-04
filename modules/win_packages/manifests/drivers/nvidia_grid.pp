@@ -9,34 +9,25 @@ class win_packages::drivers::nvidia_grid (
 ) {
   $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
   $zip_name    = "${driver_name}.zip"
-  $pkgdir      = "C:\\Windows\\Temp"
-  $src_file    = "${pkgdir}\\${zip_name}"
+  $pkgdir      = $facts['custom_win_temp_dir']
+  $src_file    = "\"${pkgdir}\\${zip_name}\""
 
   # copy the installtion file during image build
   # only install if it is a gpu worker with gpu in the pool name
 
-  archive { $display_name:
-    ensure  => 'present',
-    source  => 'https://roninpuppetassets.blob.core.windows.net/binaries/472.39_grid_win11_win10_64bit_Azure-SWL.zip',
-    path    => "C:\\472.39_grid_win11_win10_64bit_Azure-SWL.zip",
-    creates => "C:\\472.39_grid_win11_win10_64bit_Azure-SWL.zip",
-    cleanup => false,
-    extract => false,
+  file { "${pkgdir}\\${zip_name}":
+    source => "${srcloc}/${zip_name}",
   }
 
-  #file { "${pkgdir}\\${zip_name}":
-  #  source => "${srcloc}/${zip_name}",
-  #}
-
   exec { 'grid_unzip':
-    command  => "Expand-Archive -Path C:\\472.39_grid_win11_win10_64bit_Azure-SWL.zip -DestinationPath C:\\",
+    command  => "Expand-Archive -Path ${src_file} -DestinationPath ${facts['custom_win_systemdrive']}\\",
     creates  => $setup_exe,
     provider => powershell,
   }
 
   if $facts['custom_win_gpu'] == 'yes' {
     package { $display_name :
-      ensure          => installed,
+      ensure          => 'present',
       source          => $setup_exe,
       install_options => ['-s','-noreboot'],
     }
