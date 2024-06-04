@@ -9,7 +9,7 @@ class win_packages::drivers::nvidia_grid (
 ) {
   $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
   $zip_name    = "${driver_name}.zip"
-  $pkgdir      = $facts['custom_win_temp_dir']
+  $pkgdir      = "C:\\Windows\\Temp"
   $src_file    = "${pkgdir}\\${zip_name}"
 
   # copy the installtion file during image build
@@ -17,9 +17,9 @@ class win_packages::drivers::nvidia_grid (
 
   archive { $display_name:
     ensure  => 'present',
-    source  => "${srcloc}/${zip_name}",
-    path    => "${pkgdir}\\${zip_name}",
-    creates => "${pkgdir}\\${zip_name}",
+    source  => 'https://roninpuppetassets.blob.core.windows.net/binaries/472.39_grid_win11_win10_64bit_Azure-SWL.zip',
+    path    => "C:\\472.39_grid_win11_win10_64bit_Azure-SWL.zip",
+    creates => "C:\\472.39_grid_win11_win10_64bit_Azure-SWL.zip",
     cleanup => false,
     extract => false,
   }
@@ -29,7 +29,7 @@ class win_packages::drivers::nvidia_grid (
   #}
 
   exec { 'grid_unzip':
-    command  => "Expand-Archive -Path ${src_file} -DestinationPath ${facts['custom_win_systemdrive']}\\",
+    command  => "Expand-Archive -Path C:\\472.39_grid_win11_win10_64bit_Azure-SWL.zip -DestinationPath C:\\",
     creates  => $setup_exe,
     provider => powershell,
   }
