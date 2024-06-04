@@ -13,19 +13,10 @@ class roles_profiles::profiles::gpu_drivers {
       }
     }
     'win_11_2009':{
-      if $facts['custom_win_gpu'] == 'yes' {
-        class { 'win_packages::drivers::nvidia_grid':
-          display_name => lookup('win-worker.gpu-latest.display_name'),
-          driver_name  => lookup('win-worker.gpu-latest.name'),
-          srcloc       => lookup('windows.ext_pkg_src'),
-        }
-      }
-      else {
-        class { 'win_packages::drivers::nvidia_grid':
-          display_name => lookup('win-worker.gpu.display_name'),
-          driver_name  => lookup('win-worker.gpu.name'),
-          srcloc       => lookup('windows.ext_pkg_src'),
-        }
+      class { 'win_packages::drivers::nvidia_grid':
+        display_name => lookup('win-worker.gpu-latest.display_name'),
+        driver_name  => lookup('win-worker.gpu-latest.name'),
+        srcloc       => lookup('windows.ext_pkg_src'),
       }
     }
     'win_10_2004':{
