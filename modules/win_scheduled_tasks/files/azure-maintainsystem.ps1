@@ -186,26 +186,19 @@ function Puppet-Run {
     [string] $log_file = "$datetime-puppetrun.log",
     [string] $roninKey = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
     [string] $datetime = (get-date -format yyyyMMdd-HHmm),
-    [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid",
-    [string] $deploymentID,
-    [string] $workerPoolId
+    [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
 
-    #Check-RoninNodeOptions
+    Check-RoninNodeOptions
     # Do not update Ronin Repo, so that there are no chnges in configuration
     # from the time of image creation
 
     # Setting Env variabes for PuppetFile install and Puppet run
     # The ssl variables are needed for R10k
-    Set-Location $env:systemdrive\ronin
-    If ( -Not (test-path $logdir\old)) {
-      New-Item -ItemType Directory -Force -Path $logdir\old
-    }
-    Write-Log -message ('{0} :: Ronin Puppet HEAD is set to {1}' -f $($MyInvocation.MyCommand.Name), $deploymentID) -severity 'DEBUG'
     Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $env:path = "$env:programfiles\Puppet Labs\Puppet\puppet\bin;$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
     $env:SSL_CERT_FILE = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl\cert.pem"
@@ -223,8 +216,9 @@ function Puppet-Run {
 
     # Ensure worker pool ID matches what was provisioned.
     # So Puppet can update config files as needed.
-    Write-Log -message  ('{0} :: Updating worker pool ID {1} for final Puppet run' -f $($MyInvocation.MyCommand.Name), $workerPoolId) -severity 'DEBUG'
-    Set-ItemProperty -Path $roninKey -Name 'worker_pool_id' -Value $workerPoolId -ErrorAction SilentlyContinue
+    Write-Log -message  ('{0} :: Updating worker pool ID for final Puppet run' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | Where-Object { $_.name -eq ('worker-pool-id') })[0].value
+    Set-ItemProperty -Path "$roninKey" -Name 'worker_pool_id' -Value "$worker_pool_id" -ErrorAction SilentlyContinue
 
     # r10k not currently in use. leaving in place because it may change in the future
     # Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
@@ -234,150 +228,45 @@ function Puppet-Run {
     If (!(test-path $fail_dir)) {
       New-Item -ItemType Directory -Force -Path $fail_dir
     }
-
-    ## Move old logs to old directory
-    ## Include json files as json will parse better
-    Get-ChildItem -Path $logdir\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
-    Get-ChildItem -Path $logdir\*.json -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
-    ## Set a log date
-    $logDate = $(get-date -format yyyyMMdd-HHmm)
-    $LogDestination = ("$env:systemdrive\logs\{0}-{1}-bootstrap-puppet.json" -f $ENV:COMPUTERNAME, $logdate)
-    ## create a step where we're recording the time it takes to run puppet apply
-    $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
-    ## start the timer
-    $stopWatch.Start()
+    Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $LogDestination --debug
+    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$log_file
     [int]$puppet_exit = $LastExitCode
-    ## stop the timer
-    $stopWatch.Stop()
-    ## get the time it took to run puppet apply
-    $time = $stopWatch.Elapsed
-    ## The JSON file isn't formatted correctly, so add a ] to complete the json formatting and then output warnings or errors
-    Add-Content $LogDestination "`n]"
-    Write-host ('{0} :: Puppet apply took - {1} minutes, {2} seconds to complete' -f $($MyInvocation.MyCommand.Name), $time.Minutes, $time.Seconds)
-    Write-Log -message  ('{0} :: Puppet apply took - {1} minutes, {2} seconds to complete' -f $($MyInvocation.MyCommand.Name), $time.Minutes, $time.Seconds) -severity 'DEBUG'
 
-    switch ($puppet_exit) {
-      0 {
-        Write-Log -message ('{0} :: Puppet apply succeeded and no resources were changed :: Error code {1} :: {2:o}' -f $($MyInvocation.MyCommand.Name), $puppet_exit, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-        Write-Host ('{0} :: Puppet apply succeeded and no resources were changed :: Error code {1} :: {2:o}' -f $($MyInvocation.MyCommand.Name), $puppet_exit, (Get-Date).ToUniversalTime())
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
-        Set-ItemProperty -Path $ronnin_key -Name 'bootstrap_stage' -Value 'complete'
+    if ($run_to_success -eq 'true') {
+      if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
+        if ($last_exit -eq 0) {
+          Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
+          Remove-Item $lock -ErrorAction SilentlyContinue
+          # If the Puppet run fails send logs to papertrail
+          # Nxlog watches $fail_dir for files names *-puppetrun.log
+          Move-Item $logdir\$log_file -Destination $fail_dir
+          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+        }
+        elseif ($last_exit -ne 0) {
+          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
+          Remove-Item $lock
+          Move-Item $logdir\$log_file -Destination $fail_dir
+          Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          sleep 600
+          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+        }
+      }
+      elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
+        Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
+        Remove-Item -path $lock
         Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name inmutable -value true
       }
-      1 {
-        Write-Log -message ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
-        Write-Host ('{0} :: Puppet apply failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
-        $log = Get-Content $LogDestination | ConvertFrom-Json 
-        $log | Where-Object {
-          $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
-        } | ForEach-Object {
-          $data = $psitem
-          Write-Log -message ('{0} :: Puppet File {1}' -f $($MyInvocation.MyCommand.Name), $data.file) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Message {1}' -f $($MyInvocation.MyCommand.Name), $data.message) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Level {1}' -f $($MyInvocation.MyCommand.Name), $data.level) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
-        }
-        sleep 600
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed with exit code 1', '-f', '-d', '4:5')
-      }
-      2 {
-        Write-Log -message ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1} :: {2:o}' -f $($MyInvocation.MyCommand.Name), $puppet_exit, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-        Write-Host ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1} :: {2:o}' -f $($MyInvocation.MyCommand.Name), $puppet_exit, (Get-Date).ToUniversalTime())
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
-        Set-ItemProperty -Path $ronnin_key -Name 'bootstrap_stage' -Value 'complete'
-      }
-      4 {
-        Write-Log -message ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
-        Write-Host ('{0} :: Puppet apply succeeded, but some resources failed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
-        $log = Get-Content $LogDestination | ConvertFrom-Json 
-        $log | Where-Object {
-          $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
-        } | ForEach-Object {
-          $data = $psitem
-          Write-Log -message ('{0} :: Puppet File {1}' -f $($MyInvocation.MyCommand.Name), $data.file) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Message {1}' -f $($MyInvocation.MyCommand.Name), $data.message) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Level {1}' -f $($MyInvocation.MyCommand.Name), $data.level) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
-        }
-        sleep 600
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed with exit code 4', '-f', '-d', '4:5')
-      }
-      6 {
-        Write-Log -message ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
-        Write-Host ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit)
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $puppet_exit
-        $log = Get-Content $LogDestination | ConvertFrom-Json 
-        $log | Where-Object {
-          $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
-        } | ForEach-Object {
-          $data = $psitem
-          Write-Log -message ('{0} :: Puppet File {1}' -f $($MyInvocation.MyCommand.Name), $data.file) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Message {1}' -f $($MyInvocation.MyCommand.Name), $data.message) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Level {1}' -f $($MyInvocation.MyCommand.Name), $data.level) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
-        }
-        sleep 600
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed with exit code 6', '-f', '-d', '4:5')
-      }
-      Default {
-        Write-Log -message  ('{0} :: Unable to determine state post Puppet apply :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
-        Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $last_exit
-        $log = Get-Content $LogDestination | ConvertFrom-Json 
-        $log | Where-Object {
-          $psitem.Level -match "warning|err" -and $_.message -notmatch "Client Certificate|Private Key"
-        } | ForEach-Object {
-          $data = $psitem
-          Write-Log -message ('{0} :: Puppet File {1}' -f $($MyInvocation.MyCommand.Name), $data.file) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Message {1}' -f $($MyInvocation.MyCommand.Name), $data.message) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Level {1}' -f $($MyInvocation.MyCommand.Name), $data.level) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
-          Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
-        }
-        exit 1
+      else {
+        Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$last_exit"
+        Move-Item $logdir\$log_file -Destination $fail_dir
+        Remove-Item -path $lock
+        shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
       }
     }
-
-    # if ($run_to_success -eq 'true') {
-    #   if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
-    #     if ($last_exit -eq 0) {
-    #       Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    #       Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-    #       Remove-Item $lock -ErrorAction SilentlyContinue
-    #       # If the Puppet run fails send logs to papertrail
-    #       # Nxlog watches $fail_dir for files names *-puppetrun.log
-    #       Move-Item $logdir\$log_file -Destination $fail_dir
-    #       shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-    #     }
-    #     elseif ($last_exit -ne 0) {
-    #       Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-    #       Remove-Item $lock
-    #       Move-Item $logdir\$log_file -Destination $fail_dir
-    #       Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    #       sleep 600
-    #       shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-    #     }
-    #   }
-    #   elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
-    #     Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    #     Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-    #     Remove-Item -path $lock
-    #     Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name inmutable -value true
-    #   }
-    #   else {
-    #     Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    #     Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$last_exit"
-    #     Move-Item $logdir\$log_file -Destination $fail_dir
-    #     Remove-Item -path $lock
-    #     shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
-    #   }
-    # }
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -620,10 +509,6 @@ $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "insta
 
 ## Get the managed-by tag value
 $managed_by = ($imds_tags | Where-object { $psitem.name -eq "managed-by" }).Value
-## DeploymentID
-$deploymentID = ($imds_tags | Where-object { $psitem.name -eq "deploymentId" }).Value
-## WorkerPoolID
-$workerPoolId = ($imds_tags | Where-object { $psitem.name -eq "worker-pool-id" }).Value
 
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
 $ronin_key = "$mozilla_key\ronin_puppet"
@@ -648,7 +533,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
-    Puppet-Run -deploymentID $deploymentID -workerPoolId $workerPoolId
+    Puppet-Run
     LinkZY2D
   }
   ## Start worker runner, which starts generic-worker
