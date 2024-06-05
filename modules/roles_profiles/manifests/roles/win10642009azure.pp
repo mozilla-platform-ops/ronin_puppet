@@ -22,6 +22,8 @@ class roles_profiles::roles::win10642009azure {
       include roles_profiles::profiles::ntp
       ## errors if we don't have this, adding this
       include roles_profiles::profiles::mozilla_maintenance_service
+      ## We need hg-cache and pip-cache, so re-run this but just do the pip/hg stuff
+      include roles_profiles::profiles::mozilla_build_tester
     }
     default: {
       # Install MS tools earlier
