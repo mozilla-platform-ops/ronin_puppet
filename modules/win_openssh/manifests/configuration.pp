@@ -4,8 +4,6 @@
 
 class win_openssh::configuration {
 
-    require win_openssh::install
-
     registry_key { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH':
         ensure  => present,
     }
@@ -19,7 +17,9 @@ class win_openssh::configuration {
         type   => string,
         data   => '/c',
     }
-    file { "${win_openssh::ssh_program_data}\\sshd_config":
-        content => file('win_openssh/sshd_config'),
-    }
+    ## Use the default config file for now
+    ## Leaving in place in case this changes
+    #file { "${win_openssh::ssh_program_data}\\sshd_config":
+        #content => file('win_openssh/sshd_config'),
+    #}
 }

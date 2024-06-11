@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::google_chrome {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         # Bug  list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1570767
         'Windows': {
@@ -14,7 +14,7 @@ class roles_profiles::profiles::google_chrome {
             include linux_packages::google_chrome
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

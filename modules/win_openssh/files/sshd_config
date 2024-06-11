@@ -4,5 +4,6 @@
 LogLevel VERBOSE
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
+PermitRootLogin yes
 PasswordAuthentication no
 Subsystem sftp sftp-server.exe -f AUTHPRIV -l INFO

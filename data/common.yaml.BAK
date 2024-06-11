@@ -1,0 +1,318 @@
+---
+
+ntp_server: "ntp.build.mozilla.org"
+
+smtp_relay_host: "smtp1.mail.mdc1.mozilla.com"
+
+# Apple firmware acceptance hash
+apple_firmware_acceptance:
+    Macmini7,1: [ 'MM71.0232.B00' ]
+    MacBookPro13,3: [ 'VirtualBox' ]
+
+
+user_groups:
+  relops:
+    - jwatkins
+    - dhouse
+    - mcornmesser
+    - aerickson
+    - jmoss
+  signing:
+    - ahalberstadt
+    - asasaki
+    - gbrown
+    - hneiva
+    - jcristau
+    - jlorenzo
+  cia: []
+
+scriptworker_users:
+  dep:
+    depbld1:
+      home: /builds/dep1
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
+      dmg_prefix: "dep1"
+      worker_id_suffix: "a"
+      cot_product: "firefox"
+      widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
+    depbld2:
+      home: /builds/dep2
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
+      dmg_prefix: "dep2"
+      worker_id_suffix: "b"
+      cot_product: "firefox"
+      widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
+    tbbld:
+      home: /builds/tb-dep
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
+      dmg_prefix: "tb"
+      worker_type_prefix: "tb-"
+      worker_id_suffix: "tb"
+      cot_product: "thunderbird"
+      widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
+    vpnbld:
+      home: /builds/vpn-dep
+      supported_behaviors:
+        - mac_sign_and_pkg_vpn
+      dmg_prefix: "vpn"
+      worker_type_prefix: "vpn-"
+      worker_id_suffix: "vpn"
+      cot_product: "mozillavpn"
+      keychain_filename: "dep-signing.keychain"
+  tb-prod:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
+        - mac_notarize
+        - mac_notarize_part_1
+        - mac_notarize_part_3
+      dmg_prefix: "prod"
+      cot_product: "thunderbird"
+      widevine_filename: "widevine_prod.crt"
+      keychain_filename: "mozilla.20220330.keychain"
+      ed_key_filename: "ed25519_privkey"
+      notarization_users:
+        - notary1
+        - notary2
+        - notary3
+        - notary4
+        - notary5
+        - notary6
+        - notary7
+        - notary8
+        - notary9
+        - notary10
+  ff-prod:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_geckodriver
+        - mac_single_file
+        - mac_notarize
+        - mac_notarize_part_1
+        - mac_notarize_part_3
+        - mac_notarize_geckodriver
+        - mac_notarize_single_file
+      dmg_prefix: "prod"
+      cot_product: "firefox"
+      widevine_filename: "widevine_prod.crt"
+      keychain_filename: "mozilla.20220330.keychain"
+      ed_key_filename: "ed25519_privkey"
+      notarization_users:
+        - notary1
+        - notary2
+        - notary3
+        - notary4
+        - notary5
+        - notary6
+        - notary7
+        - notary8
+        - notary9
+        - notary10
+  vpn:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_notarize_vpn
+      dmg_prefix: "prod"
+      cot_product: "mozillavpn"
+      keychain_filename: "mozilla.20220330.keychain"
+      ed_key_filename: "ed25519_privkey"
+
+scriptworker_config:
+    ff-prod:
+        taskcluster_scope_prefix: 'project:releng:signing:'
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'signing-mac-v1'
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
+    tb-prod:
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'tb-signing-mac-v1'
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
+    dep:
+        taskcluster_scope_prefix: 'project:releng:signing:'
+        tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
+        vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
+        sign_chain_of_trust: false
+        verify_chain_of_trust: true
+        verify_cot_signature: false
+        worker_type: 'depsigning-mac-v1'
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
+    vpn:
+        vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'mozillavpn-3-signing-mac'
+        scriptworker_revision: "db76d627af1dd341186ff6a5a7bbc4f5e29b8974"
+        scriptworker_scripts_revision: "da10697b87acb2f343b84d134a379c86fed067a7"
+
+poller_config:
+    ff-prod:
+        user: poller
+        worker_type: mac-notarization-poller
+    tb-prod:
+        user: poller
+        worker_type: tb-mac-notarization-poller
+
+signingworker_roles:
+    ff-prod:
+        nightly:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.firefox-mac-nightly'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.firefox-mac-release'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+    tb-prod:
+        nightly:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-nightly'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-release'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+    dep:
+        dep:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 5
+            sign_with_entitlements: true
+            verify_mac_signature: false
+            base_bundle_id: 'org.mozilla.firefox-mac-dep'
+            tb_base_bundle_id: 'org.mozilla.thunderbird-mac-dep'
+            vpn_base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+    vpn:
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            notarization_poll_timeout: 6300
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            vpn_base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
+            widevine_url: 'n/a'
+            omnija_url: 'n/a'
+            langpack_url: 'n/a'
+
+all_users:
+  jwatkins:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC4L7XGxmrrQwZ6thiNih0Mmf9vylvZ3nnYpJyRISbjwRVQWcIOyw6xWJoayBIGwHF5/jeoWrQ3XpQv4Ub92u+Ck29JeQYVt8I6Q8auJipsivRMrsdLRwBgPrRUVcgIRq5O7LGuq8dP3MMcnYFGjkPwYJYkole/+d1uB8Zk6W7glpjOWH3m7bMmDUokS72gCjFCUgg/X8WF3RdYrAr4vlSJ0Gbk6Pi9QQJYzxKn7w9ju6W28q19A1iNNMSyJYjQ6ilpge8epRlutse7vxzpGFQaN6BfG5AFf08B3+PODNgmDmy8gnIMWT/EE1fnocxnE9UGggix7OxfVGWu5WbyIoO0pZqHIZy8xeQ0PEBkYVEs31SsCXBJpX7AqGPPxaomIMvCFGNoQgUfXku1SJwdp/2/PMQN5TcBJW8htZJWwDojBwv+i4jr59i+rFUXOJl0HSKvZxAlKk7OIgK+GcJhg2TfTgdE/WVVB63tJlH7QsoVpCjgL8R8j9wLTd2wdrL9V3wabI37s7mTZQ/nfUVqZYghGs1zXn9WzCk2NARHZlc/e4vvj6I1nGohwQdtDuFbrhspx3eTlbfTCe41uqyQiTw8FGZKO4t6BVL4ePx8DLAoq7w38eMufMYK6e1qgegEwfQC6g8VHEk1UQkh48sENVeyFA/LJSf7AqO5xXZIq0M60w== Mozilla_key_for_jwatkins
+
+  dhouse:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCfeLZeQj7V+K5XZA0YzxDHJiCt4iUvd6bkLFZR02fkVGsFt3639K955ycwspSoEDgqBHfO4UCv2cqBLQqI7EdYl0FcllVPeKL64XKvZA0cXqlzWmqfrnh9yw78Qw0XnYXTbTXVJDxYZC36VZaNFxUc28lr9r3BfMyrVJZ8v7Lz/2S4kYXtOgrqCbu/K2RiNiJ4uO0mAWivF+NsuWInlrH97YdohE/7kydslv0wGVf1rU1tQ0CYXNQBqir89+0Glshix2TtRdXn6HhNbFNFkkbja246fHt26W6COoF8t2R7Kh/Yvs0FLWLZe8xNWVmca2F+RDwpN9muydfVa0j+9iJu+GXBIsNbivqclcqhGHzTItM1GpGe9wgbugKtOMKQ02+OSGHmyAQhG4Fi675QG7yAz3gDH0DYiai/s032mMyqiOSH4JWFvq6dN32l/cbZMYfB/VMBJwbI0EJOb55Kqn6UDyYCaFZpfJq/w1gXEmpu7XtzuBbsFBum6c/248cGR+RtJ5N0EF098+3IRbDOq4t8cKcdy/rOu2O/iCIIfr3coBunFCUPVw6/r8I0qrFcLjCCKKjEBIpTrCv5ch1uj9P0BqJw+LWsalQsJeVQ/U71tHoUWqINrGXyjvVhHcTbeE22bALTq0iEqwZEPrZCusb5yqpow89zw+MqrT9SCz/S0w== dhouse.house
+
+  mcornmesser:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAgEAgl+gdJm/ugZQJhjWRldBMoijBAxX9aK4djspM+X+59SqdLidnHG7IyOyzniUVa5IgL8ak91v59zgTM4K9VmLdbH1EttiryJ2juYygBClFQC3p7NiHLhtuJOrrMbb7K53I6dJVxui8f3Rj58nV7Y3wvrdmoxKboVYGLNCWcVhEOFpfvr+RftMPfAgOTBgAXqWt3954OGmDLAPVCUruuNrZpFYZ4WBEVsZYFvljXz7eBZCS1HyeYtDDmNECGSKMvyR1C32kGpDfK+I8cngaZAdhUpEYVWJeIQmACUoilgx8A/K0GfPmnncfi3QJUrucFAmA8f87k4PczamTMszmdmOiXVzKCID2DtH/uunTtDe7toIuA2A0fCYeFGkvEgIUAIifhifduJdbvNuVJ/AmEcOAN9PIAzhGQh7WhPRagJeydgtB2hQihRSaVVQgSNUJA8trAQKAArB/cJSZgIu9PED6ZuRzUWpA3HPzVxyx9v73d/c0ZnacF8VP74ucOaqi+z/QUe3dPKg14x4kJQHthPJm8oVS04sWQjRVTyXgcEnHyYiEOhAq5XCd1Pss7hLICKuc9L4/AKMoKpzf2mqPuhfEHJ77MGHXfGFwY08rFpU54wRiO7tyX09w+S1CKImjoz3mjYZu42W6gIyLbCzxbMaV9aRK27Tn/A1j1NBcQvGEn0= rsa-key-20170619
+    - ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA1zBG1hfe9OgISQxo0tQgy9VfTWk81mIadB90aSowIfdUZdGg0qoDKY5JHKMxi1BOwzN/UnEO+PeS3pIRY/2Xr7ywMgnoqYo9mkF/Q0EHnjVwjJxWfza9eEvI0SoBpPu1FlCgk+unzedEaJTc0KzNKEjRxVL4/XXvIgV4U/BukYAEYAsPFWXIvkSNi9GrNrAkKRuXCVOItBQjYGP+hg9vbnGOAmzIzgAmxxxos/LH7+z/59H0Cmm4wgzgm5JCRyIIHueYkHJYswx1crr1KQTooghJf+mGV1Iif+ymVylk2nnsdfQLqYHgSte4BnXV9NZGa1PIGmA/+wHVUfaiXNtjOQ== rsa-key-20170620
+
+  jmoss:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB/I95HQM/Wr9XZkQzXfhFSpqmIiGx0fIegDNtkkoOHW jwmoss88@gmail.com
+
+  aerickson:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCVIzgS4A6o6HZ5QoQvYbRz2Ztwdu1saKSFHz2PfvDiLrhbNzrxekJ+KCYIo0KjmxQGbPFfWYmLQCm1ARdqtU2hBTcm/NQrKZDendLwiX1EGBHvrwy4bwdlm72Hp+O1czb8tyvwgJMfVjmwWMG0FTRHunrv8eFyp9AmSlnDP+BQkEii41f7UY8tdZGbYChLKjHz2px2lhKj1jRt879Vy4zLw9l6wjfJ40A88Cf1rfsblfKP7iS5umeGvtqtSDbOU1dbiH73IJci/GTQiptr/Scu7MBMq/clzD/WGC+cIdregaG7AhZLcr4kqpk2lrAWpfRK/LgHa7vYy8XvRHt+oTpF aerickson@aerickson-45094.local
+
+  ahalberstadt:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDobzliCCDeAiMIIYD2IrNs1YYYy1jshn/9LKP+D3IM0+ArWiBW8yBaYyhI5Cv2PqxhLhrHyKSuIVRcGTqmugG0cz/iwhL/7Ruedo5Hn+gEtPMgX1Ju9Ya9wckZAtkluqzzBPTebOTh0jevUwNF7bvrQUZu7NTfrCUa3DVWQya65Z7WIwX2SaMOLxXMW+XgX1NUYobav3iamqbNLOGuSNzUpFsQy7yAOaOnMT34wqemNpMndzAEU3ZPM7/XRxDcUTxfbHlNCqzWI2mGqAQz9m4Ssvb59/R7b3+qXyvyKEAKqra/Mu5l5KmT7dH2NH1fTuznR7AjJ4pUlSmM7gNsOQhLmaAFiZ4jKdXvaB4CW162RfhmD7eJQb4sV6mLqRNvjvz14DpKlA+Z7izjuBDWZwZx+9xXSGfpwCaH92zCn09NKbsA6Ghscn1vzrf7a4CfrT8FDAf0Eiqr4DvymRL0OMuUdLg2EO65lMNaPKPcOHyWC9pDPWzD9iKhGyXAOROs0ak= ahal@DESKTOP-BF76SPQ
+
+  asasaki:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQClqul9yd93oK71/O+ADPnDoabci2lF2gUYaTEGl/y3MoWWE4Vw9ZZx9/T9GWZSYPVRoTfJ6Bkex0uZodQhphcNW4aDoCU1L21qqoC3AmTw/v475bGZLwa9CLT0UkNQXCTMnNPk8GGBLhvaV8EKnCV2rNGvwx2Squ6seTRB04Ah8UnA5xJnYozTcwp8h71zrbqifceu9XIyDB4EVdBfgV4xLAMUs5o1z8Hh3cGUag2ywS4S8MbI/U36ES285Ps+B25AmAm2TWhMulKPmdTDCPI5BYo5RFe7gcWKjWYItD9dqkChCgB0uUyiYucSBbHtSYDG7Odau8BYZavx7s/S+Wyg30+guc1YvmoGrYsBi6b6YMTC7Vx3hl7m2KCx2Q21ZKO8tpEFx7Wuadm3ydt/hFKZ9PfN2zN7ZuvTMecPqznZLTJ4ZiehgfmwhSoTNlg7DliTMD2rktXJ/eNxVUo30aDIZteW9Tk9MiKSN/sUAKREkmmhMtJOfZw1XeNF0BZbqAFpoFsRrw18kO1XV4+jf6QJ8+aMYC2WEMOhXIlENfL9BNIHgCK5kY+6VqJ4OlOLJu/YGwGd4UxSmm1XG8dz5+UhDAmm/4y6iKGOBwJLBqS3JTF0fimPYSg/yO126vIoLs3+TLACA8PQGMOlNW2k2Xm3JWUDhHBztOdMz3SJFq/IjQ== Mozilla_key_for_Aki_Sasaki
+
+  gbrown:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7yH96JpXxkCkyPfn0HpJa8bd+tx+IlfhzxihdgBHLK gbrown@mozilla.com
+
+  hneiva:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCjfZR0LUC7TDL+VKC63dZ1JGzDBWja+3l0kziyY7nA03bG+XKVsi8vh09d0N0xysdrKnFaW25zMACx1V8yBpOzSgcfOJtBrTR9k6ScsLN3pCsNqlMY3MO0pTxcgTNclqVefsMfoQxHv1OsOve7LI9Po9q6XkjbqoOV2UjoVe0U8GIZSl/nwQmVk/cPzCm/zSutL3vIbH5W4XD8MKPQBM5+iJdMZb+idXRUXEAl1334zitAFe9dy8FzN8EyPk+tTj1lJDj77HWYnNaW1ws+qvhErlH+bD2FqD/fKv9c6LA9RTZsYor9pP40DZ5+E+bx0NUPjmrAAWyHfVUzgz7f2AIZmfrZQkOwjgFA3lmtMuthYh42AnIswzbUSRaRWbGmG68h20twSIpRX1tJR1g97j1wZtL8wFjdceN/cL+41TlPxZXoF34s9I2hVm0ZBgVqz8xj/gp8FFZj35qCnk78HAKxIBQhYzhv6ei28PhRkGlvWYrOXJcr2Wgpc+ELylyEe6ieTzPec2jyGd7vTGtmkLtPBcI/SJDD/kMo1E3CGQI208daXBkWIVEZnRIhqQJJzX+bg54UPARocuEq2sNLdcuuKf5Mq8wvbwaGioNDXYLrRqWtIWPUDoi0E0Stl9Z+ecZoJZqAjKCp6Fyuv7wmsx0LmkVX/t0qL5x3GKTyDfn48w== hneiva@mozilla.com
+
+  jcristau:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDD1coEjA0xXcjmJ7H2kJGWGCW4JkK8JMfzogw94t2VZVFEHFx1YSVE00dObjci8387V0QySsrndt8qIFIbUa4vss1+EtfOnd7kbPCXD8EoWJGv9G70OfdV1uMmDF10heZPdj3OmkWfusvGOEYaOQuuz3HQUYT3YO9F+8llFsCIsyeLj7xcAY8pGvYqj0Fh2uJAc72zetqGjvB7PKJmoYphVHLtEnW1OrvDouhk9fJL1SF06Kf0RmkI7N+bBPVcHYczwkLHY13OA0D8szHentG2557lwN/02UzlY25RNjCEBjlC4IIrVRKdgP4aBl/CijIiJ1tN40qp/edAQ0vjYnAN jcristau@mozilla.com
+
+  jlorenzo:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgKAI4ewrAAfxgV1sE5cNwublsALzX3xYGWwU3RLoCa yubikey-mozilla-2022
+
+  # from relops_common_keys_2020-09-08.yml
+  relops:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j+zRPprLFeTgRwkgI6mcjQCeEoaqOY2 Relops ed25519 Key
+
+  notary1:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary2:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary3:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary4:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary5:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary6:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary7:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary8:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary9:
+    - ssh-rsa AAAA invalid@mozilla.com
+  notary10:
+    - ssh-rsa AAAA invalid@mozilla.com
+  poller:
+    - ssh-rsa AAAA invalid@mozilla.com
+
+
+# Class parameter defaults: most data lookups should take place in profiles
+# so use only when necessary
+packages::setup::default_bucket: "ronin-puppet-package-repo"
+packages::setup::default_s3_domain: "s3-us-west-2.amazonaws.com"
+
+puppet::atboot::smtp_relay_host: "%{hiera('smtp_relay_host')}"

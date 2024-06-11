@@ -9,8 +9,24 @@ class roles_profiles::profiles::power_management {
             include macos_mobileconfig_profiles::power_management
         }
         'Windows': {
-            class { 'win_os_settings::power_scheme':
-                ensure => 'High performance',
+            case $facts['custom_win_os_version'] {
+                'win_11_2009': {
+                    class { 'win_os_settings::power_scheme':
+                        ensure => 'Ultimate Performance',
+                    }
+                    include win_os_settings::no_sleep
+                }
+                'win_10_2009': {
+                    class { 'win_os_settings::power_scheme':
+                        ensure => 'Ultimate Performance',
+                    }
+                    include win_os_settings::no_sleep
+                }
+                default:  {
+                    class { 'win_os_settings::power_scheme':
+                        ensure => 'High performance',
+                    }
+                }
             }
             # Bug List
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1524436

@@ -1,0 +1,54 @@
+param(
+    [string] $pkg,
+    [string] $pkgdir
+)
+
+function Write-Log {
+    param (
+        [string] $message,
+        [string] $severity = 'INFO',
+        [string] $source = 'BootStrap',
+        [string] $logName = 'Application'
+    )
+    if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
+        New-EventLog -LogName $logName -Source $source
+    }
+    switch ($severity) {
+        'DEBUG' {
+            $entryType = 'SuccessAudit'
+            $eventId = 2
+            break
+        }
+        'WARN' {
+            $entryType = 'Warning'
+            $eventId = 3
+            break
+        }
+        'ERROR' {
+            $entryType = 'Error'
+            $eventId = 4
+            break
+        }
+        default {
+            $entryType = 'Information'
+            $eventId = 1
+            break
+        }
+    }
+    Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
+    if ([Environment]::UserInteractive) {
+        $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
+        Write-Host  -object $message -ForegroundColor $fc
+    }
+}
+
+$ENV:AZCOPY_SPA_APPLICATION_ID = "<%= $win_packages::azcopy_script::app_id %>"
+$ENV:AZCOPY_SPA_CLIENT_SECRET = "<%= $win_packages::azcopy_script::secret %>"
+$ENV:AZCOPY_TENANT_ID = "<%= $win_packages::azcopy_script::tenant %>"
+
+
+Write-Log -Message ('{0} :: Downloading {1}' -f $($MyInvocation.MyCommand.Name), $pkg) -severity 'DEBUG'
+<%= $win_packages::azcopy_script::azcopy %> copy  <%= $win_packages::azcopy_script::srcloc  %>/$pkg  $pkgdir\$pkg
+if (!(Test-Path -Path "$pkgdir\\$pkg")) {
+    exit 99
+}
