@@ -115,6 +115,15 @@ LogFile   %ROOT%\data\nxlog.log
   Exec $SourceName = 'boostrap-puppet';
 </Input>
 
+<Input bootstrap_puppet_log_json>
+  Module xm_json
+  File 'C:\logs\\*-bootstrap-puppet.json'
+  SavePos TRUE
+  ReadFromLast TRUE
+  InputType LineBased
+  Exec $SourceName = 'boostrap-puppet-json';
+</Input>
+
 <Input puppet_run_log>
   Module im_file
   File 'C:\logs\\*-puppetrun.log'
@@ -140,6 +149,10 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route bootstrap_puppet_log_papertrail>
   Path bootstrap_puppet_log => papertrail
+</Route>
+
+<Route bootstrap_puppet_log_json_papertrail>
+  Path bootstrap_puppet_log_json => papertrail
 </Route>
 
 <Route puppet_run_log_papertrail>

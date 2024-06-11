@@ -7,16 +7,14 @@ class roles_profiles::profiles::files_system_managment {
     'Windows': {
       include win_filesystem::disable8dot3
       include win_filesystem::disablelastaccess
-      if $facts['custom_win_location'] == 'azure' {
-        if $facts['custom_win_y_drive'] == 'exists' {
-          win_filesystem::set_paging_file { 'azure_paging_file':
-            location => 'y:\pagefile.sys',
-            min_size => 8192,
-            max_size => 8192,
-          }
-        }
-        if $facts['custom_win_z_drive'] == 'exists' {
-          include win_filesystem::grant_z_access
+      if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
+        include win_filesystem::grant_cache_access
+      }
+      if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_d_drive'] == 'exists') {
+        win_filesystem::set_paging_file { 'azure_paging_file':
+          location => 'D:\pagefile.sys',
+          min_size => 8192,
+          max_size => 8192,
         }
       }
       case $facts['custom_win_os_version'] {

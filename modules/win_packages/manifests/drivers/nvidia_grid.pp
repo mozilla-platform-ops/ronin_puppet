@@ -23,11 +23,12 @@ class win_packages::drivers::nvidia_grid (
     command  => "Expand-Archive -Path ${src_file} -DestinationPath ${facts['custom_win_systemdrive']}\\",
     creates  => $setup_exe,
     provider => powershell,
+    require  => File["${pkgdir}\\${zip_name}"],
   }
 
   if $facts['custom_win_gpu'] == 'yes' {
     package { $display_name :
-      ensure          => '472.39',
+      ensure          => 'present',
       source          => $setup_exe,
       install_options => ['-s','-noreboot'],
     }

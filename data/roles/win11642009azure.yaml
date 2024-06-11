@@ -5,29 +5,29 @@ win-worker:
   generic_worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
-    version: '44.13.6'
+    version: '64.2.5'
 
   taskcluster:
     worker_runner:
         name: 'start-worker-windows-amd64'
-        version: '44.13.6'
+        version: '64.2.5'
         provider: "azure"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
-        version: '44.13.6'
+        version: '64.2.5'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
     livelog:
         name: "livelog-windows-amd64"
-        version: '44.13.6'
+        version: '64.2.5'
     client_id: "azure/gecko-t/win11-64-2009"
     worker_group: "test"
 
   # Mozilla-build
   mozilla_build:
-    version: '4.0.2'
-    zstandard_version: '0.15.2'
+    version: '4.1'
+    zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
 
   # Mozilla profile
@@ -42,6 +42,9 @@ win-worker:
       display_name: "Windows Azure VM Agent - 2.7.41491.1057"
   git:
     version: '2.37.3'
+  gpu-latest:
+    name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 538.15"
   gpu:
     name: "472.39_grid_win11_win10_64bit_Azure-SWL"
     display_name: "NVIDIA Graphics Driver 472.39"

@@ -1,4 +1,6 @@
-require_relative 'spec_helper'
+# frozen_string_literal: true
+
+require 'spec_helper'
 require 'puppet'
 
 describe Puppet::Type.type(:archive) do
@@ -16,12 +18,12 @@ describe Puppet::Type.type(:archive) do
     it { expect(resource[:extract]).to eq :false }
     it { expect(resource[:cleanup]).to eq :true }
     it { expect(resource[:checksum_type]).to eq :none }
-    it { expect(resource[:digest_type]).to eq nil }
+    it { expect(resource[:digest_type]).to be_nil }
     it { expect(resource[:checksum_verify]).to eq :true }
     it { expect(resource[:extract_flags]).to eq :undef }
-    it { expect(resource[:allow_insecure]).to eq false }
-    it { expect(resource[:download_options]).to eq nil }
-    it { expect(resource[:temp_dir]).to eq nil }
+    it { expect(resource[:allow_insecure]).to be false }
+    it { expect(resource[:download_options]).to be_nil }
+    it { expect(resource[:temp_dir]).to be_nil }
   end
 
   it 'verify resource[:path] is absolute filepath' do
@@ -43,6 +45,7 @@ describe Puppet::Type.type(:archive) do
         resource[:source] = 'https://home.lan/example.zip'
         resource[:source] = 'ftp://home.lan/example.zip'
         resource[:source] = 's3://home.lan/example.zip'
+        resource[:source] = 'gs://home.lan/example.zip'
         resource[:source] = '/tmp/example.zip'
       end.not_to raise_error
     end
@@ -103,7 +106,7 @@ describe Puppet::Type.type(:archive) do
 
   it 'accepts valid resource[:checksum_type]' do
     expect do
-      [:none, :md5, :sha1, :sha2, :sha256, :sha384, :sha512].each do |type|
+      %i[none md5 sha1 sha2 sha256 sha384 sha512].each do |type|
         resource[:checksum_type] = type
       end
     end.not_to raise_error
@@ -117,7 +120,7 @@ describe Puppet::Type.type(:archive) do
 
   it 'verify resource[:allow_insecure] is valid' do
     expect do
-      [:true, :false, :yes, :no].each do |type|
+      %i[true false yes no].each do |type|
         resource[:allow_insecure] = type
       end
     end.not_to raise_error
@@ -151,9 +154,11 @@ describe Puppet::Type.type(:archive) do
     it 'creates relationship' do
       expect(auto_req.size).to be 1
     end
+
     it 'links to archive resource' do
       expect(auto_req[0].target).to eql archive_resource
     end
+
     it 'autorequires parent directory' do
       expect(auto_req[0].source).to eql file_resource
     end

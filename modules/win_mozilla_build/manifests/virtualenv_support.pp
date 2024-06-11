@@ -10,10 +10,10 @@ class win_mozilla_build::virtualenv_support {
     }
 
     $source  = $win_mozilla_build::external_source
-    if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
-        $venv_dir = "${win_mozilla_build::install_path}\\python3\\Lib\\site-packages\\virtualenv_support"
-    } else {
+    if $win_mozilla_build::needed_mozbld_ver == '3.2' {
         $venv_dir = "${win_mozilla_build::install_path}\\python\\Lib\\site-packages\\virtualenv_support"
+    } else {
+        $venv_dir = "${win_mozilla_build::install_path}\\python3\\Lib\\site-packages\\virtualenv_support"
     }
 
     file { $venv_dir:
