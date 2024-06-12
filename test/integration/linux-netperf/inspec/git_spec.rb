@@ -1,0 +1,1 @@
+../../linux-perf/inspec/git_spec.rb
