@@ -15,8 +15,10 @@ class packages::linux_generic_worker (
   Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
   String                      $quarantine_worker_sha256,
 ) {
+  $threshold_version = '63.0.0'
 
-  if versioncmp($generic_worker_version, '63') < 0 {
+  if versioncmp($generic_worker_version, $threshold_version) < 0 {
+    notice('g-w: using simple g-w')
     packages::linux_package_from_s3 { "generic-worker-simple-linux-amd64-${generic_worker_version}":
       private             => false,
       os_version_specific => false,
@@ -25,6 +27,7 @@ class packages::linux_generic_worker (
       checksum            => $generic_worker_sha256,
     }
   } else {
+    notice('g-w: using insecure g-w')
     packages::linux_package_from_s3 { "generic-worker-insecure-linux-amd64-${generic_worker_version}":
       private             => false,
       os_version_specific => false,
