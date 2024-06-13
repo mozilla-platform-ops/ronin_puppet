@@ -16,7 +16,7 @@ class packages::linux_generic_worker (
   String                      $quarantine_worker_sha256,
 ) {
   $threshold_version = '63.0.0'
-  $gw_version_without_v = $generic_worker_version.sub(/^v/, '')
+  $gw_version_without_v = regsubst($generic_worker_version, 'v', '')
 
   if versioncmp($gw_version_without_v, $threshold_version) < 0 {
     notice('g-w: using simple g-w')
