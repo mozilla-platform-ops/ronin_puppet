@@ -16,8 +16,9 @@ class packages::linux_generic_worker (
   String                      $quarantine_worker_sha256,
 ) {
   $threshold_version = '63.0.0'
+  $gw_version_without_v = $generic_worker_version.sub(/^v/, '')
 
-  if versioncmp($generic_worker_version, $threshold_version) < 0 {
+  if versioncmp($gw_version_without_v, $threshold_version) < 0 {
     notice('g-w: using simple g-w')
     packages::linux_package_from_s3 { "generic-worker-simple-linux-amd64-${generic_worker_version}":
       private             => false,
