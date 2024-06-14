@@ -80,7 +80,8 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
 
       require linux_generic_worker::check_gw
 
-      # TODO: add caddy for kershaw
+      # install caddy
+      require linux_packages::caddy
     }
     default: {
       fail("${facts['os']['name']} not supported")
