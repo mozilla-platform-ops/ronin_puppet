@@ -3,30 +3,38 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define win_packages::win_msi_pkg (
-    String $pkg,
-    Array $install_options,
-    String $package=$title
-){
+  String $pkg,
+  Array $install_options,
+  String $package=$title
+) {
+  $pkgdir = $facts['custom_win_temp_dir']
 
-    $pkgdir = $facts['custom_win_temp_dir']
+  case $facts['custom_win_location'] {
+    'datacenter': {
+      $srcloc       = lookup('windows.s3.ext_pkg_src')
+    }
+    default: {
+      $srcloc = lookup('windows.ext_pkg_src')
+    }
+  }
 
-    case $facts['custom_win_location'] {
-        'datacenter': {
-            $srcloc       = lookup('windows.s3.ext_pkg_src')
-        }
-        default: {
-            $srcloc = lookup('windows.ext_pkg_src')
-        }
-    }
+  $url         = "${srcloc}/${pkg}"
 
-    file { "${pkgdir}\\${pkg}" :
-        source => "${srcloc}/${pkg}",
-    }
-    package { $title :
-        ensure  => installed,
-        source  => "${pkgdir}\\${pkg}",
-        require => File["${pkgdir}\\${pkg}"],
-    }
+  # Use https://github.com/voxpupuli/puppet-archive instead of built-in file resource type to download files
+  archive { $title:
+    ensure  => 'present',
+    source  => $url,
+    path    => "${pkgdir}\\${pkg}",
+    creates => "${pkgdir}\\${pkg}",
+    cleanup => false,
+    extract => false,
+  }
+
+  package { $title :
+    ensure          => installed,
+    source          => "${pkgdir}\\${pkg}",
+    install_options => $install_options,
+  }
 }
 
 # Bug list

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require File.join(File.dirname(__FILE__), '..', 'vcsrepo')
 
 Puppet::Type.type(:vcsrepo).provide(:bzr, parent: Puppet::Provider::Vcsrepo) do
@@ -19,9 +21,9 @@ Puppet::Type.type(:vcsrepo).provide(:bzr, parent: Puppet::Provider::Vcsrepo) do
     return false unless File.directory?(@resource.value(:path))
     begin
       bzr('status', @resource.value(:path))
-      return true
+      true
     rescue Puppet::ExecutionFailure
-      return false
+      false
     end
   end
 
@@ -53,11 +55,9 @@ Puppet::Type.type(:vcsrepo).provide(:bzr, parent: Puppet::Provider::Vcsrepo) do
 
   def revision=(desired)
     at_path do
-      begin
-        bzr('update', '-r', desired)
-      rescue Puppet::ExecutionFailure
-        bzr('update', '-r', desired, ':parent')
-      end
+      bzr('update', '-r', desired)
+    rescue Puppet::ExecutionFailure
+      bzr('update', '-r', desired, ':parent')
     end
     update_owner
   end

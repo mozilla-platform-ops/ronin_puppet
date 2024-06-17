@@ -4,15 +4,15 @@
 
 class roles_profiles::profiles::scheduled_tasks {
   include win_scheduled_tasks::at_task_user_logon
-  include win_scheduled_tasks::defender
   case $facts['os']['name'] {
     'Windows': {
       case $facts['custom_win_location'] {
-        'home': {
-          $startup_script = 'maintainsystem-reftester.ps1'
-        }
         'azure': {
-          $startup_script = 'maintainsystem.ps1'
+          if $facts['custom_win_os_version'] == '2012' {
+            $startup_script = '2012-azure-maintainsystem.ps1'
+          } else {
+            $startup_script = 'azure-maintainsystem.ps1'
+          }
         }
         'datacenter': {
           $startup_script = 'maintainsystem-reftester.ps1'
@@ -21,7 +21,6 @@ class roles_profiles::profiles::scheduled_tasks {
           $startup_script = 'maintainsystem.ps1'
         }
       }
-
       class { 'win_scheduled_tasks::maintain_system':
         startup_script => $startup_script,
       }

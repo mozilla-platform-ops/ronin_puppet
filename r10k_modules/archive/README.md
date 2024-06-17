@@ -9,21 +9,22 @@
 [![Puppet Forge - scores](https://img.shields.io/puppetforge/f/puppet/archive.svg)](https://forge.puppetlabs.com/puppet/archive)
 [![Camptocamp compatible](https://img.shields.io/badge/camptocamp-compatible-orange.svg)](https://forge.puppet.com/camptocamp/archive)
 
-#### Table of Contents
+## Table of Contents
 
 1. [Overview](#overview)
-2. [Module Description](#module-description)
-3. [Setup](#setup)
-4. [Usage](#usage)
+1. [Module Description](#module-description)
+1. [Setup](#setup)
+1. [Usage](#usage)
    * [Example](#usage-example)
    * [Puppet URL](#puppet-url)
    * [File permission](#file-permission)
    * [Network files](#network-files)
    * [Extract customization](#extract-customization)
    * [S3 Bucket](#s3-bucket)
+   * [GS Bucket](#gs-bucket)
    * [Migrating from puppet-staging](#migrating-from-puppet-staging)
-5. [Reference](#reference)
-6. [Development](#development)
+1. [Reference](#reference)
+1. [Development](#development)
 
 ## Overview
 
@@ -61,7 +62,7 @@ Archive {
 }
 ```
 
-Users of the module is responsbile for archive package dependencies for
+Users of the module are responsible for archive package dependencies, for
 alternative providers and all extraction utilities such as tar, gunzip, bunzip:
 
 ```puppet
@@ -83,9 +84,9 @@ if $facts['osfamily'] != 'windows' {
 
 ## Usage
 
-Archive module dependency is managed by the archive class. This is only
-required for windows platform. By default 7zip is installed via chocolatey, but
-can be adjusted to use the msi package instead:
+Archive module dependencies are managed by the `archive` class. This is only
+required on Windows. By default 7zip is installed via chocolatey, but
+the MSI package can be installed instead:
 
 ```puppet
 class { 'archive':
@@ -95,9 +96,21 @@ class { 'archive':
 }
 ```
 
+To automatically load archives as part of this class you can define the
+`archives` parameter.
+
+```puppet
+class { 'archive':
+  archives => { '/tmp/jta-1.1.jar' => {
+                  'ensure' => 'present',
+                  'source'  => 'http://central.maven.org/maven2/javax/transaction/jta/1.1/jta-1.1.jar',
+                  }, }
+}
+```
+
 ### Usage Example
 
-Simple example that donwloads from web server:
+Simple example that downloads from web server:
 
 ```puppet
 archive { '/tmp/vagrant.deb':
@@ -119,7 +132,7 @@ archive { '/tmp/jta-1.1.jar':
   extract_path  => '/tmp',
   source        => 'http://central.maven.org/maven2/javax/transaction/jta/1.1/jta-1.1.jar',
   checksum      => '2ca09f0b36ca7d71b762e14ea2ff09d5eac57558',
-  checksum_type => 'sha1',
+  checksum_type => sha1,
   creates       => '/tmp/javax',
   cleanup       => true,
 }
@@ -170,7 +183,7 @@ archive { '/home/myuser/help':
 ### File permission
 
 When extracting files as non-root user, either ensure the target directory
-exists with the appropriate permission (see [tomcat.pp](tests/tomcat.pp) for
+exists with the appropriate permission (see [tomcat.pp](examples/tomcat.pp) for
 full working example):
 
 ```puppet
@@ -189,7 +202,7 @@ archive { $filename:
   path          => "/tmp/${filename}",
   source        => 'http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.0.M3/bin/apache-tomcat-9.0.0.M3.zip',
   checksum      => 'f2aaf16f5e421b97513c502c03c117fab6569076',
-  checksum_type => 'sha1',
+  checksum_type => sha1,
   extract       => true,
   extract_path  => '/opt',
   creates       => "${install_path}/bin",
@@ -216,11 +229,11 @@ archive { $filename:
   path          => "/tmp/${filename}",
   source        => "http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.0.M3/bin/apache-tomcat-9.0.0.M3.zip",
   checksum      => 'f2aaf16f5e421b97513c502c03c117fab6569076',
-  checksum_type => 'sha1',
+  checksum_type => sha1,
   extract       => true,
   extract_path  => '/opt',
-  creates       => $install_path,
-  cleanup       => 'true',
+  creates       => "${install_path}/bin",
+  cleanup       => true,
   require       => File[$install_path],
 }
 
@@ -242,7 +255,7 @@ archive { '/nfs/repo/software.zip':
   source        => '/nfs/repo/software.zip'
   extract       => true,
   extract_path  => '/opt',
-  checksum_type => 'none', # typically unecessary
+  checksum_type => none,   # typically unecessary
   cleanup       => false,  # keep the file on the server
 }
 ```
@@ -276,10 +289,9 @@ archive { '/var/lib/example.zip':
 
 ### S3 bucket
 
-S3 support is implemented via the [AWS
-CLI](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html).
-By default this dependency is only installed for Linux VMs running on AWS, or
-enabled via `aws_cli_install` option:
+S3 support is implemented via the [AWS CLI](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html).
+On non-Windows systems, the `archive` class will install this dependency when
+the `aws_cli_install` parameter is set to `true`:
 
 ```puppet
 class { 'archive':
@@ -306,13 +318,53 @@ archive { '/tmp/gravatar.png':
 NOTE: Alternative s3 provider support can be implemented by overriding the
 [s3_download method](lib/puppet/provider/archive/ruby.rb):
 
+### GS bucket
+
+GSUtil support is implemented via the [GSUtil Package](https://cloud.google.com/storage/docs/gsutil).
+On non-Windows systems, the `archive` class will install this dependency when
+the `gsutil_install` parameter is set to `true`:
+
+```puppet
+class { 'archive':
+  gsutil_install => true,
+}
+
+# See Google Cloud SDK cli guide for credential and configuration settings:
+# https://cloud.google.com/storage/docs/quickstart-gsutil
+
+archive { '/tmp/gravatar.png':
+  ensure => present,
+  source => 'gs://bodecoio/gravatar.png',
+}
+```
+
+### Passing headers
+
+Sometimes headers need to be passed to source. This can be accomplished
+using `headers` parameter:
+
+```puppet
+archive { '/tmp/slack-desktop-4.28.184-amd64.deb':
+  ensure        => present,
+  extract       => true,
+  extract_path  => '/tmp',
+  source        => 'https://downloads.slack-edge.com/releases/linux/4.28.184/prod/x64/slack-desktop-4.28.184-amd64.deb',
+  checksum      => 'e5d63dc6bd112d40c97f210af4c5f66444d4d5e8',
+  checksum_type => sha1,
+  headers       => ['Authorization: OAuth ABC123']
+  creates       => '/usr/local/bin/slack',
+  cleanup       => true,
+}
+```
+
 ### Download customizations
 
-In some cases you may need custom flags for curl/wget/s3 which can be
+In some cases you may need custom flags for curl/wget/s3/gsutil which can be
 supplied via `download_options`. Since this parameter is provider specific,
 beware of the order of defaults:
 
 * s3:// files accepts aws cli options
+
   ```puppet
   archive { '/tmp/gravatar.png':
     ensure           => present,
@@ -320,7 +372,9 @@ beware of the order of defaults:
     download_options => ['--region', 'eu-central-1'],
   }
   ```
+
 * puppet `provider` override:
+
   ```puppet
   archive { '/tmp/jta-1.1.jar':
     ensure           => present,
@@ -329,9 +383,11 @@ beware of the order of defaults:
     download_options => '--continue',
   }
   ```
+
 * Linux default provider is `curl`, and Windows default is `ruby` (no effect).
 
 This option can also be applied globally to address issues for specific OS:
+
 ```puppet
 if $facts['osfamily'] != 'RedHat' {
   Archive {
@@ -345,9 +401,7 @@ if $facts['osfamily'] != 'RedHat' {
 It is recommended to use puppet-archive instead of puppet-staging.
 Users wishing to migrate may find the following examples useful.
 
-#### Simple example without extraction
-
-##### puppet-staging
+#### puppet-staging (without extraction)
 
 ```puppet
 class { 'staging':
@@ -359,7 +413,7 @@ staging::file { 'master.zip':
 }
 ```
 
-##### puppet-archive
+#### puppet-archive (without extraction)
 
 ```puppet
 archive { '/tmp/staging/master.zip':
@@ -367,9 +421,7 @@ archive { '/tmp/staging/master.zip':
 }
 ```
 
-#### Example with zip file extraction
-
-##### puppet-staging
+#### puppet-staging (with zip file extraction)
 
 ```puppet
 class { 'staging':
@@ -385,7 +437,7 @@ staging::extract { 'master.zip':
 }
 ```
 
-##### puppet-archive
+#### puppet-archive (with zip file extraction)
 
 ```puppet
 archive { '/tmp/staging/master.zip':
@@ -401,7 +453,8 @@ archive { '/tmp/staging/master.zip':
 
 ### Classes
 
-* `archive`: install 7zip package (Windows only) and aws cli for s3 support.
+* `archive`: install 7zip package (Windows only) and aws cli or gsutil for s3/gs support.
+  It also permits passing an `archives` argument to generate `archive` resources.
 * `archive::staging`: install package dependencies and creates staging directory
   for backwards compatibility. Use the archive class instead if you do not need
   the staging directory.
@@ -427,7 +480,8 @@ archive { '/tmp/staging/master.zip':
 * `ensure`: whether archive file should be present/absent (default: present)
 * `path`: namevar, archive file fully qualified file path.
 * `filename`: archive file name (derived from path).
-* `source`: archive file source, supports http|https|ftp|file|s3 uri.
+* `source`: archive file source, supports http|https|ftp|file|s3|gs uri.
+* `headers`: array of headers to pass source, like an authentication token
 * `username`: username to download source file.
 * `password`: password to download source file.
 * `allow_insecure`: Ignore HTTPS certificate errors (true|false). (default: false)
@@ -441,9 +495,10 @@ archive { '/tmp/staging/master.zip':
   (default: false)
 * `extract_path`: target folder path to extract archive.
 * `extract_command`: custom extraction command ('tar xvf example.tar.gz'), also
-* `temp_dir`: specify an alternative temporary directory to use for file downloads, if unset the OS default is used
-  support sprintf format ('tar xvf %s') which will be processed with the
-  filename: sprintf('tar xvf %s', filename)
+   support sprintf format ('tar xvf %s') which will be processed with the filename:
+   sprintf('tar xvf %s', filename)
+* `temp_dir`: Specify an alternative temporary directory to use for copying files,
+   if unset then the operating system default will be used.
 * `extract_flags`: custom extraction options, this replaces the default flags.
   A string such as 'xvf' for a tar file would replace the default xf flag. A
   hash is useful when custom flags are needed for different platforms. {'tar'
@@ -454,7 +509,9 @@ archive { '/tmp/staging/master.zip':
   file permission to 0644 so the user can read the file).
 * `cleanup`: whether archive file will be removed after extraction (true|false).
   (default: true)
-* `creates`: if file/directory exists, will not download/extract archive.
+* `creates`: if file/directory exists, will not download/extract archive. If
+  `extract` and `cleanup` are both `true`, this should be set to prevent Puppet
+  from re-downloading and re-extracting the archive every run.
 * `proxy_server`: specify a proxy server, with port number if needed. ie:
   `https://example.com:8080`.
 * `proxy_type`: proxy server type (none|http|https|ftp)
@@ -477,27 +534,62 @@ archive { '/tmp/staging/master.zip':
 * `extract`: whether to extract the files (true/false).
 * `creates`: the file created when the archive is extracted (true/false).
 * `cleanup`: remove archive file after file extraction (true/false).
+* `headers`: array of headers to pass source
 
 #### Archive::Artifactory Example
 
-```puppet
-$dirname = 'gradle-1.0-milestone-4-20110723151213+0300'
-$filename = "${dirname}-bin.zip"
+* retrieve gradle without authentication
 
-archive::artifactory { $filename:
-  archive_path => '/tmp',
-  url          => "http://repo.jfrog.org/artifactory/distributions/org/gradle/${filename}",
-  extract      => true,
-  extract_path => '/opt',
-  creates      => "/opt/${dirname}",
-  cleanup      => true,
-}
+  ```puppet
+  $dirname = 'gradle-1.0-milestone-4-20110723151213+0300'
+  $filename = "${dirname}-bin.zip"
 
-file { '/opt/gradle':
-  ensure => link,
-  target => "/opt/${dirname}",
-}
-```
+  archive::artifactory { $filename:
+    archive_path => '/tmp',
+    url          => "http://repo.jfrog.org/artifactory/distributions/org/gradle/${filename}",
+    extract      => true,
+    extract_path => '/opt',
+    creates      => "/opt/${dirname}",
+    cleanup      => true,
+  }
+
+  file { '/opt/gradle':
+    ensure => link,
+    target => "/opt/${dirname}",
+  }
+  ```
+
+* retrieve gradle with api token:
+
+  ```puppet
+  $dirname = 'gradle-1.0-milestone-4-20110723151213+0300'
+  $filename = "${dirname}-bin.zip"
+
+  archive::artifactory { $filename:
+    archive_path => '/tmp',
+    url          => "http://repo.jfrog.org/artifactory/distributions/org/gradle/${filename}",
+    headers      => ['X-JFrog-Art-Api: ABC123'],
+    extract      => true,
+    extract_path => '/opt',
+    creates      => "/opt/${dirname}",
+    cleanup      => true,
+  }
+
+  file { '/opt/gradle':
+    ensure => link,
+    target => "/opt/${dirname}",
+  }
+  ```
+
+* setup resource defaults
+
+  ```puppet
+  $artifactory_authentication = lookup('jfrog_token')
+
+  Archive::Artifactory {
+    headers => ["X-JFrog-Art-Api: ${artifactory_authentication}"],
+  }
+  ```
 
 #### Archive::Nexus
 

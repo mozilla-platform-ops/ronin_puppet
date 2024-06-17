@@ -1,12 +1,17 @@
-require_relative 'spec_helper'
+# frozen_string_literal: true
+
+require 'spec_helper'
 
 describe 'archive::go' do
   let(:facts) { { os: { family: 'RedHat' }, puppetversion: '4.4.0' } }
 
-  before do
-    MockFunction.new('go_md5') do |f|
-      f.stub.returns('0d4f4b4b039c10917cfc49f6f6be71e4')
-    end
+  # Mock Puppet V4 API ruby function with a puppet language function equivalent
+  let(:pre_condition) do
+    <<-PUPPET
+    function archive::go_md5(String $username, String $password, String $file, Stdlib::HTTPUrl $url) {
+      return '0d4f4b4b039c10917cfc49f6f6be71e4'
+    }
+    PUPPET
   end
 
   context 'go archive with defaults' do
@@ -23,7 +28,7 @@ describe 'archive::go' do
     end
 
     it do
-      is_expected.to contain_archive('/opt/app/example.zip').with(
+      expect(subject).to contain_archive('/opt/app/example.zip').with(
         path: '/opt/app/example.zip',
         source: 'http://home.lan:8081/go/example.zip',
         checksum: '0d4f4b4b039c10917cfc49f6f6be71e4',
@@ -32,7 +37,7 @@ describe 'archive::go' do
     end
 
     it do
-      is_expected.to contain_file('/opt/app/example.zip').with(
+      expect(subject).to contain_file('/opt/app/example.zip').with(
         owner: '0',
         group: '0',
         mode: '0640',
@@ -59,7 +64,7 @@ describe 'archive::go' do
     end
 
     it do
-      is_expected.to contain_archive('/opt/app/example.zip').with(
+      expect(subject).to contain_archive('/opt/app/example.zip').with(
         path: '/opt/app/example.zip',
         source: 'http://home.lan:8081/go/example.zip',
         checksum: '0d4f4b4b039c10917cfc49f6f6be71e4',
@@ -68,7 +73,7 @@ describe 'archive::go' do
     end
 
     it do
-      is_expected.to contain_file('/opt/app/example.zip').with(
+      expect(subject).to contain_file('/opt/app/example.zip').with(
         owner: 'app',
         group: 'app',
         mode: '0400',

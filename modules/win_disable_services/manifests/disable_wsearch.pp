@@ -9,8 +9,6 @@ class win_disable_services::disable_wsearch {
       provider => powershell,
       timeout  => 300,
     }
-    win_disable_services::disable_service { 'wsearch':
-    }
   } else {
     fail("${module_name} does not support ${facts['os']['name']}")
   }
