@@ -7,7 +7,7 @@ win-worker:
     name: "generic-worker-multiuser-windows-amd64"
     version: '64.2.5'
     client_id: "project/releng/generic-worker/win11-64-2009-hw-alpha"
-    idle_timeout: 0
+    idle_timeout: 600
 
   taskcluster:
     worker_runner:
