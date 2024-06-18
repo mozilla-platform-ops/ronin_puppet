@@ -9,6 +9,6 @@ class win_maintenance::pool_audit (
     require win_maintenance::maintenance_script_dir
 
     file { "${script_dir}\\pool_audit.ps1":
-        content => file('win_maintenance/force_pxe_install.ps1'),
+        content => file('win_maintenance/pool_audit.ps1'),
     }
 }
