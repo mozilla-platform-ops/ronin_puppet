@@ -88,5 +88,3 @@ If (($git_hash -ne $hash) -or ($worker_pool_id -ne $workerpool)) {
 } else {
     Write-Output "No Issues"
 }
-
-exit
