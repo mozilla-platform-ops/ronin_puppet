@@ -14,8 +14,8 @@ class roles_profiles::profiles::gpu_drivers {
     }
     'win_11_2009':{
       class { 'win_packages::drivers::nvidia_grid':
-        display_name => lookup('win-worker.gpu.display_name'),
-        driver_name  => lookup('win-worker.gpu.name'),
+        display_name => lookup('win-worker.gpu-latest.display_name'),
+        driver_name  => lookup('win-worker.gpu-latest.name'),
         srcloc       => lookup('windows.ext_pkg_src'),
       }
     }

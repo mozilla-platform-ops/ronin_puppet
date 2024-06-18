@@ -7,28 +7,16 @@ class win_packages::drivers::nvidia_grid (
   String $display_name,
   String $srcloc
 ) {
-  $setup_exe   = "${facts['custom_win_systemdrive']}\\${driver_name}\\setup.exe"
-  $zip_name    = "${driver_name}.zip"
-  $pkgdir      = $facts['custom_win_temp_dir']
-  $src_file    = "\"${pkgdir}\\${zip_name}\""
+  $driver_exe   = "${facts['custom_win_temp_dir']}\\${driver_name}.exe"
 
-  # copy the installtion file during image build
-  # only install if it is a gpu worker with gpu in the pool name
-
-  file { "${pkgdir}\\${zip_name}":
-    source => "${srcloc}/${zip_name}",
-  }
-
-  exec { 'grid_unzip':
-    command  => "Expand-Archive -Path ${src_file} -DestinationPath ${facts['custom_win_systemdrive']}\\",
-    creates  => $setup_exe,
-    provider => powershell,
+  file { $driver_exe:
+    source => "${srcloc}/${driver_name}.exe",
   }
 
   if $facts['custom_win_gpu'] == 'yes' {
     package { $display_name :
       ensure          => 'present',
-      source          => $setup_exe,
+      source          => $driver_exe,
       install_options => ['-s','-noreboot'],
     }
   }
