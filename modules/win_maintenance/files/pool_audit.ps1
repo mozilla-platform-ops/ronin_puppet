@@ -81,11 +81,7 @@ $workerpool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worke
 Write-Host $hash
 Write-Host $workerpool
 
-If (($git_hash -ne $hash) -or ($worker_pool_id -ne $workerpool)) {
-	Write-Log -message  ('{0} :: Misconfigured. Begging PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Write-Output "Issue found. Beginning PXE boot Process"
-    Set-PXE
-If (($git_hash -ne $hash) {
+If ($git_hash -ne $hash) {
     Write-Log -message  ('{0} :: Git hash mismatch. Begging PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Write-Output "Git hash mismatch. Begging PXE boot process!"
 } elseif { ($worker_pool_id -ne $workerpool)) {
