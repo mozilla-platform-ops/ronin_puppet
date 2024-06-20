@@ -49,7 +49,7 @@ function Set-PXE {
     }
     process {
         $temp_dir = "$env:systemdrive\temp\"
-        New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue
+        New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue  | Out-Null
 
         bcdedit /enum firmware > $temp_dir\firmware.txt
 
