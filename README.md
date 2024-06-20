@@ -26,43 +26,34 @@ More information:
 - https://puppet.com/docs/puppet/6/designing_system_configs_roles_and_profiles.html
 - https://puppet.com/docs/puppet/6/the_roles_and_profiles_method.html#the_roles_and_profiles_method
 
+## converging hosts
+
+Many profiles run puppet at boot, but some only do on demand.
+
+### bolt
+
+```
+# setup bolt first, see https://mana.mozilla.org/wiki/display/ROPS/M1+and+R8+Catalina+Deployment
+bolt plan run deploy::apply -t macmini-r8-140.test.releng.mdc1.mozilla.com noop=false -v
+```
+
 ## testing
 
-### vagrant
+### test-kitchen
 
-[Vagrant](https://www.vagrantup.com/) is useful for testing the full masterless bootstrapping process.
-
-Vagrant mounts this directory at /vagrant.
-
-#### bitbar_devicepool role
-
-```
-gem install bundler
-bundle install  ## .bundle/config sets the gemfile to .gemfile
-vagrant up bionic-bare
-vagrant ssh bionic-bare
-sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
-```
-
-
-### kitchen-puppet
-
-[kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to
-automate running convergence and serverspec tests for each role.
+[test-kitchen](https://docs.chef.io/workstation/kitchen/) (with [kitchen-puppet](https://github.com/neillturner/kitchen-puppet) ) provides infrastructure to automate running Puppet convergence and InSpec tests for each role.
 
 The repo contains configurations for Test Kitchen to use Vagant, Docker, and Mac instances.
 
-- ./bin/kitchen: Uses Vagrant and VirtualBox. Configured in .kitchen_configs/kitchen.yml.
-- ./bin/kitchen_docker: Uses Docker. Configured in .kitchen_configs/kitchen_docker.yml.
-- (no binary): Uses CircleCI Mac instances. Configured in .kitchen_configs/kitchen.macos.circleci.yml.
+test-kitchen in called via `./bin/kitchen_docker` (the binary tells test-kitchen to use the `.kitchen_configs/kitchen_docker.yml` config file).
 
-We use Vagrant/VirutalBox and Docker for a few reasons:
+[InSpec](https://github.com/inspec/inspec) tests live in `tests/integration/SUITE/inspec/*_spec.rb`.
 
-- Docker is the only way we can test on cloud CI systems.
-- Some tests don't work with Docker (kernel module tests).
-- Docker is faster (~1 minute faster on a converge from a new image).
+##### test-kitchen history
 
-[serverspec](https://serverspec.org/) tests live in `tests/integration/SUITE/*_spec.rb`.
+In the past we used `./bin/kitchen` (which used Vagrant and VirtualBox, and was configured in .kitchen_configs/kitchen.yml). `.kitchen_configs/kitchen.circleci.yml` was used for CircleCI (but it now uses the Docker config).
+
+We used Vagrant/VirutalBox because some things don't work with Docker (kernel module installation and testing).
 
 #### converging and running tests
 
@@ -77,57 +68,62 @@ gem install bundler
 bundle install
 
 ## testing bitbar workers
-./bin/kitchen converge bitbar
+./bin/kitchen_docker converge bitbar
 # run spec tests
-./bin/kitchen verify bitbar
+./bin/kitchen_docker verify bitbar
 
-## testing linux workers
+## testing linux-perf workers
 # coverge host
-./bin/kitchen converge linux
+./bin/kitchen_docker converge linux-perf
 # run serverspec tests
-./bin/kitchen verify linux
+./bin/kitchen_docker verify linux-perf
 # login to host
-./bin/kitchen login linux
+./bin/kitchen_docker login linux-perf
 ```
 
 #### creating a new suite
 
-1. Edit `.kitchen.yml` and `.kitchen.docker.yml`. Set the appropriate details.
-1. Create a new manifest dir for the suite.
-
-  ```bash
-  cd manifests-kitchen
-  mkdir <suite_name>
-  cd <suite_name>
-  ln -s ../../manifests/site.pp .
-  touch z-<suite_name>.pp
-  vim z-<suite_name>.pp
-  ```
-
-  We need our pp file to be run after the site.pp, that's why it starts with a z.
-
-1. Include your desired role
-
-  In the recently created `z-<suite_name>.pp`:
-
-  ```puppet
-  include roles_profiles::roles::your_favorite_role
-  ```
-
+1. Edit `.kitchen.docker.yml`. Set the appropriate details.
 1. (optional) Write spec tests.
-
-    Convergence is somewhat tolerant of failures. Write tests to ensure that the
+  - Convergence is somewhat tolerant of failures. Write tests to ensure that the
     system is in the desired state. Tests help ensure that refactoring doesn't
     break things also.
+  - See `tests/integration`.
+1. Add the new suite to CircleCI.
+  - See `.circleci/config.yml`.
 
-  See `tests/integration`.
+### verifying production hosts
 
-1. Add the new suite to Travis.
+#### InSpec tests
 
-    See `.travis.yml`.
+The InSpec tests (see above) can be run on production hosts also.
 
-#### test-kitchen TODOS
+```bash
+inspec exec test/integration/linux/inspec/ -t ssh://t-linux64-ms-001.test.releng.mdc1.mozilla.com -i ~/.ssh/id_rsa --user=aerickson --sudo
+```
 
-- refactor kitchen testing
-  - rename linux kitchen env to base
-  - create a talos kitchen env for non-base
+### vagrant
+
+[Vagrant](https://www.vagrantup.com/) is useful for testing the full masterless bootstrapping process (test-kitchen handles this normally).
+
+Vagrant mounts this directory at /vagrant.
+
+#### bitbar_devicepool role
+
+```
+gem install bundler
+bundle install  ## .bundle/config sets the gemfile to .gemfile
+vagrant up bionic-bare
+vagrant ssh bionic-bare
+sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
+```
+
+
+## documentation
+
+### module and class documentation
+
+- style guide
+  - https://www.puppet.com/docs/puppet/7/style_guide.html#style_guide_modules-documenting-code
+- generate docs
+  - https://www.puppet.com/docs/puppet/7/puppet_strings.html

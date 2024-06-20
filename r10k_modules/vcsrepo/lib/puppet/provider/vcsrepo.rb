@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'tmpdir'
 require 'digest/md5'
 require 'fileutils'
@@ -16,7 +18,18 @@ class Puppet::Provider::Vcsrepo < Puppet::Provider
   def set_ownership
     owner = @resource.value(:owner) || nil
     group = @resource.value(:group) || nil
-    FileUtils.chown_R(owner, group, @resource.value(:path))
+    excludes = @resource.value(:excludes) || nil
+    if excludes.nil? || excludes.empty?
+      FileUtils.chown_R(owner, group, @resource.value(:path))
+    else
+      FileUtils.chown(owner, group, files)
+    end
+  end
+
+  def files
+    excludes = @resource.value(:excludes)
+    path = @resource.value(:path)
+    Dir["#{path}/**/*"].reject { |f| excludes.any? { |p| f.start_with?("#{path}/#{p}") } }
   end
 
   def path_exists?
@@ -31,7 +44,7 @@ class Puppet::Provider::Vcsrepo < Puppet::Provider
     d.read.nil?
   end
 
-  # Note: We don't rely on Dir.chdir's behavior of automatically returning the
+  # NOTE: We don't rely on Dir.chdir's behavior of automatically returning the
   # value of the last statement -- for easier stubbing.
   def at_path #:nodoc:
     value = nil

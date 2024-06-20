@@ -28,8 +28,11 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_packages::psutil_py3
             require linux_packages::python2_zstandard
             require linux_packages::python3_zstandard
-            include linux_packages::tooltool
+            require linux_packages::tooltool
             require linux_packages::zstd
+
+            # moved from base to avoid ordering issues with py2/3
+            require linux_mercurial
 
             require linux_talos
 
@@ -63,14 +66,14 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
                 quarantine_client_id      => $quarantine_client_id,
                 quarantine_access_token   => $quarantine_access_token,
                 bugzilla_api_key          => $bugzilla_api_key,
-                generic_worker_version    => 'v37.3.0',
-                generic_worker_sha256     => 'be028023d89d217aecb2b9b5963c7dcf24b6236732a58f10112153013111dea3',
-                taskcluster_proxy_version => 'v37.3.0',
-                taskcluster_proxy_sha256  => 'd66356c33da0c4e48fd2a99191d2c7bc11a020bb9571c55b1e150b052fc536a4',
-                livelog_version           => 'v37.3.0',
-                livelog_sha256            => '7a4c8ef616ab3aee1e5494566d895dd44c09f7bb28d730d0de30717873a72b01',
-                start_worker_version      => 'v37.3.0',
-                start_worker_sha256       => '2a0c5d2809fa49b5d9de453834b2e56d9b8318aeb9925a8af1ccc2ce3d18eceb',
+                generic_worker_version    => 'v44.23.2',
+                generic_worker_sha256     => '4b65b06281848749500063a53190d0222372fe7252ef77f935081bfbfa915ebe',
+                taskcluster_proxy_version => 'v44.23.2',
+                taskcluster_proxy_sha256  => 'af0559355a607ecc933e0109b12c187c2d7679a4b9b0044ad1c43b122000e3c5',
+                livelog_version           => 'v44.23.2',
+                livelog_sha256            => '0adbad0397aa608f4b826bff0dc504d2f9f4efba6474ec4c0d8f8ee22cf2ee90',
+                start_worker_version      => 'v44.23.2',
+                start_worker_sha256       => '05b00bbca08477d79613025ee877b8f0a925ab3c6063ef62316c9017ccce5881',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '42ea9e9df5dce6370750cf5141a400c07f781d3e28953a5f6d5066d4967a144c',
                 user                      => 'cltbld',

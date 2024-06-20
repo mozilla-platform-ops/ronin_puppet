@@ -54,3 +54,10 @@ vendor/
 
 # Crash log files
 crash.log
+
+# generated docs
+doc/
+.yardoc/
+
+# node stuff
+node_modules

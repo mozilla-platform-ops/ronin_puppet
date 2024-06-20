@@ -33,6 +33,7 @@ class roles_profiles::profiles::mozilla_build {
             }
 
             if $facts['custom_win_mozbld_vesion'] == '3.2' {
+            #if $facts['custom_win_release_id'] == '2004'{
                 $upgrade_python = true
             } else {
                 $upgrade_python = false

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 require 'puppet/parameter/boolean'
 
@@ -56,7 +58,17 @@ Puppet::Type.newtype(:vcsrepo) do
   feature :include_paths,
           'The provider supports checking out only specific paths'
 
+  feature :keep_local_changes,
+          'The provider supports keeping local changes on files tracked by the repository when changing revision'
+
+  feature :safe_directory,
+          'The provider supports setting a safe directory. This will only be used for newer versions of git.'
+
+  feature :hooks_allowed,
+          'The provider supports managing hooks for the repository operations.'
+
   ensurable do
+    desc 'Ensure the version control repository.'
     attr_accessor :latest
 
     def insync?(is)
@@ -67,13 +79,13 @@ Puppet::Type.newtype(:vcsrepo) do
         return true unless [:absent, :purged, :held].include?(is)
       when :latest
         return true if is == :latest
-        return false
+        false
       when :bare
-        return is == :bare
+        is == :bare
       when :mirror
-        return is == :mirror
+        is == :mirror
       when :absent
-        return is == :absent
+        is == :absent
       end
     end
 
@@ -106,7 +118,9 @@ Puppet::Type.newtype(:vcsrepo) do
     end
 
     newvalue :absent do
-      provider.destroy
+      if provider.exists?
+        provider.destroy
+      end
     end
 
     newvalue :latest, required_features: [:reference_tracking] do
@@ -289,7 +303,35 @@ Puppet::Type.newtype(:vcsrepo) do
     defaultto :false
   end
 
+  newparam :keep_local_changes do
+    desc 'Keep local changes on files tracked by the repository when changing revision'
+    newvalues(true, false)
+    defaultto :false
+  end
+
+  newparam :safe_directory, required_features: [:safe_directory] do
+    desc 'Marks the current directory specified by the path parameter as a safe directory.'
+    newvalues(true, false)
+    defaultto :false
+  end
+
+  newproperty :skip_hooks, required_features: [:hooks_allowed] do
+    desc 'Explicitly skip any global hooks for this repository.'
+    newvalues(:true, :false)
+  end
+
   autorequire(:package) do
     ['git', 'git-core', 'mercurial', 'subversion']
+  end
+
+  private
+
+  def set_sensitive_parameters(sensitive_parameters)
+    if sensitive_parameters.include?(:basic_auth_password)
+      sensitive_parameters.delete(:basic_auth_password)
+      parameter(:basic_auth_password).sensitive = true
+    end
+
+    super(sensitive_parameters)
   end
 end

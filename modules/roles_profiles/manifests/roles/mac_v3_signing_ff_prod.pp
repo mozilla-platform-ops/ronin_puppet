@@ -24,6 +24,6 @@ class roles_profiles::roles::mac_v3_signing_ff_prod {
     include ::roles_profiles::profiles::duo
     include ::roles_profiles::profiles::vault_agent
     include ::fw::roles::mac_signing
-
     include ::roles_profiles::profiles::mac_v3_signing
+    include ::roles_profiles::profiles::macos_people_remover
 }
