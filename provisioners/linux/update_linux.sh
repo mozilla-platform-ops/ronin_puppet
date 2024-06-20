@@ -40,6 +40,13 @@ fi
 
 set -x
 
+# sync clock
+ssh "$THE_HOST" sudo /etc/init.d/ntp stop
+# runs once and force allows huge skews
+ssh "$THE_HOST" sudo ntpd -q -g
+ssh "$THE_HOST" sudo /etc/init.d/ntp start
+
+# deliver secrets
 scp "$SECRETS_FILE" "$THE_HOST":/tmp/vault.yaml
 ssh "$THE_HOST" sudo mv /tmp/vault.yaml /root/vault.yaml
 ssh "$THE_HOST" sudo chmod 640 /root/vault.yaml
