@@ -84,7 +84,7 @@ Write-Host $workerpool
 If ($git_hash -ne $hash) {
     Write-Log -message  ('{0} :: Git hash mismatch. Begging PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Write-Output "Git hash mismatch. Begging PXE boot process!"
-} elseif { ($worker_pool_id -ne $workerpool)) {
+} elseif { ($worker_pool_id -ne $workerpool) {
     Write-Log -message  ('{0} :: Wrong worker pool. Begging PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Write-Output "Wrong worker pool. Begging PXE boot process!"
 } else {
