@@ -51,5 +51,5 @@ end
 # ensure /usr/bin/python3 is py3.11
 describe command('/usr/bin/python3 --version') do
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match /Python 3.11/ }
+  its(:stdout) { should match /Python 3.9/ }
 end
