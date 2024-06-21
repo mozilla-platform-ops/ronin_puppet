@@ -49,24 +49,24 @@ function Set-PXE {
     }
     process {
         $temp_dir = "$env:systemdrive\temp\"
-        New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue  | Out-Null
+        New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue | Out-Null
 
         bcdedit /enum firmware > $temp_dir\firmware.txt
 
         $fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
         if (!$fwbootmgr) {
-            Write-Log -message  ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Write-Log -message ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Exit 999
         }
         Try {
             $FullLine = ((Get-Content $temp_dir\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop).context.precontext)[0]
             $GUID = '{' + $FullLine.split('{')[1]
             bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
-            Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Write-Log -message ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Restart-Computer -Force
         }
         Catch {
-            Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Write-Log -message ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Exit 888
         }
     }
@@ -82,11 +82,13 @@ Write-Host $hash
 Write-Host $workerpool
 
 If ($git_hash -ne $hash) {
-    Write-Log -message  ('{0} :: Git hash mismatch. Begging PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Write-Output "Git hash mismatch. Begging PXE boot process!"
-} elseif { ($worker_pool_id -ne $workerpool) {
-    Write-Log -message  ('{0} :: Wrong worker pool. Begging PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Write-Output "Wrong worker pool. Begging PXE boot process!"
+    Write-Log -message ('{0} :: Git hash mismatch. Beginning PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Output "Git hash mismatch. Beginning PXE boot process!"
+    Set-PXE
+} elseif ($worker_pool_id -ne $workerpool) {
+    Write-Log -message ('{0} :: Wrong worker pool. Beginning PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Output "Wrong worker pool. Beginning PXE boot process!"
+    Set-PXE
 } else {
     Write-Output "No Issues"
 }
