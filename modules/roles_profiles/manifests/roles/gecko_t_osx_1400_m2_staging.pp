@@ -25,4 +25,5 @@ class roles_profiles::roles::gecko_t_osx_1400_m2_staging {
   include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::safaridriver
+  include roles_profiles::profiles::macos_xcodes_installer
 }
