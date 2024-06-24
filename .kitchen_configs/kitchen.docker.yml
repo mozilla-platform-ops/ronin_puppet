@@ -6,7 +6,8 @@ driver:
   use_sudo: false
   privileged: true
   # if on mac m1/m2 with arm64, need this because our s3 install only has amd64
-  # fails on circleci if left enabled
+  # - fails on circleci if left enabled
+  # - now enabled if needed automatically in `bin/kitchen_docker`
   # docker_platform: linux/amd64
   run_command: /bin/systemd
   cap_add:

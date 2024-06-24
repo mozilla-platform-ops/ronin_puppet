@@ -11,8 +11,8 @@
 *.swo
 
 # secrets
-vault.yaml
-vault.yml
+vault.yaml*
+vault.yml*
 
 # editors
 .vscode/
