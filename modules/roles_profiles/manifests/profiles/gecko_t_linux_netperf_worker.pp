@@ -94,6 +94,7 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
       sudo::custom { 'allow cltbld to run tc':
         user    => 'cltbld',
         command => '/sbin/tc',
+        runas   => 'ALL',
       }
     }
     default: {
