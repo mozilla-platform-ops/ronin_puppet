@@ -84,11 +84,16 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
       require linux_packages::caddy
 
       # cltbld needs to be able to run tc
-      sudo::conf { 'cltbld-tc':
-        ensure              => present,
-        content             => 'cltbld ALL=(ALL) NOPASSWD:/sbin/tc',
-        purge               => false,
-        config_file_replace => false,
+      # include sazsudo
+      # sudo::conf { 'cltbld-tc':
+      #   ensure              => present,
+      #   content             => 'cltbld ALL=(ALL) NOPASSWD:/sbin/tc',
+      #   purge               => false,
+      #   config_file_replace => false,
+      # }
+      sudo::custom { 'allow cltbld to run tc':
+        user    => 'cltbld',
+        command => '/sbin/tc',
       }
     }
     default: {

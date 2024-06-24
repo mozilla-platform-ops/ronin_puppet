@@ -23,7 +23,6 @@ mod 'puppetlabs-vcsrepo', '5.3.0'
 mod 'puppet-windows_env', '4.0.1'
 mod 'puppetlabs-yaml', '0.2.0'
 mod 'saz-rsyslog', '5.0.0'
-mod 'saz-sudo', '8.0.0'
 mod 'thekevjames-homebrew', '1.8.3'
 mod 'webalex-windows_firewall', '1.2.3'
 
