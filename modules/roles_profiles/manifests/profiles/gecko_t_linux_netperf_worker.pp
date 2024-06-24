@@ -82,6 +82,14 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
 
       # install caddy
       require linux_packages::caddy
+
+      # cltbld needs to be able to run tc
+      sudo::conf { 'cltbld-tc':
+        ensure              => present,
+        content             => 'cltbld ALL=(ALL) NOPASSWD:/sbin/tc',
+        purge               => false,
+        config_file_replace => false,
+      }
     }
     default: {
       fail("${facts['os']['name']} not supported")
