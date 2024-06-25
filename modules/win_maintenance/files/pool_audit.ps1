@@ -79,9 +79,6 @@ function Set-PXE {
 $hash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
 $workerpool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
-Write-Host $hash
-Write-Host $workerpool
-
 If ($git_hash -ne $hash) {
     Write-Log -message ('{0} :: Git hash mismatch. Beginning PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Write-Output "Git hash mismatch. Beginning PXE boot process!"
