@@ -4,6 +4,8 @@
 
 class linux_mercurial {
   include shared
+
+  # install mercurial (not via package)
   class { 'linux_packages::mercurial' :
     pkg_ensure       => 'absent',
   }
@@ -14,24 +16,24 @@ class linux_mercurial {
 
   # setup ext dir
   file {
-      default: * => $::shared::file_defaults;
+    default: * => $shared::file_defaults;
 
-      $hgext_dir:
-          ensure => directory,
-          mode   => '0755';
+    $hgext_dir:
+      ensure => directory,
+      mode   => '0755';
 
-      $hgrc_parentdirs:
-          ensure => directory,
-          mode   => '0755';
+    $hgrc_parentdirs:
+      ensure => directory,
+      mode   => '0755';
 
-      $hgrc:
-          ensure => file,
-          source => 'puppet:///modules/linux_mercurial/hgrc',
-          mode   => '0644';
+    $hgrc:
+      ensure => file,
+      source => 'puppet:///modules/linux_mercurial/hgrc',
+      mode   => '0644';
   }
 
   # robust checkout
   file { "${hgext_dir}/robustcheckout.py":
-      source => 'puppet:///modules/linux_mercurial/robustcheckout.py',
+    source => 'puppet:///modules/linux_mercurial/robustcheckout.py',
   }
 }

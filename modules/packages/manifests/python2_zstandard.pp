@@ -3,15 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::python2_zstandard (
-    String $version = '0.11.1',
+  String $version = '0.11.1',
 ) {
-    # not installing py2 any longer
-    #
-    # require packages::python2
-    # package { 'python2-zstandard':
-    #     ensure   => $version,
-    #     name     => 'zstandard',
-    #     provider => pip,
-    #     require  => Class['packages::python2'],
-    # }
+  require packages::python2
+
+  package { 'python2-zstandard':
+    ensure   => $version,
+    name     => 'zstandard',
+    provider => pip,
+    require  => Class['packages::python2'],
+  }
 }
