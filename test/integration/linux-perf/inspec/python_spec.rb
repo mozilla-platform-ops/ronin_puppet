@@ -34,10 +34,12 @@ end
 
 # ensure pip check returns 0 for all pythons
 
+# no more py2
+#
 # system provided
-describe command('python -m pip check') do
-  its(:exit_status) { should eq 0 }
-end
+# describe command('python -m pip check') do
+#   its(:exit_status) { should eq 0 }
+# end
 
 # default python3 (was system provided 3.6 initially)
 describe command('python3 -m pip check') do

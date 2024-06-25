@@ -4,11 +4,13 @@
 
 class linux_mercurial {
   include shared
-  include linux_packages::mercurial
+  class { 'linux_packages::mercurial' :
+    pkg_ensure       => 'absent',
+  }
 
   $hgext_dir       = '/usr/local/lib/hgext'
   $hgrc            = '/etc/mercurial/hgrc.d/mozilla.rc'
-  $hgrc_parentdirs = ['/etc/mercurial']
+  $hgrc_parentdirs = ['/etc/mercurial', '/etc/mercurial/hgrc.d/']
 
   # setup ext dir
   file {
