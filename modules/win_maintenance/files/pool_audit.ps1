@@ -63,6 +63,7 @@ function Set-PXE {
             $GUID = '{' + $FullLine.split('{')[1]
             bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
             Write-Log -message ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Start-Process -FilePath "shutdown.exe" -ArgumentList "/r /t 5 /f"
             Restart-Computer -Force -Wait -For PowerShell -Timeout 5
             exit 66
         }
