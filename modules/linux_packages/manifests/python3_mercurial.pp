@@ -5,10 +5,10 @@
 class linux_packages::python3_mercurial {
     require linux_packages::py3
 
-    # mercurial below 5 is not compatible with py3
-    # package { 'python3-mercurial':
-    #     ensure   => '4.7.1',
-    #     name     => 'mercurial',
-    #     provider => pip3,
-    # }
+    # '6.7.4' is latest, but robustcheckout needs 6.4 or less
+    package { 'python3-mercurial':
+        ensure   => '6.4.5',
+        name     => 'mercurial',
+        provider => pip3,
+    }
 }

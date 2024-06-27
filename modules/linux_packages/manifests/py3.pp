@@ -125,15 +125,17 @@ class linux_packages::py3 {
           #   require  => Packages::Linux_package_from_s3_multi['install py_3118'],
           # }
 
+          # no more py2
+          #
           # /usr/bin/pip ends up pointing at py3 after py3.9 install, fix that.
           #   /usr/bin/pip -> /usr/bin/pip2 (from system, vs pip3)
-          alternative_entry { '/usr/bin/pip2':
-            ensure   => present,
-            altlink  => '/usr/bin/pip',
-            altname  => 'pip',
-            priority => 20,
-            require  => Exec['install py39'],
-          }
+          # alternative_entry { '/usr/bin/pip2':
+          #   ensure   => present,
+          #   altlink  => '/usr/bin/pip',
+          #   altname  => 'pip',
+          #   priority => 20,
+          #   require  => Exec['install py39'],
+          # }
 
           # note: pip3 (/usr/local/bin/pip3, from the 39 install?) automatically
           #   uses `python3` so this works fine (no alternative entry needed).
