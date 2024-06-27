@@ -64,7 +64,6 @@ function Set-PXE {
             bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
             Write-Log -message ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Start-Process -FilePath "shutdown.exe" -ArgumentList "/r /t 5 /f"
-            Restart-Computer -Force -Wait -For PowerShell -Timeout 5
             exit 66
         }
         Catch {
@@ -91,3 +90,5 @@ If ($git_hash -ne $hash) {
 } else {
     Write-Output "No Issues"
 }
+
+exit
