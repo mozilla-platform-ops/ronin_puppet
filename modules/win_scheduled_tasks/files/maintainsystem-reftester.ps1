@@ -326,6 +326,15 @@ If ($bootstrap_stage -eq 'complete') {
         }
     }
 
+    ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
+    choco upgrade googlechrome -y --log-file $env:systemdrive\logs\googlechrome.log
+    if ($LASTEXITCODE -ne 0) {
+        ## output to papertrail
+        Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
+        ## output chocolatey logs to papertrail
+        Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
+    }
+
     StartWorkerRunner
     start-sleep -s 30
     while ($true) {
