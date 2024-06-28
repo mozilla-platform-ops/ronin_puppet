@@ -262,13 +262,13 @@ function StartWorkerRunner {
     process {
         ## Checking for issues with the user profile.
         $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
-            Select-Object -First 1 |
-            ForEach-Object { $_.TimeCreated }
+        Select-Object -First 1 |
+        ForEach-Object { $_.TimeCreated }
         $eventIDs = @(1511, 1515)
 
         $events = Get-WinEvent -LogName "Application" |
-            Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
-            Sort-Object TimeCreated -Descending | Select-Object -First 1
+        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
+        Sort-Object TimeCreated -Descending | Select-Object -First 1
 
         if ($events) {
             Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -291,6 +291,35 @@ function Get-LoggedInUser {
     @(((query user) -replace '\s{20,39}', ',,') -replace '\s{2,}', ',' | ConvertFrom-Csv)
 }
 
+function Get-LatestGoogleChrome {
+    [CmdletBinding()]
+    param (
+        
+    )
+    
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths"
+    $chromePath = (Get-ItemProperty "$registryPath\chrome.exe").'(default)'
+    $releases = "https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions"
+    [version] $InstalledchromeVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($chromePath).ProductVersion
+    [version] $LatestChromeVersion = ((Invoke-RestMethod -UseBasicParsing -Method Get -Uri $releases).Versions | Select-Object -First 1).version
+
+    ## Only check major.minor
+    $InstalledChromeVersionMajorMinor = $InstalledchromeVersion.ToString(2)
+    ## Only check major.minor
+    $LatestChromeVersionMajorMinor = $LatestChromeVersion.ToString(2)
+
+    ## if what's availble is not locally installed, run choco
+    if ($InstalledChromeVersionMajorMinor -ne $LatestChromeVersionMajorMinor) {
+        choco upgrade googlechrome -y --log-file $env:systemdrive\logs\googlechrome.log
+        if ($LASTEXITCODE -ne 0) {
+            ## output to papertrail
+            Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
+            ## output chocolatey logs to papertrail
+            Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
+        }
+    }
+}
+
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
     Run-MaintainSystem
@@ -303,7 +332,7 @@ If ($bootstrap_stage -eq 'complete') {
     }
     Write-Log -message  ('{0} :: Disabling Start Menu' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     ## Disable start menu. If shown can interfere with tests. #>
-<#     while ($true) {
+    <#     while ($true) {
         $processname = "StartMenuExperienceHost"
         $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
         if ($null -ne $process) {
@@ -327,26 +356,21 @@ If ($bootstrap_stage -eq 'complete') {
     }
 
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
-    choco upgrade googlechrome -y --log-file $env:systemdrive\logs\googlechrome.log
-    if ($LASTEXITCODE -ne 0) {
-        ## output to papertrail
-        Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
-        ## output chocolatey logs to papertrail
-        Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
-    }
+    ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
+    Get-LatestGoogleChrome
 
     StartWorkerRunner
     start-sleep -s 30
     while ($true) {
 
         $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
-            Select-Object -First 1 |
-            ForEach-Object { $_.TimeCreated }
+        Select-Object -First 1 |
+        ForEach-Object { $_.TimeCreated }
         $eventIDs = @(1511, 1515)
 
         $events = Get-WinEvent -LogName "Application" |
-            Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
-            Sort-Object TimeCreated -Descending | Select-Object -First 1
+        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
+        Sort-Object TimeCreated -Descending | Select-Object -First 1
 
         if ($events) {
             Write-Log -message  ('{0} :: Possible User Profile Corruption After Worker Runner Start Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
