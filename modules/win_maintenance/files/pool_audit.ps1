@@ -92,6 +92,7 @@ If ($git_hash -ne $hash) {
     Set-PXE
 } else {
     Write-Output "No Issues"
+    return 0
 }
 
 exit
