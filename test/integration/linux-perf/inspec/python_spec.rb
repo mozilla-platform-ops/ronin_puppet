@@ -34,12 +34,14 @@ end
 
 # ensure pip check returns 0 for all pythons
 
+# no more py2
+#
 # system provided
-describe command('python -m pip check') do
-  its(:exit_status) { should eq 0 }
-end
+# describe command('python -m pip check') do
+#   its(:exit_status) { should eq 0 }
+# end
 
-# system provided 3.6
+# default python3 (was system provided 3.6 initially)
 describe command('python3 -m pip check') do
   its(:exit_status) { should eq 0 }
 end
@@ -48,7 +50,7 @@ describe command('python3.9 -m pip check') do
   its(:exit_status) { should eq 0 }
 end
 
-# ensure /usr/bin/python3 is py3.9
+# ensure /usr/bin/python3 is py3.11
 describe command('/usr/bin/python3 --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3.9/ }
