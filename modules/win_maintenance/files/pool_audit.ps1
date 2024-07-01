@@ -56,6 +56,7 @@ function Set-PXE {
         $fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
         if (!$fwbootmgr) {
             Write-Log -message ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            retrun 999
             Exit 999
         }
         Try {
@@ -64,10 +65,12 @@ function Set-PXE {
             bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
             Write-Log -message ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Start-Process -FilePath "shutdown.exe" -ArgumentList "/r /t 5 /f"
+            return 66
             exit 66
         }
         Catch {
             Write-Log -message ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            retrun 888
             Exit 888
         }
     }
