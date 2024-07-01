@@ -4,6 +4,7 @@
 
 class win_packages::chrome {
   include chocolatey
+  $google_chrome_version = lookup('win-worker.googlechrome.version')
 
   $chrome_key       = "HKLM\\SOFTWARE\\Policies\\Google\\Chrome"
   $chrome_reg_value = [
@@ -12,7 +13,7 @@ class win_packages::chrome {
     "${chrome_key}\\ChromeCleanupReportingEnabled",
   ]
   package { 'googlechrome':
-    ensure   => latest,
+    ensure   => $google_chrome_version,
     provider => 'chocolatey',
   }
 
