@@ -27,7 +27,7 @@ groups:
 
   - name: gecko-3-b-osx-arm64
     targets:
-      - ec2-52-35-152-252.us-west-2.compute.amazonaws.com
+      - ec2-34-222-121-144.us-west-2.compute.amazonaws.com
       - ec2-34-217-63-158.us-west-2.compute.amazonaws.com
     facts:
       puppet_role: gecko_3_b_osx_arm64
