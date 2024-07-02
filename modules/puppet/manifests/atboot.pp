@@ -39,10 +39,15 @@ class puppet::atboot (
           # notifies dependent services
           file {
             '/usr/local/bin/change_worker_id_and_type.py':
-              owner   => 'root',
-              group   => 'root',
-              mode    => '0755',
-              content => file('change_worker_id_and_type.py');
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0755',
+              source => 'puppet:///modules/puppet/change_worker_id_and_type.py';
+            '/etc/puppet/ronin_puppet':
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0644',
+              source => 'puppet:///modules/puppet/ronin_puppet.example';
             '/lib/systemd/system/run-puppet.service':
               owner   => 'root',
               group   => 'root',

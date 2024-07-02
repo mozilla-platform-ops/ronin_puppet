@@ -197,14 +197,13 @@ done
 # touch "/var/tmp/semaphore/run-buildbot"
 
 # override worker type with value defined in /etc/puppet/ronin_settings
-if [ -n "$WORKER_POOL_ID_OVERRIDE" ] && [ -n "$WORKER_TYPE_OVERRIDE" ]; then
-    # mention that we're overriding the worker type and id
-    echo "Overriding worker type and id with values from /etc/puppet/ronin_settings"
-    echo "  WORKER_POOL_ID_OVERRIDE: $WORKER_POOL_ID_OVERRIDE"
+if [ -n "$WORKER_TYPE_OVERRIDE" ]; then
+    # mention that we're overriding the worker type
+    echo "Overriding worker type with value from /etc/puppet/ronin_settings"
     echo "  WORKER_TYPE_OVERRIDE: $WORKER_TYPE_OVERRIDE"
 
     # rewrite the config
-    /usr/local/bin/change_worker_id_and_type.py -p "${WORKER_POOL_ID_OVERRIDE}" -t "${WORKER_TYPE_OVERRIDE}"
+    /usr/local/bin/change_worker_id_and_type.py -t "${WORKER_TYPE_OVERRIDE}"
 fi
 
 # touch the semaphore to let run-start-worker know it can start start-worker
