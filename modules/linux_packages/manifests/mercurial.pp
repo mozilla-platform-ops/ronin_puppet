@@ -2,21 +2,23 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class linux_packages::mercurial {
-  case $::operatingsystem {
+# handles installation of mercurial on linux (via pkg and pip)
+class linux_packages::mercurial ( Enum['present', 'absent'] $pkg_ensure = 'present') {
+  case $facts['os']['name'] {
     'Ubuntu': {
       include linux_packages::python2_mercurial
       include linux_packages::python3_mercurial
 
-      # the binary just calls the installed python module
+      # the binary just calls the installed python module,
+      # but it points at py2 on 1804
 
       package {
-          'mercurial':
-              ensure => present;
+        'mercurial':
+          ensure => $pkg_ensure;
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }

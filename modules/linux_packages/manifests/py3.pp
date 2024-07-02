@@ -64,6 +64,38 @@ class linux_packages::py3 {
               && /usr/bin/python3 -c "import distutils"',
           }
 
+          # py 3.11, from https://github.com/rstudio/python-builds
+          #   - pysnakes ppa: no longer publishing bionic debs
+
+          $temp_dir = '/tmp/py3118'
+          $pkgs_and_chksums_hash = {
+          'python-3.11.8_1_amd64.deb' => 'f83e52a7e57ba7c7d3f783c9168b125e04e510c9c43212baa98eaa614470d611' }
+          packages::linux_package_from_s3_multi { 'install py_3118' :
+            packages_and_checksums => $pkgs_and_chksums_hash,
+            temp_dir               => $temp_dir,
+            os_version_specific    => false,
+          }
+
+          # need a symlink for the lsb_release module
+          # ln -s /usr/lib/python3/dist-packages/lsb_release.py /opt/python/3.11.8/lib/python3.11/site-packages/lsb_release.py
+          #
+          # from https://stackoverflow.com/questions/46752279/lsb-release-not-working-after-install-python-3-6-3-from-source
+          file { '/opt/python/3.11.8/lib/python3.11/site-packages/lsb_release.py':
+            ensure  => link,
+            target  => '/usr/lib/python3/dist-packages/lsb_release.py',
+            require => Packages::Linux_package_from_s3_multi['install py_3118'],
+          }
+
+          # make python3.11 available on path
+          alternative_entry { '/opt/python/3.11.8/bin/python3.11':
+            ensure   => present,
+            altlink  => '/usr/bin/python3.11',
+            altname  => 'python3.11',
+            priority => 30,
+            # require  => Class['packages::linux_package_from_s3_multi'],
+            require  => Packages::Linux_package_from_s3_multi['install py_3118'],
+          }
+
           # configure alternatives
           #
           # system default py3.6 (what's installed by default)
@@ -82,15 +114,31 @@ class linux_packages::py3 {
             require  => Exec['install py39'],
           }
 
+          ### this breaks 18.04 (apt update starts to fail). tests will have to call python3.11.
+          # set py3.11 as a higher level override
+          # alternative_entry { '/opt/python/3.11.8/bin/python3':
+          #   ensure   => present,
+          #   altlink  => '/usr/bin/python3',
+          #   altname  => 'python3',
+          #   priority => 30,
+          #   # require  => Class['packages::linux_package_from_s3_multi'],
+          #   require  => Packages::Linux_package_from_s3_multi['install py_3118'],
+          # }
+
+          # no more py2
+          #
           # /usr/bin/pip ends up pointing at py3 after py3.9 install, fix that.
           #   /usr/bin/pip -> /usr/bin/pip2 (from system, vs pip3)
-          alternative_entry { '/usr/bin/pip2':
-            ensure   => present,
-            altlink  => '/usr/bin/pip',
-            altname  => 'pip',
-            priority => 20,
-            require  => Exec['install py39'],
-          }
+          # alternative_entry { '/usr/bin/pip2':
+          #   ensure   => present,
+          #   altlink  => '/usr/bin/pip',
+          #   altname  => 'pip',
+          #   priority => 20,
+          #   require  => Exec['install py39'],
+          # }
+
+          # note: pip3 (/usr/local/bin/pip3, from the 39 install?) automatically
+          #   uses `python3` so this works fine (no alternative entry needed).
 
           # update some pips that prevent other pip installations (psutil) from failing
 
