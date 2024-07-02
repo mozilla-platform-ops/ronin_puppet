@@ -54,9 +54,7 @@ groups:
       - macmini-r8-48.test.releng.mdc1.mozilla.com
       - macmini-r8-49.test.releng.mdc1.mozilla.com
       - macmini-r8-51.test.releng.mdc1.mozilla.com
-      - macmini-r8-52.test.releng.mdc1.mozilla.com
       - macmini-r8-53.test.releng.mdc1.mozilla.com
-      - macmini-r8-54.test.releng.mdc1.mozilla.com
       - macmini-r8-55.test.releng.mdc1.mozilla.com
       - macmini-r8-56.test.releng.mdc1.mozilla.com
       - macmini-r8-57.test.releng.mdc1.mozilla.com
