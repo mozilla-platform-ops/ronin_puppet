@@ -25,3 +25,9 @@ end
 describe package('puppet-release') do
   it { should_not be_installed }
 end
+
+## /etc/puppet/ronin_settings
+
+describe file('/etc/puppet/ronin_settings.example') do
+  it { should exist }
+end

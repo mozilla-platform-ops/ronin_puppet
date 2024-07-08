@@ -43,7 +43,7 @@ class puppet::atboot (
               group  => 'root',
               mode   => '0755',
               source => 'puppet:///modules/puppet/change_worker_id_and_type.py';
-            '/etc/puppet/ronin_puppet':
+            '/etc/puppet/ronin_puppet.example':
               owner  => 'root',
               group  => 'root',
               mode   => '0644',
