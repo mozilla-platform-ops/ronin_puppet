@@ -28,6 +28,6 @@ end
 
 ## /etc/puppet/ronin_settings
 
-describe file('/etc/puppet/ronin_settings.example') do
+describe file('/etc/puppet/ronin_puppet.example') do
   it { should exist }
 end
