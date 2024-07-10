@@ -66,7 +66,7 @@ class macos_safaridriver (
           }
         }
         # 20 == OS X 11
-        '20': {
+        '20', '21': {
           $perm_script = '/usr/local/bin/add_tcc_perms_os11_13.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation2.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
@@ -93,7 +93,7 @@ class macos_safaridriver (
           exec { 'execute enable remote automation script':
             # TODO: don't hardcode user id of cltbld
             #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 36 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
             cwd     => "/Users/${user_running_safari}",
             # semaphore and semaphore dir are created in script
@@ -119,12 +119,12 @@ class macos_safaridriver (
           exec { "${user_running_safari}_group_${group}":
             command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
             unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
-            require => User[$user_running_safari],
+            #require => User[$user_running_safari],
           }
         }
         # # 22 == OS X 13
         #    - 21 is only for CircleCI Testing, might not work, but test applying at least
-        '21', '22': {
+        '22': {
           $perm_script = '/usr/local/bin/add_tcc_perms_os11_13.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation3.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
@@ -151,7 +151,7 @@ class macos_safaridriver (
           exec { 'execute enable remote automation script':
             # TODO: don't hardcode user id of cltbld
             #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 35 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
             cwd     => "/Users/${user_running_safari}",
             # semaphore and semaphore dir are created in script
@@ -177,7 +177,7 @@ class macos_safaridriver (
           exec { "${user_running_safari}_group_${group}":
             command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
             unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
-            require => User[$user_running_safari],
+            #require => User[$user_running_safari],
           }
         }
         # # 23 == OS X 14

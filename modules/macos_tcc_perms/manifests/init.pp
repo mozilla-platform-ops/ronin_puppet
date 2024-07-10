@@ -22,7 +22,7 @@ class macos_tcc_perms (
       }
       # 20 is the only verified config
       #   - 21 is for CircleCI testing, not verified yet
-      '20', '21': {
+      '20', '21', '22': {
         $tcc_script = '/usr/local/bin/tcc_perms2.sh'
 
         file { $tcc_script:

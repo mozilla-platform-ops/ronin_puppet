@@ -24,12 +24,9 @@ class roles_profiles::roles::gecko_t_osx_1300_r8_latest {
     include ::roles_profiles::profiles::metrics
     include ::roles_profiles::profiles::worker
     # include ::roles_profiles::profiles::safariupdate
-    # Manually enabled for this pool
-    # include ::roles_profiles::profiles::safaridriver
+    include ::roles_profiles::profiles::safaridriver
     include macos_utils::disable_bluetooth_setup
     # include ::roles_profiles::profiles::pipconf
-    # Disabling for this pool as it will probably be temporary
     include ::roles_profiles::profiles::macos_people_remover
-    # This needs to re-worked if this pool is more permanent
-    #include ::roles_profiles::profiles::macos_tcc_perms
+    include ::roles_profiles::profiles::macos_tcc_perms
 }
