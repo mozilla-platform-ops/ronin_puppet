@@ -668,6 +668,8 @@ function Set-RemoteConnectivity {
 
 }
 
+pause
+
 ## If debug will prevent git hash locking, some reboots and PXE boot fall back
 #$debug = $true
 
