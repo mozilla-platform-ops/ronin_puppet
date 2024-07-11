@@ -14,7 +14,7 @@ FACTER_BIN='/opt/puppetlabs/bin/facter'
 FQDN=$(${FACTER_BIN} networking.fqdn)
 VAULT_ADDR=http://127.0.0.1:8200
 # If token doesn't exist, continue
-VAULT_TOKEN="$(cat /etc/vault_token 2> /dev/null)"
+VAULT_TOKEN=/etc/vault_token
 
 export LANG=en_US.UTF-8
 

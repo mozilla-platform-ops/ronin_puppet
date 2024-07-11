@@ -252,6 +252,8 @@ Puppet::Functions.create_function(:hiera_vault) do
             paths << [:v2, File.join(mount, key).chomp('/')] if key.start_with?(path)
           end
 
+          paths << [:v2, File.join(mount, path).chomp('/') + key]
+
           paths << [:v1, File.join(mount, path, key)] if options.fetch("v1_lookup", true)
 
           paths.each do |version_path|
