@@ -165,7 +165,7 @@ function Invoke-AuditScript {
 		$script:PXEcounter++
 	}
 
-    $auditCommand = "$AuditScript -git_hash $GitHash -worker_pool_id $WorkerPool"
+    $auditCommand = "$AuditScript -git_hash $GitHash -worker_pool_id $WorkerPool -image_name $image_name"
 
     try {
         $result = Run-SSHScript -Command $auditCommand -NodeName $NodeName
@@ -258,6 +258,7 @@ if ($single) {
 			if ($worker -match $worker_node_name) {
 				$WorkerPool = $worker_pool.name
 				$hash = $worker_pool.hash
+				$image_name = $worker_pool.image
 				break
 			} else {
 				Write-Host "Node name not found!!"
@@ -266,7 +267,7 @@ if ($single) {
 		}
 	}
 	Write-Host Connecting to $node_name
-	Invoke-AuditScript -AuditScript $audit_script -GitHash $hash -WorkerPool $pool_name -NodeName $node_name
+	Invoke-AuditScript -AuditScript $audit_script -GitHash $hash -WorkerPool $WorkerPool -image_name $image_name -NodeName $node_name
 
 }
 
@@ -302,11 +303,12 @@ if ($pool) {
 
 	$nodes = ($YAML.pools | Where-Object { $_.name -eq $pool_name }).nodes
 	$hash  = ($YAML.pools | Where-Object { $_.name -eq $pool_name }).hash
+	$image_name  = ($YAML.pools | Where-Object { $_.name -eq $pool_name }).image
 
 	foreach ($node in $nodes) {
 		$node_name = $node + "." + $worker_pool.domain_suffix
 		Write-Host Connecting to $node_name
-		Invoke-AuditScript -AuditScript $audit_script -GitHash $hash -WorkerPool $pool_name -NodeName $node_name
+		Invoke-AuditScript -AuditScript $audit_script -GitHash $hash -WorkerPool $pool_name -image_name $image_name -NodeName $node_name
 		$script:PXEcounter++
 		if ($script:PXEcounter % 10 -eq 0) {
 			Write-Host "Waiting one minute before continuieng"
