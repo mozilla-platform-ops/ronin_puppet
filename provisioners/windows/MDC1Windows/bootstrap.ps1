@@ -690,6 +690,8 @@ Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
+pause
+
 ## Enable OpenSSH and WinRM
 ## Installation through Puppet is is intermittent.
 ## It works here, but ultimately should be done through Puppet.
