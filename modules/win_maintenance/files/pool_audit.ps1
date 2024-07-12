@@ -1,4 +1,5 @@
 param (
+    [string] $image_name,
     [string] $git_hash,
     [string] $worker_pool_id
 )
@@ -81,6 +82,7 @@ function Set-PXE {
 
 $hash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
 $workerpool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
+$image_dir = "D:\" + $image_name
 
 If ($git_hash -ne $hash) {
     Write-Log -message ('{0} :: Git hash mismatch. Beginning PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -89,6 +91,10 @@ If ($git_hash -ne $hash) {
 } elseif ($worker_pool_id -ne $workerpool) {
     Write-Log -message ('{0} :: Wrong worker pool. Beginning PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Write-Output "Wrong worker pool. Beginning PXE boot process!"
+    Set-PXE
+} elseif (!(Test-Path $image_dir)) {
+    Write-Log -message ('{0} :: Wrong Image date. Beginning PXE boot process!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-Output "Wrong image date. Beginning PXE boot process!"
     Set-PXE
 } else {
     Write-Output "No Issues"
