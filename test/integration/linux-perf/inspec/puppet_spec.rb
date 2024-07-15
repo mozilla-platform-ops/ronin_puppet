@@ -31,3 +31,9 @@ end
 describe file('/etc/puppet/ronin_puppet.example') do
   it { should exist }
 end
+
+# /usr/local/bin/change_worker_id_and_type.py
+describe file('/usr/local/bin/change_worker_id_and_type.py') do
+  it { should exist }
+  it { should be_executable }
+end
