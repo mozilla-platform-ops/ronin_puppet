@@ -1,5 +1,3 @@
-require_relative 'spec_helper'
-
 describe 'users' do
   describe user('cltbld') do
     it { should exist }
