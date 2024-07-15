@@ -208,8 +208,9 @@ suites:
       custom_facts:
         puppet_role: <%= ENV['PUPPET_ROLE'] %>
     verifier:
-      patterns:
-      - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
+      name: inspec
+      # patterns:
+      # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
@@ -226,8 +227,9 @@ suites:
         - secrets/vault.yaml:
             <<: *secrets
     verifier:
-      patterns:
-      - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
+      name: inspec
+      # patterns:
+      # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
