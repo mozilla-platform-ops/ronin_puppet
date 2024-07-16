@@ -24,8 +24,8 @@ provisioner:
   verify_host_key: false
 
 verifier:
-  name: serverspec
-  default_pattern: true
+  name: inspec
+  # default_pattern: true
   remote_exec: false
 
 busser:
@@ -212,7 +212,7 @@ suites:
       # patterns:
       # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       # default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+      # extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - localhost
     attributes:
@@ -231,7 +231,7 @@ suites:
       # patterns:
       # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       # default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+      # extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - localhost
     attributes:
