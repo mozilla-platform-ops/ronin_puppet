@@ -211,7 +211,7 @@ suites:
       name: inspec
       # patterns:
       # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
-      default_pattern: false
+      # default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - localhost
@@ -230,7 +230,7 @@ suites:
       name: inspec
       # patterns:
       # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
-      default_pattern: false
+      # default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - localhost
