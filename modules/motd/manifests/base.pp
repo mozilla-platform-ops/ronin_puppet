@@ -5,7 +5,7 @@
 class motd::base {
     include motd::settings
 
-    $group = $::operatingsystem ? {
+    $group = $facts['os']['name'] ? {
         'Darwin' => 'wheel',
         default  => 'root'
     }
@@ -17,6 +17,15 @@ class motd::base {
     # need at least one fragment, or concat will fail:
     concat::fragment { 'base-motd':
         target  => $motd::settings::motd_file,
-        content => "Unauthorized access prohibited\n"
+        content => "
+    ┌───┬──┐                         _ _ _
+    │ ╷╭╯╷ │                       (_) | |
+    │  └╮  │     _ __ ___   ___ _____| | | __ _
+    │ ╰─┼╯ │    | '_ ` _ \\ / _ \\_  / | | |/ _` |
+    └───┴──┘    | | | | | | (_) / /| | | | (_| |
+                |_| |_| |_|\\___/___|_|_|_|\\__,_|
+
+Unauthorized access prohibited
+        "
     }
 }
