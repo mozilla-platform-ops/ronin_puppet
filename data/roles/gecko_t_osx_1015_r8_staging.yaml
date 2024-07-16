@@ -15,7 +15,7 @@ worker:
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
-  generic_worker_engine: simple
+  generic_worker_engine: multiuser
   idle_timeout_secs: 21600 # 6 hours
 
 packages_classes:
@@ -38,7 +38,7 @@ packages_classes:
 
 # Package class parameters
 packages::google_chrome::version: v115.0.5790.102
-packages::mercurial::version: 5.5.2
+packages::mercurial::version: 6.4.5
 packages::nodejs::version: 12.11.1
 packages::python2::version: 2.7.18
 packages::python2_zstandard::version: 0.11.1
