@@ -19,7 +19,7 @@ class roles_profiles::roles::gecko_3_b_osx_arm64 {
     include ::roles_profiles::profiles::motd
     include ::roles_profiles::profiles::users
     include ::roles_profiles::profiles::relops_users
-    include ::roles_profiles::profiles::cltbld_user
+    # include ::roles_profiles::profiles::cltbld_user
     include ::roles_profiles::profiles::packages_installed
     include ::roles_profiles::profiles::talos
     include ::roles_profiles::profiles::worker
