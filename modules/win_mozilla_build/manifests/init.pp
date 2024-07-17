@@ -7,9 +7,7 @@ class win_mozilla_build (
     String $needed_mozbld_ver,
     String $current_hg_ver,
     String $needed_hg_ver,
-    String $current_py3_pip_ver,
     String $needed_py3_pip_ver,
-    String $current_py3_zstandard_ver,
     String $needed_py3_zstandard_ver,
     String $install_path,
     String $system_drive,
@@ -22,7 +20,9 @@ class win_mozilla_build (
     String $external_source,
     Boolean $upgrade_python,
     String $builds_dir,
-    $tooltool_tok = undef
+    $tooltool_tok = undef,
+    $current_py3_pip_ver = undef,
+    $current_py3_zstandard_ver = undef
 ) {
     require roles_profiles::profiles::microsoft_tools
 
