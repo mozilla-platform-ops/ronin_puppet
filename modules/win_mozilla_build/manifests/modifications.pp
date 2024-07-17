@@ -100,21 +100,17 @@ class win_mozilla_build::modifications {
         windows_env { "PATH=${mozbld}\\msys\\bin": }
         windows_env { "PATH=${mozbld}\\msys\\local\\bin": }
     } else {
-      # Deprecate use of windows::path during 2022 hardware refreshes
-      windows::path {
-          [
-              "${win_mozilla_build::program_files}\\Mercurial",
-              "${mozbld}\\bin",
-              "${mozbld}\\kdiff",
-              "${mozbld}\\moztools-x64\\bin",
-              "${mozbld}\\mozmake", "${mozbld}\\nsis-3.01",
-              "${mozbld}\\python",
-              "${mozbld}\\python\\Scripts",
-              "${mozbld}\\python3",
-              "${mozbld}\\msys\\bin",
-              "${mozbld}\\msys\\local\\bin"
-          ]:
-    }
+        windows_env { "PATH=${win_mozilla_build::program_files}\\Mercurial": }
+        windows_env { "PATH=${mozbld}\\bin": }
+        windows_env { "PATH=${mozbld}\\kdiff": }
+        windows_env { "PATH=${mozbld}\\moztools-x64\\bin": }
+        windows_env { "PATH=${mozbld}\\mozmake": }
+        windows_env { "PATH=${mozbld}\\nsis-3.01": }
+        windows_env { "PATH=${mozbld}\\python": }
+        windows_env { "PATH=${mozbld}\\python\\Scripts": }
+        windows_env { "PATH=${mozbld}\\python3": }
+        windows_env { "PATH=${mozbld}\\msys\\bin": }
+        windows_env { "PATH=${mozbld}\\msys\\local\\bin": }
     }
     # don't run on older mozilla build pkg
     if $win_mozilla_build::needed_mozbld_ver != '3.2' {
