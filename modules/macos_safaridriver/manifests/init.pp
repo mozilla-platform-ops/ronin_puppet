@@ -5,6 +5,8 @@
 class macos_safaridriver (
   String $user_running_safari = 'cltbld',  # not fully parameterized, see below
 ) {
+  $user_uid = $facts['cltbld_uid']
+
   case $facts['os']['name'] {
     'Darwin': {
       case $facts['os']['release']['major'] {
@@ -34,9 +36,7 @@ class macos_safaridriver (
 
           # needs to run as cltbld via launchctl or won't work
           exec { 'execute enable remote automation script':
-            # TODO: don't hardcode user id of cltbld
-            #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 36 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
             cwd     => "/Users/${user_running_safari}",
             # semaphore and semaphore dir are created in script
@@ -91,9 +91,7 @@ class macos_safaridriver (
 
           # needs to run as cltbld via launchctl or won't work
           exec { 'execute enable remote automation script':
-            # TODO: don't hardcode user id of cltbld
-            #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
             cwd     => "/Users/${user_running_safari}",
             # semaphore and semaphore dir are created in script
@@ -149,9 +147,7 @@ class macos_safaridriver (
 
           # needs to run as cltbld via launchctl or won't work
           exec { 'execute enable remote automation script':
-            # TODO: don't hardcode user id of cltbld
-            #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
             cwd     => "/Users/${user_running_safari}",
             # semaphore and semaphore dir are created in script
@@ -218,9 +214,7 @@ class macos_safaridriver (
 
           # needs to run as cltbld via launchctl or won't work
           exec { 'execute enable remote automation script':
-            # TODO: don't hardcode user id of cltbld
-            #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
             cwd     => "/Users/${user_running_safari}",
             # semaphore and semaphore dir are created in script
@@ -229,7 +223,7 @@ class macos_safaridriver (
           }
 
           exec { 'execute enable remote automation script tech preview':
-            command => "/bin/launchctl asuser 555 sudo -u ${user_running_safari} ${enable_script_preview}",
+            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script_preview}",
             require => File[$enable_script_preview], # Dependency only on $enable_script_preview
             unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run",
             onlyif  => "/bin/test -d '/Applications/Safari Technology Preview.app'", # Condition to check if directory exists
