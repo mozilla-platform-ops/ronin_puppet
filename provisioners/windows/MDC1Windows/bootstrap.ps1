@@ -652,9 +652,23 @@ function Set-RemoteConnectivity {
     )
 
     ## OpenSSH
-    Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-
+    $sshdService = Get-Service -Name sshd -ErrorAction SilentlyContinue
+    if ($null -eq $sshdService) {
+        Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+        Start-Service sshd
+        Set-Service -Name sshd -StartupType Automatic
+        New-NetFirewallRule -Name "AllowSSH" -DisplayName "Allow SSH" -Description "Allow SSH traffic on port 22" -Profile Any -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22
+    } else {
+        Write-Log -message ('{0} :: SSHd is running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        if ($sshdService.Status -ne 'Running') {
+            Start-Service sshd
+            Set-Service -Name sshd -StartupType Automatic
+        } else {
+            Write-Host "SSHD service is already running."
+        }
+    }
+pause
     ## WinRM
     Write-Log -message ('{0} :: Enabling WinRM.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $adapter = Get-NetAdapter | Where-Object { $psitem.name -match "Ethernet" }
