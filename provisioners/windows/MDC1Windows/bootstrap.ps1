@@ -665,10 +665,9 @@ function Set-RemoteConnectivity {
             Start-Service sshd
             Set-Service -Name sshd -StartupType Automatic
         } else {
-            Write-Host "SSHD service is already running."
+            Write-Log -message ('{0} :: SSHD service is already running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
     }
-pause
     ## WinRM
     Write-Log -message ('{0} :: Enabling WinRM.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $adapter = Get-NetAdapter | Where-Object { $psitem.name -match "Ethernet" }
