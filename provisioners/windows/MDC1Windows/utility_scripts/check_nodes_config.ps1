@@ -10,10 +10,9 @@ param(
 	[string]$domain_suffix = "wintest2.releng.mdc1.mozilla.com",
 	[string]$pxe_script = "C:\management_scripts\force_pxe_install.ps1",
 	[string]$audit_script = "C:\management_scripts\pool_audit.ps1",
-	[string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/ronin_puppet/win11hardware/provisioners/windows/MDC1Windows/pools.yml"
+	[string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/ronin_puppet/win11hardware/provisioners/windows/MDC1Windows/pools.yml",
+	[switch]$help
 )
-
-
 
 $singlePresent = -not [string]::IsNullOrWhiteSpace($single)
 $poolPresent = -not [string]::IsNullOrWhiteSpace($pool)
@@ -159,6 +158,7 @@ function Invoke-AuditScript {
 		if (!(Test-Path $localscript)) {
 			Set-Content -Path $localscript -Value $content
 		}
+		write-host Creating PXE boot script and rebooting.
 		scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=empty.txt $localscript $remoteScriptlocation
 
 		Run-SSHScript -Command $remoteScriptPath -NodeName $NodeName
@@ -210,9 +210,8 @@ function Invoke-AuditScript {
 	}
 }
 
-
-if (-not $single -and -not $range -and -not $pool) {
-	$choice = Read-Host "Neither single nor pool parameters were provided. Enter `n'1' - for single node `n'2' - for entire pool `n'q' - to quit `n"
+if (-not $single -and -not $range -and -not $pool -and -not $help) {
+	$choice = Read-Host "Neither single nor pool parameters were provided. Enter `n'1' - for single node `n'2' - for entire pool `n'3' - show help `n'q' - to quit `n"
 
     switch ($choice) {
         '1' {
@@ -223,18 +222,43 @@ if (-not $single -and -not $range -and -not $pool) {
 			Write-Host "Will need pool name."
 			$pool = [bool]($single -ne $null)
 		}
-
+        '3' {
+            Write-Host "Show help."
+			$help = [bool]($single -ne $null)
+        }
         'q' {
             Write-Host "Exiting script."
             exit
         }
         default {
-            Write-Host "Invalid choice. Exiting script."
-            exit
+            Write-Host "Invalid choice."
+			$help = [bool]($single -ne $null)
         }
     }
 }
 
+if ($help) {
+    Write-Host @"
+Usage: script.ps1 [options]
+
+Options:
+  -single           : Operate on a single node.
+  -node         	: Specify the node name when using the -single option.
+  -pool             : Operate on an entire pool of nodes. Followed by pool name.
+  -pool_name        : Specify the pool name when using the -pool option.
+  -node             : Specify the node name when using the -single option.
+  -help             : Display this help message.
+
+  To use this script you will need:
+	1. The Win Audit SSH key (available in relops 1 password).
+	2. The following in your SSH config file:
+
+		Host nuc*.wintest2.releng.mdc1.mozilla.com
+		  User administrator
+		  IdentityFile ~/.ssh/win_audit_id_rsa
+"@
+    exit
+}
 
 Write-Host "Pulling pool data from $yaml_url"
 $YAML = Invoke-WebRequest -Uri $yaml_url | ConvertFrom-YAML
@@ -305,13 +329,14 @@ if ($pool) {
 	$hash  = ($YAML.pools | Where-Object { $_.name -eq $pool_name }).hash
 	$image_name  = ($YAML.pools | Where-Object { $_.name -eq $pool_name }).image
 
+	$script:PXEcounter = 0
+
 	foreach ($node in $nodes) {
 		$node_name = $node + "." + $worker_pool.domain_suffix
 		Write-Host Connecting to $node_name
 		Invoke-AuditScript -AuditScript $audit_script -GitHash $hash -WorkerPool $pool_name -image_name $image_name -NodeName $node_name
-		$script:PXEcounter++
-		if ($script:PXEcounter % 10 -eq 0) {
-			Write-Host "Waiting one minute before continuieng"
+		if ($script:PXEcounter % 10 -eq 0 -and $script:PXEcounter -ne 0) {
+			Write-Host "Waiting one minute before continuing. Allowing connections to file server to close"
 			Start-Sleep -s 60
 		}
 	}
