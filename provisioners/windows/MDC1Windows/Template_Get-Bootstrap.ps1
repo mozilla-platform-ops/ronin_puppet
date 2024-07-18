@@ -8,6 +8,7 @@ $authorized_keys =  $destinationDirectory + "authorized_keys"
 New-Item -ItemType Directory -Path $destinationDirectory -Force
 
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/SRCOrganisation/SRCRepository/SRCBranch/provisioners/windows/ImageProvisioner/authorized_keys -OutFile C:\users\administrator\.ssh\authorized_keys
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/SRCOrganisation/SRCRepository/SRCBranch/provisioners/windows/ImageProvisioner/sshd_config -OutFile C:\programdata\ssh\sshd_config
 
 New-NetFirewallRule -Name "AllowSSH" -DisplayName "Allow SSH" -Description "Allow SSH traffic on port 22" -Profile Any -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22
 
