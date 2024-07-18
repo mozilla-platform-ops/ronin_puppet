@@ -588,7 +588,6 @@ function Handle-Failure {
     }
     process {
         if ($debug) {
-            pause
             Write-Log -message  ('{0} :: Debug set; pausing on failure. ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
         $failure = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").failure
@@ -702,10 +701,8 @@ Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
 powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
-pause
-
 ## Enable OpenSSH and WinRM
-## Installation through Puppet is is intermittent.
+## Installation through Puppet is intermittent.
 ## It works here, but ultimately should be done through Puppet.
 Set-RemoteConnectivity
 
