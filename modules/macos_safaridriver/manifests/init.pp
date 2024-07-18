@@ -62,7 +62,7 @@ class macos_safaridriver (
           exec { "${user_running_safari}_group_${group}":
             command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
             unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
-            require => User[$user_running_safari],
+            require => Exec['create_macos_user'],
           }
         }
         # 20 == OS X 11
@@ -117,7 +117,7 @@ class macos_safaridriver (
           exec { "${user_running_safari}_group_${group}":
             command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
             unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
-            #require => User[$user_running_safari],
+            require => Exec['create_macos_user'],
           }
         }
         # # 22 == OS X 13
@@ -173,7 +173,7 @@ class macos_safaridriver (
           exec { "${user_running_safari}_group_${group}":
             command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
             unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
-            #require => User[$user_running_safari],
+            require => Exec['create_macos_user'],
           }
         }
         # # 23 == OS X 14
@@ -253,7 +253,7 @@ class macos_safaridriver (
           exec { "${user_running_safari}_group_${group}":
             command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
             unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
-            #require => User[$user_running_safari],
+            require => Exec['create_macos_user'],
           }
         }
         default: {
