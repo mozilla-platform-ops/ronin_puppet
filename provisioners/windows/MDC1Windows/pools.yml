@@ -6,8 +6,8 @@ pools:
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
-    src_Branch: "win11hardware_choco"
-    hash: "b406867"
+    src_Branch: "win11hardware"
+    hash: "8cfbab2"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -20,7 +20,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "210be9f"
+    hash: "8cfbab2"
     secret_date: "05-13-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -44,7 +44,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "210be9f"
+    hash: "8cfbab2"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -195,8 +195,8 @@ pools:
     #image: "win11-2009-NUC-07-11-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
-    src_Branch: "win11improve"
-    hash: "1923280"
+    src_Branch: "win11hardware"
+    hash: "8cfbab2"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
