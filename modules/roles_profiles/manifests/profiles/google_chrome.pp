@@ -3,18 +3,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::google_chrome {
-
-    case $facts['os']['name'] {
-        # Bug  list
-        # https://bugzilla.mozilla.org/show_bug.cgi?id=1570767
-        'Windows': {
-            include win_packages::chrome
-        }
-        'Ubuntu': {
-            include linux_packages::google_chrome
-        }
-        default: {
-            fail("${facts['os']['name']} not supported")
-        }
+  case $facts['os']['name'] {
+    # Bug  list
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1570767
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1876822
+    'Windows': {
+      include win_packages::chrome
     }
+    'Ubuntu': {
+      include linux_packages::google_chrome
+    }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }
