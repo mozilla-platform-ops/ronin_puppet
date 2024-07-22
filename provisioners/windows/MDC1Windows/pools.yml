@@ -2,7 +2,7 @@
 pools:
   - name: "win11-64-2009-hw-ref-alpha"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC12 Hardware Refrence Staging/Testing Pool"
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
@@ -15,7 +15,7 @@ pools:
     - t-nuc12-006
   - name: "win11-64-2009-hw-ref"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC12 Hardware Refrence Pool"
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
@@ -39,7 +39,7 @@ pools:
     - t-nuc12-015
   - name: "win11-64-2009-hw"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC13 Hardware Performance"
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
@@ -190,7 +190,7 @@ pools:
     - nuc13-160
   - name: "win11-64-2009-hw-alpha"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC12 Hardware Preformance Staging/Testing Pool"
     image: "win11-2009-NUC-05-06-2024"
     #image: "win11-2009-NUC-07-11-2024"
     src_Organisation: "mozilla-platform-ops"

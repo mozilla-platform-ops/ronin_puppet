@@ -587,9 +587,7 @@ function Handle-Failure {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-        pause
         if ($debug) {
-            pause
             Write-Log -message  ('{0} :: Debug set; pausing on failure. ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
         $failure = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").failure
@@ -653,9 +651,22 @@ function Set-RemoteConnectivity {
     )
 
     ## OpenSSH
-    Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-
+    $sshdService = Get-Service -Name sshd -ErrorAction SilentlyContinue
+    if ($null -eq $sshdService) {
+        Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+        Start-Service sshd
+        Set-Service -Name sshd -StartupType Automatic
+        New-NetFirewallRule -Name "AllowSSH" -DisplayName "Allow SSH" -Description "Allow SSH traffic on port 22" -Profile Any -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22
+    } else {
+        Write-Log -message ('{0} :: SSHd is running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        if ($sshdService.Status -ne 'Running') {
+            Start-Service sshd
+            Set-Service -Name sshd -StartupType Automatic
+        } else {
+            Write-Log -message ('{0} :: SSHD service is already running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+    }
     ## WinRM
     Write-Log -message ('{0} :: Enabling WinRM.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $adapter = Get-NetAdapter | Where-Object { $psitem.name -match "Ethernet" }
@@ -691,7 +702,7 @@ powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
 ## Enable OpenSSH and WinRM
-## Installation through Puppet is is intermittent.
+## Installation through Puppet is intermittent.
 ## It works here, but ultimately should be done through Puppet.
 Set-RemoteConnectivity
 
