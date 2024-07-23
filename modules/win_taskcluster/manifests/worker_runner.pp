@@ -58,8 +58,8 @@ class win_taskcluster::worker_runner (
     source  => $runner_exe_source,
   }
   if $provider == 'standalone' {
-    file { $runner_yml:
-      content   => epp('win_taskcluster/standalone_runner.yml.epp'),
+    file { "${worker_runner_dir}\\gw.config":
+      content   => epp('win_taskcluster/generic-worker.config.epp'),
     }
   }
   else {
