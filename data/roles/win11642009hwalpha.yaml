@@ -39,6 +39,8 @@ win-worker:
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
   # Applications
+  googlechrome:
+    version: 'latest'
   git:
     version: '2.37.3'
   hg:
