@@ -76,7 +76,7 @@ class win_taskcluster::worker_runner (
     refreshonly => true,
   }
 
-  if $facts['custom_win_runner_service'] != 'present' {
+  if $facts['custom_win_runner_service'] != '5' {
     exec { 'install_runner_service':
       command => "${nssm_exe} install worker-runner ${runner_exe_path}",
     }

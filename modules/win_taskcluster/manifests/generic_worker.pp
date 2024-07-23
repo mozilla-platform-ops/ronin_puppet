@@ -25,6 +25,9 @@ class win_taskcluster::generic_worker (
   file { $gw_exe_path:
     source  => $gw_exe_source,
   }
+  file { "${generic_worker_dir}\\gw.config":
+      content   => epp('win_taskcluster/generic-worker.config.epp'),
+  }
   exec { 'generate_ed25519_keypair':
     command => "${gw_exe_path} new-ed25519-keypair --file ${ed25519private}",
     creates => $ed25519private,
