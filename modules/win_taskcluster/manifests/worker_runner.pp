@@ -69,12 +69,12 @@ class win_taskcluster::worker_runner (
   }
   # Worker-runner/Go need the config file to have UNIX-style line endings
   # As is the file generated will have CRLF endings
-  exec { 'convert_runner_yml':
-    command     => " (Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
-    subscribe   => File[$runner_yml],
-    provider    => powershell,
-    refreshonly => true,
-  }
+#exec { 'convert_runner_yml':
+# command     => " (Get-Content ${runner_yml}  -Raw).Replace(\"`r`n\",\"`n\") | Set-Content ${runner_yml} -Force",
+# subscribe   => File[$runner_yml],
+# provider    => powershell,
+# refreshonly => true,
+#}
 
   if $facts['custom_win_runner_service'] != '5' {
     exec { 'install_runner_service':
