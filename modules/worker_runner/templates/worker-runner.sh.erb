@@ -66,6 +66,11 @@ else
     sleep 30
 fi
 
+echo "Cleaning /opt/worker/downloads/ and /opt/worker/cache/"
+
+directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/downloads
+directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/caches
+
 echo "REBOOT $(date)"
 /usr/bin/sudo /sbin/reboot
 # Sleep to prevent this script from terminating naturally, and launchd restarting
