@@ -68,8 +68,13 @@ fi
 
 echo "Cleaning /opt/worker/downloads/ and /opt/worker/cache/"
 
-directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/downloads
-directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/caches
+
+if command -v directory_cleaner &> /dev/null
+then
+    # Run the directory_cleaner commands
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/downloads
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/cache
+fi
 
 echo "REBOOT $(date)"
 /usr/bin/sudo /sbin/reboot
