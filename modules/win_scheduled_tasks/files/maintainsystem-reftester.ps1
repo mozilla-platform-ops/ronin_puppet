@@ -316,32 +316,23 @@ function Get-LatestGoogleChrome {
             Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
             ## output chocolatey logs to papertrail
             Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
+            ## Sending the logs to papertrail, wait 30 seconds
+            Start-Sleep -Seconds 30
         }
+        else {
+            ## Need to reboot in order to complete the upgrade
+            Restart-Computer -Force
+        }
+    }
+    else {
+        Write-Log -message ('{0} :: Chrome Version installed locally: {1}' -f $($MyInvocation.MyCommand.Name), $InstalledchromeVersion) -severity 'DEBUG'
+        Write-Log -message ('{0} :: Chrome Version available from Google: {1}' -f $($MyInvocation.MyCommand.Name), $LatestChromeVersion) -severity 'DEBUG'
     }
 }
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
     Run-MaintainSystem
-    <#Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
-    ## Last catch if Puppet failed
-    if (($puppet_exit -ne 0) -or ($puppet_exit -ne 2)) {
-        Write-Log -message  ('{0} :: BROKEN Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
-        #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-        #exit
-    }
-    Write-Log -message  ('{0} :: Disabling Start Menu' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    ## Disable start menu. If shown can interfere with tests. #>
-    <#     while ($true) {
-        $processname = "StartMenuExperienceHost"
-        $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
-        if ($null -ne $process) {
-            Stop-Process -Name $processname -force
-            break
-        }
-        Start-Sleep -Seconds 1
-    } #>
-
     ## We're getting user profile corruption errors, so let's check that the user is logged in using quser.exe
     for ($i = 0; $i -lt 3; $i++) {
         $loggedInUser = (Get-LoggedInUser).UserName -replace ">"
