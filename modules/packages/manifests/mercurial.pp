@@ -30,4 +30,11 @@ class packages::mercurial (
     provider => pip3,
     require  => Class['packages::python3', 'packages::xcode_cmd_line_tools'],
   }
+
+  # Create a symlink at /usr/local/bin/hg pointing to the new hg binary
+  file { '/usr/local/bin/hg':
+    ensure  => 'link',
+    target  => '/Library/Frameworks/Python.framework/Versions/3.11/bin/hg',
+    require => Package['python3-mercurial'],
+  }
 }
