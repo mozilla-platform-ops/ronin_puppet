@@ -26,5 +26,4 @@
   "workerGroup": "<%= $facts[custom_win_mozspace] %>",
   "workerId": "<%= $facts[hostname] %>",
   "workerType": "<%= $win_taskcluster::worker_runner::worker_pool_id %>"
-  }
 }
