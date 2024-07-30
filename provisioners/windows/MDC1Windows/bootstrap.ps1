@@ -98,6 +98,71 @@ function Invoke-DownloadWithRetry {
     return $Path
 }
 
+# Copied from https://github.com/actions/runner-images
+function Get-WindowsUpdateStates {
+    <#
+    .SYNOPSIS
+        Retrieves the status of Windows updates.
+
+    .DESCRIPTION
+        The Get-WindowsUpdateStates function checks the Windows Event Log for specific event IDs related to Windows updates and returns a custom PowerShell object with the state and title of each update.
+
+    .PARAMETER None
+        This function does not take any parameters.
+
+    .OUTPUTS
+        PSCustomObject. This function returns a collection of custom PowerShell objects. Each object has two properties:
+        - State: A string that represents the state of the update. Possible values are "Installed", "Failed", and "Running".
+        - Title: A string that represents the title of the update.
+
+    .NOTES
+        Event IDs used:
+        - 19: Installation Successful: Windows successfully installed the following update
+        - 20: Installation Failure: Windows failed to install the following update with error
+        - 43: Installation Started: Windows has started installing the following update
+    #>
+
+    $completedUpdates = @{}
+    $filter = @{
+        LogName      = "System"
+        Id           = 19, 20, 43
+        ProviderName = "Microsoft-Windows-WindowsUpdateClient"
+    }
+    $events = Get-WinEvent -FilterHashtable $filter -ErrorAction SilentlyContinue | Sort-Object Id
+
+    foreach ( $event in $events ) {
+        switch ( $event.Id ) {
+            19 {
+                $state = "Installed"
+                $title = $event.Properties[0].Value
+                $completedUpdates[$title] = ""
+                break
+            }
+            20 {
+                $state = "Failed"
+                $title = $event.Properties[1].Value
+                $completedUpdates[$title] = ""
+                break
+            }
+            43 {
+                $state = "Running"
+                $title = $event.Properties[0].Value
+                break
+            }
+        }
+
+        # Skip update started event if it was already completed
+        if ( $state -eq "Running" -and $completedUpdates.ContainsKey($title) ) {
+            continue
+        }
+
+        [PSCustomObject]@{
+            State = $state
+            Title = $title
+        }
+    }
+}
+
 function Write-Log {
     param (
         [string] $message,
