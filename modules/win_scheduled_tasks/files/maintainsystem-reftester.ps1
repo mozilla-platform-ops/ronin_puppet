@@ -337,34 +337,34 @@ function Set-PXE {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
-		$temp_dir = "$env:systemdrive\temp\"
+        $temp_dir = "$env:systemdrive\temp\"
         New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue
 
-		bcdedit /enum firmware > $temp_dir\firmware.txt
+        bcdedit /enum firmware > $temp_dir\firmware.txt
 
-		$fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
-		if (!$fwbootmgr){
-			Write-Log -message  ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Exit 999
-		}
-		Try{
-			# Get the line of text with the GUID for the PXE boot option.
-			# IPV4 = most PXE boot options
-			$FullLine = (( Get-Content $temp_dir\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop ).context.precontext)[0]
+        $fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
+        if (!$fwbootmgr) {
+            Write-Log -message  ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Exit 999
+        }
+        Try {
+            # Get the line of text with the GUID for the PXE boot option.
+            # IPV4 = most PXE boot options
+            $FullLine = (( Get-Content $temp_dir\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop ).context.precontext)[0]
 
-			# Remove all text but the GUID
-			$GUID = '{' + $FullLine.split('{')[1]
+            # Remove all text but the GUID
+            $GUID = '{' + $FullLine.split('{')[1]
 
-			# Add the PXE boot option to the top of the boot order on next boot
-			bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
+            # Add the PXE boot option to the top of the boot order on next boot
+            bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
 
-			Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Restart-Computer -Force
-		}
-		Catch {
-			Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Exit 888
-		}
+            Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Restart-Computer -Force
+        }
+        Catch {
+            Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Exit 888
+        }
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
