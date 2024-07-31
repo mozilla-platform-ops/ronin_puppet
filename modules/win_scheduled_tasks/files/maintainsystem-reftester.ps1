@@ -330,6 +330,56 @@ function Get-LatestGoogleChrome {
     }
 }
 
+function Set-PXE {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        $temp_dir = "$env:systemdrive\temp\"
+        New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue
+
+        bcdedit /enum firmware > $temp_dir\firmware.txt
+
+        $fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
+        if (!$fwbootmgr) {
+            Write-Log -message  ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Exit 999
+        }
+        Try {
+            # Get the line of text with the GUID for the PXE boot option.
+            # IPV4 = most PXE boot options
+            $FullLine = (( Get-Content $temp_dir\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop ).context.precontext)[0]
+
+            # Remove all text but the GUID
+            $GUID = '{' + $FullLine.split('{')[1]
+
+            # Add the PXE boot option to the top of the boot order on next boot
+            bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
+
+            Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Restart-Computer -Force
+        }
+        Catch {
+            Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Exit 888
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123 
+## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
+## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
+$refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
+if ($refresh_rate -ne "60") {
+    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+    Set-PXE
+}
+
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
     Run-MaintainSystem
