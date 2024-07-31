@@ -42,7 +42,7 @@ packages_classes:
 
 # Package class parameters
 #packages::google_chrome::version: v80.0.3987.106
-packages::mercurial::version: 5.5.2
+packages::mercurial::version: 6.4.5
 packages::nodejs::version: 12.11.1
 packages::python2::version: 2.7.18
 packages::python2_zstandard::version: 0.11.1

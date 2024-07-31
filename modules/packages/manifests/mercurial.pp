@@ -28,6 +28,8 @@ class packages::mercurial (
     ensure   => $version,
     name     => 'mercurial',
     provider => pip3,
+    # Sometimes it seems this below is needed for macOS > 10.15 (?)
+    #install_options => ['--use-pep517'],
     require  => Class['packages::python3', 'packages::xcode_cmd_line_tools'],
   }
 
