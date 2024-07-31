@@ -56,6 +56,15 @@ class roles_profiles::profiles::cltbld_user {
         }
       }
 
+      # Ensure the required groups exist before adding the user to them
+      $required_groups = ['_developer', 'com.apple.access_screensharing', 'com.apple.access_ssh']
+      $required_groups.each |String $group| {
+        exec { "ensure_group_${group}":
+          command => "/usr/bin/dscl . -create /Groups/${group}",
+          unless  => "/usr/bin/dscl . -read /Groups/${group}",
+        }
+      }
+
       #   Monkey patching directoryservice.rb in order to create users also breaks group merging
       #   So we directly add the user to the group(s)
       $groups = ['_developer','com.apple.access_screensharing','com.apple.access_ssh']
@@ -64,6 +73,7 @@ class roles_profiles::profiles::cltbld_user {
           command => "/usr/bin/dscl . -append /Groups/${group} GroupMembership cltbld",
           unless  => "/usr/bin/groups cltbld | /usr/bin/grep -q -w ${group}",
           #require => User['cltbld'],
+          require => Exec["ensure_group_${group}"],
         }
       }
       # Ensure the AuthenticationAuthority hash is set.  Puppet does not set this when creating a user.  Needed for GUI/VNC access.
