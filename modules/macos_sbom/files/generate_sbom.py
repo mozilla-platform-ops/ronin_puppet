@@ -4,9 +4,15 @@ import os
 import html
 import sys
 
-LOG_FILE = "/var/sbom/generate_sbom.log"
+LOG_DIR = "/var/sbom"
+LOG_FILE = f"{LOG_DIR}/generate_sbom.log"
+
+def ensure_log_directory():
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR, exist_ok=True)
 
 def log_message(message):
+    ensure_log_directory()
     with open(LOG_FILE, 'a') as log_file:
         log_file.write(message + '\n')
 
@@ -79,91 +85,36 @@ def generate_sbom(applications, binaries, pip_packages):
     log_message(f"SBOM generated successfully: {sbom}")
     return sbom
 
-def save_sbom_to_html_file(sbom, filename="/var/sbom/sbom.html"):
+def save_sbom_to_md_file(sbom, filename="/var/sbom/sbom.md"):
     try:
         with open(filename, 'w') as file:
-            file.write(f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Software Bill of Materials (SBOM)</title>
-<style>
-    body {{ font-family: Arial, sans-serif; margin: 20px; }}
-    h1 {{ color: #333; }}
-    table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-    table, th, td {{ border: 1px solid #ddd; }}
-    th, td {{ padding: 8px; text-align: left; }}
-    th {{ background-color: #f4f4f4; }}
-    tr:nth-child(even) {{ background-color: #f9f9f9; }}
-</style>
-</head>
-<body>
-<h1>Software Bill of Materials (SBOM)</h1>
-<p><strong>SBOM Version:</strong> {sbom['sbom_version']}</p>
-<p><strong>macOS Version:</strong> {sbom['macOS_version']}</p>
-
-<h2>Installed Applications</h2>
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Version</th>
-        <th>Path</th>
-    </tr>
-""")
+            file.write(f"# Software Bill of Materials (SBOM)\n")
+            file.write(f"**SBOM Version:** {sbom['sbom_version']}\n")
+            file.write(f"**macOS Version:** {sbom['macOS_version']}\n")
+            file.write(f"\n## Installed Applications\n")
+            file.write(f"| Name | Version | Path |\n")
+            file.write(f"|------|---------|------|\n")
 
             for software in sbom["software"]:
-                file.write("<tr>")
-                file.write(f"<td>{html.escape(software.get('_name', 'Unknown'))}</td>")
-                file.write(f"<td>{html.escape(software.get('version', 'Unknown'))}</td>")
-                file.write(f"<td>{html.escape(software.get('path', 'Unknown'))}</td>")
-                file.write("</tr>")
+                file.write(f"| {html.escape(software.get('_name', 'Unknown'))} | {html.escape(software.get('version', 'Unknown'))} | {html.escape(software.get('path', 'Unknown'))} |\n")
 
-            file.write("""
-</table>
-
-<h2>Binaries in /usr/local/bin</h2>
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Version</th>
-        <th>Path</th>
-    </tr>
-""")
+            file.write(f"\n## Binaries in /usr/local/bin\n")
+            file.write(f"| Name | Version | Path |\n")
+            file.write(f"|------|---------|------|\n")
 
             for binary in sbom["binaries"]:
-                file.write("<tr>")
-                file.write(f"<td>{html.escape(binary['name'])}</td>")
-                file.write(f"<td>{html.escape(binary['version'])}</td>")
-                file.write(f"<td>{html.escape(binary['path'])}</td>")
-                file.write("</tr>")
+                file.write(f"| {html.escape(binary['name'])} | {html.escape(binary['version'])} | {html.escape(binary['path'])} |\n")
 
-            file.write("""
-</table>
-
-<h2>Installed Pip Packages</h2>
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Version</th>
-    </tr>
-""")
+            file.write(f"\n## Installed Pip Packages\n")
+            file.write(f"| Name | Version |\n")
+            file.write(f"|------|---------|\n")
 
             for package in sbom["pip_packages"]:
-                file.write("<tr>")
-                file.write(f"<td>{html.escape(package['name'])}</td>")
-                file.write(f"<td>{html.escape(package['version'])}</td>")
-                file.write("</tr>")
+                file.write(f"| {html.escape(package['name'])} | {html.escape(package['version'])} |\n")
 
-            file.write("""
-</table>
-</body>
-</html>
-""")
         log_message(f"SBOM saved to {filename}")
     except Exception as e:
-        log_message(f"Error saving SBOM to HTML file: {e}")
+        log_message(f"Error saving SBOM to Markdown file: {e}")
         sys.exit(1)
 
 def main():
@@ -173,7 +124,7 @@ def main():
         binaries = get_binaries_in_usr_local_bin()
         pip_packages = get_pip_packages()
         sbom = generate_sbom(applications, binaries, pip_packages)
-        save_sbom_to_html_file(sbom)
+        save_sbom_to_md_file(sbom)
         log_message("SBOM generation completed successfully.")
     except Exception as e:
         log_message(f"Error during SBOM generation: {e}")

@@ -1,17 +1,7 @@
 class macos_sbom (
   Boolean $enabled = true,
 ) {
-  # Ensure Python3 is installed
-  # package { 'python3':
-  #   ensure => installed,
-  # }
-
-  # # Ensure pip3 is installed
-  # package { 'python3-pip':
-  #   ensure => installed,
-  # }
-
-  # Ensure the SBOM script is in place
+# Ensure the SBOM script is in place
   file { '/usr/local/bin/generate_sbom.py':
     ensure => file,
     owner  => 'root',
