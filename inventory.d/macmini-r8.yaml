@@ -376,8 +376,6 @@ groups:
 
   - name: gecko-t-osx-1400-r8-staging
     targets:
-      - macmini-r8-373.test.releng.mdc1.mozilla.com
-      - macmini-r8-374.test.releng.mdc1.mozilla.com
       - macmini-r8-375.test.releng.mdc1.mozilla.com
       - macmini-r8-376.test.releng.mdc1.mozilla.com
     facts:
