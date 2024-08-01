@@ -16,11 +16,26 @@ def log_message(message):
     with open(LOG_FILE, 'a') as log_file:
         log_file.write(message + '\n')
 
+def get_macos_version():
+    try:
+        log_message("Fetching macOS version...")
+        result = subprocess.run(['/usr/sbin/system_profiler', 'SPSoftwareDataType'], capture_output=True, text=True, check=True, timeout=60)
+        for line in result.stdout.split('\n'):
+            if 'System Version' in line:
+                version = line.split(':')[-1].strip()
+                log_message(f"macOS version found: {version}")
+                return version
+    except subprocess.CalledProcessError as e:
+        log_message(f"Error while fetching macOS version: {e}")
+    except subprocess.TimeoutExpired:
+        log_message("Timeout while fetching macOS version")
+    return "Unknown version"
+
 def get_installed_software():
     try:
         log_message("Fetching installed software...")
         result = subprocess.run(['/usr/sbin/system_profiler', 'SPApplicationsDataType', '-json'], capture_output=True, text=True, check=True, timeout=60)
-        log_message(f"Installed software fetched successfully: {result}")
+        log_message("Installed software fetched successfully")
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
         log_message(f"Error while fetching installed software: {e}")
@@ -65,7 +80,7 @@ def get_pip_packages():
     try:
         log_message("Fetching pip packages...")
         result = subprocess.run(['pip3', 'list', '--format=json'], capture_output=True, text=True, check=True, timeout=60)
-        log_message(f"Pip packages fetched successfully: {result}")
+        log_message("Pip packages fetched successfully")
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
         log_message(f"Error while fetching pip packages: {e}")
@@ -74,15 +89,15 @@ def get_pip_packages():
         log_message("Timeout while fetching pip packages")
         return []
 
-def generate_sbom(applications, binaries, pip_packages):
+def generate_sbom(applications, binaries, pip_packages, macos_version):
     sbom = {
         "sbom_version": "1.0",
-        "macOS_version": "14",
+        "macOS_version": macos_version,
         "software": sorted(applications.get('SPApplicationsDataType', []), key=lambda x: x.get('_name', '').lower()),
         "binaries": binaries,
         "pip_packages": pip_packages
     }
-    log_message(f"SBOM generated successfully: {sbom}")
+    log_message("SBOM generated successfully")
     return sbom
 
 def save_sbom_to_md_file(sbom, filename="/var/sbom/sbom.md"):
@@ -120,12 +135,13 @@ def save_sbom_to_md_file(sbom, filename="/var/sbom/sbom.md"):
 def main():
     try:
         log_message("Starting SBOM generation...")
+        macos_version = get_macos_version()
         applications = get_installed_software()
         binaries = get_binaries_in_usr_local_bin()
         pip_packages = get_pip_packages()
-        sbom = generate_sbom(applications, binaries, pip_packages)
+        sbom = generate_sbom(applications, binaries, pip_packages, macos_version)
         save_sbom_to_md_file(sbom)
-        log_message("SBOM generation completed successfully.")
+        log_message("SBOM generation completed successfully")
     except Exception as e:
         log_message(f"Error during SBOM generation: {e}")
         sys.exit(1)
