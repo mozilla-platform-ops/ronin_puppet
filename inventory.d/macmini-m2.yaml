@@ -32,6 +32,18 @@ groups:
     facts:
       puppet_role: gecko_3_b_osx_arm64
 
+  - name: mozilla-b-1-osx
+    targets:
+      - macmini-m2-18.test.releng.mslv.mozilla.com
+    facts:
+      puppet_role: mozilla_b_1_osx
+
+  - name: mozilla-b-3-osx
+    targets:
+      - macmini-m2-19.test.releng.mslv.mozilla.com
+    facts:
+      puppet_role: mozilla_b_3_osx
+
   - name: gecko-t-osx-1400-m2-vms-staging
     targets:
       - vm-runner-1.local
