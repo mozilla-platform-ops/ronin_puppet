@@ -4,6 +4,7 @@
 
 class roles_profiles::roles::gecko_3_t_osx_1014 {
   include fw::roles::osx_taskcluster_worker
+  include macos_utils::disable_bluetooth_setup
   include macos_utils::uninstall_homebrew
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker

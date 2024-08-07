@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::roles::mozilla_b_1_osx {
+  include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
