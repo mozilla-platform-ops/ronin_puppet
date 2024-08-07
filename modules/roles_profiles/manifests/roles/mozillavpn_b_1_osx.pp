@@ -3,16 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::roles::mozillavpn_b_1_osx {
-    include ::roles_profiles::profiles::gui
-    include ::roles_profiles::profiles::hardware
-    include ::roles_profiles::profiles::macos_people_remover
-    include ::roles_profiles::profiles::motd
-    include ::roles_profiles::profiles::network
-    include ::roles_profiles::profiles::ntp
-    include ::roles_profiles::profiles::relops_users
-    include ::roles_profiles::profiles::sudo
-    include ::roles_profiles::profiles::timezone
-    include ::roles_profiles::profiles::users
-    include ::roles_profiles::profiles::vnc
-    include ::roles_profiles::profiles::worker
+  include roles_profiles::profiles::gui
+  include roles_profiles::profiles::hardware
+  include roles_profiles::profiles::macos_people_remover
+  include roles_profiles::profiles::motd
+  include roles_profiles::profiles::network
+  include roles_profiles::profiles::ntp
+  include roles_profiles::profiles::relops_users
+  include roles_profiles::profiles::sudo
+  include roles_profiles::profiles::timezone
+  include roles_profiles::profiles::users
+  include roles_profiles::profiles::vnc
+  include roles_profiles::profiles::worker
 }

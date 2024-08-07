@@ -3,19 +3,19 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::roles::gecko_t_osx_1400_m2_vms_staging {
-    include ::roles_profiles::profiles::cltbld_user
-    include ::roles_profiles::profiles::macos_people_remover
-    include ::roles_profiles::profiles::motd
-    include ::roles_profiles::profiles::network
-    include ::roles_profiles::profiles::ntp
-    include ::roles_profiles::profiles::packages_installed
-    include ::roles_profiles::profiles::pipconf
-    include ::roles_profiles::profiles::relops_users
-    include ::roles_profiles::profiles::safaridriver
-    include ::roles_profiles::profiles::sudo
-    include ::roles_profiles::profiles::talos
-    include ::roles_profiles::profiles::timezone
-    include ::roles_profiles::profiles::users
-    include ::roles_profiles::profiles::vnc
-    include ::roles_profiles::profiles::worker
+  include roles_profiles::profiles::cltbld_user
+  include roles_profiles::profiles::macos_people_remover
+  include roles_profiles::profiles::motd
+  include roles_profiles::profiles::network
+  include roles_profiles::profiles::ntp
+  include roles_profiles::profiles::packages_installed
+  include roles_profiles::profiles::pipconf
+  include roles_profiles::profiles::relops_users
+  include roles_profiles::profiles::safaridriver
+  include roles_profiles::profiles::sudo
+  include roles_profiles::profiles::talos
+  include roles_profiles::profiles::timezone
+  include roles_profiles::profiles::users
+  include roles_profiles::profiles::vnc
+  include roles_profiles::profiles::worker
 }
