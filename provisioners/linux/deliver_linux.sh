@@ -5,17 +5,14 @@ set -e
 
 # delivers bootstrap.sh, secrets.yml, and sets a role
 
-# recommended ssh config entries
+# recommended ssh config entry
 #
-# Host *.mdc1.mozilla.com *.mdc2.mozilla.com
-#   ForwardAgent yes
-#   ControlMaster auto
-#   ControlPath ~/.ssh/sockets/%h-%r
-#   ControlPersist 600
+#   Host *.mdc1.mozilla.com *.mdc2.mozilla.com
+#     ForwardAgent yes
+#     ControlMaster auto
+#     ControlPath ~/.ssh/sockets/%h-%r
+#     ControlPersist yes
 #
-# Host *.test.releng.mdc1.mozilla.com *.test.releng.mdc2.mozilla.com
-#   ProxyJump rejh1.srv.releng.mdc1.mozilla.com
-
 
 # local files
 BOOTSTRAP_FILE="bootstrap_linux.sh"
