@@ -20,8 +20,6 @@ worker:
   idle_timeout_secs: 3600
 
 packages_classes:
-    #  - google_chrome
-    #  - java_developer_package_for_osx
   - mercurial
   - nodejs
   - python2
@@ -41,7 +39,6 @@ packages_classes:
   - virt_audio_s3
 
 # Package class parameters
-packages::google_chrome::version: v80.0.3987.106
 packages::mercurial::version: 6.4.5
 packages::nodejs::version: 12.11.1
 packages::python2::version: 2.7.18
