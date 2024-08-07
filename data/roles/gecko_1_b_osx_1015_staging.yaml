@@ -19,8 +19,8 @@ worker:
   idle_timeout_secs: 21600 # 6 hours
 
 packages_classes:
-  - python3
   - mercurial
+  - python3
   - python3_zstandard
   - xcode_cmd_line_tools
   - zstandard
