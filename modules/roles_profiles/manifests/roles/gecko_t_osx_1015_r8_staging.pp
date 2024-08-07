@@ -30,4 +30,5 @@ class roles_profiles::roles::gecko_t_osx_1015_r8_staging {
     include ::roles_profiles::profiles::macos_people_remover
     include ::roles_profiles::profiles::macos_tcc_perms
     include ::roles_profiles::profiles::macos_directory_cleaner
+    include roles_profiles::profiles::macos_sbom
 }
