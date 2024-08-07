@@ -6,7 +6,7 @@ class linux_packages::psutil_py3 {
     require linux_packages::py3
 
     package { 'psutil_py3':
-        ensure   => '5.7.0',
+        ensure   => '5.9.3',
         name     => 'psutil',
         provider => pip3,
         require  => Class['linux_packages::py3'],

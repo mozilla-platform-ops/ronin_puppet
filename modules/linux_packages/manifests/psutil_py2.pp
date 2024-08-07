@@ -5,10 +5,11 @@
 class linux_packages::psutil_py2 {
     require linux_packages::py2
 
-    package { 'psutil_py2':
-        ensure   => '5.7.0',
-        name     => 'psutil',
-        provider => pip,
-        require  => Class['linux_packages::py2'],
-    }
+    # not installing py2 any longer
+    # package { 'psutil_py2':
+    #     ensure   => '5.7.0',
+    #     name     => 'psutil',
+    #     provider => pip,
+    #     require  => Class['linux_packages::py2'],
+    # }
 }

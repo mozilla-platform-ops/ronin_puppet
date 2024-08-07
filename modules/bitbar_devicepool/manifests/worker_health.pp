@@ -3,23 +3,41 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class bitbar_devicepool::worker_health {
-
   $desired_packages = ['python3-pip']
-  ensure_packages($desired_packages, {'ensure' => 'present'})
+  ensure_packages($desired_packages, { 'ensure' => 'present' })
 
   exec { 'install pipenv':
-      command => '/usr/bin/pip3 install pipenv',
-      user    => 'bitbar',
-      unless  => '/bin/ls /home/bitbar/.local/bin/pipenv'
+    command => '/usr/bin/pip3 install pipenv',
+    user    => 'bitbar',
+    unless  => '/bin/ls /home/bitbar/.local/bin/pipenv',
   }
 
-  # create venv and install requirement
-  $influx_logger_path = '/home/bitbar/android-tools/worker_health'
-  exec { 'create and install worker_health pipenv':
-      command => '/home/bitbar/.local/bin/pipenv --python 3.6 install',
-      cwd     => $influx_logger_path,
-      user    => 'bitbar',
-      unless  => '/bin/ls /home/bitbar/.local/share/virtualenvs/worker_health-*/'
+  # TODO: set a variable with python version and just use it
+  case $facts['os']['release']['full'] {
+    '18.04' : {
+      # create venv and install requirement
+      $influx_logger_path = '/home/bitbar/android-tools/worker_health'
+      exec { 'create and install worker_health pipenv':
+        command => '/home/bitbar/.local/bin/pipenv --python 3.6 install',
+        cwd     => $influx_logger_path,
+        user    => 'bitbar',
+        unless  => '/bin/ls /home/bitbar/.local/share/virtualenvs/worker_health-*/',
+      }
+    }
+    '22.04': {
+      # create venv and install requirement
+      $influx_logger_path = '/home/bitbar/android-tools/worker_health'
+      exec { 'create and install worker_health pipenv':
+        command => '/home/bitbar/.local/bin/pipenv --python 3.10 install',
+        cwd     => $influx_logger_path,
+        user    => 'bitbar',
+        unless  => '/bin/ls /home/bitbar/.local/share/virtualenvs/worker_health-*/',
+      }
+    }
+
+    default: {
+      fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
+    }
   }
 
   # we need the user to be in this group so sudo isn't required to view logs
@@ -48,5 +66,4 @@ class bitbar_devicepool::worker_health {
   # - configure ~/.bitbar_slack_alert.toml
   # - configure ~/.bitbar_influx_logger.toml
   # - enabling these service on primary
-
 }

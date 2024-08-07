@@ -1,0 +1,1 @@
+../../linux-perf/inspec/puppet_spec.rb

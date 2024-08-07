@@ -1,0 +1,1 @@
+../../linux-perf/inspec/imagemagick_spec.rb

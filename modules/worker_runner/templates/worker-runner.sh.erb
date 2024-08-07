@@ -18,6 +18,9 @@ date > $last_premature_end
 # Removing the tasks-resolved-count.txt allows the worker to exit properly when numberOfTasksToRun is reached
 rm <%= @data_dir %>/tasks-resolved-count.txt
 
+# Clear up previous task dirs
+rm -rf /opt/worker/tasks/task_*
+
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/start-worker "$@"
@@ -61,6 +64,15 @@ if test $(find $last_premature_end -mmin +1); then
 else
     echo "Started less than 60s ago. Sleeping 30s"
     sleep 30
+fi
+
+echo "Cleaning /opt/worker/downloads/ and /opt/worker/cache/"
+
+if command -v directory_cleaner &> /dev/null
+then
+    # Run the directory_cleaner commands
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/downloads
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/cache
 fi
 
 echo "REBOOT $(date)"

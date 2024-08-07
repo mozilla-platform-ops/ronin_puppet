@@ -1,0 +1,1 @@
+../../linux-perf/inspec/motd_spec.rb

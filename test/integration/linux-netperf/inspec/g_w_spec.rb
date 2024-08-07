@@ -1,0 +1,1 @@
+../../linux-perf/inspec/g_w_spec.rb
