@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Check if the semaphore file exists
+if [ ! -f /var/tmp/semaphore/run-buildbot ]; then
+    echo "Semaphore file /var/tmp/semaphore/run-buildbot does not exist. Exiting script."
+    exit 1
+fi
+
 # Check if /bin/bash, /usr/local/bin/worker-runner.sh, and /opt/worker/worker-runner-config.yaml are running
 check_processes() {
     if ! pgrep -x "bash" > /dev/null; then
