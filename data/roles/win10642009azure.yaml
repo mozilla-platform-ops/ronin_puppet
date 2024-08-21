@@ -1,6 +1,7 @@
 ---
 
 win-worker:
+  function: "tester"
   # generic-worker
   generic_worker:
     # File versions

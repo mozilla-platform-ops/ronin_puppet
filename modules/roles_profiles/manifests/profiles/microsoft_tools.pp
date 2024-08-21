@@ -16,7 +16,9 @@ class roles_profiles::profiles::microsoft_tools {
         moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
       }
 
-      case $facts['custom_win_purpose'] {
+      $func = lookup('win-worker.function')
+
+      case $func {
         'builder':{
           ## This class seems to timeout on the first run of a new VM
           ## For now don't look for it after bootstrap.
