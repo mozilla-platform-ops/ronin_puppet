@@ -2,21 +2,24 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# installs homebrew on macOS
 class roles_profiles::profiles::homebrew (
-    Boolean $purge = false
+  # @param $purge Whether homebrew should be uninstalled.
+  #   Defaults to false.
+  Boolean $purge = false
 ) {
-    if $purge {
-        include ::macos_utils::uninstall_homebrew
-    } else {
-        require 'macos_xcode_tools'
-        require packages::coreutils
-        #require roles_profiles::profiles::cltbld_user
+  if $purge {
+    include macos_utils::uninstall_homebrew
+  } else {
+    require macos_xcode_tools
+    require packages::coreutils
+    #require roles_profiles::profiles::cltbld_user
 
-        class { 'homebrew':
-            user      => 'cltbld',
-            group     => 'staff',
-            multiuser => true,
-            require   => Class['macos_xcode_tools'],
-        }
+    class { 'homebrew':
+      user      => 'cltbld',
+      group     => 'staff',
+      multiuser => true,
+      require   => Class['macos_xcode_tools'],
     }
+  }
 }
