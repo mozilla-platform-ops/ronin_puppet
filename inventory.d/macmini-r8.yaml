@@ -377,5 +377,6 @@ groups:
     targets:
       - macmini-r8-375.test.releng.mdc1.mozilla.com
       - macmini-r8-376.test.releng.mdc1.mozilla.com
+      - macmini-r8-129.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_r8_staging
