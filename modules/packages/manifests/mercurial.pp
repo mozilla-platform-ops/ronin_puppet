@@ -30,7 +30,7 @@ class packages::mercurial (
     provider => pip3,
     # Sometimes it seems this below is needed for macOS > 10.15 (?)
     #install_options => ['--use-pep517'],
-    require  => [Class['packages::python3'], Class[macos_xcode_tools]],
+    require  => [Class['packages::python3'], Class['macos_xcode_tools']],
   }
 
   # Create a symlink at /usr/local/bin/hg pointing to the new hg binary
