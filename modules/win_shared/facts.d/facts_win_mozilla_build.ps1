@@ -33,7 +33,11 @@ if (Test-Path $hg_file) {
 # Python 3 Pip
 if (Test-Path $python3_file) {
     $pip_version = (C:\mozilla-build\python3\python3.exe -m pip --version)
-    $py3_pip_version = [regex]::Matches($pip_version, "(\d+\.\d+\.\d+)").value
+    if ($pip_version -ne $null) {
+        $py3_pip_version = [regex]::Matches($pip_version, "(\d+\.\d+\.\d+)").value
+    } else {
+        $py3_pip_version = 0.0.0
+    }
 } else {
     $py3_pip_version = 0.0.0
 }
