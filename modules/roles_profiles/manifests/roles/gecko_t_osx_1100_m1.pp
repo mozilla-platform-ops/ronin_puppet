@@ -5,6 +5,7 @@
 class roles_profiles::roles::gecko_t_osx_1100_m1 {
   include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::cltbld_user
+  include roles_profiles::profiles::macos_gw_checker
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_tcc_perms
   include roles_profiles::profiles::motd
