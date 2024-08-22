@@ -249,17 +249,6 @@ groups:
       - macmini-r8-279.test.releng.mdc1.mozilla.com
       - macmini-r8-280.test.releng.mdc1.mozilla.com
       - macmini-r8-281.test.releng.mdc1.mozilla.com
-      - macmini-r8-282.test.releng.mdc1.mozilla.com
-      - macmini-r8-283.test.releng.mdc1.mozilla.com
-      - macmini-r8-284.test.releng.mdc1.mozilla.com
-      - macmini-r8-285.test.releng.mdc1.mozilla.com
-      - macmini-r8-286.test.releng.mdc1.mozilla.com
-      - macmini-r8-287.test.releng.mdc1.mozilla.com
-      - macmini-r8-288.test.releng.mdc1.mozilla.com
-      - macmini-r8-381.test.releng.mdc1.mozilla.com
-      - macmini-r8-382.test.releng.mdc1.mozilla.com
-      - macmini-r8-383.test.releng.mdc1.mozilla.com
-      - macmini-r8-384.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8
 
@@ -271,7 +260,6 @@ groups:
       - macmini-r8-124.test.releng.mdc1.mozilla.com
       - macmini-r8-126.test.releng.mdc1.mozilla.com
       - macmini-r8-127.test.releng.mdc1.mozilla.com
-      - macmini-r8-246.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8_staging
 
@@ -375,7 +363,25 @@ groups:
 
   - name: gecko-t-osx-1400-r8-staging
     targets:
+      - macmini-r8-129.test.releng.mdc1.mozilla.com
+      - macmini-r8-246.test.releng.mdc1.mozilla.com
+      - macmini-r8-282.test.releng.mdc1.mozilla.com
+      - macmini-r8-283.test.releng.mdc1.mozilla.com
+      - macmini-r8-284.test.releng.mdc1.mozilla.com
+      - macmini-r8-285.test.releng.mdc1.mozilla.com
+      - macmini-r8-286.test.releng.mdc1.mozilla.com
+      - macmini-r8-287.test.releng.mdc1.mozilla.com
+      - macmini-r8-288.test.releng.mdc1.mozilla.com
+      - macmini-r8-361.test.releng.mdc1.mozilla.com
       - macmini-r8-375.test.releng.mdc1.mozilla.com
       - macmini-r8-376.test.releng.mdc1.mozilla.com
+      - macmini-r8-377.test.releng.mdc1.mozilla.com
+      - macmini-r8-378.test.releng.mdc1.mozilla.com
+      - macmini-r8-379.test.releng.mdc1.mozilla.com
+      - macmini-r8-380.test.releng.mdc1.mozilla.com
+      - macmini-r8-381.test.releng.mdc1.mozilla.com
+      - macmini-r8-382.test.releng.mdc1.mozilla.com
+      - macmini-r8-383.test.releng.mdc1.mozilla.com
+      - macmini-r8-384.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_r8_staging
