@@ -45,7 +45,11 @@ if (Test-Path $python3_file) {
 # Pyhton 3 zstandard
 if (Test-Path $python3_file) {
     $zstandard_info = (C:\mozilla-build\python3\python3.exe -m pip show zstandard)
-    $zstandard_version = [regex]::Matches($zstandard_info, "(\d+\.\d+\.\d+)").value
+    if (-not [string]::IsNullOrEmpty($zstandard_info)) {
+        $zstandard_version = [regex]::Matches($zstandard_info, "(\d+\.\d+\.\d+)").value
+        } else {
+            $zstandard_version = 0.0.0
+        }
 } else {
     $zstandard_version = 0.0.0
 }
