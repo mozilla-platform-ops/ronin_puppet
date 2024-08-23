@@ -6,6 +6,7 @@ class packages::mercurial (
   String $version = '6.4.5',
 ) {
   require packages::python3
+  require macos_xcode_tools
 
   # Add the Python 3.11 bin directory to the system PATH permanently
   file { '/etc/paths.d/python3.11':
