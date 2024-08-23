@@ -8,8 +8,18 @@ class win_packages::dxsdk_jun10 {
     $sdk_dir = 'Microsoft DirectX SDK (June 2010)'
     $file    = 'DXSDK_Jun10.exe'
 
-    windowsfeature { 'NET-Framework-Core':
-        ensure => present,
+    case $facts['az_metadata']['compute']['publisher'] {
+        'microsoftwindowsdesktop': {
+            exec { 'install_net_framework3.5':
+                command  => 'Enable-WindowsOptionalFeature -Online -FeatureName "NetFx3" -All',
+                provider => powershell,
+            }
+        }
+        default: {
+            windowsfeature { 'NET-Framework-Core':
+                ensure => present,
+            }
+        }
     }
 
     win_packages::win_exe_pkg  { 'dxsdk_jun10':
