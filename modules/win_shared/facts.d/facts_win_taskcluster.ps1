@@ -9,48 +9,48 @@ $taskcluster_proxy_file  = "$env:systemdrive\generic-worker\taskcluster-proxy.ex
 # Generic-worker
 $gw_service = 'Generic Worker'
 
-If (Get-Service $gw_service -ErrorAction SilentlyContinue) {
+if (Get-Service $gw_service -ErrorAction SilentlyContinue) {
 	$gw_service = "present"
-} Else {
+} else {
 	$gw_service = "missing"
 }
 write-host "custom_win_genericworker_service=$gw_service"
 
 # The command will typically write out multiple strings including stdout.
-# There is need to drop what is is writen to stdout and selct the version
+# There is a need to drop what is written to stdout and select the version
 # out of the remaining string.
 if (Test-Path $gw_file) {
-    $gw_version = ($gw_file --short-version)
+    $gw_version = & $gw_file --short-version
 } else {
-    $gw_version = 0.0
+    $gw_version = "0.0"
 }
 write-host "custom_win_genericworker_version=$gw_version"
 
 # worker-runner
 $runner_service = 'worker-runner'
-If (Get-Service $runner_service -ErrorAction SilentlyContinue) {
+if (Get-Service $runner_service -ErrorAction SilentlyContinue) {
      $runner_service = "present"
-} Else {
+} else {
     $runner_service = "missing"
 }
 write-host "custom_win_runner_service=$runner_service"
 
 if (Test-Path $runner_file) {
-	$runner_version = ($runner_file --short-version)
+	$runner_version = & $runner_file --short-version
 } else {
-    $runner_version = 0.0
+    $runner_version = "0.0"
 }
 write-host "custom_win_runner_version=$runner_version"
 
 # Taskcluster proxy
 if (Test-Path $taskcluster_proxy_file) {
-    $proxy_version = ($taskcluster_proxy_file --short-version)
+    $proxy_version = & $taskcluster_proxy_file --short-version
 } else {
-    $proxy_version = 0.0
+    $proxy_version = "0.0"
 }
 write-host "custom_win_taskcluster_proxy_version=$proxy_version"
 
-# workerType is set during proviosning (This may only be for hardware) And OLD.
+# workerType is set during provisioning (This may only be for hardware).
 if (test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet") {
     $gw_workertype = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").workerType
     write-host "custom_win_gw_workerType=$gw_workertype"
