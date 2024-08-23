@@ -22,7 +22,6 @@ packages_classes:
   - mercurial
 
 packages::mercurial::version: 5.5.2
-packages::xcode_cmd_line_tools::version: '12.4'
 
 # Determines how puppet should be executed
 # ( atboot, cron, never )

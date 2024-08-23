@@ -5,6 +5,7 @@
 class roles_profiles::roles::gecko_1_b_osx_1015_staging {
   include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::macos_people_remover
+  include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
