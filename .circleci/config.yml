@@ -220,6 +220,11 @@ jobs:
           role: << parameters.role >>
       - gem_cache
       - install_macos_puppet
+      - run:
+          name: Install Mercurial 6.4.5
+          command: |
+            pip3 install mercurial==6.4.5
+            sudo ln -sf /Library/Frameworks/Python.framework/Versions/3.11/bin/hg /usr/local/bin/hg
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
