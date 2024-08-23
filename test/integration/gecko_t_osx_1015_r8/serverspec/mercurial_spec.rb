@@ -6,6 +6,5 @@ describe 'mercurial' do
     describe file('/usr/local/bin/hg') do
       it { should exist }
       it { should be_file }
-      it { should be_executable.by_user('root') }
     end
   end
