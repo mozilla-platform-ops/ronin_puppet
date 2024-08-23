@@ -221,9 +221,22 @@ jobs:
       - gem_cache
       - install_macos_puppet
       - run:
+          name: Install Python 3.11.0 from Python.org
+          command: |
+            PYTHON_VERSION=3.11.0
+            PYTHON_PKG="python-${PYTHON_VERSION}-macos11.pkg"
+            curl -O https://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_PKG}
+            sudo installer -pkg ${PYTHON_PKG} -target /
+            if [ ! -d "/Library/Frameworks/Python.framework/Versions/3.11" ]; then
+              echo "Python installation failed"
+              exit 1
+            fi
+            /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 --version
+            /Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 --version
+      - run:
           name: Install Mercurial 6.4.5
           command: |
-            pip3 install mercurial==6.4.5
+            /Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 install mercurial==6.4.5
             sudo ln -sf /Library/Frameworks/Python.framework/Versions/3.11/bin/hg /usr/local/bin/hg
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
