@@ -4,29 +4,42 @@
 
 class roles_profiles::roles::win11a6424h2azure {
 
-    # Needs to be applied before other Win Update is disabled
-    include roles_profiles::profiles::microsoft_tools
+    case $facts['custom_win_bootstrap_stage'] {
+        ## Include only what is needed in the catalog post bootstrap
+        ## Saves minutes on workers first boot
+        'complete': {
+            include roles_profiles::profiles::error_reporting
+            include roles_profiles::profiles::files_system_managment
+            include roles_profiles::profiles::logging
+            include roles_profiles::profiles::mozbuild_post_boostrap
+            include roles_profiles::profiles::network
+            include roles_profiles::profiles::ntp
+        }
+        default: {
+            # Needs to be applied before other Win Update is disabled
+            include roles_profiles::profiles::microsoft_tools
 
-    # System
-    include roles_profiles::profiles::disable_services
-    include roles_profiles::profiles::error_reporting
-    include roles_profiles::profiles::suppress_dialog_boxes
-    include roles_profiles::profiles::files_system_managment
-    include roles_profiles::profiles::firewall
-    include roles_profiles::profiles::network
-    include roles_profiles::profiles::ntp
-    include roles_profiles::profiles::power_management
-    include roles_profiles::profiles::scheduled_tasks
-    include roles_profiles::profiles::azure_vm_agent
+            # System
+            include roles_profiles::profiles::disable_services
+            include roles_profiles::profiles::error_reporting
+            include roles_profiles::profiles::suppress_dialog_boxes
+            include roles_profiles::profiles::files_system_managment
+            include roles_profiles::profiles::firewall
+            include roles_profiles::profiles::network
+            include roles_profiles::profiles::ntp
+            include roles_profiles::profiles::power_management
+            include roles_profiles::profiles::scheduled_tasks
+            include roles_profiles::profiles::azure_vm_agent
 
-    # Adminstration
-    include roles_profiles::profiles::logging
-    include roles_profiles::profiles::common_tools
+            # Adminstration
+            include roles_profiles::profiles::logging
+            include roles_profiles::profiles::common_tools
 
-    # Worker
-    include roles_profiles::profiles::google_auth
-    include roles_profiles::profiles::git
-    include roles_profiles::profiles::mozilla_build
-    include roles_profiles::profiles::mozilla_maintenance_service
-    include roles_profiles::profiles::windows_worker_runner
+            # Worker
+            include roles_profiles::profiles::google_auth
+            include roles_profiles::profiles::git
+            include roles_profiles::profiles::mozilla_build
+            include roles_profiles::profiles::windows_worker_runner
+        }
+    }
 }
