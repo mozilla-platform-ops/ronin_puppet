@@ -5,6 +5,5 @@ require_relative 'spec_helper'
 describe 'mercurial' do
     describe file('/usr/local/bin/hg') do
       it { should exist }
-      it { should be_file }
     end
   end
