@@ -11,26 +11,18 @@ describe 'worker_metadata' do
   end
 
   it 'should correctly look up and set workerId' do
-    is_expected.to contain_class('worker_metadata').with(
-      'workerId' => '%{lookup(\'gw.worker_id\')}'
-    )
+    is_expected.to contain('workerId').with_value('%{lookup(\'gw.worker_id\')}')
   end
 
   it 'should correctly look up and set workerGroup' do
-    is_expected.to contain_class('worker_metadata').with(
-      'workerGroup' => '%{lookup(\'gw.worker_group\')}'
-    )
+    is_expected.to contain('workerGroup').with_value('%{lookup(\'gw.worker_group\')}')
   end
 
   it 'should correctly look up and set workerType' do
-    is_expected.to contain_class('worker_metadata').with(
-      'workerType' => '%{lookup(\'gw.worker_type\')}'
-    )
+    is_expected.to contain('workerType').with_value('%{lookup(\'gw.worker_type\')}')
   end
 
   it 'should correctly look up and set provisionerId' do
-    is_expected.to contain_class('worker_metadata').with(
-      'provisionerId' => '%{lookup(\'gw.provisioner_id\')}'
-    )
+    is_expected.to contain('provisionerId').with_value('%{lookup(\'gw.provisioner_id\')}')
   end
 end
