@@ -6,6 +6,7 @@ class packages::mercurial (
   String $version = '6.4.5',
 ) {
   require packages::python3
+  require macos_xcode_tools
 
   # Add the Python 3.11 bin directory to the system PATH permanently
   file { '/etc/paths.d/python3.11':
@@ -30,7 +31,7 @@ class packages::mercurial (
     provider => pip3,
     # Sometimes it seems this below is needed for macOS > 10.15 (?)
     #install_options => ['--use-pep517'],
-    require  => Class['packages::python3', 'packages::xcode_cmd_line_tools'],
+    require  => [Class['packages::python3'], Class['macos_xcode_tools']],
   }
 
   # Create a symlink at /usr/local/bin/hg pointing to the new hg binary

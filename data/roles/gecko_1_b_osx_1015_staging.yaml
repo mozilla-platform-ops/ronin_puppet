@@ -22,14 +22,12 @@ packages_classes:
   - mercurial
   - python3
   - python3_zstandard
-  - xcode_cmd_line_tools
   - zstandard
 
 # Package class parameters
 packages::mercurial::version: 6.4.5
 packages::python3::version: 3.11.0
 packages::python3_zstandard::version: 0.22.0
-packages::xcode_cmd_line_tools::version: '12.4'
 
 # Determines how puppet should be executed
 # ( atboot, cron, never )

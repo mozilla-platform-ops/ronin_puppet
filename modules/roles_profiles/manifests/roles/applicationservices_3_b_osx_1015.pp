@@ -7,6 +7,7 @@ class roles_profiles::roles::applicationservices_3_b_osx_1015 {
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::hardware
   include roles_profiles::profiles::macos_people_remover
+  include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
