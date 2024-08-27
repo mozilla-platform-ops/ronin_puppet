@@ -183,7 +183,6 @@ pools:
     - nuc13-157
     - nuc13-158
     - nuc13-159
-    - nuc13-160
   - name: "win11-64-2009-hw-alpha"
     puppet_version: "8.5.1"
     Description: "NUC12 Hardware Preformance Staging/Testing Pool"
@@ -216,6 +215,7 @@ pools:
     - nuc13-018
     - nuc13-019
     - nuc13-020
+    - nuc13-160
 defaults:
   NV_domain: "mdc1.mozilla.com"
 Validate:
