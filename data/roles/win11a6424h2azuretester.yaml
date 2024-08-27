@@ -6,32 +6,29 @@ win-worker:
   generic_worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
-    version: '67.1.0'
+    version: '64.2.5'
 
   taskcluster:
     worker_runner:
         name: 'start-worker-windows-amd64'
-        version: '67.1.0'
+        version: '64.2.5'
         provider: "azure"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
-        version: '67.1.0'
+        version: '64.2.5'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
     livelog:
         name: "livelog-windows-amd64"
-        version: '67.1.0'
-    client_id: "azure/gecko-t/2012"
-    #worker_pool_id: "gecko-t/win10-64-2004"
+        version: '64.2.5'
+    client_id: "azure/gecko-t/win11-64-2009"
     worker_group: "test"
 
   # Mozilla-build
   mozilla_build:
     version: '4.1'
-    hg_version: '6.2.1'
-    py3_pip_version: '23.3.2'
-    py3_zstandard_version: '0.19.0'
+    zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
 
   # Mozilla profile
@@ -40,20 +37,24 @@ win-worker:
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
   # Applications
-  vnc_msi:  "UltraVnc_1223_X64.msi"
-  vnc_name:  "UltraVnc"
-  nssm:
-    version: '2.24'
   azure:
     vm_agent:
       version: '2.7.41491.1057_2205251057.fre'
       display_name: "Windows Azure VM Agent - 2.7.41491.1057"
-  vac:
-    version: '464'
   git:
-    version: '2.46.0'
+    version: '2.37.3'
+  gpu-latest:
+    name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 538.15"
+  gpu:
+    name: "472.39_grid_win11_win10_64bit_Azure-SWL"
+    display_name: "NVIDIA Graphics Driver 472.39"
   hg:
     version: '6.2.1'
+  nssm:
+    version: '2.24'
+  vac:
+    version: '464'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
