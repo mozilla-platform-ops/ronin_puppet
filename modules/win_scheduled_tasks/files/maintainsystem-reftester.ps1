@@ -371,6 +371,30 @@ function Set-PXE {
     }
 }
 
+function Test-ConnectionUntilOnline {
+    param (
+        [string]$Hostname = "www.google.com",
+        [int]$Interval = 5,
+        [int]$TotalTime = 120
+    )
+
+    $elapsedTime = 0
+
+    while ($elapsedTime -lt $totalTime) {
+        if (Test-Connection -ComputerName $hostname -Count 1 -Quiet) {
+            Write-Log -message ('{0} :: {1} is online! Continuing.' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
+            return
+        } else {
+            Write-Log -message ('{0} :: {1} is not online, checking again in {2}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME, $interval) -severity 'DEBUG'
+            Start-Sleep -Seconds $interval
+            $elapsedTime += $interval
+        }
+    }
+
+    Write-Log -message ('{0} :: {1} did not come online within {2} seconds' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME, $totalTime) -severity 'DEBUG'
+    throw "Connection timeout."
+}
+
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123 
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
@@ -395,6 +419,9 @@ If ($bootstrap_stage -eq 'complete') {
             break
         }
     }
+
+    ## Let's make sure the machine is online before checking the internet
+    Test-ConnectionUntilOnline
 
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
