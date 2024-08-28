@@ -310,6 +310,9 @@ function Get-LatestGoogleChrome {
 
     ## if what's availble is not locally installed, run choco
     if ($InstalledChromeVersionMajorMinor -ne $LatestChromeVersionMajorMinor) {
+        Write-Log -message ('{0} :: Chrome Version installed locally: {1}' -f $($MyInvocation.MyCommand.Name), $InstalledChromeVersionMajorMinor) -severity 'DEBUG'
+        Write-Log -message ('{0} :: Chrome Version available from Google: {1}' -f $($MyInvocation.MyCommand.Name), $LatestChromeVersionMajorMinor) -severity 'DEBUG'
+        Write-Log -message ('{0} :: Upgrading Google Chrome via Chocolatey' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         choco upgrade googlechrome -y --log-file $env:systemdrive\logs\googlechrome.log
         if ($LASTEXITCODE -ne 0) {
             ## output to papertrail
@@ -321,6 +324,8 @@ function Get-LatestGoogleChrome {
         }
         else {
             ## Need to reboot in order to complete the upgrade
+            Write-Log -message ('{0} :: Google Chrome needs to reboot to complete upgrade. Rebooting..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Start-Sleep -Seconds 5
             Restart-Computer -Force
         }
     }
