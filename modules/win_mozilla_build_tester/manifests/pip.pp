@@ -3,20 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_tester::pip {
-  ## If Azure, then cache drive is either Y or D
-  if ($facts['custom_win_location'] == 'azure') {
-    case $facts['custom_win_os_version'] {
-      'win_2012': {
-        $cache_drive = 'y:'
-      }
-      default: {
-        $cache_drive = 'd:'
-      }
-    }
-  }
-  ## If Datacenter, then cache drive is C
-  if ($facts['custom_win_location'] == 'datacenter') {
-    $cache_drive = 'c:'
+
+  if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_Ddrive_present'] == 'true') {
+    $cache_drive = 'd:'
+  } else {
+    $cache_drive = $facts['custom_win_systemdrive']
   }
 
   file { "${$facts['custom_win_programdata']}\\pip":
