@@ -77,10 +77,10 @@ if ($os_caption -like "*windows_10*") {
 	$os_version = $null
 }
 
-$DDriveExists = $false
-
 if (Test-Path -Path "D:\") {
-    $DriveExists = $true
+    $DDriveExists = $true
+} else {
+    $DDriveExists = $false
 }
 
 write-host "custom_win_release_id=$release_id"
