@@ -65,17 +65,15 @@ class win_packages::chrome {
   }
 
   ## Install the latest version of chrome via chocolatey
-  package { 'googlechrome':
-    ensure          => $google_chrome_version,
-    provider        => 'chocolatey',
-    install_options => ['--ignore-checksums'],
+  exec { 'install_google_chrome':
+    command  => file('win_packages/install_google_chrome.ps1'),
+    provider => powershell,
   }
 
   ## Disable the google updater service
   exec { 'disable_google_update':
     command  => file('win_packages/disable_google_updater.ps1'),
     provider => powershell,
-    require  => Package['googlechrome'],
   }
 }
 # Reference https://cloud.google.com/docs/chrome-enterprise/policies for registry settings

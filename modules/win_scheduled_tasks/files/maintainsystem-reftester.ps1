@@ -294,26 +294,24 @@ function Get-LoggedInUser {
 function Get-LatestGoogleChrome {
     [CmdletBinding()]
     param (
-        
+        [String]
+        $Package = "googlechrome"
     )
     
-    $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths"
-    $chromePath = (Get-ItemProperty "$registryPath\chrome.exe").'(default)'
-    $releases = "https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions"
-    [version] $InstalledchromeVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($chromePath).ProductVersion
-    [version] $LatestChromeVersion = ((Invoke-RestMethod -UseBasicParsing -Method Get -Uri $releases).Versions | Select-Object -First 1).version
+    ## Use chocolatey with outdated
+    $choco_packages = choco outdated --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name','CurrentVersion','AvailableVersion','Pinned'
 
-    ## Only check major.minor
-    $InstalledChromeVersionMajorMinor = $InstalledchromeVersion.ToString(2)
-    ## Only check major.minor
-    $LatestChromeVersionMajorMinor = $LatestChromeVersion.ToString(2)
+    ## Check if Google Chrome is present
+    $chrome_outdated_choco_package = $choco_packages | Where-Object { $_.Name -eq $Package }
 
-    ## if what's availble is not locally installed, run choco
-    if ($InstalledChromeVersionMajorMinor -ne $LatestChromeVersionMajorMinor) {
-        Write-Log -message ('{0} :: Chrome Version installed locally: {1}' -f $($MyInvocation.MyCommand.Name), $InstalledChromeVersionMajorMinor) -severity 'DEBUG'
-        Write-Log -message ('{0} :: Chrome Version available from Google: {1}' -f $($MyInvocation.MyCommand.Name), $LatestChromeVersionMajorMinor) -severity 'DEBUG'
-        Write-Log -message ('{0} :: Upgrading Google Chrome via Chocolatey' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        choco upgrade googlechrome -y --ignore-checksums --log-file $env:systemdrive\logs\googlechrome.log
+    ## Get Google Chrome Version installed locally
+    $pkg = choco list --localonly $Package --exact --all --limitoutput | ConvertFrom-Csv -Delimiter '|' -Header "Package","Version"
+
+    if ([string]::IsNullOrEmpty($chrome_outdated_choco_package)) {
+        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $pkg.Version) -severity 'DEBUG'
+    }
+    else {
+        choco upgrade $Package -y "--ignore-checksums" "--ignore-package-exit-codes" "--log-file" $env:systemdrive\logs\googlechrome.log
         if ($LASTEXITCODE -ne 0) {
             ## output to papertrail
             Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
@@ -325,13 +323,9 @@ function Get-LatestGoogleChrome {
         else {
             ## Need to reboot in order to complete the upgrade
             Write-Log -message ('{0} :: Google Chrome needs to reboot to complete upgrade. Rebooting..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Start-Sleep -Seconds 5
+            Start-Sleep -Seconds 10
             Restart-Computer -Force
         }
-    }
-    else {
-        Write-Log -message ('{0} :: Chrome Version installed locally: {1}' -f $($MyInvocation.MyCommand.Name), $InstalledchromeVersion) -severity 'DEBUG'
-        Write-Log -message ('{0} :: Chrome Version available from Google: {1}' -f $($MyInvocation.MyCommand.Name), $LatestChromeVersion) -severity 'DEBUG'
     }
 }
 
