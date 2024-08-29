@@ -5,14 +5,18 @@ if (Get-Service -Name "wsearch" -ErrorAction SilentlyContinue) {
         $service.WaitForStatus('Stopped', "00:02:00")
         $service | Set-Service -StartupType Disabled
 
-        takeown /f "C:\WINDOWS\system32\SearchIndexer.exe" /a
-        icacls "C:\WINDOWS\system32\SearchIndexer.exe" /grant "Administrators:F"
-        Rename-Item -Path "C:\WINDOWS\system32\SearchIndexer.exe" "C:\WINDOWS\system32\SearchIndexer.exe.bak"
+        if (Test-Path -Path "C:\WINDOWS\system32\SearchIndexer.exe") {
+            takeown /f "C:\WINDOWS\system32\SearchIndexer.exe" /a
+            icacls "C:\WINDOWS\system32\SearchIndexer.exe" /grant "Administrators:F"
+            Rename-Item -Path "C:\WINDOWS\system32\SearchIndexer.exe" "C:\WINDOWS\system32\SearchIndexer.exe.bak"
+        }
     }
     else {
-        takeown /f "C:\WINDOWS\system32\SearchIndexer.exe" /a
-        icacls "C:\WINDOWS\system32\SearchIndexer.exe" /grant "Administrators:F"
-        Rename-Item -Path "C:\WINDOWS\system32\SearchIndexer.exe" "C:\WINDOWS\system32\SearchIndexer.exe.bak"
+        if (Test-Path -Path "C:\WINDOWS\system32\SearchIndexer.exe") {
+            takeown /f "C:\WINDOWS\system32\SearchIndexer.exe" /a
+            icacls "C:\WINDOWS\system32\SearchIndexer.exe" /grant "Administrators:F"
+            Rename-Item -Path "C:\WINDOWS\system32\SearchIndexer.exe" "C:\WINDOWS\system32\SearchIndexer.exe.bak"
+        }
     }
 
     $value = (Get-ItemProperty -Path "HKLM:\SYSTEM\ControlSet001\Services\WSearch").Start
