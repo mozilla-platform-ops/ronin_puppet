@@ -66,8 +66,9 @@ class win_packages::chrome {
 
   ## Install the latest version of chrome via chocolatey
   package { 'googlechrome':
-    ensure   => $google_chrome_version,
-    provider => 'chocolatey',
+    ensure          => $google_chrome_version,
+    provider        => 'chocolatey',
+    install_options => ['--ignore-checksums'],
   }
 
   ## Disable the google updater service
