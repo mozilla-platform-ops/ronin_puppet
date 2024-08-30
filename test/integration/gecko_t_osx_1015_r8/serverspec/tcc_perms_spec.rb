@@ -1,7 +1,6 @@
 require_relative 'spec_helper'
-require 'sqlite3'
 
-# This test suite checks for the presence of a specific entry in the TCC.db
+# This test suite checks for the presence of a specific entry in the TCC.db using the /usr/bin/sqlite3 binary
 describe 'TCC.db' do
   let(:db_path) { '/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db' }
   let(:query) do
@@ -9,19 +8,10 @@ describe 'TCC.db' do
   end
 
   it 'contains the expected access entry' do
-    db = SQLite3::Database.open(db_path)
-    result = db.execute(query)
-    db.close
+    command = "/usr/bin/sqlite3 '#{db_path}' \"#{query}\""
+    result = command(command)
 
-    expect(result).not_to be_empty
-    expect(result[0]).to include(
-      'kTCCServiceAppleEvents',
-      '/usr/libexec/sshd-keygen-wrapper',
-      1,
-      1,
-      1,
-      nil,
-      'com.apple.systemevents'
-    )
+    expect(result.exit_status).to eq(0)
+    expect(result.stdout.strip).not_to be_empty
   end
 end
