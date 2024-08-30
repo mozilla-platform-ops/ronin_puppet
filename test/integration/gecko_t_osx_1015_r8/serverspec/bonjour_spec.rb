@@ -7,9 +7,13 @@ describe 'Bonjour multicast advertisements disabled' do
     its(:stdout) { should match(/^1$/) }
   end
 
-  # Ensure the mDNSResponder service is running and enabled
-  describe service('com.apple.mDNSResponder') do
-    it { should be_running }
-    it { should be_enabled }
+  # Check if the mDNSResponder service is running
+  describe command('launchctl list | grep com.apple.mDNSResponder') do
+    its(:stdout) { should match(/com.apple.mDNSResponder/) }
+  end
+
+  # Alternatively, use a command to check if the service is active
+  describe command('launchctl print system/com.apple.mDNSResponder | grep -E "state = running|state = active"') do
+    its(:exit_status) { should eq 0 }
   end
 end
