@@ -24,7 +24,7 @@ class win_packages::dxsdk_jun10 {
 
     win_packages::win_exe_pkg  { 'dxsdk_jun10':
         pkg                    => 'DXSDK_Jun10.exe',
-        install_options_string => '/U',
+        install_options_string => '/U /O /S',
         creates                => "${prog86x}\\${sdk_dir}\\Include\\audiodefs.h",
     }
     windows::environment { 'DXSDK_DIR':
