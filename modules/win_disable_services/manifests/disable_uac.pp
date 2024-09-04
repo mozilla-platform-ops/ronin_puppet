@@ -53,9 +53,19 @@ class win_disable_services::disable_uac {
         type => dword,
         data => '1',
       }
-      registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
-        type => dword,
-        data => '1',
+      case $facts['custom_win_os_version'] {
+        'builder':{
+            registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
+                type => dword,
+                data => '0',
+            }
+        }
+        default: {
+            registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
+                type => dword,
+                data => '1',
+            }
+        }
       }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableVirtualization':
         type => dword,
