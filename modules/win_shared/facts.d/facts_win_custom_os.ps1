@@ -9,6 +9,7 @@
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
 $win_os_build = [System.Environment]::OSVersion.Version.build
+$display_version = $release_key.DisplayVersion
 
 # OS caption
 # Used to determine which KMS license for cloud workers
@@ -77,7 +78,7 @@ if ($os_caption -like "*windows_10*") {
 	$os_version = $null
 }
 
-
+write-host "custom_win_display_version=$display_version"
 write-host "custom_win_release_id=$release_id"
 write-host "custom_win_os_caption=$os_caption"
 write-host "custom_win_os_version=$os_version"
