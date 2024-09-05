@@ -8,7 +8,7 @@ class roles_profiles::profiles::microsoft_tools {
     'Windows': {
       ## May not be needed. Start pahasing out with 2022
       if $facts['os']['release']['full'] != '2016' {
-          include win_os_settings::powershell_profile
+        include win_os_settings::powershell_profile
       }
       include win_shared::win_ronin_dirs
       class { 'win_packages::performance_tool_kit':
@@ -30,7 +30,9 @@ class roles_profiles::profiles::microsoft_tools {
           include win_packages::vc_redist_x64
         }
         'tester':{
-          include win_packages::win_10_sdk
+          if $facts['custom_win_location'] != 'datacenter' {
+            include win_packages::win_10_sdk
+          }
         }
         default: {
           fail("${$facts['custom_win_purpose']} not supported")
