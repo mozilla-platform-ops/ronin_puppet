@@ -6,8 +6,8 @@ pools:
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
-    src_Branch: "win11hardware"
-    hash: "b7561c0"
+    src_Branch: "win11hardware_winsdk"
+    hash: "97c586d"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
