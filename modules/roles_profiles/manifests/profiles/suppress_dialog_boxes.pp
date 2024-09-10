@@ -22,8 +22,13 @@ class roles_profiles::profiles::suppress_dialog_boxes {
             include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
         'Windows': {
+
+            $purpose = lookup('win-worker.function')
+
             include win_os_settings::disable_notifications
-            include win_disable_services::disable_uac
+            class { 'win_disable_services::disable_uac':
+                purpose => $purpose
+            }
 
         # Bug list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
