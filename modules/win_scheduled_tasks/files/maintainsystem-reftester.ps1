@@ -319,6 +319,8 @@ function Get-LatestGoogleChrome {
             Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
             ## Sending the logs to papertrail, wait 30 seconds
             Start-Sleep -Seconds 30
+            ## PXE Boot
+            Set-PXE
         }
         else {
             ## Need to reboot in order to complete the upgrade
