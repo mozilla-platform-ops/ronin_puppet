@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::chrome {
-  include chocolatey
   $google_chrome_version = lookup('win-worker.googlechrome.version')
 
   ## Block googleupdate.exe to prevent installing an updating version of chrome outside of chocolatey
@@ -62,10 +61,6 @@ class win_packages::chrome {
     ensure => present,
     type   => dword,
     data   => '0',
-  }
-
-  chocolateyfeature { 'checksumFiles':
-    ensure => disabled,
   }
 
   ## Install the latest version of chrome via chocolatey

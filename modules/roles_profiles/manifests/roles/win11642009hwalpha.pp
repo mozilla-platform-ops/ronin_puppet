@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win11642009hwalpha {
+  include roles_profiles::profiles::chocolatey
   ## Install before Widnows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh

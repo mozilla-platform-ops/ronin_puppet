@@ -1,4 +1,5 @@
 class roles_profiles::roles::win11642009hwrefalpha {
+  include roles_profiles::profiles::chocolatey
   # Install MS tools earlier
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
