@@ -1,5 +1,16 @@
-## Set up ssh early on to ensure access if bootstrap fails.
+function Set-PXE {
+    Import-Module Microsoft.Windows.Bcd.Cmdlets
+    $data = (Get-BcdStore).entries | ForEach-Object {
+        $d = ($_.Elements | Where-Object { $_.Name -eq "Description" }).value
+        if ($d -match "IPv4") {
+            $PSItem
+        }
+    }
+    bcdedit /set "{fwbootmgr}" BOOTSEQUENCE "{$($data.Identifier.Guid)}"
+    Restart-Computer -Force
+}
 
+## Set up ssh early on to ensure access if bootstrap fails.
 Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
 
 $destinationDirectory = "C:\users\administrator\.ssh"
@@ -7,14 +18,13 @@ $authorized_keys =  $destinationDirectory + "authorized_keys"
 $chocoPath = 'C:\ProgramData\Chocolatey\bin'
 
 ## Install chocolatey here
-Set-ExecutionPolicy Bypass -Scope Process -Force
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+Set-ExecutionPolicy Unrestricted -Force -ErrorAction SilentlyContinue
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-## Add choco to path
-$currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
-$newPath = $chocoPath + ';' + $currentPath
-[Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+if (-Not (Test-Path "$chocoPath\choco.exe")) {
+    Set-PXE
+}
 
 New-Item -ItemType Directory -Path $destinationDirectory -Force
 
