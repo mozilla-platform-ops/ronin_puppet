@@ -302,15 +302,12 @@ function Get-LatestGoogleChrome {
     $choco_packages = choco outdated --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name','CurrentVersion','AvailableVersion','Pinned'
 
     ## Check if Google Chrome is present
-    $chrome_outdated_choco_package = $choco_packages | Where-Object { $_.Name -eq $Package }
+    $pkg = $choco_packages | Where-Object { $_.Name -eq $Package }
 
-    ## Get Google Chrome Version installed locally
-    $pkg = choco list --localonly $Package --exact --all --limitoutput | ConvertFrom-Csv -Delimiter '|' -Header "Package","Version"
-
-    if ([string]::IsNullOrEmpty($chrome_outdated_choco_package)) {
-        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $pkg.Version) -severity 'DEBUG'
-    }
-    else {
+    ## The $chrome_outdated_choco_package returns currentVersion and availableVersion, use that instead
+    if ($pkg.CurrentVersion -ne $pkg.AvailableVersion) {
+        ## run choco upgrade
+        Write-Log -message ('{0} :: Updating Google Chrome from current: {1} to available: {2}' -f $($MyInvocation.MyCommand.Name), $pkg.currentVersion, $pkg.availableVersion) -severity 'DEBUG'
         choco upgrade $Package -y "--ignore-checksums" "--ignore-package-exit-codes" "--log-file" $env:systemdrive\logs\googlechrome.log
         if ($LASTEXITCODE -ne 0) {
             ## output to papertrail
@@ -328,6 +325,9 @@ function Get-LatestGoogleChrome {
             Start-Sleep -Seconds 10
             Restart-Computer -Force
         }
+    }
+    else {
+        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $chrome_outdated_choco_package.Version) -severity 'DEBUG' 
     }
 }
 
