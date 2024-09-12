@@ -21,7 +21,7 @@ worker:
 packages_classes:
   - mercurial
 
-packages::mercurial::version: 5.5.2
+packages::mercurial::version: 6.4.5
 
 # Determines how puppet should be executed
 # ( atboot, cron, never )
