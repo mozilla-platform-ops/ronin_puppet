@@ -12,8 +12,8 @@ class win_packages::dxsdk_jun10 {
         'microsoftwindowsdesktop': {
             exec { 'install_net_framework3.5':
                 command  => 'Enable-WindowsOptionalFeature -Online -FeatureName "NetFx3" -All',
-                retries  => 3,
                 provider => powershell,
+                timeout  => 600,
             }
         }
         default: {
