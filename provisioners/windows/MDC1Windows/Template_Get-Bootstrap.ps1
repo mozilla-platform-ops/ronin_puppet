@@ -4,6 +4,17 @@ Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
 
 $destinationDirectory = "C:\users\administrator\.ssh"
 $authorized_keys =  $destinationDirectory + "authorized_keys"
+$chocoPath = 'C:\ProgramData\Chocolatey\bin'
+
+## Install chocolatey here
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+## Add choco to path
+$currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+$newPath = $chocoPath + ';' + $currentPath
+[Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
 
 New-Item -ItemType Directory -Path $destinationDirectory -Force
 

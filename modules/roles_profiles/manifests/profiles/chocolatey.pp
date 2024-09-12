@@ -5,9 +5,9 @@
 class roles_profiles::profiles::chocolatey {
   case $facts['os']['name'] {
     'Windows': {
-      include chocolatey
+      #include chocolatey
       ## chocolatey doesn't seem to add to path, doing that here
-      windows_env { "PATH=C:\\ProgramData\\Chocolatey\\bin": }
+      #windows_env { "PATH=C:\\ProgramData\\Chocolatey\\bin": }
       ## There are times when installing google chrome will fail due to hash mismatch
       ## This should be fixed once we internalize google chrome
       chocolateyfeature { 'checksumFiles':
