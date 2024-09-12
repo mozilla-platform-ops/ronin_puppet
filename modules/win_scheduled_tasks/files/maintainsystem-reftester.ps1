@@ -327,7 +327,7 @@ function Get-LatestGoogleChrome {
         }
     }
     else {
-        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $chrome_outdated_choco_package.Version) -severity 'DEBUG' 
+        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $pkg.CurrentVersion) -severity 'DEBUG' 
     }
 }
 
