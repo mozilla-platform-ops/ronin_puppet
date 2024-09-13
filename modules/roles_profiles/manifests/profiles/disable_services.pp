@@ -36,7 +36,7 @@ class roles_profiles::profiles::disable_services {
     }
     'Windows': {
       include win_disable_services::disable_puppet
-      #include win_disable_services::disable_windows_update
+      include win_disable_services::disable_windows_update
       include win_disable_services::disable_wsearch
 
       $func = lookup('win-worker.function')
