@@ -7,7 +7,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "66bbd06"
+    hash: "85552ae"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -20,7 +20,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "66bbd06"
+    hash: "85552ae"
     secret_date: "05-13-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -40,7 +40,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "66bbd06"
+    hash: "85552ae"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -191,7 +191,7 @@ pools:
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "66bbd06"
+    hash: "85552ae"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
