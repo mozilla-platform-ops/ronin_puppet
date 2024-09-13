@@ -309,7 +309,6 @@ function Get-LatestGoogleChrome {
 
     ## There is no google chrome update, so output the current version
     if ([String]::IsNullOrEmpty($pkg)) {
-        $current_version = choco list --exact $Package --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion'
         Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $current_version.CurrentVersion) -severity 'DEBUG' 
     }
     else {
@@ -324,7 +323,7 @@ function Get-LatestGoogleChrome {
                 ## output chocolatey logs to papertrail
                 Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
                 ## Sending the logs to papertrail, wait 30 seconds
-                Start-Sleep -Seconds 30
+                Start-Sleep -Seconds 60
                 ## PXE Boot
                 Set-PXE
             }
