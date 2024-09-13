@@ -298,36 +298,43 @@ function Get-LatestGoogleChrome {
         $Package = "googlechrome"
     )
     
+    ## Current version of google chrome
+    $current_version = choco list --exact $Package --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion'
+    
     ## Use chocolatey with outdated
-    $choco_packages = choco outdated --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name','CurrentVersion','AvailableVersion','Pinned'
+    $choco_packages = choco outdated --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion', 'AvailableVersion', 'Pinned'
 
     ## Check if Google Chrome is present
     $pkg = $choco_packages | Where-Object { $_.Name -eq $Package }
 
-    ## The $chrome_outdated_choco_package returns currentVersion and availableVersion, use that instead
-    if ($pkg.CurrentVersion -ne $pkg.AvailableVersion) {
-        ## run choco upgrade
-        Write-Log -message ('{0} :: Updating Google Chrome from current: {1} to available: {2}' -f $($MyInvocation.MyCommand.Name), $pkg.currentVersion, $pkg.availableVersion) -severity 'DEBUG'
-        choco upgrade $Package -y "--ignore-checksums" "--ignore-package-exit-codes" "--log-file" $env:systemdrive\logs\googlechrome.log
-        if ($LASTEXITCODE -ne 0) {
-            ## output to papertrail
-            Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
-            ## output chocolatey logs to papertrail
-            Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
-            ## Sending the logs to papertrail, wait 30 seconds
-            Start-Sleep -Seconds 30
-            ## PXE Boot
-            Set-PXE
-        }
-        else {
-            ## Need to reboot in order to complete the upgrade
-            Write-Log -message ('{0} :: Google Chrome needs to reboot to complete upgrade. Rebooting..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Start-Sleep -Seconds 10
-            Restart-Computer -Force
-        }
+    ## There is no google chrome update, so output the current version
+    if ([String]::IsNullOrEmpty($pkg)) {
+        $current_version = choco list --exact $Package --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion'
+        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $current_version.CurrentVersion) -severity 'DEBUG' 
     }
     else {
-        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $pkg.CurrentVersion) -severity 'DEBUG' 
+        ## Chrome is installed and needs to be updated
+        if ($pkg.CurrentVersion -ne $pkg.AvailableVersion) {
+            ## run choco upgrade
+            Write-Log -message ('{0} :: Updating Google Chrome from current: {1} to available: {2}' -f $($MyInvocation.MyCommand.Name), $pkg.currentVersion, $pkg.availableVersion) -severity 'DEBUG'
+            choco upgrade $Package -y "--ignore-checksums" "--ignore-package-exit-codes" "--log-file" $env:systemdrive\logs\googlechrome.log
+            if ($LASTEXITCODE -ne 0) {
+                ## output to papertrail
+                Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
+                ## output chocolatey logs to papertrail
+                Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
+                ## Sending the logs to papertrail, wait 30 seconds
+                Start-Sleep -Seconds 30
+                ## PXE Boot
+                Set-PXE
+            }
+            else {
+                ## Need to reboot in order to complete the upgrade
+                Write-Log -message ('{0} :: Google Chrome needs to reboot to complete upgrade. Rebooting..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Start-Sleep -Seconds 10
+                Restart-Computer -Force
+            }
+        }
     }
 }
 
@@ -385,7 +392,8 @@ function Test-ConnectionUntilOnline {
         if (Test-Connection -ComputerName $hostname -Count 1 -Quiet) {
             Write-Log -message ('{0} :: {1} is online! Continuing.' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
             return
-        } else {
+        }
+        else {
             Write-Log -message ('{0} :: {1} is not online, checking again in {2}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME, $interval) -severity 'DEBUG'
             Start-Sleep -Seconds $interval
             $elapsedTime += $interval
