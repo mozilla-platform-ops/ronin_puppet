@@ -27,6 +27,7 @@ def run():
         scriptworker_config = yaml.load(fh, Loader=yaml.Loader)["scriptworker_config"]
 
     for name, config in scriptworker_config.items():
+        print(f"Updating requirements for {name}..")
         scriptworker_revision = config["scriptworker_revision"]
         scriptworker_scripts_revision = config["scriptworker_scripts_revision"]
 
@@ -36,10 +37,10 @@ def run():
             fp.write(
                 dedent(
                     f"""
+                -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/{scriptworker_revision}/requirements.txt
                 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/{scriptworker_scripts_revision}/scriptworker_client/requirements/base.in
                 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/{scriptworker_scripts_revision}/iscript/requirements/base.in
                 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/{scriptworker_scripts_revision}/notarization_poller/requirements/base.in
-                -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/{scriptworker_revision}/requirements.txt
                 # mozbuild dependencies
                 jsmin>=3
                 mozfile
@@ -51,21 +52,22 @@ def run():
             )
             fp.close()
 
-            with open(fp.name, "r") as fh:
-                print(fh.read())
-
             subprocess.run(
                 [
                     "uv",
                     "pip",
                     "compile",
+                    "-q",
                     "--universal",
+                    "--python-version=3.8",
                     "--generate-hashes",
                     "-o",
                     output_file,
                     fp.name,
                 ]
             )
+
+    print("Done!")
 
 
 if __name__ == "__main__":
