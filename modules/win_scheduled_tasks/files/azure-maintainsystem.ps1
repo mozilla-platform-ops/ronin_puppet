@@ -80,7 +80,7 @@ function Run-MaintainSystem {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    Remove-OldTaskDirectories
+    #Remove-OldTaskDirectories
     Get-ChildItem "$env:systemdrive\logs\old" -Recurse -File | Where-Object CreationTime -lt  (Get-Date).AddDays(-7)  | Remove-Item -Force
   }
   end {

@@ -16,14 +16,28 @@ class win_taskcluster::worker_runner (
   String $runner_service_type = 'SERVICE_WIN32_OWN_PROCESS',
   String $runner_app_exit = 'Default Exit',
   $implementation = undef,
-  $root_url       = undef,
-  $client_id      = undef,
-  $access_token   = undef,
-  $worker_pool_id = undef,
-  $worker_group   = undef,
-  $worker_id      = undef,
   $gw_exe_path    = undef,
-  $config_file    = undef
+  # GW config
+  $access_token          = undef,
+  $cache_dir             = undef,
+  $client_id             = undef,
+  $config_file           = undef,
+  $downloads_dir         = undef,
+  $ed25519signingkey     = undef,
+  $idle_timeout          = undef,
+  $livelog_exe           = undef,
+  $location              = undef,
+  $provisioner           = undef,
+  $root_url              = undef,
+  $task_dir              = undef,
+  $task_user_init_cmd    = undef,
+  $taskcluster_proxy_exe = undef,
+  $taskcluster_root_url  = undef,
+  $worker_id             = undef,
+  $worker_group          = undef,
+  $worker_pool_id        = undef,
+  $wstaudience           = undef,
+  $wstserverurl          = undef
 ) {
   require win_packages::custom_nssm
 

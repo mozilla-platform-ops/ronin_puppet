@@ -12,9 +12,9 @@ $acl = Get-Acl $folder
 $everyone = $acl.Access | Where-Object {$PSItem.IdentityReference -eq "Everyone"}
 
 foreach ($access in $everyone) {
-    if ($access.IdentityReference -eq "Everyone" -and
-        $access.FileSystemRights -eq "FullControl" -and
-        $access.InheritanceFlags -eq "ContainerInherit, ObjectInherit" -and
+    if ($access.IdentityReference -eq "Everyone" -and 
+        $access.FileSystemRights -eq "FullControl" -and 
+        $access.InheritanceFlags -eq "ContainerInherit, ObjectInherit" -and 
         $access.AccessControlType -eq "Allow") {
         Write-host "Permission set on $folder"
         exit 0

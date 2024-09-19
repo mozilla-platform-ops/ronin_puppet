@@ -3,23 +3,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::scheduled_tasks {
+  include win_scheduled_tasks::at_task_user_logon
   case $facts['os']['name'] {
     'Windows': {
-      if ($facts['custom_win_location'] == 'azure') {
-        case $facts['custom_win_os_version'] {
-          'win_2012': {
+      case $facts['custom_win_location'] {
+        'azure': {
+          if $facts['custom_win_os_version'] == '2012' {
             $startup_script = '2012-azure-maintainsystem.ps1'
-          }
-          default: {
+          } else {
             $startup_script = 'azure-maintainsystem.ps1'
           }
         }
-        #$startup_script = 'azure-maintainsystem.ps1'
-        ## Temp change for new 2012 image.
-        #$startup_script = '2012-azure-maintainsystem.ps1'
-        include win_scheduled_tasks::at_task_user_logon
-      } else {
-        $startup_script = 'maintainsystem.ps1'
+        'datacenter': {
+          $startup_script = 'maintainsystem-reftester.ps1'
+        }
+        default: {
+          $startup_script = 'maintainsystem.ps1'
+        }
       }
       class { 'win_scheduled_tasks::maintain_system':
         startup_script => $startup_script,
