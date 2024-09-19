@@ -9,5 +9,5 @@ export LANG=en_US.UTF-8
 if command -v directory_cleaner &> /dev/null
 then
     directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/downloads
-    directory_cleaner -c /opt/directory_cleaner/configs/config.toml /opt/worker/cache
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml /Users/cltbld/Library/Caches/Mozilla/updates/opt/worker/tasks/
 fi
