@@ -100,10 +100,11 @@ class roles_profiles::profiles::windows_worker_runner {
                     $livelog_exe           = undef
                     $location              = undef
                     $provisioner           = undef
+                    $root_url              = undef
                     $task_dir              = undef
                     $task_user_init_cmd    = undef
-                    $taskcluster_root_url  = undef
                     $taskcluster_proxy_exe = undef
+                    $taskcluster_root_url  = undef
                     $worker_id             = undef
                     $worker_group          = undef
                     $worker_pool_id        = undef
