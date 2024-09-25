@@ -8,29 +8,24 @@
 
 class win_disable_services::disable_wsearch {
   if $facts['os']['name'] == 'Windows' {
-    exec { 'disable_wsearch':
-      command  => file('win_disable_services/wsearch/disable.ps1'),
-      provider => powershell,
-      timeout  => 300,
+    case $facts['custom_win_location'] {
+      'datacenter': {
+        exec { 'disable_wsearch':
+          command  => file('win_disable_services/wsearch/disable.ps1'),
+          provider => powershell,
+          timeout  => 300,
+        }
+      }
+      'azure':{ ## Let's use this method of disabling service on cloud workers
+        win_disable_services::disable_service { 'wsearch':
+        }
+      }
+      default: {
+        win_disable_services::disable_service { 'wsearch':
+        }
+      }
     }
   } else {
     fail("${module_name} does not support ${facts['os']['name']}")
   }
 }
-
-# case $facts['custom_win_location'] {
-#   'datacenter': {
-#     exec { 'disable_wsearch':
-#       command  => file('win_disable_services/wsearch/disable.ps1'),
-#       provider => powershell,
-#       timeout  => 300,
-#     }
-#   }
-#   'azure':{ ## Let's use this method of disabling service on cloud workers
-#     win_disable_services::disable_service { 'wsearch':
-#     }
-#   }
-#   default: {
-#     $source_location = lookup('windows.ext_pkg_src')
-#   }
-# }
