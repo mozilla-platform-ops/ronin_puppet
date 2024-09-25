@@ -24,8 +24,12 @@ class roles_profiles::profiles::suppress_dialog_boxes {
         'Windows': {
             include win_os_settings::disable_notifications
             include win_disable_services::disable_uac
-            if $facts['custom_win_os_version'] == 'win_11_2009' {
-              include win_os_settings::hide_start_menu
+            ## Let's hide start menu on datacenter win11, not cloud
+            ## This may be effecting bc1 for win/debug-msix
+            if $facts['custom_win_location'] == 'datacenter' {
+              if $facts['custom_win_os_version'] == 'win_11_2009' {
+                include win_os_settings::hide_start_menu
+            }
             }
         # Bug list
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
