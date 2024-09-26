@@ -10,8 +10,6 @@ class roles_profiles::profiles::power_management {
     'Windows': {
       case $facts['custom_win_location'] {
         'datacenter': {
-          ## no sleep  on hardware to rule out problem with tests failing
-          include win_os_settings::no_sleep
           $guid = 'e9a42b02-d5df-448d-aa00-03f14749eb61' # Ultimate Performance
         }
         default: {
@@ -25,6 +23,7 @@ class roles_profiles::profiles::power_management {
         unless   => template('windows/powercfg_check.ps1.erb'),
         provider => 'powershell',
       }
+      include win_os_settings::no_sleep
     }
     default: {
       fail("${$facts['os']['name']} not supported")
