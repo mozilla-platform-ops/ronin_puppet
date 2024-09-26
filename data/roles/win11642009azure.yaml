@@ -38,8 +38,8 @@ win-worker:
   # Applications
   azure:
     vm_agent:
-      version: '2.7.41491.1057_2205251057.fre'
-      display_name: "Windows Azure VM Agent - 2.7.41491.1057"
+      version: '2.7.41491.1139_2408131139.fre'
+      display_name: "Windows Azure VM Agent - 2.7.41491.1139"
   git:
     version: '2.46.0'
   gpu-latest:
