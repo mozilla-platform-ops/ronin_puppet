@@ -42,7 +42,7 @@ while ($true) {
   ## add support for multiple services
   $clip_service = (Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.name -Like "cbdhsvc_*" })
   if ([string]::IsNullOrEmpty($clip_service)) {
-    Write-Log -message  ('{0} :: Local Clip Board service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    #Write-Log -message  ('{0} :: Local Clip Board service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }
   else {
     Write-Log -message ('{0} :: {1} is {2} and start up is set to {3}' -f $($MyInvocation.MyCommand.Name), $clip_service.DisplayName, $clip_service.status, $clip_service.start_type) -severity 'DEBUG'
