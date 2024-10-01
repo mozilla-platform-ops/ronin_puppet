@@ -17,10 +17,11 @@ class roles_profiles::profiles::files_system_managment {
           max_size => 8192,
         }
       }
-      # Bug List
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1515779
-      # Paging file
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1562974
+      ## If tester then enable long path
+      ## Limit long paths on hardware to rule out problem with tests failing
+      if ($facts['custom_win_purpose'] == 'tester') {
+        include win_os_settings::enable_long_paths
+      }
     }
     default: {
       fail("${$facts['os']['name']} not supported")

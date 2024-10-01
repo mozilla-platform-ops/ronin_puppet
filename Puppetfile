@@ -25,7 +25,8 @@ mod 'puppet-windowsfeature', '4.0.0'
 mod 'puppetlabs-yaml', '0.2.0'
 mod 'saz-rsyslog', '5.0.0'
 mod 'thekevjames-homebrew', '1.8.3'
-mod 'webalex-windows_firewall', '1.2.3'
+mod 'puppet-windows_firewall', '5.0.0'
+mod 'puppetlabs-chocolatey', '8.0.0'
 
 mod 'archive',
   :git => "https://github.com/voxpupuli/puppet-archive.git",

@@ -12,10 +12,6 @@ define win_packages::win_exe_pkg (
   $srcloc       = lookup('windows.ext_pkg_src')
   $url         = "${srcloc}/${pkg}"
 
-  notify { "${package} download message":
-    message => "Downloading ${pkg} from ${url} to ${pkgdir}",
-  }
-
   archive { $title:
     ensure  => 'present',
     source  => $url,

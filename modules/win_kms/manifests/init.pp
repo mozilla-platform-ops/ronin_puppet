@@ -3,12 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_kms {
-
-    if $::operatingsystem == 'Windows' {
-        include win_kms::fw_exception
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
-    }
+  if $facts['os']['name'] == 'Windows' {
+    include win_kms::fw_exception
+  } else {
+    fail("${module_name} does not support ${facts['os']['name']}")
+  }
 }
 
 # Bug list

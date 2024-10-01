@@ -5,7 +5,15 @@
 class win_packages::nircmd {
 
     $system32 = $facts['custom_win_system32']
-    $srcloc   = lookup('windows.ext_pkg_src')
+
+    case $facts['custom_win_location'] {
+        'datacenter': {
+            $srcloc       = lookup('windows.s3.ext_pkg_src')
+        }
+        default: {
+            $srcloc = lookup('windows.ext_pkg_src')
+        }
+    }
 
     file { "${system32}\\nircmd.exe":
         ensure => present,
