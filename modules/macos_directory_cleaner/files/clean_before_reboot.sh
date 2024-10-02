@@ -10,4 +10,5 @@ if command -v directory_cleaner &> /dev/null
 then
     directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /opt/worker/downloads
     directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /Users/cltbld/Library/Caches/Mozilla/updates/opt/worker/tasks/
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /opt/worker/tasks/cltbld
 fi
