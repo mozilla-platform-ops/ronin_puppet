@@ -41,6 +41,9 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::virtual_drivers
       include roles_profiles::profiles::gpu_drivers
 
+      # Skip OOBE
+      include roles_profiles::profiles::oobe
+
       # Adminstration
       include roles_profiles::profiles::logging
       include roles_profiles::profiles::common_tools
