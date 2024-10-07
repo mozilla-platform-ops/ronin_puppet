@@ -22,6 +22,8 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::ntp
       ## errors if we don't have this, adding this
       include roles_profiles::profiles::mozilla_maintenance_service
+      # Skip OOBE
+      include roles_profiles::profiles::oobe
     }
     default: {
       # Install MS tools earlier
