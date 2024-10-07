@@ -43,6 +43,9 @@ class roles_profiles::roles::win11642009azure {
       include roles_profiles::profiles::virtual_drivers
       include roles_profiles::profiles::gpu_drivers
 
+      # WebView
+      include roles_profiles::profiles::webview2
+
       # Adminstration
       include roles_profiles::profiles::logging
       include roles_profiles::profiles::common_tools
