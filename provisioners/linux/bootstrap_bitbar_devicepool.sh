@@ -141,7 +141,7 @@ ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
 # install r10k
 # to handle https://github.com/puppetlabs/r10k/issues/930
 /opt/puppetlabs/puppet/bin/gem install cri -v 2.15.6
-/opt/puppetlabs/puppet/bin/gem install r10k
+/opt/puppetlabs/puppet/bin/gem install r10k -v 3.15.2
 
 # disable puppet agent systemd service
 # - we run masterless and only converge manually
