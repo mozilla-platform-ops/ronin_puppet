@@ -85,7 +85,7 @@ EOF
 
   # Enable the service to run on shutdown/reboot
   service { 'clean_before_reboot':
-    ensure  => 'enabled',
+    ensure  => 'running',
     enable  => true,
     require => Exec['systemd-reload'],
   }
