@@ -20,6 +20,7 @@ groups:
 
   - name: gecko-t-osx-1100-m1
     targets:
+      - macmini-m1-12.test.releng.mslv.mozilla.com
       - macmini-m1-15.test.releng.mslv.mozilla.com
       - macmini-m1-16.test.releng.mslv.mozilla.com
       - macmini-m1-18.test.releng.mslv.mozilla.com
