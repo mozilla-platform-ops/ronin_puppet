@@ -126,6 +126,25 @@ switch ($os_version) {
             }
         }
     }
+    "win_10_2009" {
+        ## If it's not there already, create it
+        if ($null -eq $Accessibility.DynamicScrollbars) {
+            Try {
+                New-ItemProperty -Path "HKCU:\Control Panel\Accessibility" -Name "DynamicScrollbars" -Value 0 -ErrorAction Stop
+                #Write-Log -message  ('{0} :: Scrollbars successfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            }
+            Catch {
+                Write-Log -message  ('{0} :: Scrollbars unsuccessfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            }
+        }
+        else {
+            ## If it's already there, make sure it's 0
+            if ($Accessibility.DynamicScrollbars -eq 0) {
+                #Write-Log -message  ('{0} :: Scrollbars already set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                continue
+            }
+        }
+    }
     "win_2012" {
         ## Ensure strong encryption
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12

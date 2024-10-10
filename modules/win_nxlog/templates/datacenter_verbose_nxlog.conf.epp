@@ -48,26 +48,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input generic_worker_log>
   Module im_file
-  File 'C:/generic-worker/generic-worker.log'
-  SavePos TRUE
-  ReadFromLast TRUE
-  InputType multiline-gw-datetime-header
-  Exec if $raw_event =~ /^(\d\d\d\d\/\d\d\/\d\d\s\d\d:\d\d:\d\d)\s(.*)/s { $EventTime = parsedate($1); $Message = $2; }
-  Exec $SourceName = 'generic-worker';
-</Input>
-
-<Input generic_worker_wrapper_log>
-  Module im_file
-  File 'C:/generic-worker/generic-worker-wrapper.log'
-  SavePos TRUE
-  ReadFromLast TRUE
-  InputType LineBased
-  Exec $SourceName = 'generic-worker-wrapper';
-</Input>
-
-<Input generic_worker_service_log>
-  Module im_file
-  File 'C:/generic-worker/generic-worker-service.log'
+  File 'C:\generic-worker\\*.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType multiline-gw-datetime-header
@@ -77,7 +58,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input worker_runner_log>
   Module im_file
-  File 'C:/worker-runner/*.log'
+  File 'C:\worker-runner\\*.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType multiline-gw-datetime-header
@@ -105,7 +86,7 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Input nxlog>
   Module im_file
-  File 'C:/Program Files (x86)/nxlog/data/nxlog.log'
+  File 'C:\Program Files (x86)\nxlog\data\nxlog.log'
   SavePos TRUE
   ReadFromLast TRUE
   InputType LineBased
@@ -137,14 +118,6 @@ LogFile   %ROOT%\data\nxlog.log
 
 <Route generic_worker_log_<%= $facts[custom_win_mozspace] %>_aggregator>
   Path generic_worker_log => <%= $facts[custom_win_mozspace] %>_aggregator
-</Route>
-
-<Route generic_worker_wrapper_log_<%= $facts[custom_win_mozspace] %>_aggregator>
-  Path generic_worker_wrapper_log => <%= $facts[custom_win_mozspace] %>_aggregator
-</Route>
-
-<Route generic_worker_service_log_<%= $facts[custom_win_mozspace] %>_aggregator>
-  Path generic_worker_service_log => <%= $facts[custom_win_mozspace] %>_aggregator
 </Route>
 
 <Route worker_runner_log_<%= $facts[custom_win_mozspace] %>_aggregator>

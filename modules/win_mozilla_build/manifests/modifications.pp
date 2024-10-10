@@ -80,14 +80,38 @@ class win_mozilla_build::modifications {
     }
     # Resource from counsyl-windows
 
-
-    windows_env { "PATH=${mozbld}\\bin": }
-    windows_env { "PATH=${mozbld}\\kdiff": }
-    windows_env { "PATH=${mozbld}\\msys2": }
-    windows_env { "PATH=${mozbld}\\python3": }
-    windows_env { "PATH=${mozbld}\\mozmake": }
-    windows_env { "PATH=${mozbld}\\msys2\\usr\\bin": }
-
+    if $win_mozilla_build::needed_mozbld_ver == '4.0.1' {
+        windows_env { "PATH=${mozbld}\\bin": }
+        windows_env { "PATH=${mozbld}\\kdiff": }
+        windows_env { "PATH=${mozbld}\\msys2": }
+        windows_env { "PATH=${mozbld}\\python3": }
+        windows_env { "PATH=${mozbld}\\mozmake": }
+        windows_env { "PATH=${mozbld}\\msys2\\usr\\bin": }
+    } elsif $win_mozilla_build::upgrade_python == true {
+        windows_env { "PATH=${win_mozilla_build::program_files}\\Mercurial": }
+        windows_env { "PATH=${mozbld}\\bin": }
+        windows_env { "PATH=${mozbld}\\kdiff": }
+        windows_env { "PATH=${mozbld}\\moztools-x64\\bin": }
+        windows_env { "PATH=${mozbld}\\mozmake": }
+        windows_env { "PATH=${mozbld}\\nsis-3.01": }
+        windows_env { "PATH=${mozbld}\\python": }
+        windows_env { "PATH=${mozbld}\\python\\Scripts": }
+        windows_env { "PATH=${mozbld}\\python3": }
+        windows_env { "PATH=${mozbld}\\msys\\bin": }
+        windows_env { "PATH=${mozbld}\\msys\\local\\bin": }
+    } else {
+        windows_env { "PATH=${win_mozilla_build::program_files}\\Mercurial": }
+        windows_env { "PATH=${mozbld}\\bin": }
+        windows_env { "PATH=${mozbld}\\kdiff": }
+        windows_env { "PATH=${mozbld}\\moztools-x64\\bin": }
+        windows_env { "PATH=${mozbld}\\mozmake": }
+        windows_env { "PATH=${mozbld}\\nsis-3.01": }
+        windows_env { "PATH=${mozbld}\\python": }
+        windows_env { "PATH=${mozbld}\\python\\Scripts": }
+        windows_env { "PATH=${mozbld}\\python3": }
+        windows_env { "PATH=${mozbld}\\msys\\bin": }
+        windows_env { "PATH=${mozbld}\\msys\\local\\bin": }
+    }
     # don't run on older mozilla build pkg
     if $win_mozilla_build::needed_mozbld_ver != '3.2' {
         exec { 'set_path':

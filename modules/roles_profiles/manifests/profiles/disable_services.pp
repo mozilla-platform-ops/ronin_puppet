@@ -37,11 +37,8 @@ class roles_profiles::profiles::disable_services {
     'Windows': {
       include win_disable_services::disable_puppet
       include win_disable_services::disable_windows_update
-      include win_disable_services::disable_wsearch
-
-      $func = lookup('win-worker.function')
-
-      if $func != builder {
+      if $facts['custom_win_purpose'] != builder {
+        include win_disable_services::disable_wsearch
         if ($facts['custom_win_location'] == 'azure') {
           include win_scheduled_tasks::kill_local_clipboard
         }
@@ -53,7 +50,7 @@ class roles_profiles::profiles::disable_services {
       if $facts['os']['release']['full'] == '10' {
         include win_disable_services::disable_onedrive
       }
-      if ($func == 'datacenter') {
+      if ($facts['custom_win_location'] == 'datacenter') {
         if ($facts['custom_win_purpose'] == 'tester') {
           include win_disable_services::disable_onedrive
         }

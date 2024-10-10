@@ -2,12 +2,12 @@
 pools:
   - name: "win11-64-2009-hw-ref-alpha"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC12 Hardware Refrence Staging/Testing Pool"
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
-    src_Branch: "cloud_windows"
-    hash: "9180af2"
+    src_Branch: "win11hardware"
+    hash: "561e8d4"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -15,36 +15,32 @@ pools:
     - t-nuc12-006
   - name: "win11-64-2009-hw-ref"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC12 Hardware Refrence Pool"
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "210be9f"
+    hash: "561e8d4"
     secret_date: "05-13-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
-    - t-nuc12-001
-    - t-nuc12-002
     - t-nuc12-003
     - t-nuc12-004
-    - t-nuc12-007
     - t-nuc12-008
     - t-nuc12-009
     - t-nuc12-010
-    - t-nuc12-011
     - t-nuc12-012
     - t-nuc12-013
     - t-nuc12-014
     - t-nuc12-015
   - name: "win11-64-2009-hw"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC13 Hardware Performance"
     image: "win11-2009-NUC-05-06-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "210be9f"
+    hash: "561e8d4"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -187,15 +183,15 @@ pools:
     - nuc13-157
     - nuc13-158
     - nuc13-159
-    - nuc13-160
   - name: "win11-64-2009-hw-alpha"
     puppet_version: "8.5.1"
-    Description: "Pool Description"
+    Description: "NUC12 Hardware Preformance Staging/Testing Pool"
     image: "win11-2009-NUC-05-06-2024"
+    #image: "win11-2009-NUC-07-11-2024"
     src_Organisation: "mozilla-platform-ops"
     src_Repository: "ronin_puppet"
     src_Branch: "win11hardware"
-    hash: "210be9f"
+    hash: "561e8d4"
     secret_date: "03-22-2024"
     domain_suffix: "wintest2.releng.mdc1.mozilla.com"
     nodes:
@@ -219,6 +215,7 @@ pools:
     - nuc13-018
     - nuc13-019
     - nuc13-020
+    - nuc13-160
 defaults:
   NV_domain: "mdc1.mozilla.com"
 Validate:

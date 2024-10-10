@@ -48,6 +48,9 @@ if ($firewall_status -like "*off*") {
 	$firewall_status = "running"
 }
 
+# Dispaly adapter
+$display_adapt = (((Get-WmiObject Win32_VideoController).Caption).Replace(" ", ""))
+
 # Base image ID
 #$role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
 $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
@@ -90,6 +93,7 @@ write-host "custom_win_kms_activated=$kms_status"
 write-host "custom_win_admin_sid=$win_admin_sid"
 Write-host "custom_win_net_category=$NetworkCategory"
 Write-host "custom_win_firewall_status=$firewall_status"
+Write-host "custom_win_display_adpater=$display_adapt"
 Write-host "custom_win_role=$role"
 write-host "custom_win_worker_pool_id=$worker_pool_id"
 write-host "custom_win_gpu=$gpu"

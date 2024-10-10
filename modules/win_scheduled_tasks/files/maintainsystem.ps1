@@ -110,38 +110,12 @@ function Check-RoninNodeOptions {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Check-RoninLock {
-  param (
-    [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock"
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    if (Test-Path $lock) {
-      ruby_process = Get-Process ruby -ErrorAction SilentlyContinue
-      if (ruby_process -eq $null) {
-        Remove-Item $lock
-        write-host shutdown @('-r', '-t', '0', '-c', 'Reboot; Lock file is present but Puppet is not running', '-f', '-d', '4:5')
-      } elseif (ruby_process -neq $null) {
-        Write-Log -message  ('{0} :: An instance of Puppet is currently running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        exit
-      } else {
-        New-Item -Path $lock -ItemType file -Force
-        Write-Log -message  ('{0} :: $lock created.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      }
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
 
 Function UpdateRonin {
   param (
     [string] $sourceOrg,
     [string] $sourceRepo,
-    [string] $sourceRev,
+    [string] $sourceBranch,
     [string] $ronin_repo = "$env:systemdrive\ronin"
   )
   begin {
@@ -150,10 +124,11 @@ Function UpdateRonin {
   process {
     $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation').Organisation } else { 'mozilla-platform-ops' })
     $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository').Repository } else { 'ronin_puppet' })
-    $sourceRev = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Revision').Revision } else { 'master' })
+    $sourceBranch = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch').Branch } else { 'master' })
 
-    Set-Location "$env:systemdrive\ronin"
-    git pull https://github.com/$sourceOrg/$sourceRepo $sourceRev
+    Set-Location $ronin_repo
+    git config --global --add safe.directory "C:/ronin"
+    git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
     $git_exit = $LastExitCode
     if ($git_exit -eq 0) {
       $git_hash = (git rev-parse --verify HEAD)
@@ -165,7 +140,7 @@ Function UpdateRonin {
      Write-Log -message  ('{0} :: Deleting old repository and cloning repository .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 	 Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
 	 Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
-	 Remove-Item -Recurse -Force $ronin_repo
+	 #Remove-Item -Recurse -Force $ronin_repo
 	 Start-Sleep -s 2
 	 git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
 	 Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
@@ -195,7 +170,6 @@ function Puppet-Run {
   process {
 
     Check-RoninNodeOptions
-    Check-RoninLock
     UpdateRonin
 
     # Setting Env variabes for PuppetFile install and Puppet run
@@ -215,14 +189,16 @@ function Puppet-Run {
 
     # This is temporary and should be removed after the cloud_windows branch is merged
     # Hiera lookups will fail after the merge if this is not in place following the merge
+    <#
     if((test-path $env:systemdrive\ronin\win_hiera.yaml)) {
         $hiera = "win_hiera.yaml"
     } else {
         $hiera = "hiera.yaml"
     }
+    #>
+    # this will break Win 10 1803 if this is merged into the master brnach
+    $hiera = "hiera.yaml"
 
-    Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
-    R10k puppetfile install --moduledir=r10k_modules
     # Needs to be removed from path or a wrong puppet file will be used
     $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
     If(!(test-path $fail_dir))  {
@@ -270,6 +246,20 @@ function Puppet-Run {
   }
 }
 
+function StartWorkerRunner {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        Start-Service -Name worker-runner
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 $bootstrap_stage =  (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet reboot_count -ErrorAction SilentlyContinue
   If ( $reboot_count_exists -ne $null) {
@@ -280,6 +270,38 @@ $reboot_count_exists = Get-ItemProperty HKLM:\SOFTWARE\Mozilla\ronin_puppet rebo
 If ($bootstrap_stage -eq 'complete') {
   Run-MaintainSystem
   Puppet-Run
+  Write-Log -message  ('{0} :: Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
+  ## Last catch if Puppet failed
+  if (($puppet_exit -ne 0) -or ($puppet_exit -ne 2)) {
+    Write-Log -message  ('{0} :: BROKEN Puppet exited with {1}' -f $($MyInvocation.MyCommand.Name), ($LastExitCode)) -severity 'DEBUG'
+    #shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+    #exit
+  }
+  Write-Log -message  ('{0} :: Disabling Start Menu' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+  ## Disable start menu. If shown can interfere with tests.
+  while ($true) {
+    $processname = "StartMenuExperienceHost"
+    $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
+    if ($process -ne $null) {
+      Stop-Process -Name $processName -force
+      break
+    }
+    Start-Sleep -Seconds 1
+  }
+  StartWorkerRunner
+  start-sleep -s 3600
+  while($true) {
+    $gw = (Get-process -name generic-worker -ErrorAction SilentlyContinue )
+    if ($gw -eq $null) {
+      # Wait to supress meesage if check is cuaght during a reboot.
+      start-sleep -s 45
+      Write-Log -message  ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      start-sleep -s 3
+      shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
+    } else {
+      start-sleep -s 120
+    }
+  }
 } else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   Exit-PSSession

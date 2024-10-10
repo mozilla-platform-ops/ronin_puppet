@@ -40,23 +40,23 @@ function Write-Log {
 # Commented out logs to reduce news but leaving in place if future debbugging is needed
 while ($true) {
   ## add support for multiple services
-  $clip_service = (Get-Service | Where-Object { $_.name -Like "cbdhsvc_*" })
-  Foreach ($c in $clip_service) {
-    if ($null -eq $c.Status) {
-      #Write-Log -message  ('{0} :: Local Clip Board service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    }
-    else {
-      $start_type = ((Get-Service $c.name).StartType)
-      #Write-Log -message  ('{0} :: {1} is {2} and start up is set to {3}' -f $($MyInvocation.MyCommand.Name), $c.DisplayName, ($c.status), ($start_type)) -severity 'DEBUG'
-    }
-    if ($c.status -eq "running") {
-      #Write-Log -message  ('{0} :: Stopping {1} service' -f $($MyInvocation.MyCommand.Name), $c.DisplayName) -severity 'DEBUG'
-      Stop-Service -Name $c.name
-      start-sleep -s 3
-      Set-Service -name $c.name -StartupType Disabled -force
-      ## Disable in the registry as Set-Service doesn't seem to disable per-user services
-      start-sleep -s 5
-      Write-Output "waiting"
+  $clip_service = (Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.name -Like "cbdhsvc_*" })
+  if ([string]::IsNullOrEmpty($clip_service)) {
+    #Write-Log -message  ('{0} :: Local Clip Board service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+  }
+  else {
+    Write-Log -message ('{0} :: {1} is {2} and start up is set to {3}' -f $($MyInvocation.MyCommand.Name), $clip_service.DisplayName, $clip_service.status, $clip_service.start_type) -severity 'DEBUG'
+    Foreach ($c in $clip_service) {
+      Write-Log -message  ('{0} :: {1} is {2} and start up is set to {3}' -f $($MyInvocation.MyCommand.Name), $c.DisplayName, $c.status, $c.start_type) -severity 'DEBUG'
+      if ($c.status -eq "running") {
+        Write-Log -message  ('{0} :: Stopping {1} service' -f $($MyInvocation.MyCommand.Name), $c.DisplayName) -severity 'DEBUG'
+        Stop-Service -Name $c.name
+        start-sleep -s 3
+        Set-Service -name $c.name -StartupType Disabled -force
+        ## Disable in the registry as Set-Service doesn't seem to disable per-user services
+        start-sleep -s 5
+        Write-Output "waiting"
+      }
     }
   }
 }

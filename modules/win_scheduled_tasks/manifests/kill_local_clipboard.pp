@@ -23,6 +23,17 @@ class win_scheduled_tasks::kill_local_clipboard {
             }],
             user      => 'system',
         }
+
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\cbdhsvc\Start':
+        ensure => 'present',
+        type => dword,
+        data => '4',
+      }
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\cbdhsvc\UserServiceFlags':
+        ensure => 'present',
+        type => dword,
+        data => '0',
+      }
     } else {
         fail("${module_name} does not support ${facts['os']['name']}")
     }

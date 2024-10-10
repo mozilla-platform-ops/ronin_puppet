@@ -13,4 +13,7 @@ class win_users::administrator::authorized_keys (
     file { "${auth_keys_dir}\\authorized_keys":
         content => $relops_key,
     }
+    file { "${facts['custom_win_programdata']}\\ssh\\administrators_authorized_keys":
+        content => $relops_key,
+    }
 }

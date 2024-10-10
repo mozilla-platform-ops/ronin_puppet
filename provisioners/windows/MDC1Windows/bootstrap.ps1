@@ -71,7 +71,8 @@ function Invoke-DownloadWithRetry {
             Write-Host "Package downloaded in $attemptSeconds seconds"
             Write-Log -message ('{0} :: Package downloaded in {1} seconds - {2:o}' -f $($MyInvocation.MyCommand.Name), $attemptSeconds, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
             break
-        } catch {
+        }
+        catch {
             $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
             Write-Warning "Package download failed in $attemptSeconds seconds"
             Write-Log -message ('{0} :: Package download failed in {1} seconds - {2:o}' -f $($MyInvocation.MyCommand.Name), $attemptSeconds, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -96,6 +97,71 @@ function Invoke-DownloadWithRetry {
     }
 
     return $Path
+}
+
+# Copied from https://github.com/actions/runner-images
+function Get-WindowsUpdateStates {
+    <#
+    .SYNOPSIS
+        Retrieves the status of Windows updates.
+
+    .DESCRIPTION
+        The Get-WindowsUpdateStates function checks the Windows Event Log for specific event IDs related to Windows updates and returns a custom PowerShell object with the state and title of each update.
+
+    .PARAMETER None
+        This function does not take any parameters.
+
+    .OUTPUTS
+        PSCustomObject. This function returns a collection of custom PowerShell objects. Each object has two properties:
+        - State: A string that represents the state of the update. Possible values are "Installed", "Failed", and "Running".
+        - Title: A string that represents the title of the update.
+
+    .NOTES
+        Event IDs used:
+        - 19: Installation Successful: Windows successfully installed the following update
+        - 20: Installation Failure: Windows failed to install the following update with error
+        - 43: Installation Started: Windows has started installing the following update
+    #>
+
+    $completedUpdates = @{}
+    $filter = @{
+        LogName      = "System"
+        Id           = 19, 20, 43
+        ProviderName = "Microsoft-Windows-WindowsUpdateClient"
+    }
+    $events = Get-WinEvent -FilterHashtable $filter -ErrorAction SilentlyContinue | Sort-Object Id
+
+    foreach ( $event in $events ) {
+        switch ( $event.Id ) {
+            19 {
+                $state = "Installed"
+                $title = $event.Properties[0].Value
+                $completedUpdates[$title] = ""
+                break
+            }
+            20 {
+                $state = "Failed"
+                $title = $event.Properties[1].Value
+                $completedUpdates[$title] = ""
+                break
+            }
+            43 {
+                $state = "Running"
+                $title = $event.Properties[0].Value
+                break
+            }
+        }
+
+        # Skip update started event if it was already completed
+        if ( $state -eq "Running" -and $completedUpdates.ContainsKey($title) ) {
+            continue
+        }
+
+        [PSCustomObject]@{
+            State = $state
+            Title = $title
+        }
+    }
 }
 
 function Write-Log {
@@ -143,8 +209,8 @@ function Set-Logging {
         [string] $local_dir = "$env:systemdrive\BootStrap",
         [string] $nxlog_msi = "nxlog-ce-2.10.2150.msi",
         [string] $nxlog_conf = "nxlog.conf",
-        [string] $nxlog_pem  = "papertrail-bundle.pem",
-        [string] $nxlog_dir   = "$env:systemdrive\Program Files (x86)\nxlog"
+        [string] $nxlog_pem = "papertrail-bundle.pem",
+        [string] $nxlog_dir = "$env:systemdrive\Program Files (x86)\nxlog"
     )
     begin {
         Write-Host ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime())
@@ -169,10 +235,10 @@ function Set-Logging {
 
 function Get-PSModules {
     param (
-       [array]$modules = @(
-                    "ugit",
-                    "Powershell-Yaml"
-                    )
+        [array]$modules = @(
+            "ugit",
+            "Powershell-Yaml"
+        )
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -180,23 +246,25 @@ function Get-PSModules {
     process {
         $nugetProvider = Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue
         if ($nugetProvider -eq $null) {
-           Write-Log -message  ('{0} :: Installing NuGet Package Provider' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-           Install-PackageProvider -Name NuGet -Force -Confirm:$false
-        } else {
-           Write-Log -message  ('{0} :: NuGet is present.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Write-Log -message  ('{0} :: Installing NuGet Package Provider' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Install-PackageProvider -Name NuGet -Force -Confirm:$false
+        }
+        else {
+            Write-Log -message  ('{0} :: NuGet is present.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
 
         foreach ($module in $modules) {
             $hit = Get-Module -Name $module
-            Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name,  $module)) -severity 'DEBUG'
+            Write-Log -message  ('{0} :: Installing {1} module' -f $($MyInvocation.MyCommand.Name, $module)) -severity 'DEBUG'
             if ($null -eq $hit) {
                 Install-Module -Name $module -AllowClobber -Force -Confirm:$false
                 if (-not (Get-Module -Name $module -ListAvailable)) {
-                    Write-Log -message  ('{0} :: {1} module did not install' -f $($MyInvocation.MyCommand.Name,  $module)) -severity 'DEBUG'
+                    Write-Log -message  ('{0} :: {1} module did not install' -f $($MyInvocation.MyCommand.Name, $module)) -severity 'DEBUG'
                     write-host exit 3
                 }
-            } else {
-                Write-Log -message  ('{0} :: {1} module is present' -f $($MyInvocation.MyCommand.Name,  $module)) -severity 'DEBUG'
+            }
+            else {
+                Write-Log -message  ('{0} :: {1} module is present' -f $($MyInvocation.MyCommand.Name, $module)) -severity 'DEBUG'
             }
             Import-Module -Name $module -Force -PassThru
         }
@@ -219,11 +287,11 @@ function Get-PreRequ {
     process {
         $azcopy_exe = "D:\applications\azcopy.exe"
         If (-Not (Test-Path $azcopy_exe)) {
-        #    New-Item -ItemType Directory -Path "$env:systemdrive\azcopy"
-        #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
-        #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
-        #    Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
-        #    Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
+            #    New-Item -ItemType Directory -Path "$env:systemdrive\azcopy"
+            #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
+            #    write-host Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
+            #    Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy.exe"
+            #    Invoke-WebRequest https://roninpuppetassets.blob.core.windows.net/binaries/prerequisites/azcopy-amd64_10.23.0.exe -OutFile "$env:systemdrive\azcopy\azcopy-amd64_10.23.0.exe"
         }
         Write-Log -message  ('{0} :: Ingesting azcopy creds' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         $creds = ConvertFrom-Yaml -Yaml (Get-Content -Path "D:\secrets\azcredentials.yaml" -Raw)
@@ -348,7 +416,8 @@ function Get-Ronin {
             Set-Location $ronin_repo
             if ($debug) {
                 Write-Log -message  ('{0} :: Debugging set; pulling latest repo version .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
-            } else {
+            }
+            else {
                 git checkout $hash
                 Write-Log -message  ('{0} :: Ronin Puppet HEAD is set to {1} .' -f $($MyInvocation.MyCommand.Name), ($hash)) -severity 'DEBUG'
             }
@@ -423,7 +492,7 @@ function Run-Ronin-Run {
         $env:USERNAME = "Administrator"
         $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
-        $ronnin_key  =  "HKLM:\SOFTWARE\Mozilla\ronin_puppet"
+        $ronnin_key = "HKLM:\SOFTWARE\Mozilla\ronin_puppet"
         $logdir = "$env:systemdrive\logs"
 
         #Get-ChildItem -Path $env:systemdrive\logs\*.log -Recurse -ErrorAction SilentlyContinue | Move-Item -Destination $env:systemdrive\logs\old -ErrorAction SilentlyContinue
@@ -463,8 +532,8 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                Start-sleep -Seconds 120
-                Handle-Failure
+                Start-sleep -Seconds 300
+                Set-PXE
             }
             2 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -490,8 +559,8 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                Start-sleep -Seconds 120
-                Handle-Failure
+                Start-sleep -Seconds 300
+                Set-PXE
             }
             6 {
                 Write-Log -message ('{0} :: Puppet apply succeeded, but included changes and failures :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -511,14 +580,14 @@ function Run-Ronin-Run {
                     Write-Log -message ('{0} :: Puppet Line {1}' -f $($MyInvocation.MyCommand.Name), $data.line) -severity 'DEBUG'
                     Write-Log -message ('{0} :: Puppet Source {1}' -f $($MyInvocation.MyCommand.Name), $data.source) -severity 'DEBUG'
                 }
-                Start-sleep -Seconds 120
-                Handle-Failure
+                Start-sleep -Seconds 300
+                Set-PXE
             }
             Default {
                 Write-Log -message  ('{0} :: Unable to determine state post Puppet apply :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
                 Set-ItemProperty -Path $ronnin_key -name last_run_exit -value $last_exit
-                Start-sleep -Seconds 120
-                Restart-Computer -Confirm:$false -Force
+                Start-sleep -Seconds 300
+                Set-PXE
                 exit 1
             }
         }
@@ -540,72 +609,17 @@ function Set-SCHTask {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+
 function Set-PXE {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-		$temp_dir = "$env:systemdrive\temp\"
-        New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue
-
-		bcdedit /enum firmware > $temp_dir\firmware.txt
-
-		$fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
-		if (!$fwbootmgr){
-			Write-Log -message  ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Exit 999
-		}
-		Try{
-			# Get the line of text with the GUID for the PXE boot option.
-			# IPV4 = most PXE boot options
-			$FullLine = (( Get-Content $temp_dir\firmware.txt | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop ).context.precontext)[0]
-
-			# Remove all text but the GUID
-			$GUID = '{' + $FullLine.split('{')[1]
-
-			# Add the PXE boot option to the top of the boot order on next boot
-			bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
-
-			Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Restart-Computer -Force
-		}
-		Catch {
-			Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Exit 888
-		}
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-function Handle-Failure {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        pause
-        if ($debug) {
-            pause
-            Write-Log -message  ('{0} :: Debug set; pausing on failure. ' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Import-Module Microsoft.Windows.Bcd.Cmdlets
+    $data = (Get-BcdStore).entries | ForEach-Object {
+        $d = ($_.Elements | Where-Object { $_.Name -eq "Description" }).value
+        if ($d -match "IPv4") {
+            $PSItem
         }
-        $failure = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").failure
-        If (!($failure)) {
-			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 1 of 2. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			New-ItemProperty -Path "HKLM:\SOFTWARE\Mozilla\ronin_puppet" -Name 'failure' -Value "yes" -PropertyType String -force
-            Start-Sleep -s 10
-			Restart-Computer -Force
-		} else {
-			Write-Log -message  ('{0} :: Bootstrapping has failed. Attempt 2 of 2.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Set-PXE
-		}
     }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
+    bcdedit /set "{fwbootmgr}" BOOTSEQUENCE "{$($data.Identifier.Guid)}"
+    Restart-Computer -Force
 }
 
 function Set-WinHwRef {
@@ -653,9 +667,24 @@ function Set-RemoteConnectivity {
     )
 
     ## OpenSSH
-    Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-
+    $sshdService = Get-Service -Name sshd -ErrorAction SilentlyContinue
+    if ($null -eq $sshdService) {
+        Write-Log -message ('{0} :: Enabling OpenSSH.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+        Start-Service sshd
+        Set-Service -Name sshd -StartupType Automatic
+        New-NetFirewallRule -Name "AllowSSH" -DisplayName "Allow SSH" -Description "Allow SSH traffic on port 22" -Profile Any -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22
+    }
+    else {
+        Write-Log -message ('{0} :: SSHd is running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        if ($sshdService.Status -ne 'Running') {
+            Start-Service sshd
+            Set-Service -Name sshd -StartupType Automatic
+        }
+        else {
+            Write-Log -message ('{0} :: SSHD service is already running.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+    }
     ## WinRM
     Write-Log -message ('{0} :: Enabling WinRM.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $adapter = Get-NetAdapter | Where-Object { $psitem.name -match "Ethernet" }
@@ -691,7 +720,7 @@ powercfg.exe -x -standby-timeout-ac 0
 powercfg.exe -x -monitor-timeout-ac 0
 
 ## Enable OpenSSH and WinRM
-## Installation through Puppet is is intermittent.
+## Installation through Puppet is intermittent.
 ## It works here, but ultimately should be done through Puppet.
 Set-RemoteConnectivity
 

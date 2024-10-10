@@ -20,9 +20,9 @@ class win_mozilla_build (
     String $external_source,
     Boolean $upgrade_python,
     String $builds_dir,
-    $current_py3_zstandard_ver = undef,
+    $tooltool_tok = undef,
     $current_py3_pip_ver = undef,
-    $tooltool_tok = undef
+    $current_py3_zstandard_ver = undef
 ) {
     require roles_profiles::profiles::microsoft_tools
 
