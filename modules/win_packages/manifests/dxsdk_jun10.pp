@@ -11,9 +11,11 @@ class win_packages::dxsdk_jun10 {
     case $facts['az_metadata']['compute']['publisher'] {
         'microsoftwindowsdesktop': {
             exec { 'install_net_framework3.5':
-                command  => 'Enable-WindowsOptionalFeature -Online -FeatureName "NetFx3" -All',
-                provider => powershell,
-                timeout  => 600,
+                command   => 'Enable-WindowsOptionalFeature -Online -FeatureName "NetFx3" -All',
+                provider  => powershell,
+                tries     => 2,
+                try_sleep => 10,
+                timeout   => 600,
             }
         }
         default: {
