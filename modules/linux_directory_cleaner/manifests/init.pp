@@ -6,6 +6,7 @@ class linux_directory_cleaner (
     command => 'chown cltbld:wheel /usr/local/lib/python3.9/dist-packages/',
     onlyif  => 'test ! -w /usr/local/lib/python3.9/dist-packages/',
     user    => 'root',
+    path    => ['/usr/bin', '/bin'],  # Add the path for 'test' and other common binaries
   }
 
   # Install the directory_cleaner package using pip3 as cltbld user
@@ -22,6 +23,7 @@ class linux_directory_cleaner (
     onlyif  => 'test -w /usr/local/lib/python3.9/dist-packages/',
     user    => 'root',
     require => Exec['install_directory_cleaner_linux'],
+    path    => ['/usr/bin', '/bin'],  # Add the path for 'test' and other common binaries
   }
 
   # Create necessary directories if they do not exist
