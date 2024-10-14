@@ -8,37 +8,41 @@ class linux_packages::google_chrome () {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
         '18.04': {
-          include apt
+          #
+          # installation via apt is not working (latest chrome is too new, so install via s3 deb)
+          #
 
-          Exec['apt_update'] -> Package['google-chrome-stable']
+          # include apt
 
-          # setup chrome source
-          apt::source { 'google_repo':
-            location => '[arch=amd64] https://dl.google.com/linux/chrome/deb/',
-            release  => 'stable',
-            key      => {
-              id     => '4CCA1EAF950CEE4AB83976DCA040830F7FAC5991',
-              source => 'https://dl.google.com/linux/linux_signing_key.pub',
-            },
-            repos    => 'main',
-            include  => {
-              'src' => false,
-            },
-            notify   => Exec['apt_update'],
-          }
+          # Exec['apt_update'] -> Package['google-chrome-stable']
 
-          # configure auto-update
-          schedule { 'update-chrome-schedule':
-            period => weekly,
-            repeat => 1,
-          }
-          exec { 'update-chrome-action':
-            schedule => 'update-chrome-schedule',
-            command  => '/usr/bin/apt-get update -o \
-            Dir::Etc::sourcelist="sources.list.d/google-chrome.list" \
-            -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"',
-          }
+          # # setup chrome source
+          # apt::source { 'google_repo':
+          #   location => '[arch=amd64] https://dl.google.com/linux/chrome/deb/',
+          #   release  => 'stable',
+          #   key      => {
+          #     id     => '4CCA1EAF950CEE4AB83976DCA040830F7FAC5991',
+          #     source => 'https://dl.google.com/linux/linux_signing_key.pub',
+          #   },
+          #   repos    => 'main',
+          #   include  => {
+          #     'src' => false,
+          #   },
+          #   notify   => Exec['apt_update'],
+          # }
 
+          # # configure auto-update
+          # schedule { 'update-chrome-schedule':
+          #   period => weekly,
+          #   repeat => 1,
+          # }
+          # exec { 'update-chrome-action':
+          #   schedule => 'update-chrome-schedule',
+          #   command  => '/usr/bin/apt-get update -o \
+          #   Dir::Etc::sourcelist="sources.list.d/google-chrome.list" \
+          #   -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"',
+          # }
+          #
           # install chrome
           # package {
           #   'google-chrome-stable':
@@ -47,6 +51,7 @@ class linux_packages::google_chrome () {
           #     # need to upgrade to newer os version
           #     ensure => '127.0.6533.119-1';
           # }
+
           packages::linux_package_from_s3 { 'google-chrome-stable_127.0.6533.119-1_amd64.deb':
             private             => false,
             os_version_specific => false,
