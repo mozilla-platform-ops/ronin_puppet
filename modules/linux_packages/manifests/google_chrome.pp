@@ -40,12 +40,19 @@ class linux_packages::google_chrome () {
           }
 
           # install chrome
-          package {
-            'google-chrome-stable':
-              # on 1804, latest no longer works missing packages (won't be created for deprecated release)
-              #  `google-chrome-stable : Depends: libgcc-s1 (>= 4.2) but it is not installable`
-              # need to upgrade to newer os version
-              ensure => '127.0.6533.119-1';
+          # package {
+          #   'google-chrome-stable':
+          #     # on 1804, latest no longer works missing packages (won't be created for deprecated release)
+          #     #  `google-chrome-stable : Depends: libgcc-s1 (>= 4.2) but it is not installable`
+          #     # need to upgrade to newer os version
+          #     ensure => '127.0.6533.119-1';
+          # }
+          packages::linux_package_from_s3 { 'google-chrome-stable_127.0.6533.119-1_amd64.deb':
+            private             => false,
+            os_version_specific => false,
+            type                => 'bin',
+            file_destination    => '/usr/bin/google-chrome',
+            checksum            => '87431900e4446517630adb0bceef8f08634e6cd444513482f8f45c4b245b8c65',  # sha256
           }
         }
         '22.04','24.04': {
