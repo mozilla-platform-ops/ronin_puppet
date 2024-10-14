@@ -1,11 +1,27 @@
 class linux_directory_cleaner (
   Boolean $enabled = true,
 ) {
-  # Install the directory_cleaner package using pip3 with --prefix to install in /usr/local
+  # Temporarily change ownership of /usr/local/lib/python3.9/dist-packages/
+  exec { 'change_ownership_before_install':
+    command => 'chown cltbld:wheel /usr/local/lib/python3.9/dist-packages/',
+    onlyif  => 'test ! -w /usr/local/lib/python3.9/dist-packages/',
+    user    => 'root',
+  }
+
+  # Install the directory_cleaner package using pip3 as cltbld user
   exec { 'install_directory_cleaner_linux':
     command => '/usr/local/bin/pip3 install --prefix /usr/local directory_cleaner==0.2.0',
     unless  => '/usr/local/bin/pip3 show directory_cleaner | grep "Version: 0.2.0"',
     user    => 'cltbld',
+    require => Exec['change_ownership_before_install'],
+  }
+
+  # Revert ownership of /usr/local/lib/python3.9/dist-packages/ after install
+  exec { 'revert_ownership_after_install':
+    command => 'chown root:wheel /usr/local/lib/python3.9/dist-packages/',
+    onlyif  => 'test -w /usr/local/lib/python3.9/dist-packages/',
+    user    => 'root',
+    require => Exec['install_directory_cleaner_linux'],
   }
 
   # Create necessary directories if they do not exist
