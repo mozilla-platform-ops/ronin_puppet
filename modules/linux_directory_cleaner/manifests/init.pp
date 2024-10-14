@@ -1,10 +1,10 @@
 class linux_directory_cleaner (
   Boolean $enabled = true,
 ) {
-  # Install the directory_cleaner package using pip3 as cltbld user
+  # Install the directory_cleaner package using pip3 with --prefix to install in /usr/local
   exec { 'install_directory_cleaner_linux':
-    command => 'PATH=$PATH:/home/cltbld/.local/bin /usr/local/bin/pip3 install directory_cleaner==0.2.0',
-    unless  => 'PATH=$PATH:/home/cltbld/.local/bin /usr/local/bin/pip3 show directory_cleaner | grep "Version: 0.2.0"',
+    command => '/usr/local/bin/pip3 install --prefix /usr/local directory_cleaner==0.2.0',
+    unless  => '/usr/local/bin/pip3 show directory_cleaner | grep "Version: 0.2.0"',
     user    => 'cltbld',
   }
 
@@ -48,15 +48,6 @@ EOF
     mode   => '0755',
     owner  => 'root',
     group  => 'wheel',
-  }
-
-  # Permanently add /home/cltbld/.local/bin to PATH for the cltbld user
-  file_line { 'add_local_bin_to_path':
-    path  => '/home/cltbld/.bashrc',
-    line  => 'export PATH=$PATH:/home/cltbld/.local/bin',
-    match => '^export PATH=',
-    owner => 'cltbld',
-    group => 'cltbld',
   }
 
   # Define the systemd service content
