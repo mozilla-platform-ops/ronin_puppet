@@ -52,7 +52,7 @@ class linux_packages::google_chrome () {
             os_version_specific => false,
             type                => 'bin',
             file_destination    => '/usr/bin/google-chrome',
-            checksum            => '87431900e4446517630adb0bceef8f08634e6cd444513482f8f45c4b245b8c65',  # sha256
+            checksum            => '93daec10b02d38574b4a2d5d3935782ebec4d94bb9b11d7f18e2fd0560ea665e',  # sha256
           }
         }
         '22.04','24.04': {
