@@ -14,7 +14,6 @@ class linux_directory_cleaner (
     command => '/usr/local/bin/pip3 install --prefix /usr/local directory_cleaner==0.2.0',
     unless  => '/usr/local/bin/pip3 show directory_cleaner | grep "Version: 0.2.0"',
     user    => 'cltbld',
-    require => Exec['change_ownership_before_install'],
   }
 
   # # Revert ownership of /usr/local/lib/python3.9/dist-packages/ after install
