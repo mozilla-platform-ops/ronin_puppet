@@ -7,7 +7,7 @@ file {
     mode   => '0755',
     owner  => 'root';
 
-  '$/root/.pip/pip.conf':
+  '/root/.pip/pip.conf':
     owner  => 'root',
     group  => 'root',
     mode   => '0644',
