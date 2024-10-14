@@ -14,7 +14,11 @@ if os.family == 'debian' && os.release == '22.04'
   end
 end
 
-# 18.04 is busted, due to new package requirement that's not available
+# 18.04 is pinned to an older version provided by s3
+# latest updates are too new for 18.04
 if os.family == 'debian' && os.release == '18.04'
-  # pass
+  describe command('google-chrome-stable --version') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match /Google Chrome/ }
+  end
 end
