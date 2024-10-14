@@ -55,7 +55,7 @@ class linux_packages::google_chrome () {
           packages::linux_package_from_s3 { 'google-chrome-stable_127.0.6533.119-1_amd64.deb':
             private             => false,
             os_version_specific => false,
-            type                => 'bin',
+            type                => 'deb',
             file_destination    => '/usr/bin/google-chrome',
             checksum            => '93daec10b02d38574b4a2d5d3935782ebec4d94bb9b11d7f18e2fd0560ea665e',  # sha256
           }
