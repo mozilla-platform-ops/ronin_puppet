@@ -12,14 +12,14 @@ class linux_directory_cleaner (
   file { '/opt/directory_cleaner':
     ensure => directory,
     owner  => 'root',
-    group  => 'wheel',
+    group  => 'admin',
     mode   => '0755',
   }
 
   file { '/opt/directory_cleaner/configs':
     ensure  => directory,
     owner   => 'root',
-    group   => 'wheel',
+    group   => 'admin',
     mode    => '0755',
     require => File['/opt/directory_cleaner'],
   }
@@ -37,7 +37,7 @@ EOF
     content => $config_content,
     mode    => '0644',
     owner   => 'root',
-    group   => 'wheel',
+    group   => 'admin',
     require => File['/opt/directory_cleaner/configs'],
   }
 
@@ -47,7 +47,7 @@ EOF
     source => 'puppet:///modules/linux_directory_cleaner/clean_before_reboot.sh',
     mode   => '0755',
     owner  => 'root',
-    group  => 'wheel',
+    group  => 'admin',
   }
 
   # Define the systemd service content
