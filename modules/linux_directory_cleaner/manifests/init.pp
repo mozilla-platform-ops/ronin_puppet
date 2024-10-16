@@ -60,7 +60,7 @@ EOF
 
   [Service]
   Type=oneshot
-  ExecStart=/usr/local/bin/clean_before_reboot.sh
+  ExecStop=/usr/local/bin/clean_before_reboot.sh
   RemainAfterExit=true
 
   [Install]
@@ -90,4 +90,5 @@ EOF
       enable  => true,
       require => Exec['systemd-reload'],
     }
-  }}
+  }
+}
