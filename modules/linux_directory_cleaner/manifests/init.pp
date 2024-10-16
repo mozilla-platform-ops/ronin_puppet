@@ -56,15 +56,16 @@ EOF
   [Unit]
   Description=Run cleanup script before shutdown/reboot
   DefaultDependencies=no
-  Before=shutdown.target reboot.target halt.target
+  Before=final.target shutdown.target reboot.target halt.target
+  Requires=network.target
 
   [Service]
   Type=oneshot
-  ExecStop=/usr/local/bin/clean_before_reboot.sh
+  ExecStart=/usr/local/bin/clean_before_reboot.sh
   RemainAfterExit=true
 
   [Install]
-  WantedBy=halt.target reboot.target shutdown.target
+  WantedBy=final.target
 EOF
 
     # Create the systemd service file
