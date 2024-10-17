@@ -41,54 +41,26 @@ EOF
       require => File['/opt/directory_cleaner/configs'],
     }
 
-    # Deploy the clean_before_reboot.sh script
-    file { '/usr/local/bin/clean_before_reboot.sh':
+    # Deploy the clean_before_reboot.sh script to the correct directories
+    file { '/etc/init.d/clean_before_reboot':
       ensure => file,
       source => 'puppet:///modules/linux_directory_cleaner/clean_before_reboot.sh',
       mode   => '0755',
       owner  => 'root',
-      group  => 'admin',
+      group  => 'root',
     }
 
-    # Define the systemd service content
-    $systemd_service_content = @("EOF")
-[Unit]
-Description=Run cleanup script before shutdown/reboot
-DefaultDependencies=no
-Before=shutdown.target reboot.target halt.target
-Conflicts=reboot.target shutdown.target halt.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/bin/clean_before_reboot.sh
-RemainAfterExit=true
-
-[Install]
-WantedBy=halt.target reboot.target shutdown.target
-EOF
-
-    # Create the systemd service file
-    file { '/etc/systemd/system/clean_before_reboot.service':
-      ensure  => file,
-      content => $systemd_service_content,
-      mode    => '0644',
-      owner   => 'root',
-      group   => 'root',
-      require => File['/usr/local/bin/clean_before_reboot.sh'],
+    # Create symlinks in rc0.d and rc6.d for shutdown and reboot
+    file { '/etc/rc0.d/K01clean_before_reboot':
+      ensure  => link,
+      target  => '/etc/init.d/clean_before_reboot',
+      require => File['/etc/init.d/clean_before_reboot'],
     }
 
-    # Ensure systemd reloads the service files
-    exec { 'systemd-reload':
-      command     => '/bin/systemctl daemon-reload',
-      refreshonly => true,
-      subscribe   => File['/etc/systemd/system/clean_before_reboot.service'],
-    }
-
-    # Enable the service to run on shutdown/reboot
-    service { 'clean_before_reboot':
-      ensure  => 'running',
-      enable  => true,
-      require => Exec['systemd-reload'],
+    file { '/etc/rc6.d/K01clean_before_reboot':
+      ensure  => link,
+      target  => '/etc/init.d/clean_before_reboot',
+      require => File['/etc/init.d/clean_before_reboot'],
     }
   }
 }
