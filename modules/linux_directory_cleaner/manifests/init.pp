@@ -61,8 +61,8 @@ EOF
 
   [Service]
   Type=oneshot
-  ExecStop=/usr/local/bin/clean_before_reboot.sh
-  RemainAfterExit=false
+  ExecStart=/usr/local/bin/clean_before_reboot.sh
+  RemainAfterExit=true
 
   [Install]
   WantedBy=halt.target reboot.target shutdown.target
