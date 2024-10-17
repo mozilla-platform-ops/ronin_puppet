@@ -61,12 +61,13 @@ EOF
 
   [Service]
   Type=oneshot
-  ExecStart=/usr/local/bin/clean_before_reboot.sh
-  RemainAfterExit=true
+  ExecStop=/usr/local/bin/clean_before_reboot.sh
+  RemainAfterExit=false
 
   [Install]
   WantedBy=halt.target reboot.target shutdown.target
 EOF
+
 
     # Create the systemd service file
     file { '/etc/systemd/system/clean_before_reboot.service':
