@@ -55,8 +55,7 @@ EOF
 [Unit]
 Description=Run cleanup script before shutdown/reboot
 DefaultDependencies=no
-Before=umount.target shutdown.target reboot.target halt.target
-Conflicts=reboot.target shutdown.target halt.target
+After=final.target
 
 [Service]
 Type=oneshot
@@ -64,19 +63,8 @@ ExecStart=/usr/local/bin/clean_before_reboot.sh
 RemainAfterExit=true
 
 [Install]
-WantedBy=umount.target
-
-[Unit]
-Description=Save system clock on shutdown
-DefaultDependencies=no
-After=final.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/lib/systemd/scripts/fake-hwclock.sh save
-
-[Install]
 WantedBy=final.target
+
 EOF
 
     # Create the systemd service file
