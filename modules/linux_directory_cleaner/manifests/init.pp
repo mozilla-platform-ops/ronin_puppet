@@ -1,7 +1,6 @@
 class linux_directory_cleaner (
   Boolean $enabled = true,
 ) {
-  # use $enabled to conditionally install the package and enable the service
   if $enabled {
     # Install the directory_cleaner package using pip3
     package { 'python3-directory_cleaner':
@@ -11,7 +10,7 @@ class linux_directory_cleaner (
       require  => Class['linux_packages::py3', 'linux_python'],
     }
 
-    # Create necessary directories if they do not exist
+    # Create necessary directories
     file { '/opt/directory_cleaner':
       ensure => directory,
       owner  => 'root',
@@ -29,10 +28,10 @@ class linux_directory_cleaner (
 
     # Define the content of the file to be created
     $config_content = @("EOF")
-              exclusion_patterns = []
+  exclusion_patterns = []
 EOF
 
-    # Create the configuration file with the specified content
+    # Create the configuration file
     file { '/opt/directory_cleaner/configs/config.toml':
       ensure  => file,
       content => $config_content,
@@ -53,20 +52,19 @@ EOF
 
     # Define the systemd service content
     $systemd_service_content = @("EOF")
-  [Unit]
-  Description=Run cleanup script before shutdown/reboot
-  DefaultDependencies=no
-  Before=shutdown.target reboot.target halt.target
-  Conflicts=reboot.target shutdown.target halt.target
+[Unit]
+Description=Run cleanup script before shutdown/reboot
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+Conflicts=reboot.target shutdown.target halt.target
 
-  [Service]
-  Type=oneshot
-  ExecStart=/bin/true
-  ExecStop=/usr/local/bin/clean_before_reboot.sh
-  RemainAfterExit=false
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/clean_before_reboot.sh
+RemainAfterExit=true
 
-  [Install]
-  WantedBy=halt.target reboot.target shutdown.target
+[Install]
+WantedBy=halt.target reboot.target shutdown.target
 EOF
 
     # Create the systemd service file
