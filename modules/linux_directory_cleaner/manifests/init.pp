@@ -29,7 +29,7 @@ class linux_directory_cleaner (
 
     # Define the content of the file to be created
     $config_content = @("EOF")
-  exclusion_patterns = []
+        exclusion_patterns = []
 EOF
 
     # Create the configuration file with the specified content
@@ -53,7 +53,7 @@ EOF
 
     # Define the systemd service content
     $systemd_service_content = @("EOF")
-  [Unit]
+        [Unit]
   Description=Run cleanup script before shutdown/reboot
   DefaultDependencies=no
   Before=shutdown.target reboot.target halt.target
@@ -61,13 +61,13 @@ EOF
 
   [Service]
   Type=oneshot
+  ExecStart=/bin/true
   ExecStop=/usr/local/bin/clean_before_reboot.sh
   RemainAfterExit=false
 
   [Install]
   WantedBy=halt.target reboot.target shutdown.target
 EOF
-
 
     # Create the systemd service file
     file { '/etc/systemd/system/clean_before_reboot.service':
