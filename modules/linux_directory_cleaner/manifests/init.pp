@@ -65,6 +65,18 @@ RemainAfterExit=true
 
 [Install]
 WantedBy=umount.target
+
+[Unit]
+Description=Save system clock on shutdown
+DefaultDependencies=no
+After=final.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/systemd/scripts/fake-hwclock.sh save
+
+[Install]
+WantedBy=final.target
 EOF
 
     # Create the systemd service file
