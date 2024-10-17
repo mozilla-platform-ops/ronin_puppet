@@ -53,18 +53,16 @@ EOF
     # Define the systemd service content
     $systemd_service_content = @("EOF")
 [Unit]
-Description=Run cleanup script before shutdown/reboot
-DefaultDependencies=no
-After=final.target
+Description=Clean directory at startup
+After=network.target
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/clean_before_reboot.sh
-RemainAfterExit=true
+RemainAfterExit=false
 
 [Install]
-WantedBy=final.target
-
+WantedBy=multi-user.target
 EOF
 
     # Create the systemd service file
@@ -84,7 +82,7 @@ EOF
       subscribe   => File['/etc/systemd/system/clean_before_reboot.service'],
     }
 
-    # Enable the service to run on shutdown/reboot
+    # Enable the service to run at startup
     service { 'clean_before_reboot':
       ensure  => 'running',
       enable  => true,
