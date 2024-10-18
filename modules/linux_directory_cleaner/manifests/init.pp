@@ -82,6 +82,7 @@ EOF
 
     # Enable the service to run at startup
     service { 'clean_at_startup':
+      # don't ensure running, we want it to run once at startup
       # ensure  => 'running',
       enable  => true,
       require => Exec['systemd-reload'],
