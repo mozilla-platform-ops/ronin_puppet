@@ -22,9 +22,9 @@ worker:
 packages_classes:
   - mercurial
   - nodejs
-  - python2
-  - python2_psutil
-  - python2_zstandard
+  # - python2
+  # - python2_psutil
+  # - python2_zstandard
   - python3
   - python3_psutil
   - python3_zstandard
