@@ -19,6 +19,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
                 syslog_identifiers => ['generic-worker', 'run-start-worker', 'sudo'],
             }
 
+            require linux_python
             # TODO: move these lines to linux-base?
             require linux_packages::py2
             require linux_packages::py3
@@ -35,6 +36,8 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_mercurial
 
             require linux_talos
+
+            require linux_directory_cleaner
 
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
