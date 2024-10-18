@@ -12,7 +12,7 @@ worker:
   taskcluster_version: 60.3.4
   provider_type: standalone
   worker_pool_id: releng-hardware/gecko-3-b-osx-arm64
-  worker_group: macstadium-vegas
+  worker_group: aws-ec2
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
@@ -22,9 +22,9 @@ worker:
 packages_classes:
   - mercurial
   - nodejs
-  - python2
-  - python2_psutil
-  - python2_zstandard
+  # - python2
+  # - python2_psutil
+  # - python2_zstandard
   - python3
   - python3_psutil
   - python3_zstandard
