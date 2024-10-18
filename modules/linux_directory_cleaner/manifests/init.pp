@@ -41,10 +41,10 @@ EOF
       require => File['/opt/directory_cleaner/configs'],
     }
 
-    # Deploy the clean_before_reboot.sh script
-    file { '/usr/local/bin/clean_before_reboot.sh':
+    # Deploy the clean_at_startup.sh script
+    file { '/usr/local/bin/clean_at_startup.sh':
       ensure => file,
-      source => 'puppet:///modules/linux_directory_cleaner/clean_before_reboot.sh',
+      source => 'puppet:///modules/linux_directory_cleaner/clean_at_startup.sh',
       mode   => '0755',
       owner  => 'root',
       group  => 'admin',
@@ -54,36 +54,33 @@ EOF
     $systemd_service_content = @("EOF")
 [Unit]
 Description=Clean directory at startup
-After=network.target
 
 [Service]
-Type=oneshot
-ExecStart=/usr/local/bin/clean_before_reboot.sh
-RemainAfterExit=false
+ExecStart=/usr/local/bin/clean_at_startup.sh
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
     # Create the systemd service file
-    file { '/etc/systemd/system/clean_before_reboot.service':
+    file { '/etc/systemd/system/clean_at_startup.service':
       ensure  => file,
       content => $systemd_service_content,
       mode    => '0644',
       owner   => 'root',
       group   => 'root',
-      require => File['/usr/local/bin/clean_before_reboot.sh'],
+      require => File['/usr/local/bin/clean_at_startup.sh'],
     }
 
     # Ensure systemd reloads the service files
     exec { 'systemd-reload':
       command     => '/bin/systemctl daemon-reload',
       refreshonly => true,
-      subscribe   => File['/etc/systemd/system/clean_before_reboot.service'],
+      subscribe   => File['/etc/systemd/system/clean_at_startup.service'],
     }
 
     # Enable the service to run at startup
-    service { 'clean_before_reboot':
+    service { 'clean_at_startup':
       ensure  => 'running',
       enable  => true,
       require => Exec['systemd-reload'],

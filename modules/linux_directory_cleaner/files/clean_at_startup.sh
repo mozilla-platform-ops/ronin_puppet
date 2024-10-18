@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Log the execution of the script to a file
-echo "$(date): Running cleanup script" >> /var/log/clean_before_reboot.log
+echo "$(date): Running cleanup script" >> /var/log/clean_at_startup.log
 
 if command -v directory_cleaner &> /dev/null
 then
@@ -9,4 +9,4 @@ then
 fi
 
 # Log completion of the script
-echo "$(date): Cleanup script completed" >> /var/log/clean_before_reboot.log
+echo "$(date): Cleanup script completed" >> /var/log/clean_at_startup.log
