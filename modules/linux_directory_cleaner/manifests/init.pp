@@ -54,6 +54,7 @@ EOF
     $systemd_service_content = @("EOF")
 [Unit]
 Description=Clean directory at startup
+Before=run-puppet.service
 
 [Service]
 ExecStart=/usr/local/bin/clean_at_startup.sh
@@ -81,7 +82,7 @@ EOF
 
     # Enable the service to run at startup
     service { 'clean_at_startup':
-      ensure  => 'running',
+      # ensure  => 'running',
       enable  => true,
       require => Exec['systemd-reload'],
     }
