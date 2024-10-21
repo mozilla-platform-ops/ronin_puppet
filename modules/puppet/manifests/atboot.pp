@@ -38,11 +38,11 @@ class puppet::atboot (
           # On Ubuntu 18.04 puppet runs by systemd and on successful result
           # notifies dependent services
           file {
-            '/usr/local/bin/change_worker_id_and_type.py':
+            '/usr/local/bin/change_workertype.py':
               owner  => 'root',
               group  => 'root',
               mode   => '0755',
-              source => 'puppet:///modules/puppet/change_worker_id_and_type.py';
+              source => 'puppet:///modules/puppet/change_workertype.py';
             '/etc/puppet/ronin_puppet.example':
               owner  => 'root',
               group  => 'root',

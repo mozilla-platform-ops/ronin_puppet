@@ -204,7 +204,7 @@ if [ -n "$WORKER_TYPE_OVERRIDE" ]; then
     echo "  WORKER_TYPE_OVERRIDE: $WORKER_TYPE_OVERRIDE"
 
     # rewrite the config
-    /usr/local/bin/change_worker_id_and_type.py -t "${WORKER_TYPE_OVERRIDE}"
+    /usr/local/bin/change_workertype.py -t "${WORKER_TYPE_OVERRIDE}"
 fi
 
 # touch the semaphore to let run-start-worker know it can start start-worker
