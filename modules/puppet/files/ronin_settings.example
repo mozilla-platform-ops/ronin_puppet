@@ -1,4 +1,4 @@
-# if you place this file at /etc/puppet/ronin_puppet
+# if you place this file at `/etc/puppet/ronin_settings`
 # the `run-puppet.sh` script will use the values here.
 
 # puppet overrides
