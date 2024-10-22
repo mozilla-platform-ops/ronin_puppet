@@ -5,22 +5,22 @@ win-worker:
   generic_worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
-    version: '69.0.1'
+    version: '72.0.1'
 
   taskcluster:
     worker_runner:
         name: 'start-worker-windows-amd64'
-        version: '69.0.1'
+        version: '72.0.1'
         provider: "azure"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
-        version: '69.0.1'
+        version: '72.0.1'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
     livelog:
         name: "livelog-windows-amd64"
-        version: '69.0.1'
+        version: '72.0.1'
     client_id: "azure/gecko-t/win11-64-2009"
     worker_group: "test"
 
