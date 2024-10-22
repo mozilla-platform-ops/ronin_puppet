@@ -261,7 +261,6 @@ groups:
 
   - name: gecko-t-osx-1200-r8-latest
     targets:
-      - macmini-r8-366.test.releng.mdc1.mozilla.com
       - macmini-r8-367.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1200_r8_latest
