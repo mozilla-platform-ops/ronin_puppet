@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 function Set-PXE {
     Import-Module Microsoft.Windows.Bcd.Cmdlets
     $data = (Get-BcdStore).entries | ForEach-Object {
@@ -39,13 +37,8 @@ Start-Service sshd
 
 Set-Service -Name sshd -StartupType Automatic
 
->>>>>>> 619c23f53994f6093d2e5e8873e166ef68d56b05
 $local_bootstrap = "C:\bootstrap\bootstrap.ps1"
 
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/SRCOrganisation/SRCRepository/SRCBranch/provisioners/windows/ImageProvisioner/bootstrap.ps1 -OutFile $local_bootstrap
 
-<<<<<<< HEAD
 D:\applications\psexec.exe -i -s -d -accepteula powershell.exe -ExecutionPolicy Bypass -file $local_bootstrap -worker_pool_id "WorkerPoolId" -role "1Role"  -src_Organisation "SRCOrganisation" -src_Repository "SRCRepository" -src_Branch "SRCBranch" -hash "1HASH" -secret_date "1secret_date" -puppet_version "1puppet_version"
-=======
-D:\applications\psexec.exe -i -s -d -accepteula powershell.exe -ExecutionPolicy Bypass -file $local_bootstrap -worker_pool_id "WorkerPoolId" -role "1Role"  -src_Organisation "SRCOrganisation" -src_Repository "SRCRepository" -src_Branch "SRCBranch" -hash "1HASH" -secret_date "1secret_date" -puppet_version "1puppet_version"
->>>>>>> 619c23f53994f6093d2e5e8873e166ef68d56b05
