@@ -3,8 +3,24 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# TODO: automatically generate PUPPET_ENV from PUPPET_REPO or something
-PUPPET_ENV="${PUPPET_ENV:-<%= @puppet_env -%>}"
+function fail {
+    # TODO: report failure to ext service
+    echo "${@}"
+    exit 1
+}
+
+extract_username() {
+    local url="$1"
+    if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
+        echo "${BASH_REMATCH[1]}"
+    elif [[ "$url" =~ https://github.com/([^/]+)/.* ]]; then
+        echo "${BASH_REMATCH[1]}"
+    else
+        echo "Invalid URL format"
+        exit 1
+    fi
+}
+
 PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
@@ -15,19 +31,16 @@ if [ -f "/etc/puppet/ronin_settings" ]; then
     source /etc/puppet/ronin_settings
 fi
 
-WORKING_DIR="/etc/puppet/environments/${PUPPET_ENV}/code"
+# Extract username from puppet_repo
+puppet_env=$(extract_username "${PUPPET_REPO}")
+
+WORKING_DIR="/etc/puppet/environments/${puppet_env}/code"
 ROLE_FILE='/etc/puppet_role'
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
 FQDN=$(${FACTER_BIN} networking.fqdn)
 
 export LANG=en_US.UTF-8
-
-function fail {
-    # TODO: report failure to ext service
-    echo "${@}"
-    exit 1
-}
 
 mkdir -p "${WORKING_DIR}" || fail
 cd "${WORKING_DIR}" || fail

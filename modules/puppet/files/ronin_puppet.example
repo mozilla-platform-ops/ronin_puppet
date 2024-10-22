@@ -2,7 +2,6 @@
 # the `run-puppet.sh` script will use the values here.
 
 # puppet overrides
-PUPPET_ENV='aerickson'
 PUPPET_REPO='https://github.com/aerickson/ronin_puppet.git'
 PUPPET_BRANCH='moonshot_linux_py311_and_tc_update_plus_1804_hg_upgrade'
 PUPPET_MAIL='aerickson@gmail.com'
