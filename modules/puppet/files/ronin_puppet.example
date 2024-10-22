@@ -7,4 +7,4 @@ PUPPET_BRANCH='moonshot_linux_py311_and_tc_update_plus_1804_hg_upgrade'
 PUPPET_MAIL='aerickson@gmail.com'
 
 # taskcluster overrides
-WORKER_TYPE_OVERRIDE='gecko-t-linux-talos-1804-staging'
+# WORKER_TYPE_OVERRIDE='gecko-t-linux-talos-1804-staging'
