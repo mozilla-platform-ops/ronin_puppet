@@ -24,7 +24,7 @@ rm -rf /opt/worker/tasks/task_*
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
 # this line below is to get multiuser working
-cd ~
+cd /opt/worker
 /usr/local/bin/start-worker "$@"
 
 exitstatus="${PIPESTATUS[0]}"
