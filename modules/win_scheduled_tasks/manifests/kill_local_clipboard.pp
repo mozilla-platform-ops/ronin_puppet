@@ -3,38 +3,43 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_scheduled_tasks::kill_local_clipboard {
+  $kill_localclip = "${facts['custom_win_roninprogramdata']}\\kill_local_clipboard.ps1"
 
-    $kill_localclip = "${facts['custom_win_roninprogramdata']}\\kill_local_clipboard.ps1"
-
-    if $facts['os']['name'] == 'Windows' {
-        file { $kill_localclip:
-            content => file('win_scheduled_tasks/kill_local_clipboard.ps1'),
-        }
-        # Resource from puppetlabs-scheduled_task
-        scheduled_task { 'kill_remote_clipboard':
-            ensure    => 'present',
-            command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
-            arguments => "-executionpolicy bypass -File ${kill_localclip}",
-            enabled   => true,
-            trigger   => [{
-                'schedule'         => 'boot',
-                'minutes_interval' => '0',
-                'minutes_duration' => '0'
-            }],
-            user      => 'system',
-        }
-
-      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\cbdhsvc\Start':
-        ensure => 'present',
-        type => dword,
-        data => '4',
-      }
-      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\cbdhsvc\UserServiceFlags':
-        ensure => 'present',
-        type => dword,
-        data => '0',
-      }
-    } else {
-        fail("${module_name} does not support ${facts['os']['name']}")
+  if $facts['os']['name'] == 'Windows' {
+    file { $kill_localclip:
+      content => file('win_scheduled_tasks/kill_local_clipboard.ps1'),
     }
+    # Resource from puppetlabs-scheduled_task
+    scheduled_task { 'kill_remote_clipboard':
+      ensure    => 'present',
+      command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
+      arguments => "-executionpolicy bypass -File ${kill_localclip}",
+      enabled   => true,
+      trigger   => [{
+          'schedule'         => 'boot',
+          'minutes_interval' => '0',
+          'minutes_duration' => '0'
+      }],
+      user      => 'system',
+    }
+
+    registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\cbdhsvc\Start':
+      ensure => 'present',
+      type   => dword,
+      data   => '4',
+    }
+    registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\cbdhsvc\UserServiceFlags':
+      ensure => 'present',
+      type   => dword,
+      data   => '0',
+    }
+    ## Disable clipboard history
+    registry_value { 'HKLM\SOFTWARE\Microsoft\Clipboard\EnableClipboardHistory':
+      ensure => 'present',
+      type   => dword,
+      data   => '0',
+    }
+  } else {
+    fail("${module_name} does not support ${facts['os']['name']}")
+  }
 }
