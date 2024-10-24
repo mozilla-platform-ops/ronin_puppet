@@ -11,6 +11,8 @@ class linux_packages::google_chrome () {
           # Ensure apt is included
           include apt
 
+          Exec['apt_update'] -> Package['google-chrome-stable']
+
           # Setup Google Chrome apt repository
           apt::source { 'google_repo':
             location => '[arch=amd64] https://dl.google.com/linux/chrome/deb/',
