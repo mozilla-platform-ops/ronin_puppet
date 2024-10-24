@@ -11,13 +11,6 @@ class linux_packages::google_chrome () {
           # Ensure apt is included
           include apt
 
-          # Update apt and ensure chrome is installed
-          exec { 'apt_update':
-            command => '/usr/bin/apt-get update',
-            path    => ['/usr/bin', '/bin'],
-            before  => Package['google-chrome-stable'],
-          }
-
           # Setup Google Chrome apt repository
           apt::source { 'google_repo':
             location => '[arch=amd64] https://dl.google.com/linux/chrome/deb/',
@@ -30,7 +23,7 @@ class linux_packages::google_chrome () {
             include  => {
               'src' => false,
             },
-            notify   => Exec['apt_update'],
+            notify   => Exec['apt_update'],  # This ensures apt_update is triggered after the source is added
           }
 
           # Schedule for Chrome auto-updates
