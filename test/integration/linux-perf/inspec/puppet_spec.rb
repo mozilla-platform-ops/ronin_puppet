@@ -25,3 +25,15 @@ end
 describe package('puppet-release') do
   it { should_not be_installed }
 end
+
+## /etc/puppet/ronin_settings
+
+describe file('/etc/puppet/ronin_settings.example') do
+  it { should exist }
+end
+
+# /usr/local/bin/changetype.py
+describe file('/usr/local/bin/change_workertype.py') do
+  it { should exist }
+  it { should be_executable }
+end
