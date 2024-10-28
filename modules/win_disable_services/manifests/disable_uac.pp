@@ -4,7 +4,9 @@
 
 # https://woshub.com/user-account-control-slider-and-group-policy-settings/
 
-class win_disable_services::disable_uac {
+class win_disable_services::disable_uac (
+  String $purpose
+) {
   case $facts['custom_win_os_version'] {
     'win_10_2009':{
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorAdmin':
@@ -53,9 +55,19 @@ class win_disable_services::disable_uac {
         type => dword,
         data => '1',
       }
-      registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
-        type => dword,
-        data => '1',
+      case $purpose {
+        'builder':{
+          registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
+            type => dword,
+            data => '0',
+          }
+        }
+        default: {
+          registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
+            type => dword,
+            data => '1',
+          }
+        }
       }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableVirtualization':
         type => dword,
