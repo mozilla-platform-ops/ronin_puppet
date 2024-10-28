@@ -22,8 +22,11 @@ class roles_profiles::profiles::suppress_dialog_boxes {
             include macos_mobileconfig_profiles::disable_diagnostic_submissions
         }
         'Windows': {
+
             include win_os_settings::disable_notifications
-            include win_disable_services::disable_uac
+            class { 'win_disable_services::disable_uac':
+                purpose => lookup('win-worker.function')
+            }
             if $facts['custom_win_os_version'] == 'win_11_2009' {
               include win_os_settings::hide_start_menu
             }

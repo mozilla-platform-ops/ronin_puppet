@@ -413,6 +413,25 @@ function Start-WorkerRunner {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+    ## A work around for https://bugzilla.mozilla.org/show_bug.cgi?id=1913293#c19
+
+    $filePath = "C:\generic-worker\ed25519-private.key"
+    $acl = Get-Acl -Path $filePath
+    $otherAccessRules = $acl.Access | Where-Object {
+        $_.IdentityReference -notlike "NT AUTHORITY\SYSTEM" -and
+        $_.IdentityReference -notlike "BUILTIN\Administrators"
+    }
+
+    if ($otherAccessRules.Count -gt 0) {
+        $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }
+        $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "Allow")
+        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "Allow")
+        $acl.AddAccessRule($systemRule)
+        $acl.AddAccessRule($adminRule)
+        Set-Acl -Path $filePath -AclObject $acl
+    }
+
+
     Start-Service -Name worker-runner
   }
   end {
@@ -564,13 +583,13 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
         ## Check to see if it actually started
         switch ($scheduled_event_post.StatusCode) {
           200 {
-            Write-Log -Message ('{0} :: Azure VM Maintenance initiated by azuremaintain-system :: Status Code: 200' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'    
+            Write-Log -Message ('{0} :: Azure VM Maintenance initiated by azuremaintain-system :: Status Code: 200' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           }
           400 {
-            Write-Log -Message ('{0} :: Azure VM Maintenance malformed payload :: Status Code: 400' -f $MyInvocation.MyCommand.Name) -severity 'DEBUG'    
+            Write-Log -Message ('{0} :: Azure VM Maintenance malformed payload :: Status Code: 400' -f $MyInvocation.MyCommand.Name) -severity 'DEBUG'
           }
           Default {
-            Write-Log -Message ('{0} :: Azure VM Maintenance unable to determine initiating maintenance event' -f $MyInvocation.MyCommand.Name) -severity 'DEBUG'    
+            Write-Log -Message ('{0} :: Azure VM Maintenance unable to determine initiating maintenance event' -f $MyInvocation.MyCommand.Name) -severity 'DEBUG'
           }
         }
         # Wait to supress meesage if check is caught during a reboot.

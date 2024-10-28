@@ -12,7 +12,10 @@ class roles_profiles::profiles::common_tools {
             include win_packages::sevenzip
             include win_packages::sublimetxt
             ## Is managed in the mozilla build module for builders
-            if $facts['custom_win_purpose'] != builder {
+
+            $func = lookup('win-worker.function')
+
+            if $func != builder {
                 include win_packages::mercurial
             }
             if $facts['custom_win_location'] == 'aws' {
