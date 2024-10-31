@@ -2,6 +2,15 @@
 
 export PATH=/usr/local/bin:/bin:/sbin:/usr/bin:/usr/sbin
 
+# Clean up old ronin
+rm -rf /var/root/ronin_puppet
+
+# Fresh clone
+git clone https://github.com/mozilla-platform-ops/ronin_puppet.git /var/root/ronin_puppet
+
+# Puppet run
+/var/root/mojave_bootstrap.sh
+
 last_premature_end=<%= @data_dir %>/worker_running_semaphore
 if test $(find $last_premature_end -mmin -2); then
     echo "Last worker-runner.sh execution started less than 120s ago. Sleeping 30s ..."
