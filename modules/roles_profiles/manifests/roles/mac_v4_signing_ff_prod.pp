@@ -6,16 +6,9 @@ class roles_profiles::roles::mac_v4_signing_ff_prod {
   include roles_profiles::profiles::timezone
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::network
-  # Depreceated
-  # include ::roles_profiles::profiles::disable_services
   include roles_profiles::profiles::vnc
-  # Deprecated
-  # include ::roles_profiles::profiles::suppress_dialog_boxes
-  # include ::roles_profiles::profiles::power_management
-  # include ::roles_profiles::profiles::screensaver
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::sudo
-  # include ::roles_profiles::profiles::software_updates
   include roles_profiles::profiles::hardware
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::users
@@ -24,8 +17,7 @@ class roles_profiles::roles::mac_v4_signing_ff_prod {
   include roles_profiles::profiles::remove_bootstrap_user
   include roles_profiles::profiles::duo
   include roles_profiles::profiles::vault_agent
-  # Probably need to un-comment this
-  # include ::fw::roles::mac_signing
+  include ::fw::roles::mac_signing
   include roles_profiles::profiles::mac_v3_signing
   include roles_profiles::profiles::macos_people_remover
 }
