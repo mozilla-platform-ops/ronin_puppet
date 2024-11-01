@@ -113,6 +113,8 @@ scriptworker_users:
         - notary10
   ff-prod:
     cltbld:
+      # for macOS 14.4 and later, we need to use /builds/scriptworker
+      # home: /usr/local/builds/scriptworker
       home: /builds/scriptworker
       supported_behaviors:
         - mac_sign
