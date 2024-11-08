@@ -403,12 +403,42 @@ function Test-ConnectionUntilOnline {
     throw "Connection timeout."
 }
 
+function Test-IsRoninUpdated {
+    [CmdletBinding()]
+    param (
+        [String]
+        $WorkerPoolId = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id
+    )
+    
+    ## Get pools.yml
+    $pools = Invoke-RestMethod "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/main/provisioners/windows/MDC1Windows/pools.yml"
+    if ($null -ne $pools) {
+        ## Find the worker pool id
+        $pools_def = $remoteCommit.pools | Where-Object { $PSItem.name -eq $WorkerPoolId }
+        Write-Log -message ('{0} :: Checking commit hash for {1}' -f $($MyInvocation.MyCommand.Name), $pools_def.Desription) -severity 'DEBUG'
+        $localCommit = git -C "C:\Ronin" rev-parse --short HEAD
+        if ([String]::IsNullOrEmpty($localCommit)) {
+            Write-Log -message ('{0} :: Unable to get local commit hash from git -C C:\Ronin rev-parse --short HEAD' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        }
+        else {
+            $remoteCommit = $pools_def.hash
+            if ($localCommit -ne $remoteCommit) {
+                Write-Log -message ('{0} :: LocalCommit {1} does not match Pool.yml hash {2}' -f $($MyInvocation.MyCommand.Name), $localCommit, $remoteCommit) -severity 'DEBUG'
+                Write-Log -message ('{0} :: Reimaging the machine using Set-PXE {1}' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME) -severity 'DEBUG'
+                Start-Sleep -Seconds 45
+                Set-PXE
+            }
+        }
+    }
+}
+
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123 
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
 if ($refresh_rate -ne "60") {
     Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+    Start-Sleep -Seconds 10
     Set-PXE
 }
 
@@ -430,6 +460,10 @@ If ($bootstrap_stage -eq 'complete') {
 
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
+
+    ## Let's check github to make sure the local copy of ronin puppet matches what we're trying to deploy
+    ## If it's not, reimage the machine
+    Test-IsRoninUpdated -WorkerPoolId (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id
 
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
