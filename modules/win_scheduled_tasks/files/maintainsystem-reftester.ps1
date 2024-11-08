@@ -414,7 +414,7 @@ function Test-IsRoninUpdated {
     $pools = Invoke-RestMethod "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/main/provisioners/windows/MDC1Windows/pools.yml"
     if ($null -ne $pools) {
         ## Find the worker pool id
-        $pools_def = $pools.pools | Where-Object { $PSItem.name -eq $WorkerPoolId }
+        $pools_def = (ConvertFrom-YAML $pools).pools | Where-Object { $PSItem.name -eq $WorkerPoolId }
         Write-Log -message ('{0} :: Checking commit hash for {1}' -f $($MyInvocation.MyCommand.Name), $pools_def.Desription) -severity 'DEBUG'
         $localCommit = git -C "C:\Ronin" rev-parse --short HEAD
         if ([String]::IsNullOrEmpty($localCommit)) {
