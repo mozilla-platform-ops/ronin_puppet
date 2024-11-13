@@ -6,7 +6,7 @@ class macos_tcc_perms (
 ) {
   if $enabled {
     case $facts['os']['release']['major'] {
-      '19','20','21','22','23': {
+      '19','20','21','22','23', '24': {
         $tcc_script = '/usr/local/bin/tcc_perms.sh'
 
         file { $tcc_script:

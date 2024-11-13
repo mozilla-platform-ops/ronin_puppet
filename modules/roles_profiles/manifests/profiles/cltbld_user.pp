@@ -36,7 +36,7 @@ class roles_profiles::profiles::cltbld_user {
             ensure => directory,
           }
         }
-        '20','21','22', '23': {
+        '20','21','22', '23', '24': {
           exec { 'create_macos_user':
             # UID needs to be > 501 for LaunchAgents to function
             command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password_hash}'",
