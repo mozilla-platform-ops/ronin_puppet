@@ -153,7 +153,6 @@ groups:
       - macmini-r8-167.test.releng.mdc1.mozilla.com
       - macmini-r8-168.test.releng.mdc1.mozilla.com
       - macmini-r8-169.test.releng.mdc1.mozilla.com
-      - macmini-r8-170.test.releng.mdc1.mozilla.com
       - macmini-r8-171.test.releng.mdc1.mozilla.com
       - macmini-r8-172.test.releng.mdc1.mozilla.com
       - macmini-r8-173.test.releng.mdc1.mozilla.com
@@ -241,6 +240,12 @@ groups:
       - macmini-r8-281.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8
+
+  - name: gecko-t-osx-1015-r8-bug1927416
+    targets:
+      - macmini-r8-170.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1015_r8_bug1927416
 
   - name: gecko-t-osx-1015-r8-staging
     targets:
