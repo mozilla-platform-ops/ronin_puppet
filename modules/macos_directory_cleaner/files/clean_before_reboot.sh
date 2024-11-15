@@ -11,4 +11,6 @@ then
     directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /opt/worker/downloads
     directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /Users/cltbld/Library/Caches/Mozilla/updates/opt/worker/tasks/
     directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /Users/cltbld/Downloads
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /Users/cltbld/Desktop
+    directory_cleaner -c /opt/directory_cleaner/configs/config.toml --remove-empty-directories /Users/cltbld/Library/Application\ Support/Firefox/Crash\ Reports
 fi
