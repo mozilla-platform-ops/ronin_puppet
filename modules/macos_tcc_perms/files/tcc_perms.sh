@@ -68,7 +68,7 @@ elif [[ "$macos_major_version" -eq 11 || "$macos_major_version" -eq 12 || "$maco
     for query in "${queries_11_12_13[@]}"; do
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
-elif [[ "$macos_major_version" -eq 14 ]]; then
+elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 ]]; then
     for query in "${queries_14_system[@]}"; do
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
