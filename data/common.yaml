@@ -20,7 +20,6 @@ user_groups:
     - ahalberstadt
     - bhearsum
     - gbustamante
-    - gbrown
     - hneiva
     - jcristau
     - jlorenzo
@@ -283,9 +282,6 @@ all_users:
 
   gbustamante:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDckeV1kqxcageX4KWL9Shq+sig7tUTYexXmB5dMC3oIAOl5pSYu0f6AOA1xkzlJPRturYJG10O1Kuzv4EY3EyoF+DQG0Gremb+iWdGvZutzGwWSXitcwZZ8bUoq3TADuEdhWDfsyGf3vYlO/IbmoO1Sedc4cD//Xre8q0D1rXWDkV+Ik43WA9qcpIo1pIklS8Y1iT4r6oSC0fFM5ELqyJilZj/gy3vjT8fWSXt6KTIs2Qkc5Ayz5Y7FUlRf9MplzyQKoxKtT+MsaaNoVgKJea/OVnwyFcEvMGZytJZN7GpqSUJO4W9Fp8PQX1bJ5PxjKVcHZ/Pmt9XnmkBAaSpvr5nCSZ1sleO/z5Att6NulUbqUChSKeoFacCyQ7IYwX1myVOFCi4rLrDzCYwPxIjroWh+VuNZoXUUrAL4BFHB7Df2skDsyznm1OqUTqk06TNfCQOf7Xt5DGsw2eAPA5xD0qlOrVBNhOVIVwETNqZSTSvBQgqcIGBh1XbbbJSbi8tww96tXK831hQ+83EASUi3MpMz3ZcoeFVE6P/TMJCiGygRsvgyv4z0AJ1AYi9viWxAfmQVd661k84qiN547GU9A6HwMABsw4p+mg3LsvMtU7ka1aiKwpmIFJq+8HNmBvdYKGXsMwxQwmXpuYgry2yV+2GYn4XbArNz8qPUszxzXZwqQ== Mozilla_key
-
-  gbrown:
-    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7yH96JpXxkCkyPfn0HpJa8bd+tx+IlfhzxihdgBHLK gbrown@mozilla.com
 
   hneiva:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCjfZR0LUC7TDL+VKC63dZ1JGzDBWja+3l0kziyY7nA03bG+XKVsi8vh09d0N0xysdrKnFaW25zMACx1V8yBpOzSgcfOJtBrTR9k6ScsLN3pCsNqlMY3MO0pTxcgTNclqVefsMfoQxHv1OsOve7LI9Po9q6XkjbqoOV2UjoVe0U8GIZSl/nwQmVk/cPzCm/zSutL3vIbH5W4XD8MKPQBM5+iJdMZb+idXRUXEAl1334zitAFe9dy8FzN8EyPk+tTj1lJDj77HWYnNaW1ws+qvhErlH+bD2FqD/fKv9c6LA9RTZsYor9pP40DZ5+E+bx0NUPjmrAAWyHfVUzgz7f2AIZmfrZQkOwjgFA3lmtMuthYh42AnIswzbUSRaRWbGmG68h20twSIpRX1tJR1g97j1wZtL8wFjdceN/cL+41TlPxZXoF34s9I2hVm0ZBgVqz8xj/gp8FFZj35qCnk78HAKxIBQhYzhv6ei28PhRkGlvWYrOXJcr2Wgpc+ELylyEe6ieTzPec2jyGd7vTGtmkLtPBcI/SJDD/kMo1E3CGQI208daXBkWIVEZnRIhqQJJzX+bg54UPARocuEq2sNLdcuuKf5Mq8wvbwaGioNDXYLrRqWtIWPUDoi0E0Stl9Z+ecZoJZqAjKCp6Fyuv7wmsx0LmkVX/t0qL5x3GKTyDfn48w== hneiva@mozilla.com

@@ -3,15 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class fw::roles::mac_signing {
-
-    case $::fqdn {
-        /.*\.(mdc1|mdc2)\.mozilla\.com/: {
-            include ::fw::profiles::ssh_from_rejh_logging
-            include ::fw::profiles::ssh_from_mozvpn_logging
-            include ::fw::profiles::nrpe_from_nagios
-        }
-        default:{
-            # Silently skip other DCs
-        }
+  case $facts['networking']['fqdn'] {
+    # TO DO remove mdc2
+    /.*\.(mdc1|mdc2)\.mozilla\.com/: {
+      # include fw::profiles::ssh_from_rejh_logging
+      include fw::profiles::ssh_from_mozvpn_logging
+      # include fw::profiles::nrpe_from_nagios
     }
+    default:{
+      # Silently skip other DCs
+    }
+  }
 }
