@@ -7,7 +7,8 @@ class roles_profiles::profiles::common_tools {
     'Windows': {
       include win_packages::process_debug
       #include win_packages::jq
-      include win_packages::gpg4win
+      ## Doesn't install on windows server core, let's try removing it to see if we run into issues
+      #include win_packages::gpg4win
       include win_packages::sevenzip
       include win_packages::sublimetxt
       ## Is managed in the mozilla build module for builders
