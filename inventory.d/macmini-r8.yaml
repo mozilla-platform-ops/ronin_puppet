@@ -350,8 +350,13 @@ groups:
 
   - name: gecko-t-osx-1400-r8-staging
     targets:
-      - macmini-r8-129.test.releng.mdc1.mozilla.com
       - macmini-r8-246.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1400_r8_staging
+
+  - name: gecko-t-osx-1400-r8
+    targets:
+      - macmini-r8-129.test.releng.mdc1.mozilla.com
       - macmini-r8-282.test.releng.mdc1.mozilla.com
       - macmini-r8-283.test.releng.mdc1.mozilla.com
       - macmini-r8-284.test.releng.mdc1.mozilla.com
@@ -371,4 +376,4 @@ groups:
       - macmini-r8-383.test.releng.mdc1.mozilla.com
       - macmini-r8-384.test.releng.mdc1.mozilla.com
     facts:
-      puppet_role: gecko_t_osx_1400_r8_staging
+      puppet_role: gecko_t_osx_1400_r8
