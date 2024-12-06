@@ -46,6 +46,11 @@ class roles_profiles::profiles::disable_services {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
         }
+        if $facts['custom_win_display_version'] == '24H2' {
+          ## Firefox will ask prompt for microphone access during mochitest,
+          ## so explicitly disable it here
+          include win_disable_services::disable_permissions_prompt
+        }
       }
       if $facts['os']['release']['full'] == '10' {
         include win_disable_services::disable_onedrive
