@@ -39,6 +39,10 @@ class roles_profiles::profiles::disable_services {
       include win_disable_services::disable_windows_update
       if $facts['custom_win_purpose'] != builder {
         include win_disable_services::disable_wsearch
+        ## Let's Uninstall Appx Packages
+        ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
+        ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499 
+        include win_disable_services::uninstall_appx_packages
         if ($facts['custom_win_location'] == 'azure') {
           include win_scheduled_tasks::kill_local_clipboard
         }
@@ -51,10 +55,6 @@ class roles_profiles::profiles::disable_services {
         ## Firefox will ask prompt for microphone access during mochitest,
         ## so explicitly disable it here
         include win_disable_services::disable_permissions_prompt
-        ## Let's Uninstall Appx Packages
-        ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
-        ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499 
-        include win_disable_services::uninstall_appx_packages
         ## Let's uninstall OneDrive 
         include win_disable_services::disable_onedrive
       }
