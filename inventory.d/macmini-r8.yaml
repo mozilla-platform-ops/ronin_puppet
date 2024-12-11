@@ -41,7 +41,6 @@ groups:
       - macmini-r8-40.test.releng.mdc1.mozilla.com
       - macmini-r8-41.test.releng.mdc1.mozilla.com
       - macmini-r8-42.test.releng.mdc1.mozilla.com
-      - macmini-r8-43.test.releng.mdc1.mozilla.com
       - macmini-r8-44.test.releng.mdc1.mozilla.com
       - macmini-r8-45.test.releng.mdc1.mozilla.com
       - macmini-r8-46.test.releng.mdc1.mozilla.com
@@ -135,7 +134,6 @@ groups:
       - macmini-r8-219.test.releng.mdc1.mozilla.com
       - macmini-r8-220.test.releng.mdc1.mozilla.com
       - macmini-r8-222.test.releng.mdc1.mozilla.com
-      - macmini-r8-224.test.releng.mdc1.mozilla.com
       - macmini-r8-225.test.releng.mdc1.mozilla.com
       - macmini-r8-226.test.releng.mdc1.mozilla.com
       - macmini-r8-227.test.releng.mdc1.mozilla.com
@@ -148,18 +146,6 @@ groups:
       - macmini-r8-236.test.releng.mdc1.mozilla.com
       - macmini-r8-237.test.releng.mdc1.mozilla.com
       - macmini-r8-240.test.releng.mdc1.mozilla.com
-      - macmini-r8-241.test.releng.mdc1.mozilla.com
-      - macmini-r8-242.test.releng.mdc1.mozilla.com
-      - macmini-r8-243.test.releng.mdc1.mozilla.com
-      - macmini-r8-244.test.releng.mdc1.mozilla.com
-      - macmini-r8-245.test.releng.mdc1.mozilla.com
-      - macmini-r8-249.test.releng.mdc1.mozilla.com
-      - macmini-r8-250.test.releng.mdc1.mozilla.com
-      - macmini-r8-251.test.releng.mdc1.mozilla.com
-      - macmini-r8-252.test.releng.mdc1.mozilla.com
-      - macmini-r8-253.test.releng.mdc1.mozilla.com
-      - macmini-r8-256.test.releng.mdc1.mozilla.com
-      - macmini-r8-258.test.releng.mdc1.mozilla.com
       - macmini-r8-259.test.releng.mdc1.mozilla.com
       - macmini-r8-260.test.releng.mdc1.mozilla.com
       - macmini-r8-262.test.releng.mdc1.mozilla.com
@@ -304,6 +290,7 @@ groups:
       - macmini-r8-8.test.releng.mdc1.mozilla.com
       - macmini-r8-16.test.releng.mdc1.mozilla.com
       - macmini-r8-17.test.releng.mdc1.mozilla.com
+      - macmini-r8-43.test.releng.mdc1.mozilla.com
       - macmini-r8-47.test.releng.mdc1.mozilla.com
       - macmini-r8-63.test.releng.mdc1.mozilla.com
       - macmini-r8-71.test.releng.mdc1.mozilla.com
@@ -347,12 +334,25 @@ groups:
       - macmini-r8-217.test.releng.mdc1.mozilla.com
       - macmini-r8-221.test.releng.mdc1.mozilla.com
       - macmini-r8-223.test.releng.mdc1.mozilla.com
+      - macmini-r8-224.test.releng.mdc1.mozilla.com
       - macmini-r8-230.test.releng.mdc1.mozilla.com
       - macmini-r8-238.test.releng.mdc1.mozilla.com
       - macmini-r8-239.test.releng.mdc1.mozilla.com
+      - macmini-r8-241.test.releng.mdc1.mozilla.com
+      - macmini-r8-242.test.releng.mdc1.mozilla.com
+      - macmini-r8-243.test.releng.mdc1.mozilla.com
+      - macmini-r8-244.test.releng.mdc1.mozilla.com
+      - macmini-r8-245.test.releng.mdc1.mozilla.com
       - macmini-r8-247.test.releng.mdc1.mozilla.com
       - macmini-r8-248.test.releng.mdc1.mozilla.com
+      - macmini-r8-249.test.releng.mdc1.mozilla.com
+      - macmini-r8-250.test.releng.mdc1.mozilla.com
+      - macmini-r8-251.test.releng.mdc1.mozilla.com
+      - macmini-r8-252.test.releng.mdc1.mozilla.com
+      - macmini-r8-253.test.releng.mdc1.mozilla.com
+      - macmini-r8-256.test.releng.mdc1.mozilla.com
       - macmini-r8-257.test.releng.mdc1.mozilla.com
+      - macmini-r8-258.test.releng.mdc1.mozilla.com
       - macmini-r8-261.test.releng.mdc1.mozilla.com
       - macmini-r8-267.test.releng.mdc1.mozilla.com
       - macmini-r8-268.test.releng.mdc1.mozilla.com
