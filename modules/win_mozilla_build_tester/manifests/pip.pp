@@ -41,7 +41,7 @@ class win_mozilla_build_tester::pip {
     },
   }
   # Resource from counsyl-windows
-  windows::environment { 'PIP_DOWNLOAD_CACHE':
+  windows::environment { 'PIP_CACHE_DIR':
     value => "${cache_drive}\\pip-cache",
   }
 }
