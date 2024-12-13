@@ -16,7 +16,7 @@ class win_mozilla_build_tester::pip {
   }
   ## If Datacenter, then cache drive is C
   if ($facts['custom_win_location'] == 'datacenter') {
-    $cache_drive = 'c:'
+    $cache_drive = 'd:'
   }
 
   file { "${$facts['custom_win_programdata']}\\pip":
