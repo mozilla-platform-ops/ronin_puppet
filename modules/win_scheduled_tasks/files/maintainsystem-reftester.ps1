@@ -403,6 +403,29 @@ function Test-ConnectionUntilOnline {
     throw "Connection timeout."
 }
 
+function Set-PipCachePermissions {
+    [CmdletBinding()]
+    param (
+        
+    )
+    
+    Write-Log -message  ('{0} :: Setting permissions on : {1}' -f $($MyInvocation.MyCommand.Name), $ENV:PIP_CACHE_DIR) -severity 'DEBUG'
+    $folderPath = $ENV:PIP_CACHE_DIR
+    $acl = Get-Acl $folderPath
+    $permission = "Everyone", "FullControl", "Allow"
+    $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $permission
+    $acl.SetAccessRule($accessRule)
+    Set-Acl $folderPath $acl
+
+    # Apply permissions recursively to all subdirectories and files
+    Get-ChildItem -Path $folderPath -Recurse | ForEach-Object {
+        $itemAcl = Get-Acl $_.FullName
+        $itemAcl.SetAccessRule($accessRule)
+        Set-Acl $_.FullName $itemAcl
+    }
+    Write-Log -message  ('{0} :: Successfully set permissions on : {1}' -f $($MyInvocation.MyCommand.Name), $ENV:PIP_CACHE_DIR) -severity 'DEBUG'
+}
+
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123 
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
@@ -434,6 +457,9 @@ If ($bootstrap_stage -eq 'complete') {
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
+
+    ## Finally, let's make sure that $ENV:PIP_CACHE_DIR is readable by all users
+    Set-PipCachePermissions
 
     StartWorkerRunner
     start-sleep -s 30
