@@ -18,7 +18,7 @@ class macos_fsmonitor (
 
   # Step 2: Adjust ownership of the directory
   exec { 'chown_watchman_dir':
-    command => 'sudo chown -R relops:staff /usr/local/var/run/watchman',
+    command => 'sudo chown -R cltbld:staff /usr/local/var/run/watchman',
     require => Exec['prepare_watchman_dir'], # Run only after the directory is created.
     path    => ['/usr/bin', '/usr/local/bin'],
   }
@@ -37,5 +37,28 @@ class macos_fsmonitor (
     onlyif  => '/bin/test -f /usr/local/bin/watchmanctl', # Specify full path to 'test'.
     require => Packages::Macos_package_from_s3['watchman.pkg'],
     path    => ['/usr/bin', '/usr/local/bin', '/bin'],
+  }
+
+  # Step 5: Append configuration to `.hgrc` for cltbld
+  file_line { 'enable_fsmonitor_plugin':
+    path    => '/Users/cltbld/.hgrc',
+    line    => '[extensions]\nfsmonitor =',
+    match   => '^\[extensions\]',
+    require => Exec['codesign_watchman'], # Ensure this runs after Watchman setup.
+  }
+
+  file_line { 'configure_fsmonitor_mode':
+    path    => '/Users/cltbld/.hgrc',
+    line    => '[fsmonitor]\nmode = paranoid',
+    match   => '^\[fsmonitor\]',
+    require => Exec['codesign_watchman'],
+  }
+
+  # Ensure correct ownership and permissions of .hgrc
+  file { '/Users/cltbld/.hgrc':
+    ensure => file,
+    owner  => 'cltbld',
+    group  => 'staff',
+    mode   => '0644',
   }
 }
