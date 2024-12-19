@@ -39,26 +39,41 @@ class macos_fsmonitor (
     path    => ['/usr/bin', '/usr/local/bin', '/bin'],
   }
 
-  # Step 5: Append configuration to `.hgrc` for cltbld
-  file_line { 'enable_fsmonitor_plugin':
-    path    => '/Users/cltbld/.hgrc',
-    line    => '[extensions]\nfsmonitor =',
-    match   => '^\[extensions\]',
-    require => Exec['codesign_watchman'], # Ensure this runs after Watchman setup.
-  }
-
-  file_line { 'configure_fsmonitor_mode':
-    path    => '/Users/cltbld/.hgrc',
-    line    => '[fsmonitor]\nmode = paranoid',
-    match   => '^\[fsmonitor\]',
+  # Step 5: Manage `.hgrc` file for cltbld
+  file { '/Users/cltbld/.hgrc':
+    ensure  => file,
+    owner   => 'cltbld',
+    group   => 'staff',
+    mode    => '0644',
+    content => epp('macos_fsmonitor/hgrc.epp'), # Use a template for consistent content.
     require => Exec['codesign_watchman'],
   }
 
-  # Ensure correct ownership and permissions of .hgrc
-  file { '/Users/cltbld/.hgrc':
-    ensure => file,
-    owner  => 'cltbld',
-    group  => 'staff',
-    mode   => '0644',
-  }
+  # Embedded Puppet Template (hgrc.epp)
+  # This template will look like this:
+  #
+  # <%# macos_fsmonitor/hgrc.epp %>
+  # [diff]
+  # git=True
+  # showfunc=True
+  # ignoreblanklines=True
+  #
+  # [ui]
+  # username = Mozilla Release Engineering <release@mozilla.com>
+  # traceback = True
+  #
+  # [extensions]
+  # share=
+  # rebase=
+  # mq=
+  # purge=
+  # robustcheckout=/usr/local/lib/hgext/robustcheckout.py
+  # sparse=
+  # fsmonitor =
+  #
+  # [fsmonitor]
+  # mode = paranoid
+  #
+  # [web]
+  # cacerts = /etc/mercurial/cacert.pem
 }
