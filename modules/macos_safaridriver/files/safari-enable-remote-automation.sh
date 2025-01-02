@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Ensure the logged-in user is 'cltbld'
+current_user=$(id -u -n)
+if [ "$current_user" != "cltbld" ]; then
+  echo "This script must be run as the user 'cltbld'. Current user is '$current_user'. Exiting..."
+  exit 1
+fi
+
 # Function to enable remote automation for Safari
 enable_remote_automation() {
   local semaphore_file="$1"
@@ -8,7 +15,6 @@ enable_remote_automation() {
   local develop_menu_text="$3"
   local allow_remote_automation_text="$4"
 
-  current_user=$(id -u -n)
   mkdir -p "$(dirname "$semaphore_file")"
   touch "$semaphore_file"
 
@@ -63,15 +69,6 @@ macos_full_version=$(get_macos_version)
 macos_major_version=$(echo "$macos_full_version" | awk -F '.' '{print $1}')
 macos_minor_version=$(echo "$macos_full_version" | awk -F '.' '{print $2}')
 
-# Ensure not running as root
-if [ "$EUID" -eq 0 ]; then
-  echo "Must not run as root!"
-  echo "  'Allow Remote Automation' is per account."
-  exit 1
-fi
-
-current_user=$(id -u -n)
-
 case "$macos_major_version" in
   "10")
     if [ "$macos_minor_version" -eq 15 ]; then
@@ -91,19 +88,14 @@ case "$macos_major_version" in
     enable_remote_automation "$semaphore_file" "Safari" "Developer" "Allow remote automation"
     ;;
   "14")
-    # Get current version of Safari.app
     safari_version=$(/usr/libexec/PlistBuddy -c "print :CFBundleShortVersionString" /Applications/Safari.app/Contents/Info.plist)
     safari_major_version="${safari_version%%.*}"
 
-    if [ "$safari_major_version" == "16" ]; then
-      semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
-      enable_remote_automation "$semaphore_file" "Safari" "Developer" "Allow remote automation"
-    elif [ "$safari_major_version" == "17" ]; then
+    if [ "$safari_major_version" == "16" ] || [ "$safari_major_version" == "17" ]; then
       semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
       enable_remote_automation "$semaphore_file" "Safari" "Developer" "Allow remote automation"
     fi
 
-    # Check for Safari Technology Preview
     if [ -d "/Applications/Safari Technology Preview.app" ]; then
       semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run"
       enable_remote_automation "$semaphore_file" "Safari Technology Preview" "Developer" "Allow remote automation"
