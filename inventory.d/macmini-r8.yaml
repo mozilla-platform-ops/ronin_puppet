@@ -48,7 +48,6 @@ groups:
       - macmini-r8-82.test.releng.mdc1.mozilla.com
       - macmini-r8-83.test.releng.mdc1.mozilla.com
       - macmini-r8-84.test.releng.mdc1.mozilla.com
-      - macmini-r8-86.test.releng.mdc1.mozilla.com
       - macmini-r8-87.test.releng.mdc1.mozilla.com
       - macmini-r8-90.test.releng.mdc1.mozilla.com
       - macmini-r8-91.test.releng.mdc1.mozilla.com
@@ -85,7 +84,6 @@ groups:
       - macmini-r8-155.test.releng.mdc1.mozilla.com
       - macmini-r8-157.test.releng.mdc1.mozilla.com
       - macmini-r8-159.test.releng.mdc1.mozilla.com
-      - macmini-r8-160.test.releng.mdc1.mozilla.com
       - macmini-r8-162.test.releng.mdc1.mozilla.com
       - macmini-r8-165.test.releng.mdc1.mozilla.com
       - macmini-r8-166.test.releng.mdc1.mozilla.com
@@ -138,6 +136,7 @@ groups:
 
   - name: gecko-t-osx-1200-r8-latest
     targets:
+      - macmini-r8-366.test.releng.mdc1.mozilla.com
       - macmini-r8-367.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1200_r8_latest
