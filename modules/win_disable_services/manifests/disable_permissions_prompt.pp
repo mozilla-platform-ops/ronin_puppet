@@ -12,4 +12,11 @@ class win_disable_services::disable_permissions_prompt {
     type   => string,
     data   => 'Allow',
   }
+
+  ## Required for Mochitest browser-chrome run from msix packages 
+  registry_value { 'HKLM\SOFTWARE\MicrosoftWindows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone\Mozilla.Firefox.MSIX':
+    ensure => present,
+    type   => string,
+    data   => 'Allow',
+  }
 }
