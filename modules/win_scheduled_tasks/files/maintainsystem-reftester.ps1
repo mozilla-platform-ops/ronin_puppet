@@ -285,9 +285,9 @@ function StartWorkerRunner {
 function Get-LoggedInUser {
     [CmdletBinding()]
     param (
-        
+
     )
-    
+
     @(((query user) -replace '\s{20,39}', ',,') -replace '\s{2,}', ',' | ConvertFrom-Csv)
 }
 
@@ -297,10 +297,16 @@ function Get-LatestGoogleChrome {
         [String]
         $Package = "googlechrome"
     )
-    
+
+
+    ## Not needed on Moonshots Windows
+    if ($osVersion -like "10.*") {
+        Write-Host "Detected Windows 10. Exiting function."
+        return
+    }
     ## Current version of google chrome
     $current_version = choco list --exact $Package --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion'
-    
+
     ## Use chocolatey with outdated
     $choco_packages = choco outdated --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion', 'AvailableVersion', 'Pinned'
 
@@ -309,7 +315,7 @@ function Get-LatestGoogleChrome {
 
     ## There is no google chrome update, so output the current version
     if ([String]::IsNullOrEmpty($pkg)) {
-        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $current_version.CurrentVersion) -severity 'DEBUG' 
+        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $current_version.CurrentVersion) -severity 'DEBUG'
     }
     else {
         ## Chrome is installed and needs to be updated
@@ -403,7 +409,7 @@ function Test-ConnectionUntilOnline {
     throw "Connection timeout."
 }
 
-## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123 
+## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
