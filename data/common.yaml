@@ -112,9 +112,11 @@ scriptworker_users:
         - notary10
   ff-prod:
     cltbld:
-      # for macOS 14.4 and later, we need to use /builds/scriptworker
-      # home: /usr/local/builds/scriptworker
-      home: /builds/scriptworker
+      # macOS 10.14 directory
+      # home: /builds/scriptworker
+      # macOS 10.15 directory
+      # TODO: fix logic here before merging so that it doesn't break the old signers
+      home: /usr/local/builds/scriptworker
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg

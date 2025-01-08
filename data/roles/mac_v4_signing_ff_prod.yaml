@@ -1,7 +1,11 @@
 ---
 
+packages_classes:
+  - python3
+
 # Package class parameters
 packages::vault::version: 1.7.3
+packages::python3::version: 3.11.0
 
 # Override secrets with vault secrets
 
