@@ -412,10 +412,12 @@ function Test-ConnectionUntilOnline {
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
-$refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
-if ($refresh_rate -ne "60") {
-    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
-    Set-PXE
+if (!($osVersion -like "10.*")) {
+    $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
+    if ($refresh_rate -ne "60") {
+        Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+        Set-PXE
+    }
 }
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
