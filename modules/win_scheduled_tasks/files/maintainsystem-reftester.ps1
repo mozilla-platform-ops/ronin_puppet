@@ -298,12 +298,6 @@ function Get-LatestGoogleChrome {
         $Package = "googlechrome"
     )
 
-
-    ## Not needed on Moonshots Windows
-    if ($osVersion -like "10.*") {
-        Write-Host "Detected Windows 10. Exiting function."
-        return
-    }
     ## Current version of google chrome
     $current_version = choco list --exact $Package --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion'
 
@@ -412,6 +406,7 @@ function Test-ConnectionUntilOnline {
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
+$osVersion = (Get-CimInstance Win32_OperatingSystem).Version
 if (!($osVersion -like "10.*")) {
     $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
     if ($refresh_rate -ne "60") {
