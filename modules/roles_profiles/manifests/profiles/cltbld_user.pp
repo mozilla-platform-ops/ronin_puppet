@@ -7,12 +7,11 @@ class roles_profiles::profiles::cltbld_user {
     'Darwin': {
       $account_username = 'cltbld'
       $password     = lookup('cltbld_user.password')
-      # lookup('cltbld_user.unhashedpassword') does not work for some reason. Hard coding for now
       $password_unhashed    = 'cltbld'
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
-      $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '${salt}', '-6', '-rounds', '${iterations}', '${password}']).read.chomp %>")
+      $password_hash = inline_template("<%= IO.popen(['openssl']).read.chomp %>")
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {

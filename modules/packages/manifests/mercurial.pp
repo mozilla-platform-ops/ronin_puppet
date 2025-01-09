@@ -26,12 +26,12 @@ class packages::mercurial (
   Exec['remove_old_hg'] -> File['/etc/paths.d/python3.11'] -> Package['python3-mercurial']
 
   package { 'python3-mercurial':
-    ensure   => $version,
-    name     => 'mercurial',
-    provider => pip3,
+    ensure          => $version,
+    name            => 'mercurial',
+    provider        => pip3,
     # Sometimes it seems this below is needed for macOS > 10.15 (?)
-    #install_options => ['--use-pep517'],
-    require  => [Class['packages::python3'], Class['macos_xcode_tools']],
+    install_options => ['--use-pep517'],
+    require         => [Class['packages::python3'], Class['macos_xcode_tools']],
   }
 
   # Create a symlink at /usr/local/bin/hg pointing to the new hg binary
