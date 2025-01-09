@@ -416,7 +416,7 @@ if (!($osVersion -like "10.*")) {
     $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
     if ($refresh_rate -ne "60") {
         Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
-        Set-PXE
+        #Set-PXE
     }
 }
 
