@@ -418,17 +418,17 @@ function Start-WorkerRunner {
     $filePath = "C:\generic-worker\ed25519-private.key"
     $acl = Get-Acl -Path $filePath
     $otherAccessRules = $acl.Access | Where-Object {
-        $_.IdentityReference -notlike "NT AUTHORITY\SYSTEM" -and
-        $_.IdentityReference -notlike "BUILTIN\Administrators"
+      $_.IdentityReference -notlike "NT AUTHORITY\SYSTEM" -and
+      $_.IdentityReference -notlike "BUILTIN\Administrators"
     }
 
     if ($otherAccessRules.Count -gt 0) {
-        $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }
-        $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "Allow")
-        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "Allow")
-        $acl.AddAccessRule($systemRule)
-        $acl.AddAccessRule($adminRule)
-        Set-Acl -Path $filePath -AclObject $acl
+      $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }
+      $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "Allow")
+      $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "Allow")
+      $acl.AddAccessRule($systemRule)
+      $acl.AddAccessRule($adminRule)
+      Set-Acl -Path $filePath -AclObject $acl
     }
 
 
@@ -523,6 +523,29 @@ function LinkZY2D {
   }
 }
 
+function Set-PipCachePermissions {
+  [CmdletBinding()]
+  param (
+      
+  )
+  
+  Write-Log -message  ('{0} :: Setting permissions on : {1}' -f $($MyInvocation.MyCommand.Name), $ENV:PIP_CACHE_DIR) -severity 'DEBUG'
+  $folderPath = $ENV:PIP_CACHE_DIR
+  $acl = Get-Acl $folderPath
+  $permission = "Everyone", "FullControl", "Allow"
+  $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $permission
+  $acl.SetAccessRule($accessRule)
+  Set-Acl $folderPath $acl
+
+  # Apply permissions recursively to all subdirectories and files
+  Get-ChildItem -Path $folderPath -Recurse | ForEach-Object {
+    $itemAcl = Get-Acl $_.FullName
+    $itemAcl.SetAccessRule($accessRule)
+    Set-Acl $_.FullName $itemAcl
+  }
+  Write-Log -message  ('{0} :: Successfully set permissions on : {1}' -f $($MyInvocation.MyCommand.Name), $ENV:PIP_CACHE_DIR) -severity 'DEBUG'
+}
+
 ## Get the tags from azure imds
 $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
 
@@ -555,6 +578,8 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
     Puppet-Run
     LinkZY2D
   }
+  ## Finally, let's make sure that $ENV:PIP_CACHE_DIR is readable by all users
+  Set-PipCachePermissions
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
   # wait and check if GW has started
