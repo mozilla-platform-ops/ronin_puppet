@@ -52,9 +52,6 @@ class roles_profiles::profiles::disable_services {
         }
       }
       if $facts['custom_win_display_version'] == '24H2' {
-        ## Firefox will ask prompt for microphone access during mochitest,
-        ## Let's not disable here, but rather in-tree in win_unittest.py pre-flight commands
-        # include win_disable_services::disable_permissions_prompt
         ## Let's uninstall OneDrive 
         include win_disable_services::disable_onedrive
       }
