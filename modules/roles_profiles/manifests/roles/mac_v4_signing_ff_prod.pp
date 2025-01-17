@@ -21,5 +21,6 @@ class roles_profiles::roles::mac_v4_signing_ff_prod {
   include ::fw::roles::mac_signing
   include roles_profiles::profiles::mac_v3_signing
   include roles_profiles::profiles::macos_people_remover
+  include roles_profiles::profiles::macos_signer_python
   include roles_profiles::profiles::packages_installed
 }
