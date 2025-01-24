@@ -1,5 +1,10 @@
-class macos_notification_disabler {
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+class macos_notification_disabler (
+  Boolean $enabled = true,
+) {
   # This class enables the "Do Not Disturb" (Focus Mode) feature in macOS
   # by setting up the required directories and copying necessary configuration files.
   # Note: A logout and log back in are required for changes to take effect.
@@ -26,18 +31,18 @@ class macos_notification_disabler {
     'Assertions.json',
     'Metrics.json',
     'Settings.sqlite',
-    'Settings.sqlite-shm'
+    'Settings.sqlite-shm',
   ]
 
-  # Copy the configuration files from the Puppet module to the DB directory
-  # These files contain the necessary settings for Do Not Disturb mode.
-  file { $files:
-    ensure  => 'file',
-    source  => "puppet:///modules/${module_name}/DoNotDisturb/${name}",
-    path    => "/Users/cltbld/Library/DoNotDisturb/DB/${name}",
-    owner   => 'cltbld',
-    group   => 'staff',
-    mode    => '0644',
-    require => File['/Users/cltbld/Library/DoNotDisturb/DB'],
+  # Loop through the files array to create each file resource
+  $files.each |String $file| {
+    file { "/Users/cltbld/Library/DoNotDisturb/DB/${file}":
+      ensure  => 'file',
+      source  => "puppet:///modules/macos_notification_disabler/${file}",
+      owner   => 'cltbld',
+      group   => 'staff',
+      mode    => '0644',
+      require => File['/Users/cltbld/Library/DoNotDisturb/DB'],
+    }
   }
 }
