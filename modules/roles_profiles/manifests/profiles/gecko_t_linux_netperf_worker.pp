@@ -19,6 +19,7 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
 
       require linux_python
       # TODO: move these lines to linux-base?
+      require linux_packages::iperf
       require linux_packages::py2
       require linux_packages::py3
       require linux_packages::ffmpeg
