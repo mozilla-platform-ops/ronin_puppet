@@ -5,6 +5,7 @@ groups:
     targets:
       - macmini-m2-54.test.releng.mdc1.mozilla.com
       # rcurran's local home macmini
+      # will remove once returned
       - macmini-m2-43.local
     facts:
       puppet_role: mac_v4_signing_ff_prod
