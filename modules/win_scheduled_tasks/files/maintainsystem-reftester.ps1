@@ -504,7 +504,6 @@ function Set-WinRM {
 
 Set-WinRM
 Set-SSH
-pause
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
