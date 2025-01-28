@@ -242,6 +242,12 @@ signingworker_roles:
             widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            stage_widevine_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_omnija_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_langpack_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            gcp_prod_widevine_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_omnija_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_langpack_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
         release:
             apple_asc_provider: 'MozillaCorporation'
             notarization_poll_timeout: 6300
