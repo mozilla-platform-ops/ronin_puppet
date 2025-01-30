@@ -8,6 +8,7 @@ class macos_signer_python (
   # Ensure the required package is downloaded
   exec { 'download_python_pkg':
     command => "/usr/bin/curl -o ${download_path} ${pkg_url}",
+    unless  => "/usr/bin/python3 --version 2>&1 | /usr/bin/grep -q '3.11'",
     creates => $download_path,
     path    => ['/usr/bin', '/usr/sbin'],
   }

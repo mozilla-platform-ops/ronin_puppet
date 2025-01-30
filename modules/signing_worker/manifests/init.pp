@@ -122,17 +122,16 @@ define signing_worker (
     path    => ['/usr/bin', '/usr/local/bin'],
     unless  => 'python3 -m virtualenv --version',
     user    => 'root',
-    require => Package['python3'],
+    #require => Package['python3'],
   }
 
-  # Explicitly create the virtualenv before using it
   exec { 'create_scriptworker_virtualenv':
     command => "python3 -m virtualenv ${virtualenv_dir}",
     path    => ['/usr/bin', '/usr/local/bin'],
     creates => "${virtualenv_dir}/bin/python",
     user    => $user,
     group   => $group,
-    require => Exec['install_virtualenv'],  # Ensure virtualenv is installed first
+    require => Exec['install_virtualenv'],
   }
 
   exec { 'fix_virtualenv_permissions':
@@ -262,14 +261,43 @@ define signing_worker (
     #
     # In an ideal world we'd still use `vcsrepo` for this, but it breaks after we
     # clean up the token, so we're stuck with this for now.
-    exec { "clone widevine ${scriptworker_base}":
-      command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
-      user    => $user,
+
+    # Ensure the widevine directory exists and is owned by the correct user
+    file { "${scriptworker_base}/widevine":
+      ensure  => 'directory',
+      owner   => $user,
       group   => $group,
-      unless  => "test -d ${widevine_clone_dir}",
-      path    => ['/bin', '/usr/bin'],
+      mode    => '0755',
       require => File[$scriptworker_base],
     }
+
+    # Fix ownership of the parent directory to avoid permission issues
+    exec { 'fix_widevine_permissions':
+      command => "/usr/sbin/chown -R ${user}:${group} ${scriptworker_base}",
+      path    => ['/usr/sbin', '/bin', '/usr/bin'],
+      onlyif  => "test -d ${scriptworker_base}",
+      require => File[$scriptworker_base],
+    }
+
+    # Clone the Widevine repository
+    exec { "clone widevine ${scriptworker_base}":
+      command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${scriptworker_base}/widevine",
+      user    => $user,
+      group   => $group,
+      cwd     => $scriptworker_base,  # Set working directory to avoid 'Permission denied'
+      unless  => "test -d ${scriptworker_base}/widevine",
+      path    => ['/bin', '/usr/bin'],
+      require => [File["${scriptworker_base}/widevine"], Exec['fix_widevine_permissions']],
+    }
+
+    # exec { "clone widevine ${scriptworker_base}":
+    #   command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
+    #   user    => $user,
+    #   group   => $group,
+    #   unless  => "test -d ${widevine_clone_dir}",
+    #   path    => ['/bin', '/usr/bin'],
+    #   require => File[$scriptworker_base],
+    # }
     # This has credentials in it. Clean up.
     ->file { "Remove widevine directory ${scriptworker_base}":
       ensure  => absent,
