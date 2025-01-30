@@ -116,13 +116,33 @@ define signing_worker (
     group  => $group,
   }
 
-  # Setting up the virtualenv happens in 3 stages:
-  # 1) Create it
-  # 2) Install indirect dependencies (which have their own requirements file)
-  # 3) Install direct dependencies
-  # We cannot combine these into one requirements file because the indirect
-  # dependencies use hash pinning, while the direct ones cannot, because they're
-  # installed in editable mode.
+  # Ensure virtualenv is correctly installed and up-to-date
+  exec { 'install_virtualenv':
+    command => 'python3 -m pip install --upgrade --force-reinstall virtualenv',
+    path    => ['/usr/bin', '/usr/local/bin'],
+    unless  => 'python3 -m virtualenv --version',
+    user    => 'root',
+    require => Package['python3'],
+  }
+
+  # Explicitly create the virtualenv before using it
+  exec { 'create_scriptworker_virtualenv':
+    command => "python3 -m virtualenv ${virtualenv_dir}",
+    path    => ['/usr/bin', '/usr/local/bin'],
+    creates => "${virtualenv_dir}/bin/python",
+    user    => $user,
+    group   => $group,
+    require => Exec['install_virtualenv'],  # Ensure virtualenv is installed first
+  }
+
+  exec { 'fix_virtualenv_permissions':
+    command => "/usr/sbin/chown -R ${user}:${group} ${virtualenv_dir}",
+    path    => ['/usr/sbin', '/bin', '/usr/bin'],
+    onlyif  => "test -d ${virtualenv_dir}",
+    require => Exec['create_scriptworker_virtualenv'],
+  }
+
+  # Now proceed with Puppet's management of the virtualenv
   python::virtualenv { "signingworker_${user}" :
     ensure          => present,
     version         => '3',
@@ -131,13 +151,32 @@ define signing_worker (
     owner           => $user,
     group           => $group,
     timeout         => 0,
-    # This is not strictly necessary, but if Puppet ever runs
-    # from a cwd that the signing worker user can't access,
-    # we end up hitting this pip bug:
-    # https://github.com/pypa/pip/issues/9445
     cwd             => $scriptworker_base,
     path            => ['/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
+    require         => Exec['fix_virtualenv_permissions'],  # Ensure permissions are correct before using it
   }
+  # Setting up the virtualenv happens in 3 stages:
+  # 1) Create it
+  # 2) Install indirect dependencies (which have their own requirements file)
+  # 3) Install direct dependencies
+  # We cannot combine these into one requirements file because the indirect
+  # dependencies use hash pinning, while the direct ones cannot, because they're
+  # installed in editable mode.
+  # python::virtualenv { "signingworker_${user}" :
+  #   ensure          => present,
+  #   version         => '3',
+  #   venv_dir        => $virtualenv_dir,
+  #   ensure_venv_dir => true,
+  #   owner           => $user,
+  #   group           => $group,
+  #   timeout         => 0,
+  #   # This is not strictly necessary, but if Puppet ever runs
+  #   # from a cwd that the signing worker user can't access,
+  #   # we end up hitting this pip bug:
+  #   # https://github.com/pypa/pip/issues/9445
+  #   cwd             => $scriptworker_base,
+  #   path            => ['/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
+  # }
   exec { "install ${scriptworker_base} requirements":
     command     => "${virtualenv_dir}/bin/pip install -r ${requirements}",
     user        => $user,
