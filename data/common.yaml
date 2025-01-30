@@ -113,7 +113,7 @@ scriptworker_users:
         - notary10
   ff-prod:
     cltbld:
-      home: /builds/scriptworker
+      home: "%{hiera('scriptworker_home')}"
       supported_behaviors:
         - mac_sign
         - mac_sign_and_pkg

@@ -4,5 +4,8 @@ groups:
   - name: mac-v4-signing-ff-prod
     targets:
       - macmini-m2-54.test.releng.mdc1.mozilla.com
+      - macmini-m2-43.local
+      - macsigner-local-1.local
+
     facts:
       puppet_role: mac_v4_signing_ff_prod
