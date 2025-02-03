@@ -23,9 +23,9 @@ class duo::duo_unix (
     include packages::openssl
     include packages::duo_unix
 
-    # Use package-based requirement
+# Use package-based requirement
     $duo_require = Class['packages::duo_unix']
-  } elsif versioncmp($mac_version, '21','23') >= 0 {
+  } elsif versioncmp($mac_version, '21') >= 0 or versioncmp($mac_version, '23') >= 0 {
     notify { "Detected macOS ${mac_version}, treating as 14+":
       message => 'Installing Duo Unix with macOS 14+ script.',
     }
