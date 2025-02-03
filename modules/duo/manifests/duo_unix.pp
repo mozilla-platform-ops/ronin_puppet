@@ -19,19 +19,16 @@ class duo::duo_unix (
   # Determine macOS version
   $mac_version = $facts['os']['release']['major']
 
-  if $enabled {
-    # Sanity Check
-    if $ikey == '' or $skey == '' or $host == '' {
-      fail('ikey, skey, and host must all be defined.')
-    }
-  }
-
   if $mac_version == '10.15' {
-    # Install Duo Unix via Package if macOS 10.15
     include packages::openssl
     include packages::duo_unix
-  } elsif $mac_version == '14' {
-    # Install OpenSSL & Duo Unix via Script for macOS 14
+
+    # Use package-based requirement
+    $duo_require = Class['packages::duo_unix']
+  } elsif versioncmp($mac_version, '23') >= 0 {
+    notify { "Detected macOS ${mac_version}, treating as 14+":
+      message => 'Installing Duo Unix with macOS 14+ script.',
+    }
 
     file { '/usr/local/bin/openssl_duo_mac14.sh':
       ensure => file,
@@ -47,19 +44,20 @@ class duo::duo_unix (
       refreshonly => true,
       subscribe   => File['/usr/local/bin/openssl_duo_mac14.sh'],
     }
+
+    # Fake a class dependency so require doesn't break
+    $duo_require = Exec['install_duo_unix_mac14']
   } else {
     fail("Unsupported macOS version: ${mac_version}")
   }
 
-  # Do not leave duo config around if disabled
-  $conf_present = $enabled ? {
-    true => 'present',
-    default => 'absent',
-  }
-
+# Ensure /etc/duo directory exists
   file { '/etc/duo':
     ensure => directory,
   }
+
+# Use the dynamic dependency for `require`
+  $conf_present = $enabled ? { true => 'present', default => 'absent' }
 
   file { '/etc/duo/pam_duo.conf':
     ensure    => $conf_present,
@@ -68,7 +66,7 @@ class duo::duo_unix (
     mode      => '0600',
     show_diff => false,
     content   => template('duo/duo.conf.erb'),
-    require   => Class['packages::duo_unix'],
+    require   => $duo_require,
   }
 
   file { '/etc/duo/login_duo.conf':
@@ -78,7 +76,7 @@ class duo::duo_unix (
     mode      => '0600',
     show_diff => false,
     content   => template('duo/duo.conf.erb'),
-    require   => Class['packages::duo_unix'],
+    require   => $duo_require,
   }
 
   file { '/etc/ssh/sshd_config':
@@ -87,7 +85,7 @@ class duo::duo_unix (
     group   => 'wheel',
     mode    => '0644',
     source  => 'puppet:///modules/duo/sshd_config',
-    require => Class['packages::duo_unix'],
+    require => $duo_require,
   }
 
   file { '/etc/pam.d/sshd':
@@ -96,6 +94,6 @@ class duo::duo_unix (
     group   => 'wheel',
     mode    => '0444',
     source  => 'puppet:///modules/duo/pam_sshd',
-    require => Class['packages::duo_unix'],
+    require => $duo_require,
   }
 }

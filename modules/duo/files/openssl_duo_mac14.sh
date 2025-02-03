@@ -27,20 +27,33 @@ fi
 cd "$DOWNLOADS_DIR"
 
 ######
-# Install OpenSSL 3.4.0 from Precompiled Zip
+# Install OpenSSL 3.4.0
 ######
 
-OPENSSL_ZIP_URL="https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/14/openssl-3.4.0.zip"
+OPENSSL_URL="https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/14/openssl-3.4.0.tar.gz"
 
-echo "Downloading OpenSSL 3.4.0 (precompiled)..."
-sudo -u "$CURRENT_USER" curl -O "$OPENSSL_ZIP_URL"
+echo "Downloading OpenSSL 3.4.0..."
+sudo -u "$CURRENT_USER" curl -O "$OPENSSL_URL"
 
 echo "Extracting OpenSSL 3.4.0..."
-sudo -u "$CURRENT_USER" unzip -o openssl-3.4.0.zip -d openssl-3.4.0-extracted
+sudo -u "$CURRENT_USER" tar -xzf openssl-3.4.0.tar.gz
 
-# Move the extracted OpenSSL binaries to /usr/local
+cd openssl-3.4.0
+
+# Set compiler environment variables for ARM64
+export CC="clang"
+export CFLAGS="-arch arm64"
+export LDFLAGS="-arch arm64"
+
+# Configure, make, and install OpenSSL
+echo "Building OpenSSL..."
+sudo -u "$CURRENT_USER" ./Configure darwin64-arm64-cc
+sudo -u "$CURRENT_USER" make
+
 echo "Installing OpenSSL..."
-sudo cp -R openssl-3.4.0-extracted/* /usr/local/
+sudo make install
+
+echo "OpenSSL installation complete."
 
 # Verify OpenSSL Installation
 if [[ ! -f "/usr/local/bin/openssl" ]]; then
