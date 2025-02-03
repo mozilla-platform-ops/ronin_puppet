@@ -16,6 +16,13 @@ class duo::duo_unix (
   String $prompts           = '3',
   String $accept_env_factor = 'no',
 ) {
+  # Sanity Check
+  if $enabled {
+    if $ikey == '' or $skey == '' or $host == '' {
+      fail('ikey, skey, and host must all be defined.')
+    }
+  }
+
   # Determine macOS version
   $mac_version = $facts['os']['release']['major']
 
@@ -23,7 +30,7 @@ class duo::duo_unix (
     include packages::openssl
     include packages::duo_unix
 
-# Use package-based requirement
+    # Use package-based requirement
     $duo_require = Class['packages::duo_unix']
   } elsif versioncmp($mac_version, '21') >= 0 or versioncmp($mac_version, '23') >= 0 {
     notify { "Detected macOS ${mac_version}, treating as 14+":
@@ -51,12 +58,12 @@ class duo::duo_unix (
     fail("Unsupported macOS version: ${mac_version}")
   }
 
-# Ensure /etc/duo directory exists
+  # Ensure /etc/duo directory exists
   file { '/etc/duo':
     ensure => directory,
   }
 
-# Use the dynamic dependency for `require`
+  # Use the dynamic dependency for `require`
   $conf_present = $enabled ? { true => 'present', default => 'absent' }
 
   file { '/etc/duo/pam_duo.conf':
