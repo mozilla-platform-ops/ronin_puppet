@@ -33,7 +33,6 @@ class roles_profiles::roles::win2022642009azure {
 
             # Adminstration
             include roles_profiles::profiles::logging
-            include roles_profiles::profiles::common_tools
 
             # Worker
             include roles_profiles::profiles::google_auth

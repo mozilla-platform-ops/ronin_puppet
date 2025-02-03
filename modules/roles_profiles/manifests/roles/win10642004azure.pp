@@ -20,7 +20,7 @@ class roles_profiles::roles::win10642004azure {
 
   # Adminstration
   include roles_profiles::profiles::logging
-  include roles_profiles::profiles::common_tools
+  include roles_profiles::profiles::mercurial
 
   # Worker
   include roles_profiles::profiles::git
