@@ -5,14 +5,14 @@
 class win_packages::mercurial {
   $needed_hg_ver = lookup('win-worker.hg.version')
 
-    case $facts['custom_win_location'] {
-        'datacenter': {
-            $srcloc       = lookup('windows.s3.ext_pkg_src')
-        }
-        default: {
-            $srcloc = lookup('windows.ext_pkg_src')
-        }
+  case $facts['custom_win_location'] {
+    'datacenter': {
+      $srcloc = lookup('windows.s3.ext_pkg_src')
     }
+    default: {
+      $srcloc = lookup('windows.ext_pkg_src')
+    }
+  }
 
   win_packages::win_msi_pkg { "Mercurial ${needed_hg_ver}" :
     pkg             => "mercurial-${needed_hg_ver}-x64.msi",
