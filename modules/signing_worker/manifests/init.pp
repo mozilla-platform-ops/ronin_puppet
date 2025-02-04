@@ -216,6 +216,14 @@ define signing_worker (
     if $widevine_filename {
         $widevine_clone_dir = "${scriptworker_base}/widevine"
 
+        file { $widevine_clone_dir:
+            ensure => 'directory',
+            owner  => $user,
+            group  => $group,
+            mode   => '0755',
+            before => Exec["clone widevine ${scriptworker_base}"],
+        }
+
         # We only clone this once for three reasons:
         # 1) It is almost never updated
         # 2) We don't support general code deployments through puppet (yet)
@@ -229,7 +237,7 @@ define signing_worker (
             group   => $group,
             unless  => "test -d ${widevine_clone_dir}",
             path    => ['/bin', '/usr/bin'],
-            require => File[$scriptworker_base],
+            require => [File[$scriptworker_base], File[$widevine_clone_dir]],
         }
         # This has credentials in it. Clean up.
         ->file { "Remove widevine directory ${scriptworker_base}":
