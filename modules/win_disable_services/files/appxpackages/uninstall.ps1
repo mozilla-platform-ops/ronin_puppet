@@ -29,11 +29,6 @@ $apps = @{
         "URL"         = "https://apps.microsoft.com/detail/9NBLGGH4NNS1"
         "Description" = "Microsoft App Installer for Windows 10 makes sideloading Windows apps easy"
     }
-    "Microsoft.GamingApp"                    = @{
-        "VDIState"    = "Unchanged"
-        "URL"         = "https://www.microsoft.com/en-us/p/xbox/9mv0b5hzvk9z"
-        "Description" = "Xbox app"
-    }
     "Microsoft.GetHelp"                      = @{
         "VDIState"    = "Unchanged"
         "URL"         = "https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/customize-get-help-app"
@@ -183,16 +178,6 @@ $apps = @{
         "VDIState"    = "Unchanged"
         "URL"         = "https://docs.microsoft.com/en-us/gaming/xbox-live/features/general/tcui/live-tcui-overview"
         "Description" = "XBox Title Callable UI (TCUI) enables your game code to call pre-defined user interface displays"
-    }
-    "Microsoft.XboxGameOverlay"              = @{
-        "VDIState"    = "Unchanged"
-        "URL"         = "https://www.microsoft.com/en-us/p/xbox-game-bar/9nzkpstsnw4p"
-        "Description" = "Xbox Game Bar extensible overlay"
-    }
-    "Microsoft.XboxGamingOverlay"            = @{
-        "VDIState"    = "Unchanged"
-        "URL"         = "https://www.microsoft.com/en-us/p/xbox-game-bar/9nzkpstsnw4p"
-        "Description" = "Xbox Game Bar extensible overlay"
     }
     "Microsoft.XboxIdentityProvider"         = @{
         "VDIState"    = "Unchanged"
