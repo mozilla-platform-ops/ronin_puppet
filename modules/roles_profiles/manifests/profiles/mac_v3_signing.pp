@@ -115,7 +115,8 @@ class roles_profiles::profiles::mac_v3_signing {
         telegraf_user     => lookup('telegraf.user'),
         telegraf_password => lookup('telegraf.password'),
         puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-        puppet_branch     => 'production-mac-signing',
+        # Testing do not merge
+        puppet_branch     => 'macos-signer-latest',
         meta_data         => {
           workerType    => $worker_type,
           workerGroup   => $worker_group,
