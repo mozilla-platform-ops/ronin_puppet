@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+
+sudo xcodebuild -license accept
+
 # Determine the currently logged-in user (excluding root)
 CURRENT_USER=$(stat -f%Su /dev/console)
 
