@@ -7,8 +7,7 @@ class puppet::periodic (
   String $telegraf_password,
   String $puppet_env          = 'production',
   String $puppet_repo         = 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-  # Changing for testing. Do not merge.
-  String $puppet_branch       = 'macos-signer-latest',
+  String $puppet_branch       = 'macos-siginer-latest',
   String $puppet_notify_email = 'puppet-ronin-reports@mozilla.com',
   String $smtp_relay_host     = lookup({ 'name' => 'smtp_relay_host', 'default_value' => 'localhost' }),
   Hash $meta_data             = {},
@@ -38,6 +37,21 @@ class puppet::periodic (
           group  => 'wheel',
           mode   => '0755',
           source => 'puppet:///modules/puppet/periodic_launchctl_wrapper.sh';
+
+        '/Library/LaunchDaemons/com.mozilla.periodic.plist':
+          owner  => 'root',
+          group  => 'wheel',
+          mode   => '0755',
+          source => 'puppet:///modules/puppet/com.mozilla.periodic_puppet.plist';
+      }
+
+      exec { 'periodic_puppet_launchctl_load':
+        command     => '/bin/bash /usr/local/bin/periodic_launchctl_wrapper.sh',
+        refreshonly => true,
+        subscribe   => [
+          File['/usr/local/bin/periodic_launchctl_wrapper.sh'],
+          File['/Library/LaunchDaemons/com.mozilla.periodic.plist'],
+        ],
       }
     }
     default: {
