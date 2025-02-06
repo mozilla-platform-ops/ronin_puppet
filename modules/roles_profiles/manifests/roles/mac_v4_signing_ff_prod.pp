@@ -4,6 +4,7 @@
 
 class roles_profiles::roles::mac_v4_signing_ff_prod {
   include roles_profiles::profiles::duo
+  include roles_profiles::profiles::macos_signer_virtualenv_fixer
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::hardware
   #include fw::roles::mac_signing
