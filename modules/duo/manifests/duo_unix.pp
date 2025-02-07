@@ -3,25 +3,25 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class duo::duo_unix (
-  Boolean $enabled          = false,
-  String $ikey              = '',
-  String $skey              = '',
-  String $host              = '',
-  String $group             = '',
-  String $http_proxy        = '',
-  String $fallback_local_ip = 'no',
-  String $failmode          = 'safe',
-  String $pushinfo          = 'no',
-  String $autopush          = 'no',
-  String $prompts           = '3',
-  String $accept_env_factor = 'no',
+    Boolean $enabled          = false,
+    String $ikey              = '',
+    String $skey              = '',
+    String $host              = '',
+    String $group             = '',
+    String $http_proxy        = '',
+    String $fallback_local_ip = 'no',
+    String $failmode          = 'safe',
+    String $pushinfo          = 'no',
+    String $autopush          = 'no',
+    String $prompts           = '3',
+    String $accept_env_factor = 'no',
 ) {
-  # Sanity Check
-  if $enabled {
-    if $ikey == '' or $skey == '' or $host == '' {
-      fail('ikey, skey, and host must all be defined.')
+    if $enabled {
+        # Sanity Check
+        if $ikey == '' or $skey == '' or $host == '' {
+            fail('ikey, skey, and host must all be defined.')
+        }
     }
-  }
 
   # Determine macOS version
   $mac_version = $facts['os']['release']['major']
@@ -58,7 +58,6 @@ class duo::duo_unix (
     fail("Unsupported macOS version: ${mac_version}")
   }
 
-  # Ensure /etc/duo directory exists
   file { '/etc/duo':
     ensure => directory,
   }
@@ -67,40 +66,40 @@ class duo::duo_unix (
   $conf_present = $enabled ? { true => 'present', default => 'absent' }
 
   file { '/etc/duo/pam_duo.conf':
-    ensure    => $conf_present,
-    owner     => 'root',
-    group     => 'wheel',
-    mode      => '0600',
-    show_diff => false,
-    content   => template('duo/duo.conf.erb'),
-    require   => $duo_require,
+      ensure    => $conf_present,
+      owner     => 'root',
+      group     => 'wheel',
+      mode      => '0600',
+      show_diff => false,
+      content   => template('duo/duo.conf.erb'),
+      require   => $duo_require,
   }
 
   file { '/etc/duo/login_duo.conf':
-    ensure    => $conf_present,
-    owner     => '_sshd',
-    group     => 'wheel',
-    mode      => '0600',
-    show_diff => false,
-    content   => template('duo/duo.conf.erb'),
-    require   => $duo_require,
+      ensure    => $conf_present,
+      owner     => '_sshd',
+      group     => 'wheel',
+      mode      => '0600',
+      show_diff => false,
+      content   => template('duo/duo.conf.erb'),
+      require   => $duo_require,
   }
 
   file { '/etc/ssh/sshd_config':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'wheel',
-    mode    => '0644',
-    source  => 'puppet:///modules/duo/sshd_config',
-    require => $duo_require,
+      ensure  => present,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0644',
+      source  => 'puppet:///modules/duo/sshd_config',
+      require => $duo_require,
   }
 
   file { '/etc/pam.d/sshd':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'wheel',
-    mode    => '0444',
-    source  => 'puppet:///modules/duo/pam_sshd',
-    require => $duo_require,
+      ensure  => present,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0444',
+      source  => 'puppet:///modules/duo/pam_sshd',
+      require => $duo_require,
   }
 }
