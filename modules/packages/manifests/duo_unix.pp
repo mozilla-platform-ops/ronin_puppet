@@ -3,10 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class packages::duo_unix (
-  Pattern[/^\d+\.\d+\.\d+$/] $version = '1.11.4',
+    Pattern[/^\d+\.\d+\.\d+$/] $version = '1.11.4',
 ) {
-  packages::macos_package_from_s3 { "duo_unix-${version}.pkg":
-    os_version_specific => true,
-    type                => 'pkg',
-  }
+
+    packages::macos_package_from_s3 { "duo_unix-${version}.pkg":
+        os_version_specific => true,
+        type                => 'pkg',
+    }
 }
