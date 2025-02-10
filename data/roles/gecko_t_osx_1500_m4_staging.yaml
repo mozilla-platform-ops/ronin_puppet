@@ -17,7 +17,7 @@ worker:
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
   generic_worker_engine: simple
-  idle_timeout_secs: 3600
+  idle_timeout_secs: 21600 # 6 hours
 
 packages_classes:
   - mercurial
@@ -28,14 +28,13 @@ packages_classes:
   - python3
   - python3_psutil
   - python3_zstandard
-  - safari_preview
   - scres
+  - telegraf
   - tooltool
+  - virt_audio_s3
   - virtualenv
   - wget
   - zstandard
-  - telegraf
-  - virt_audio_s3
 
 # Package class parameters
 packages::mercurial::version: 6.4.5

@@ -4,5 +4,8 @@ groups:
   - name: gecko-t-osx-1500-m4-staging
     targets:
       - macmini-m4-1.local
+      - macmini-m4-2.local
+      - macmini-m4-3.local
+      - macmini-m4-4.local
     facts:
       puppet_role: gecko_t_osx_1500_m4_staging
