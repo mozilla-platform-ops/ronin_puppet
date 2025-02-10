@@ -7,6 +7,8 @@ groups:
 - _plugin: yaml
   filepath: inventory.d/macmini-m2.yaml
 - _plugin: yaml
+  filepath: inventory.d/macmini-m4.yaml
+- _plugin: yaml
   filepath: inventory.d/signing.yaml
 - _plugin: yaml
   filepath: inventory.d/services.yaml
