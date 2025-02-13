@@ -40,6 +40,26 @@ class roles_profiles::profiles::mac_v3_signing {
 
       $scriptworker_users = lookup("scriptworker_users.${role}")
 
+      # Determine macOS version for correct scriptworker path
+      $mac_version = $facts['os']['release']['major']
+
+      # Set scriptworker_base depending on macOS version
+      $scriptworker_base = $mac_version ? {
+        '18'    => '/usr/local/builds/scriptworker',  # macOS 10.14
+        '19'    => '/usr/local/builds/scriptworker',  # macOS 10.15 (assuming same as 10.14)
+        '21'    => '/usr/local/builds/scriptworker',  # macOS 14+
+        '23'    => '/usr/local/builds/scriptworker',  # macOS 14+
+        default => fail("Unsupported macOS version: ${mac_version}"),
+      }
+
+      $exe_path = $mac_version ? {
+        '18'    => '/builds/scriptworker/bin/scriptworker',  # macOS 10.14
+        '19'    => '/builds/scriptworker/bin/scriptworker',  # macOS 10.15
+        '21'    => '/usr/local/builds/scriptworker/bin/scriptworker',  # macOS 14+
+        '23'    => '/usr/local/builds/scriptworker/bin/scriptworker',  # macOS 14+
+        default => fail("Unsupported macOS version: ${mac_version}"),
+      }
+
       $scriptworker_users.each |String $user, Hash $user_data| {
         signing_worker { "signing_worker_${user}":
           role                => $role,
@@ -47,7 +67,7 @@ class roles_profiles::profiles::mac_v3_signing {
           password            => lookup("${user}_user.password"),
           salt                => lookup("${user}_user.salt"),
           iterations          => lookup("${user}_user.iterations"),
-          scriptworker_base   => $user_data['home'],
+          scriptworker_base   => $scriptworker_base,  # <-- Hardcoded based on macOS version
           dmg_prefix          => $user_data['dmg_prefix'],
           worker_type_prefix  => $user_data['worker_type_prefix'],
           worker_id_suffix    => $user_data['worker_id_suffix'],
@@ -63,17 +83,6 @@ class roles_profiles::profiles::mac_v3_signing {
           ed_key_filename     => $user_data['ed_key_filename'],
           poller_config       => $poller_config,
         }
-      }
-
-      # Determine macOS version for correct scriptworker path
-      $mac_version = $facts['os']['release']['major']
-
-      $exe_path = $mac_version ? {
-        '18'    => '/builds/scriptworker/bin/scriptworker',  # macOS 10.14
-        '19'    => '/builds/scriptworker/bin/scriptworker',  # macOS 10.15
-        '21'    => '/usr/local/builds/scriptworker/bin/scriptworker',  # macOS 14+
-        '23'    => '/usr/local/builds/scriptworker/bin/scriptworker',  # macOS 14+
-        default => fail("Unsupported macOS version: ${mac_version}"),
       }
 
       class { 'telegraf':
