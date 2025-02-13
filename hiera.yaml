@@ -18,9 +18,6 @@ hierarchy:
   - name: "Per-role Windows"
     path: "roles/%{facts.custom_win_role}.yaml"
 
-  - name: "Per-OS version data (for macOS)"
-    path: "os/MacOS/%{facts.os.macosx.version.major}.yaml"
-
   - name: "Per-OS defaults"
     path: "os/%{facts.os.family}.yaml"
 
