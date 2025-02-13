@@ -136,7 +136,7 @@ define signing_worker (
         # we end up hitting this pip bug:
         # https://github.com/pypa/pip/issues/9445
         cwd             => $scriptworker_base,
-        path            => [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
+        path            => ['/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.8/bin'],
     }
     exec { "install ${scriptworker_base} requirements":
         command     => "${virtualenv_dir}/bin/pip install -r ${requirements}",
@@ -337,8 +337,8 @@ define signing_worker (
         ]
         file { $poller_required_directories:
           ensure => 'directory',
-          owner  =>  $poller_config['user'],
-          group  =>  $group,
+          owner  => $poller_config['user'],
+          group  => $group,
           mode   => '0750',
         }
 
