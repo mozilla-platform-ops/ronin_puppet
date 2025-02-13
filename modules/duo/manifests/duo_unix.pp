@@ -23,83 +23,85 @@ class duo::duo_unix (
         }
     }
 
-  # Determine macOS version
-  $mac_version = $facts['os']['release']['major']
+    # Determine macOS version
+    $mac_version = $facts['os']['release']['major']
 
-  if $mac_version == '10.15' {
-    include packages::openssl
-    include packages::duo_unix
+    if $mac_version == '18' or $mac_version == '19' {
+        # macOS 10.14 and 10.15
+        include packages::openssl
+        include packages::duo_unix
 
-    # Use package-based requirement
-    $duo_require = Class['packages::duo_unix']
-  } elsif versioncmp($mac_version, '21') >= 0 or versioncmp($mac_version, '23') >= 0 {
-    notify { "Detected macOS ${mac_version}, treating as 14+":
-      message => 'Installing Duo Unix with macOS 14+ script.',
+        # Use package-based requirement
+        $duo_require = Class['packages::duo_unix']
+    } elsif versioncmp($mac_version, '21') >= 0 or versioncmp($mac_version, '23') >= 0 {
+        # macOS 14+
+        notify { "Detected macOS ${mac_version}, treating as 14+":
+            message => 'Installing Duo Unix with macOS 14+ script.',
+        }
+
+        file { '/usr/local/bin/openssl_duo_mac14.sh':
+            ensure => file,
+            owner  => 'root',
+            group  => 'wheel',
+            mode   => '0755',
+            source => 'puppet:///modules/duo/openssl_duo_mac14.sh',
+        }
+
+        exec { 'install_duo_unix_mac14':
+            command     => '/usr/local/bin/openssl_duo_mac14.sh',
+            path        => ['/usr/local/bin', '/usr/bin', '/bin'],
+            refreshonly => true,
+            subscribe   => File['/usr/local/bin/openssl_duo_mac14.sh'],
+        }
+
+        # Fake a class dependency so require doesn't break
+        $duo_require = Exec['install_duo_unix_mac14']
+    } else {
+        fail("Unsupported macOS version: ${mac_version}")
     }
 
-    file { '/usr/local/bin/openssl_duo_mac14.sh':
-      ensure => file,
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
-      source => 'puppet:///modules/duo/openssl_duo_mac14.sh',
+    file { '/etc/duo':
+        ensure => directory,
     }
 
-    exec { 'install_duo_unix_mac14':
-      command     => '/usr/local/bin/openssl_duo_mac14.sh',
-      path        => ['/usr/local/bin', '/usr/bin', '/bin'],
-      refreshonly => true,
-      subscribe   => File['/usr/local/bin/openssl_duo_mac14.sh'],
+    # Use the dynamic dependency for `require`
+    $conf_present = $enabled ? { true => 'present', default => 'absent' }
+
+    file { '/etc/duo/pam_duo.conf':
+        ensure    => $conf_present,
+        owner     => 'root',
+        group     => 'wheel',
+        mode      => '0600',
+        show_diff => false,
+        content   => template('duo/duo.conf.erb'),
+        require   => $duo_require,
     }
 
-    # Fake a class dependency so require doesn't break
-    $duo_require = Exec['install_duo_unix_mac14']
-  } else {
-    fail("Unsupported macOS version: ${mac_version}")
-  }
+    file { '/etc/duo/login_duo.conf':
+        ensure    => $conf_present,
+        owner     => '_sshd',
+        group     => 'wheel',
+        mode      => '0600',
+        show_diff => false,
+        content   => template('duo/duo.conf.erb'),
+        require   => $duo_require,
+    }
 
-  file { '/etc/duo':
-    ensure => directory,
-  }
+    file { '/etc/ssh/sshd_config':
+        ensure  => present,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0644',
+        source  => 'puppet:///modules/duo/sshd_config',
+        require => $duo_require,
+    }
 
-  # Use the dynamic dependency for `require`
-  $conf_present = $enabled ? { true => 'present', default => 'absent' }
-
-  file { '/etc/duo/pam_duo.conf':
-      ensure    => $conf_present,
-      owner     => 'root',
-      group     => 'wheel',
-      mode      => '0600',
-      show_diff => false,
-      content   => template('duo/duo.conf.erb'),
-      require   => $duo_require,
-  }
-
-  file { '/etc/duo/login_duo.conf':
-      ensure    => $conf_present,
-      owner     => '_sshd',
-      group     => 'wheel',
-      mode      => '0600',
-      show_diff => false,
-      content   => template('duo/duo.conf.erb'),
-      require   => $duo_require,
-  }
-
-  file { '/etc/ssh/sshd_config':
-      ensure  => present,
-      owner   => 'root',
-      group   => 'wheel',
-      mode    => '0644',
-      source  => 'puppet:///modules/duo/sshd_config',
-      require => $duo_require,
-  }
-
-  file { '/etc/pam.d/sshd':
-      ensure  => present,
-      owner   => 'root',
-      group   => 'wheel',
-      mode    => '0444',
-      source  => 'puppet:///modules/duo/pam_sshd',
-      require => $duo_require,
-  }
+    file { '/etc/pam.d/sshd':
+        ensure  => present,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0444',
+        source  => 'puppet:///modules/duo/pam_sshd',
+        require => $duo_require,
+    }
 }
