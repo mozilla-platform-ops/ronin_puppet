@@ -45,8 +45,8 @@ class roles_profiles::profiles::mac_v3_signing {
 
       # Set scriptworker_base depending on macOS version
       $scriptworker_base = $mac_version ? {
-        '18'    => '/usr/local/builds/scriptworker',  # macOS 10.14
-        '19'    => '/usr/local/builds/scriptworker',  # macOS 10.15 (assuming same as 10.14)
+        '18'    => '/builds/scriptworker',  # macOS 10.14
+        '19'    => '/builds/scriptworker',  # macOS 10.15 (assuming same as 10.14)
         '21'    => '/usr/local/builds/scriptworker',  # macOS 14+
         '23'    => '/usr/local/builds/scriptworker',  # macOS 14+
         default => fail("Unsupported macOS version: ${mac_version}"),
