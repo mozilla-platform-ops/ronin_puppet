@@ -65,9 +65,15 @@ class roles_profiles::profiles::mac_v3_signing {
         }
       }
 
-      $exe_path = $facts['os']['macosx']['version']['major'] == '14' ? {
-        true    => '/usr/local/builds/scriptworker/bin/scriptworker',
-        default => '/builds/scriptworker/bin/scriptworker',
+      # Determine macOS version for correct scriptworker path
+      $mac_version = $facts['os']['release']['major']
+
+      $exe_path = $mac_version ? {
+        '18'    => '/builds/scriptworker/bin/scriptworker',  # macOS 10.14
+        '19'    => '/builds/scriptworker/bin/scriptworker',  # macOS 10.15
+        '21'    => '/usr/local/builds/scriptworker/bin/scriptworker',  # macOS 14+
+        '23'    => '/usr/local/builds/scriptworker/bin/scriptworker',  # macOS 14+
+        default => fail("Unsupported macOS version: ${mac_version}"),
       }
 
       class { 'telegraf':
@@ -119,7 +125,6 @@ class roles_profiles::profiles::mac_v3_signing {
         telegraf_user     => lookup('telegraf.user'),
         telegraf_password => lookup('telegraf.password'),
         puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-        # Testing do not merge
         puppet_branch     => 'macos-signer-latest',
         meta_data         => {
           workerType    => $worker_type,
