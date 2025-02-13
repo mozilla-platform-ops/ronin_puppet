@@ -51,7 +51,7 @@ export LDFLAGS="-arch arm64"
 # Configure, make, and install OpenSSL
 echo "Building OpenSSL..."
 sudo -u "$CURRENT_USER" ./Configure darwin64-arm64-cc
-sudo -u "$CURRENT_USER" make
+sudo -u "$CURRENT_USER" make -j"$(sysctl -n hw.ncpu)"
 
 echo "Installing OpenSSL..."
 sudo make install

@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::mac_v4_signing_ff_prod {
+class roles_profiles::roles::mac_v4_signing_dep {
   include roles_profiles::profiles::duo
   include roles_profiles::profiles::macos_signer_virtualenv_fixer
   include roles_profiles::profiles::gui
