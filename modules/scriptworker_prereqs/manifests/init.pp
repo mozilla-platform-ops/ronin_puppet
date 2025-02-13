@@ -7,18 +7,23 @@ class scriptworker_prereqs {
     version => '3.8.3',
   }
 
-  if $facts['os']['macosx']['version']['major'] == '14' {
+  # Determine macOS version correctly for older and newer versions
+  $mac_version = $facts['os']['release']['major']
+
+  if $mac_version == '21' or $mac_version == '23' { # macOS 14+
     file { '/usr/local/tools/python3':
       ensure  => 'link',
-      target  => '/usr/local/bin/python3',  # Correct target path
-      require => Class['packages::python3'], # Ensure Python3 is installed before creating the symlink
+      target  => '/usr/local/bin/python3',
+      require => Class['packages::python3'],
     }
-  } else {
+  } elsif $mac_version == '18' or $mac_version == '19' { # macOS 10.14 and 10.15
     file { '/tools/python3':
       ensure  => 'link',
       target  => '/usr/local/bin/python3',
       require => Class['packages::python3'],
     }
+  } else {
+    fail("Unsupported macOS version: ${mac_version}")
   }
 
   include dirs::builds
