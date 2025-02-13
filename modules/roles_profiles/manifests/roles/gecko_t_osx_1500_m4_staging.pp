@@ -11,7 +11,6 @@ class roles_profiles::roles::gecko_t_osx_1500_m4_staging {
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_tcc_perms
   include roles_profiles::profiles::macos_xcode_tools
-  include roles_profiles::profiles::macos_xcodes_installer
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
