@@ -80,14 +80,14 @@ define signing_worker (
     ]
     file { $required_directories:
       ensure => 'directory',
-      owner  =>  $user,
-      group  =>  $group,
+      owner  => $user,
+      group  => $group,
       mode   => '0750',
     }
     file { "${scriptworker_base}/certs":
       ensure => 'directory',
-      owner  =>  $user,
-      group  =>  $group,
+      owner  => $user,
+      group  => $group,
       mode   => '0700',
     }
 
