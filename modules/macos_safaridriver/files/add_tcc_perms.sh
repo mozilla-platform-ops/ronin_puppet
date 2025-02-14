@@ -71,8 +71,8 @@ if [[ "$os_version" == "11."* || "$os_version" == "12."* || "$os_version" == "13
     done
 fi
 
-# macOS 14
-if [[ "$os_version" == "15."* ]]; then
+# macOS 14 and 15
+if [[ "$os_version" == "14."* || "$os_version" == "15."* ]]; then
     # kTCCServiceSystemPolicyAllFiles, in system TCC DB
     query="REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355061,NULL,NULL,'UNUSED',1710355061);"
     run_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
