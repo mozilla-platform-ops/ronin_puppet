@@ -3,12 +3,12 @@ name: mac-v4-signing
 groups:
   - name: mac-v4-signing-ff-prod
     targets:
-      # - macsigner-local-1.local
+      - macsigner-local-1.local
     facts:
       puppet_role: mac_v4_signing_ff_prod
   - name: mac-v4-signing-dep
     targets:
-      - macsigner-local-1.local
+      # - macsigner-local-1.local
       - macmini-m2-44.test.releng.mdc1.mozilla.com
       - macmini-m2-45.test.releng.mdc1.mozilla.com
     facts:
