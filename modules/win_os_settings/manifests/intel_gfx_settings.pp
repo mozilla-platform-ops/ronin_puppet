@@ -2,10 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::intel_drivers {
+class win_os_settings::intel_gfx_settings {
 
-    class { 'win_packages::drivers::intel_gfx' :
-        version => lookup('win-worker.driver.gfx.version')
+    exec { 'disable_generic_adapter':
+        command  => file('win_os_settings/disable_generic_adapter.ps1'),
+        provider => 'powershell',
     }
-    include win_os_settings::intel_gfx_settings
 }
