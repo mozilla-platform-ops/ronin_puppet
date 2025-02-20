@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::vnc {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $pw_hash              = lookup('win_vncpw_hash')
