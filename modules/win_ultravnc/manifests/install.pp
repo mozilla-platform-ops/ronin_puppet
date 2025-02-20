@@ -4,12 +4,8 @@
 
 class win_ultravnc::install {
 
-    if $::operatingsystem == 'Windows' {
-        win_packages::win_msi_pkg  { $win_ultravnc::package:
-            pkg             => $win_ultravnc::msi,
-            install_options => ['/quiet'],
-        }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+    win_packages::win_msi_pkg  { $win_ultravnc::package:
+        pkg             => $win_ultravnc::msi,
+        install_options => ['/quiet'],
     }
 }
