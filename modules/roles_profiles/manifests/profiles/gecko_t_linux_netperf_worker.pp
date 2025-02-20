@@ -105,7 +105,6 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
         path    => ['/sbin', '/usr/sbin', '/bin', '/usr/bin'],
         unless  => '/sbin/ip link show lo | grep "mtu 1500"',
         user    => 'root',
-        require => Class['networking'],
       }
     }
     default: {
