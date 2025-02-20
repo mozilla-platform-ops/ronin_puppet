@@ -26,7 +26,7 @@ class roles_profiles::roles::win10642009hw {
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::common_tools
   include roles_profiles::profiles::nuc_management
-  #include roles_profiles::profiles::vnc
+  include roles_profiles::profiles::vnc
 
   # Worker
   include roles_profiles::profiles::git
