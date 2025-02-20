@@ -27,6 +27,7 @@ packages_classes:
   - python2_zstandard
   - python3
   - python3_psutil
+  - python3_pyobjc
   - python3_zstandard
   - scres
   - telegraf
