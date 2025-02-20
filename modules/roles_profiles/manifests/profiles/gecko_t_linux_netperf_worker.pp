@@ -98,6 +98,15 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
         command => '/usr/bin/caddy',
         runas   => 'ALL',
       }
+
+      # Set MTU for loopback interface
+      exec { 'set-lo-mtu':
+        command => '/sbin/ip link set dev lo mtu 1500',
+        path    => ['/sbin', '/usr/sbin', '/bin', '/usr/bin'],
+        unless  => '/sbin/ip link show lo | grep "mtu 1500"',
+        user    => 'root',
+        require => Class['networking'],
+      }
     }
     default: {
       fail("${facts['os']['name']} not supported")
