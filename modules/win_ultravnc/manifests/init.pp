@@ -14,7 +14,7 @@ class win_ultravnc (
         include win_ultravnc::install
         include win_ultravnc::configuration
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }
 
