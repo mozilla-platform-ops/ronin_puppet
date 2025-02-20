@@ -50,6 +50,9 @@ win-worker:
     version: '2.24'
   vac:
     version: '464'
+  driver:
+    gfx:
+      version: '101.4255'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
