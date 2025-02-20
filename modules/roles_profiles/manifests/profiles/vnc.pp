@@ -48,7 +48,7 @@ class roles_profiles::profiles::vnc {
             include macos_utils::enable_screensharing
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
