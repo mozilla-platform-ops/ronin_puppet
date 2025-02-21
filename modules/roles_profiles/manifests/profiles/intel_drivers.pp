@@ -7,5 +7,5 @@ class roles_profiles::profiles::intel_drivers {
     class { 'win_packages::drivers::intel_gfx' :
         version => lookup('win-worker.driver.gfx.version')
     }
-    include win_os_settings::intel_gfx_settings
+    #include win_os_settings::intel_gfx_settings
 }
