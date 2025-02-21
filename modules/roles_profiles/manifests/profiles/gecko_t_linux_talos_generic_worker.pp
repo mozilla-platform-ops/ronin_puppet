@@ -31,6 +31,8 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_packages::python3_zstandard
             require linux_packages::tooltool
             require linux_packages::zstd
+            # RELOPS-1318
+            require linux_packages::pulseaudio
 
             # moved from base to avoid ordering issues with py2/3
             require linux_mercurial
