@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::pulseaudio {
-  # Ensure the 'iperf3' package is installed
+  # Ensure the 'ulseaudio-utils' package is installed which provides pactl
   package { 'pulseaudio-utils':
     ensure   => installed,
     name     => 'pulseaudio-utils',
