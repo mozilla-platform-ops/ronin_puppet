@@ -32,25 +32,6 @@ reg ADD "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11
 reg ADD "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\$IntelID" /v InfPath /t REG_SZ /d oem5.inf /f
 reg DELETE "HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\$MSadpatID" /f
 
-New-Item C:\DSC\semaphore\intel_reg.reboot.ok -type file
-[Environment]::Exit(0)
-}
-[int]$retryCount = 0;
-Do {
-Try {
-$retryCount++;
-Start-Sleep -s 60
-Set-ItelReg
-}
-
-catch  [Exception]{
-if($retryCount -eq 10){
-throw
-}
-}
-} #End of Do
-Until($retryCount -eq 10)
-
 $adapter = Get-PnpDevice -Class Display | Where-Object { $_.Name -like "*Microsoft Basic Display Adapter*" }
 
 if ($adapter) {
