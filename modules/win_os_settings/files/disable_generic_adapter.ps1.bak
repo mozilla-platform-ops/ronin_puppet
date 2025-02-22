@@ -50,11 +50,3 @@ throw
 }
 } #End of Do
 Until($retryCount -eq 10)
-
-$adapter = Get-PnpDevice -Class Display | Where-Object { $_.Name -like "*Microsoft Basic Display Adapter*" }
-
-if ($adapter) {
-    Disable-PnpDevice -InstanceId $adapter.InstanceId -Confirm:$false
-} else {
-    exit 90
-}
