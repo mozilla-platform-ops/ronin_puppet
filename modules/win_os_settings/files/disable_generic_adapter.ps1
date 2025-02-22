@@ -1,6 +1,3 @@
-Function Set-ItelReg
-{
-
 $key0 = "hklm:\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000"
 $IDcheck0 = (Get-ItemProperty -Path $key0 -Name ProviderName).ProviderName
 $key1 = "hklm:\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0001"
