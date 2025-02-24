@@ -46,8 +46,14 @@ groups:
     facts:
       puppet_role: mozilla_b_3_osx
 
-  - name: gecko-t-osx-1400-m2-vms-staging
+  - name: gecko-t-osx-1400-m-vms
     targets:
-      - vm-runner-1.local
+      - vm-runner-14-1.local
     facts:
-      puppet_role: gecko_t_osx_1400_m2_vms_staging
+      puppet_role: gecko_t_osx_1400_m_vms
+
+  - name: gecko-t-osx-1500-m-vms
+    targets:
+      - vm-runner-5-1.local
+    facts:
+      puppet_role: gecko_t_osx_1500_m_vms
