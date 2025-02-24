@@ -2,9 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::gecko_t_osx_1400_m2_vms_staging {
+class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::cltbld_user
+  include roles_profiles::profiles::macos_bin_signer
+  include roles_profiles::profiles::macos_directory_cleaner
   include roles_profiles::profiles::macos_gw_checker
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_tcc_perms
