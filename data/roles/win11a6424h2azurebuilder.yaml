@@ -6,22 +6,22 @@ win-worker:
   generic_worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
-    version: '77.3.1'
+    version: '81.0.3'
 
   taskcluster:
     worker_runner:
         name: 'start-worker-windows-amd64'
-        version: '77.3.1'
+        version: '81.0.3'
         provider: "azure"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
-        version: '77.3.1'
+        version: '81.0.3'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
     livelog:
         name: "livelog-windows-amd64"
-        version: '77.3.1'
+        version: '81.0.3'
     client_id: "azure/gecko-t/2012"
     #worker_pool_id: "gecko-t/win10-64-2004"
     worker_group: "test"
@@ -51,7 +51,7 @@ win-worker:
   vac:
     version: '464'
   git:
-    version: '2.46.0'
+    version: '2.48.1'
   hg:
     version: '6.2.1'
   # Logging
