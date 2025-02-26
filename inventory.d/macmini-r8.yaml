@@ -16,7 +16,6 @@ groups:
       - macmini-r8-81.test.releng.mdc1.mozilla.com
       - macmini-r8-82.test.releng.mdc1.mozilla.com
       - macmini-r8-83.test.releng.mdc1.mozilla.com
-      - macmini-r8-84.test.releng.mdc1.mozilla.com
       - macmini-r8-87.test.releng.mdc1.mozilla.com
       - macmini-r8-90.test.releng.mdc1.mozilla.com
       - macmini-r8-91.test.releng.mdc1.mozilla.com
@@ -300,7 +299,6 @@ groups:
       - macmini-r8-187.test.releng.mdc1.mozilla.com
       - macmini-r8-188.test.releng.mdc1.mozilla.com
       - macmini-r8-190.test.releng.mdc1.mozilla.com
-      - macmini-r8-206.test.releng.mdc1.mozilla.com
       - macmini-r8-210.test.releng.mdc1.mozilla.com
       - macmini-r8-215.test.releng.mdc1.mozilla.com
       - macmini-r8-217.test.releng.mdc1.mozilla.com
