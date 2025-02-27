@@ -15,7 +15,7 @@ class puppet::periodic (
 
     include puppet::setup
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             file {
                 '/Library/LaunchDaemons/com.mozilla.atboot_puppet.plist':
@@ -56,7 +56,7 @@ class puppet::periodic (
             }
         }
         default: {
-            fail("${module_name} does not support ${::operatingsystem}")
+            fail("${module_name} does not support ${facts['os']['name']}")
         }
     }
 
