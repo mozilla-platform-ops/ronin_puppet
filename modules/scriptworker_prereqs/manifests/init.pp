@@ -1,7 +1,3 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
 class scriptworker_prereqs {
   class { 'packages::python3':
     version => '3.8.3',
@@ -17,10 +13,34 @@ class scriptworker_prereqs {
       require => Class['packages::python3'],
     }
   } elsif $mac_version == '18' or $mac_version == '19' { # macOS 10.14 and 10.15
+    # Ensure /tools directory exists only on older macOS versions
+    file { '/tools':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'wheel',
+      mode   => '0755',
+    }
+
     file { '/tools/python3':
       ensure  => 'link',
       target  => '/usr/local/bin/python3',
-      require => Class['packages::python3'],
+      require => [Class['packages::python3'], File['/tools']],
+    }
+
+    # Ensure /builds directory exists only on older macOS versions
+    file { '/builds':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'wheel',
+      mode   => '0755',
+    }
+
+    file { '/builds/scriptworker':
+      ensure  => 'directory',
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0755',
+      require => File['/builds'],
     }
   } else {
     fail("Unsupported macOS version: ${mac_version}")
