@@ -1,5 +1,6 @@
 class macos_auto_puppet (
   Boolean $enabled = true,
+  String $puppet_role = $facts['puppet_role'], # Dynamically pull from Facter
 ) {
   # Ensure /etc/facter/ exists
   file { '/etc/facter/':
@@ -17,10 +18,10 @@ class macos_auto_puppet (
     mode   => '0755',
   }
 
-  # Set Puppet role and ensure it's readable
+  # Set Puppet role dynamically
   file { '/etc/facter/facts.d/puppet_role.txt':
     ensure  => file,
-    content => 'puppet_role=gecko_t_osx_1400_r8_staging',
+    content => "puppet_role=${puppet_role}\n",
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
@@ -29,7 +30,7 @@ class macos_auto_puppet (
   # Ensure /etc/puppet_role exists and matches Facter
   file { '/etc/puppet_role':
     ensure  => file,
-    content => 'gecko_t_osx_1400_r8_staging',
+    content => "${puppet_role}\n",
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
