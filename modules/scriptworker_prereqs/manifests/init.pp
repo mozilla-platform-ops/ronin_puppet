@@ -34,14 +34,6 @@ class scriptworker_prereqs {
       group  => 'wheel',
       mode   => '0755',
     }
-
-    file { '/builds/scriptworker':
-      ensure  => 'directory',
-      owner   => 'root',
-      group   => 'wheel',
-      mode    => '0755',
-      require => File['/builds'],
-    }
   } else {
     fail("Unsupported macOS version: ${mac_version}")
   }
