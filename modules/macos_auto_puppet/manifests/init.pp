@@ -20,7 +20,7 @@ class macos_auto_puppet (
   # Set Puppet role and ensure it's readable
   file { '/etc/facter/facts.d/puppet_role.txt':
     ensure  => file,
-    content => 'puppet_role=gecko_t_osx_1400_r8_staging\n',
+    content => 'puppet_role=gecko_t_osx_1400_r8_staging',
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
@@ -29,7 +29,7 @@ class macos_auto_puppet (
   # Ensure /etc/puppet_role exists and matches Facter
   file { '/etc/puppet_role':
     ensure  => file,
-    content => 'gecko_t_osx_1400_r8_staging\n',
+    content => 'gecko_t_osx_1400_r8_staging',
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
