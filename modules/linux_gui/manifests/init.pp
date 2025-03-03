@@ -94,6 +94,7 @@ class linux_gui(
                 # from 1804 docker image
                 # silence pip version warnings
                 # TODO: should be in linux base
+                # RELOPS-1318: We used to disable autospawn in client.conf, but may be causing issues. Removed this in relops-1318.
                 ["${builder_home}/.pip",
                   "${builder_home}/.config/pulse"  ]:
                     ensure => directory,
