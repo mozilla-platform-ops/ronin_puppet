@@ -100,11 +100,6 @@ class linux_gui(
                     group  => $builder_group,
                     mode   => '0755',
                     owner  => $builder_user;
-                "${builder_home}/.config/pulse/client.conf":
-                    owner  => $builder_user,
-                    group  => $builder_group,
-                    mode   => '0644',
-                    source => "puppet:///modules/${module_name}/pulse_client.conf";
                 "${builder_home}/.pip/pip.conf":
                     owner  => $builder_user,
                     group  => $builder_group,
