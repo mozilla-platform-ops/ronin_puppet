@@ -122,8 +122,6 @@ secrets: &secrets
   signing_secrets:
     ff-prod:
       nightly:
-        notarization_account: notarization_account_testing
-        notarization_password: notarization_password_testing
         identity: identity_testing
         keychain_password: keychain_password_testing
         pkg_cert_id: pkg_cert_id_tesing
@@ -134,8 +132,6 @@ secrets: &secrets
         langpack_user: langpack_user_testing
         langpack_pass: langpack_pass_testing
       release:
-        notarization_account: notarization_account_testing
-        notarization_password: notarization_password_testing
         identity: identity_testing
         keychain_password: keychain_password_testing
         pkg_cert_id: pkg_cert_id_tesing
@@ -147,8 +143,6 @@ secrets: &secrets
         langpack_pass: langpack_pass_testing
     tb-prod:
       nightly:
-        notarization_account: notarization_account_testing
-        notarization_password: notarization_password_testing
         identity: identity_testing
         keychain_password: keychain_password_testing
         pkg_cert_id: pkg_cert_id_tesing
@@ -159,8 +153,6 @@ secrets: &secrets
         langpack_user: langpack_user_testing
         langpack_pass: langpack_pass_testing
       release:
-        notarization_account: notarization_account_testing
-        notarization_password: notarization_password_testing
         identity: identity_testing
         keychain_password: keychain_password_testing
         pkg_cert_id: pkg_cert_id_tesing
@@ -172,8 +164,6 @@ secrets: &secrets
         langpack_pass: langpack_pass_testing
     dep:
       dep:
-        notarization_account: notarization_account_testing
-        notarization_password: notarization_password_testing
         identity: identity_testing
         keychain_password: keychain_password_testing
         pkg_cert_id: pkg_cert_id_tesing
@@ -185,21 +175,9 @@ secrets: &secrets
         langpack_pass: langpack_pass_testing
     vpn:
       release:
-        notarization_account: notarization_account_testing
-        notarization_password: notarization_password_testing
         identity: identity_testing
         keychain_password: keychain_password_testing
         pkg_cert_id: pkg_cert_id_tesing
-  poller_secrets:
-    ff-prod:
-      taskcluster_client_id: taskcluster_client_id_testing
-      taskcluster_access_token: taskcluster_access_token_testing
-      notarization_account: notarization_account_testing
-      notarization_password: notarization_password_testing
-    tb-prod:
-      taskcluster_client_id: taskcluster_client_id_testing
-      taskcluster_access_token: taskcluster_access_token_testing
-      notarization_account: notarization_account_testing
 
 suites:
   - name: default
@@ -232,8 +210,6 @@ suites:
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - localhost
-    attributes:
-      notarization_password: notarization_password_testing
   - name: windows
     provisioner:
       custom_options: '-e "include roles_profiles::roles::<%= ENV["PUPPET_ROLE"] %>"'

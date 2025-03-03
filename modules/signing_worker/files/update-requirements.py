@@ -40,7 +40,6 @@ def run():
                 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/{scriptworker_revision}/requirements.txt
                 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/{scriptworker_scripts_revision}/scriptworker_client/requirements/base.in
                 -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/{scriptworker_scripts_revision}/iscript/requirements/base.in
-                -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/{scriptworker_scripts_revision}/notarization_poller/requirements/base.in
                 # mozbuild dependencies
                 jsmin>=3
                 mozfile

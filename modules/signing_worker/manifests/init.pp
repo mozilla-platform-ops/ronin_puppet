@@ -14,7 +14,6 @@ define signing_worker (
     String $keychain_filename,
     Hash $worker_config,
     Hash $role_config,
-    Hash $poller_config,
     Variant[String, Undef] $widevine_user = undef,
     Variant[String, Undef] $widevine_key = undef,
     Variant[String, Undef] $widevine_filename = undef,
@@ -22,7 +21,6 @@ define signing_worker (
     String $worker_id_suffix = '',
     String $group = 'staff',
     Variant[String, Undef] $ed_key_filename = undef,
-    Variant[Array, Undef] $notarization_users = undef,
 ) {
     $virtualenv_dir           = "${scriptworker_base}/virtualenv"
     $certs_dir                = "${scriptworker_base}/certs"
@@ -31,7 +29,6 @@ define signing_worker (
     $script_config_file       = "${scriptworker_base}/script_config.yaml"
     $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
     $launchctl_wrapper        = "${scriptworker_base}/launchctl_wrapper.sh"
-    $poller_launchctl_wrapper = "${scriptworker_base}/poller/poller_launchctl_wrapper.sh"
     $enable_scriptworker      = "${scriptworker_base}/enable_scriptworker.sh"
 
     # Dep workers have a non-deterministic suffix
@@ -61,17 +58,6 @@ define signing_worker (
         password   => $password,
         salt       => $salt,
         iterations => $iterations,
-    }
-
-    # Also used in script_config.yaml.erb
-    $notary_users = $notarization_users? {
-        undef => [],
-        default => $notarization_users,
-    }
-    $notary_users.each |String $user| {
-        signing_worker::notarization_user { "create_notary_${user}":
-            user => $user,
-        }
     }
 
     $required_directories = [
@@ -203,15 +189,6 @@ define signing_worker (
         subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
         require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
     }
-    exec { "install ${scriptworker_base} notarization_poller":
-        command     => "${virtualenv_dir}/bin/python setup.py install",
-        cwd         => "${scriptworker_scripts_clone_dir}/notarization_poller",
-        user        => $user,
-        group       => $group,
-        refreshonly => true,
-        subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
-        require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
-    }
 
     if $widevine_filename {
         $widevine_clone_dir = "${scriptworker_base}/widevine"
@@ -260,8 +237,7 @@ define signing_worker (
 
     # XXX once we:
     #     - get the virtualenv to re-run pip on requirements.txt change,
-    #     - get the scriptworker and poller to restart on config or python
-    #       change, and
+    #     - get the scriptworker to restart on config or python change, and
     #     - get puppet running periodically,
     #     we can upgrade scriptworker and python deps without sshing in.
 
@@ -320,66 +296,5 @@ define signing_worker (
             File[$scriptworker_config_file],
             File[$scriptworker_wrapper],
         ],
-    }
-
-    if !empty($poller_config) {
-        signing_worker::notarization_user { "create_user_${poller_config['user']}":
-            user => $poller_config['user'],
-        }
-        $poller_worker_id         = "poller-${facts['networking']['hostname']}"
-        $poller_dir               = "${scriptworker_base}/poller"
-        $poller_config_file       = "${scriptworker_base}/poller/poller.yaml"
-        $poller_wrapper           = "${scriptworker_base}/poller/poller_wrapper.sh"
-
-        $poller_required_directories = [
-          $poller_dir,
-          "${poller_dir}/logs",
-        ]
-        file { $poller_required_directories:
-          ensure => 'directory',
-          owner  => $poller_config['user'],
-          group  => $group,
-          mode   => '0750',
-        }
-
-        file { $poller_config_file:
-            content => template('signing_worker/poller.yaml.erb'),
-            owner   => $poller_config['user'],
-            group   => $group,
-            mode    => '0400',
-        }
-
-        file { $poller_wrapper:
-            content => template('signing_worker/poller_wrapper.sh.erb'),
-            mode    => '0755',
-            owner   => $poller_config['user'],
-            group   => $group,
-        }
-
-        $poller_launchd_script_name = 'org.mozilla.notarization_poller'
-        $poller_launchd_script = "/Library/LaunchDaemons/${poller_launchd_script_name}.${poller_config['user']}.plist"
-        file { $poller_launchd_script:
-            content => template('signing_worker/org.mozilla.notarization_poller.plist.erb'),
-            mode    => '0644',
-        }
-        file { $poller_launchctl_wrapper:
-            content => template('signing_worker/poller_launchctl_wrapper.sh.erb'),
-            mode    => '0755',
-            owner   => $poller_config['user'],
-            group   => $group,
-        }
-        exec { "${poller_config['user']}_launchctl_load":
-            command     => "/bin/bash ${$poller_launchctl_wrapper}",
-            refreshonly => true,
-            subscribe   => [
-                Exec["install ${scriptworker_base} notarization_poller"],
-                Exec["install ${scriptworker_base} requirements"],
-                Exec["install ${scriptworker_base} scriptworker_client"],
-                File[$poller_config_file],
-                File[$poller_launchd_script],
-                File[$poller_launchctl_wrapper],
-                File[$poller_wrapper],
-            ],
-        }
     }
 }
