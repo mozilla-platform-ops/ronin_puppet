@@ -2,13 +2,6 @@ work_dir: "<%= @scriptworker_base %>/work"
 artifact_dir: "<%= @scriptworker_base %>/artifacts"
 taskcluster_scope_prefix: "<%= @tc_scope_prefix %>"
 verbose: true
-<% if @notary_users.empty? -%>
-local_notarization_accounts: []
-<% else -%>
-local_notarization_accounts:
-<% @notary_users.each do |nuser| -%>
-    - <%= nuser %>
-<% end -%><% end -%>
 default_keychains:
     - "/Users/<%= @user %>/Library/Keychains/login.keychain-db"
     - "/Library/Keychains/System.keychain"
@@ -34,10 +27,7 @@ mac_config:
         identity: "<%= role_data['identity'] %>"
         keychain_password: "<%= role_data['keychain_password'] %>"
         pkg_cert_id: "<%= role_data['pkg_cert_id'] %>"
-        apple_notarization_account: "<%= role_data['notarization_account'] %>"
-        apple_notarization_password: "<%= role_data['notarization_password'] %>"
         apple_asc_provider: "<%= role_data['apple_asc_provider'] %>"
-        notarization_poll_timeout: <%= role_data['notarization_poll_timeout'] %>
         widevine_url: "<%= role_data['widevine_url'] %>"
         widevine_user: "<%= role_data['widevine_user'] %>"
         widevine_pass: "<%= role_data['widevine_pass'] %>"

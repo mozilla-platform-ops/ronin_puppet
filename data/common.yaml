@@ -92,25 +92,11 @@ scriptworker_users:
         - mac_sign_and_pkg_hardened
         - mac_geckodriver
         - mac_single_file
-        - mac_notarize
-        - mac_notarize_part_1
-        - mac_notarize_part_3
       dmg_prefix: "prod"
       cot_product: "thunderbird"
       widevine_filename: "widevine_prod.crt"
       keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
-      notarization_users:
-        - notary1
-        - notary2
-        - notary3
-        - notary4
-        - notary5
-        - notary6
-        - notary7
-        - notary8
-        - notary9
-        - notary10
   ff-prod:
     cltbld:
       home: /builds/scriptworker
@@ -121,32 +107,15 @@ scriptworker_users:
         - mac_sign_and_pkg_hardened
         - mac_geckodriver
         - mac_single_file
-        - mac_notarize
-        - mac_notarize_part_1
-        - mac_notarize_part_3
-        - mac_notarize_geckodriver
-        - mac_notarize_single_file
       dmg_prefix: "prod"
       cot_product: "firefox"
       widevine_filename: "widevine_prod.crt"
       keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
-      notarization_users:
-        - notary1
-        - notary2
-        - notary3
-        - notary4
-        - notary5
-        - notary6
-        - notary7
-        - notary8
-        - notary9
-        - notary10
   vpn:
     cltbld:
       home: /builds/scriptworker
       supported_behaviors:
-        - mac_notarize_vpn
         - mac_sign_and_pkg_vpn
         - mac_sign_hardened
         - mac_sign_and_pkg_hardened
@@ -192,19 +161,10 @@ scriptworker_config:
         scriptworker_revision: "b334747f5bc8959ac390695380cb47523aae577a"
         scriptworker_scripts_revision: "f49ebe1138ec3df71fb9ea1d3682e958b95a11a0"
 
-poller_config:
-    ff-prod:
-        user: poller
-        worker_type: mac-notarization-poller
-    tb-prod:
-        user: poller
-        worker_type: tb-mac-notarization-poller
-
 signingworker_roles:
     ff-prod:
         nightly:
             apple_asc_provider: 'MozillaCorporation'
-            notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
             base_bundle_id: 'org.mozilla.firefox-mac-nightly'
@@ -219,7 +179,6 @@ signingworker_roles:
             gcp_prod_langpack_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
         release:
             apple_asc_provider: 'MozillaCorporation'
-            notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
             base_bundle_id: 'org.mozilla.firefox-mac-release'
@@ -235,7 +194,6 @@ signingworker_roles:
     tb-prod:
         nightly:
             apple_asc_provider: 'MozillaCorporation'
-            notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
             tb_base_bundle_id: 'org.mozilla.thunderbird-mac-nightly'
@@ -250,7 +208,6 @@ signingworker_roles:
             gcp_prod_langpack_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
         release:
             apple_asc_provider: 'MozillaCorporation'
-            notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
             tb_base_bundle_id: 'org.mozilla.thunderbird-mac-release'
@@ -266,7 +223,6 @@ signingworker_roles:
     dep:
         dep:
             apple_asc_provider: 'MozillaCorporation'
-            notarization_poll_timeout: 5
             sign_with_entitlements: true
             verify_mac_signature: false
             base_bundle_id: 'org.mozilla.firefox-mac-dep'
@@ -284,7 +240,6 @@ signingworker_roles:
     vpn:
         release:
             apple_asc_provider: 'MozillaCorporation'
-            notarization_poll_timeout: 6300
             sign_with_entitlements: true
             verify_mac_signature: true
             vpn_base_bundle_id: 'org.mozilla.macos.FirefoxVPN'
@@ -336,29 +291,6 @@ all_users:
   # from relops_common_keys_2020-09-08.yml
   relops:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILB0k0dwdH7h8j+zRPprLFeTgRwkgI6mcjQCeEoaqOY2 Relops ed25519 Key
-
-  notary1:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary2:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary3:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary4:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary5:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary6:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary7:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary8:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary9:
-    - ssh-rsa AAAA invalid@mozilla.com
-  notary10:
-    - ssh-rsa AAAA invalid@mozilla.com
-  poller:
-    - ssh-rsa AAAA invalid@mozilla.com
 
 
 # Class parameter defaults: most data lookups should take place in profiles
