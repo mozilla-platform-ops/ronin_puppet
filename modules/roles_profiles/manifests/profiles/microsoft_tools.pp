@@ -20,7 +20,9 @@ class roles_profiles::profiles::microsoft_tools {
           ## For now don't look for it after bootstrap.
           if $facts['custom_win_bootstrap_stage'] != 'complete' {
             include win_packages::dxsdk_jun10
-            include win_packages::win_10_sdk
+            if $facts['custom_win_os_arch'] != 'aarch64' {
+              include win_packages::win_10_sdk
+            }
             #include win_packages::win_11_sdk
           }
           include win_packages::binscope
