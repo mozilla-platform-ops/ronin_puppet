@@ -14,7 +14,7 @@ PUPPET_ROLE_FILE="/etc/puppet_role"
 PUPPET_BIN="/opt/puppetlabs/bin/puppet"
 FACTER_BIN="/opt/puppetlabs/bin/facter"
 GIT_REPO_URL="https://github.com/mozilla-platform-ops/ronin_puppet.git"
-GIT_BRANCH="master"
+GIT_BRANCH="auto_puppet_v2"
 
 # Vault configuration
 export VAULT_ADDR="http://127.0.0.1:8200"
