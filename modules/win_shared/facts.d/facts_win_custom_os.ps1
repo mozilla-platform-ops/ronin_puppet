@@ -87,13 +87,12 @@ if (Test-Path -Path "D:\") {
     $DDriveExists = $false
 }
 
-switch ($ENV:PROCESSOR_ARCHITECTURE) {
-	"AMD64" {
-		$custom_win_os_arch = "x64"
-	}
-	"ARM64" {
-		$custom_win_os_arch = "aarch64"
-	}
+$os_arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+if ($os_arch -like "*ARM*") {
+	$custom_win_os_arch = "aarch64"
+}
+else {
+	$custom_win_os_arch = "x64"
 }
 
 write-host "custom_win_display_version=$display_version"
