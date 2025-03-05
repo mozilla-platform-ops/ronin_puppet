@@ -108,6 +108,11 @@ class linux_gui(
                     source => "puppet:///modules/${module_name}/pip.conf";
             }
 
+            # Let's make sure pulse_client.conf is not present 
+            file { "${builder_home}/.config/pulse/client.conf":
+                ensure => absent,
+            }
+
             # disbale gdm (we run our own X server)
             exec { 'set systemctl default to multi-user vs graphical':
                 command  => 'systemctl set-default multi-user.target',
