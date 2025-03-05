@@ -7,7 +7,6 @@ defaults:
 hierarchy:
     # It is acceptable for dot notation facts (eg. %{facts.some_fact}) to not exist
     # since they will simply return an empty string
-
   - name: "Per-role data"
     path: "roles/%{facts.puppet_role}.yaml"
 
