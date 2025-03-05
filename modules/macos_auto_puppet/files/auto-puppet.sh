@@ -16,6 +16,21 @@ FACTER_BIN="/opt/puppetlabs/bin/facter"
 GIT_REPO_URL="https://github.com/mozilla-platform-ops/ronin_puppet.git"
 GIT_BRANCH="auto_puppet_v2"
 
+# Override defaults with values from /etc/puppet/ronin_settings if the file exists
+if [ -f "/etc/puppet/ronin_settings" ]; then
+    echo "Loading settings from /etc/puppet/ronin_settings..."
+    source /etc/puppet/ronin_settings
+
+    # Explicitly export the variables to ensure they override the defaults
+    export GIT_REPO_URL="${PUPPET_REPO:-$GIT_REPO_URL}"
+    export GIT_BRANCH="${PUPPET_BRANCH:-$GIT_BRANCH}"
+    export PUPPET_MAIL="${PUPPET_MAIL:-}"
+    export WORKER_TYPE_OVERRIDE="${WORKER_TYPE_OVERRIDE:-}"
+fi
+
+echo "Using Puppet Repo: $GIT_REPO_URL"
+echo "Using Branch: $GIT_BRANCH"
+
 # Vault configuration
 export VAULT_ADDR="http://127.0.0.1:8200"
 VAULT_TOKEN="$(cat /etc/vault_token 2>/dev/null)"
