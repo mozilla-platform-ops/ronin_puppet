@@ -54,6 +54,34 @@ get_puppet_repo() {
     fi
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to change directory to $LOCAL_PUPPET_REPO"
 
+    # Inject Hiera Configuration
+    sudo tee "$LOCAL_PUPPET_REPO/hiera.yaml" > /dev/null << 'EOF'
+---
+version: 5
+defaults:
+  data_hash: yaml_data
+  datadir: data
+
+hierarchy:
+  - name: "local"
+    path: "/var/root/vault.yaml"
+
+  - name: "Per-role data"
+    path: "roles/%%{facts.puppet_role}.yaml"
+
+  - name: "Per-role Windows"
+    path: "roles/%%{facts.custom_win_role}.yaml"
+
+  - name: "Per-OS defaults"
+    path: "os/%%{facts.os.family}.yaml"
+
+  - name: "Secrets generated from Vault"
+    path: "secrets/vault.yaml"
+
+  - name: "Common data to all"
+    path: "common.yaml"
+EOF
+
     # Inject Hiera Secrets
     mkdir -p ./data/secrets
     cp /var/root/vault.yaml ./data/secrets/vault.yaml
