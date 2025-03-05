@@ -14,7 +14,7 @@ PUPPET_ROLE_FILE="/etc/puppet_role"
 PUPPET_BIN="/opt/puppetlabs/bin/puppet"
 FACTER_BIN="/opt/puppetlabs/bin/facter"
 GIT_REPO_URL="https://github.com/mozilla-platform-ops/ronin_puppet.git"
-GIT_BRANCH="auto_puppet_v2"
+GIT_BRANCH="master"
 
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
