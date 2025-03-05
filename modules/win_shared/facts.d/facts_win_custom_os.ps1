@@ -87,6 +87,14 @@ if (Test-Path -Path "D:\") {
     $DDriveExists = $false
 }
 
+$os_arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+if ($os_arch -like "*ARM*") {
+	$custom_win_os_arch = "aarch64"
+}
+else {
+	$custom_win_os_arch = "x64"
+}
+
 write-host "custom_win_display_version=$display_version"
 write-host "custom_win_release_id=$release_id"
 write-host "custom_win_os_caption=$os_caption"
@@ -101,3 +109,4 @@ write-host "custom_win_worker_pool_id=$worker_pool_id"
 write-host "custom_win_gpu=$gpu"
 write-host "custom_win_purpose=$purpose"
 write-host "custom_win_Ddrive_present=$DDriveExists"
+write-host "custom_win_os_arch=$custom_win_os_arch"
