@@ -409,11 +409,9 @@ function Test-ConnectionUntilOnline {
 $hardware = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Manufacturer, Model
 $model = $hardware.Model
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
-if ($model -ne "ProLiant m710x Server Cartridge") {
-    if ($refresh_rate -ne "60") {
-        Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
-        Set-PXE
-    }
+if ($refresh_rate -ne "60") {
+    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+    Set-PXE
 }
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
