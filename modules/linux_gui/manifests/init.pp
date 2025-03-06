@@ -108,7 +108,7 @@ class linux_gui(
                     source => "puppet:///modules/${module_name}/pip.conf";
             }
 
-            # Let's make sure pulse_client.conf is not present 
+            # RELOPS-1318: Let's make sure pulse client.conf is not present
             file { "${builder_home}/.config/pulse/client.conf":
                 ensure => absent,
             }
