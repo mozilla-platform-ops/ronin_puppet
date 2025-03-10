@@ -1,6 +1,6 @@
-class roles_profiles::roles::win11642009hwrefalpha {
+class roles_profiles::roles::win116424h2hw {
   include roles_profiles::profiles::chocolatey
-  # Install MS tools earlier
+  ## Install before Widnows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
@@ -16,7 +16,6 @@ class roles_profiles::roles::win11642009hwrefalpha {
   include roles_profiles::profiles::hardware
   #include roles_profiles::profiles::intel_drivers
   include roles_profiles::profiles::virtual_drivers
-  #include roles_profiles::profiles::microsoft_store
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::microsoft_kms
 

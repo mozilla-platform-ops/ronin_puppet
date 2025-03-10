@@ -6,10 +6,6 @@
 class roles_profiles::profiles::microsoft_tools {
   case $facts['os']['name'] {
     'Windows': {
-      ## May not be needed. Start pahasing out with 2022
-      if $facts['os']['release']['full'] != '2016' {
-        include win_os_settings::powershell_profile
-      }
       include win_shared::win_ronin_dirs
       class { 'win_packages::performance_tool_kit':
         moz_profile_source => lookup('win-worker.mozilla_profile.source'),
@@ -24,7 +20,9 @@ class roles_profiles::profiles::microsoft_tools {
           ## For now don't look for it after bootstrap.
           if $facts['custom_win_bootstrap_stage'] != 'complete' {
             include win_packages::dxsdk_jun10
-            include win_packages::win_10_sdk
+            if $facts['custom_win_os_arch'] != 'aarch64' {
+              include win_packages::win_10_sdk
+            }
             #include win_packages::win_11_sdk
           }
           include win_packages::binscope
@@ -33,7 +31,10 @@ class roles_profiles::profiles::microsoft_tools {
           include win_packages::vc_redist_x64
         }
         'tester':{
-          include win_packages::win_10_sdk
+          # Hardware testers don't need the windows sdk so skip installing them completely
+          if $facts['custom_win_location'] == 'azure' {
+            include win_packages::win_10_sdk
+          }
         }
         default: {
           fail("${$facts['custom_win_purpose']} not supported")

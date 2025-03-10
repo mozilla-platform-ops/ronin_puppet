@@ -7,7 +7,7 @@ win-worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
     version: '81.0.3'
-    client_id: "project/releng/generic-worker/win11-64-2009-hw-alpha"
+    client_id: "project/releng/generic-worker/win11-64-24h2-hw-perf-sheriff"
     idle_timeout: 0
 
   taskcluster:
@@ -25,7 +25,7 @@ win-worker:
     livelog:
         name: "livelog-windows-amd64"
         version: '81.0.3'
-    client_id: "azure/gecko-t/win11-64-2009-hw-ref"
+    client_id: "azure/gecko-t/win11-64-24h2-hw-perf-sheriff"
     worker_group: "mdc1"
 
   # Mozilla-build
