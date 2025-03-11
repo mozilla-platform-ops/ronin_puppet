@@ -4,6 +4,6 @@
 
 class roles_profiles::profiles::macos_auto_puppet {
   class { 'macos_auto_puppet':
-    enabled    => true,
+    enabled => true,
   }
 }
