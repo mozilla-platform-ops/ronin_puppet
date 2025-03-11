@@ -17,12 +17,9 @@ class win_packages::mercurial {
   win_packages::win_msi_pkg { "Mercurial ${needed_hg_ver}" :
     pkg             => "mercurial-${needed_hg_ver}-x64.msi",
     install_options => [
+      'INSTALLDIR="C:\Program Files\TortoiseHg"',
+      'ADDLOCAL=MainProgram',
       '/quiet',
-      'TARGETDIR="C:\Program Files\TortoiseHg"',
-      'HGRCD="C:\Program Files\TortoiseHg\defaultrc"',
-      'ARPINSTALLLOCATION="C:\Program Files\TortoiseHg"',
-      'ADDLOCAL=MainProgram,Complete',
-      '/qn',
     ],
   }
 }
