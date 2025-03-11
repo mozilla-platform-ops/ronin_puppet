@@ -14,7 +14,7 @@ PUPPET_ROLE_FILE="/etc/puppet_role"
 PUPPET_BIN="/opt/puppetlabs/bin/puppet"
 FACTER_BIN="/opt/puppetlabs/bin/facter"
 GIT_REPO_URL="https://github.com/mozilla-platform-ops/ronin_puppet.git"
-GIT_BRANCH="master"
+GIT_BRANCH="auto_puppet_v2"
 
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
@@ -58,9 +58,21 @@ if [ ! -x "$FACTER_BIN" ]; then
     fail "Facter is missing or not executable."
 fi
 
-# Remove existing Puppet repository and re-clone it
-rm -rf "$LOCAL_PUPPET_REPO"
-git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+# Clone or update Puppet repository
+if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
+    echo "Updating existing Puppet repository..."
+    cd "$LOCAL_PUPPET_REPO" || fail "Failed to change directory to Puppet repository"
+
+    # Reset any local changes and pull the latest changes
+    git reset --hard HEAD || fail "Failed to reset repository"
+    git clean -fd || fail "Failed to clean untracked files"
+    git fetch --all || fail "Failed to fetch latest changes"
+    git checkout "$GIT_BRANCH" || fail "Failed to checkout branch $GIT_BRANCH"
+    git pull origin "$GIT_BRANCH" || fail "Failed to pull latest changes"
+else
+    echo "Cloning Puppet repository..."
+    git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+fi
 
 # Ensure Puppet Repository Exists
 get_puppet_repo() {
