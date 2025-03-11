@@ -1,0 +1,59 @@
+---
+
+win-worker:
+  function: "tester"
+  # generic-worker
+  generic_worker:
+    # File versions
+    name: "generic-worker-multiuser-windows-amd64"
+    version: '81.0.3'
+    client_id: "project/releng/generic-worker/win10-64-2009-hw"
+    idle_timeout: 0
+
+  taskcluster:
+    worker_runner:
+        provisionerId: 'releng-hardware'
+        name: 'start-worker-windows-amd64'
+        version: '81.0.3'
+        provider: "standalone"
+        implementation: "generic-worker"
+    proxy:
+        name: "taskcluster-proxy-windows-amd64"
+        version: '81.0.3'
+    # Refrencing the file directly with version in it
+    # Since there is no programtic way to check the version of the livelog exe
+    livelog:
+        name: "livelog-windows-amd64"
+        version: '81.0.3'
+    client_id: "azure/gecko-t/win10-64-2009-hw-alpha"
+    worker_group: "mdc1"
+
+  # Mozilla-build
+  mozilla_build:
+    version: '4.1'
+    zstandard_version: '0.19.0'
+    psutil_version: '5.9.4'
+
+  # Mozilla profile
+  mozilla_profile:
+    source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
+    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
+
+  # Applications
+  googlechrome:
+    version: 'latest'
+  git:
+    version: '2.37.3'
+  hg:
+    version: '6.2.1'
+  nssm:
+    version: '2.24'
+  vac:
+    version: '464'
+  driver:
+    gfx:
+      version: '101.4255'
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "verbose"

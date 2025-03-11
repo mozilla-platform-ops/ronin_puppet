@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::vnc {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $pw_hash              = lookup('win_vncpw_hash')
@@ -22,14 +22,17 @@ class roles_profiles::profiles::vnc {
                 pw_hash           => $pw_hash,
                 read_only_pw_hash => $read_only_pw_hash
             }
-            win_firewall::open_local_port { "allow_${firewall_name}_mdc1":
-                port            => $firewall_port,
-                reciprocal      => true,
-                fw_display_name => "${firewall_name}_mdc1",
+            windows_firewall::exception { "allow_${firewall_name}_mdc1":
+                ensure       => present,
+                direction    => 'in',
+                action       => 'allow',
+                enabled      => true,
+                protocol     => 'TCP',
+                local_port   => $firewall_port,
+                remote_port  => 'any',
+                display_name => "${firewall_name}_mdc1",
+                description  => "${firewall_name}_mdc1",
             }
-            # Bug List
-            #
-            # TODO Add 32 bit support
         }
         'Ubuntu': {
             $user = lookup('linux_vnc.user')
@@ -48,7 +51,7 @@ class roles_profiles::profiles::vnc {
             include macos_utils::enable_screensharing
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

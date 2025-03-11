@@ -6,19 +6,15 @@ class win_packages::drivers::intel_gfx (
   String $version
 ) {
 
-    case $facts['custom_win_location'] {
-        'datacenter': {
-            $srcloc       = lookup('windows.s3.ext_pkg_src')
-        }
-        default: {
-            $srcloc = lookup('windows.ext_pkg_src')
-        }
-    }
+    $srcloc = lookup('windows.ext_pkg_src')
 
-    $pkgdir     = $facts['custom_win_temp_dir']
+    $pkgdir     =  "${facts['custom_win_systemdrive']}\\intel"
     $gfx_driver = "gfx_win_${version}"
     $gfx_exe    = "${gfx_driver}.exe"
 
+    file { $pkgdir :
+        ensure => directory,
+    }
 
     file { "${pkgdir}\\gfx.exe" :
         source => "${srcloc}/${gfx_exe}",

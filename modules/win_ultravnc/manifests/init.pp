@@ -10,13 +10,6 @@ class win_ultravnc (
     String  $read_only_pw_hash
 ){
 
-    if $::operatingsystem == 'Windows' {
-        include win_ultravnc::install
-        include win_ultravnc::configuration
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
-    }
+    include win_ultravnc::install
+    include win_ultravnc::configuration
 }
-
-# Bug list
-#
