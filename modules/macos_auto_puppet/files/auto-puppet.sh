@@ -60,17 +60,26 @@ fi
 
 # Clone or update Puppet repository
 if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
-    echo "Updating existing Puppet repository..."
+    echo "Checking existing Puppet repository..."
+
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to change directory to Puppet repository"
 
-    # Reset any local changes and pull the latest changes
-    git reset --hard HEAD || fail "Failed to reset repository"
-    git clean -fd || fail "Failed to clean untracked files"
-    git fetch --all || fail "Failed to fetch latest changes"
-    git checkout "$GIT_BRANCH" || fail "Failed to checkout branch $GIT_BRANCH"
-    git pull origin "$GIT_BRANCH" || fail "Failed to pull latest changes"
+    CURRENT_REMOTE_URL=$(git remote get-url origin 2>/dev/null)
+
+    if [ "$CURRENT_REMOTE_URL" != "$GIT_REPO_URL" ]; then
+        echo "Repository URL has changed. Removing old repository..."
+        cd ..
+        rm -rf "$LOCAL_PUPPET_REPO"
+        echo "Cloning new Puppet repository..."
+        git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+    else
+        echo "Updating existing repository..."
+        git fetch --all || fail "Failed to fetch latest changes"
+        git reset --hard "origin/$GIT_BRANCH" || fail "Failed to reset to latest commit"
+        git clean -fd || fail "Failed to remove untracked files"
+    fi
 else
-    echo "Cloning Puppet repository..."
+    echo "Cloning fresh Puppet repository..."
     git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
 fi
 
