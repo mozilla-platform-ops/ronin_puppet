@@ -4,6 +4,6 @@
 
 class roles_profiles::profiles::macos_signer_python {
   class { 'macos_signer_python':
-    enabled    => true,
+    enabled => true,
   }
 }

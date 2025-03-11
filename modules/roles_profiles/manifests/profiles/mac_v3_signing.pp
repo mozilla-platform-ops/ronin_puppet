@@ -19,11 +19,14 @@ class roles_profiles::profiles::mac_v3_signing {
       $widevine_user = lookup('widevine_config.user')
       $widevine_key = lookup('widevine_config.key')
 
-      $role = $facts['networking']['hostname']? {
-        /^dep-mac-v3-signing\d+/ => 'dep',
-        /^tb-mac-v3-signing\d+/ => 'tb-prod',
-        /^vpn-mac-v3-signing\d+/ => 'vpn',
-        default => 'ff-prod',
+      $role = $facts['networking']['hostname'] ? {
+        /^mac-v(3|4)-signing\d+/       => 'ff-prod',
+        /^fx-mac-v(3|4)-signing\d+/    => 'ff-prod',
+        /^tb-mac-v(3|4)-signing\d+/    => 'tb-prod',
+        /^vpn-mac-v(3|4)-signing\d+/   => 'vpn-prod',
+        /^adhoc-mac-v(3|4)-signing\d+/ => 'adhoc-prod',
+        /^dep-mac-v(3|4)-signing\d+/   => 'dep',
+        default                        => 'ff-prod',  # Not optimal, but used in unit tests and for local debugging
       }
 
       $worker_common = lookup("scriptworker_config.${role}", Hash, undef, {})
@@ -40,11 +43,11 @@ class roles_profiles::profiles::mac_v3_signing {
       $mac_version = $facts['os']['release']['major']
 
       # Set scriptworker_base depending on macOS version
-      $scriptworker_base = $mac_version ? {
-        '18'    => '/builds/scriptworker',  # macOS 10.14
-        '19'    => '/builds/scriptworker',  # macOS 10.15 (assuming same as 10.14)
-        '21'    => '/usr/local/builds/scriptworker',  # macOS 14+
-        '23'    => '/usr/local/builds/scriptworker',  # macOS 14+
+      $scriptworker_parent = $mac_version ? {
+        '18'    => '',  # macOS 10.14
+        '19'    => '',  # macOS 10.15 (assuming same as 10.14)
+        '21'    => '/usr/local',  # macOS 14+
+        '23'    => '/usr/local',  # macOS 14+
         default => fail("Unsupported macOS version: ${mac_version}"),
       }
 
@@ -63,7 +66,7 @@ class roles_profiles::profiles::mac_v3_signing {
           password            => lookup("${user}_user.password"),
           salt                => lookup("${user}_user.salt"),
           iterations          => lookup("${user}_user.iterations"),
-          scriptworker_base   => $scriptworker_base,  # <-- Hardcoded based on macOS version
+          scriptworker_base   => "${scriptworker_parent}${user_data['home']}",
           dmg_prefix          => $user_data['dmg_prefix'],
           worker_type_prefix  => $user_data['worker_type_prefix'],
           worker_id_suffix    => $user_data['worker_id_suffix'],

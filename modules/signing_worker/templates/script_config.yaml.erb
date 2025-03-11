@@ -21,8 +21,10 @@ mac_config:
         base_bundle_id: "<%= role_data['base_bundle_id'] %>"
 <% elsif @cot_product == "mozillavpn" -%>
         base_bundle_id: "<%= role_data['vpn_base_bundle_id'] %>"
-<% else -%>
+<% elsif @cot_product == "thunderbird" -%>
         base_bundle_id: "<%= role_data['tb_base_bundle_id'] %>"
+<% elsif @cot_product == "adhoc" -%>
+        base_bundle_id: com.mozilla.app
 <% end -%>
         identity: "<%= role_data['identity'] %>"
         keychain_password: "<%= role_data['keychain_password'] %>"

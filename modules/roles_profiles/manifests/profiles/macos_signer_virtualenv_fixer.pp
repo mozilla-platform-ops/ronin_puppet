@@ -4,6 +4,6 @@
 
 class roles_profiles::profiles::macos_signer_virtualenv_fixer {
   class { 'macos_signer_virtualenv_fixer':
-    enabled    => true,
+    enabled => true,
   }
 }
