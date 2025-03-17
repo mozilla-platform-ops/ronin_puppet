@@ -19,7 +19,7 @@ class win_mozilla_build_new::modifications {
     value => $mozbld,
   }
 
-  case lookup('win-worker.mozilla_build.version') {
+  case lookup('win-worker.function') {
     'builder': {
       file { "C:\\mozilla-build\\mozmake":
         ensure => directory,
