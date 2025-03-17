@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Installs psutil python package within mozbuild
-class win_mozilla_build_tester::install_psutil {
+class win_mozilla_build_new::install_psutil {
   require win_mozilla_build_tester::install
 
   $psutil_version = lookup('win-worker.mozilla_build.psutil_version')
