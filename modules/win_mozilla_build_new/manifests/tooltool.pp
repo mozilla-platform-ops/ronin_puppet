@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build_new::tooltool {
-  require win_mozilla_build_mew::install
+  require win_mozilla_build_new::install
 
   $builds         = "${facts['custom_win_systemdrive']}\\builds"
   $tooltool_cache = "${builds}\\tooltool_cache"
@@ -32,7 +32,7 @@ class win_mozilla_build_new::tooltool {
     inherit_parent_permissions => true,
   }
 
-  case lookup('win-worker.mozilla_build.version') {
+  case lookup('win-worker.function') {
     'builder': {
       file { $builds:
         ensure => directory,

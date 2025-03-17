@@ -21,7 +21,7 @@ class roles_profiles::profiles::mozbuild_post_boostrap_new {
     }
   }
 
-  case lookup('win-worker.mozilla_build.version') {
+  case lookup('win-worker.function') {
     'builder': {
       file { "C:\\mozilla-build\\mozmake":
         ensure => directory,
