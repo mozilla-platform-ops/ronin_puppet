@@ -18,7 +18,7 @@ class win_mozilla_build_tester::grant_symlink_access {
 
   # Using puppetlabs-powershell
   exec { 'grant_symlnk_access':
-    command     => file('win_mozilla_build_tester/grant_symlink_access.ps1'),
+    command     => file('win_mozilla_build_new/grant_symlink_access.ps1'),
     provider    => powershell,
     subscribe   => Exec['carbon.zip'],
     refreshonly => true,
