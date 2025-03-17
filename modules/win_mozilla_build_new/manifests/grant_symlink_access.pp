@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_mozilla_build_tester::grant_symlink_access {
+class win_mozilla_build_new::grant_symlink_access {
   $module_dir = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules"
   # This a temporary work around to subscribe to file in a temp dir since
   # we are unable to susbscribe the windows::unzip resource
