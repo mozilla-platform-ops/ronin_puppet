@@ -10,7 +10,7 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
 # Puppet configuration
 LOCAL_PUPPET_REPO="/Users/relops/Desktop/puppet/ronin_puppet"
-PUPPET_ROLE_FILE="/etc/facter/facts.d/puppet_role.txt"
+PUPPET_ROLE_FILE="/etc/puppet_role"
 PUPPET_BIN="/opt/puppetlabs/bin/puppet"
 FACTER_BIN="/opt/puppetlabs/bin/facter"
 GIT_REPO_URL="https://github.com/mozilla-platform-ops/ronin_puppet.git"
