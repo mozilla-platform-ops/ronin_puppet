@@ -51,6 +51,8 @@ win-worker:
   gpu-latest:
     name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
     display_name: "NVIDIA Graphics Driver 538.15"
+  hg:
+    version: '6.9'
   nssm:
     version: '2.24'
   # Logging
