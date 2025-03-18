@@ -7,29 +7,29 @@ class macos_auto_puppet (
   String $puppet_role = $facts['puppet_role'], # Dynamically pull from Facter
 ) {
   # Ensure /etc/facter/ exists
-  # file { '/etc/facter/':
-  #   ensure => directory,
-  #   owner  => 'root',
-  #   group  => 'wheel',
-  #   mode   => '0755',
-  # }
+  file { '/etc/facter/':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'wheel',
+    mode   => '0755',
+  }
 
-  # # Ensure /etc/facter/facts.d exists
-  # file { '/etc/facter/facts.d':
-  #   ensure => directory,
-  #   owner  => 'root',
-  #   group  => 'wheel',
-  #   mode   => '0755',
-  # }
+  # Ensure /etc/facter/facts.d exists
+  file { '/etc/facter/facts.d':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'wheel',
+    mode   => '0755',
+  }
 
-  # # Set Puppet role dynamically
-  # file { '/etc/facter/facts.d/puppet_role.txt':
-  #   ensure  => file,
-  #   content => "puppet_role=${puppet_role}\n",
-  #   owner   => 'root',
-  #   group   => 'wheel',
-  #   mode    => '0644',
-  # }
+  # Set Puppet role dynamically
+  file { '/etc/facter/facts.d/puppet_role.txt':
+    ensure  => file,
+    content => "puppet_role=${puppet_role}\n",
+    owner   => 'root',
+    group   => 'wheel',
+    mode    => '0644',
+  }
 
   # Ensure /etc/puppet_role exists and matches Facter
   file { '/etc/puppet_role':
