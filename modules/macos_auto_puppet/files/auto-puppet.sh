@@ -31,11 +31,6 @@ fi
 echo "Using Puppet Repo: $GIT_REPO_URL"
 echo "Using Branch: $GIT_BRANCH"
 
-# Vault configuration
-export VAULT_ADDR="http://127.0.0.1:8200"
-VAULT_TOKEN="$(cat /etc/vault_token 2>/dev/null)"
-export VAULT_TOKEN
-
 # Fail function
 fail() {
     echo "${@}"
@@ -89,34 +84,6 @@ get_puppet_repo() {
         fail "Local Puppet repository not found at $LOCAL_PUPPET_REPO"
     fi
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to change directory to $LOCAL_PUPPET_REPO"
-
-    # Inject Hiera Configuration
-#     sudo tee "$LOCAL_PUPPET_REPO/hiera.yaml" > /dev/null << 'EOF'
-# ---
-# version: 5
-# defaults:
-#   data_hash: yaml_data
-#   datadir: data
-
-# hierarchy:
-#   - name: "local"
-#     path: "/var/root/vault.yaml"
-
-#   - name: "Per-role data"
-#     path: "roles/%%{facts.puppet_role}.yaml"
-
-#   - name: "Per-role Windows"
-#     path: "roles/%%{facts.custom_win_role}.yaml"
-
-#   - name: "Per-OS defaults"
-#     path: "os/%%{facts.os.family}.yaml"
-
-#   - name: "Secrets generated from Vault"
-#     path: "secrets/vault.yaml"
-
-#   - name: "Common data to all"
-#     path: "common.yaml"
-# EOF
 
     # Inject Hiera Secrets
     mkdir -p ./data/secrets
