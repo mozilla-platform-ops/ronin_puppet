@@ -21,6 +21,22 @@ class roles_profiles::profiles::mozbuild_post_boostrap_new {
     }
   }
 
+  file { "${cache_drive}\\hg-shared":
+    ensure => directory,
+  }
+
+  acl { "${cache_drive}\\hg-shared":
+    target      => "${cache_drive}\\hg-shared",
+    permissions => {
+      identity                   => 'everyone',
+      rights                     => ['full'],
+      perm_type                  => 'allow',
+      child_types                => 'all',
+      affects                    => 'all',
+      inherit_parent_permissions => true,
+    },
+  }
+
   case lookup('win-worker.function') {
     'builder': {
       file { "C:\\mozilla-build\\mozmake":
