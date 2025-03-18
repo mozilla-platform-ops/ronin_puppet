@@ -4,7 +4,7 @@
 
 # Installs psutil python package within mozbuild
 class win_mozilla_build_new::install_psutil {
-  require win_mozilla_build_tester::install
+  require win_mozilla_build_new::install
 
   $psutil_version = lookup('win-worker.mozilla_build.psutil_version')
   $pip_string  = "-m pip install psutil==${psutil_version}"
