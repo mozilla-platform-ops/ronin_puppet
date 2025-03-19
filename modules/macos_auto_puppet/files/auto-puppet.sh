@@ -96,15 +96,15 @@ get_puppet_repo() {
     cp /var/root/vault.yaml ./data/secrets/vault.yaml
 
     # Get FQDN from Facter
-    FQDN=$("$FACTER_BIN" networking.fqdn)
+    #FQDN=$("$FACTER_BIN" networking.fqdn)
 
-    # Create a node definition for this host
-    cat <<EOF > manifests/nodes/nodes.pp
-node '$FQDN' {
-    include ::roles_profiles::roles::$ROLE
-}
-EOF
-}
+#     # Create a node definition for this host
+#     cat <<EOF > manifests/nodes/nodes.pp
+# node '$FQDN' {
+#     include ::roles_profiles::roles::$ROLE
+# }
+# EOF
+ }
 
 # Run Puppet
 run_puppet() {
