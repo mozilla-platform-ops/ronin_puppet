@@ -68,10 +68,18 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
         echo "Cloning new Puppet repository..."
         git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
     else
-        echo "Updating existing repository..."
-        git fetch --all || fail "Failed to fetch latest changes"
-        git reset --hard "origin/$GIT_BRANCH" || fail "Failed to reset to latest commit"
-        git clean -fd || fail "Failed to remove untracked files"
+        echo "Checking for updates in Puppet repository..."
+        git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+
+        LOCAL_COMMIT=$(git rev-parse HEAD)
+        REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
+
+        if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+            echo "Updates found. Pulling latest changes..."
+            git reset --hard "origin/$GIT_BRANCH" || fail "Failed to reset to latest commit"
+        else
+            echo "Already up-to-date. No changes needed."
+        fi
     fi
 else
     echo "Cloning fresh Puppet repository..."
