@@ -47,10 +47,10 @@ class macos_auto_puppet (
   # }
 
   # Verify fact is correctly set
-  exec { 'verify_puppet_role':
-    command => '/opt/puppetlabs/bin/facter puppet_role',
-    path    => ['/bin', '/usr/bin', '/usr/local/bin'],
-  }
+  # exec { 'verify_puppet_role':
+  #   command => '/opt/puppetlabs/bin/facter puppet_role',
+  #   path    => ['/bin', '/usr/bin', '/usr/local/bin'],
+  # }
 
   # # Ensure /etc/puppet_role exists before continuing
   # exec { 'verify_puppet_role_exists':
