@@ -4,7 +4,7 @@
 
 class macos_auto_puppet (
   Boolean $enabled = true,
-  String $puppet_role = $facts['puppet_role'], # Dynamically pull from Facter
+  String $puppet_role = lookup('generic_worker', String, 'first', 'default_role')
 ) {
   # Ensure /etc/facter/ exists
   file { '/etc/facter/':
