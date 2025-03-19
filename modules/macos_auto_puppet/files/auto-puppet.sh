@@ -10,7 +10,7 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
 # Puppet configuration
 LOCAL_PUPPET_REPO="/Users/relops/Desktop/puppet/ronin_puppet"
-PUPPET_ROLE_FILE="/etc/puppet_role"
+# PUPPET_ROLE_FILE="/etc/puppet_role"
 PUPPET_BIN="/opt/puppetlabs/bin/puppet"
 FACTER_BIN="/opt/puppetlabs/bin/facter"
 GIT_REPO_URL="https://github.com/mozilla-platform-ops/ronin_puppet.git"
@@ -36,12 +36,12 @@ fail() {
     exit 1
 }
 
-# Ensure Puppet Role is Set
-if [ -f "$PUPPET_ROLE_FILE" ]; then
-    ROLE=$(<"$PUPPET_ROLE_FILE")
-else
-    fail "Failed to find Puppet role file $PUPPET_ROLE_FILE"
-fi
+# # Ensure Puppet Role is Set
+# if [ -f "$PUPPET_ROLE_FILE" ]; then
+#     ROLE=$(<"$PUPPET_ROLE_FILE")
+# else
+#     fail "Failed to find Puppet role file $PUPPET_ROLE_FILE"
+# fi
 
 # Ensure Puppet & Facter are Installed
 if [ ! -x "$PUPPET_BIN" ]; then
