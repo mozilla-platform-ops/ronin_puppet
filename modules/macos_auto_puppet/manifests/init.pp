@@ -40,11 +40,11 @@ class macos_auto_puppet (
     mode    => '0644',
   }
 
-  # Remove Facter cache to force reload
-  exec { 'clear_facter_cache':
-    command => 'rm -rf /opt/puppetlabs/facter/cache/',
-    path    => ['/bin', '/usr/bin', '/usr/local/bin'],
-  }
+  # # Remove Facter cache to force reload
+  # exec { 'clear_facter_cache':
+  #   command => 'rm -rf /opt/puppetlabs/facter/cache/',
+  #   path    => ['/bin', '/usr/bin', '/usr/local/bin'],
+  # }
 
   # Verify fact is correctly set
   exec { 'verify_puppet_role':
