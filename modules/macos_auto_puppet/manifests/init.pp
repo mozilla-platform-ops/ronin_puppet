@@ -40,24 +40,6 @@ class macos_auto_puppet (
     mode    => '0644',
   }
 
-  # # Remove Facter cache to force reload
-  # exec { 'clear_facter_cache':
-  #   command => 'rm -rf /opt/puppetlabs/facter/cache/',
-  #   path    => ['/bin', '/usr/bin', '/usr/local/bin'],
-  # }
-
-  # Verify fact is correctly set
-  # exec { 'verify_puppet_role':
-  #   command => '/opt/puppetlabs/bin/facter puppet_role',
-  #   path    => ['/bin', '/usr/bin', '/usr/local/bin'],
-  # }
-
-  # # Ensure /etc/puppet_role exists before continuing
-  # exec { 'verify_puppet_role_exists':
-  #   command => '[ -f /etc/puppet_role ] || (echo "ERROR: /etc/puppet_role was not created. Exiting..." && exit 1)',
-  #   path    => ['/bin', '/usr/bin', '/usr/local/bin'],
-  # }
-
   # Deploy auto-puppet.sh to /usr/local/bin/ with execution permissions
   file { '/usr/local/bin/auto-puppet.sh':
     ensure => file,
