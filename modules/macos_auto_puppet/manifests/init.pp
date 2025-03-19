@@ -4,7 +4,7 @@
 
 class macos_auto_puppet (
   Boolean $enabled = true,
-  String $puppet_role = lookup('generic_worker', String, 'first', 'default_role')
+  String $puppet_role = lookup('generic_worker.gecko_t_osx_1400_r8_staging', String, 'first', 'default_role')
 ) {
   # Ensure /etc/facter/ exists
   file { '/etc/facter/':
