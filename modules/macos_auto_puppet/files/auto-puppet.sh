@@ -21,7 +21,6 @@ if [ -f "/etc/puppet/ronin_settings" ]; then
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
 
-    # Explicitly export the variables to ensure they override the defaults
     export GIT_REPO_URL="${PUPPET_REPO:-$GIT_REPO_URL}"
     export GIT_BRANCH="${PUPPET_BRANCH:-$GIT_BRANCH}"
     export PUPPET_MAIL="${PUPPET_MAIL:-}"
@@ -56,7 +55,6 @@ fi
 # Clone or update Puppet repository
 if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
     echo "Checking existing Puppet repository..."
-
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to change directory to Puppet repository"
 
     CURRENT_REMOTE_URL=$(git remote get-url origin 2>/dev/null)
@@ -147,9 +145,31 @@ run_puppet() {
     esac
 }
 
-# Retry Puppet Until Success
-while ! run_puppet; do
-    echo "Puppet run failed; re-trying in 60 seconds"
+# Retry Puppet Until Success, Checking for Updates Before Each Retry
+while true; do
+    echo "Running Puppet apply..."
+
+    if run_puppet; then
+        echo "Puppet apply succeeded!"
+        exit 0
+    fi
+
+    echo "Puppet apply failed. Checking for updates before retrying..."
+
+    cd "$LOCAL_PUPPET_REPO" || fail "Failed to enter Puppet repository directory"
+
+    git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+    LOCAL_COMMIT=$(git rev-parse HEAD)
+    REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
+
+    if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+        echo "New changes detected! Updating repository..."
+        git reset --hard "origin/$GIT_BRANCH" || fail "Failed to reset to latest commit"
+        echo "Repository updated. Retrying Puppet apply..."
+    else
+        echo "No new changes found. Retrying Puppet apply in 60 seconds..."
+    fi
+
     sleep 60
 done
 
