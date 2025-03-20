@@ -38,6 +38,11 @@ class win_mozilla_build_new::modifications {
       windows_env { "PATH=${mozbld}\\python3": }
       windows_env { "PATH=${mozbld}\\msys2\\usr\\bin": }
       windows_env { "PATH=${mozbld}\\mozmake": }
+
+      exec { 'setmsys2path':
+        command  => file('win_mozilla_build_new/set_path.ps1.'),
+        provider => powershell,
+      }
     }
     'tester': {
       windows_env { "PATH=${mozbld}\\bin": }
