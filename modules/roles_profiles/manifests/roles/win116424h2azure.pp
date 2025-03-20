@@ -16,7 +16,7 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::gpu_drivers
       ## Change log level from verbose to whatever hiera lookup is
       include roles_profiles::profiles::logging
-      ## 
+      ## We need to configure the cache drive and hg-shared in this profile
       include roles_profiles::profiles::mozbuild_post_boostrap_new
       ## Set network to private
       include roles_profiles::profiles::network
