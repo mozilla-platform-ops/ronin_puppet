@@ -12,6 +12,10 @@ class win_mozilla_build_new::tooltool {
     source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
   }
 
+  file { $builds:
+    ensure => directory,
+  }
+
   file { $tooltool_cache:
     ensure => directory,
   }
@@ -34,9 +38,6 @@ class win_mozilla_build_new::tooltool {
 
   case lookup('win-worker.function') {
     'builder': {
-      file { $builds:
-        ensure => directory,
-      }
       # This script will get the SSL Server Certificate for https://tooltool.mozilla-releng.net
       # and will add it to the local user store
       # Without the cert in the local user store tooltool will hit SSL errors when fetching a package
