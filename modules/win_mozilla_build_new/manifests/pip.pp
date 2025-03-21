@@ -2,28 +2,29 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_mozilla_build_tester::pip {
-  ## If Azure, then cache drive is either Y or D
-  if ($facts['custom_win_location'] == 'azure') {
-    case $facts['custom_win_os_version'] {
-      'win_2012': {
-        $cache_drive = 'y:'
-      }
-      default: {
+class win_mozilla_build_new::pip {
+  case $facts['custom_win_location'] {
+    'azure': {
+      if $facts['custom_win_os_arch'] != 'aarch64' {
         $cache_drive = 'd:'
       }
+      else {
+        $cache_drive = 'c:'
+      }
     }
-  }
-  ## If Datacenter, then cache drive is C
-  if ($facts['custom_win_location'] == 'datacenter') {
-    $cache_drive = 'c:'
+    'datacenter': {
+      $cache_drive = 'c:'
+    }
+    default: {
+      fail('custom_win_location not supported')
+    }
   }
 
   file { "${$facts['custom_win_programdata']}\\pip":
     ensure => directory,
   }
   file { "${$facts['custom_win_programdata']}\\pip\\pip.ini":
-    content   => epp('win_mozilla_build_tester/pip.conf.epp'),
+    content   => epp('win_mozilla_build_new/pip.conf.epp'),
   }
   file { "${cache_drive}\\pip-cache":
     ensure => directory,
