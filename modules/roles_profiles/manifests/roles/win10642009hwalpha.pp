@@ -26,7 +26,7 @@ class roles_profiles::roles::win10642009hwalpha {
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::common_tools
   include roles_profiles::profiles::nuc_management
-  #include roles_profiles::profiles::vnc
+  include roles_profiles::profiles::vnc
 
   # Worker
   include roles_profiles::profiles::git
@@ -34,4 +34,5 @@ class roles_profiles::roles::win10642009hwalpha {
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_worker_runner
   include roles_profiles::profiles::windows_datacenter_administrator
+  include roles_profiles::profiles::google_chrome
 }
