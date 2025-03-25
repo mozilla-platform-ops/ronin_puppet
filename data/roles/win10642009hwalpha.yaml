@@ -7,7 +7,7 @@ win-worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
     version: '81.0.3'
-    client_id: "project/releng/generic-worker/win10-64-2009-hw"
+    client_id: "project/releng/generic-worker/win10-64-2009-hw-alpha"
     idle_timeout: 0
 
   taskcluster:
