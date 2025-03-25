@@ -109,8 +109,10 @@ define signing_worker (
   # dependencies use hash pinning, while the direct ones cannot, because they're
   # installed in editable mode.
   exec { "install ${scriptworker_base} virtualenv":
-    command => "python3 -m virtualenv ${virtualenv_dir} && chown -R ${user}:staff ${virtualenv_dir}",
+    command => "python3 -m virtualenv ${virtualenv_dir}",
     cwd     => $scriptworker_base,
+    user    => $user,
+    group   => $group,
     onlyif  => "test ! -f ${virtualenv_dir}/bin/activate",
     path    => ['/usr/local/bin', '/bin', '/usr/sbin'],
   }
@@ -133,14 +135,19 @@ define signing_worker (
     group    => $group,
     require  => File[$scriptworker_base],
   }
+  $sw_deps = [
+    Vcsrepo[$scriptworker_clone_dir],
+    Exec["install ${scriptworker_base} virtualenv"],
+    Exec["install ${scriptworker_base} requirements"],
+  ]
   exec { "install ${scriptworker_base} scriptworker":
-    command     => "${virtualenv_dir}/bin/python setup.py install",
+    command     => "${virtualenv_dir}/bin/pip install .",
     cwd         => $scriptworker_clone_dir,
     user        => $user,
     group       => $group,
     refreshonly => true,
-    subscribe   => [Vcsrepo[$scriptworker_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
-    require     => [Vcsrepo[$scriptworker_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
+    subscribe   => $sw_deps,
+    require     => $sw_deps,
   }
 
   vcsrepo { $scriptworker_scripts_clone_dir:
@@ -152,32 +159,37 @@ define signing_worker (
     group    => $group,
     require  => File[$scriptworker_base],
   }
+  $ss_deps = [
+    Vcsrepo[$scriptworker_scripts_clone_dir],
+    Exec["install ${scriptworker_base} virtualenv"],
+    Exec["install ${scriptworker_base} requirements"],
+  ]
   exec { "install ${scriptworker_base} mozbuild":
-    command     => "${virtualenv_dir}/bin/python setup.py install",
+    command     => "${virtualenv_dir}/bin/pip install .",
     cwd         => "${scriptworker_scripts_clone_dir}/vendored/mozbuild",
     user        => $user,
     group       => $group,
     refreshonly => true,
-    subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
-    require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
+    subscribe   => $ss_deps,
+    require     => $ss_deps,
   }
   exec { "install ${scriptworker_base} scriptworker_client":
-    command     => "${virtualenv_dir}/bin/python setup.py install",
+    command     => "${virtualenv_dir}/bin/pip install .",
     cwd         => "${scriptworker_scripts_clone_dir}/scriptworker_client",
     user        => $user,
     group       => $group,
     refreshonly => true,
-    subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
-    require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
+    subscribe   => $ss_deps,
+    require     => $ss_deps,
   }
   exec { "install ${scriptworker_base} iscript":
-    command     => "${virtualenv_dir}/bin/python setup.py install",
+    command     => "${virtualenv_dir}/bin/pip install .",
     cwd         => "${scriptworker_scripts_clone_dir}/iscript",
     user        => $user,
     group       => $group,
     refreshonly => true,
-    subscribe   => [Vcsrepo[$scriptworker_scripts_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
-    require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Exec["install ${scriptworker_base} virtualenv"]],
+    subscribe   => $ss_deps,
+    require     => $ss_deps,
   }
 
   if $widevine_filename {
@@ -215,7 +227,7 @@ define signing_worker (
       force   => true,
     }
     exec { "install ${scriptworker_base} widevine":
-      command     => "${virtualenv_dir}/bin/python setup.py install",
+      command     => "${virtualenv_dir}/bin/pip install .",
       cwd         => $widevine_clone_dir,
       user        => $user,
       group       => $group,
