@@ -3,12 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build::install {
+  $mozbld_version = lookup('win-worker.mozilla_build.version')
 
-    if $win_mozilla_build::current_mozbld_ver != $win_mozilla_build::needed_mozbld_ver {
-        win_packages::win_exe_pkg  { 'mozilla_build':
-            pkg                    => "MozillaBuildSetup-${win_mozilla_build::needed_mozbld_ver}.exe",
-            install_options_string =>  "/S /D=${win_mozilla_build::install_path}",
-            creates                => "${win_mozilla_build::install_path}\\msys\\bin\\sh.exe"
-        }
-    }
+  win_packages::win_exe_pkg { 'mozilla_build':
+    pkg                    => "MozillaBuildSetup-${mozbld_version}.exe",
+    install_options_string => '/S',
+    creates                => "C:\\mozilla-build\\msys2\\usr\\bin\\sh.exe",
+  }
 }
