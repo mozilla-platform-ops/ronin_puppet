@@ -51,7 +51,7 @@ win-worker:
   vac:
     version: '464'
   git:
-    version: '2.48.1'
+    version: '2.49.0'
   hg:
     version: '6.2.1'
   # Logging

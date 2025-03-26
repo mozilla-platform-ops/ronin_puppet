@@ -43,7 +43,7 @@ win-worker:
   googlechrome:
     version: 'latest'
   git:
-    version: '2.37.3'
+    version: '2.49.0'
   hg:
     version: '6.2.1'
   nssm:
