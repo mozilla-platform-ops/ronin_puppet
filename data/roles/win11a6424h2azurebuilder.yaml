@@ -31,7 +31,7 @@ win-worker:
     version: '4.1'
     hg_version: '6.2.1'
     py3_pip_version: '23.3.2'
-    py3_zstandard_version: '0.19.0'
+    zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
 
   # Mozilla profile
