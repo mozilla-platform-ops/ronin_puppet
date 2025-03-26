@@ -45,7 +45,7 @@ win-worker:
   git:
     version: '2.37.3'
   hg:
-    version: '6.2.1'
+    version: '6.9'
   nssm:
     version: '2.24'
   vac:
