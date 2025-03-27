@@ -3,55 +3,53 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::vnc {
+  case $facts['os']['name'] {
+    'Windows': {
+      $pw_hash              = lookup('win_vncpw_hash')
+      $read_only_pw_hash    = lookup('win_readonly_vncpw_hash')
+      $ini_file             = "${facts['custom_win_programfiles']}\\uvnc bvba\\UltraVNC\\ultravnc.ini"
+      $package              = 'UltraVnc'
+      $msi                  = 'UltraVnc_1223_X64.msi'
+      $firewall_port        = lookup('windows.datacenter.ports.vnc')
+      $firewall_name        = 'UltraVNC'
 
-    case $facts['os']['name'] {
-        'Windows': {
-
-            $pw_hash              = lookup('win_vncpw_hash')
-            $read_only_pw_hash    = lookup('win_readonly_vncpw_hash')
-            $ini_file             = "${facts['custom_win_programfiles']}\\uvnc bvba\\UltraVNC\\ultravnc.ini"
-            $package              = 'UltraVnc'
-            $msi                  = 'UltraVnc_1223_X64.msi'
-            $firewall_port        = lookup('windows.datacenter.ports.vnc')
-            $firewall_name        = 'UltraVNC'
-
-            class { 'win_ultravnc':
-                package           => $package,
-                msi               => $msi,
-                ini_file          => $ini_file,
-                pw_hash           => $pw_hash,
-                read_only_pw_hash => $read_only_pw_hash
-            }
-            windows_firewall::exception { "allow_${firewall_name}_mdc1":
-                ensure       => present,
-                direction    => 'in',
-                action       => 'allow',
-                enabled      => true,
-                protocol     => 'TCP',
-                local_port   => $firewall_port,
-                remote_port  => 'any',
-                display_name => "${firewall_name}_mdc1",
-                description  => "${firewall_name}_mdc1",
-            }
-        }
-        'Ubuntu': {
-            $user = lookup('linux_vnc.user')
-            $user_homedir = lookup('linux_vnc.user_homedir')
-            $group = lookup('linux_vnc.group')
-            $password = lookup('linux_vnc.password')
-
-            class { 'linux_vnc':
-                user          => $user,
-                group         => $group,
-                user_homedir  => $user_homedir,
-                user_password => $password,
-            }
-        }
-        'Darwin': {
-            include macos_utils::enable_screensharing
-        }
-        default: {
-            fail("${facts['os']['name']} not supported")
-        }
+      class { 'win_ultravnc':
+        package           => $package,
+        msi               => $msi,
+        ini_file          => $ini_file,
+        pw_hash           => $pw_hash,
+        read_only_pw_hash => $read_only_pw_hash,
+      }
+      windows_firewall::exception { "allow_${firewall_name}_mdc1":
+        ensure       => present,
+        direction    => 'in',
+        action       => 'allow',
+        enabled      => true,
+        protocol     => 'TCP',
+        local_port   => $firewall_port,
+        remote_port  => 'any',
+        display_name => "${firewall_name}_mdc1",
+        description  => "${firewall_name}_mdc1",
+      }
     }
+    'Ubuntu': {
+      $user = lookup('linux_vnc.user')
+      $user_homedir = lookup('linux_vnc.user_homedir')
+      $group = lookup('linux_vnc.group')
+      $password = lookup('linux_vnc.password')
+
+      class { 'linux_vnc':
+        user          => $user,
+        group         => $group,
+        user_homedir  => $user_homedir,
+        user_password => $password,
+      }
+    }
+    'Darwin': {
+      include macos_utils::enable_screensharing
+    }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }
