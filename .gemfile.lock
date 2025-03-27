@@ -468,6 +468,9 @@ GEM
     puppet-lint (2.5.2)
     puppet-resource_api (1.8.14)
       hocon (>= 1.0)
+    puppet-strings (4.1.0)
+      rgen (~> 0.9)
+      yard (~> 0.9)
     puppet-syntax (3.2.1)
       puppet (>= 5)
       rake
@@ -501,6 +504,7 @@ GEM
       uber (< 0.2.0)
     retriable (3.1.2)
     rexml (3.2.5)
+    rgen (0.9.1)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
       rspec-expectations (~> 3.12.0)
@@ -717,6 +721,7 @@ GEM
       rubyzip (~> 2.0)
       winrm (~> 2.0)
     wisper (2.0.1)
+    yard (0.9.34)
 
 PLATFORMS
   arm64-darwin-21
@@ -733,6 +738,7 @@ DEPENDENCIES
   librarian-puppet
   puppet (= 7.8.0)
   puppet-lint (>= 2.4.2)
+  puppet-strings (~> 4.1)
   puppetlabs_spec_helper
   r10k
   rake

@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  slack: circleci/slack@3.4.2
-  vault: jmingtan/hashicorp-vault@0.2.1
+  # slack: circleci/slack@3.4.2
+  vault: jmingtan/hashicorp-vault@0.2.2
   tfutils: ukslee/tfutils@0.0.5
 
 executors:
@@ -11,7 +11,7 @@ executors:
       - image: cimg/base:stable
   python:
     docker:
-      - image: cimg/python:3.11.2
+      - image: cimg/python:3.11.9
   docker-base:
     docker:
       - image: cimg/base:2022.09
@@ -24,17 +24,20 @@ executors:
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
   ubuntu-2004:
     machine:
-      image: ubuntu-2004:2022.07.1
+      image: default
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
   macos-1014: &1014
     macos:
-      xcode: 12.5.1  # 8/15/23: os x 11.4.0, no older available
+      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
+    resource_class: macos.m1.medium.gen1
   macos-1015: &1015
     macos:
-      xcode: 12.5.1  # 8/15/23: os x 11.4.0, no older available
+      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
+    resource_class: macos.m1.medium.gen1
   macos-1100: &1100
     macos:
-      xcode: 12.5.1  # 8/15/23: os x 11.4.0
+      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
+    resource_class: macos.m1.medium.gen1
 
 commands:
   early_return_for_forked_pull_requests:
@@ -75,13 +78,16 @@ commands:
             fi
             echo OSX version is "${OS_VER}"
             # Install puppet agent
-            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
+            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/arm64/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
             hdiutil mount "puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
             sudo -E installer -pkg "/Volumes/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}/puppet-agent-${PUPPET_VER}-1-installer.pkg" -target /
             # Install bolt
-            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
-            hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
-            sudo -E installer -pkg "/Volumes/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}/puppet-bolt-${BOLT_VER}-1-installer.pkg" -target /
+            # not working on arm64 (no build for arm64 yet)
+            # curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/arm64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            # hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            curl -s -O https://downloads.puppet.com/mac/puppet-tools/12/x86_64/puppet-bolt-3.29.0-1.osx12.dmg
+            hdiutil mount puppet-bolt-3.29.0-1.osx12.dmg
+            sudo -E installer -pkg "/Volumes/puppet-bolt-3.29.0-1.osx12/puppet-bolt-3.29.0-1-installer.pkg" -target /
             # Install gems needed for hiera vault
             sudo /opt/puppetlabs/puppet/bin/gem install vault debouncer
   apt_cache_restore:
@@ -129,6 +135,7 @@ commands:
         type: string
     steps:
       - vault/install:
+          arch: arm64
           verify: false
       - run: vault version
       - run:
@@ -211,11 +218,6 @@ jobs:
       - checkout
       - setup_vault:
           role: << parameters.role >>
-      - when:
-          condition:
-            equal: [ *1014, << parameters.os >> ]
-          steps:
-            - run: echo "ruby-2.6.4" > ~/.ruby-version
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
@@ -280,7 +282,7 @@ workflows:
               os: [macos-1014]
               suite: ["mac-v3-signing"]
               role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
@@ -290,7 +292,7 @@ workflows:
               os: [macos-1015]
               suite: ["default"]
               role: ["gecko_t_osx_1015_r8"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
@@ -300,14 +302,14 @@ workflows:
               os: [macos-1100]
               suite: ["default"]
               role: ["gecko_t_osx_1100_m1"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
       - linux_integration_tests:
           matrix:
             parameters:
-              kitchen_target: ["bitbar-ubuntu-2204", "linux-ubuntu-1804"]
+              kitchen_target: ["bitbar-ubuntu-2204", "linux-perf-ubuntu-1804", "linux-netperf-ubuntu-1804"]
           requires:
             - pre_commit
             - r10k_install

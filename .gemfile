@@ -19,3 +19,5 @@ gem 'r10k'
 gem 'debouncer'
 gem 'vault'
 gem 'rspec_junit_formatter'
+
+gem "puppet-strings", "~> 4.1", :group => :dev
