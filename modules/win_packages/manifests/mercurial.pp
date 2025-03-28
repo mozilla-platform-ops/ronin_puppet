@@ -14,12 +14,21 @@ class win_packages::mercurial {
     }
   }
 
+  case $needed_hg_ver {
+    '6.2.1': {
+      $install_opts = ['/quiet']
+    }
+    default: {
+      $install_opts = [
+        '/quiet',
+        { 'INSTALLDIR' => 'C:\\Program Files\\Mercurial' },
+        { 'ADDLOCAL' => 'MainProgram' },
+      ]
+    }
+  }
+
   win_packages::win_msi_pkg { "Mercurial ${needed_hg_ver}" :
     pkg             => "mercurial-${needed_hg_ver}-x64.msi",
-    install_options => [
-      { 'INSTALLDIR' => 'C:\\Program Files\\Mercurial' },
-      { 'ADDLOCAL' => 'MainProgram' },
-      '/quiet',
-    ],
+    install_options => $install_opts,
   }
 }
