@@ -24,6 +24,7 @@ repos:
     - --no-documentation-check
     - --no-slash_comments
     - --no-unquoted_resource_title
+    - --no-140chars-check
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 3.0.0
   hooks:
