@@ -3,36 +3,34 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::virtual_drivers {
+  case $facts['os']['name'] {
+    'Windows': {
+      $flags    = '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
+      $vac_dir  = lookup('windows.dir.vac')
+      $version  = lookup('win-worker.vac.version')
+      $work_dir = "${vac_dir}\\vac${version}"
 
-    case $facts['os']['name'] {
-        'Windows': {
-
-            $flags    = '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
-            $vac_dir  = lookup('windows.dir.vac')
-            $version  = lookup('win-worker.vac.version')
-            $work_dir = "${vac_dir}\\vac${version}"
-
-            case $facts['custom_win_location'] {
-                'datacenter': {
-                    $srcloc       = lookup('windows.s3.ext_pkg_src')
-                }
-                default: {
-                    $srcloc = lookup('windows.ext_pkg_src')
-                }
-            }
-
-            class { 'win_packages::vac':
-                flags    => $flags,
-                srcloc   => $srcloc,
-                vac_dir  => $vac_dir,
-                version  => $version,
-                work_dir => $work_dir
-            }
-            # Bug List
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1656286
+      case $facts['custom_win_location'] {
+        'datacenter': {
+          $srcloc       = lookup('windows.s3.ext_pkg_src')
         }
         default: {
-            fail("${$facts['os']['name']} not supported")
+          $srcloc = lookup('windows.ext_pkg_src')
         }
+      }
+
+      class { 'win_packages::vac':
+        flags    => $flags,
+        srcloc   => $srcloc,
+        vac_dir  => $vac_dir,
+        version  => $version,
+        work_dir => $work_dir,
+      }
+      # Bug List
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1656286
     }
+    default: {
+      fail("${$facts['os']['name']} not supported")
+    }
+  }
 }
