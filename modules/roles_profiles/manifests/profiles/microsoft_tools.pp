@@ -33,7 +33,9 @@ class roles_profiles::profiles::microsoft_tools {
         'tester':{
           # Hardware testers don't need the windows sdk so skip installing them completely
           if $facts['custom_win_location'] == 'azure' {
-            include win_packages::win_10_sdk
+            if $facts['custom_win_os_arch'] != 'aarch64' {
+              include win_packages::win_10_sdk
+            }
           }
         }
         default: {
