@@ -1,0 +1,98 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+class roles_profiles::profiles::windows-generic-worker-standalone {
+
+    case $facts['os']['name'] {
+        'Windows': {
+
+            $nssm_dir              = lookup('windows.dir.nssm')
+            $nssm_version          = lookup('win-worker.nssm.version')
+            $arch = 'win64'
+            $nssm_exe              =  "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
+
+            $ext_pkg_src_loc = lookup('windows.taskcluster.relops_s3')
+
+            $generic_worker_dir    = lookup('windows.dir.generic_worker')
+            $gw_name               = lookup('win-worker.generic_worker.name')
+            $desired_gw_version    = lookup('win-worker.generic_worker.version')
+            $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
+
+            $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
+            $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
+
+            $livelog_name          = lookup('win-worker.taskcluster.livelog.name')
+            $livelog_version       = lookup('win-worker.taskcluster.livelog.version')
+
+            $config_file            = "${facts['custom_win_systemdrive']}\\generic-worker\\generic-worker.config"
+
+            case $facts['custom_win_os_version'] {
+                'win_10_2009': {
+                    $init = 'task-user-init-win10-64-2009.cmd'
+                }
+                'win_11_2009': {
+                    $init = 'task-user-init-win11.cmd'
+                }
+                default: {
+                    $init = undef
+                }
+            }
+
+            $access_token          = lookup('taskcluster_access_token')
+            $cache_dir             = "${facts['custom_win_systemdrive']}\\\\cache"
+            $client_id             = lookup('win-worker.generic_worker.client_id')
+            $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
+            $ed25519signingkey     = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key"
+            $idle_timeout          = lookup('win-worker.generic_worker.idle_timeout')
+            $livelog_exe           = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe"
+            $location              = $facts['custom_win_location']
+            $provisioner           = lookup('win-worker.taskcluster.worker_runner.provisionerId')
+            $root_url              = lookup('windows.taskcluster.root_url')
+            $task_dir              = "${facts['custom_win_systemdrive']}\\\\"
+            $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
+            $taskcluster_proxy_exe = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe"
+            $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
+            $worker_id             = $facts['networking']['hostname']
+            $worker_group          = lookup('win-worker.taskcluster.worker_group')
+            $worker_pool_id        = $facts['custom_win_worker_pool_id']
+            $wstaudience           = lookup('windows.taskcluster.wstaudience')
+            $wstserverurl          = lookup('windows.taskcluster.wstserverurl')
+
+            class { 'win_packages::custom_nssm':
+                version  => $nssm_version,
+                nssm_exe => $nssm_exe,
+                nssm_dir => $nssm_dir,
+            }
+
+            class { 'win_generic_worker::generic_worker':
+                gw_exe_path            => $gw_exe_path,
+                nssm_exe               => $nssm_exe,
+                access_token           => $access_token,
+                cache_dir              => $cache_dir,
+                client_id              => $client_id,
+                config_file            => $config_file,
+                downloads_dir          => $downloads_dir,
+                ed25519signingkey      => $ed25519signingkey,
+                idle_timeout           => $idle_timeout,
+                livelog_exe            => $livelog_exe,
+                location               => $location,
+                provisioner            => $provisioner,
+                root_url               => $root_url,
+                task_dir               => $task_dir,
+                task_user_init_cmd     => $task_user_init_cmd,
+                taskcluster_proxy_exe  => $taskcluster_proxy_exe,
+                taskcluster_root_url   => $taskcluster_root_url,
+                worker_id              => $worker_id,
+                worker_group           => $worker_group,
+                worker_pool_id         => $worker_pool_id,
+                wstaudience            => $wstaudience,
+                wstserverurl           => $wstserverurl,
+            }
+
+        }
+        default: {
+            fail("${$facts['os']['name']} not supported")
+        }
+    }
+}
