@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows-generic-worker-standalone {
+class roles_profiles::profiles::windows_generic_worker_standalone {
 
     case $facts['os']['name'] {
         'Windows': {
@@ -66,28 +66,28 @@ class roles_profiles::profiles::windows-generic-worker-standalone {
             }
 
             class { 'win_generic_worker::generic_worker':
-                gw_exe_path            => $gw_exe_path,
-                nssm_exe               => $nssm_exe,
-                access_token           => $access_token,
-                cache_dir              => $cache_dir,
-                client_id              => $client_id,
-                config_file            => $config_file,
-                downloads_dir          => $downloads_dir,
-                ed25519signingkey      => $ed25519signingkey,
-                idle_timeout           => $idle_timeout,
-                livelog_exe            => $livelog_exe,
-                location               => $location,
-                provisioner            => $provisioner,
-                root_url               => $root_url,
-                task_dir               => $task_dir,
-                task_user_init_cmd     => $task_user_init_cmd,
-                taskcluster_proxy_exe  => $taskcluster_proxy_exe,
-                taskcluster_root_url   => $taskcluster_root_url,
-                worker_id              => $worker_id,
-                worker_group           => $worker_group,
-                worker_pool_id         => $worker_pool_id,
-                wstaudience            => $wstaudience,
-                wstserverurl           => $wstserverurl,
+                gw_exe_path           => $gw_exe_path,
+                nssm_exe              => $nssm_exe,
+                access_token          => $access_token,
+                cache_dir             => $cache_dir,
+                client_id             => $client_id,
+                config_file           => $config_file,
+                downloads_dir         => $downloads_dir,
+                ed25519signingkey     => $ed25519signingkey,
+                idle_timeout          => $idle_timeout,
+                livelog_exe           => $livelog_exe,
+                location              => $location,
+                provisioner           => $provisioner,
+                root_url              => $root_url,
+                task_dir              => $task_dir,
+                task_user_init_cmd    => $task_user_init_cmd,
+                taskcluster_proxy_exe => $taskcluster_proxy_exe,
+                taskcluster_root_url  => $taskcluster_root_url,
+                worker_id             => $worker_id,
+                worker_group          => $worker_group,
+                worker_pool_id        => $worker_pool_id,
+                wstaudience           => $wstaudience,
+                wstserverurl          => $wstserverurl,
             }
 
         }
