@@ -39,26 +39,6 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 }
             }
 
-            $access_token          = lookup('taskcluster_access_token')
-            $cache_dir             = "${facts['custom_win_systemdrive']}\\\\cache"
-            $client_id             = lookup('win-worker.generic_worker.client_id')
-            $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
-            $ed25519signingkey     = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key"
-            $idle_timeout          = lookup('win-worker.generic_worker.idle_timeout')
-            $livelog_exe           = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe"
-            $location              = $facts['custom_win_location']
-            $provisioner           = lookup('win-worker.taskcluster.worker_runner.provisionerId')
-            $root_url              = lookup('windows.taskcluster.root_url')
-            $task_dir              = "${facts['custom_win_systemdrive']}\\\\"
-            $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
-            $taskcluster_proxy_exe = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe"
-            $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
-            $worker_id             = $facts['networking']['hostname']
-            $worker_group          = lookup('win-worker.taskcluster.worker_group')
-            $worker_pool_id        = $facts['custom_win_worker_pool_id']
-            $wstaudience           = lookup('windows.taskcluster.wstaudience')
-            $wstserverurl          = lookup('windows.taskcluster.wstserverurl')
-
             class { 'win_packages::custom_nssm':
                 version  => $nssm_version,
                 nssm_exe => $nssm_exe,
@@ -66,30 +46,26 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             }
 
             class { 'win_generic_worker::generic_worker':
-                gw_exe_path           => $gw_exe_path,
-                nssm_exe              => $nssm_exe,
-                access_token          => $access_token,
-                cache_dir             => $cache_dir,
-                client_id             => $client_id,
-                config_file           => $config_file,
-                downloads_dir         => $downloads_dir,
-                ed25519signingkey     => $ed25519signingkey,
-                idle_timeout          => $idle_timeout,
-                livelog_exe           => $livelog_exe,
-                location              => $location,
-                provisioner           => $provisioner,
-                root_url              => $root_url,
-                task_dir              => $task_dir,
-                task_user_init_cmd    => $task_user_init_cmd,
-                taskcluster_proxy_exe => $taskcluster_proxy_exe,
-                taskcluster_root_url  => $taskcluster_root_url,
-                worker_id             => $worker_id,
-                worker_group          => $worker_group,
-                worker_pool_id        => $worker_pool_id,
-                wstaudience           => $wstaudience,
-                wstserverurl          => $wstserverurl,
+                cache_dir                => "${facts['custom_win_systemdrive']}\\\\cache",
+                client_id                => lookup('win-worker.generic_worker.client_id'),
+                current_gw_version       => undef,
+                desired_gw_version       => undef,
+                downloads_dir            => "${facts['custom_win_systemdrive']}\\\\downloads",
+                ed25519signingkey        => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key",
+                idle_timeout             => lookup('win-worker.generic_worker.idle_timeout'),
+                init_file                => undef,
+                generic_worker_dir       => undef,
+                gw_exe_path              => undef,
+                gw_exe_source            => undef,
+                livelog_exe              => lookup('win-worker.generic_worker.idle_timeout'),
+                task_dir                 => "${facts['custom_win_systemdrive']}\\\\",
+                taskcluster_access_token => lookup('taskcluster_access_token'),
+                taskcluster_proxy_exe    => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe",
+                taskcluster_root         => lookup('windows.taskcluster.root_url'),
+                task_user_init_cmd       => undef,
+                wstaudience              => lookup('windows.taskcluster.wstaudience'),
+                wstserverurl             => lookup('windows.taskcluster.wstserverurl'),
             }
-
         }
         default: {
             fail("${$facts['os']['name']} not supported")
