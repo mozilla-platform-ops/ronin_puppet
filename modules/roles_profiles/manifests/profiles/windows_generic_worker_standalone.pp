@@ -17,7 +17,9 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
-            $desired_gw_version     = lookup('win-worker.generic_worker.version')
+            $desired_gw_version    = lookup('win-worker.generic_worker.version')
+            $worker_pool_id        = $facts['custom_win_worker_pool_id']
+
 
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
             $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
@@ -63,7 +65,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 taskcluster_proxy_exe    => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe",
                 taskcluster_root         => lookup('windows.taskcluster.root_url'),
                 #task_user_init_cmd      => $init,
-                worker_type              => $facts['custom_win_worker_pool_id'],
+                worker_type              => $worker_pool_id,
                 wstaudience              => lookup('windows.taskcluster.wstaudience'),
                 wstserverurl             => lookup('windows.taskcluster.wstserverurl'),
             }
