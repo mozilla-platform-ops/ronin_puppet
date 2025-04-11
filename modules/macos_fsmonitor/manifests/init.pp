@@ -1,7 +1,6 @@
 class macos_fsmonitor (
   Boolean $enabled = true,
 ) {
-
   # Install the watchman package from S3
   packages::macos_package_from_s3 { 'watchman.pkg':
     private             => false,
