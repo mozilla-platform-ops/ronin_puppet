@@ -16,7 +16,6 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')
-            $desired_gw_version    = lookup('win-worker.generic_worker.version')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
 
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
@@ -48,21 +47,21 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             class { 'win_generic_worker::generic_worker':
                 cache_dir                => "${facts['custom_win_systemdrive']}\\\\cache",
                 client_id                => lookup('win-worker.generic_worker.client_id'),
-                current_gw_version       => undef,
-                desired_gw_version       => undef,
+                current_gw_version       => $facts['custom_win_genericworker_version'],
+                desired_gw_version       => lookup('win-worker.generic_worker.version'),
                 downloads_dir            => "${facts['custom_win_systemdrive']}\\\\downloads",
                 ed25519signingkey        => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key",
                 idle_timeout             => lookup('win-worker.generic_worker.idle_timeout'),
-                init_file                => undef,
-                generic_worker_dir       => undef,
-                gw_exe_path              => undef,
-                gw_exe_source            => undef,
-                livelog_exe              => lookup('win-worker.generic_worker.idle_timeout'),
+                init_file                => $init,
+                generic_worker_dir       => $generic_worker_dir,
+                gw_exe_path              => "${generic_worker_dir}\\generic-worker.exe",
+                gw_exe_source            => "${ext_pkg_src_loc}\\${desired_gw_version}\\${gw_name}",
+                livelog_exe              => "${generic_worker_dir}\\livelog.exe",
                 task_dir                 => "${facts['custom_win_systemdrive']}\\\\",
                 taskcluster_access_token => lookup('taskcluster_access_token'),
                 taskcluster_proxy_exe    => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe",
                 taskcluster_root         => lookup('windows.taskcluster.root_url'),
-                task_user_init_cmd       => undef,
+                #task_user_init_cmd       => $init,
                 wstaudience              => lookup('windows.taskcluster.wstaudience'),
                 wstserverurl             => lookup('windows.taskcluster.wstserverurl'),
             }

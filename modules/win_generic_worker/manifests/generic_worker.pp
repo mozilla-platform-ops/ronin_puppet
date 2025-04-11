@@ -9,7 +9,7 @@ class  win_generic_worker::generic_worker (
   String $desired_gw_version,
   String $downloads_dir,
   String $ed25519signingkey,
-  String $idle_timeout,
+  Integer $idle_timeout,
   String $init_file,
   String $generic_worker_dir,
   String $gw_exe_path,
@@ -19,12 +19,14 @@ class  win_generic_worker::generic_worker (
   String $taskcluster_access_token,
   String $taskcluster_proxy_exe,
   String $taskcluster_root,
-  String $task_user_init_cmd,
+  #String $task_user_init_cmd,
   String $wstaudience,
   String $wstserverurl,
   String $worker_type
 ) {
 
+
+    require win_packages::custom_nssm
 
     file { $generic_worker_dir:
         ensure => directory,
@@ -40,4 +42,17 @@ class  win_generic_worker::generic_worker (
         content   => epp('win_generic_worker/hw-generic-worker.config.epp'),
         show_diff => false,
     }
+
+    if ($current_gw_version != $desired_gw_version) {
+            exec { 'purge_old_gw_exe':
+            command  => "remove-Item -path ${gw_exe_path}",
+            provider => powershell,
+        }
+    }
+    file { $gw_exe_path:
+        source => $gw_exe_source,
+    }
+
+
+
 }
