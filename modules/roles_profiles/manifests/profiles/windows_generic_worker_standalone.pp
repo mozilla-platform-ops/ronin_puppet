@@ -17,6 +17,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_name               = lookup('win-worker.generic_worker.name')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
+            $desired_gw_version     = lookup('win-worker.generic_worker.version')
 
             $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
             $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
@@ -48,7 +49,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 cache_dir                => "${facts['custom_win_systemdrive']}\\\\cache",
                 client_id                => lookup('win-worker.generic_worker.client_id'),
                 current_gw_version       => $facts['custom_win_genericworker_version'],
-                desired_gw_version       => lookup('win-worker.generic_worker.version'),
+                desired_gw_version       => $desired_gw_version,
                 downloads_dir            => "${facts['custom_win_systemdrive']}\\\\downloads",
                 ed25519signingkey        => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key",
                 idle_timeout             => lookup('win-worker.generic_worker.idle_timeout'),
