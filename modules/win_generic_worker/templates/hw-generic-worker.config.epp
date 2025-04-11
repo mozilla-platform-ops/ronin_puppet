@@ -12,7 +12,7 @@
   "publicIP": "<%= $facts[networking][ip] %>",
   "requiredDiskSpaceMegabytes": 10240,
   "rootURL": "<%= $win_generic_worker::generic_worker::taskcluster_root %>",
-  "runAfterUserCreation": "<%= $win_generic_worker::generic_worker::task_user_init_cmd %>",
+  "runAfterUserCreation": "<%= $win_generic_worker::generic_worker::init_file %>",
   "sentryProject": "generic-worker",
   "shutdownMachineOnIdle": false,
   "shutdownMachineOnInternalError": false,
