@@ -12,6 +12,7 @@ class  win_generic_worker::generic_worker (
   Integer $idle_timeout,
   String $init_file,
   String $generic_worker_dir,
+  String $gw_config_path,
   String $gw_exe_path,
   String $gw_exe_source,
   String $livelog_exe,
@@ -38,7 +39,7 @@ class  win_generic_worker::generic_worker (
         ensure => directory,
     }
 
-    file { $win_generic_worker::generic_worker_config:
+    file { $gw_config_path:
         content   => epp('win_generic_worker/hw-generic-worker.config.epp'),
         show_diff => false,
     }
