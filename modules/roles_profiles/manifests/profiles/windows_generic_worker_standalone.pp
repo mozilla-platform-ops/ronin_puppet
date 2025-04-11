@@ -62,7 +62,8 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 taskcluster_access_token => lookup('taskcluster_access_token'),
                 taskcluster_proxy_exe    => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe",
                 taskcluster_root         => lookup('windows.taskcluster.root_url'),
-                #task_user_init_cmd       => $init,
+                #task_user_init_cmd      => $init,
+                worker_type              => $facts['custom_win_worker_pool_id'],
                 wstaudience              => lookup('windows.taskcluster.wstaudience'),
                 wstserverurl             => lookup('windows.taskcluster.wstserverurl'),
             }
