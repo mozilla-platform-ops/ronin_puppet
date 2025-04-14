@@ -67,7 +67,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 gw_install_command       =>
                     "${gw_exe_path} install service --nssm ${nssm_command} --config ${gw_config_path}",
                 gw_status                => $facts['custom_win_genericworker_service'],
-                livelog_exe              => "${generic_worker_dir}\\livelog.exe",
+                livelog_exe              => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe",
                 livelog_exe_source       => "${ext_pkg_src_loc}/${livelog_version}/${livelog_name}",
                 task_dir                 => "${facts['custom_win_systemdrive']}\\\\",
                 taskcluster_access_token => lookup('taskcluster_access_token'),
