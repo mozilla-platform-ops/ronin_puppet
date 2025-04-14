@@ -6,7 +6,9 @@ class  win_generic_worker::generic_worker (
   String $cache_dir,
   String $client_id,
   String $current_gw_version,
+  String $current_proxy_version,
   String $desired_gw_version,
+  String $desired_proxy_version,
   String $downloads_dir,
   String $ed25519signingkey,
   Integer $idle_timeout,
@@ -16,9 +18,11 @@ class  win_generic_worker::generic_worker (
   String $gw_exe_path,
   String $gw_exe_source,
   String $livelog_exe,
+  String $livelog_exe_source,
   String $task_dir,
   String $taskcluster_access_token,
   String $taskcluster_proxy_exe,
+  String $taskcluster_proxy_source,
   String $taskcluster_root,
   #String $task_user_init_cmd,
   String $wstaudience,
@@ -43,10 +47,22 @@ class  win_generic_worker::generic_worker (
         content   => epp('win_generic_worker/hw-generic-worker.config.epp'),
         show_diff => false,
     }
-
+    file { $livelog_exe:
+        source  => $livelog_exe_source,
+    }
+    file { $taskcluster_proxy_exe:
+        source  => $taskcluster_proxy_source,
+    }
     if ($current_gw_version != $desired_gw_version) {
             exec { 'purge_old_gw_exe':
             command  => "remove-Item -path ${gw_exe_path}",
+            provider => powershell,
+        }
+    }
+    if ($current_proxy_version != $desired_proxy_version) {
+        exec { 'purge_old_proxy_exe':
+            command  => "Remove-Item -path ${taskcluster_proxy_exe}",
+            unless   => "Test-Path ${taskcluster_proxy_exe}",
             provider => powershell,
         }
     }
