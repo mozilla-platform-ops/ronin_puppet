@@ -65,7 +65,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 gw_exe_path              => $gw_exe_path,
                 gw_exe_source            => "${ext_pkg_src_loc}/${desired_gw_version}/${gw_name}",
                 gw_install_command       =>
-                    "${gw_exe_path} install service --nssm ${nssm_command} --config ",
+                    "${gw_exe_path} install service --nssm ${nssm_command} --config ${gw_config_path}",
                 gw_status                => $facts['custom_win_genericworker_service'],
                 livelog_exe              => "${generic_worker_dir}\\livelog.exe",
                 livelog_exe_source       => "${ext_pkg_src_loc}/${livelog_version}/${livelog_name}",
