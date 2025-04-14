@@ -22,7 +22,7 @@
   "wstAudience": "<%= $win_generic_worker::generic_worker::wstaudience %>",
   "wstServerURL": "<%= $win_generic_worker::generic_worker::wstserverurl %>",
   "workerGroup": "<%= $facts[custom_win_mozspace] %>",
-  "workerId": "<%= $facts[hostname] %>",
+  "workerId": "<%= $facts['networking']['hostname'] %>",
   "workerLocation": "datacenter",
   "workerType": "<%= $win_generic_worker::generic_worker::worker_type %>",
   "workerTypeMetadata": {
