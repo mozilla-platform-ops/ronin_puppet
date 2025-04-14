@@ -11,7 +11,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             $nssm_version = lookup('win-worker.nssm.version')
             $arch         = 'win64'
             $nssm_exe     = "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
-            $nssm_command = "${facts['custom_win_systemdrive']}\\nssm\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe"
+            $nssm_command = "${facts['custom_win_systemdrive']}\\nssm\\nssm-2.24\\win64\\nssm.exe"
 
             $ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
 
