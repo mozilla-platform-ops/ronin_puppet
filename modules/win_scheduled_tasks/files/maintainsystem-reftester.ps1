@@ -437,7 +437,8 @@ If ($bootstrap_stage -eq 'complete') {
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
 
-    StartWorkerRunner
+    #StartWorkerRunner
+    C:\generic-worker\generic-worker.exe  run --config C:\generic-worker\generic-worker.config
     start-sleep -s 30
     while ($true) {
 
