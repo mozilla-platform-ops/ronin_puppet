@@ -59,7 +59,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 generic_worker_dir       => $generic_worker_dir,
                 gw_config_path           => "${generic_worker_dir}\\generic-worker.config",
                 gw_exe_path              => "${generic_worker_dir}\\generic-worker.exe",
-                gw_exe_source            => "${ext_pkg_src_loc}\\${desired_gw_version}\\${gw_name}",
+                gw_exe_source            => "${ext_pkg_src_loc}/${desired_gw_version}/${gw_name}",
                 livelog_exe              => "${generic_worker_dir}\\livelog.exe",
                 task_dir                 => "${facts['custom_win_systemdrive']}\\\\",
                 taskcluster_access_token => lookup('taskcluster_access_token'),
