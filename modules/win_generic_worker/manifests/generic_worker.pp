@@ -17,6 +17,8 @@ class  win_generic_worker::generic_worker (
   String $gw_config_path,
   String $gw_exe_path,
   String $gw_exe_source,
+  String $gw_install_command,
+  String $gw_status,
   String $livelog_exe,
   String $livelog_exe_source,
   String $task_dir,
@@ -69,7 +71,17 @@ class  win_generic_worker::generic_worker (
     file { $gw_exe_path:
         source => $gw_exe_source,
     }
-
-
+    if $gw_status != 'present' {
+        exec { 'install_generic_worker_service':
+            command => $gw_install_command,
+            require => File[$gw_exe_path],
+        }
+    }
+    exec { 'generate_ed25519_keypair':
+        command =>
+            "${gw_exe_path} new-ed25519-keypair --file ${ed25519signingkey}",
+        require => File[$gw_exe_path],
+        creates => $ed25519signingkey,
+    }
 
 }
