@@ -4,6 +4,6 @@
 
 class roles_profiles::profiles::macos_fsmonitor {
   class { 'macos_fsmonitor':
-    enabled    => true,
+    enabled => true,
   }
 }
