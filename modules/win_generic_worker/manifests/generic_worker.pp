@@ -13,6 +13,7 @@ class  win_generic_worker::generic_worker (
   String $ed25519signingkey,
   Integer $idle_timeout,
   String $init_file,
+  String $init_path,
   String $generic_worker_dir,
   String $gw_config_path,
   String $gw_exe_path,
@@ -82,6 +83,9 @@ class  win_generic_worker::generic_worker (
             "${gw_exe_path} new-ed25519-keypair --file ${ed25519signingkey}",
         require => File[$gw_exe_path],
         creates => $ed25519signingkey,
+    }
+    file { $init_path:
+        content   => file("win_generic_worker/${init_file}"),
     }
 
 }
