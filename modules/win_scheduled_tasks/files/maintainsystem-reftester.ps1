@@ -282,6 +282,38 @@ function StartWorkerRunner {
     }
 }
 
+function StartGenericWorker {
+    param (
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        ## Checking for issues with the user profile.
+        $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
+        Select-Object -First 1 |
+        ForEach-Object { $_.TimeCreated }
+        $eventIDs = @(1511, 1515)
+
+        $events = Get-WinEvent -LogName "Application" |
+        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
+        Sort-Object TimeCreated -Descending | Select-Object -First 1
+
+        if ($events) {
+            Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Restart-Computer -Force
+            exit
+        }
+         C:\generic-worker\generic-worker.exe  run --config C:\generic-worker\generic-worker.config
+         start-sleep -s 60
+         Restart-Computer -Force
+         pause
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 function Get-LoggedInUser {
     [CmdletBinding()]
     param (
@@ -438,7 +470,7 @@ If ($bootstrap_stage -eq 'complete') {
     Get-LatestGoogleChrome
 
     #StartWorkerRunner
-    C:\generic-worker\generic-worker.exe  run --config C:\generic-worker\generic-worker.config
+    StartGenericWorker
     start-sleep -s 30
     while ($true) {
 
