@@ -39,6 +39,12 @@ class macos_fsmonitor (
     path    => ['/usr/bin', '/usr/local/bin', '/bin'],
   }
 
+  exec { 'install_pywatchman':
+    command => '/usr/local/bin/pip3.11 install pywatchman==2.0.0',
+    unless  => '/usr/local/bin/python3 -c "import pywatchman"',
+    path    => ['/usr/local/bin', '/usr/bin'],
+  }
+
   # Step 5: Append fsmonitor config to existing .hgrc if enabled
   if $enabled {
     file_line { 'add_fsmonitor_extension':
