@@ -218,6 +218,8 @@ groups:
 
   - name: mozillavpn-b-1-osx
     targets:
+    # New Mac15 VPN worker
+      - macmini-r8-102.test.releng.mdc1.mozilla.com
       - macmini-r8-179.test.releng.mdc1.mozilla.com
       - macmini-r8-182.test.releng.mdc1.mozilla.com
       - macmini-r8-183.test.releng.mdc1.mozilla.com
@@ -248,10 +250,11 @@ groups:
   - name: gecko-t-osx-1400-r8-staging
     targets:
       - macmini-r8-109.test.releng.mdc1.mozilla.com
-      - macmini-r8-114.test.releng.mdc1.mozilla.com
       - macmini-r8-154.test.releng.mdc1.mozilla.com
       - macmini-r8-156.test.releng.mdc1.mozilla.com
       - macmini-r8-246.test.releng.mdc1.mozilla.com
+      - macmini-r8-361.test.releng.mdc1.mozilla.com
+      - macmini-r8-375.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_r8_staging
 
