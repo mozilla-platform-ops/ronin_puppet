@@ -10,8 +10,8 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             $nssm_dir     = lookup('windows.dir.nssm')
             $nssm_version = lookup('win-worker.nssm.version')
             $arch         = 'win64'
-            $nssm_exe     = "${nssm_dir}\nssm-${nssm_version}\${arch}\nssm.exe"
-            $nssm_command = "${facts['custom_win_systemdrive']}\nssm\nssm-2.24\win64\nssm.exe"
+            $nssm_exe     = "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
+            $nssm_command = "${facts['custom_win_systemdrive']}\\nssm\\nssm-2.24\\win64\\nssm.exe"
 
             $ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
 
@@ -29,7 +29,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             $livelog_name          = lookup('win-worker.taskcluster.livelog.name')
             $livelog_version       = lookup('win-worker.taskcluster.livelog.version')
 
-            $config_file            = "${facts['custom_win_systemdrive']}\generic-worker\generic-worker.config"
+            $config_file            = "${facts['custom_win_systemdrive']}\\generic-worker\\generic-worker.config"
 
             case $facts['custom_win_os_version'] {
                 'win_10_2009': {
