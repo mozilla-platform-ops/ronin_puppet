@@ -59,7 +59,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 downloads_dir            => "${facts['custom_win_systemdrive']}\\\\downloads",
                 ed25519signingkey        => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key",
                 idle_timeout             => lookup('win-worker.generic_worker.idle_timeout'),
-                init_file                => $init,
+                init_file                => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\${init}",
                 generic_worker_dir       => $generic_worker_dir,
                 gw_config_path           => $gw_config_path,
                 gw_exe_path              => $gw_exe_path,
