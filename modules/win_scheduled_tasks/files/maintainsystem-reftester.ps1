@@ -455,6 +455,7 @@ If ($bootstrap_stage -eq 'complete') {
 
     if ($tasks) {
         $tasks | ForEach-Object {
+            Stop-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath
             Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false
             Write-Host "Deleted task '$($_.TaskName)' at path '$($_.TaskPath)'."
         }
