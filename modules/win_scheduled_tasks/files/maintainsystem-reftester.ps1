@@ -450,6 +450,15 @@ if ($refresh_rate -ne "60") {
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
+
+    $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -eq bootstrap }
+
+    if ($tasks) {
+        $tasks | ForEach-Object {
+            Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false
+            Write-Host "Deleted task '$($_.TaskName)' at path '$($_.TaskPath)'."
+        }
+    }
     Run-MaintainSystem
     ## We're getting user profile corruption errors, so let's check that the user is logged in using quser.exe
     for ($i = 0; $i -lt 3; $i++) {
@@ -471,11 +480,11 @@ If ($bootstrap_stage -eq 'complete') {
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
 
-    #StartWorkerRunner
-    StartGenericWorker
+    $processname = "StartMenuExperienceHost"
     if ($null -ne $process) {
         Stop-Process -Name $processname -force
     }
+    StartGenericWorker
 }
 else {
     Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
