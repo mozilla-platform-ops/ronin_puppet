@@ -59,6 +59,15 @@ class roles_profiles::profiles::mac_v3_signing {
         default => fail("Unsupported macOS version: ${mac_version}"),
       }
 
+      # This is also set in common.yaml - things might break if this diverges.
+      $builds_path = "${scriptworker_parent}/builds"
+      file { $builds_path:
+        ensure => 'directory',
+        owner  => 'root',
+        group  => 'wheel',
+        mode   => '0775',
+      }
+
       $scriptworker_users.each |String $user, Hash $user_data| {
         signing_worker { "signing_worker_${user}":
           role                => $role,
