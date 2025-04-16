@@ -54,7 +54,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 desired_proxy_version    => $taskcluster_version,
                 downloads_dir            => "${facts['custom_win_systemdrive']}\\\\downloads",
                 ed25519signingkey        => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key",
-                idle_timeout             => lookup('win-worker.generic_worker.idle_timeout'),
+                idle_timeout             => lookup('windows.taskcluster.hardware_idle_timeout'),
                 init_file                => $init,
                 init_path                => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\${init}",
                 generic_worker_dir       => $generic_worker_dir,
