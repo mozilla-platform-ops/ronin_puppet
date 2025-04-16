@@ -301,10 +301,12 @@ function StartGenericWorker {
 
         if ($events) {
             Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            start-sleep -s 5
             Restart-Computer -Force
             exit
         }
          C:\generic-worker\generic-worker.exe  run --config C:\generic-worker\generic-worker.config
+         Write-Log -message  ('{0} :: GW Exited. REBOOTING' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
          start-sleep -s 60
          Restart-Computer -Force
          pause

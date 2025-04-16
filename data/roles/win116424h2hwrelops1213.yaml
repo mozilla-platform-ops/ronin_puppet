@@ -4,29 +4,7 @@ win-worker:
   function: "tester"
   # generic-worker
   generic_worker:
-    # File versions
-    name: "generic-worker-multiuser-windows-amd64"
-    version: '81.0.3'
     client_id: "project/releng/generic-worker/win11-64-24h2-hw-relops1213"
-    idle_timeout: 0
-
-  taskcluster:
-    worker_runner:
-        provisionerId: 'releng-hardware'
-        name: 'start-worker-windows-amd64'
-        version: '81.0.3'
-        provider: "standalone"
-        implementation: "generic-worker"
-    proxy:
-        name: "taskcluster-proxy-windows-amd64"
-        version: '81.0.3'
-    # Refrencing the file directly with version in it
-    # Since there is no programtic way to check the version of the livelog exe
-    livelog:
-        name: "livelog-windows-amd64"
-        version: '81.0.3'
-    client_id: "azure/gecko-t/win11-64-24h2-hw-alpha"
-    worker_group: "mdc1"
 
   # Mozilla-build
   mozilla_build:
@@ -46,8 +24,6 @@ win-worker:
     version: '2.37.3'
   hg:
     version: '6.2.1'
-  nssm:
-    version: '2.24'
   vac:
     version: '464'
   # Logging
