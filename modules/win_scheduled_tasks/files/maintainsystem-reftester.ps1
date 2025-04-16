@@ -305,10 +305,10 @@ function StartGenericWorker {
             Restart-Computer -Force
             exit
         }
-         C:\generic-worker\generic-worker.exe  run --config C:\generic-worker\generic-worker.config
-         Write-Log -message  ('{0} :: GW Exited. REBOOTING' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-         start-sleep -s 60
-         Restart-Computer -Force
+        Start-Process -FilePath "C:\generic-worker\generic-worker.exe" -ArgumentList "run --config C:\generic-worker\generic-worker.config" -Wait
+        Write-Log -message  ('{0} :: GW Exited. REBOOTING' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        start-sleep -s 60
+        Restart-Computer -Force
          pause
     }
     end {
