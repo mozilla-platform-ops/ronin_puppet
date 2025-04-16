@@ -87,5 +87,7 @@ class  win_generic_worker::generic_worker (
     file { $init_path:
         content   => file("win_generic_worker/${init_file}"),
     }
-
+    file { "${generic_worker_dir}\\task-user-init.ps1":
+        content   => file('win_generic_worker/task-user-init.ps1'),
+    }
 }
