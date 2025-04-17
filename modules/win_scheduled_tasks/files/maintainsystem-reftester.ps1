@@ -310,18 +310,8 @@ function StartGenericWorker {
 		# Set working directory
 		Set-Location -Path $GW_dir
 
-		# Build and write the batch file
-		$batFilePath = Join-Path $GW_dir "start-gw.bat"
-		$batContent = @(
-			"@echo off"
-			"cd /d `"$GW_dir`""
-			"\"C:\generic-worker\generic-worker.exe\" run --config \"C:\generic-worker\generic-worker.config\""
-			"exit /b %ERRORLEVEL%"
-		)
-		Set-Content -Path $batFilePath -Value $batContent -Encoding ASCII
+        Start-Process -FilePath generic-worker.exe -ArgumentList "run --config generic-worker.config -Wait
 
-		# Run the batch file and capture the exit code
-		& cmd.exe /c `"$batFilePath`"
 		$exitCode = $LASTEXITCODE
 
 		Write-Log -message ('{0} :: GW exited with code {1}. REBOOTING' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
