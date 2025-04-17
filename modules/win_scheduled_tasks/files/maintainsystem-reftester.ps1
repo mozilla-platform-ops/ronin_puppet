@@ -461,7 +461,7 @@ if ($refresh_rate -ne "60") {
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
 
-    $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -eq bootstrap }
+    $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -eq "bootstrap" }
 
     if ($tasks) {
         $tasks | ForEach-Object {
