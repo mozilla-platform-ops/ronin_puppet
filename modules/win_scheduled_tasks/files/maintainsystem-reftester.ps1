@@ -161,7 +161,7 @@ function Puppet-Run {
         [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
         [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
         [string] $run_to_success = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").runtosuccess,
-        [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
+        [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\nodes.pp",
         [string] $logdir = "$env:systemdrive\logs",
         [string] $fail_dir = "$env:systemdrive\fail_logs",
         [string] $log_file = "$datetime-puppetrun.log",
@@ -310,7 +310,7 @@ function StartGenericWorker {
 		# Set working directory
 		Set-Location -Path $GW_dir
 
-        Start-Process -FilePath generic-worker.exe -ArgumentList "run --config generic-worker.config -Wait
+        Start-Process -FilePath generic-worker.exe -ArgumentList "run --config generic-worker.config" -Wait
 
 		$exitCode = $LASTEXITCODE
 
