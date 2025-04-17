@@ -76,7 +76,7 @@ class  win_generic_worker::generic_worker (
     if $gw_status != 'present' {
         exec { 'install_generic_worker_service':
             #command => $gw_install_command,
-            command => '%SystemRoot%\System32\cmd.exe /c exit 0',
+            command => "C:\\System32\\cmd.exe /c exit 0",
             require => File[$gw_exe_path],
         }
     }
