@@ -14,6 +14,7 @@ class  win_generic_worker::generic_worker (
   Integer $idle_timeout,
   String $init_file,
   String $init_path,
+  String $init_ps,
   String $generic_worker_dir,
   String $gw_config_path,
   String $gw_exe_path,
@@ -87,7 +88,7 @@ class  win_generic_worker::generic_worker (
     file { $init_path:
         content   => file("win_generic_worker/${init_file}"),
     }
-    file { "${generic_worker_dir}\\task-user-init.ps1":
+    file { $init_ps:
         content   => file('win_generic_worker/task-user-init.ps1'),
     }
 }

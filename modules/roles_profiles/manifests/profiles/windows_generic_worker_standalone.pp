@@ -57,6 +57,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 idle_timeout             => lookup('windows.taskcluster.hardware_idle_timeout'),
                 init_file                => $init,
                 init_path                => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\${init}",
+                init_ps                  => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\task-user-init.ps1",
                 generic_worker_dir       => $generic_worker_dir,
                 gw_config_path           => $gw_config_path,
                 gw_exe_path              => $gw_exe_path,
