@@ -73,13 +73,6 @@ class  win_generic_worker::generic_worker (
     file { $gw_exe_path:
         source => $gw_exe_source,
     }
-    if $gw_status != 'present' {
-        exec { 'install_generic_worker_service':
-            #command => $gw_install_command,
-            command => "C:\\System32\\cmd.exe /c exit 0",
-            require => File[$gw_exe_path],
-        }
-    }
     exec { 'generate_ed25519_keypair':
         command =>
             "${gw_exe_path} new-ed25519-keypair --file ${ed25519signingkey}",
