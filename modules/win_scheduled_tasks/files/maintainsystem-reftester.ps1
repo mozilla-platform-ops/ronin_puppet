@@ -284,6 +284,7 @@ function StartWorkerRunner {
 
 function StartGenericWorker {
     param (
+        [string] $GW_dir = "$env:systemdrive\generic-worker",
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -305,7 +306,8 @@ function StartGenericWorker {
             Restart-Computer -Force
             exit
         }
-        #Start-Process -FilePath "C:\generic-worker\generic-worker.exe" -ArgumentList "run --config C:\generic-worker\generic-worker.config" -Wait
+        Set-Location -Path $GW_dir
+        #Start-Process -FilePath generic-worker.exe -ArgumentList "run --config generic-worker.config -Wait
         $exitCode = & "C:\generic-worker\generic-worker.exe" run --config "C:\generic-worker\generic-worker.config"
         $LASTEXITCODE
         Write-Log -message  ('{0} :: GW Exited. REBOOTING' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
