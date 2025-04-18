@@ -312,7 +312,6 @@ function StartGenericWorker {
         Start-Process -FilePath "generic-worker.exe" `
             -ArgumentList "run --config generic-worker.config" `
             -RedirectStandardOutput "C:\generic-worker\generic-worker.log" `
-            -RedirectStandardError "C:\generic-worker\generic-worker.log" `
             -NoNewWindow `
             -Wait
         pause
