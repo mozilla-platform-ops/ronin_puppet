@@ -494,6 +494,14 @@ If ($bootstrap_stage -eq 'complete') {
     if ($null -ne $process) {
         Stop-Process -Name $processname -force
     }
+    # Wait until explorer.exe is running for the current user
+    while (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
+        Write-Log -message ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Start-Sleep -Seconds 5
+    }
+
+Write-Log -message ('{0} :: User profile is fully loaded.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+
     StartGenericWorker
 }
 else {
