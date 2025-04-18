@@ -309,9 +309,9 @@ function StartGenericWorker {
 
 		# Set working directory
 		Set-Location -Path $GW_dir
-        Start-Process -FilePath "generic-worker.exe" `
+        Start-Process -FilePath ".\generic-worker.exe" `
             -ArgumentList "run --config generic-worker.config" `
-            -RedirectStandardOutput "C:\generic-worker\generic-worker.log" `
+            -RedirectStandardOutput "generic-worker.log" `
             -NoNewWindow `
             -Wait
         pause
