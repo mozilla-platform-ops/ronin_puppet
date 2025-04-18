@@ -309,9 +309,12 @@ function StartGenericWorker {
 
 		# Set working directory
 		Set-Location -Path $GW_dir
-
-        $args = @("run", "--config", "generic-worker.config", "-RedirectStandardOutput", "C:\generic-worker\generic-worker.log", "-RedirectStandardError", "C:\generic-worker\generic-worker.log")
-        Write-Host Start-Process -FilePath generic-worker.exe -ArgumentList $args -Wait
+        Start-Process -FilePath "generic-worker.exe" `
+            -ArgumentList "run --config generic-worker.config" `
+            -RedirectStandardOutput "C:\generic-worker\generic-worker.log" `
+            -RedirectStandardError "C:\generic-worker\generic-worker.log" `
+            -NoNewWindow `
+            -Wait
         pause
 		$exitCode = $LASTEXITCODE
 
