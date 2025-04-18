@@ -310,8 +310,8 @@ function StartGenericWorker {
 		# Set working directory
 		Set-Location -Path $GW_dir
 
-        Start-Process -FilePath generic-worker.exe -ArgumentList "run --config generic-worker.config -RedirectStandardOutput "C:\generic-worker\generic-worker.log"  -RedirectStandardError "C:\generic-worker\generic-worker.log" `" -Wait
-
+        $args = @("run", "--config", "generic-worker.config", "-RedirectStandardOutput", "C:\generic-worker\generic-worker.log", "-RedirectStandardError", "C:\generic-worker\generic-worker.log")
+        Start-Process -FilePath generic-worker.exe -ArgumentList $args -Wait
 		$exitCode = $LASTEXITCODE
 
 		Write-Log -message ('{0} :: GW exited with code {1}. REBOOTING' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
