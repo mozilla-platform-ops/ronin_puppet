@@ -9,6 +9,7 @@
   "idleTimeoutSecs": <%= $win_generic_worker::generic_worker::idle_timeout %>,
   "livelogExecutable": "<%= $win_generic_worker::generic_worker::livelog_exe %>",
   "numberOfTasksToRun": 0,
+  "provisionerId": "releng-hardware",
   "publicIP": "<%= $facts[networking][ip] %>",
   "requiredDiskSpaceMegabytes": 10240,
   "rootURL": "<%= $win_generic_worker::generic_worker::taskcluster_root %>",
