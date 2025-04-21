@@ -311,7 +311,8 @@ function StartGenericWorker {
 
         #& .\generic-worker.exe run --config generic-worker.config *> generic-worker.log
         #& $GW_dir\generic-worker.exe run --config generic-worker.config *> generic-worker.log
-        & $GW_dir\generic-worker.exe run --config generic-worker.config | Out-File -FilePath generic-worker.log -Encoding utf8
+        #& $GW_dir\generic-worker.exe run --config generic-worker.config | Out-File -FilePath generic-worker.log -Encoding utf8
+        & $GW_dir\generic-worker.exe run --config generic-worker.config > generic-worker.log 2>&1
 
         $exitCode = $LASTEXITCODE
 
