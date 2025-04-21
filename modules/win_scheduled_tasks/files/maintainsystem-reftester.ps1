@@ -310,7 +310,8 @@ function StartGenericWorker {
         Set-Location -Path $GW_dir
 
         #& .\generic-worker.exe run --config generic-worker.config *> generic-worker.log
-        & $GW_dir\generic-worker.exe run --config generic-worker.config *> generic-worker.log
+        #& $GW_dir\generic-worker.exe run --config generic-worker.config *> generic-worker.log
+        & $GW_dir\generic-worker.exe run --config generic-worker.config | Out-File -FilePath generic-worker.log -Encoding utf8
 
         $exitCode = $LASTEXITCODE
 
