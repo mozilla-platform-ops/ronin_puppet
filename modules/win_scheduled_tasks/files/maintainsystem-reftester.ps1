@@ -283,51 +283,55 @@ function StartWorkerRunner {
 }
 
 function StartGenericWorker {
-	param (
-		[string] $GW_dir = "$env:systemdrive\generic-worker"
-	)
-	begin {
-		Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-	}
-	process {
-		# Check for user profile issues
-		$lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
-			Select-Object -First 1 |
-			ForEach-Object { $_.TimeCreated }
+    param (
+        [string] $GW_dir = "$env:systemdrive\generic-worker"
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        # Check for user profile issues
+        $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
+            Select-Object -First 1 |
+            ForEach-Object { $_.TimeCreated }
 
-		$eventIDs = @(1511, 1515)
-		$events = Get-WinEvent -LogName "Application" |
-			Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
-			Sort-Object TimeCreated -Descending | Select-Object -First 1
+        $eventIDs = @(1511, 1515)
+        $events = Get-WinEvent -LogName "Application" |
+            Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
+            Sort-Object TimeCreated -Descending | Select-Object -First 1
 
-		if ($events) {
-			Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-			Start-Sleep -Seconds 5
-			Restart-Computer -Force
-			exit
-		}
+        if ($events) {
+            Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Start-Sleep -Seconds 5
+            Restart-Computer -Force
+            exit
+        }
 
         Set-Location -Path $GW_dir
 
-        #& .\generic-worker.exe run --config generic-worker.config *> generic-worker.log
-        #& $GW_dir\generic-worker.exe run --config generic-worker.config *> generic-worker.log
-        #& $GW_dir\generic-worker.exe run --config generic-worker.config | Out-File -FilePath generic-worker.log -Encoding utf8
-        #& $GW_dir\generic-worker.exe run --config generic-worker.config > generic-worker.log 2>&1
         & $GW_dir\generic-worker.exe run --config generic-worker.config 2>&1 | Out-File -FilePath generic-worker.log -Encoding utf8
-
         $exitCode = $LASTEXITCODE
 
-		Write-Log -message ('{0} :: GW exited with code {1}. REBOOTING' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+        Write-Log -message ('{0} :: GW exited with code {1}' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
 
-		Start-Sleep -Seconds 60
-		Restart-Computer -Force
-		Pause
-	}
-	end {
-		Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-	}
+        switch ($exitCode) {
+            68 {
+                Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Restarting generic-worker' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Start-Sleep -Seconds 5
+                StartGenericWorker
+                return
+            }
+            default {
+                Write-Log -message ('{0} :: Non-idle exit code {1}. Sleeping 10s and rebooting' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+                Start-Sleep -Seconds 10
+                Restart-Computer -Force
+            }
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
 }
-
 
 function Get-LoggedInUser {
     [CmdletBinding()]
