@@ -316,7 +316,16 @@ function StartGenericWorker {
 
         switch ($exitCode) {
             68 {
-                Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Restarting generic-worker' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Copying current-task-user.json to next-task-user.json' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                $src = Join-Path $GW_dir 'current-task-user.json'
+                $dest = Join-Path $GW_dir 'next-task-user.json'
+                if (Test-Path $src) {
+                    Copy-Item -Path $src -Destination $dest -Force
+                    Write-Log -message ('{0} :: File copied successfully' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                } else {
+                    Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
+                }
+
                 Start-Sleep -Seconds 5
                 StartGenericWorker
                 return
