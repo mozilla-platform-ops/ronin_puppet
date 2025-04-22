@@ -348,7 +348,33 @@ function CompareConfig {
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
-        $yaml = Invoke-WebRequest -Uri $yaml_url | ConvertFrom-Yaml
+        #$yaml = Invoke-WebRequest -Uri $yaml_url | ConvertFrom-Yaml
+
+        $maxRetries = 5
+        $retryDelay = 10
+        $attempt = 0
+        $success = $false
+
+        while ($attempt -lt $maxRetries -and -not $success) {
+        try {
+            $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+            $yaml = $response.Content | ConvertFrom-Yaml
+            if ($yaml) {
+                $success = $true
+            } else {
+                throw "YAML content is empty"
+            }
+        } catch {
+            Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
+            Start-Sleep -Seconds $retryDelay
+            $attempt++
+        }
+    }
+
+if (-not $success) {
+    Write-Log -message "YAML could not be loaded after $maxRetries attempts." -severity 'ERROR'
+    return
+}
 
         $found = $false
         foreach ($pool in $yaml.pools) {
