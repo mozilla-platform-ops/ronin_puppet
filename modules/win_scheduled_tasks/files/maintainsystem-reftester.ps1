@@ -282,6 +282,143 @@ function StartWorkerRunner {
     }
 }
 
+function CompareConfig {
+    param (
+        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml"
+    )
+
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+
+    process {
+        $SETPXE = $false
+
+        $IPAddress = $null
+        $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object { $_.Name -match "ethernet" }
+
+        try {
+            $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses |
+                Where-Object { $_.Address.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and $_.Address.IPAddressToString -ne "127.0.0.1" } |
+                Select-Object -First 1 -ExpandProperty Address).IPAddressToString
+
+            if (-not $IPAddress) {
+                throw "No IP address found using .NET method."
+            }
+        } catch {
+            try {
+                $NetshOutput = netsh interface ip show addresses
+                $IPAddress = ($NetshOutput -match "IP Address" | ForEach-Object {
+                    if ($_ -notmatch "127.0.0.1") {
+                        $_ -replace ".*?:\s*", ""
+                    }
+                })[0]
+            } catch {
+                Write-Log -message "Failed to get IP address" -severity 'ERROR'
+            }
+        }
+
+        if ($IPAddress) {
+            Write-Log -message "IP Address: $IPAddress" -severity 'INFO'
+        } else {
+            Write-Log -message "No IP Address could be determined." -severity 'ERROR'
+            return
+        }
+
+        try {
+            $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
+        } catch {
+            Write-Log -message "DNS resolution failed." -severity 'ERROR'
+            return
+        }
+
+        Write-Log -message "Resolved Name: $ResolvedName" -severity 'INFO'
+
+        $index = $ResolvedName.IndexOf('.')
+        if ($index -lt 0) {
+            Write-Log -message "Invalid hostname format." -severity 'ERROR'
+            return
+        }
+
+        $worker_node_name = $ResolvedName.Substring(0, $index)
+        $domain_suffix = $ResolvedName.Substring($index + 1)
+
+        Write-Log -message "Host name set to: $ResolvedName" -severity 'INFO'
+
+        $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
+        $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
+        $localImageName = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).image_name
+        $localImageDir = "D:\" + $localImageName
+
+        $yaml = Invoke-WebRequest -Uri $yaml_url | ConvertFrom-Yaml
+
+        $found = $false
+        foreach ($pool in $yaml.pools) {
+            foreach ($node in $pool.nodes) {
+                if ($node -eq $worker_node_name) {
+                    $WorkerPool = $pool.name
+                    $yamlHash = $pool.hash
+                    $yamlImageName = $pool.image
+                    $yamlImageDir = "D:\" + $yamlImageName
+                    $found = $true
+                    break
+                }
+            }
+            if ($found) { break }
+        }
+
+        if (-not $found) {
+            Write-Log -message "Node name not found in YAML!!" -severity 'ERROR'
+            exit 96
+        }
+
+        Write-Log -message "=== Configuration Comparison ===" -severity 'INFO'
+
+        if ($localPool -eq $WorkerPool) {
+            Write-Log -message "Worker Pool Match: $WorkerPool" -severity 'INFO'
+        } else {
+            Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
+            Write-Log -message "Local: $localPool" -severity 'WARN'
+            Write-Log -message "YAML : $WorkerPool" -severity 'WARN'
+            $SETPXE = $true
+        }
+
+        if ($localHash -eq $yamlHash) {
+            Write-Log -message "Git Hash Match: $yamlHash" -severity 'INFO'
+        } else {
+            Write-Log -message "Git Hash MISMATCH!" -severity 'ERROR'
+            Write-Log -message "Local: $localHash" -severity 'WARN'
+            Write-Log -message "YAML : $yamlHash" -severity 'WARN'
+            $SETPXE = $true
+        }
+
+        if ($localImageName -eq $yamlImageName) {
+            Write-Log -message "Image Name Match: $yamlImageName" -severity 'INFO'
+        } else {
+            Write-Log -message "Image Name MISMATCH!" -severity 'ERROR'
+            Write-Log -message "Local: $localImageName" -severity 'WARN'
+            Write-Log -message "YAML : $yamlImageName" -severity 'WARN'
+            $SETPXE = $true
+        }
+
+        if ($localImageDir -eq $yamlImageDir) {
+            Write-Log -message "Image Directory Match: $yamlImageDir" -severity 'INFO'
+        } else {
+            Write-Log -message "Image Directory MISMATCH!" -severity 'ERROR'
+            Write-Log -message "Local: $localImageDir" -severity 'WARN'
+            Write-Log -message "YAML : $yamlImageDir" -severity 'WARN'
+            $SETPXE = $true
+        }
+
+        Write-Log -message "SETPXE set to: $SETPXE" -severity 'DEBUG'
+    }
+
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+
 function StartGenericWorker {
     param (
         [string] $GW_dir = "$env:systemdrive\generic-worker"
@@ -325,6 +462,7 @@ function StartGenericWorker {
                 } else {
                     Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
                 }
+                CompareConfig
 
                 Start-Sleep -Seconds 5
                 StartGenericWorker
@@ -473,6 +611,8 @@ if ($refresh_rate -ne "60") {
     Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
     Set-PXE
 }
+
+CompareConfig
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
