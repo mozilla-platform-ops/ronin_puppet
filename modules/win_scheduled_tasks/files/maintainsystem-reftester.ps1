@@ -353,7 +353,9 @@ function CompareConfig {
         $found = $false
         foreach ($pool in $yaml.pools) {
             foreach ($node in $pool.nodes) {
+                Write-Log -message "Checking $node" -severity 'INFO'
                 if ($node -eq $worker_node_name) {
+                    Write-Log -message "$worker_node_name FOUND!" -severity 'INFO'
                     $WorkerPool = $pool.name
                     $yamlHash = $pool.hash
                     $yamlImageName = $pool.image
