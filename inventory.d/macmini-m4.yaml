@@ -3,7 +3,6 @@ name: macmini-m4
 groups:
   - name: gecko-t-osx-1500-m4-staging
     targets:
-      - macmini-m4-3.test.releng.mslv.mozilla.com
       - macmini-m4-4.test.releng.mslv.mozilla.com
       - macmini-m4-5.test.releng.mslv.mozilla.com
       - macmini-m4-6.test.releng.mslv.mozilla.com
