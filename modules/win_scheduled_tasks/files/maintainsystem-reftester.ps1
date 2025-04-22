@@ -343,7 +343,7 @@ function CompareConfig {
         $worker_node_name = $ResolvedName.Substring(0, $index)
         $domain_suffix = $ResolvedName.Substring($index + 1)
 
-        Write-Log -message "Host name set to: $ResolvedName" -severity 'INFO'
+        Write-Log -message "Host name set to: $worker_node_name" -severity 'INFO'
 
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
