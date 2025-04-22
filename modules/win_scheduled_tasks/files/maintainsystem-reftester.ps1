@@ -348,8 +348,6 @@ function CompareConfig {
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
-        #$yaml = Invoke-WebRequest -Uri $yaml_url | ConvertFrom-Yaml
-
         $maxRetries = 5
         $retryDelay = 10
         $attempt = 0
@@ -379,9 +377,7 @@ if (-not $success) {
         $found = $false
         foreach ($pool in $yaml.pools) {
             foreach ($node in $pool.nodes) {
-                Write-Log -message "Checking $node" -severity 'INFO'
                 if ($node -eq $worker_node_name) {
-                    Write-Log -message "$worker_node_name FOUND!" -severity 'INFO'
                     $WorkerPool = $pool.name
                     $yamlHash = $pool.hash
                     $yamlImageName = $pool.image
@@ -404,8 +400,6 @@ if (-not $success) {
             Write-Log -message "Worker Pool Match: $WorkerPool" -severity 'INFO'
         } else {
             Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
-            Write-Log -message "Local: $localPool" -severity 'WARN'
-            Write-Log -message "YAML : $WorkerPool" -severity 'WARN'
             $SETPXE = $true
         }
 
@@ -418,21 +412,10 @@ if (-not $success) {
             $SETPXE = $true
         }
 
-        if ($localImageName -eq $yamlImageName) {
-            Write-Log -message "Image Name Match: $yamlImageName" -severity 'INFO'
-        } else {
-            Write-Log -message "Image Name MISMATCH!" -severity 'ERROR'
-            Write-Log -message "Local: $localImageName" -severity 'WARN'
-            Write-Log -message "YAML : $yamlImageName" -severity 'WARN'
-            $SETPXE = $true
-        }
 
         if (!(Test-Path $yamlImageDir)) {
-            Write-Log -message "Image Directory Match: $yamlImageDir" -severity 'INFO'
-        } else {
             Write-Log -message "Image Directory MISMATCH!" -severity 'ERROR'
-            Write-Log -message "Local: $localImageDir" -severity 'WARN'
-            Write-Log -message "YAML : $yamlImageDir" -severity 'WARN'
+            Write-Log -message "YAML : $yamlImageDir NOT FOUND" -severity 'WARN'
             $SETPXE = $true
         }
 
