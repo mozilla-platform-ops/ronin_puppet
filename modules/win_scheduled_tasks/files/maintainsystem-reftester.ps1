@@ -399,7 +399,7 @@ function CompareConfig {
             $SETPXE = $true
         }
 
-        if (!(Test-Path $yamlImageDir) {)
+        if (!(Test-Path $yamlImageDir)) {
             Write-Log -message "Image Directory Match: $yamlImageDir" -severity 'INFO'
         } else {
             Write-Log -message "Image Directory MISMATCH!" -severity 'ERROR'
