@@ -347,8 +347,6 @@ function CompareConfig {
 
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
-        $localImageName = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).image_name
-        $localImageDir = "D:\" + $localImageName
 
         $yaml = Invoke-WebRequest -Uri $yaml_url | ConvertFrom-Yaml
 
@@ -401,7 +399,7 @@ function CompareConfig {
             $SETPXE = $true
         }
 
-        if ($localImageDir -eq $yamlImageDir) {
+        if (!(Test-Path $yamlImageDir) {)
             Write-Log -message "Image Directory Match: $yamlImageDir" -severity 'INFO'
         } else {
             Write-Log -message "Image Directory MISMATCH!" -severity 'ERROR'
