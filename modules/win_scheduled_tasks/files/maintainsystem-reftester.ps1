@@ -418,7 +418,10 @@ if (-not $success) {
             Write-Log -message "YAML : $yamlImageDir NOT FOUND" -severity 'WARN'
             $SETPXE = $true
         }
-
+        if ($SETPXE) {
+            Write-Log -message "Configuration MISMATCH! Initiating self re-deploy!" -severity 'ERROR'
+            Set-PXE
+        }
         Write-Log -message "SETPXE set to: $SETPXE" -severity 'DEBUG'
     }
 
