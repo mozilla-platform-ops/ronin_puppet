@@ -361,6 +361,7 @@ function CompareConfig {
                 $success = $true
             } else {
                 throw "YAML content is empty"
+                Write-Log -message "YAML content is empty" -severity 'WARN'
             }
         } catch {
             Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
@@ -380,6 +381,7 @@ if (-not $success) {
                 if ($node -eq $worker_node_name) {
                     $WorkerPool = $pool.name
                     $yamlHash = $pool.hash
+                    Write-Log -message "deploy ID should be $yamlHash" -severity 'INFO'
                     $yamlImageName = $pool.image
                     $yamlImageDir = "D:\" + $yamlImageName
                     $found = $true
