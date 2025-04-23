@@ -483,15 +483,10 @@ function StartGenericWorker {
                     Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
                 }
 
-                Get-Process | Where-Object {
-                $_.MainWindowHandle -ne 0 -and
-                $_.ProcessName -notin @("explorer", "powershell", "pwsh")
-                } | ForEach-Object {
-                    Write-Host "Killing process: $($_.ProcessName)"
-                    $_.Kill()
-                }
+                ## Restart Explorer/close out exisiting windows
+                Stop-Process -Name explorer -Force
 
-                Start-Sleep -s 1
+                Start-Sleep -s 2
                 StartGenericWorker
                 return
             }
