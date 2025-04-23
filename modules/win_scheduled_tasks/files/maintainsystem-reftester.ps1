@@ -381,7 +381,6 @@ if (-not $success) {
                 if ($node -eq $worker_node_name) {
                     $WorkerPool = $pool.name
                     $yamlHash = $pool.hash
-                    Write-Log -message "deploy ID should be $yamlHash" -severity 'INFO'
                     $yamlImageName = $pool.image
                     $yamlImageDir = "D:\" + $yamlImageName
                     $found = $true
@@ -403,6 +402,7 @@ if (-not $success) {
         } else {
             Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
             $SETPXE = $true
+            Start-Sleep -s 1
         }
 
         if ($localHash -eq $yamlHash) {
@@ -412,6 +412,7 @@ if (-not $success) {
             Write-Log -message "Local: $localHash" -severity 'WARN'
             Write-Log -message "YAML : $yamlHash" -severity 'WARN'
             $SETPXE = $true
+            Start-Sleep -s 1
         }
 
 
@@ -419,6 +420,7 @@ if (-not $success) {
             Write-Log -message "Image Directory MISMATCH!" -severity 'ERROR'
             Write-Log -message "YAML : $yamlImageDir NOT FOUND" -severity 'WARN'
             $SETPXE = $true
+            Start-Sleep -s 1
         }
         if ($SETPXE) {
             Write-Log -message "Configuration MISMATCH! Initiating self re-deploy!" -severity 'ERROR'
@@ -467,7 +469,11 @@ function StartGenericWorker {
 
         switch ($exitCode) {
             68 {
-                Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Copying current-task-user.json to next-task-user.json' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+
+                Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Checking for latest Config.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                CompareConfig
+
+                Write-Log -message ('{0} :: Copying current-task-user.json to next-task-user.json' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 $src = Join-Path $GW_dir 'current-task-user.json'
                 $dest = Join-Path $GW_dir 'next-task-user.json'
                 if (Test-Path $src) {
@@ -476,7 +482,6 @@ function StartGenericWorker {
                 } else {
                     Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
                 }
-                CompareConfig
 
                 Get-Process | Where-Object {
                 $_.MainWindowHandle -ne 0 -and
@@ -486,7 +491,7 @@ function StartGenericWorker {
                     $_.Kill()
                 }
 
-                Start-Sleep -Seconds 5
+                Start-Sleep -s 1
                 StartGenericWorker
                 return
             }
