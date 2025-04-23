@@ -476,6 +476,14 @@ function StartGenericWorker {
                 }
                 CompareConfig
 
+                Get-Process | Where-Object {
+                $_.MainWindowHandle -ne 0 -and
+                $_.ProcessName -notin @("explorer", "powershell", "pwsh")
+                } | ForEach-Object {
+                    Write-Host "Killing process: $($_.ProcessName)"
+                    $_.Kill()
+                }
+
                 Start-Sleep -Seconds 5
                 StartGenericWorker
                 return
