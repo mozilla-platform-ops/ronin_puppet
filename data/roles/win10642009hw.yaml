@@ -6,7 +6,7 @@ win-worker:
   generic_worker:
     # File versions
     name: "generic-worker-multiuser-windows-amd64"
-    version: '81.0.3'
+    version: '83.5.7'
     client_id: "project/releng/generic-worker/win10-64-2009-hw"
     idle_timeout: 0
 
@@ -14,17 +14,17 @@ win-worker:
     worker_runner:
         provisionerId: 'releng-hardware'
         name: 'start-worker-windows-amd64'
-        version: '81.0.3'
+        version: '83.5.7'
         provider: "standalone"
         implementation: "generic-worker"
     proxy:
         name: "taskcluster-proxy-windows-amd64"
-        version: '81.0.3'
+        version: '83.5.7'
     # Refrencing the file directly with version in it
     # Since there is no programtic way to check the version of the livelog exe
     livelog:
         name: "livelog-windows-amd64"
-        version: '81.0.3'
+        version: '83.5.7'
     client_id: "azure/gecko-t/win10-64-2009-hw"
     worker_group: "mdc1"
 
