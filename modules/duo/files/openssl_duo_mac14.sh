@@ -15,9 +15,7 @@ fi
 
 echo "Detected logged-in user: $CURRENT_USER"
 
-# Get the user's home directory
-USER_HOME=$(eval echo "~$CURRENT_USER")
-DOWNLOADS_DIR="$USER_HOME/Downloads"
+DOWNLOADS_DIR="/tmp"
 
 # Ensure the Downloads directory exists
 if [[ ! -d "$DOWNLOADS_DIR" ]]; then
