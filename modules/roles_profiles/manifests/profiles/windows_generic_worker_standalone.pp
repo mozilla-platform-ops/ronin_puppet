@@ -7,11 +7,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
     case $facts['os']['name'] {
         'Windows': {
 
-            #$nssm_dir     = lookup('windows.dir.nssm')
-            #$nssm_version = lookup('windows.application.nssm.version')
             $arch         = 'win64'
-            #$nssm_exe     = "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
-            #$nssm_command = "${facts['custom_win_systemdrive']}\\nssm\\nssm-2.24\\win64\\nssm.exe"
 
             $ext_pkg_src_loc     = lookup('windows.taskcluster.relops_az')
             $taskcluster_version = lookup('windows.taskcluster.version')
@@ -39,12 +35,6 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 }
             }
 
-            #class { 'win_packages::custom_nssm':
-            #    version  => $nssm_version,
-            #    nssm_exe => $nssm_exe,
-            #    nssm_dir => $nssm_dir,
-            #}
-
             class { 'win_generic_worker::generic_worker':
                 cache_dir                => "${facts['custom_win_systemdrive']}\\\\cache",
                 client_id                => lookup('win-worker.generic_worker.client_id'),
@@ -62,8 +52,6 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 gw_config_path           => $gw_config_path,
                 gw_exe_path              => $gw_exe_path,
                 gw_exe_source            => "${ext_pkg_src_loc}/${taskcluster_version}/${gw_name}",
-                #gw_install_command       =>
-                #    "${gw_exe_path} install service --nssm ${nssm_command} --config ${gw_config_path}",
                 gw_status                => $facts['custom_win_genericworker_service'],
                 livelog_exe              => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe",
                 livelog_exe_source       => "${ext_pkg_src_loc}/${$taskcluster_version}/${livelog_name}",

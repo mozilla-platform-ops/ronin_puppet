@@ -161,7 +161,7 @@ function Puppet-Run {
         [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
         [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
         [string] $run_to_success = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").runtosuccess,
-        [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
+        [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\nodes.pp",
         [string] $logdir = "$env:systemdrive\logs",
         [string] $fail_dir = "$env:systemdrive\fail_logs",
         [string] $log_file = "$datetime-puppetrun.log",
@@ -276,6 +276,230 @@ function StartWorkerRunner {
             exit
         }
         Start-Service -Name worker-runner
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+function CompareConfig {
+    param (
+        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml"
+    )
+
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+
+    process {
+
+        $yaml = $null
+
+        $SETPXE = $false
+
+        $IPAddress = $null
+        $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object { $_.Name -match "ethernet" }
+
+        try {
+            $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses |
+                Where-Object { $_.Address.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and $_.Address.IPAddressToString -ne "127.0.0.1" } |
+                Select-Object -First 1 -ExpandProperty Address).IPAddressToString
+
+            if (-not $IPAddress) {
+                throw "No IP address found using .NET method."
+            }
+        } catch {
+            try {
+                $NetshOutput = netsh interface ip show addresses
+                $IPAddress = ($NetshOutput -match "IP Address" | ForEach-Object {
+                    if ($_ -notmatch "127.0.0.1") {
+                        $_ -replace ".*?:\s*", ""
+                    }
+                })[0]
+            } catch {
+                Write-Log -message "Failed to get IP address" -severity 'ERROR'
+            }
+        }
+
+        if ($IPAddress) {
+            Write-Log -message "IP Address: $IPAddress" -severity 'INFO'
+        } else {
+            Write-Log -message "No IP Address could be determined." -severity 'ERROR'
+            return
+        }
+
+        try {
+            $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
+        } catch {
+            Write-Log -message "DNS resolution failed." -severity 'ERROR'
+            return
+        }
+
+        Write-Log -message "Resolved Name: $ResolvedName" -severity 'INFO'
+
+        $index = $ResolvedName.IndexOf('.')
+        if ($index -lt 0) {
+            Write-Log -message "Invalid hostname format." -severity 'ERROR'
+            return
+        }
+
+        $worker_node_name = $ResolvedName.Substring(0, $index)
+        $domain_suffix = $ResolvedName.Substring($index + 1)
+
+        Write-Log -message "Host name set to: $worker_node_name" -severity 'INFO'
+
+        $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
+        $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
+
+        $maxRetries = 5
+        $retryDelay = 10
+        $attempt = 0
+        $success = $false
+
+        while ($attempt -lt $maxRetries -and -not $success) {
+        try {
+            $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+            $yaml = $response.Content | ConvertFrom-Yaml
+            if ($yaml) {
+                $success = $true
+            } else {
+                throw "YAML content is empty"
+                Write-Log -message "YAML content is empty" -severity 'WARN'
+            }
+        } catch {
+            Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
+            Start-Sleep -Seconds $retryDelay
+            $attempt++
+        }
+    }
+
+if (-not $success) {
+    Write-Log -message "YAML could not be loaded after $maxRetries attempts." -severity 'ERROR'
+    return
+}
+
+        $found = $false
+        foreach ($pool in $yaml.pools) {
+            foreach ($node in $pool.nodes) {
+                if ($node -eq $worker_node_name) {
+                    $WorkerPool = $pool.name
+                    $yamlHash = $pool.hash
+                    $yamlImageName = $pool.image
+                    $yamlImageDir = "D:\" + $yamlImageName
+                    $found = $true
+                    break
+                }
+            }
+            if ($found) { break }
+        }
+
+        if (-not $found) {
+            Write-Log -message "Node name not found in YAML!!" -severity 'ERROR'
+            exit 96
+        }
+
+        Write-Log -message "=== Configuration Comparison ===" -severity 'INFO'
+
+        if ($localPool -eq $WorkerPool) {
+            Write-Log -message "Worker Pool Match: $WorkerPool" -severity 'INFO'
+        } else {
+            Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
+            $SETPXE = $true
+            Start-Sleep -s 1
+        }
+
+        if ($localHash -eq $yamlHash) {
+            Write-Log -message "Git Hash Match: $yamlHash" -severity 'INFO'
+        } else {
+            Write-Log -message "Git Hash MISMATCH!" -severity 'ERROR'
+            Write-Log -message "Local: $localHash" -severity 'WARN'
+            Write-Log -message "YAML : $yamlHash" -severity 'WARN'
+            $SETPXE = $true
+            Start-Sleep -s 1
+        }
+
+
+        if (!(Test-Path $yamlImageDir)) {
+            Write-Log -message "Image Directory MISMATCH!" -severity 'ERROR'
+            Write-Log -message "YAML : $yamlImageDir NOT FOUND" -severity 'WARN'
+            $SETPXE = $true
+            Start-Sleep -s 1
+        }
+        if ($SETPXE) {
+            Write-Log -message "Configuration MISMATCH! Initiating self re-deploy!" -severity 'ERROR'
+            Set-PXE
+        }
+        Write-Log -message "SETPXE set to: $SETPXE" -severity 'DEBUG'
+    }
+
+
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+
+function StartGenericWorker {
+    param (
+        [string] $GW_dir = "$env:systemdrive\generic-worker"
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        # Check for user profile issues
+        $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
+            Select-Object -First 1 |
+            ForEach-Object { $_.TimeCreated }
+
+        $eventIDs = @(1511, 1515)
+        $events = Get-WinEvent -LogName "Application" |
+            Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
+            Sort-Object TimeCreated -Descending | Select-Object -First 1
+
+        if ($events) {
+            Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Start-Sleep -Seconds 5
+            Restart-Computer -Force
+            exit
+        }
+
+        Set-Location -Path $GW_dir
+
+        & $GW_dir\generic-worker.exe run --config generic-worker.config 2>&1 | Out-File -FilePath generic-worker.log -Encoding utf8
+        $exitCode = $LASTEXITCODE
+
+        Write-Log -message ('{0} :: GW exited with code {1}' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+
+        switch ($exitCode) {
+            68 {
+
+                Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Checking for latest Config.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                CompareConfig
+
+                Write-Log -message ('{0} :: Copying current-task-user.json to next-task-user.json' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                $src = Join-Path $GW_dir 'current-task-user.json'
+                $dest = Join-Path $GW_dir 'next-task-user.json'
+                if (Test-Path $src) {
+                    Copy-Item -Path $src -Destination $dest -Force
+                    Write-Log -message ('{0} :: File copied successfully' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                } else {
+                    Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
+                }
+
+                ## Restart Explorer/close out exisiting windows
+                Stop-Process -Name explorer -Force
+
+                Start-Sleep -s 2
+                StartGenericWorker
+                return
+            }
+            default {
+                Write-Log -message ('{0} :: Non-idle exit code {1}. Sleeping 10s and rebooting' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+                Start-Sleep -Seconds 10
+                Restart-Computer -Force
+            }
+        }
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -416,6 +640,16 @@ if ($refresh_rate -ne "60") {
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
+
+    $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -eq "bootstrap" }
+
+    if ($tasks) {
+        $tasks | ForEach-Object {
+            Stop-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath
+            Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false
+            Write-Host "Deleted task '$($_.TaskName)' at path '$($_.TaskPath)'."
+        }
+    }
     Run-MaintainSystem
     ## We're getting user profile corruption errors, so let's check that the user is logged in using quser.exe
     for ($i = 0; $i -lt 3; $i++) {
@@ -437,42 +671,12 @@ If ($bootstrap_stage -eq 'complete') {
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
 
-    StartWorkerRunner
-    start-sleep -s 30
-    while ($true) {
-
-        $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
-        Select-Object -First 1 |
-        ForEach-Object { $_.TimeCreated }
-        $eventIDs = @(1511, 1515)
-
-        $events = Get-WinEvent -LogName "Application" |
-        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
-        Sort-Object TimeCreated -Descending | Select-Object -First 1
-
-        if ($events) {
-            Write-Log -message  ('{0} :: Possible User Profile Corruption After Worker Runner Start Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Restart-Computer -Force
-            exit
-        }
-
-        $gw = (Get-process -name generic-worker -ErrorAction SilentlyContinue )
-        $processname = "StartMenuExperienceHost"
-        $process = Get-Process -Name StartMenuExperienceHost -ErrorAction SilentlyContinue
-        if ($null -ne $process) {
-            Stop-Process -Name $processname -force
-        }
-        if ($null -eq $gw) {
-            # Wait to supress meesage if check is cuaght during a reboot.
-            start-sleep -s 45
-            Write-Log -message  ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            start-sleep -s 3
-            #shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
-        }
-        else {
-            start-sleep -s 120
-        }
+    $processname = "StartMenuExperienceHost"
+    if ($null -ne $process) {
+        Stop-Process -Name $processname -force
     }
+    CompareConfig
+    StartGenericWorker
 }
 else {
     Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'

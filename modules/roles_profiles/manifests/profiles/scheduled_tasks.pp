@@ -8,14 +8,10 @@ class roles_profiles::profiles::scheduled_tasks {
     'Windows': {
       case $facts['custom_win_location'] {
         'azure': {
-          if $facts['custom_win_os_version'] == '2012' {
-            $startup_script = '2012-azure-maintainsystem.ps1'
-          } else {
-            $startup_script = 'azure-maintainsystem.ps1'
-          }
+          $startup_script = 'azure-maintainsystem.ps1'
         }
         'datacenter': {
-          $startup_script = 'maintainsystem-reftester.ps1'
+          $startup_script = 'maintainsystem-hw.ps1'
         }
         default: {
           $startup_script = 'maintainsystem.ps1'

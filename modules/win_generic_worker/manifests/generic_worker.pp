@@ -19,7 +19,6 @@ class  win_generic_worker::generic_worker (
   String $gw_config_path,
   String $gw_exe_path,
   String $gw_exe_source,
-  #String $gw_install_command,
   String $gw_status,
   String $livelog_exe,
   String $livelog_exe_source,
