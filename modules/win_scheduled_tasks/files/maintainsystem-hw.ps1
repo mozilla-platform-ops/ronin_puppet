@@ -495,8 +495,8 @@ function StartGenericWorker {
                 return
             }
             default {
-                Write-Log -message ('{0} :: Non-idle exit code {1}. Sleeping 10s and rebooting' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
-                Start-Sleep -Seconds 10
+                Write-Log -message ('{0} :: Non-idle exit code {1}. Rebooting' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+                Start-Sleep -Seconds 1
                 Restart-Computer -Force
             }
         }
@@ -591,6 +591,7 @@ function Set-PXE {
 
             Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Restart-Computer -Force
+            Exit
         }
         Catch {
             Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
