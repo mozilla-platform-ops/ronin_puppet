@@ -106,7 +106,14 @@ case "$macos_major_version" in
   "15")
     semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
     enable_remote_automation "$semaphore_file" "Safari" "Developer" "Allow remote automation"
-    ;; # <- **Missing `;;` was added here**
+
+    if [ -d "/Applications/Safari Technology Preview.app" ]; then
+      semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run"
+      enable_remote_automation "$semaphore_file" "Safari Technology Preview" "Developer" "Allow remote automation"
+    else
+      echo "Safari Technology Preview is not installed."
+    fi
+    ;;
   *)
     echo "Unsupported macOS version: $macos_full_version"
     exit 1

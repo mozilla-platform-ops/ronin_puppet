@@ -29,6 +29,7 @@ packages_classes:
   - python3_psutil
   - python3_pyobjc
   - python3_zstandard
+  - safari_preview
   - scres
   - telegraf
   - tooltool
