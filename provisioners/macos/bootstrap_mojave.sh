@@ -114,7 +114,7 @@ function run_puppet {
     get_puppet_repo
 
     echo "Running puppet apply"
-    PUPPET_OPTIONS=('--modulepath=./modules:./r10k_modules' '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    PUPPET_OPTIONS=('--modulepath=./modules:./r10k_modules' '--hiera_config=./hiera.yaml' '--debug' '--logdest=console,/tmp/puppet_bootstrap.log' '--color=false' '--detailed-exitcodes' './manifests/')
     export FACTER_PUPPETIZING=true
 
     TMP_LOG=$(mktemp /tmp/puppet-outputXXXXXX)
