@@ -47,9 +47,9 @@ class scriptworker_prereqs {
   }
   exec {
     'install-developer-id-root':
-      command => '/usr/bin/security add-trusted-cert -r trustAsRoot -k /Library/Keychains/System.keychain /tmp/DeveloperIDCA.cer',
+      command => '/usr/bin/security unlock-keychain -u /Library/Keychains/System.keychain && /usr/bin/security add-trusted-cert -r trustAsRoot -k /Library/Keychains/System.keychain /tmp/DeveloperIDCA.cer',
       require => File['/tmp/DeveloperIDCA.cer'],
-      unless  => "/usr/bin/security dump-keychain /Library/Keychains/System.keychain | /usr/bin/grep 'Developer ID Certification'",
+      unless  => "/usr/bin/security unlock-keychain -u /Library/Keychains/System.keychain && /usr/bin/security dump-keychain /Library/Keychains/System.keychain | /usr/bin/grep 'Developer ID Certification'",
       returns => [1],
   }
 
