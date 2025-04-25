@@ -30,3 +30,6 @@ win-worker:
   # Logging level options debug, verbose, or restricted.
   log:
     level: "restricted"
+  variant:
+    taskcluster:
+      version: '81.0.3'
