@@ -31,5 +31,4 @@ win-worker:
   log:
     level: "restricted"
   variant:
-    taskcluster:
-      version: '81.0.3'
+    taskcluster_version: '81.0.3'
