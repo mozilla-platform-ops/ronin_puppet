@@ -15,7 +15,8 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
             $gw_name               = lookup('windows.taskcluster.generic-worker.name.amd64')
-            $desired_gw_version    = lookup('windows.taskcluster.version')
+            $desired_gw_version    =
+                lookup(['win-worker.variant.generic_worker.version', 'windows.taskcluster.version'])
             $worker_pool_id        = $facts['custom_win_worker_pool_id']
             $gw_config_path        = "${generic_worker_dir}\\generic-worker.config"
             $proxy_name            = lookup('windows.taskcluster.proxy.name.amd64')
