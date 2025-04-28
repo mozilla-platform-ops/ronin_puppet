@@ -65,6 +65,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 wstaudience              => lookup('windows.taskcluster.wstaudience'),
                 wstserverurl             => lookup('windows.taskcluster.wstserverurl'),
             }
+            include win_scheduled_tasks::gw_exe_check
         }
         default: {
             fail("${$facts['os']['name']} not supported")
