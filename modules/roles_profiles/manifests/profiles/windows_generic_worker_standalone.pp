@@ -10,14 +10,12 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
             $arch         = 'win64'
 
             $ext_pkg_src_loc     = lookup('windows.taskcluster.relops_az')
-            $taskcluster_version = lookup('windows.taskcluster.version')
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
             $gw_name               = lookup('windows.taskcluster.generic-worker.name.amd64')
-            $desired_gw_version    =
-                #lookup(['win-worker.variant.taskcluster_version', 'windows.taskcluster.version'])
-                lookup('win-worker.variant.taskcluster.version')
+            $taskcluster_version    =
+                lookup(['win-worker.variant.taskcluster_version', 'windows.taskcluster.version'])
             $worker_pool_id        = $facts['custom_win_worker_pool_id']
             $gw_config_path        = "${generic_worker_dir}\\generic-worker.config"
             $proxy_name            = lookup('windows.taskcluster.proxy.name.amd64')
