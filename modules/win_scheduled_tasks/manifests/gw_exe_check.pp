@@ -8,7 +8,7 @@ class win_scheduled_tasks::gw_exe_check (
     $gw_exe_check_ps1 = "${facts['custom_win_roninprogramdata']}\\gw_exe_check.ps1"
 
     file { $gw_exe_check_ps1:
-        content => file('win_scheduled_tasks/gw_exe_check'),
+        content => file('win_scheduled_tasks/gw_exe_check.ps1'),
     }
     # Resource from puppetlabs-scheduled_task
     scheduled_task { 'gw_exe_check':
