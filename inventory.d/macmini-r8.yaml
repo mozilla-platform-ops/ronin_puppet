@@ -120,8 +120,8 @@ groups:
 
   - name: gecko-t-osx-1400-r8-latest
     targets:
-      - macmini-r8-373.test.releng.mdc1.mozilla.com
-      - macmini-r8-374.test.releng.mdc1.mozilla.com
+      # - macmini-r8-373.test.releng.mdc1.mozilla.com
+      # - macmini-r8-374.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1400_r8_latest
 
@@ -171,6 +171,8 @@ groups:
       - macmini-r8-182.test.releng.mdc1.mozilla.com
       - macmini-r8-183.test.releng.mdc1.mozilla.com
       - macmini-r8-185.test.releng.mdc1.mozilla.com
+      - macmini-r8-373.test.releng.mdc1.mozilla.com
+      - macmini-r8-374.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: mozillavpn_b_1_osx
 
