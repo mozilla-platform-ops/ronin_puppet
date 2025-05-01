@@ -118,10 +118,10 @@ define signing_worker (
   }
   exec { "install ${scriptworker_base} requirements":
     command     => "${virtualenv_dir}/bin/pip install -r ${requirements}",
+    cwd         => $scriptworker_base,  # new
     user        => $user,
     group       => $group,
     refreshonly => true,
-    # Make sure these are updated when they change
     subscribe   => [File[$requirements], Exec["install ${scriptworker_base} virtualenv"]],
     require     => [File[$requirements], Exec["install ${scriptworker_base} virtualenv"]],
   }
@@ -212,6 +212,7 @@ define signing_worker (
     # clean up the token, so we're stuck with this for now.
     exec { "clone widevine ${scriptworker_base}":
       command => "git clone https://${widevine_user}:${widevine_key}@github.com/mozilla-services/widevine ${widevine_clone_dir}",
+      cwd     => $scriptworker_base,  # new
       user    => $user,
       group   => $group,
       unless  => "test -d ${widevine_clone_dir}/src",

@@ -8,8 +8,6 @@ class roles_profiles::roles::mac_v4_signing_adhoc {
   include roles_profiles::profiles::hardware
   include fw::roles::mac_signing
   include roles_profiles::profiles::macos_people_remover
-  include roles_profiles::profiles::macos_signer_python
-  include roles_profiles::profiles::macos_signer_virtualenv_fixer
   include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::mac_v3_signing
   include roles_profiles::profiles::motd
