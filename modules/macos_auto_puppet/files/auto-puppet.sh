@@ -87,7 +87,7 @@ else
 fi
 
 # Ensure Puppet Repository Exists
-get_puppet_repo() {
+setup_local_puppet_manifest() {
     if [ ! -d "$LOCAL_PUPPET_REPO" ]; then
         fail "Local Puppet repository not found at $LOCAL_PUPPET_REPO"
     fi
@@ -110,7 +110,7 @@ EOF
 
 # Run Puppet
 run_puppet() {
-    get_puppet_repo
+    setup_local_puppet_manifest
     echo "Running puppet apply"
 
     PUPPET_OPTIONS=(
