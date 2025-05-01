@@ -17,6 +17,7 @@ workerConfig:
   cachesDir: "<%= $win_taskcluster::worker_runner::cache_dir %>"
   cleanUpTaskDirs: true
   disableReboots: false
+  disableOOMProtection: true
   downloadsDir: "<%= $win_taskcluster::worker_runner::downloads_dir %>"
   ed25519SigningKeyLocation: "<%= $win_taskcluster::worker_runner::ed25519signingkey %>"
   idleTimeoutSecs: <%= $win_taskcluster::worker_runner::idle_timeout %>
