@@ -5,6 +5,8 @@
 
 # Purpose: Bootstrap a macOS 14+ host from post-install (or image) to a complete Puppet run.
 
+set -e
+
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
