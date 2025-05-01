@@ -4,7 +4,7 @@
   "cleanUpTaskDirs": true,
   "clientId": "<%= $win_generic_worker::generic_worker::client_id %>",
   "disableReboots": true,
-  "disableOOMProtection": true
+  "disableOOMProtection": true,
   "downloadsDir": "<%= $win_generic_worker::generic_worker::downloads_dir %>",
   "ed25519SigningKeyLocation": "<%= $win_generic_worker::generic_worker::ed25519signingkey %>",
   "idleTimeoutSecs": <%= $win_generic_worker::generic_worker::idle_timeout %>,
