@@ -5,14 +5,7 @@
 class win_packages::mercurial {
   $needed_hg_ver = lookup('win-worker.hg.version')
 
-  case $facts['custom_win_location'] {
-    'datacenter': {
-      $srcloc = lookup('windows.s3.ext_pkg_src')
-    }
-    default: {
-      $srcloc = lookup('windows.ext_pkg_src')
-    }
-  }
+  $srcloc = lookup('windows.ext_pkg_src')
 
   ## CLEAN UP: version should be in Hiera
   ## looked up in profile and passed to this class.

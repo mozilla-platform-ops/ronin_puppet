@@ -8,14 +8,7 @@ class win_mozilla_build::modifications {
   require win_mozilla_build::install
 
   $mozbld = "C:\\mozilla-build"
-  case $facts['custom_win_location'] {
-    'datacenter': {
-      $srcloc = lookup('windows.s3.ext_pkg_src')
-    }
-    default: {
-      $srcloc = lookup('windows.ext_pkg_src')
-    }
-  }
+  $srcloc = lookup('windows.ext_pkg_src')
 
   windows::environment { 'MOZILLABUILD':
     value => $mozbld,

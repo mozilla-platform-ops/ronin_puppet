@@ -6,7 +6,6 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
   $mozbld = "C:\\mozilla-build"
   case $facts['custom_win_location'] {
     'azure': {
-      $srcloc = lookup('windows.ext_pkg_src')
       if $facts['custom_win_os_arch'] != 'aarch64' {
         $cache_drive = 'd:'
       }
@@ -16,12 +15,12 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
     }
     'datacenter': {
       $cache_drive = 'c:'
-      $srcloc       = lookup('windows.s3.ext_pkg_src')
     }
     default: {
       fail('custom_win_location not supported')
     }
   }
+  $srcloc = lookup('windows.ext_pkg_src')
 
   file { "${cache_drive}\\hg-shared":
     ensure => directory,
