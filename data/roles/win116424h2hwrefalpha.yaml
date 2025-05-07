@@ -4,7 +4,7 @@ win-worker:
   function: "tester"
   generic_worker:
     client_id: "project/releng/generic-worker/win11-64-24h2-hw-ref-alpha"
-
+    
   # Mozilla-build
   mozilla_build:
     version: '4.1'
