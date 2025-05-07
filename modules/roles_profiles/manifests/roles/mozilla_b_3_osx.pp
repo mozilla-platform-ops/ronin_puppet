@@ -10,7 +10,7 @@ class roles_profiles::roles::mozilla_b_3_osx {
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::packages_installed
-  include roles_profiles::profiles::pipconf
+  #include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::talos
