@@ -2,10 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_mozilla_build_new::install_zstandard {
-  require win_mozilla_build_new::install
+## CLEAN UP: lookups should be in the profile and passed to this class.
 
-  $zstandard_version = lookup('win-worker.mozilla_build.zstandard_version')
+class win_mozilla_build::install_zstandard {
+  require win_mozilla_build::install
+
+  $zstandard_version = lookup('windows.mozilla_build.zstandard_version')
   $pip_string  = "-m pip install zstandard==${zstandard_version}"
   $create_path = 'Lib\\site-packages\\zstandard\\__init__.py'
 

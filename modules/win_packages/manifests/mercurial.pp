@@ -14,6 +14,8 @@ class win_packages::mercurial {
     }
   }
 
+  ## CLEAN UP: version should be in Hiera
+  ## looked up in profile and passed to this class.
   case $needed_hg_ver {
     '6.2.1': {
       $install_opts = ['/quiet']

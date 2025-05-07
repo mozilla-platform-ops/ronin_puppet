@@ -3,52 +3,76 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::mozbuild_post_boostrap {
-
-    case $facts['os']['name'] {
-        'Windows': {
-
-            # Current versions Determined in /modules/win_shared/facts.d/facts_win_mozilla_build.ps1
-
-            case $facts['custom_win_os_version'] {
-                'win_2022_2009': {
-                    if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-                        $cache_drive  = 'd:'
-                    } else {
-                        $cache_drive  = $facts['custom_win_systemdrive']
-                    }
-                }
-                default: {
-                    if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-                        $cache_drive  = 'y:'
-                    } else {
-                        $cache_drive  = $facts['custom_win_systemdrive']
-                    }
-                }
-            }
-
-            # tooltool token is not needed with worker-runner
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1624900#c1
-            # As worker-runner support is expanded this conditional will expand as well
-            # Once worker-runner is fully implemented then this support can be removed
-            $tooltool_tok = $facts['custom_win_location'] ? {
-                'azure' => undef,
-                default => lookup('tooltool_tok')
-            }
-
-            class { 'win_mozilla_build::post_boostrap':
-                install_path  => "${facts['custom_win_systemdrive']}\\mozilla-build",
-                system_drive  => $facts['custom_win_systemdrive'],
-                cache_drive   => $cache_drive,
-                program_files => $facts['custom_win_programfiles'],
-                programdata   => $facts['custom_win_programdata'],
-                tempdir       => $facts['custom_win_temp_dir'],
-                system32      => $facts['custom_win_system32'],
-                builds_dir    => "${facts['custom_win_systemdrive']}\\builds",
-                tooltool_tok  => $tooltool_tok,
-            }
-        }
-        default: {
-            fail("${facts['os']['name']} not supported")
-        }
+  $mozbld = "C:\\mozilla-build"
+  case $facts['custom_win_location'] {
+    'azure': {
+      $srcloc = lookup('windows.ext_pkg_src')
+      if $facts['custom_win_os_arch'] != 'aarch64' {
+        $cache_drive = 'd:'
+      }
+      else {
+        $cache_drive = 'c:'
+      }
     }
+    'datacenter': {
+      $cache_drive = 'c:'
+      $srcloc       = lookup('windows.s3.ext_pkg_src')
+    }
+    default: {
+      fail('custom_win_location not supported')
+    }
+  }
+
+  file { "${cache_drive}\\hg-shared":
+    ensure => directory,
+  }
+
+  acl { "${cache_drive}\\hg-shared":
+    target      => "${cache_drive}\\hg-shared",
+    permissions => {
+      identity                   => 'everyone',
+      rights                     => ['full'],
+      perm_type                  => 'allow',
+      child_types                => 'all',
+      affects                    => 'all',
+      inherit_parent_permissions => true,
+    },
+  }
+
+  case lookup('win-worker.function') {
+    'builder': {
+      file { "C:\\mozilla-build\\mozmake":
+        ensure => directory,
+      }
+      file { "C:\\mozilla-build\\mozmake\\mozmake.exe":
+        ensure => file,
+        source => "${$srcloc}/mozmake.exe",
+      }
+      file { "C:\\mozilla-build\\builds":
+        ensure => directory,
+      }
+
+      windows_env { "PATH=${mozbld}\\bin": }
+      windows_env { "PATH=${mozbld}\\kdiff3": }
+      windows_env { "PATH=${mozbld}\\msys2": }
+      windows_env { "PATH=${mozbld}\\python3": }
+      windows_env { "PATH=${mozbld}\\msys2\\usr\\bin": }
+      windows_env { "PATH=${mozbld}\\mozmake": }
+
+      exec { 'setmsys2path':
+        command  => file('win_mozilla_build_new/set_path.ps1.'),
+        provider => powershell,
+      }
+    }
+    'tester': {
+      windows_env { "PATH=${mozbld}\\bin": }
+      windows_env { "PATH=${mozbld}\\kdiff3": }
+      windows_env { "PATH=${mozbld}\\msys2": }
+      windows_env { "PATH=${mozbld}\\python3": }
+      windows_env { "PATH=${mozbld}\\msys2\\usr\\bin": }
+    }
+    default: {
+      fail("${$facts['os']['name']} not supported")
+    }
+  }
 }

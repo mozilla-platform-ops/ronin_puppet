@@ -8,7 +8,7 @@ class roles_profiles::profiles::windows_worker_runner {
         'Windows': {
 
             $nssm_dir              = lookup('windows.dir.nssm')
-            $nssm_version          = lookup('win-worker.nssm.version')
+            $nssm_version          = lookup('windows.nssm.version')
             if $facts['os']['architecture'] == 'x86' {
                 $arch = 'win32'
             } else {
@@ -24,23 +24,25 @@ class roles_profiles::profiles::windows_worker_runner {
                     $ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
                 }
             }
+            $taskcluster_version    =
+                lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.version'])
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
-            $gw_name               = lookup('win-worker.generic_worker.name')
-            $desired_gw_version    = lookup('win-worker.generic_worker.version')
+            $gw_name               = lookup('windows.taskcluster.generic-worker.name.amd64')
+            $desired_gw_version    = $taskcluster_version
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
 
-            $desired_proxy_version = lookup('win-worker.taskcluster.proxy.version')
-            $proxy_name            = lookup('win-worker.taskcluster.proxy.name')
+            $desired_proxy_version = $taskcluster_version
+            $proxy_name            = lookup('windows.taskcluster.proxy.name.amd64')
 
             # Livelog command does not have a version flag
             # Locking the version file name
-            $livelog_name          = lookup('win-worker.taskcluster.livelog.name')
-            $livelog_version       = lookup('win-worker.taskcluster.livelog.version')
+            $livelog_name          = lookup('windows.taskcluster.livelog.name.amd64')
+            $livelog_version       = $taskcluster_version
 
             $worker_runner_dir     = lookup('windows.dir.worker_runner')
-            $runner_name           = lookup('win-worker.taskcluster.worker_runner.name')
-            $desired_rnr_version   = lookup('win-worker.taskcluster.worker_runner.version')
+            $runner_name           = lookup('windows.taskcluster.worker_runner.name.amd64')
+            $desired_rnr_version   = $taskcluster_version
             $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
             $provider              = lookup('win-worker.taskcluster.worker_runner.provider')
             $implementation        = lookup('win-worker.taskcluster.worker_runner.implementation')
