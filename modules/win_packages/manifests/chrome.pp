@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::chrome {
-  $google_chrome_version = lookup('win-worker.googlechrome.version')
+  $google_chrome_version = lookup('windows.googlechrome.version')
 
   ## Block googleupdate.exe to prevent installing an updating version of chrome outside of chocolatey
   windows_firewall::exception { 'googleupdate':
@@ -17,7 +17,7 @@ class win_packages::chrome {
     program      => 'C:\\Program Files (x86)\\Google\\Update\\GoogleUpdate.exe',
   }
 
-  ## Registry path for google update 
+  ## Registry path for google update
   $googleupdate_key = "HKLM\\SOFTWARE\\Policies\\Google\\Update"
   registry_key { $googleupdate_key:
     ensure => present,
@@ -37,12 +37,12 @@ class win_packages::chrome {
 
   $googleupdate_disable = [
     "${googleupdate_key}\\AutoUpdateCheckPeriodMinutes", ## Minutes between update checks https://admx.help/?Category=GoogleUpdate&Policy=Google.Policies.Update::Pol_AutoUpdateCheckPeriod
-    "${googleupdate_key}\\UpdateDefault", ## Updates disabled https://admx.help/?Category=GoogleUpdate&Policy=Google.Policies.Update::Pol_DefaultUpdatePolicy 
+    "${googleupdate_key}\\UpdateDefault", ## Updates disabled https://admx.help/?Category=GoogleUpdate&Policy=Google.Policies.Update::Pol_DefaultUpdatePolicy
     "${googleupdate_key}\\Update{8A69D345-D564-463C-AFF1-A69D9E530F96}", ## Updates disabled https://admx.help/?Category=GoogleUpdate&Policy=Google.Policies.Update::Pol_UpdatePolicyGoogleChrome
   ]
 
   $googleupdate_enable = [
-    "${googleupdate_key}\\DisableAutoUpdateChecksCheckboxValue", ## http://googlesystem.blogspot.com/2009/05/customize-or-disable-google-update.html 
+    "${googleupdate_key}\\DisableAutoUpdateChecksCheckboxValue", ## http://googlesystem.blogspot.com/2009/05/customize-or-disable-google-update.html
   ]
 
   registry_value { $googleupdate_disable:

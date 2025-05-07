@@ -78,6 +78,8 @@ windows:
     psutil_version: '5.9.4'
   git:
     version: '2.49.0'
+  googlechrome:
+    version: 'latest'
   gpu-latest:
     name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
     display_name: "NVIDIA Graphics Driver 538.15"
