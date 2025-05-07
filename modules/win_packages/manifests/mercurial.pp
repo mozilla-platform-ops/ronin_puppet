@@ -3,12 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::mercurial {
-  $needed_hg_ver = lookup('win-worker.hg.version')
-
-  $srcloc = lookup('windows.ext_pkg_src')
 
   ## CLEAN UP: version should be in Hiera
   ## looked up in profile and passed to this class.
+
+  $needed_hg_ver = lookup('windows.hg.version')
+  $srcloc = lookup('windows.ext_pkg_src')
+
   case $needed_hg_ver {
     '6.2.1': {
       $install_opts = ['/quiet']
