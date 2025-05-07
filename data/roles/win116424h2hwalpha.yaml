@@ -2,31 +2,8 @@
 
 win-worker:
   function: "tester"
-  # generic-worker
   generic_worker:
-    # File versions
-    name: "generic-worker-multiuser-windows-amd64"
-    version: '83.5.7'
     client_id: "project/releng/generic-worker/win11-64-24h2-hw-alpha"
-    idle_timeout: 0
-
-  taskcluster:
-    worker_runner:
-        provisionerId: 'releng-hardware'
-        name: 'start-worker-windows-amd64'
-        version: '83.5.7'
-        provider: "standalone"
-        implementation: "generic-worker"
-    proxy:
-        name: "taskcluster-proxy-windows-amd64"
-        version: '83.5.7'
-    # Refrencing the file directly with version in it
-    # Since there is no programtic way to check the version of the livelog exe
-    livelog:
-        name: "livelog-windows-amd64"
-        version: '83.5.7'
-    client_id: "azure/gecko-t/win11-64-24h2-hw-alpha"
-    worker_group: "mdc1"
 
   # Mozilla-build
   mozilla_build:
@@ -54,3 +31,6 @@ win-worker:
   # Logging level options debug, verbose, or restricted.
   log:
     level: "verbose"
+  ## Use to overwrite values in the Windows yaml file.
+  ## Replace windows. with win-worker.variant.
+  variant:

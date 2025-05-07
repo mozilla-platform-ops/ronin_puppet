@@ -59,3 +59,7 @@ if (test-path "HKLM:\SOFTWARE\Mozilla\ronin_puppet") {
 # Get worker pool ID
 $worker_pool_id = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").worker_pool_id
 write-host "custom_win_worker_pool_id=$worker_pool_id"
+
+# Get deployment ID
+$deployment_id = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").GITHASH
+write-host "custom_win_deployment_id=$deployment_id"

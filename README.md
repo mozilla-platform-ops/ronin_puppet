@@ -131,3 +131,27 @@ bundle install
 - refactor kitchen testing
   - rename linux kitchen env to base
   - create a talos kitchen env for non-base
+
+  ## Commit Structure for Worker-Images Related PRs
+
+## Commit Structure for Worker-Images Related PRs
+
+The [Worker-Images repo](https://github.com/mozilla-platform-ops/worker-images) supports parsing the Ronin Puppet Git commit log to generate changelogs. For this functionality to work correctly, specific tags and values must be present in commit messages.
+
+#### Examples
+```
+FEAT: Jira:RELOPS-1266 Bug1953982 MSG: Testing all-win role flag
+Roles: All-WIN Location: All
+```
+```
+FIX: Jira:RELOPS-1266 Bug1953982 MSG: Remove Webviewer role due to Puppet failures
+roles: win11-64-2009-notes Location: Azure
+```
+
+#### Explanation
+
+- `FIX:` – Conventional commit type, followed by a colon. Acceptable values include `FEAT`, `FIX`, `CHORE`, etc.
+- `Jira:RELOPS-1266` – To link the changelog to a Jira ticket, the `Jira:` tag must be present, followed by the ticket ID.
+- `MSG:` – This tag should be followed by a concise explanation of the changes.
+- `Roles:` – A comma-separated list of roles affected by the change. These should match the [config file](https://github.com/mozilla-platform-ops/worker-images/tree/main/config) names for the relevant images. You may also use special values like `ALL-WIN` or `ALL-HW-WIN`.
+- `Location:` *(Optional)* – Indicates the location of the affected workers.

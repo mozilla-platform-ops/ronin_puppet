@@ -32,9 +32,8 @@ class roles_profiles::roles::win10642009hw {
   include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build_new
   include roles_profiles::profiles::mozilla_maintenance_service
-  include roles_profiles::profiles::windows_worker_runner
   include roles_profiles::profiles::windows_datacenter_administrator
-  ## Commented out to get these workers up. 
-  ## https://mozilla-hub.atlassian.net/browse/RELOPS-1466
-  # include roles_profiles::profiles::google_chrome
+  include roles_profiles::profiles::google_chrome
+  include roles_profiles::profiles::windows_generic_worker_standalone
+
 }
