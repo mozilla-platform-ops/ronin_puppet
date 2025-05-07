@@ -17,7 +17,7 @@ class roles_profiles::roles::win116424h2azure {
       ## Change log level from verbose to whatever hiera lookup is
       include roles_profiles::profiles::logging
       ## We need to configure the cache drive and hg-shared in this profile
-      include roles_profiles::profiles::mozbuild_post_boostrap_new
+      include roles_profiles::profiles::mozbuild_post_boostrap
       ## Set network to private
       include roles_profiles::profiles::network
       ## set UTC
@@ -54,7 +54,7 @@ class roles_profiles::roles::win116424h2azure {
 
       # Worker
       include roles_profiles::profiles::git
-      include roles_profiles::profiles::mozilla_build_new
+      include roles_profiles::profiles::mozilla_build
       include roles_profiles::profiles::mozilla_maintenance_service
       include roles_profiles::profiles::windows_worker_runner
     }
