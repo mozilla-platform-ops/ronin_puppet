@@ -91,7 +91,7 @@ function Invoke-DownloadWithRetry {
 $Dll = Invoke-DownloadwithRetry -Url $File
 
 ## install the DLL
-$process = Start-Process -FilePath "regsvr32.exe" -ArgumentList "/s $Dll" -Wait -NoNewWindow
+$process = Start-Process -FilePath "regsvr32.exe" -ArgumentList "/s $Dll" -Wait -NoNewWindow -PassThru
 if ($process.ExitCode -eq 0) {
     exit 0
 }
