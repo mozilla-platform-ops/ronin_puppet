@@ -44,7 +44,7 @@ windows:
     livelog:
       name:
         amd64: "livelog-windows-amd64"
-    hardware_idle_timeout: 120
+    hardware_idle_timeout: 14400
 
   # Windows KMS
   # KMS keys are publicly available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
