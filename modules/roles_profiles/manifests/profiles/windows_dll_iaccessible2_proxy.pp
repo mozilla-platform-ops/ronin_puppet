@@ -5,17 +5,7 @@
 class roles_profiles::profiles::windows_dll_iaccessible2_proxy {
   case $facts['os']['name'] {
     'Windows': {
-      case $facts['custom_win_location'] {
-        'datacenter': {
-          $srcloc = lookup('windows.s3.ext_pkg_src')
-        }
-        default: {
-          $srcloc = lookup('windows.ext_pkg_src')
-        }
-      }
-
-      class { 'win_packages::windows_dll_iaccessible2_proxy' :
-        file     => "${srcloc}/IAccessible2proxy.dll",
+      class { 'win_packages::windows_dll_iaccessible2_proxy':
       }
     }
     default: {

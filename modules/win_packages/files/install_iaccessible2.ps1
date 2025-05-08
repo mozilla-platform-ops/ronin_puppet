@@ -1,10 +1,3 @@
-[CmdletBinding()]
-param (
-    [Parameter()]
-    [String]
-    $File
-)
-
 function Invoke-DownloadWithRetry {
     <#
     .SYNOPSIS
@@ -87,6 +80,8 @@ function Invoke-DownloadWithRetry {
 
     return $Path
 }
+
+$File = "https://roninpuppetassets.blob.core.windows.net/binaries/IAccessible2proxy.dll"
 
 $Dll = Invoke-DownloadwithRetry -Url $File
 
