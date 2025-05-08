@@ -14,7 +14,7 @@ class roles_profiles::profiles::windows_dll_iaccessible2_proxy {
         }
       }
 
-      class { 'win_packages::dll::windows_dll_iaccessible2_proxy' :
+      class { 'win_packages::windows_dll_iaccessible2_proxy' :
         file     => "${srcloc}/IAccessible2proxy.dll",
       }
     }
