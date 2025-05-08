@@ -41,7 +41,7 @@ windows:
     source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
-# Software and related values
+  # Software and related values
   # azure blob resources
   ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
   ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
@@ -89,3 +89,7 @@ windows:
     version: '2.24'
   vac:
     version: '464'
+  azure:
+    vm_agent:
+      version: '2.7.41491.1057_2205251057.fre'
+      display_name: "Windows Azure VM Agent - 2.7.41491.1057"
