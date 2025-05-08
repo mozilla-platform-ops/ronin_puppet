@@ -44,6 +44,7 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::azure_vm_agent
       include roles_profiles::profiles::virtual_drivers
       include roles_profiles::profiles::gpu_drivers
+      include roles_profiles::profiles::windows_dll_iaccessible2_proxy
 
       # Skip OOBE
       include roles_profiles::profiles::oobe
