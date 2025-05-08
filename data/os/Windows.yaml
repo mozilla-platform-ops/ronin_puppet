@@ -67,8 +67,8 @@ windows:
     worker_runner:
       name:
         amd64: "start-worker-windows-amd64"
-        provider: "azure"
-        implementation: "generic-worker"
+      provider: "azure"
+      implementation: "generic-worker"
     hardware_idle_timeout: 120
 
   # Mozilla-Build
