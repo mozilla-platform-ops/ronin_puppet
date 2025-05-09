@@ -54,6 +54,7 @@ groups:
       - macmini-r8-155.test.releng.mdc1.mozilla.com
       - macmini-r8-157.test.releng.mdc1.mozilla.com
       - macmini-r8-159.test.releng.mdc1.mozilla.com
+      - macmini-r8-160.test.releng.mdc1.mozilla.com
       - macmini-r8-162.test.releng.mdc1.mozilla.com
       - macmini-r8-165.test.releng.mdc1.mozilla.com
       - macmini-r8-166.test.releng.mdc1.mozilla.com
@@ -72,6 +73,7 @@ groups:
       - macmini-r8-192.test.releng.mdc1.mozilla.com
       - macmini-r8-203.test.releng.mdc1.mozilla.com
       - macmini-r8-204.test.releng.mdc1.mozilla.com
+      - macmini-r8-205.test.releng.mdc1.mozilla.com
       - macmini-r8-208.test.releng.mdc1.mozilla.com
       - macmini-r8-209.test.releng.mdc1.mozilla.com
       - macmini-r8-211.test.releng.mdc1.mozilla.com
@@ -90,40 +92,11 @@ groups:
 
   - name: gecko-t-osx-1015-r8-staging
     targets:
-      - macmini-r8-121.test.releng.mdc1.mozilla.com
       - macmini-r8-125.test.releng.mdc1.mozilla.com
       - macmini-r8-126.test.releng.mdc1.mozilla.com
       - macmini-r8-127.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1015_r8_staging
-
-  - name: gecko-t-osx-1100-r8-latest
-    targets:
-      - macmini-r8-371.test.releng.mdc1.mozilla.com
-      - macmini-r8-372.test.releng.mdc1.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1100_r8_latest
-
-  - name: gecko-t-osx-1200-r8-latest
-    targets:
-      - macmini-r8-366.test.releng.mdc1.mozilla.com
-      - macmini-r8-367.test.releng.mdc1.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1200_r8_latest
-
-  - name: gecko-t-osx-1300-r8-latest
-    targets:
-      - macmini-r8-362.test.releng.mdc1.mozilla.com
-      - macmini-r8-364.test.releng.mdc1.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1300_r8_latest
-
-  - name: gecko-t-osx-1400-r8-latest
-    targets:
-      # - macmini-r8-373.test.releng.mdc1.mozilla.com
-      # - macmini-r8-374.test.releng.mdc1.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1400_r8_latest
 
   - name: gecko-1-b-osx-1015
     targets:
@@ -167,8 +140,6 @@ groups:
 
   - name: mozillavpn-b-1-osx
     targets:
-      - macmini-r8-179.test.releng.mdc1.mozilla.com
-      - macmini-r8-182.test.releng.mdc1.mozilla.com
       - macmini-r8-183.test.releng.mdc1.mozilla.com
       - macmini-r8-185.test.releng.mdc1.mozilla.com
       - macmini-r8-373.test.releng.mdc1.mozilla.com
@@ -178,6 +149,7 @@ groups:
 
   - name: mozillavpn-b-3-osx
     targets:
+      - macmini-r8-102.test.releng.mdc1.mozilla.com
       - macmini-r8-180.test.releng.mdc1.mozilla.com
       - macmini-r8-184.test.releng.mdc1.mozilla.com
     facts:
@@ -249,6 +221,7 @@ groups:
       - macmini-r8-37.test.releng.mdc1.mozilla.com
       - macmini-r8-38.test.releng.mdc1.mozilla.com
       - macmini-r8-39.test.releng.mdc1.mozilla.com
+      - macmini-r8-40.test.releng.mdc1.mozilla.com
       - macmini-r8-41.test.releng.mdc1.mozilla.com
       - macmini-r8-42.test.releng.mdc1.mozilla.com
       - macmini-r8-43.test.releng.mdc1.mozilla.com
