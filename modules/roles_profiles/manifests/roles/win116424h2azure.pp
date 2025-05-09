@@ -14,6 +14,8 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::files_system_managment
       ## gpu drivers are needed for gpu images
       include roles_profiles::profiles::gpu_drivers
+      ## we need to load this after the worker gets deployed
+      include roles_profiles::profiles::windows_iaccessible2proxy
       ## Change log level from verbose to whatever hiera lookup is
       include roles_profiles::profiles::logging
       ## We need to configure the cache drive and hg-shared in this profile
@@ -44,7 +46,7 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::azure_vm_agent
       include roles_profiles::profiles::virtual_drivers
       include roles_profiles::profiles::gpu_drivers
-      include roles_profiles::profiles::windows_dll_iaccessible2_proxy
+      include roles_profiles::profiles::windows_iaccessible2proxy
 
       # Skip OOBE
       include roles_profiles::profiles::oobe
