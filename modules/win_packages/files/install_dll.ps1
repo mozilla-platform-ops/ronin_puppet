@@ -1,0 +1,20 @@
+Param(
+    [Parameter(Mandatory = $true)]
+    [string]
+    $Path
+)
+
+## install the DLL
+$process = Start-Process -FilePath "regsvr32.exe" -ArgumentList "/s $path" -Wait -NoNewWindow -PassThru
+
+## validate the install
+$results = Get-ChildItem -Path Registry::HKEY_CLASSES_ROOT\CLSID -Recurse -ErrorAction SilentlyContinue | Where-Object {
+    (Get-ItemProperty -Path $_.PSPath -ErrorAction Stop)."(default)" -eq $path
+}
+
+if (-Not ([string]::IsNullOrEmpty($results))) {
+    exit 0
+}
+else {
+    exit 1
+}
