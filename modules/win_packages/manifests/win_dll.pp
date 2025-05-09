@@ -17,20 +17,27 @@ define win_packages::win_dll (
     }
   }
 
-  $url         = "${srcloc}/${dll_name}"
+  $url  = "${srcloc}/${dll_name}"
+  $path = "${pkgdir}\\${dll_name}"
 
   archive { $title:
     ensure  => 'present',
     source  => $url,
-    path    => "${pkgdir}\\${dll_name}",
-    creates => "${pkgdir}\\${dll_name}",
+    path    => $path,
+    creates => $path,
     cleanup => false,
     extract => false,
   }
 
-  exec { 'install_dll':
-    command  => file("win_packages/install_dll.ps1 -Path ${pkgdir}\\${dll_name}"),
+  file { 'dll_ps1':
+    ensure  => file,
+    content => template('win_packages/install_dll.ps1.erb'),
+  }
+
+  exec { 'install-dll':
     provider => powershell,
+    command  => "& ${dll_ps1}",
+    require  => File[$dll_ps1],
   }
 }
 # Bug List
