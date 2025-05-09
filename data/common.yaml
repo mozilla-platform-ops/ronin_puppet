@@ -141,11 +141,16 @@ scriptworker_users:
     cltbld:
       home: /builds/scriptworker
       supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_sign_hardened
         - mac_sign_and_pkg_vpn
         - mac_sign_hardened
         - mac_sign_and_pkg_hardened
+        - mac_geckodriver
+        - mac_single_file
       dmg_prefix: "prod"
-      cot_product: "mozillavpn"
+      cot_product: "adhoc"
       keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
 
@@ -166,7 +171,7 @@ scriptworker_config:
         worker_type: 'comm-signing-mac14m2'
         scriptworker_revision: "f3bb1095e460031f78e554ecb3ffe041014872fa"
         scriptworker_scripts_revision: "df364bcbae8c4ad40eaa3a8deb21d160f9a943f5"
-    vpn:
+    vpn-prod:
         vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
@@ -174,7 +179,7 @@ scriptworker_config:
         worker_type: 'mozillavpn-signing-mac14m2'
         scriptworker_revision: "f3bb1095e460031f78e554ecb3ffe041014872fa"
         scriptworker_scripts_revision: "df364bcbae8c4ad40eaa3a8deb21d160f9a943f5"
-    adhoc:
+    adhoc-prod:
         adhoc_taskcluster_scope_prefix: 'project:adhoc:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
