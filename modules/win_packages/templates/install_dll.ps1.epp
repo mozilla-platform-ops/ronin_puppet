@@ -1,4 +1,4 @@
-$Path = "<%= $win_packages::win_dll::path %>"
+$Path = "<%= $path %>"
 
 ## install the DLL
 $process = Start-Process -FilePath "regsvr32.exe" -ArgumentList "/s $path" -Wait -NoNewWindow -PassThru
