@@ -19,6 +19,7 @@ define win_packages::win_dll (
 
   $url  = "${srcloc}/${dll_name}"
   $path = "${pkgdir}\\${dll_name}"
+  $dll_ps1 = "${facts['custom_win_roninprogramdata']}\\install_dll.ps1"
 
   archive { $title:
     ensure  => 'present',
@@ -29,7 +30,7 @@ define win_packages::win_dll (
     extract => false,
   }
 
-  file { 'dll_ps1':
+  file { $dll_ps1:
     ensure  => file,
     content => epp('win_packages/install_dll.ps1.epp', {
         'path' => $path
@@ -38,8 +39,8 @@ define win_packages::win_dll (
 
   exec { 'install-dll':
     provider => powershell,
-    command  => "& ${dll_ps1}",
-    require  => File[$dll_ps1],
+    command  => $dll_ps1,
+    require  => [File[$dll_ps1], Archive[$title]],
   }
 }
 # Bug List
