@@ -31,7 +31,7 @@ define win_packages::win_dll (
 
   file { 'dll_ps1':
     ensure  => file,
-    content => template('win_packages/install_dll.ps1.epp', {
+    content => epp('win_packages/install_dll.ps1.epp', {
         'path' => $path
     }),
   }
