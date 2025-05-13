@@ -1,23 +1,6 @@
 ---
 name: macmini-m2
 groups:
-  - name: gecko-t-osx-1400-m2-staging
-    targets:
-      - macmini-m2-8.test.releng.mslv.mozilla.com
-      - macmini-m2-13.test.releng.mslv.mozilla.com
-      - macmini-m2-14.test.releng.mslv.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1400_m2_staging
-
-  - name: gecko-t-osx-1400-m2
-    targets:
-      - macmini-m2-6.test.releng.mslv.mozilla.com
-      - macmini-m2-7.test.releng.mslv.mozilla.com
-      - macmini-m2-11.test.releng.mslv.mozilla.com
-      - macmini-m2-12.test.releng.mslv.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1400_m2
-
   - name: gecko-1-b-osx-arm64
     targets:
       - macmini-m2-9.test.releng.mslv.mozilla.com
@@ -33,27 +16,3 @@ groups:
 
     facts:
       puppet_role: gecko_3_b_osx_arm64
-
-  - name: mozilla-b-1-osx
-    targets:
-      - macmini-m2-18.test.releng.mslv.mozilla.com
-    facts:
-      puppet_role: mozilla_b_1_osx
-
-  - name: mozilla-b-3-osx
-    targets:
-      - macmini-m2-19.test.releng.mslv.mozilla.com
-    facts:
-      puppet_role: mozilla_b_3_osx
-
-  - name: gecko-t-osx-1400-m-vms
-    targets:
-      - vm-runner-14-1.local
-    facts:
-      puppet_role: gecko_t_osx_1400_m_vms
-
-  - name: gecko-t-osx-1500-m-vms
-    targets:
-      - vm-runner-5-1.local
-    facts:
-      puppet_role: gecko_t_osx_1500_m_vms
