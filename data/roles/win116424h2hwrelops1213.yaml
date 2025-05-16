@@ -6,30 +6,16 @@ win-worker:
   generic_worker:
     client_id: "project/releng/generic-worker/win11-64-24h2-hw-relops1213"
 
-  # Mozilla-build
-  mozilla_build:
-    version: '4.1'
-    zstandard_version: '0.19.0'
-    psutil_version: '5.9.4'
-
   # Mozilla profile
   mozilla_profile:
     source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
-  # Applications
-  googlechrome:
-    version: 'latest'
-  git:
-    version: '2.37.3'
-  hg:
-    version: '6.2.1'
-  vac:
-    version: '464'
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
     level: "restricted"
+
   variant:
     #taskcluster:
       #version: '81.0.3'

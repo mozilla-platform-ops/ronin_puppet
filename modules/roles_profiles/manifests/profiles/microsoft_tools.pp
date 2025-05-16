@@ -8,8 +8,8 @@ class roles_profiles::profiles::microsoft_tools {
     'Windows': {
       include win_shared::win_ronin_dirs
       class { 'win_packages::performance_tool_kit':
-        moz_profile_source => lookup('win-worker.mozilla_profile.source'),
-        moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
+        moz_profile_source => lookup('windows.mozilla_profile.source'),
+        moz_profile_file   => lookup('windows.mozilla_profile.local'),
       }
 
       $func = lookup('win-worker.function')

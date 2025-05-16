@@ -7,17 +7,9 @@ class roles_profiles::profiles::virtual_drivers {
     'Windows': {
       $flags    = '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
       $vac_dir  = lookup('windows.dir.vac')
-      $version  = lookup('win-worker.vac.version')
+      $version  = lookup('windows.vac.version')
       $work_dir = "${vac_dir}\\vac${version}"
-
-      case $facts['custom_win_location'] {
-        'datacenter': {
-          $srcloc       = lookup('windows.s3.ext_pkg_src')
-        }
-        default: {
-          $srcloc = lookup('windows.ext_pkg_src')
-        }
-      }
+      $srcloc = lookup('windows.ext_pkg_src')
 
       class { 'win_packages::vac':
         flags    => $flags,
