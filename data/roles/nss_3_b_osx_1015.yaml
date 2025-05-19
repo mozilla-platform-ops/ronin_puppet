@@ -20,6 +20,7 @@ worker:
 
 packages_classes:
   - mercurial
+  - python3
 
 packages::mercurial::version: 6.4.5
 packages::python3::version: 3.11.0
