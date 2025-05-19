@@ -4,7 +4,7 @@ $Path = "<%= $path %>"
 $process = Start-Process -FilePath "regsvr32.exe" -ArgumentList "/s $path" -Wait -NoNewWindow -PassThru
 
 ## validate the install
-$results = Get-ChildItem -Path Registry::HKEY_CLASSES_ROOT\CLSID -Recurse -ErrorAction SilentlyContinue | Where-Object {
+$results = Get-ChildItem -Path HKLM:\SOFTWARE\Classes\CLSID -Recurse -ErrorAction SilentlyContinue | Where-Object {
     (Get-ItemProperty -Path $_.PSPath -ErrorAction Stop)."(default)" -eq $path
 }
 
