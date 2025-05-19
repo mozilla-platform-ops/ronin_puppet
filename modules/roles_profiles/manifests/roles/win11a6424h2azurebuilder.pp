@@ -10,7 +10,7 @@ class roles_profiles::roles::win11a6424h2azurebuilder {
       include roles_profiles::profiles::error_reporting
       include roles_profiles::profiles::files_system_managment
       include roles_profiles::profiles::logging
-      include roles_profiles::profiles::mozbuild_post_boostrap_new
+      include roles_profiles::profiles::mozbuild_post_boostrap
       include roles_profiles::profiles::network
       include roles_profiles::profiles::ntp
     }
@@ -38,7 +38,7 @@ class roles_profiles::roles::win11a6424h2azurebuilder {
       include roles_profiles::profiles::google_auth
       include roles_profiles::profiles::git
       include roles_profiles::profiles::gpg4win
-      include roles_profiles::profiles::mozilla_build_new
+      include roles_profiles::profiles::mozilla_build
       include roles_profiles::profiles::windows_worker_runner
     }
   }

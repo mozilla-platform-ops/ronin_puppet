@@ -27,9 +27,9 @@ class roles_profiles::roles::win116424h2hwperfsheriff {
 
   # Worker
   include roles_profiles::profiles::git
-  include roles_profiles::profiles::mozilla_build_new
+  include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
-  include roles_profiles::profiles::windows_worker_runner
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::google_chrome
+  include roles_profiles::profiles::windows_generic_worker_standalone
 }

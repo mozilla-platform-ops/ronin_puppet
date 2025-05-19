@@ -7,7 +7,7 @@ class roles_profiles::profiles::git {
     include chocolatey
     case $facts['os']['name'] {
       'Windows': {
-        $git_version = lookup('win-worker.git.version')
+        $git_version = lookup('windows.git.version')
 
         package { 'git':
           ensure   => $git_version,

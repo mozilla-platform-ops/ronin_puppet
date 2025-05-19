@@ -1,5 +1,4 @@
 ---
-
 windows:
 
 # Datacnter resources
@@ -20,12 +19,33 @@ windows:
     ntp: "0.pool.ntp.org"
     papertrail: "logs.papertrailapp.com"
 
+  # Windows KMS
+  # KMS keys are publicly available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
+  kms:
+    key:
+      microsoft_windows_11_enterprise: "NPPR9-FWDCX-D2C8J-H872K-2YT43"
+      microsoft_windows_10_enterprise: "NPPR9-FWDCX-D2C8J-H872K-2YT43"
+
+
+  # Common dirs across all Windows platforms
+  dir:
+    generic_worker: "%{facts.custom_win_systemdrive}\\generic-worker"
+    worker_runner: "%{facts.custom_win_systemdrive}\\worker-runner"
+    nssm: "%{facts.custom_win_systemdrive}\\nssm"
+    vac: "%{facts.custom_win_systemdrive}\\VAC"
+
+  winaudit_ssh: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/htVXFyRg4wDhIIl8rCUBwI2QhkzNkUDgfT+uBy5Ni8PZGu/5KfVTBQyFIAv5hbe9O+koakGElcQxwNhYOm6YbYwbht+rJt7GTh9PKGRhcRBIrOb1v1x032ZXkMoBkHpQPnD7pBky5hVRkrEaXDGrg/NxhFMr2HgbfOvWPX7NGaQ0WJky7oMvEKB7kTnCYZkogzuvu4rtUDF2FzINn91IaXfi9LDPLZnlGSZ1h03yiezbuY+NePNJOuRj4QoVuCsdj6nZ5X9JeDMClOZpn2RCtzsEPPYnBgH0m6cYFUvcRV9AkRp4Q1wA+HIcBprTw1eWbknmt4qFH7vkXQCNUozl win_audit'
+
+  # Mozilla profile
+  mozilla_profile:
+    source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
+    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
+
+  # Software and related values
   # azure blob resources
   ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
   ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
 
-  s3:
-    ext_pkg_src: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows"
   # Taskcluster resources
   taskcluster:
     root_url: "https://firefox-ci-tc.services.mozilla.com"
@@ -44,29 +64,35 @@ windows:
     livelog:
       name:
         amd64: "livelog-windows-amd64"
+    worker_runner:
+      name:
+        amd64: "start-worker-windows-amd64"
+      provider: "azure"
+      implementation: "generic-worker"
     hardware_idle_timeout: 14400
 
-  # Windows KMS
-  # KMS keys are publicly available https://docs.microsoft.com/en-us/windows-server/get-started/kmsclientkeys
-  kms:
-    key:
-      microsoft_windows_11_enterprise: "NPPR9-FWDCX-D2C8J-H872K-2YT43"
-      microsoft_windows_10_enterprise: "NPPR9-FWDCX-D2C8J-H872K-2YT43"
 
-
-  # Common dirs across all Windows platforms
-  dir:
-    generic_worker: "%{facts.custom_win_systemdrive}\\generic-worker"
-    worker_runner: "%{facts.custom_win_systemdrive}\\worker-runner"
-    nssm: "%{facts.custom_win_systemdrive}\\nssm"
-    vac: "%{facts.custom_win_systemdrive}\\VAC"
-
-  winaudit_ssh: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/htVXFyRg4wDhIIl8rCUBwI2QhkzNkUDgfT+uBy5Ni8PZGu/5KfVTBQyFIAv5hbe9O+koakGElcQxwNhYOm6YbYwbht+rJt7GTh9PKGRhcRBIrOb1v1x032ZXkMoBkHpQPnD7pBky5hVRkrEaXDGrg/NxhFMr2HgbfOvWPX7NGaQ0WJky7oMvEKB7kTnCYZkogzuvu4rtUDF2FzINn91IaXfi9LDPLZnlGSZ1h03yiezbuY+NePNJOuRj4QoVuCsdj6nZ5X9JeDMClOZpn2RCtzsEPPYnBgH0m6cYFUvcRV9AkRp4Q1wA+HIcBprTw1eWbknmt4qFH7vkXQCNUozl win_audit'
-
-  application:
-    nssm:
-      version: "2.24"
-
-# this should be changed into a defined type
-# Useful commands
-win_pwrshl_run_script: "%{facts.custom_win_system32}\\WindowsPowerShell\\v1.0\\powershell.exe -executionpolicy bypass -file"
+  # Mozilla-Build
+  mozilla_build:
+    version: '4.1'
+    hg_version: '6.2.1'
+    py3_pip_version: '23.3.2'
+    zstandard_version: '0.19.0'
+    psutil_version: '5.9.4'
+  git:
+    version: '2.49.0'
+  googlechrome:
+    version: 'latest'
+  gpu-latest:
+    name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 538.15"
+  hg:
+    version: '6.9'
+  nssm:
+    version: '2.24'
+  vac:
+    version: '464'
+  azure:
+    vm_agent:
+      version: '2.7.41491.1057_2205251057.fre'
+      display_name: "Windows Azure VM Agent - 2.7.41491.1057"

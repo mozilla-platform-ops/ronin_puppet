@@ -1,4 +1,4 @@
 [global]
 disable-pip-version-check = true
 trusted-host = pypi.pub.build.mozilla.org
-download-cache = <%= $win_mozilla_build_new::pip::cache_drive %>\pip-cache
+download-cache = <%= $win_mozilla_build::pip::cache_drive %>\pip-cache

@@ -2,60 +2,59 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+## CLEAN UP: tootool support is no longer needed
+
 class win_mozilla_build::tooltool {
+  require win_mozilla_build::install
 
-    require win_mozilla_build::install
-    require win_mozilla_build::modifications
+  $builds         = "${facts['custom_win_systemdrive']}\\builds"
+  $tooltool_cache = "${builds}\\tooltool_cache"
 
-    $builds         = $win_mozilla_build::builds_dir
-    $tooltool_cache = "${builds}\\tooltool_cache"
+  file { "${facts['custom_win_systemdrive']}\\mozilla-build\\tooltool.py":
+    source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
+  }
 
-    file { "${win_mozilla_build::install_path}\\tooltool.py":
-        source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
-    }
-    file { $tooltool_cache:
-        ensure => directory,
-    }
-    # Needed for NSS only
-    if $win_mozilla_build::needed_mozbld_ver == '3.2' {
-        file { "${builds}\\tooltool.py":
-            source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/3566f20314e881b3fee3416653d5cdad3ef6384a/client/tooltool.py',
-        }
-    } else {
-        file { "${builds}\\tooltool.py":
-            source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
-        }
-    }
-    # Resource from counsyl-windows
-    windows::environment { 'TOOLTOOL_CACHE':
-        value => $tooltool_cache,
-    }
-    # Resource from puppetlabs-acl
-    acl { "${win_mozilla_build::system_drive}\\tooltool-cache":
-        target                     => $tooltool_cache,
-        permissions                =>   {
-                                            identity    => 'everyone',
-                                            rights      => ['full'],
-                                            perm_type   => 'allow',
-                                            child_types => 'all',
-                                            affects     => 'all'
-                                        },
-        inherit_parent_permissions => true,
-    }
+  file { $builds:
+    ensure => directory,
+  }
 
-    if $win_mozilla_build::tooltool_tok != undef {
-        file { "${builds}\\relengapi.tok":
-            content   => $win_mozilla_build::tooltool_tok,
-            show_diff => false,
-        }
-    }
-    # This script will get the SSL Server Certificate for https://tooltool.mozilla-releng.net
-    # and will add it to the local user store
-    # Without the cert in the local user store tooltool will hit SSL errors when fetching a package
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=1546827
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=1548641
-    exec { 'install_tooltool_cert':
+  file { $tooltool_cache:
+    ensure => directory,
+  }
+
+  windows::environment { 'TOOLTOOL_CACHE':
+    value => $tooltool_cache,
+  }
+
+  acl { "${$facts['custom_win_systemdrive']}\\tooltool-cache":
+    target                     => $tooltool_cache,
+    permissions                => {
+      identity    => 'everyone',
+      rights      => ['full'],
+      perm_type   => 'allow',
+      child_types => 'all',
+      affects     => 'all',
+    },
+    inherit_parent_permissions => true,
+  }
+
+  case lookup('win-worker.function') {
+    'builder': {
+      # This script will get the SSL Server Certificate for https://tooltool.mozilla-releng.net
+      # and will add it to the local user store
+      # Without the cert in the local user store tooltool will hit SSL errors when fetching a package
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1546827
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1548641
+      exec { 'install_tooltool_cert':
         command  => file('win_mozilla_build/tooltool_cert_install.ps1'),
         provider => powershell,
+      }
     }
+    'tester': {
+      notice('No further tooltool modifications for testers')
+    }
+    default: {
+      fail("${$facts['os']['name']} not supported")
+    }
+  }
 }

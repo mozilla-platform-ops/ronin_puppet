@@ -3,43 +3,57 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build::hg_files {
+  require win_mozilla_build::install
 
-    require win_mozilla_build::install
-    require win_mozilla_build::hg_install
+  $mozbld      = "${facts['custom_win_systemdrive']}\\mozilla-build"
+  $msys_dir = "${facts['custom_win_systemdrive']}\\mozilla-build\\msys2"
 
-    $mozbld = $win_mozilla_build::install_path
-    $hg_cache = "${win_mozilla_build::cache_drive}\\hg-shared"
+  ## If Azure, then cache drive is either Y or D
 
-    $msys_dir = "${win_mozilla_build::install_path}\\msys2"
+  case $facts['custom_win_location'] {
+    'azure': {
+      if $facts['custom_win_os_arch'] != 'aarch64' {
+        $cache_drive = 'd:'
+      }
+      else {
+        $cache_drive = 'c:'
+      }
+    }
+    'datacenter': {
+      $cache_drive = 'c:'
+    }
+    default: {
+      fail('custom_win_location not supported')
+    }
+  }
 
-    # Original Source https://github.com/mozilla/version-control-tools/blob/master/hgext/robustcheckout/__init__.py
-    # Reference  https://bugzilla.mozilla.org/show_bug.cgi?id=1305485#c5
-    file { "${mozbld}\\robustcheckout.py":
-        content => file('win_mozilla_build/robustcheckout.py'),
-    }
-    file { "${msys_dir}\\etc\\cacert.pem":
-        content => file('win_mozilla_build/cacert.pem'),
-    }
-    file { "${win_mozilla_build::program_files}\\mercurial\\mercurial.ini":
-        content => file('win_mozilla_build/mercurial.ini'),
-    }
-    file { $hg_cache:
-        ensure => directory,
-    }
-    # Resource from counsyl-windows
-    windows::environment { 'HG_CACHE':
-        value => $hg_cache,
-    }
-    # Resource from puppetlabs-acl
-    acl { "${win_mozilla_build::cache_drive}\\hg-shared":
-        target      => $hg_cache,
-        permissions => {
-            identity                   => 'everyone',
-            rights                     => ['full'],
-            perm_type                  => 'allow',
-            child_types                => 'all',
-            affects                    => 'all',
-            inherit_parent_permissions => true,
-        }
-    }
+  file { "${cache_drive}\\hg-shared":
+    ensure => directory,
+  }
+  # Resource from counsyl-windows
+  windows::environment { 'HG_CACHE':
+    value => "${cache_drive}\\hg-cache",
+  }
+  # Reference  https://bugzilla.mozilla.org/show_bug.cgi?id=1305485#c5
+  file { "${mozbld}\\robustcheckout.py":
+    content => file('win_mozilla_build/robustcheckout.py'),
+  }
+  file { "${msys_dir}\\etc\\cacert.pem":
+    content => file('win_mozilla_build/cacert.pem'),
+  }
+  file { "${facts['custom_win_programfiles']}\\mercurial\\mercurial.ini":
+    content => file('win_mozilla_build/mercurial.ini'),
+  }
+  # Resource from puppetlabs-acl
+  acl { "${cache_drive}\\hg-shared":
+    target      => "${cache_drive}\\hg-shared",
+    permissions => {
+      identity                   => 'everyone',
+      rights                     => ['full'],
+      perm_type                  => 'allow',
+      child_types                => 'all',
+      affects                    => 'all',
+      inherit_parent_permissions => true,
+    },
+  }
 }
