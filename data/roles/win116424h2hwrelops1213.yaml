@@ -16,6 +16,6 @@ win-worker:
   log:
     level: "restricted"
 
+  ## Use to overwrite values in the Windows yaml file.
+  ## Replace windows. with win-worker.variant.
   variant:
-    #taskcluster:
-      #version: '81.0.3'
