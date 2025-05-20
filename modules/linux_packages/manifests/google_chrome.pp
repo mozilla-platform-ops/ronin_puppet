@@ -14,11 +14,7 @@ class linux_packages::google_chrome () {
           $postinst_script = '/usr/local/sbin/g_c_install.sh'
 
           # ordering
-          Exec['apt_update'] -> Package['google-chrome-stable']
-
-          package { 'update-alternatives':
-            ensure => 'latest',
-          }
+          Exec['install_repo'] -> Exec['apt_update'] -> Package['google-chrome-stable']
 
           # send the post inst script to the host
           file { $postinst_script:
@@ -30,7 +26,7 @@ class linux_packages::google_chrome () {
           }
 
           # exec the postinst script if the apt repo is not already present
-          exec { 'google-chrome-stable':
+          exec { 'install_repo':
             command => $postinst_script,
             path    => ['/usr/local/sbin', '/bin', '/usr/bin'],
             require => File[$postinst_script],
