@@ -11,15 +11,19 @@ class linux_packages::google_chrome () {
           # Ensure apt is included
           include apt
 
-          $postinst_script = '/usr/local/sbin/g_c_postinst.sh'
+          $postinst_script = '/usr/local/sbin/g_c_install.sh'
 
           # ordering
           Exec['apt_update'] -> Package['google-chrome-stable']
 
+          package { 'update-alternatives':
+            ensure => 'latest',
+          }
+
           # send the post inst script to the host
           file { $postinst_script:
             ensure  => file,
-            content => file('linux_packages/google_chrome/postinst'),
+            content => file('linux_packages/google_chrome/install_repo'),
             owner   => 'root',
             group   => 'root',
             mode    => '0700',

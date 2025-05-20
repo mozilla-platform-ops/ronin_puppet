@@ -22,7 +22,12 @@ dpkg-deb -e google-chrome-stable_current_amd64.deb google-chrome-stable_current_
 # postinst is the interesting one for us
 ```
 
-### scripts
+## postinst script
 
 The postinst script sets up the google repository. After a `apt update`, you should
 be able to `apt install google-chrome-stable`.
+
+### Changes made
+
+1. line 2. `# shellcheck disable=all`
+2.
