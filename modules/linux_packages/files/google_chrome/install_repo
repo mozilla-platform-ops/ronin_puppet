@@ -428,11 +428,9 @@ find_apt_trusted() {
 # main
 
 # start
+echo "start"
 install_key
-#uninstall_key()
-#find_apt_sources()
-update_bad_sources
-#create_sources_lists()
-clean_sources_lists
 handle_distro_upgrade
+update_bad_sources
+create_sources_lists
 echo "done"
