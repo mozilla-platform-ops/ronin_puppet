@@ -27,11 +27,10 @@ class linux_packages::google_chrome () {
 
           # exec the postinst script if the apt repo is not already present
           exec { 'google-chrome-stable':
-            command     => $postinst_script,
-            path        => ['/usr/local/sbin', '/bin', '/usr/bin'],
-            require     => File[$postinst_script],
-            refreshonly => true,
-            unless      => 'test -f /etc/apt/sources.list.d/google-chrome.list',
+            command => $postinst_script,
+            path    => ['/usr/local/sbin', '/bin', '/usr/bin'],
+            require => File[$postinst_script],
+            unless  => 'test -f /etc/apt/sources.list.d/google-chrome.list',
           }
 
           # the deb we're installing includes a cron
