@@ -11,35 +11,31 @@ class linux_packages::google_chrome () {
           # Ensure apt is included
           include apt
 
+          $postinst_script = '/usr/local/sbin/g_c_postinst.sh'
+
+          # ordering
           Exec['apt_update'] -> Package['google-chrome-stable']
 
-          # Setup Google Chrome apt repository
-          apt::source { 'google_repo':
-            location => '[arch=amd64] https://dl.google.com/linux/chrome/deb/',
-            release  => 'stable',
-            key      => {
-              id     => '4CCA1EAF950CEE4AB83976DCA040830F7FAC5991',
-              source => 'https://dl.google.com/linux/linux_signing_key.pub',
-            },
-            repos    => 'main',
-            include  => {
-              'src' => false,
-            },
-            notify   => Exec['apt_update'],  # This ensures apt_update is triggered after the source is added
+          # send the post inst script to the host
+          file { $postinst_script:
+            ensure => file,
+            source => 'google_chrome/postinst',
+            owner  => 'root',
+            group  => 'root',
+            mode   => '0700',
           }
 
-          # Schedule for Chrome auto-updates
-          schedule { 'update-chrome-schedule':
-            period => weekly,
-            repeat => 1,
+          # exec the postinst script if the apt repo is not already present
+          exec { 'google-chrome-stable':
+            command     => $postinst_script,
+            path        => ['/usr/local/sbin', '/bin', '/usr/bin'],
+            require     => File[$postinst_script],
+            refreshonly => true,
+            unless      => 'test -f /etc/apt/sources.list.d/google-chrome.list',
           }
 
-          exec { 'update-chrome-action':
-            schedule => 'update-chrome-schedule',
-            command  => '/usr/bin/apt-get update -o \
-            Dir::Etc::sourcelist="sources.list.d/google-chrome.list" \
-            -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"',
-          }
+          # the deb we're installing includes a cron
+          # TODO: write test to check for the cron
 
           # Install Google Chrome stable version
           package { 'google-chrome-stable':
