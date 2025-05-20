@@ -18,11 +18,11 @@ class linux_packages::google_chrome () {
 
           # send the post inst script to the host
           file { $postinst_script:
-            ensure => file,
-            source => 'google_chrome/postinst',
-            owner  => 'root',
-            group  => 'root',
-            mode   => '0700',
+            ensure  => file,
+            content => file('linux_packages/google_chrome/postinst'),
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0700',
           }
 
           # exec the postinst script if the apt repo is not already present
