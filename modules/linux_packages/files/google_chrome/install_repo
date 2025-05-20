@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=all
 
+# this is a repackaging of the chrome deb package's postinst script
+
+# TODO: come up with a script that generates this file
+#   - basically take all functions and definitions from postinst
+#   - then add our main function
+
 set -e
 set -x
 
@@ -427,7 +433,6 @@ find_apt_trusted() {
 
 # main
 
-# start
 echo "start"
 install_key
 handle_distro_upgrade
