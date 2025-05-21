@@ -418,17 +418,17 @@ function Start-WorkerRunner {
     $filePath = "C:\generic-worker\ed25519-private.key"
     $acl = Get-Acl -Path $filePath
     $otherAccessRules = $acl.Access | Where-Object {
-        $_.IdentityReference -notlike "NT AUTHORITY\SYSTEM" -and
-        $_.IdentityReference -notlike "BUILTIN\Administrators"
+      $_.IdentityReference -notlike "NT AUTHORITY\SYSTEM" -and
+      $_.IdentityReference -notlike "BUILTIN\Administrators"
     }
 
     if ($otherAccessRules.Count -gt 0) {
-        $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }
-        $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "Allow")
-        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "Allow")
-        $acl.AddAccessRule($systemRule)
-        $acl.AddAccessRule($adminRule)
-        Set-Acl -Path $filePath -AclObject $acl
+      $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }
+      $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "Allow")
+      $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "Allow")
+      $acl.AddAccessRule($systemRule)
+      $acl.AddAccessRule($adminRule)
+      Set-Acl -Path $filePath -AclObject $acl
     }
 
 
@@ -523,6 +523,28 @@ function LinkZY2D {
   }
 }
 
+function Get-IAccessible2ProxyDLL {
+  [CmdletBinding()]
+  param (
+    [String]
+    $Path    
+  )
+
+  ## validate the install
+  $results = Get-ChildItem -Path "HKLM:\SOFTWARE\Classes\CLSID" -Recurse -ErrorAction SilentlyContinue | Where-Object {
+    (Get-ItemProperty -Path $_.PSPath -ErrorAction Stop)."(default)" -eq $path
+  }
+
+  if (-Not ([string]::IsNullOrEmpty($results))) {
+    Write-log -message ('{0} :: IAccessible2Proxy.dll is installed' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Write-log -message ('{0} :: {1}' -f $($MyInvocation.MyCommand.Name), $results) -severity 'DEBUG'
+  }
+  else {
+      Write-log -message ('{0} :: IAccessible2Proxy.dll is not installed' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+  }
+
+}
+
 ## Get the tags from azure imds
 $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
 
@@ -552,8 +574,10 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
+    ## check if the windows dll is present and loaded 
     Puppet-Run
     LinkZY2D
+    Get-IAccessible2ProxyDLL -Path "C:\ProgramData\PuppetLabs\ronin\IAccessible2Proxy.dll"
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
