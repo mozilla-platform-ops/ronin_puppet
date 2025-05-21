@@ -38,6 +38,8 @@ Takes the functions we want and uses our own main.
 
 Similar to `install_repo` script, but made in an automated manner.
 
+`extract.sh` converts the `postinst` script to an AST (https://en.wikipedia.org/wiki/Abstract_syntax_tree) so that we can later select the parts of the script we'd like (declarations and functions, but not function invocations basically). `process.py` does the selection of the AST parts and outputs of the new script based on an inline template.
+
 ```
 # extract the ast
 ./extract.sh
@@ -45,6 +47,7 @@ Similar to `install_repo` script, but made in an automated manner.
 # generate install_repo_automated
 ./process.py
 
+# see `install_repo_automated`
 ```
 
 ### `install_repo_automated` status
