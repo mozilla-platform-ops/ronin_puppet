@@ -49,11 +49,3 @@ Similar to `install_repo` script, but made in an automated manner.
 
 # see `install_repo_automated`
 ```
-
-### `install_repo_automated` status
-
-This is still a work in progress.
-
-Issues:
-- variables (and functions with variables) can still run operations and we're not ready for everything run (some paths don't exist yet), so need to exclude them.
-  - see `SOURCELIST` and `update_defaults_list()`
