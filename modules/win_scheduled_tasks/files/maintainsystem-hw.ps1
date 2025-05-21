@@ -284,7 +284,8 @@ function StartWorkerRunner {
 
 function CompareConfig {
     param (
-        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml"
+        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
+        [string]$PAT
     )
 
     begin {
@@ -308,29 +309,33 @@ function CompareConfig {
             if (-not $IPAddress) {
                 throw "No IP address found using .NET method."
             }
-        } catch {
+        }
+        catch {
             try {
                 $NetshOutput = netsh interface ip show addresses
                 $IPAddress = ($NetshOutput -match "IP Address" | ForEach-Object {
-                    if ($_ -notmatch "127.0.0.1") {
-                        $_ -replace ".*?:\s*", ""
-                    }
-                })[0]
-            } catch {
+                        if ($_ -notmatch "127.0.0.1") {
+                            $_ -replace ".*?:\s*", ""
+                        }
+                    })[0]
+            }
+            catch {
                 Write-Log -message "Failed to get IP address" -severity 'ERROR'
             }
         }
 
         if ($IPAddress) {
             Write-Log -message "IP Address: $IPAddress" -severity 'INFO'
-        } else {
+        }
+        else {
             Write-Log -message "No IP Address could be determined." -severity 'ERROR'
             return
         }
 
         try {
             $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
-        } catch {
+        }
+        catch {
             Write-Log -message "DNS resolution failed." -severity 'ERROR'
             return
         }
@@ -357,26 +362,41 @@ function CompareConfig {
         $success = $false
 
         while ($attempt -lt $maxRetries -and -not $success) {
-        try {
-            $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-            $yaml = $response.Content | ConvertFrom-Yaml
-            if ($yaml) {
-                $success = $true
-            } else {
-                throw "YAML content is empty"
-                Write-Log -message "YAML content is empty" -severity 'WARN'
-            }
-        } catch {
-            Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
-            Start-Sleep -Seconds $retryDelay
-            $attempt++
-        }
-    }
+            try {
+                ## Add support for using a PAT
+                if ($PAT) {
 
-if (-not $success) {
-    Write-Log -message "YAML could not be loaded after $maxRetries attempts." -severity 'ERROR'
-    return
-}
+                }
+                else {
+
+                }
+                $Headers = @{
+                    Accept                 = "application/vnd.github+json"
+                    Authorization          = "Bearer $($PAT)"
+                    "X-GitHub-Api-Version" = "2022-11-28"
+                }
+                $response = Invoke-WebRequest -Uri $Url -Headers $Headers
+                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+                $yaml = $response.Content | ConvertFrom-Yaml
+                if ($yaml) {
+                    $success = $true
+                }
+                else {
+                    throw "YAML content is empty"
+                    Write-Log -message "YAML content is empty" -severity 'WARN'
+                }
+            }
+            catch {
+                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
+                Start-Sleep -Seconds $retryDelay
+                $attempt++
+            }
+        }
+
+        if (-not $success) {
+            Write-Log -message "YAML could not be loaded after $maxRetries attempts." -severity 'ERROR'
+            return
+        }
 
         $found = $false
         foreach ($pool in $yaml.pools) {
@@ -402,7 +422,8 @@ if (-not $success) {
 
         if ($localPool -eq $WorkerPool) {
             Write-Log -message "Worker Pool Match: $WorkerPool" -severity 'INFO'
-        } else {
+        }
+        else {
             Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
             $SETPXE = $true
             Start-Sleep -s 1
@@ -410,7 +431,8 @@ if (-not $success) {
 
         if ($localHash -eq $yamlHash) {
             Write-Log -message "Git Hash Match: $yamlHash" -severity 'INFO'
-        } else {
+        }
+        else {
             Write-Log -message "Git Hash MISMATCH!" -severity 'ERROR'
             Write-Log -message "Local: $localHash" -severity 'WARN'
             Write-Log -message "YAML : $yamlHash" -severity 'WARN'
@@ -449,13 +471,13 @@ function StartGenericWorker {
     process {
         # Check for user profile issues
         $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
-            Select-Object -First 1 |
-            ForEach-Object { $_.TimeCreated }
+        Select-Object -First 1 |
+        ForEach-Object { $_.TimeCreated }
 
         $eventIDs = @(1511, 1515)
         $events = Get-WinEvent -LogName "Application" |
-            Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
-            Sort-Object TimeCreated -Descending | Select-Object -First 1
+        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
+        Sort-Object TimeCreated -Descending | Select-Object -First 1
 
         if ($events) {
             Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -475,7 +497,7 @@ function StartGenericWorker {
             68 {
 
                 Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Checking for latest Config.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                CompareConfig
+                CompareConfig -PAT (Get-Content "D:\Secrets\pat.txt")
 
                 Write-Log -message ('{0} :: Copying current-task-user.json to next-task-user.json' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 $src = Join-Path $GW_dir 'current-task-user.json'
@@ -483,7 +505,8 @@ function StartGenericWorker {
                 if (Test-Path $src) {
                     Copy-Item -Path $src -Destination $dest -Force
                     Write-Log -message ('{0} :: File copied successfully' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                } else {
+                }
+                else {
                     Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
                 }
 
@@ -676,7 +699,7 @@ If ($bootstrap_stage -eq 'complete') {
     if ($null -ne $process) {
         Stop-Process -Name $processname -force
     }
-    CompareConfig
+    CompareConfig -PAT (Get-Content "D:\Secrets\pat.txt")
     StartGenericWorker
 }
 else {
