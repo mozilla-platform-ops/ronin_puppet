@@ -22,23 +22,19 @@ dpkg-deb -e google-chrome-stable_current_amd64.deb google-chrome-stable_current_
 # postinst is the interesting one for us
 ```
 
-## postinst script
-
-The postinst script sets up the google repository. After a `apt update`, you should
-be able to `apt install google-chrome-stable`.
-
-### Changes made
-
-1. line 2. `# shellcheck disable=all`
-2.
-
-## install_repo script
+## `install_repo` script
 
 Repackaged version just for our use.
 
 Takes the functions we want and uses our own main.
 
-## install_repo_automated script
+### Changes made
+
+1. line 2. `# shellcheck disable=all`
+2. crafted new main by analyzing needed functions
+3. added in required functions and variables until it worked (debugged with set -x)
+
+## `install_repo_automated` script
 
 Similar to `install_repo` script, but made in an automated manner.
 
@@ -50,3 +46,11 @@ Similar to `install_repo` script, but made in an automated manner.
 ./process.py
 
 ```
+
+### `install_repo_automated` status
+
+This is still a work in progress.
+
+Issues:
+- variables (and functions with variables) can still run operations and we're not ready for everything run (some paths don't exist yet), so need to exclude them.
+  - see `SOURCELIST` and `update_defaults_list()`

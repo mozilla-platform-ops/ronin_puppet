@@ -434,11 +434,24 @@ find_apt_trusted() {
   eval $("$APT_CONFIG" shell APT_TRUSTEDDIR 'Dir::Etc::trustedparts/d')
 }
 
-# main
+LOCKERGNOME=$(cat <<'EOF'
+     :|                                               ++            :|       :| :|
+.::/ :::| :::| ,::\ :\/| :~~/   :::| :~~/ :::\ ,::\   :| :::\ <::< :::| .::\ :| :| :~~/ :::|
+`::\ :|:| :|   `::/ :::| :::,   :|   :::, :::/ `::/   :| :|:| >::>  :|  `::| :| :| :::, :|
+                                          :|
+EOF
+)
 
-echo "start"
+# main
+echo "$LOCKERGNOME"
+
 install_key
 handle_distro_upgrade
 update_bad_sources
 create_sources_lists
-echo "done"
+
+echo ""
+
+echo "Completed installation of Google Chrome repository."
+echo "Please run 'apt update' to refresh the package list."
+echo "You can now install Google Chrome with 'apt install google-chrome-stable'."
