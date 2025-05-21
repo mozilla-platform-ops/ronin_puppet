@@ -95,4 +95,4 @@ $source = "<%= $tooltool_src %>"
 $dst = "<%= $tooltool_dst %>"
 $pat = "<%= $github_pat %>"
 
-Invoke-DownloadWithRetry -Url $source -Path $dst -PAT $pat
+Invoke-DownloadWithRetryGithub -Url $source -Path $dst -PAT $pat
