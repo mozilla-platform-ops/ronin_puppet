@@ -9,9 +9,37 @@ class win_mozilla_build::tooltool {
 
   $builds         = "${facts['custom_win_systemdrive']}\\builds"
   $tooltool_cache = "${builds}\\tooltool_cache"
+  $tooltool_dst = "${facts['custom_win_systemdrive']}\\mozilla-build\\tooltool.py"
+  $tooltool_src = 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py'
+  $tooltool_ps1 = "${facts['custom_win_roninprogramdata']}\\download_tooltool.ps1"
+  $github_pat = $facts['custom_win_github_pat']
 
-  file { "${facts['custom_win_systemdrive']}\\mozilla-build\\tooltool.py":
-    source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
+  ## If we're running in datacenter, use github pat
+  case $facts['custom_win_location'] {
+    'azure': {
+      file { $tooltool_dst:
+        source => 'https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py',
+      }
+    }
+    'datacenter': {
+      file { $tooltool_ps1:
+        ensure  => file,
+        content => epp('win_mozilla_build/download_tooltool.ps1.epp', {
+            'url'  => $tooltool_src,
+            'path' => $tooltool_dst,
+            'pat'  => $github_pat,
+        }),
+      }
+
+      exec { 'download_tooltool':
+        provider => powershell,
+        command  => $tooltool_ps1,
+        require  => File[$tooltool_ps1],
+      }
+    }
+    default: {
+      fail('custom_win_location not supported')
+    }
   }
 
   file { $builds:
