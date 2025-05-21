@@ -12,6 +12,8 @@ class linux_packages::google_chrome () {
           include apt
 
           # path to install the script at
+          # $source_file_puppet_path = 'linux_packages/google_chrome/install_repo'
+          $source_file_puppet_path = 'linux_packages/google_chrome/install_repo_automated'
           $postinst_script = '/usr/local/sbin/g_c_install.sh'
 
           # ordering
@@ -20,7 +22,7 @@ class linux_packages::google_chrome () {
           # send the post inst script to the host
           file { $postinst_script:
             ensure  => file,
-            content => file('linux_packages/google_chrome/install_repo'),
+            content => file($source_file_puppet_path),
             owner   => 'root',
             group   => 'root',
             mode    => '0700',
