@@ -455,4 +455,4 @@ echo ""
 
 echo "Completed installation of Google Chrome repository."
 echo "Please run 'apt update' to refresh the package list."
-echo "You can now install Google Chrome with 'apt install google-chrome-stable'."
+echo "You can then install Google Chrome with 'apt install google-chrome-stable'."
