@@ -13,6 +13,12 @@
 # set -e
 # set -x
 
+# check that we're root, exit if not
+if [ "$(id -u)" != "0" ]; then
+  echo "This script must be run as root" 1>&2
+  exit 1
+fi
+
 APT_GET="`command -v apt-get 2> /dev/null`"
 APT_CONFIG="`command -v apt-config 2> /dev/null`"
 REPOCONFIG="deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main"
