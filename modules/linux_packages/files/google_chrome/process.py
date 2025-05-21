@@ -5,8 +5,11 @@ import json
 template = r'''#!/usr/bin/env bash
 # shellcheck disable=all
 
+# sadly, we cannot run with `-e`... variables defined by calls (including grep) fail
+# because paths don't exist (and cause the script to exit)
+#
 # set -e
-#set -x
+# set -x
 
 # this is a repackaging of the chrome deb package's postinst script
 # from https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb

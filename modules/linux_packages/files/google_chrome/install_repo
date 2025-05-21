@@ -7,7 +7,9 @@
 #   - basically take all functions and definitions from postinst
 #   - then add our main function
 
-# sadly, we cannot run with `-e`... written in a way that greps fail
+# sadly, we cannot run with `-e`... variables defined by calls (including grep) fail
+# because paths don't exist (and cause the script to exit)
+#
 # set -e
 # set -x
 
