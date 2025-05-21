@@ -7,8 +7,9 @@
 #   - basically take all functions and definitions from postinst
 #   - then add our main function
 
-set -e
-set -x
+# sadly, we cannot run with `-e`... written in a way that greps fail
+# set -e
+# set -x
 
 APT_GET="`command -v apt-get 2> /dev/null`"
 APT_CONFIG="`command -v apt-config 2> /dev/null`"
