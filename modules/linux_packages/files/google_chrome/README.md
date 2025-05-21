@@ -31,3 +31,22 @@ be able to `apt install google-chrome-stable`.
 
 1. line 2. `# shellcheck disable=all`
 2.
+
+## install_repo script
+
+Repackaged version just for our use.
+
+Takes the functions we want and uses our own main.
+
+## install_repo_automated script
+
+Similar to `install_repo` script, but made in an automated manner.
+
+```
+# extract the ast
+./extract.sh
+
+# generate install_repo_automated
+./process.py
+
+```
