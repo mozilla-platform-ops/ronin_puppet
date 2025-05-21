@@ -11,6 +11,7 @@ class linux_packages::google_chrome () {
           # Ensure apt is included
           include apt
 
+          # path to install the script at
           $postinst_script = '/usr/local/sbin/g_c_install.sh'
 
           # ordering
@@ -25,7 +26,8 @@ class linux_packages::google_chrome () {
             mode    => '0700',
           }
 
-          # exec the postinst script if the apt repo is not already present
+          # exec the script if the apt repo is not already present
+          # TODO: is this reentrant? perhaps always run it (since it does more than just install the repo)?
           exec { 'install_repo':
             command => $postinst_script,
             path    => ['/usr/local/sbin', '/bin', '/usr/bin'],
@@ -33,13 +35,13 @@ class linux_packages::google_chrome () {
             unless  => 'test -f /etc/apt/sources.list.d/google-chrome.list',
           }
 
-          # the deb we're installing includes a cron
-          # TODO: write test to check for the cron
-
           # Install Google Chrome stable version
           package { 'google-chrome-stable':
             ensure => 'latest',
           }
+
+          # TODO: the `google-chrome-stable` deb includes a cron to do updates, write a test
+          #       to check for it
         }
         default: {
           fail("Cannot install Google Chrome on ${facts['os']['release']['full']}")
