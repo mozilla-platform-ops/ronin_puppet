@@ -12,6 +12,9 @@ set -x
 
 APT_GET="`command -v apt-get 2> /dev/null`"
 APT_CONFIG="`command -v apt-config 2> /dev/null`"
+REPOCONFIG="deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main"
+REPOCONFIGREGEX="deb (\[arch=[^]]*\bamd64\b[^]]*\][[:space:]]*) https?://dl.google.com/linux/chrome/deb/ stable main"
+
 
 # Install the repository/package signing keys.
 # (see also: https://www.google.com/linuxrepositories/)
