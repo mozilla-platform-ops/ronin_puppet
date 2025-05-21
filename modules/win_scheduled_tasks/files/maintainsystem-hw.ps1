@@ -363,20 +363,12 @@ function CompareConfig {
 
         while ($attempt -lt $maxRetries -and -not $success) {
             try {
-                ## Add support for using a PAT
-                if ($PAT) {
-
-                }
-                else {
-
-                }
                 $Headers = @{
                     Accept                 = "application/vnd.github+json"
                     Authorization          = "Bearer $($PAT)"
                     "X-GitHub-Api-Version" = "2022-11-28"
                 }
-                $response = Invoke-WebRequest -Uri $Url -Headers $Headers
-                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop -Headers $Headers
                 $yaml = $response.Content | ConvertFrom-Yaml
                 if ($yaml) {
                     $success = $true
