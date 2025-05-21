@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
+# set -x
 
 # check that shfmt is installed
 if ! command -v shfmt &> /dev/null
@@ -16,3 +16,4 @@ fi
 # cat postinst | shfmt -tojson > ast.json
 # fancier version of above
 shfmt -tojson < postinst > ast.json
+echo "done"
