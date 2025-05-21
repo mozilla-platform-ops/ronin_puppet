@@ -91,8 +91,4 @@ function Invoke-DownloadWithRetryGithub {
     return $Path
 }
 
-$source = "<%= $tooltool_src %>"
-$dst = "<%= $tooltool_dst %>"
-$pat = "<%= $github_pat %>"
-
 Invoke-DownloadWithRetryGithub -Url $source -Path $dst -PAT $pat
