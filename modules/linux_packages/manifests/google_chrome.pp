@@ -11,40 +11,44 @@ class linux_packages::google_chrome () {
           # Ensure apt is included
           include apt
 
-          Exec['apt_update'] -> Package['google-chrome-stable']
+          # path to install the script at
+          # $source_file_puppet_path = 'linux_packages/google_chrome/install_repo'
+          $source_file_puppet_path = 'linux_packages/google_chrome/install_repo_automated'
+          $dest_install_script_path = '/usr/local/sbin/g_c_install.sh'
 
-          # Setup Google Chrome apt repository
-          apt::source { 'google_repo':
-            location => '[arch=amd64] https://dl.google.com/linux/chrome/deb/',
-            release  => 'stable',
-            key      => {
-              id     => '4CCA1EAF950CEE4AB83976DCA040830F7FAC5991',
-              source => 'https://dl.google.com/linux/linux_signing_key.pub',
-            },
-            repos    => 'main',
-            include  => {
-              'src' => false,
-            },
-            notify   => Exec['apt_update'],  # This ensures apt_update is triggered after the source is added
+          # ordering
+          Exec['install_repo'] -> Exec['apt_update'] -> Package['google-chrome-stable']
+
+          # send the install script to the host
+          file { $dest_install_script_path:
+            ensure  => file,
+            content => file($source_file_puppet_path),
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0700',
           }
 
-          # Schedule for Chrome auto-updates
-          schedule { 'update-chrome-schedule':
-            period => weekly,
-            repeat => 1,
-          }
-
-          exec { 'update-chrome-action':
-            schedule => 'update-chrome-schedule',
-            command  => '/usr/bin/apt-get update -o \
-            Dir::Etc::sourcelist="sources.list.d/google-chrome.list" \
-            -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"',
+          # exec the script if the apt repo is not already present
+          # TODO: is this reentrant? perhaps always run it (since it does more than just install the repo)?
+          exec { 'install_repo':
+            command => $dest_install_script_path,
+            path    => ['/usr/local/sbin', '/bin', '/usr/bin'],
+            require => File[$dest_install_script_path],
+            unless  => 'test -f /etc/apt/sources.list.d/google-chrome.list',
           }
 
           # Install Google Chrome stable version
           package { 'google-chrome-stable':
             ensure => 'latest',
           }
+
+          # clean up the old `google_repo.list` file
+          file { '/etc/apt/sources.list.d/google_repo.list':
+            ensure => absent,
+          }
+
+          # TODO: the `google-chrome-stable` deb includes a cron to do updates, write a test
+          #       to check for it (/etc/cron.daily/google-chrome)
         }
         default: {
           fail("Cannot install Google Chrome on ${facts['os']['release']['full']}")
