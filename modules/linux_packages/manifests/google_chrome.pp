@@ -43,7 +43,7 @@ class linux_packages::google_chrome () {
           }
 
           # clean up the old `google_repo.list` file
-          file { '/etc/apt/sources.list.d/google-chrome.list':
+          file { '/etc/apt/sources.list.d/google_repo.list':
             ensure => absent,
           }
 
