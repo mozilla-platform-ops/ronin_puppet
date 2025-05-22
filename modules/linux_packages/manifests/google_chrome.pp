@@ -14,13 +14,13 @@ class linux_packages::google_chrome () {
           # path to install the script at
           # $source_file_puppet_path = 'linux_packages/google_chrome/install_repo'
           $source_file_puppet_path = 'linux_packages/google_chrome/install_repo_automated'
-          $postinst_script = '/usr/local/sbin/g_c_install.sh'
+          $dest_install_script_path = '/usr/local/sbin/g_c_install.sh'
 
           # ordering
           Exec['install_repo'] -> Exec['apt_update'] -> Package['google-chrome-stable']
 
-          # send the post inst script to the host
-          file { $postinst_script:
+          # send the install script to the host
+          file { $dest_install_script_path:
             ensure  => file,
             content => file($source_file_puppet_path),
             owner   => 'root',
@@ -31,9 +31,9 @@ class linux_packages::google_chrome () {
           # exec the script if the apt repo is not already present
           # TODO: is this reentrant? perhaps always run it (since it does more than just install the repo)?
           exec { 'install_repo':
-            command => $postinst_script,
+            command => $dest_install_script_path,
             path    => ['/usr/local/sbin', '/bin', '/usr/bin'],
-            require => File[$postinst_script],
+            require => File[$dest_install_script_path],
             unless  => 'test -f /etc/apt/sources.list.d/google-chrome.list',
           }
 
