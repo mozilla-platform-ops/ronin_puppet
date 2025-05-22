@@ -42,8 +42,13 @@ class linux_packages::google_chrome () {
             ensure => 'latest',
           }
 
+          # clean up the old `google_repo.list` file
+          file { '/etc/apt/sources.list.d/google-chrome.list':
+            ensure => absent,
+          }
+
           # TODO: the `google-chrome-stable` deb includes a cron to do updates, write a test
-          #       to check for it
+          #       to check for it (/etc/cron.daily/google-chrome)
         }
         default: {
           fail("Cannot install Google Chrome on ${facts['os']['release']['full']}")
