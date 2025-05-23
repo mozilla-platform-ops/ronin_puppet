@@ -140,8 +140,7 @@ groups:
 
   - name: mozillavpn-b-1-osx
     targets:
-      - macmini-r8-183.test.releng.mdc1.mozilla.com
-      - macmini-r8-185.test.releng.mdc1.mozilla.com
+      - macmini-r8-362.test.releng.mdc1.mozilla.com
       - macmini-r8-373.test.releng.mdc1.mozilla.com
       - macmini-r8-374.test.releng.mdc1.mozilla.com
     facts:
@@ -150,8 +149,9 @@ groups:
   - name: mozillavpn-b-3-osx
     targets:
       - macmini-r8-102.test.releng.mdc1.mozilla.com
-      - macmini-r8-180.test.releng.mdc1.mozilla.com
-      - macmini-r8-184.test.releng.mdc1.mozilla.com
+      - macmini-r8-364.test.releng.mdc1.mozilla.com
+      - macmini-r8-366.test.releng.mdc1.mozilla.com
+
     facts:
       puppet_role: mozillavpn_b_3_osx
 
