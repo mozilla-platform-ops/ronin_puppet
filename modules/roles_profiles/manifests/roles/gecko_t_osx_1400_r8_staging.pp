@@ -5,6 +5,7 @@
 class roles_profiles::roles::gecko_t_osx_1400_r8_staging {
   include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::cltbld_user
+  include roles_profiles::profiles::macos_run_puppet
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_directory_cleaner
   include roles_profiles::profiles::macos_fsmonitor
