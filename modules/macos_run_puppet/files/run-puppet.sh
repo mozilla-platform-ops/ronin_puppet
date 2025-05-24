@@ -8,14 +8,24 @@ set -e
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
+# Function to extract GitHub username from repo URL
+extract_username_from_url() {
+    local url="$1"
+    if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
+        echo "${BASH_REMATCH[1]}"
+    elif [[ "$url" =~ https://github.com/([^/]+)/.* ]]; then
+        echo "${BASH_REMATCH[1]}"
+    else
+        echo "unknown"
+    fi
+}
+
 # Puppet configuration
-LOCAL_PUPPET_REPO="/opt/ronin_puppet"
+GIT_REPO_URL="https://github.com/rcurranmoz/ronin_puppet.git"
+GIT_BRANCH="local_puppet_work"
 PUPPET_ROLE_FILE="/etc/puppet_role"
 PUPPET_BIN="/opt/puppetlabs/bin/puppet"
 FACTER_BIN="/opt/puppetlabs/bin/facter"
-# This location will change before merge
-GIT_REPO_URL="https://github.com/rcurranmoz/ronin_puppet.git"
-GIT_BRANCH="local_puppet_work"
 
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
@@ -27,6 +37,10 @@ if [ -f "/etc/puppet/ronin_settings" ]; then
     export PUPPET_MAIL="${PUPPET_MAIL:-}"
     export WORKER_TYPE_OVERRIDE="${WORKER_TYPE_OVERRIDE:-}"
 fi
+
+# Compute username-based repo path after overrides
+GIT_USERNAME=$(extract_username_from_url "$GIT_REPO_URL")
+LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
 
 echo "Using Puppet Repo: $GIT_REPO_URL"
 echo "Using Branch: $GIT_BRANCH"
@@ -82,6 +96,7 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
     fi
 else
     echo "Cloning fresh Puppet repository..."
+    mkdir -p "$(dirname "$LOCAL_PUPPET_REPO")"
     git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
 fi
 
