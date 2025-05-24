@@ -9,9 +9,7 @@ export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
 # Puppet configuration
-
-# This will probably need to change in the future to a more generic location
-LOCAL_PUPPET_REPO="/Users/relops/Desktop/puppet/ronin_puppet"
+LOCAL_PUPPET_REPO="/opt/ronin_puppet"
 PUPPET_ROLE_FILE="/etc/puppet_role"
 PUPPET_BIN="/opt/puppetlabs/bin/puppet"
 FACTER_BIN="/opt/puppetlabs/bin/facter"
