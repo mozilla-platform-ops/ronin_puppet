@@ -5,12 +5,30 @@
 class macos_run_puppet (
   Boolean $enabled = true,
 ) {
-  # Deploy auto-puppet.sh to /usr/local/bin/ with execution permissions
-  file { '/usr/local/bin/run-puppet.sh':
-    ensure => file,
-    source => 'puppet:///modules/macos_run_puppet/run-puppet.sh',
-    owner  => 'root',
-    group  => 'wheel',
-    mode   => '0755',
+  if $enabled {
+
+    file { '/usr/local/bin/run-puppet.sh':
+      ensure => file,
+      source => 'puppet:///modules/macos_run_puppet/run-puppet.sh',
+      owner  => 'root',
+      group  => 'wheel',
+      mode   => '0755',
+    }
+
+    file { '/opt/puppet_environments':
+      ensure => directory,
+      owner  => 'root',
+      group  => 'wheel',
+      mode   => '0755',
+    }
+
+    file { '/opt/puppet_environments/ronin_settings':
+      ensure => file,
+      source => 'puppet:///modules/macos_run_puppet/ronin_settings',
+      owner  => 'root',
+      group  => 'wheel',
+      mode   => '0600',
+    }
+
   }
 }

@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck disable=SC1090
+
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -20,32 +22,30 @@ extract_username_from_url() {
     fi
 }
 
-# Puppet configuration
-GIT_REPO_URL="https://github.com/rcurranmoz/ronin_puppet.git"
-GIT_BRANCH="local_puppet_work"
-PUPPET_ROLE_FILE="/etc/puppet_role"
-PUPPET_BIN="/opt/puppetlabs/bin/puppet"
-FACTER_BIN="/opt/puppetlabs/bin/facter"
+# Require override settings file
+SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
 
-# Override defaults with values from /etc/puppet/ronin_settings if the file exists
-if [ -f "/etc/puppet/ronin_settings" ]; then
-    echo "Loading settings from /etc/puppet/ronin_settings..."
-    source /etc/puppet/ronin_settings
-
-    export GIT_REPO_URL="${PUPPET_REPO:-$GIT_REPO_URL}"
-    export GIT_BRANCH="${PUPPET_BRANCH:-$GIT_BRANCH}"
-    export PUPPET_MAIL="${PUPPET_MAIL:-}"
-    export WORKER_TYPE_OVERRIDE="${WORKER_TYPE_OVERRIDE:-}"
+if [ ! -f "$SETTINGS_FILE" ]; then
+    echo "Missing required settings file: $SETTINGS_FILE"
+    exit 1
 fi
 
-# Compute username-based repo path after overrides
+# shellcheck source=/opt/puppet_environments/ronin_settings
+echo "Loading settings from $SETTINGS_FILE..."
+source "$SETTINGS_FILE"
+
+# Expect these to be set in the sourced file
+# PUPPET_REPO, PUPPET_BRANCH, PUPPET_ROLE_FILE, PUPPET_BIN, FACTER_BIN
+
+export GIT_REPO_URL="$PUPPET_REPO"
+export GIT_BRANCH="$PUPPET_BRANCH"
+
 GIT_USERNAME=$(extract_username_from_url "$GIT_REPO_URL")
 LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
 
 echo "Using Puppet Repo: $GIT_REPO_URL"
 echo "Using Branch: $GIT_BRANCH"
 
-# Fail function
 fail() {
     echo "${@}"
     exit 1
