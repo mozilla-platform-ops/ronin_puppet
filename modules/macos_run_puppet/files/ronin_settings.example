@@ -1,0 +1,17 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# ronin_settings.example
+# Place this file on individual hosts as /opt/puppet_environments/ronin_settings
+# This file is NOT managed by Puppet — it is meant to be edited manually per-host.
+# Required:
+#   PUPPET_REPO
+#   PUPPET_BRANCH
+#   PUPPET_ROLE_FILE
+#   PUPPET_BIN
+#   FACTER_BIN
+#
+# Optional:
+#   FACT_PUPPET_MAIL
+#   FACT_WORKER_TYPE_OVERRIDE

@@ -6,7 +6,6 @@ class macos_run_puppet (
   Boolean $enabled = true,
 ) {
   if $enabled {
-
     file { '/usr/local/bin/run-puppet.sh':
       ensure => file,
       source => 'puppet:///modules/macos_run_puppet/run-puppet.sh',
@@ -14,21 +13,5 @@ class macos_run_puppet (
       group  => 'wheel',
       mode   => '0755',
     }
-
-    file { '/opt/puppet_environments':
-      ensure => directory,
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
-    }
-
-    file { '/opt/puppet_environments/ronin_settings':
-      ensure => file,
-      source => 'puppet:///modules/macos_run_puppet/ronin_settings',
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0600',
-    }
-
   }
 }

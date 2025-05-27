@@ -5,12 +5,41 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Bootstrap a macOS host to a complete Puppet run.
 set -e
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
-# Function to extract GitHub username from repo URL
+### ---------------------------------------------
+### 1. Constants & Variable Definitions
+### ---------------------------------------------
+
+SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
+
+# Optional override settings file
+if [ -f "$SETTINGS_FILE" ]; then
+    # shellcheck source=/opt/puppet_environments/ronin_settings
+    echo "Loading settings from $SETTINGS_FILE..."
+    source "$SETTINGS_FILE"
+else
+    echo "No override settings file found at $SETTINGS_FILE; using script defaults."
+fi
+
+# Change before merge
+: "${PUPPET_REPO:=https://github.com/rcurranmoz/ronin_puppet.git}"
+: "${PUPPET_BRANCH:=local_puppet_work}"
+: "${PUPPET_ROLE_FILE:=/etc/puppet_role}"
+: "${PUPPET_BIN:=/opt/puppetlabs/bin/puppet}"
+: "${FACTER_BIN:=/opt/puppetlabs/bin/facter}"
+
+### ---------------------------------------------
+### 2. Function Definitions
+### ---------------------------------------------
+
+fail() {
+    echo "${@}"
+    exit 1
+}
+
 extract_username_from_url() {
     local url="$1"
     if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
@@ -22,85 +51,6 @@ extract_username_from_url() {
     fi
 }
 
-# Require override settings file
-SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
-
-if [ ! -f "$SETTINGS_FILE" ]; then
-    echo "Missing required settings file: $SETTINGS_FILE"
-    exit 1
-fi
-
-# shellcheck source=/opt/puppet_environments/ronin_settings
-echo "Loading settings from $SETTINGS_FILE..."
-source "$SETTINGS_FILE"
-
-# Expect these to be set in the sourced file
-# PUPPET_REPO, PUPPET_BRANCH, PUPPET_ROLE_FILE, PUPPET_BIN, FACTER_BIN
-
-export GIT_REPO_URL="$PUPPET_REPO"
-export GIT_BRANCH="$PUPPET_BRANCH"
-
-GIT_USERNAME=$(extract_username_from_url "$GIT_REPO_URL")
-LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
-
-echo "Using Puppet Repo: $GIT_REPO_URL"
-echo "Using Branch: $GIT_BRANCH"
-
-fail() {
-    echo "${@}"
-    exit 1
-}
-
-# Ensure Puppet Role is Set
-if [ -f "$PUPPET_ROLE_FILE" ]; then
-    ROLE=$(<"$PUPPET_ROLE_FILE")
-else
-    fail "Failed to find Puppet role file $PUPPET_ROLE_FILE"
-fi
-
-# Ensure Puppet & Facter are Installed
-if [ ! -x "$PUPPET_BIN" ]; then
-    fail "Puppet is missing or not executable."
-fi
-
-if [ ! -x "$FACTER_BIN" ]; then
-    fail "Facter is missing or not executable."
-fi
-
-# Clone or update Puppet repository
-if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
-    echo "Checking existing Puppet repository..."
-    cd "$LOCAL_PUPPET_REPO" || fail "Failed to change directory to Puppet repository"
-
-    CURRENT_REMOTE_URL=$(git remote get-url origin 2>/dev/null)
-
-    if [ "$CURRENT_REMOTE_URL" != "$GIT_REPO_URL" ]; then
-        echo "Repository URL has changed. Removing old repository..."
-        cd ..
-        rm -rf "$LOCAL_PUPPET_REPO"
-        echo "Cloning new Puppet repository..."
-        git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
-    else
-        echo "Checking for updates in Puppet repository..."
-        git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
-
-        LOCAL_COMMIT=$(git rev-parse HEAD)
-        REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
-
-        if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
-            echo "Updates found. Pulling latest changes..."
-            git reset --hard "origin/$GIT_BRANCH" || fail "Failed to reset to latest commit"
-        else
-            echo "Already up-to-date. No changes needed."
-        fi
-    fi
-else
-    echo "Cloning fresh Puppet repository..."
-    mkdir -p "$(dirname "$LOCAL_PUPPET_REPO")"
-    git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
-fi
-
-# Ensure Puppet Repository Exists
 get_puppet_repo() {
     if [ ! -d "$LOCAL_PUPPET_REPO" ]; then
         fail "Local Puppet repository not found at $LOCAL_PUPPET_REPO"
@@ -109,7 +59,14 @@ get_puppet_repo() {
 
     # Inject Hiera Secrets
     mkdir -p ./data/secrets
+
+    if [ ! -f /var/root/vault.yaml ]; then
+        echo "vault.yaml not found — exiting gracefully."
+        exit 0
+    fi
+
     cp /var/root/vault.yaml ./data/secrets/vault.yaml
+    chmod 0600 ./data/secrets/vault.yaml
 
     # Get FQDN from Facter
     FQDN=$("$FACTER_BIN" networking.fqdn)
@@ -120,9 +77,8 @@ node '$FQDN' {
     include ::roles_profiles::roles::$ROLE
 }
 EOF
- }
+}
 
-# Run Puppet
 run_puppet() {
     get_puppet_repo
     echo "Running puppet apply"
@@ -161,20 +117,77 @@ run_puppet() {
     esac
 }
 
+### ---------------------------------------------
+### 3. Main Execution Logic
+### ---------------------------------------------
+
+export GIT_REPO_URL="$PUPPET_REPO"
+export GIT_BRANCH="$PUPPET_BRANCH"
+
+GIT_USERNAME=$(extract_username_from_url "$GIT_REPO_URL")
+LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
+
+echo "Using Puppet Repo: $GIT_REPO_URL"
+echo "Using Branch: $GIT_BRANCH"
+
+# Ensure Puppet Role is Set
+if [ -f "$PUPPET_ROLE_FILE" ]; then
+    ROLE=$(<"$PUPPET_ROLE_FILE")
+else
+    fail "Failed to find Puppet role file $PUPPET_ROLE_FILE"
+fi
+
+# Ensure Puppet & Facter are Installed
+[ -x "$PUPPET_BIN" ] || fail "Puppet is missing or not executable."
+[ -x "$FACTER_BIN" ] || fail "Facter is missing or not executable."
+
+# Clone or update Puppet repository
+if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
+    echo "Checking existing Puppet repository..."
+    cd "$LOCAL_PUPPET_REPO" || fail "Failed to change directory to Puppet repository"
+
+    CURRENT_REMOTE_URL=$(git remote get-url origin 2>/dev/null)
+
+    if [ "$CURRENT_REMOTE_URL" != "$GIT_REPO_URL" ]; then
+        echo "Repository URL has changed. Removing old repository..."
+        cd ..
+        rm -rf "$LOCAL_PUPPET_REPO"
+        echo "Cloning new Puppet repository..."
+        git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+    else
+        echo "Checking for updates in Puppet repository..."
+        git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+
+        LOCAL_COMMIT=$(git rev-parse HEAD)
+        REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
+
+        if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+            echo "Updates found. Pulling latest changes..."
+            git reset --hard "origin/$GIT_BRANCH" || fail "Failed to reset to latest commit"
+        else
+            echo "Already up-to-date. No changes needed."
+        fi
+    fi
+else
+    echo "Cloning fresh Puppet repository..."
+    mkdir -p "$(dirname "$LOCAL_PUPPET_REPO")"
+    git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+fi
+
 # Retry Puppet Until Success, Checking for Updates Before Each Retry
 while true; do
     echo "Running Puppet apply..."
 
     if run_puppet; then
         echo "Puppet apply succeeded!"
-        exit 0
+        break
     fi
 
     echo "Puppet apply failed. Checking for updates before retrying..."
 
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to enter Puppet repository directory"
-
     git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+
     LOCAL_COMMIT=$(git rev-parse HEAD)
     REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
 
