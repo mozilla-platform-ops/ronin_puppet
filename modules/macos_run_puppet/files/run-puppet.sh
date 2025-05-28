@@ -23,7 +23,6 @@ else
     echo "No override settings file found at $SETTINGS_FILE; using script defaults."
 fi
 
-# Change before merge
 : "${PUPPET_REPO:=https://github.com/mozilla-platform-ops/ronin_puppet.git}"
 : "${PUPPET_BRANCH:=master}"
 : "${PUPPET_ROLE_FILE:=/etc/puppet_role}"
