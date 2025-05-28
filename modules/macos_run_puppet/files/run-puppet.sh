@@ -5,15 +5,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set -e
-export LANG=en_US.UTF-8
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
-
 ### ---------------------------------------------
 ### 1. Constants & Variable Definitions
 ### ---------------------------------------------
-
-SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
+set -e
+export LANG=en_US.UTF-8
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
+export GIT_REPO_URL="$PUPPET_REPO"
+export GIT_BRANCH="$PUPPET_BRANCH"
 
 # Optional override settings file
 if [ -f "$SETTINGS_FILE" ]; then
@@ -25,8 +24,8 @@ else
 fi
 
 # Change before merge
-: "${PUPPET_REPO:=https://github.com/rcurranmoz/ronin_puppet.git}"
-: "${PUPPET_BRANCH:=local_puppet_work}"
+: "${PUPPET_REPO:=https://github.com/mozilla-platform-ops/ronin_puppet.git}"
+: "${PUPPET_BRANCH:=master}"
 : "${PUPPET_ROLE_FILE:=/etc/puppet_role}"
 : "${PUPPET_BIN:=/opt/puppetlabs/bin/puppet}"
 : "${FACTER_BIN:=/opt/puppetlabs/bin/facter}"
@@ -121,11 +120,9 @@ run_puppet() {
 ### 3. Main Execution Logic
 ### ---------------------------------------------
 
-export GIT_REPO_URL="$PUPPET_REPO"
-export GIT_BRANCH="$PUPPET_BRANCH"
-
 GIT_USERNAME=$(extract_username_from_url "$GIT_REPO_URL")
 LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
+SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
 
 echo "Using Puppet Repo: $GIT_REPO_URL"
 echo "Using Branch: $GIT_BRANCH"
