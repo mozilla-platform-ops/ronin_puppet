@@ -14,6 +14,8 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 export GIT_REPO_URL="$PUPPET_REPO"
 export GIT_BRANCH="$PUPPET_BRANCH"
 
+SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
+
 # Optional override settings file
 if [ -f "$SETTINGS_FILE" ]; then
     # shellcheck source=/opt/puppet_environments/ronin_settings
@@ -121,7 +123,6 @@ run_puppet() {
 
 GIT_USERNAME=$(extract_username_from_url "$GIT_REPO_URL")
 LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
-SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
 
 echo "Using Puppet Repo: $GIT_REPO_URL"
 echo "Using Branch: $GIT_BRANCH"
