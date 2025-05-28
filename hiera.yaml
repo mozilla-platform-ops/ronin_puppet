@@ -21,7 +21,5 @@ hierarchy:
   - name: "Per-OS defaults"
     path: "os/%{facts.os.family}.yaml"
 
-
-
   - name: "Common data to all"
     path: "common.yaml"
