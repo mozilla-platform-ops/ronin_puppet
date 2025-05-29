@@ -198,6 +198,12 @@ jobs:
       - gem_cache
       - apt_cache_restore
       - run:
+          name: 0-60s sleep (rate-limit avoidance)
+          shell: bash
+          command: |
+            echo "Sleeping 0-60 seconds to avoid Ubuntu rate limiting..."
+            sleep $((RANDOM % 61))
+      - run:
           command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
       - run: bundle exec kitchen verify << parameters.kitchen_target >>
