@@ -12,22 +12,21 @@ set -e
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
-: "${PUPPET_REPO:=https://github.com/mozilla-platform-ops/ronin_puppet.git}"
-: "${PUPPET_BRANCH:=master}"
-
-export GIT_REPO_URL="$PUPPET_REPO"
-export GIT_BRANCH="$PUPPET_BRANCH"
-
 SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
 
 # Optional override settings file
 if [ -f "$SETTINGS_FILE" ]; then
-    # shellcheck source=/opt/puppet_environments/ronin_settings
     echo "Loading settings from $SETTINGS_FILE..."
     source "$SETTINGS_FILE"
 else
     echo "No override settings file found at $SETTINGS_FILE; using script defaults."
 fi
+
+: "${PUPPET_REPO:=https://github.com/mozilla-platform-ops/ronin_puppet.git}"
+: "${PUPPET_BRANCH:=master}"
+
+export GIT_REPO_URL="$PUPPET_REPO"
+export GIT_BRANCH="$PUPPET_BRANCH"
 
 : "${PUPPET_ROLE_FILE:=/etc/puppet_role}"
 : "${PUPPET_BIN:=/opt/puppetlabs/bin/puppet}"
@@ -48,7 +47,7 @@ email_report() {
     local FQDN
     FQDN=$("$FACTER_BIN" networking.fqdn)
     local SENDER="root@${FQDN}"
-    local RECEIVER="${PUPPET_NOTIFY_EMAIL:-root@localhost}"
+    local RECEIVER="${PUPPET_MAIL:-root@localhost}"
 
     python3 <<EOF
 import smtplib
@@ -61,7 +60,7 @@ ${ERR_MSG}
 """
 
 try:
-    smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
+    smtpObj = smtplib.SMTP("${PUPPET_SMTP_RELAY:-localhost}")
     smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
     print("Successfully sent email")
 except Exception as e:
@@ -98,6 +97,7 @@ get_puppet_repo() {
     chmod 0600 ./data/secrets/vault.yaml
 
     # Get FQDN from Facter
+    local FQDN
     FQDN=$("$FACTER_BIN" networking.fqdn)
 
     # Create a node definition for this host
