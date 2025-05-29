@@ -11,6 +11,10 @@
 set -e
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
+
+: "${PUPPET_REPO:=https://github.com/mozilla-platform-ops/ronin_puppet.git}"
+: "${PUPPET_BRANCH:=master}"
+
 export GIT_REPO_URL="$PUPPET_REPO"
 export GIT_BRANCH="$PUPPET_BRANCH"
 
@@ -25,8 +29,6 @@ else
     echo "No override settings file found at $SETTINGS_FILE; using script defaults."
 fi
 
-: "${PUPPET_REPO:=https://github.com/mozilla-platform-ops/ronin_puppet.git}"
-: "${PUPPET_BRANCH:=master}"
 : "${PUPPET_ROLE_FILE:=/etc/puppet_role}"
 : "${PUPPET_BIN:=/opt/puppetlabs/bin/puppet}"
 : "${FACTER_BIN:=/opt/puppetlabs/bin/facter}"
