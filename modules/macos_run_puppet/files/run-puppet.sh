@@ -40,6 +40,33 @@ fail() {
     exit 1
 }
 
+email_report() {
+    local ERR_SUBJECT="$1"
+    local ERR_MSG="$2"
+    local FQDN
+    FQDN=$("$FACTER_BIN" networking.fqdn)
+    local SENDER="root@${FQDN}"
+    local RECEIVER="${PUPPET_NOTIFY_EMAIL:-root@localhost}"
+
+    python3 <<EOF
+import smtplib
+
+msg = """From: ${SENDER}
+To: ${RECEIVER}
+Subject: ${ERR_SUBJECT}
+
+${ERR_MSG}
+"""
+
+try:
+    smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
+    smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
+    print("Successfully sent email")
+except Exception as e:
+    print("Error: unable to send email:", e)
+EOF
+}
+
 extract_username_from_url() {
     local url="$1"
     if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
@@ -178,6 +205,9 @@ while true; do
     if run_puppet; then
         echo "Puppet apply succeeded!"
         break
+    else
+        echo "Puppet apply failed."
+        email_report "Puppet apply failed on $(hostname -f)" "Puppet apply failed on host $(hostname -f). See logs for details."
     fi
 
     echo "Puppet apply failed. Checking for updates before retrying..."
