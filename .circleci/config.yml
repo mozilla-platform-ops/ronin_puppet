@@ -201,8 +201,9 @@ jobs:
           name: 0-60s sleep (rate-limit avoidance)
           shell: bash
           command: |
-            echo "Sleeping 0-60 seconds to avoid Ubuntu rate limiting..."
-            sleep $((RANDOM % 61))
+            sleep_duration=$((RANDOM % 61))
+            echo "Sleeping for $sleep_duration seconds..."
+            sleep $sleep_duration
       - run:
           command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
