@@ -24,6 +24,12 @@ rm -rf /opt/worker/tasks/task_*
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
 find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
 
+if [ -x /usr/local/bin/run-puppet.sh ]; then
+    /usr/local/bin/run-puppet.sh
+else
+    echo "run-puppet.sh not found, skipping Puppet run."
+fi
+
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/start-worker "$@"
