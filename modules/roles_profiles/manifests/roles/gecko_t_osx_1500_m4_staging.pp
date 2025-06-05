@@ -5,11 +5,11 @@
 class roles_profiles::roles::gecko_t_osx_1500_m4_staging {
   include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::cltbld_user
-  include roles_profiles::profiles::macos_run_puppet
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_directory_cleaner
   include roles_profiles::profiles::macos_gw_checker
   include roles_profiles::profiles::macos_people_remover
+  include roles_profiles::profiles::macos_run_puppet
   include roles_profiles::profiles::macos_tcc_perms
   include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::motd
