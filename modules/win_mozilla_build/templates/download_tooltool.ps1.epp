@@ -1,3 +1,14 @@
+Parameter(
+    [Parameter(Mandatory = $true)]
+    [string] $url = "<%= $tooltool_src %>"
+
+    [Parameter(Mandatory = $true)]
+    [string] $path = "<%= $tooltool_dst %>"
+
+    [Parameter(Mandatory = $true)]
+    [string] $pat = "<%= $github_pat %>"
+)
+
 function Invoke-DownloadWithRetryGithub {
     <#
     .SYNOPSIS
@@ -91,8 +102,4 @@ function Invoke-DownloadWithRetryGithub {
     return $Path
 }
 
-$source = "<%= $tooltool_src %>"
-$dst = "<%= $tooltool_dst %>"
-$pat = "<%= $github_pat %>"
-
-Invoke-DownloadWithRetryGithub -Url $source -Path $dst -PAT $pat
+Invoke-DownloadWithRetryGithub -Url $url -Path $path -PAT $pat
