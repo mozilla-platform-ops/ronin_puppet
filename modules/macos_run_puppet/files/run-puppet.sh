@@ -159,6 +159,7 @@ echo "Using Branch: $GIT_BRANCH"
 # Ensure Puppet Role is Set
 if [ -f "$PUPPET_ROLE_FILE" ]; then
     ROLE=$(<"$PUPPET_ROLE_FILE")
+    export FACTER_puppet_role="$ROLE"
 else
     fail "Failed to find Puppet role file $PUPPET_ROLE_FILE"
 fi
