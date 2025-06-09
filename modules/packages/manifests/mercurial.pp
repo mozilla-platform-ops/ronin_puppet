@@ -22,22 +22,21 @@ class packages::mercurial (
     path    => ['/bin', '/usr/bin'],
   }
 
-  # Ensure the path file is created and old hg binary is removed before the package is installed
-  Exec['remove_old_hg'] -> File['/etc/paths.d/python3.11'] -> Package['python3-mercurial']
+  # Ensure the path file is created and old hg binary is removed before installation
+  Exec['remove_old_hg'] -> File['/etc/paths.d/python3.11']
 
-  package { 'python3-mercurial':
-    ensure          => $version,
-    name            => 'mercurial',
-    provider        => pip3,
-    # Sometimes it seems this below is needed for macOS > 10.15 (?)
-    install_options => ['--use-pep517'],
-    require         => [Class['packages::python3'], Class['macos_xcode_tools']],
+  # Install Mercurial using Python 3.11's pip3
+  exec { 'install_mercurial_py311':
+    command => "/Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 install mercurial==${version} --use-pep517",
+    unless  => "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -c 'import mercurial; assert mercurial.__version__ == \"${version}\"'",
+    path    => ['/bin', '/usr/bin', '/usr/local/bin', '/Library/Frameworks/Python.framework/Versions/3.11/bin'],
+    require => [Class['packages::python3'], Class['macos_xcode_tools']],
   }
 
   # Create a symlink at /usr/local/bin/hg pointing to the new hg binary
   file { '/usr/local/bin/hg':
     ensure  => 'link',
     target  => '/Library/Frameworks/Python.framework/Versions/3.11/bin/hg',
-    require => Package['python3-mercurial'],
+    require => Exec['install_mercurial_py311'],
   }
 }
