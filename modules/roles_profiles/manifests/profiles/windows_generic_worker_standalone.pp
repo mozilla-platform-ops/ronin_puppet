@@ -25,7 +25,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
 
             case $facts['custom_win_os_version'] {
                 'win_10_2009': {
-                    $init = 'task-user-init-win10-64-2009.cmd'
+                    $init = 'task-user-init-win10.cmd'
                 }
                 'win_11_2009': {
                     $init = 'task-user-init-win11.cmd'

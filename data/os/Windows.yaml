@@ -79,6 +79,9 @@ windows:
     py3_pip_version: '23.3.2'
     zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
+  driver:
+    gfx:
+      version: '101.4255'
   git:
     version: '2.49.0'
   googlechrome:
