@@ -227,7 +227,6 @@ while true; do
         break
     else
         echo "Puppet apply failed."
-        email_report "Puppet apply failed on $(hostname -f)" "Puppet apply failed on host $(hostname -f). See logs for details."
     fi
 
     echo "Puppet apply failed. Checking for updates before retrying..."
