@@ -152,7 +152,7 @@ run_puppet() {
 
     if [[ "$retval" -ne 0 ]]; then
         LOG_SUMMARY=$(tail -n 50 "$TMP_LOG")
-        email_report "Puppet apply failed on $(hostname -f)" "Puppet apply failed on host $(hostname -f). Last 50 lines of log:\n\n$LOG_SUMMARY"
+        email_report "Puppet apply failed on $(hostname -f)" "Puppet apply failed on host $(hostname -f). Failure output:\n\n$LOG_SUMMARY"
     fi
 
     rm "$TMP_LOG"
