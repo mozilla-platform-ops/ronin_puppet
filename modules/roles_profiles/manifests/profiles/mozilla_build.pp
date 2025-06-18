@@ -13,7 +13,7 @@ class roles_profiles::profiles::mozilla_build {
       include win_mozilla_build::install
       include win_mozilla_build::modifications
       include win_mozilla_build::install_py3_certs
-      include win_mozilla_build::tooltool
+      #include win_mozilla_build::tooltool
       include win_mozilla_build::hg_files
       include win_mozilla_build::grant_symlink_access
       include win_mozilla_build::install_psutil
