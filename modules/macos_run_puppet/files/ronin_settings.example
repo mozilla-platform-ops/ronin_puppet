@@ -2,7 +2,7 @@
 # the `run-puppet.sh` script will use the values here.
 
 # puppet overrides
-PUPPET_REPO='https://github.com/rcurran/ronin_puppet.git'
+PUPPET_REPO='https://github.com/rcurranmoz/ronin_puppet.git'
 PUPPET_BRANCH='local_puppet_work'
 PUPPET_MAIL='rcurran@mozilla.com'
 

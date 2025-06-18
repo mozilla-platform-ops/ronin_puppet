@@ -24,6 +24,8 @@ fi
 
 : "${PUPPET_REPO:=https://github.com/mozilla-platform-ops/ronin_puppet.git}"
 : "${PUPPET_BRANCH:=master}"
+: "${PUPPET_MAIL:=puppet-ronin-reports@mozilla.com}"
+: "${PUPPET_SMTP_RELAY:=smtp1.mail.mdc1.mozilla.com}"
 
 export GIT_REPO_URL="$PUPPET_REPO"
 export GIT_BRANCH="$PUPPET_BRANCH"
@@ -46,22 +48,32 @@ email_report() {
     local ERR_MSG="$2"
     local FQDN
     FQDN=$("$FACTER_BIN" networking.fqdn)
-    local SENDER="root@${FQDN}"
-    local RECEIVER="${PUPPET_MAIL:-root@localhost}"
+    local SENDER="ci-worker@mozilla.com"
+    local RECEIVER="${PUPPET_MAIL}"
 
     python3 <<EOF
 import smtplib
+import socket
+import datetime
+import email.utils
 
-msg = """From: ${SENDER}
-To: ${RECEIVER}
-Subject: ${ERR_SUBJECT}
+sender = "${SENDER}"
+recipient = "${RECEIVER}"
+subject = "${ERR_SUBJECT}"
+body = """${ERR_MSG}"""
 
-${ERR_MSG}
+msg = f"""From: {sender}
+To: {recipient}
+Date: {email.utils.formatdate()}
+Message-ID: <{datetime.datetime.now().timestamp()}@{socket.getfqdn()}>
+Subject: {subject}
+
+{body}
 """
 
 try:
-    smtpObj = smtplib.SMTP("${PUPPET_SMTP_RELAY:-localhost}")
-    smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
+    smtp = smtplib.SMTP("${PUPPET_SMTP_RELAY}", 25)
+    smtp.sendmail(sender, recipient, msg)
     print("Successfully sent email")
 except Exception as e:
     print("Error: unable to send email:", e)
@@ -138,6 +150,11 @@ run_puppet() {
         retval=1
     fi
 
+    if [[ "$retval" -ne 0 ]]; then
+        LOG_SUMMARY=$(tail -n 50 "$TMP_LOG")
+        email_report "Puppet apply failed on $(hostname -f)" "Puppet apply failed on host $(hostname -f). Failure output:\n\n$LOG_SUMMARY"
+    fi
+
     rm "$TMP_LOG"
 
     case $retval in
@@ -210,7 +227,6 @@ while true; do
         break
     else
         echo "Puppet apply failed."
-        email_report "Puppet apply failed on $(hostname -f)" "Puppet apply failed on host $(hostname -f). See logs for details."
     fi
 
     echo "Puppet apply failed. Checking for updates before retrying..."
