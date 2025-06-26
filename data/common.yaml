@@ -78,6 +78,7 @@ scriptworker_users:
         - mac_sign_and_pkg_vpn
         - mac_sign_hardened
         - mac_sign_and_pkg_hardened
+        - mac_sign_pkg
       dmg_prefix: "vpn"
       worker_type_prefix: "dep-mozillavpn-"
       cot_product: "mozillavpn"
@@ -133,6 +134,7 @@ scriptworker_users:
         - mac_sign_and_pkg_vpn
         - mac_sign_hardened
         - mac_sign_and_pkg_hardened
+        - mac_sign_pkg
       dmg_prefix: "prod"
       cot_product: "mozillavpn"
       keychain_filename: "mozilla.20240328.keychain"
@@ -147,6 +149,7 @@ scriptworker_users:
         - mac_sign_and_pkg_vpn
         - mac_sign_hardened
         - mac_sign_and_pkg_hardened
+        - mac_sign_pkg
         - mac_geckodriver
         - mac_single_file
       dmg_prefix: "prod"
