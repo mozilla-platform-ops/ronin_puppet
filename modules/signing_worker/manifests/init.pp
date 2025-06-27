@@ -186,7 +186,7 @@ define signing_worker (
         require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
     }
     exec { "install ${scriptworker_base} scriptworker_client":
-        command     => "${virtualenv_dir}/bin/python setup.py install",
+        command     => "${virtualenv_dir}/bin/python -m pip install .",
         cwd         => "${scriptworker_scripts_clone_dir}/scriptworker_client",
         user        => $user,
         group       => $group,
@@ -195,7 +195,7 @@ define signing_worker (
         require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
     }
     exec { "install ${scriptworker_base} iscript":
-        command     => "${virtualenv_dir}/bin/python setup.py install",
+        command     => "${virtualenv_dir}/bin/python -m pip install .",
         cwd         => "${scriptworker_scripts_clone_dir}/iscript",
         user        => $user,
         group       => $group,
@@ -204,7 +204,7 @@ define signing_worker (
         require     => [Vcsrepo[$scriptworker_scripts_clone_dir], Python::Virtualenv["signingworker_${user}"]],
     }
     exec { "install ${scriptworker_base} notarization_poller":
-        command     => "${virtualenv_dir}/bin/python setup.py install",
+        command     => "${virtualenv_dir}/bin/python -m pip install .",
         cwd         => "${scriptworker_scripts_clone_dir}/notarization_poller",
         user        => $user,
         group       => $group,
