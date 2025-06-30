@@ -117,7 +117,7 @@ class roles_profiles::profiles::cltbld_user {
       $homedir      = '/home/cltbld'
 
       group { 'cltbld':
-        name      => 'cltbld',
+        name => 'cltbld',
       }
 
       # Create the cltbld user
