@@ -3,6 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::cltbld_user {
+  require roles_profiles::profiles::worker
+
   case $facts['os']['name'] {
     'Darwin': {
       $account_username = 'cltbld'
@@ -12,6 +14,9 @@ class roles_profiles::profiles::cltbld_user {
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
       $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '${salt}', '-6', '-rounds', '${iterations}', '${password}']).read.chomp %>")
+      $runner_config_path = '/opt/worker/worker-runner-config.yaml'
+      $runner_config_content = file($runner_config_path, '')
+      $multiuser_enabled = $runner_config_content =~ /multiuser/
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {
@@ -41,9 +46,11 @@ class roles_profiles::profiles::cltbld_user {
             command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password_hash}'",
             unless  => '/usr/bin/dscl . -read /Users/cltbld',
           }
-          class { 'macos_utils::autologin_user':
-            user       => $account_username,
-            kcpassword => $password_unhashed,
+          unless $multiuser_enabled {
+            class { 'macos_utils::autologin_user':
+              user       => 'cltbld',
+              kcpassword => $kcpassword,
+            }
           }
           macos_utils::clean_appstate_13_plus { 'cltbld':
             user  => 'cltbld',
