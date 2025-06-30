@@ -15,7 +15,7 @@ class roles_profiles::profiles::cltbld_user {
       $kcpassword   = lookup('cltbld_user.kcpassword')
       $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '${salt}', '-6', '-rounds', '${iterations}', '${password}']).read.chomp %>")
       $runner_config_path = '/opt/worker/worker-runner-config.yaml'
-      $runner_config_content = file($runner_config_path, '')
+      $runner_config_content = Deferred('file', ['/opt/worker/worker-runner-config.yaml'])
       $multiuser_enabled = $runner_config_content =~ /multiuser/
 
       # Create the cltbld user
