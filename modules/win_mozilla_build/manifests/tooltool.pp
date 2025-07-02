@@ -25,9 +25,9 @@ class win_mozilla_build::tooltool {
       file { $tooltool_ps1:
         ensure  => file,
         content => epp('win_mozilla_build/download_tooltool.ps1.epp', {
-            'tooltool_src' => $tooltool_src,
-            'tooltool_dst' => $tooltool_dst,
-            'github_pat'   => $github_pat,
+            'url'  => $tooltool_src,
+            'path' => $tooltool_dst,
+            'pat'  => $github_pat,
         }),
       }
 
