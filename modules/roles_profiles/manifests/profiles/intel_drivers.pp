@@ -3,9 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::intel_drivers {
-
-    class { 'win_packages::drivers::intel_gfx' :
-        version => lookup('windows.driver.gfx.version')
-    }
-    include win_os_settings::intel_gfx_settings
+  class { 'win_packages::drivers::intel_gfx' :
+    version => lookup('windows.driver.gfx.version'),
+  }
+  include win_os_settings::intel_gfx_settings
 }
