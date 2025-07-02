@@ -1,14 +1,3 @@
-Parameter(
-    [Parameter(Mandatory = $true)]
-    [string] $url = "<%= $url %>"
-
-    [Parameter(Mandatory = $true)]
-    [string] $path = "<%= $path %>"
-
-    [Parameter(Mandatory = $true)]
-    [string] $pat = "<%= $pat %>"
-)
-
 function Invoke-DownloadWithRetryGithub {
     <#
     .SYNOPSIS
@@ -102,4 +91,8 @@ function Invoke-DownloadWithRetryGithub {
     return $Path
 }
 
-Invoke-DownloadWithRetryGithub -Url $url -Path $path -PAT $pat
+$source = "<%= $url %>"
+$dst = "<%= $path %>"
+$pat = "<%= $pat %>"
+
+Invoke-DownloadWithRetryGithub -Url $source -Path $dst -PAT $pat
