@@ -4,7 +4,7 @@
 
 class win_openssh::service {
 
-    require win_openssh::add_openssh
+    #require win_openssh::add_openssh
 
     service { 'sshd':
         ensure => running,
