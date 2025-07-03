@@ -146,6 +146,6 @@ esac
 rm -rf "$TMP_PUPPET_DIR"
 echo "System Installed: $(date)" >> /etc/issue
 
-/sbin/reboot
+# /sbin/reboot
 
 exit 0
