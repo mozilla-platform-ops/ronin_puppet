@@ -208,6 +208,7 @@ run_puppet() {
         "--modulepath=./modules:./r10k_modules:/etc/puppetlabs/code/environments/production/modules"
         "--hiera_config=./hiera.yaml"
         "--logdest=console"
+        "--debug"
         "--color=false"
         "--detailed-exitcodes"
         "./manifests/"
