@@ -23,6 +23,7 @@ class roles_profiles::profiles::windows_worker_runner {
                 }
                 default: {
                     $ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
+                    $provider = lookup('windows.taskcluster.worker_runner.provider')
                 }
             }
 
@@ -46,7 +47,6 @@ class roles_profiles::profiles::windows_worker_runner {
             $runner_name           = lookup('windows.taskcluster.worker_runner.name.amd64')
             $desired_rnr_version   = $taskcluster_version
             $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
-            $provider              = $provider
             $implementation        = lookup('windows.taskcluster.worker_runner.implementation')
             $config_file            = "${facts['custom_win_systemdrive']}\\generic-worker\\generic-worker.config"
 
