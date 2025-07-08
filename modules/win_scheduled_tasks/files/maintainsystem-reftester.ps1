@@ -366,7 +366,7 @@ function Set-PXE {
             bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
 
             Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Restart-Computer -Force
+            #Restart-Computer -Force
         }
         Catch {
             Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
