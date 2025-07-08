@@ -19,11 +19,13 @@ class roles_profiles::profiles::windows_worker_runner {
             case $facts['custom_win_location'] {
                 'datacenter': {
                     $ext_pkg_src_loc = lookup('windows.taskcluster.relops_s3')
+                    $provider = 'standalone'
                 }
                 default: {
                     $ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
                 }
             }
+
             $taskcluster_version    =
                 lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.version'])
 
@@ -76,17 +78,17 @@ class roles_profiles::profiles::windows_worker_runner {
                     $client_id             = lookup('win-worker.generic_worker.client_id')
                     $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
                     $ed25519signingkey     = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key"
-                    $idle_timeout          = lookup('win-worker.generic_worker.idle_timeout')
+                    $idle_timeout          =  lookup('windows.taskcluster.hardware_idle_timeout')
                     $livelog_exe           = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe"
                     $location              = $facts['custom_win_location']
-                    $provisioner           = lookup('win-worker.taskcluster.worker_runner.provisionerId')
+                    $provisioner           = 'releng-hardware'
                     $root_url              = lookup('windows.taskcluster.root_url')
                     $task_dir              = "${facts['custom_win_systemdrive']}\\\\"
                     $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
                     $taskcluster_proxy_exe = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe"
                     $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
                     $worker_id             = $facts['networking']['hostname']
-                    $worker_group          = lookup('win-worker.taskcluster.worker_group')
+                    $worker_group          = 'mdc1'
                     $worker_pool_id        = $facts['custom_win_worker_pool_id']
                     $wstaudience           = lookup('windows.taskcluster.wstaudience')
                     $wstserverurl          = lookup('windows.taskcluster.wstserverurl')
