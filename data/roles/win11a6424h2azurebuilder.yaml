@@ -16,3 +16,5 @@ win-worker:
   ## Use to overwrite values in the Windows yaml file.
   ## Replace windows. with win-worker.variant.
   variant:
+    hg:
+      version: '6.2.1'
