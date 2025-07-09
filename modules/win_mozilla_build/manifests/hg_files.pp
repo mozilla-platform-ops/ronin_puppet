@@ -38,9 +38,6 @@ class win_mozilla_build::hg_files {
   file { "${mozbld}\\robustcheckout.py":
     content => file('win_mozilla_build/robustcheckout.py'),
   }
-  file { "${msys_dir}\\etc\\cacert.pem":
-    content => file('win_mozilla_build/cacert.pem'),
-  }
   file { "${facts['custom_win_programfiles']}\\mercurial\\mercurial.ini":
     content => file('win_mozilla_build/mercurial.ini'),
   }
