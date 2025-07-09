@@ -7,7 +7,7 @@ class win_packages::mercurial {
   ## CLEAN UP: version should be in Hiera
   ## looked up in profile and passed to this class.
 
-  $needed_hg_ver = lookup('windows.hg.version')
+  $needed_hg_ver = lookup(['win-worker.variant.hg.version', 'windows.hg.version'])
   $srcloc = lookup('windows.ext_pkg_src')
 
   case $needed_hg_ver {
