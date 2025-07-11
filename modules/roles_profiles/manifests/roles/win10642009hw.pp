@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win10642009hw {
-  #include roles_profiles::profiles::chocolatey
+  include roles_profiles::profiles::chocolatey
   ## Install before Widnows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
   # System
@@ -34,6 +34,6 @@ class roles_profiles::roles::win10642009hw {
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::google_chrome
-  include roles_profiles::profiles::windows_generic_worker_standalone
-
+  #include roles_profiles::profiles::windows_generic_worker_standalone
+  include roles_profiles::profiles::windows_worker_runner
 }
