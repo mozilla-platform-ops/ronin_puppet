@@ -529,7 +529,7 @@ cryptography==45.0.4 \
     --hash=sha256:eaa3e28ea2235b33220b949c5a0d6cf79baa80eab2eb5607ca8ab7525331b9ff \
     --hash=sha256:f3fe7a5ae34d5a414957cc7f457e2b92076e72938423ac64d215722f6cf49a9e
     # via
-    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmpefk_1e6s.in
     #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
     #   pyjwt
 dictdiffer==0.9.0 \
@@ -688,7 +688,7 @@ jinja2==3.1.6 \
     # via cookiecutter
 jsmin==3.0.1 \
     --hash=sha256:c0959a121ef94542e807a674142606f7e90214a2b3d1eb17300244bbb5cc2bfc
-    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmpefk_1e6s.in
 json-e==4.8.0 \
     --hash=sha256:51ead93962912d701c6f1a6a0b27cc34bb2cb8397a82affd8adb2401898e27ea \
     --hash=sha256:91a50ba4e1a9e6d40c36c0601d68acda9ae44ca2817525e09938b2c82ce23572
@@ -713,7 +713,7 @@ macholib==1.16.3 \
     --hash=sha256:07ae9e15e8e4cd9a788013d81f5908b3609aa76f9b1421bae9c4d7606ec86a30 \
     --hash=sha256:0e315d7583d38b8c77e815b1ecbdbf504a8258d8b3e17b61165c6feb60d18f2c
     # via
-    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmpefk_1e6s.in
     #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
 markdown-it-py==3.0.0 \
     --hash=sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1 \
@@ -795,7 +795,7 @@ mohawk==1.1.0 \
 mozfile==3.0.0 \
     --hash=sha256:3b0afcda2fa8b802ef657df80a56f21619008f61fcc14b756124028d7b7adf5c \
     --hash=sha256:92ca1a786abbdf5e6a7aada62d3a4e28f441ef069c7623223add45268e53c789
-    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmpefk_1e6s.in
 mozilla-repo-urls==0.2.2 \
     --hash=sha256:161ab84cac58c0bef2c9ce0c414aaec5483fc9593fc5616c5b186e0cccff4984 \
     --hash=sha256:f6e6e037ed28b38956624dfc6b40ed78247e747f13157863ab39ac89ecd7ffd6
