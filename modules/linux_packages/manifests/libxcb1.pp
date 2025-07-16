@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::libxcb1 {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
-      case $::operatingsystemrelease {
+      case $facts['os']['release']['full'] {
         '18.04', '22.04': {
           package {
             'libxcb1':
@@ -13,12 +13,12 @@ class linux_packages::libxcb1 {
           }
         }
         default: {
-          fail("Ubuntu ${::operatingsystemrelease} is not supported")
+          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
         }
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }

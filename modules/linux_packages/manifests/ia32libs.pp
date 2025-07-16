@@ -4,9 +4,9 @@
 
 # ia32-libs are needed by b2g emulator tests
 class linux_packages::ia32libs {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
-      case $::operatingsystemrelease {
+      case $facts['os']['release']['full'] {
         '18.04': {
           # from Alin Selagea, 2017-03-14:
           # In ubuntu 16.04, ia32-libs was replaced with lib32z1 lib32ncurses5
@@ -46,12 +46,12 @@ class linux_packages::ia32libs {
         #   }
         # }
         default: {
-          fail("Ubuntu ${::operatingsystemrelease} is not supported")
+          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
         }
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }

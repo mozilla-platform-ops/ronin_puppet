@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::gstreamer {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
-      case $::operatingsystemrelease {
+      case $facts['os']['release']['full'] {
         '18.04', '22.04': {
           package {
             # In ubuntu 16.04, gstreamer0.10-ffmpeg was replaced with gstreamer1.0-libav
@@ -20,12 +20,12 @@ class linux_packages::gstreamer {
           }
         }
         default: {
-          fail("Ubuntu ${::operatingsystemrelease} is not supported")
+          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
         }
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }

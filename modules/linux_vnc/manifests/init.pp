@@ -28,7 +28,7 @@ class linux_vnc (
       content   => $user_password,
       show_diff => false;
   }
-  case $::operatingsystemrelease {
+  case $facts['os']['release']['full'] {
     '18.04', '22.04': {
       file {
         '/lib/systemd/system/x11vnc.service':
@@ -36,7 +36,7 @@ class linux_vnc (
       }
     }
     default: {
-      fail ("Ubuntu ${::operatingsystemrelease} is not suported")
+      fail ("Ubuntu ${facts['os']['release']['full']} is not suported")
     }
   }
   # note that x11vnc isn't started automatically

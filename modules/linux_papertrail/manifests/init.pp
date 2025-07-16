@@ -8,9 +8,9 @@ class linux_papertrail (
     Array   $systemd_units = [],  # optional, only show these units
     Array   $syslog_identifiers = [],  # optional, display these syslog identifiers also
 ) {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
-            case $::operatingsystemrelease {
+            case $facts['os']['release']['full'] {
                 '18.04', '22.04': {
                     # only configure if required variables are set
                     if (! $papertrail_host.empty) and ($papertrail_port != -1) {
@@ -67,12 +67,12 @@ class linux_papertrail (
                     }
                 }
                 default: {
-                    fail ("Cannot install on Ubuntu version ${::operatingsystemrelease}")
+                    fail ("Cannot install on Ubuntu version ${facts['os']['release']['full']}")
                 }
             }
         }
         default: {
-            fail("gui is not supported on ${::operatingsystem}")
+            fail("gui is not supported on ${facts['os']['name']}")
         }
     }
 }

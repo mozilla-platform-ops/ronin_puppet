@@ -8,7 +8,7 @@ class roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker {
     $worker_type  = 'gecko-t-linux-talos-2204'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             require roles_profiles::profiles::cltbld_user
 
@@ -81,7 +81,7 @@ class roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
