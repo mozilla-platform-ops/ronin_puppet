@@ -8,7 +8,7 @@ class win_packages::sevenzip {
       $pkg = '7z2500-arm64.exe'
       win_packages::win_exe_pkg { '7-Zip 25.00 (arm64 edition)':
         pkg                    => $pkg,
-        install_options_string => ['/S'],
+        install_options_string => '/S',
         creates                => 'C:\\Program Files\\7-Zip\\7z.exe',
       }
     }
