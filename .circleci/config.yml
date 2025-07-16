@@ -317,7 +317,10 @@ workflows:
       - linux_integration_tests:
           matrix:
             parameters:
-              kitchen_target: ["bitbar-ubuntu-2204", "linux-ubuntu-2204", "linux-perf-ubuntu-1804", "linux-netperf-ubuntu-1804"]
+              kitchen_target: ["linux-netperf-ubuntu-1804",
+                               "linux-perf-ubuntu-1804",
+                               "linux-perf-ubuntu-2204",
+                               "bitbar-ubuntu-2204"]
           requires:
             - pre_commit
             - r10k_install
