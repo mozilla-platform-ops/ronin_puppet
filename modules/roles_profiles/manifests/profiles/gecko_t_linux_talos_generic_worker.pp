@@ -8,7 +8,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
     $worker_type  = 'gecko-t-linux-talos-1804'
     $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             require roles_profiles::profiles::cltbld_user
 
@@ -19,6 +19,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
                 syslog_identifiers => ['generic-worker', 'run-start-worker', 'sudo'],
             }
 
+            require linux_python
             # TODO: move these lines to linux-base?
             require linux_packages::py2
             require linux_packages::py3
@@ -30,11 +31,15 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
             require linux_packages::python3_zstandard
             require linux_packages::tooltool
             require linux_packages::zstd
+            # RELOPS-1318
+            require linux_packages::pulseaudio
 
             # moved from base to avoid ordering issues with py2/3
             require linux_mercurial
 
             require linux_talos
+
+            require linux_directory_cleaner
 
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
@@ -66,14 +71,14 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
                 quarantine_client_id      => $quarantine_client_id,
                 quarantine_access_token   => $quarantine_access_token,
                 bugzilla_api_key          => $bugzilla_api_key,
-                generic_worker_version    => 'v44.23.2',
-                generic_worker_sha256     => '4b65b06281848749500063a53190d0222372fe7252ef77f935081bfbfa915ebe',
-                taskcluster_proxy_version => 'v44.23.2',
-                taskcluster_proxy_sha256  => 'af0559355a607ecc933e0109b12c187c2d7679a4b9b0044ad1c43b122000e3c5',
-                livelog_version           => 'v44.23.2',
-                livelog_sha256            => '0adbad0397aa608f4b826bff0dc504d2f9f4efba6474ec4c0d8f8ee22cf2ee90',
-                start_worker_version      => 'v44.23.2',
-                start_worker_sha256       => '05b00bbca08477d79613025ee877b8f0a925ab3c6063ef62316c9017ccce5881',
+                generic_worker_version    => 'v61.0.0',
+                generic_worker_sha256     => '9aed38c86c1c0417725a677318857266e51bd28e69b2e27586edd72e658af3f0',
+                taskcluster_proxy_version => 'v61.0.0',
+                taskcluster_proxy_sha256  => '639b3333cfefaf4d2e449c2962c20912e4449c3ffb9ab6d899c237d87e46712c',
+                livelog_version           => 'v61.0.0',
+                livelog_sha256            => '0513c85b3ad2f289961992ec166ee1e890ad033a1b485c29c69653049c369e23',
+                start_worker_version      => 'v61.0.0',
+                start_worker_sha256       => 'ddf74465e77e2a97a12c87a15dcd9599952127cb38b2e7040bc3177802b1151e',
                 quarantine_worker_version => 'v1.0.0',
                 quarantine_worker_sha256  => '42ea9e9df5dce6370750cf5141a400c07f781d3e28953a5f6d5066d4967a144c',
                 user                      => 'cltbld',
@@ -84,7 +89,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

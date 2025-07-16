@@ -5,7 +5,24 @@ set -e
 # dockerfile specifies this dir as a bind mount for caching debs
 mkdir -p /tmp/docker/var/cache/apt
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+root_dir="${script_dir}/.."
+kitchen_config="${root_dir}/.kitchen_configs/kitchen.docker.yml"
+temp_kitchen_config="/tmp/ronin_puppet_kitchen_docker_temp_config.yml"
+
+# add docker_platform if we're on arm64
+if [[ "$(uname -m)" == "arm64" ]]; then
+    echo "This system is running on arm64 architecture."
+    echo "Modifying kitchen.docker.yml to use linux/arm64 platform."
+    sed 's/# docker_platform: linux\/amd64$/docker_platform: linux\/amd64/' "${kitchen_config}" > "${temp_kitchen_config}"
+    export KITCHEN_YAML="${temp_kitchen_config}"
+    # for testing
+    # grep docker_platform ${KITCHEN_YAML}
+    # exit 0
+else
+    # echo "This system is not running on arm64 architecture."
+    export KITCHEN_YAML="${kitchen_config}"
+fi
+
 # set CI=true so our spec_helper can disable problematic tests
-CI=TRUE \
-KITCHEN_YAML=".kitchen_configs/kitchen.docker.yml" \
-  bundle exec kitchen "$@"
+CI=TRUE bundle exec kitchen "$@"

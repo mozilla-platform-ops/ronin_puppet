@@ -1,33 +1,43 @@
 version: 2.1
 
 orbs:
-  slack: circleci/slack@3.4.2
-  vault: jmingtan/hashicorp-vault@0.2.1
+  # slack: circleci/slack@3.4.2
+  vault: jmingtan/hashicorp-vault@0.2.2
+  tfutils: ukslee/tfutils@0.0.5
 
 executors:
+  default:
+    docker:
+      - image: cimg/base:stable
+  python:
+    docker:
+      - image: cimg/python:3.11.9
   docker-base:
     docker:
       - image: cimg/base:2022.09
   docker-ruby:
     docker:
-      - image: cimg/ruby:3.0
+      - image: cimg/ruby:3.2.2
   ubuntu-2004-docker:
     docker:
       # see https://github.com/mozilla-platform-ops/relops_infra_as_code/tree/master/docker/dockerfiles/circleci-ubuntu-2004
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
   ubuntu-2004:
     machine:
-      image: ubuntu-2004:2022.07.1
+      image: default
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
   macos-1014: &1014
     macos:
-      xcode: 11.7.0  # 9/1/22: os x 10.15.5, no 10.14 images available
+      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
+    resource_class: macos.m1.medium.gen1
   macos-1015: &1015
     macos:
-      xcode: 11.7.0  # 9/1/22: os x 10.15.5
+      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
+    resource_class: macos.m1.medium.gen1
   macos-1100: &1100
     macos:
-      xcode: 13.2.1  # 9/1/22: os x 11.6.2
+      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
+    resource_class: macos.m1.medium.gen1
 
 commands:
   early_return_for_forked_pull_requests:
@@ -68,13 +78,16 @@ commands:
             fi
             echo OSX version is "${OS_VER}"
             # Install puppet agent
-            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
+            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/arm64/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
             hdiutil mount "puppet-agent-${PUPPET_VER}-1.osx${OS_VER}.dmg"
             sudo -E installer -pkg "/Volumes/puppet-agent-${PUPPET_VER}-1.osx${OS_VER}/puppet-agent-${PUPPET_VER}-1-installer.pkg" -target /
             # Install bolt
-            curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/x86_64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
-            hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
-            sudo -E installer -pkg "/Volumes/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}/puppet-bolt-${BOLT_VER}-1-installer.pkg" -target /
+            # not working on arm64 (no build for arm64 yet)
+            # curl -s -O "https://downloads.puppet.com/mac/puppet/${OS_VER}/arm64/puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            # hdiutil mount "puppet-bolt-${BOLT_VER}-1.osx${OS_VER}.dmg"
+            curl -s -O https://downloads.puppet.com/mac/puppet-tools/12/x86_64/puppet-bolt-3.29.0-1.osx12.dmg
+            hdiutil mount puppet-bolt-3.29.0-1.osx12.dmg
+            sudo -E installer -pkg "/Volumes/puppet-bolt-3.29.0-1.osx12/puppet-bolt-3.29.0-1-installer.pkg" -target /
             # Install gems needed for hiera vault
             sudo /opt/puppetlabs/puppet/bin/gem install vault debouncer
   apt_cache_restore:
@@ -122,6 +135,7 @@ commands:
         type: string
     steps:
       - vault/install:
+          arch: arm64
           verify: false
       - run: vault version
       - run:
@@ -148,26 +162,23 @@ commands:
             terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -var="role=<< parameters.role >>" -input=false -auto-approve
 jobs:
   pre_commit:
-    executor: ubuntu-2004-docker
+    executor: python
     steps:
       - checkout
-        #- run: apt-get update
-        #- run: apt-get -y install shellcheck git curl unzip python3-pip ruby-full
-        #- run:
-        #  name: Install tfenv and terraform
-        #  command: |
-        #    git clone https://github.com/tfutils/tfenv.git ~/.tfenv
-        #    export PATH="$HOME/.tfenv/bin:$PATH"
-        #    tfenv install 1.0.3
-        #- run: pip3 install pre-commit
-#     - run: pre-commit run --all-files --verbose
+      - tfutils/install:
+          tf_version: 'latest'
+      - run:
+          name: setup
+          command: |
+            sudo apt update
+            sudo apt install -y ruby-full
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
       - run: git fetch --all
       - run:
           name: Run pre-commit
           command: |
             export PATH="$HOME/.tfenv/bin:$PATH"
-            tfenv use 1.0.3
+            pip install pre-commit
             pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     executor: ubuntu-2004
@@ -186,6 +197,13 @@ jobs:
       - checkout
       - gem_cache
       - apt_cache_restore
+      - run:
+          name: 0-60s sleep (rate-limit avoidance)
+          shell: bash
+          command: |
+            sleep_duration=$((RANDOM % 61))
+            echo "Sleeping for $sleep_duration seconds..."
+            sleep $sleep_duration
       - run:
           command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
@@ -207,11 +225,6 @@ jobs:
       - checkout
       - setup_vault:
           role: << parameters.role >>
-      - when:
-          condition:
-            equal: [ *1014, << parameters.os >> ]
-          steps:
-            - run: echo "ruby-2.6.4" > ~/.ruby-version
       - gem_cache
       - install_macos_puppet
       - run: bundle exec kitchen converge << parameters.suite >>
@@ -276,7 +289,7 @@ workflows:
               os: [macos-1014]
               suite: ["mac-v3-signing"]
               role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
@@ -286,7 +299,7 @@ workflows:
               os: [macos-1015]
               suite: ["default"]
               role: ["gecko_t_osx_1015_r8"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
@@ -296,14 +309,14 @@ workflows:
               os: [macos-1100]
               suite: ["default"]
               role: ["gecko_t_osx_1100_m1"]
-          context: slack-secrets
+          # context: slack-secrets
           requires:
             - pre_commit
             - r10k_install
       - linux_integration_tests:
           matrix:
             parameters:
-              kitchen_target: ["bitbar-ubuntu-2204", "linux-ubuntu-2204", "linux-ubuntu-1804"]
+              kitchen_target: ["bitbar-ubuntu-2204", "linux-ubuntu-2204", "linux-perf-ubuntu-1804", "linux-netperf-ubuntu-1804"]
           requires:
             - pre_commit
             - r10k_install

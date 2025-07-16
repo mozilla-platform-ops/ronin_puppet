@@ -5,14 +5,16 @@
 class macos_safaridriver (
   String $user_running_safari = 'cltbld',  # not fully parameterized, see below
 ) {
+  $user_uid = $facts['cltbld_uid']
+
   case $facts['os']['name'] {
     'Darwin': {
       case $facts['os']['release']['major'] {
-        # 19 == OS X 10.15
-        '19': {
+        '19','20','21','22','23','24': {
           $perm_script = '/usr/local/bin/add_tcc_perms.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
+          $safari_update_script = '/usr/local/bin/install_safari_softwareupdate_updates.py'
 
           file { $perm_script:
             content => file('macos_safaridriver/add_tcc_perms.sh'),
@@ -21,6 +23,11 @@ class macos_safaridriver (
 
           file { $enable_script:
             content => file('macos_safaridriver/safari-enable-remote-automation.sh'),
+            mode    => '0755',
+          }
+
+          file { $safari_update_script:
+            content => file('macos_safaridriver/install_safari_softwareupdate_updates.py'),
             mode    => '0755',
           }
 
@@ -34,13 +41,17 @@ class macos_safaridriver (
 
           # needs to run as cltbld via launchctl or won't work
           exec { 'execute enable remote automation script':
-            # TODO: don't hardcode user id of cltbld
-            #   - make a driver script that gets id of cltbld on each system?
-            command => "/bin/launchctl asuser 36 sudo -u ${user_running_safari} ${enable_script}",
+            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
             require => File[$enable_script],
-            # semaphore created in script
+            cwd     => "/Users/${user_running_safari}",
+            # semaphore and semaphore dir are created in script
             unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
             # logoutput => true,
+          }
+
+          sudo::custom { 'allow_safari_updates':
+            user    => 'cltbld',
+            command => '/usr/local/bin/install_safari_softwareupdates.py',
           }
 
           exec { 'enable safari driver':
@@ -61,7 +72,7 @@ class macos_safaridriver (
           exec { "${user_running_safari}_group_${group}":
             command => "/usr/sbin/dseditgroup -o edit -a ${user_running_safari} -t user ${group}",
             unless  => "/usr/bin/groups ${user_running_safari} | /usr/bin/grep -q -w ${group}",
-            require => User[$user_running_safari],
+            #require => User[$user_running_safari],
           }
         }
         default: {

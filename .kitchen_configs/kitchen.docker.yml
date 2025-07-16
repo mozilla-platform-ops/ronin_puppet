@@ -6,8 +6,9 @@ driver:
   use_sudo: false
   privileged: true
   # if on mac m1/m2 with arm64, need this because our s3 install only has amd64
-  # fails on circleci if left enabled
-  #docker_platform: linux/amd64
+  # - fails on circleci if left enabled
+  # - now enabled if needed automatically in `bin/kitchen_docker`
+  # docker_platform: linux/amd64
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
@@ -48,6 +49,13 @@ provisioner:
             quarantine_client_id: '3333'
             quarantine_access_token: 'Q_TOKEN'
             bugzilla_api_key: 'BZ_KEY'
+          gecko_t_linux_netperf:
+            taskcluster_client_id: '123'
+            taskcluster_access_token: 'foo'
+            livelog_secret: 'haha'
+            quarantine_client_id: '3333'
+            quarantine_access_token: 'Q_TOKEN'
+            bugzilla_api_key: 'BZ_KEY'
           gecko_t_linux_2204_talos:
             taskcluster_client_id: '123'
             taskcluster_access_token: 'foo'
@@ -58,7 +66,10 @@ provisioner:
   puppet_verbose: true
   # explodes if version specified, see https://github.com/petems/puppet-install-shell/issues/137
   # puppet_version: 7
-  puppet_omnibus_url: https://raw.githubusercontent.com/aerickson/puppet-install-shell/2204-jammy-support/install_puppet_7_agent.sh
+  # used to work, but now grumpy about gpg keys
+  # puppet_omnibus_url: https://raw.githubusercontent.com/aerickson/puppet-install-shell/2204-jammy-support/install_puppet_7_agent.sh
+  # fix for gpg keys (includes upstream fixes for 2204)
+  puppet_omnibus_url: https://raw.githubusercontent.com/aerickson/puppet-install-shell/puppet7-1804-fix/install_puppet_7_agent.sh
   puppet_debug: true
   require_chef_for_busser: true
   require_puppet_omnibus: true
@@ -78,12 +89,19 @@ platforms:
 
 verifier:
   name: inspec
+  color: <%= !ENV.include?('CI') %>
 
 busser:
   sudo: true
 
 suites:
-  - name: linux
+  - name: linux-netperf
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_netperf"'
+    attributes:
+    includes:
+      - ubuntu-18.04  # no moonshot 2204 config yet
+  - name: linux-perf
     attributes:
     includes:
       - ubuntu-18.04

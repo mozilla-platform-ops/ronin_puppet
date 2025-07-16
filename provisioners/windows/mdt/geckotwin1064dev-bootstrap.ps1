@@ -106,7 +106,7 @@ $src_Organisation = 'mozilla-platform-ops'
 $src_Repository = 'ronin_puppet'
 $src_Revision = 'master'
 $image_provisioner = 'mdt'
-$max_boots = 200
+$max_boots = 10
 
 # Ensuring scripts can run uninhibited
 Set-ExecutionPolicy unrestricted -force  -ErrorAction SilentlyContinue

@@ -4,6 +4,8 @@
 
 class bitbar_devicepool::devicepool {
 
+  $devicepool_path = '/home/bitbar/mozilla-bitbar-devicepool'
+
   # clone repo
   vcsrepo { '/home/bitbar/mozilla-bitbar-devicepool':
     ensure   => present,
@@ -12,13 +14,20 @@ class bitbar_devicepool::devicepool {
     user     => 'bitbar',
   }
 
-  # create venv and install requirement
-  $devicepool_path = '/home/bitbar/mozilla-bitbar-devicepool'
-  exec { 'create devicepool venv and install requirements':
-      command =>"/usr/bin/virtualenv --python python3 venv && ${devicepool_path}/venv/bin/pip3 install -r requirements.txt",
+  # set poetry config options
+  exec { 'set poetry options':
+      command => '/home/bitbar/.local/bin/poetry config --local virtualenvs.in-project true',
       cwd     => $devicepool_path,
       user    => 'bitbar',
-      unless  => "/bin/ls ${devicepool_path}/venv"
+      unless  => "/bin/ls ${devicepool_path}/poetry.toml",
+  }
+
+  # create venv and install requirement
+  exec { 'create devicepool venv and install requirements':
+      command => '/home/bitbar/.local/bin/poetry install',
+      cwd     => $devicepool_path,
+      user    => 'bitbar',
+      unless  => "/bin/ls ${devicepool_path}/.venv"
   }
 
   # place apk files required for starting jobs via API
@@ -28,7 +37,6 @@ class bitbar_devicepool::devicepool {
     owner  => 'bitbar',
     group  => 'bitbar',
     mode   => '0644',
-
   }
   file { '/home/bitbar/mozilla-bitbar-devicepool/files/aerickson-Testdroid.apk':
     ensure => file,
