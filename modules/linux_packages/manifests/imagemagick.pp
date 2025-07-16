@@ -10,7 +10,7 @@ class linux_packages::imagemagick {
 
           # 6.9
           package { 'imagemagick':
-            ensure   => present,
+            ensure => present,
           }
           # 7.0, 'Complete portable application on Linux'
           #   from https://imagemagick.org/script/download.php
@@ -25,7 +25,7 @@ class linux_packages::imagemagick {
         '22.04': {
           # 6.9
           package { 'imagemagick':
-            ensure   => present,
+            ensure => present,
           }
         }
         default: {

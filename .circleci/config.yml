@@ -180,7 +180,6 @@ jobs:
             export PATH="$HOME/.tfenv/bin:$PATH"
             pip install pre-commit
             pre-commit --version
-            puppet-lint --version
             pre-commit run --from-ref original/master --to-ref HEAD --verbose
   r10k_install:
     executor: ubuntu-2004
