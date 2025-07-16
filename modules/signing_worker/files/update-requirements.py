@@ -25,20 +25,16 @@ def run():
     with open(COMMON_YAML) as fh:
         scriptworker_config = yaml.load(fh, Loader=yaml.Loader)["scriptworker_config"]
 
-    # with TemporaryDirectory() as ss_git_dir, TemporaryDirectory() as req_dir, TemporaryDirectory() as scriptworker_git_dir:
-    with TemporaryDirectory() as req_dir:
-        # print("Cloning scriptworker scripts repository")
-        # subprocess.run(["git", "init"], cwd=ss_git_dir)
-        # subprocess.run(["git", "remote", "add", "origin", "https://github.com/mozilla-releng/scriptworker-scripts.git"], cwd=ss_git_dir)
-        # subprocess.run(["git", "fetch", "-a", "origin"], cwd=ss_git_dir)
+    with TemporaryDirectory() as ss_git_dir, TemporaryDirectory() as req_dir, TemporaryDirectory() as scriptworker_git_dir:
+        print("Cloning scriptworker scripts repository")
+        subprocess.run(["git", "init"], cwd=ss_git_dir)
+        subprocess.run(["git", "remote", "add", "origin", "https://github.com/mozilla-releng/scriptworker-scripts.git"], cwd=ss_git_dir)
+        subprocess.run(["git", "fetch", "-a", "origin"], cwd=ss_git_dir)
 
-        # print("Cloning scriptworker repository")
-        # subprocess.run(["git", "init"], cwd=scriptworker_git_dir)
-        # subprocess.run(["git", "remote", "add", "origin", "https://github.com/mozilla-releng/scriptworker.git"], cwd=scriptworker_git_dir)
-        # subprocess.run(["git", "fetch", "-a", "origin"], cwd=scriptworker_git_dir)
-
-        ss_git_dir = "/Users/hneiva/dev/scriptworker-scripts"
-        scriptworker_git_dir = "/Users/hneiva/dev/scriptworker"
+        print("Cloning scriptworker repository")
+        subprocess.run(["git", "init"], cwd=scriptworker_git_dir)
+        subprocess.run(["git", "remote", "add", "origin", "https://github.com/mozilla-releng/scriptworker.git"], cwd=scriptworker_git_dir)
+        subprocess.run(["git", "fetch", "-a", "origin"], cwd=scriptworker_git_dir)
 
         for name, config in scriptworker_config.items():
             print(f"Updating requirements for {name}..")
@@ -65,11 +61,6 @@ def run():
                 ],
                 cwd=scriptworker_git_dir,
             )
-
-            # with open(scriptworker_req, "w") as fh:
-            #     fh.write(
-            #         f"git+https://github.com/mozilla-releng/scriptworker.git@{scriptworker_revision}\n"
-            #     )
 
             all_reqs = [scriptworker_req]
 
