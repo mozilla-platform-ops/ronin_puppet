@@ -9,10 +9,10 @@ class linux_packages::py3 {
         '18.04': {
           # py3.6
           package { 'python3':
-            ensure   => present,
+            ensure => present,
           }
           package { 'python3-pip':
-            ensure   => present,
+            ensure => present,
           }
 
           # py3.9, from deadsnakes ppa
@@ -185,10 +185,10 @@ class linux_packages::py3 {
         '22.04': {
           # ships with py3.10
           package { 'python3':
-            ensure   => present,
+            ensure => present,
           }
           package { 'python3-pip':
-            ensure   => present,
+            ensure => present,
           }
 
           # update some pips that prevent other pip installations (psutil) from failing
