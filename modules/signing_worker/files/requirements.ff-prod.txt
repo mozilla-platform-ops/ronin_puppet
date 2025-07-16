@@ -1,11 +1,21 @@
 aiodns==3.5.0 \
     --hash=sha256:11264edbab51896ecf546c18eb0dd56dff0428c6aa6d2cd87e643e07300eb310 \
     --hash=sha256:6d0404f7d5215849233f6ee44854f2bb2481adf71b336b2279016ea5990ca5c5
-    # via aiohttp
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
 aiohappyeyeballs==2.6.1 \
     --hash=sha256:c3f9d0113123803ccadfdf3f0faa505bc78e6a72d1cc4806cbd719826e943558 \
     --hash=sha256:f349ba8f4b75cb25c99c5c2d84e997e485204d2902a9597802b0371f09331fb8
-    # via aiohttp
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   aiohttp
 aiohttp==3.12.13 \
     --hash=sha256:0022de47ef63fd06b065d430ac79c6b0bd24cdae7feaf0e8c6bac23b805a23a8 \
     --hash=sha256:003038e83f1a3ff97409999995ec02fe3008a1d675478949643281141f54751d \
@@ -94,61 +104,95 @@ aiohttp==3.12.13 \
     --hash=sha256:fcc30ad4fb5cb41a33953292d45f54ef4066746d625992aeac33b8c681173178 \
     --hash=sha256:fef8d50dfa482925bb6b4c208b40d8e9fa54cecba923dc65b825a72eed9a5dbd
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/scriptworker_client/requirements/base.in
-    #   gql
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   simple-github
     #   taskcluster
 aiomemoizettl==0.0.3 \
     --hash=sha256:07a6becac60f6cd2604b9f2b73bcd9a50079a0b7b55e2a4e45b1eec5a3ea9659 \
     --hash=sha256:0a80d2dc765e545263f515363b6700ec8cf86fa3968b529f56390b28e34f743d
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 aiosignal==1.3.2 \
     --hash=sha256:45cde58e409a301715980c2b01d0c28bdde3770d8290b5eb2173759d9acb31a5 \
     --hash=sha256:a8c255c66fafb1e499c9351d0bf32ff2d8a0321595ebac3b93713656d2436f54
-    # via aiohttp
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   aiohttp
 altgraph==0.17.4 \
     --hash=sha256:1b5afbb98f6c4dcadb2e2ae6ab9fa994bbb8c1d75f4fa96d340f9437ae454406 \
     --hash=sha256:642743b4750de17e655e6711601b077bc6598dbfa3ba5fa2b2a35ce12b508dff
-    # via macholib
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   macholib
 anyio==4.9.0 \
     --hash=sha256:673c0c244e15788651a4ff38710fea9675823028a6f08a5eda409e0c9840a028 \
     --hash=sha256:9f76d541cad6e36af7beb62e978876f3b41e3e04f2c1fbf0884604c0a9c4d93c
-    # via gql
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   gql
 appdirs==1.4.4 \
     --hash=sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41 \
     --hash=sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128
-    # via taskcluster-taskgraph
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   taskcluster-taskgraph
 arrow==1.3.0 \
     --hash=sha256:c728b120ebc00eb84e01882a6f5e7927a53960aa990ce7dd2b10f39005a67f80 \
     --hash=sha256:d4540617648cb5f895730f1ad8c82a65f2dad0166f57b75f3ca54759c4d67a85
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   cookiecutter
     #   isoduration
 async-timeout==5.0.1 \
     --hash=sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c \
     --hash=sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3
-    # via taskcluster
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   aiohttp
+    #   taskcluster
 attrs==25.3.0 \
     --hash=sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3 \
     --hash=sha256:75d7cefc7fb576747b2c81b4442d4d4a1ce0900973527c011d1030fd3bf4af1b
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   aiohttp
     #   jsonschema
     #   referencing
 backoff==2.2.1 \
     --hash=sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba \
     --hash=sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8
-    # via gql
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   gql
 binaryornot==0.4.4 \
     --hash=sha256:359501dfc9d40632edc9fac890e19542db1a287bbcfa58175b66658392018061 \
     --hash=sha256:b8b71173c917bddcd2c16070412e369c3ed7f0528926f70cac18a6c97fd563e4
-    # via cookiecutter
-brotli==1.1.0 ; platform_python_implementation == 'CPython' \
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   cookiecutter
+brotli==1.1.0 \
     --hash=sha256:03d20af184290887bdea3f0f78c4f737d126c74dc2f3ccadf07e54ceca3bf208 \
     --hash=sha256:0541e747cce78e24ea12d69176f6a7ddb690e62c425e01d31cc065e69ce55b48 \
     --hash=sha256:069a121ac97412d1fe506da790b3e69f52254b9df4eb665cd42460c837193354 \
@@ -274,40 +318,21 @@ brotli==1.1.0 ; platform_python_implementation == 'CPython' \
     --hash=sha256:fce1473f3ccc4187f75b4690cfc922628aed4d3dd013d047f95a9b3919a86596 \
     --hash=sha256:fd5f17ff8f14003595ab414e45fce13d073e0762394f957182e69035c9f3d7c2 \
     --hash=sha256:fdc3ff3bfccdc6b9cc7c342c03aa2400683f0cb891d46e94b64a197910dc4064
-    # via aiohttp
-brotlicffi==1.1.0.0 ; platform_python_implementation != 'CPython' \
-    --hash=sha256:19ffc919fa4fc6ace69286e0a23b3789b4219058313cf9b45625016bf7ff996b \
-    --hash=sha256:1a807d760763e398bbf2c6394ae9da5815901aa93ee0a37bca5efe78d4ee3171 \
-    --hash=sha256:1b12b50e07c3911e1efa3a8971543e7648100713d4e0971b13631cce22c587eb \
-    --hash=sha256:246f1d1a90279bb6069de3de8d75a8856e073b8ff0b09dcca18ccc14cec85979 \
-    --hash=sha256:2a7ae37e5d79c5bdfb5b4b99f2715a6035e6c5bf538c3746abc8e26694f92f33 \
-    --hash=sha256:2e4aeb0bd2540cb91b069dbdd54d458da8c4334ceaf2d25df2f4af576d6766ca \
-    --hash=sha256:2f3711be9290f0453de8eed5275d93d286abe26b08ab4a35d7452caa1fef532f \
-    --hash=sha256:37c26ecb14386a44b118ce36e546ce307f4810bc9598a6e6cb4f7fca725ae7e6 \
-    --hash=sha256:391151ec86bb1c683835980f4816272a87eaddc46bb91cbf44f62228b84d8cca \
-    --hash=sha256:3de0cf28a53a3238b252aca9fed1593e9d36c1d116748013339f0949bfc84112 \
-    --hash=sha256:4b7b0033b0d37bb33009fb2fef73310e432e76f688af76c156b3594389d81391 \
-    --hash=sha256:54a07bb2374a1eba8ebb52b6fafffa2afd3c4df85ddd38fcc0511f2bb387c2a8 \
-    --hash=sha256:6be5ec0e88a4925c91f3dea2bb0013b3a2accda6f77238f76a34a1ea532a1cb0 \
-    --hash=sha256:7901a7dc4b88f1c1475de59ae9be59799db1007b7d059817948d8e4f12e24e35 \
-    --hash=sha256:84763dbdef5dd5c24b75597a77e1b30c66604725707565188ba54bab4f114820 \
-    --hash=sha256:8557a8559509b61e65083f8782329188a250102372576093c88930c875a69838 \
-    --hash=sha256:994a4f0681bb6c6c3b0925530a1926b7a189d878e6e5e38fae8efa47c5d9c613 \
-    --hash=sha256:9b6068e0f3769992d6b622a1cd2e7835eae3cf8d9da123d7f51ca9c1e9c333e5 \
-    --hash=sha256:9b7ae6bd1a3f0df532b6d67ff674099a96d22bc0948955cb338488c31bfb8851 \
-    --hash=sha256:9feb210d932ffe7798ee62e6145d3a757eb6233aa9a4e7db78dd3690d7755814 \
-    --hash=sha256:add0de5b9ad9e9aa293c3aa4e9deb2b61e99ad6c1634e01d01d98c03e6a354cc \
-    --hash=sha256:b77827a689905143f87915310b93b273ab17888fd43ef350d4832c4a71083c13 \
-    --hash=sha256:ca72968ae4eaf6470498d5c2887073f7efe3b1e7d7ec8be11a06a79cc810e990 \
-    --hash=sha256:cc4bc5d82bc56ebd8b514fb8350cfac4627d6b0743382e46d033976a5f80fab6 \
-    --hash=sha256:ce01c7316aebc7fce59da734286148b1d1b9455f89cf2c8a4dfce7d41db55c2d \
-    --hash=sha256:d9eb71bb1085d996244439154387266fd23d6ad37161f6f52f1cd41dd95a3808 \
-    --hash=sha256:fa8ca0623b26c94fccc3a1fdd895be1743b838f3917300506d04aa3346fd2a14
-    # via aiohttp
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
 certifi==2025.6.15 \
     --hash=sha256:2e0c7ce7cb5d8f8634ca55d2ba7e6ec2689a2fd6537d8dec1296a477a4910057 \
     --hash=sha256:d747aa5a8b9bbbb1bb8c22bb13e22bd1f18e9796defa16bab421f7f7a317323b
-    # via requests
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   requests
 cffi==1.17.1 \
     --hash=sha256:045d61c734659cc045141be4bae381a41d89b741f795af1dd018bfb532fd0df8 \
     --hash=sha256:0984a4925a435b1da406122d4d7968dd861c1385afe3b45ba82b750f229811e2 \
@@ -377,13 +402,19 @@ cffi==1.17.1 \
     --hash=sha256:f7f5baafcc48261359e14bcd6d9bff6d4b28d9103847c9e136694cb0501aef87 \
     --hash=sha256:fc48c783f9c87e60831201f2cce7f3b2e4846bf4d8728eabe54d60700b318a0b
     # via
-    #   brotlicffi
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   cryptography
     #   pycares
 chardet==5.2.0 \
     --hash=sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7 \
     --hash=sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970
-    # via binaryornot
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   binaryornot
 charset-normalizer==3.4.2 \
     --hash=sha256:005fa3432484527f9732ebd315da8da8001593e2cf46a3d817669f062c3d9ed4 \
     --hash=sha256:046595208aae0120559a67693ecc65dd75d46f7bf687f159127046628178dc45 \
@@ -477,19 +508,25 @@ charset-normalizer==3.4.2 \
     --hash=sha256:fb707f3e15060adf5b7ada797624a6c6e0138e2a26baa089df64c68ee98e040f \
     --hash=sha256:fcbe676a55d7445b22c10967bceaaf0ee69407fbe0ece4d032b6eb8d4565982a \
     --hash=sha256:fdb20a30fe1175ecabed17cbf7812f7b804b8a315a25f24678bcdf120a90077f
-    # via requests
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   requests
 click==8.2.1 \
     --hash=sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202 \
     --hash=sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b
-    # via cookiecutter
-colorama==0.4.6 ; sys_platform == 'win32' \
-    --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
-    --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
-    # via click
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   cookiecutter
 cookiecutter==2.6.0 \
     --hash=sha256:a54a8e37995e4ed963b3e82831072d1ad4b005af736bb17b99c2cbd9d41b6e2d \
     --hash=sha256:db21f8169ea4f4fdc2408d48ca44859349de2647fbe494a9d6c3edfc0542c21c
-    # via taskcluster-taskgraph
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   taskcluster-taskgraph
 cryptography==45.0.4 \
     --hash=sha256:0339a692de47084969500ee455e42c58e449461e0ec845a34a6a9b9bf7df7fb8 \
     --hash=sha256:03dbff8411206713185b8cebe31bc5c0eb544799a50c09035733716b386e61a4 \
@@ -529,17 +566,19 @@ cryptography==45.0.4 \
     --hash=sha256:eaa3e28ea2235b33220b949c5a0d6cf79baa80eab2eb5607ca8ab7525331b9ff \
     --hash=sha256:f3fe7a5ae34d5a414957cc7f457e2b92076e72938423ac64d215722f6cf49a9e
     # via
-    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
-    #   pyjwt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 dictdiffer==0.9.0 \
     --hash=sha256:17bacf5fbfe613ccf1b6d512bd766e6b21fb798822a133aa86098b8ac9997578 \
     --hash=sha256:442bfc693cfcadaf46674575d2eba1c53b42f5e404218ca2c2ff549f2df56595
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 fqdn==1.5.1 \
     --hash=sha256:105ed3677e767fb5ca086a0c1f4bb66ebc3c100be518f0e0d755d9eae164d89f \
     --hash=sha256:3a179af3761e4df6eb2e026ff9e1a3033d3587bf980a0b1b2e1e5d08d7358014
-    # via jsonschema
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 frozenlist==1.7.0 \
     --hash=sha256:04fb24d104f425da3540ed83cbfc31388a586a7696142004c577fa61c6298c3f \
     --hash=sha256:05579bf020096fe05a764f1f84cd104a12f78eaab68842d036772dc6d4870b4b \
@@ -646,79 +685,118 @@ frozenlist==1.7.0 \
     --hash=sha256:f89f65d85774f1797239693cef07ad4c97fdd0639544bad9ac4b869782eb1981 \
     --hash=sha256:fe2365ae915a1fafd982c146754e1de6ab3478def8a59c86e1f7242d794f97d5
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   aiohttp
     #   aiosignal
 github3-py==4.0.1 \
     --hash=sha256:30d571076753efc389edc7f9aaef338a4fcb24b54d8968d5f39b1342f45ddd36 \
     --hash=sha256:a89af7de25650612d1da2f0609622bcdeb07ee8a45a1c06b2d16a05e4234e753
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 giturlparse==0.12.0 \
     --hash=sha256:412b74f2855f1da2fefa89fd8dde62df48476077a72fc19b62039554d27360eb \
     --hash=sha256:c0fff7c21acc435491b1779566e038757a205c1ffdcb47e4f81ea52ad8c3859a
-    # via mozilla-repo-urls
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   mozilla-repo-urls
 gql==3.5.3 \
     --hash=sha256:393b8c049d58e0d2f5461b9d738a2b5f904186a40395500b4a84dd092d56e42b \
     --hash=sha256:e1fcbde2893fcafdd28114ece87ff47f1cc339a31db271fc4e1d528f5a1d4fbc
-    # via simple-github
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   simple-github
 graphql-core==3.2.6 \
     --hash=sha256:78b016718c161a6fb20a7d97bbf107f331cd1afe53e45566c59f776ed7f0b45f \
     --hash=sha256:c08eec22f9e40f0bd61d805907e3b3b1b9a320bc606e23dc145eebca07c8fbab
-    # via gql
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   gql
 idna==3.10 \
     --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9 \
     --hash=sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   anyio
-    #   jsonschema
     #   requests
     #   yarl
 immutabledict==4.2.1 \
     --hash=sha256:c56a26ced38c236f79e74af3ccce53772827cef5c3bce7cab33ff2060f756373 \
     --hash=sha256:d91017248981c72eb66c8ff9834e99c2f53562346f23e7f51e7a5ebcf66a3bcc
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/scriptworker_client/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 isoduration==20.11.0 \
     --hash=sha256:ac2f9015137935279eac671f94f89eb00584f940f5dc49462a0c4ee692ba1bd9 \
     --hash=sha256:b2904c2a4228c3d44f409c8ae8e2370eb21a26f7ac2ec5446df141dde3452042
-    # via jsonschema
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 jinja2==3.1.6 \
     --hash=sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d \
     --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67
-    # via cookiecutter
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   cookiecutter
 jsmin==3.0.1 \
     --hash=sha256:c0959a121ef94542e807a674142606f7e90214a2b3d1eb17300244bbb5cc2bfc
-    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
 json-e==4.8.0 \
     --hash=sha256:51ead93962912d701c6f1a6a0b27cc34bb2cb8397a82affd8adb2401898e27ea \
     --hash=sha256:91a50ba4e1a9e6d40c36c0601d68acda9ae44ca2817525e09938b2c82ce23572
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   taskcluster-taskgraph
 jsonpointer==3.0.0 \
     --hash=sha256:13e088adc14fca8b6aa8177c044e12701e6ad4b28ff10e65f2267a90109c9942 \
     --hash=sha256:2b2d729f2091522d61c3b31f82e11870f60b68f43fbc705cb76bf4b832af59ef
-    # via jsonschema
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 jsonschema==4.24.0 \
     --hash=sha256:0b4e8069eb12aedfa881333004bccaec24ecef5a8a6a4b6df142b2cc9599d196 \
     --hash=sha256:a462455f19f5faf404a7902952b6f0e3ce868f3ee09a359b05eca6673bd8412d
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/scriptworker_client/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 jsonschema-specifications==2025.4.1 \
     --hash=sha256:4653bffbd6584f7de83a67e0d620ef16900b390ddc7939d56684d6c81e33f1af \
     --hash=sha256:630159c9f4dbea161a6a2205c3011cc4f18ff381b189fff48bb39b9bf26ae608
-    # via jsonschema
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   jsonschema
 macholib==1.16.3 \
     --hash=sha256:07ae9e15e8e4cd9a788013d81f5908b3609aa76f9b1421bae9c4d7606ec86a30 \
     --hash=sha256:0e315d7583d38b8c77e815b1ecbdbf504a8258d8b3e17b61165c6feb60d18f2c
     # via
-    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
 markdown-it-py==3.0.0 \
     --hash=sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1 \
     --hash=sha256:e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb
-    # via rich
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   rich
 markupsafe==3.0.2 \
     --hash=sha256:0bff5e0ae4ef2e1ae4fdf2dfd5b76c75e5c2fa4132d05fc1b0dabcd20c7e28c4 \
     --hash=sha256:0f4ca02bea9a23221c0182836703cbf8930c5e9454bacce27e767509fa286a30 \
@@ -781,135 +859,167 @@ markupsafe==3.0.2 \
     --hash=sha256:f3818cb119498c0678015754eba762e0d61e5b52d34c8b13d770f0719f7b1d79 \
     --hash=sha256:f8b3d067f2e40fe93e1ccdd6b2e1d16c43140e76f02fb1319a05cf2b79d99430 \
     --hash=sha256:fcabf5ff6eea076f859677f5f0b6b5c1a51e70a376b0579e0eadef8db48c6b50
-    # via jinja2
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   jinja2
 mdurl==0.1.2 \
     --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 \
     --hash=sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba
-    # via markdown-it-py
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   markdown-it-py
 mohawk==1.1.0 \
     --hash=sha256:3ed296a30453d0b724679e0fd41e4e940497f8e461a9a9c3b7f36e43bab0fa09 \
     --hash=sha256:d2a0e3ab10a209cc79e95e28f2dd54bd4a73fd1998ffe27b7ba0f962b6be9723
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   requests-hawk
     #   taskcluster
 mozfile==3.0.0 \
     --hash=sha256:3b0afcda2fa8b802ef657df80a56f21619008f61fcc14b756124028d7b7adf5c \
     --hash=sha256:92ca1a786abbdf5e6a7aada62d3a4e28f441ef069c7623223add45268e53c789
-    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp_kxj2l4x.in
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
 mozilla-repo-urls==0.2.2 \
     --hash=sha256:161ab84cac58c0bef2c9ce0c414aaec5483fc9593fc5616c5b186e0cccff4984 \
     --hash=sha256:f6e6e037ed28b38956624dfc6b40ed78247e747f13157863ab39ac89ecd7ffd6
-    # via taskcluster-taskgraph
-multidict==6.5.1 \
-    --hash=sha256:0120ed5cff2082c7a0ed62a8f80f4f6ac266010c722381816462f279bfa19487 \
-    --hash=sha256:0499cbc67c1b02ba333781798560c5b1e7cd03e9273b678c92c6de1b1657fac9 \
-    --hash=sha256:059fb556c3e6ce1a168496f92ef139ad839a47f898eaa512b1d43e5e05d78c6b \
-    --hash=sha256:05dcaed3e5e54f0d0f99a39762b0195274b75016cbf246f600900305581cf1a2 \
-    --hash=sha256:071b962f4cc87469cda90c7cc1c077b76496878b39851d7417a3d994e27fe2c6 \
-    --hash=sha256:090e0b37fde199b58ea050c472c21dc8a3fbf285f42b862fe1ff02aab8942239 \
-    --hash=sha256:0ce8f0ea49e8f54203f7d80e083a7aa017dbcb6f2d76d674273e25144c8aa3d7 \
-    --hash=sha256:11f5ecf3e741a18c578d118ad257c5588ca33cc7c46d51c0487d7ae76f072c32 \
-    --hash=sha256:153d7ff738d9b67b94418b112dc5a662d89d2fc26846a9e942f039089048c804 \
-    --hash=sha256:189f0c2bd1c0ae5509e453707d0e187e030c9e873a0116d1f32d1c870d0fc347 \
-    --hash=sha256:195882f2f6272dacc88194ecd4de3608ad0ee29b161e541403b781a5f5dd346f \
-    --hash=sha256:199a0a9b3de8bbeb6881460d32b857dc7abec94448aeb6d607c336628c53580a \
-    --hash=sha256:1d784c0a1974f00d87f632d0fb6b1078baf7e15d2d2d1408af92f54d120f136e \
-    --hash=sha256:228533a5f99f1248cd79f6470779c424d63bc3e10d47c82511c65cc294458445 \
-    --hash=sha256:22b47f7e76ebea0b802df9ed08165b1e6ab52b140c7180c3e740e6205b3781b3 \
-    --hash=sha256:253e5c41fcc02e2956ab276b5a702f3972db1e87c080be55e87ca31a2f4f8012 \
-    --hash=sha256:279a37cb9d04097bf1c6308d7495cb4dfbd8fb538301bfe464266b045dfeb1cd \
-    --hash=sha256:29eff1c9a905e298e9cd29f856f77485e58e59355f0ee323ac748203e002bbd3 \
-    --hash=sha256:2bf0068fe9abb0ebed1436a4e415117386951cf598eb8146ded4baf8e1ff6d1e \
-    --hash=sha256:2d7def2fc47695c46a427b8f298fb5ace03d635c1fb17f30d6192c9a8fb69e70 \
-    --hash=sha256:2ec3aa63f0c668f591d43195f8e555f803826dee34208c29ade9d63355f9e095 \
-    --hash=sha256:2fb5dde79a7f6d98ac5e26a4c9de77ccd2c5224a7ce89aeac6d99df7bbe06464 \
-    --hash=sha256:36b138c6ec3aedaa975653ea90099efb22042bab31727dd4cd2921a64de46b25 \
-    --hash=sha256:38755bcba18720cb2338bea23a5afcff234445ee75fa11518f6130e22f2ab970 \
-    --hash=sha256:3c78fc6bc1dd7a139dab7ee9046f79a2082dce9360e3899b762615d564e2e857 \
-    --hash=sha256:3d749b10cc6acb2c0814df881910ffd8d8ab1ec54493585579b4a75f89fe86d6 \
-    --hash=sha256:3dea06ba27401c4b54317aa04791182dc9295e7aa623732dd459071a0e0f65db \
-    --hash=sha256:48f95fe064f63d9601ef7a3dce2fc2a437d5fcc11bca960bc8be720330b13b6a \
-    --hash=sha256:4b299a2ffed33ad0733a9d47805b538d59465f8439bfea44df542cfb285c4db2 \
-    --hash=sha256:5125a9faed98738d7d6e23650bd8af70abb95628d011f57f70a4d8f349e6d073 \
-    --hash=sha256:527076fdf5854901b1246c589af9a8a18b4a308375acb0020b585f696a10c794 \
-    --hash=sha256:562d4714fa43f6ebc043a657535e4575e7d6141a818c9b3055f0868d29a1a41b \
-    --hash=sha256:576a1887a5c5becbe4fb484d0bdf6ed8ec89e9c11770f8f3214fd127ba137b8b \
-    --hash=sha256:5776f9d2c3a1053f022f744af5f467c2f65b40d4cc00082bcf70e8c462c7dbad \
-    --hash=sha256:5891e3327e6a426ddd443c87339b967c84feb8c022dd425e0c025fa0fcd71e68 \
-    --hash=sha256:5e8fefd7c062b0657af2480d789dcb347450d17c7bd20b02303c25f1f59a33a7 \
-    --hash=sha256:6037beca8cb481307fb586ee0b73fae976a3e00d8f6ad7eb8af94a878a4893f0 \
-    --hash=sha256:627ba4b7ce7c0115981f0fd91921f5d101dfb9972622178aeef84ccce1c2bbf3 \
-    --hash=sha256:62eb76be8c20d9017a82b74965db93ddcf472b929b6b2b78c56972c73bacf2e4 \
-    --hash=sha256:6eb3bf26cd94eb306e4bc776d0964cc67a7967e4ad9299309f0ff5beec3c62be \
-    --hash=sha256:70c0e51d55f9bc5e97de950c3b3e88f501b3ca2b3894f231f3957dd3985b4d54 \
-    --hash=sha256:70c742357dd6207be30922207f8d59c91e2776ddbefa23830c55c09020e59f8a \
-    --hash=sha256:719af50a44ce9cf9ab15d829bf8cf146de486b4816284c17c3c9b9c9735abb8f \
-    --hash=sha256:7710c716243525cc05cd038c6e09f1807ee0fef2510a6e484450712c389c8d7f \
-    --hash=sha256:77bc8ab5c6bfe696eff564824e73a451fdeca22f3b960261750836cee02bcbfa \
-    --hash=sha256:79101d58094419b6e8d07e24946eba440136b9095590271cd6ccc4a90674a57d \
-    --hash=sha256:79d13e06d5241f9c8479dfeaf0f7cce8f453a4a302c9a0b1fa9b1a6869ff7757 \
-    --hash=sha256:7a365a579fb3e067943d0278474e14c2244c252f460b401ccbf49f962e7b70fa \
-    --hash=sha256:7b7b6e1ce9b61f721417c68eeeb37599b769f3b631e6b25c21f50f8f619420b9 \
-    --hash=sha256:7b7d75cb5b90fa55700edbbdca12cd31f6b19c919e98712933c7a1c3c6c71b73 \
-    --hash=sha256:7cbf407313236a79ce9b8af11808c29756cfb9c9a49a7f24bb1324537eec174b \
-    --hash=sha256:83eb172b4856ffff2814bdcf9c7792c0439302faab1b31376817b067b26cd8f5 \
-    --hash=sha256:84292145303f354a35558e601c665cdf87059d87b12777417e2e57ba3eb98903 \
-    --hash=sha256:895354f4a38f53a1df2cc3fa2223fa714cff2b079a9f018a76cad35e7f0f044c \
-    --hash=sha256:8a0d22e8b07cf620e9aeb1582340d00f0031e6a1f3e39d9c2dcbefa8691443b4 \
-    --hash=sha256:8a266373c604e49552d295d9f8ec4fd59bd364f2dd73eb18e7d36d5533b88f45 \
-    --hash=sha256:8a6605dc74cd333be279e1fcb568ea24f7bdf1cf09f83a77360ce4dd32d67f14 \
-    --hash=sha256:8b83b055889bda09fc866c0a652cdb6c36eeeafc2858259c9a7171fe82df5773 \
-    --hash=sha256:8d64e30ae9ba66ce303a567548a06d64455d97c5dff7052fe428d154274d7174 \
-    --hash=sha256:8e63ac6adc668cfe52e29c00afe33c3b8dbec8e37b529aa83bf31ba4bad0c509 \
-    --hash=sha256:93b21be44f3cfee3be68ed5cd8848a3c0420d76dbd12d74f7776bde6b29e5f33 \
-    --hash=sha256:98011312f36d1e496f15454a95578d1212bc2ffc25650a8484752b06d304fd9b \
-    --hash=sha256:9a17a17bad5c22f43e6a6b285dd9c16b1e8f8428202cd9bc22adaac68d0bbfed \
-    --hash=sha256:9eec51891d3c210948ead894ec1483d48748abec08db5ce9af52cc13fef37aee \
-    --hash=sha256:a0f1890f9a05d038720a7c3b5d82467534495bcb6bbda929f6f0914977cc56d1 \
-    --hash=sha256:a6523258f2eb24c91995ae64172c19cd73bacd5a7f2b0733676966c527ab08f8 \
-    --hash=sha256:a835ea8103f4723915d7d621529c80ef48db48ae0c818afcabe0f95aa1febc3a \
-    --hash=sha256:a9e15dfe441aec31e0fa78f497aca83f0ad992ca58782cbaba8220e5a87608fc \
-    --hash=sha256:aa6dcf25ced31cdce10f004506dbc26129f28a911b32ed10e54453a0842a6173 \
-    --hash=sha256:ab94923ae54385ed480e4ab19f10269ee60f3eabd0b35e2a5d1ba6dbf3b0cc27 \
-    --hash=sha256:ad32e43e028276612bf5bab762677e7d131d2df00106b53de2efb2b8a28d5bce \
-    --hash=sha256:b3bd88c1bc1f749db6a1e1f01696c3498bc25596136eceebb45766d24a320b27 \
-    --hash=sha256:b632c1e4a2ff0bb4c1367d6c23871aa95dbd616bf4a847034732a142bb6eea94 \
-    --hash=sha256:b7bd4d655dc460c7aebb73b58ed1c074e85f7286105b012556cf0f25c6d1dba3 \
-    --hash=sha256:b948eb625411c20b15088fca862c51a39140b9cf7875b5fb47a72bb249fa2f42 \
-    --hash=sha256:bae589fb902b47bd94e6f539b34eefe55a1736099f616f614ec1544a43f95b05 \
-    --hash=sha256:c07d5f38b39acb4f8f61a7aa4166d140ed628245ff0441630df15340532e3b3c \
-    --hash=sha256:c5c18f8646a520cc34d00f65f9f6f77782b8a8c59fd8de10713e0de7f470b5d0 \
-    --hash=sha256:cc80c7e8f297484c4511e887c244adec9a7ed3a76826cb8dbc6183b717a37d1f \
-    --hash=sha256:d3468f0db187aca59eb56e0aa9f7c8c5427bcb844ad1c86557b4886aeb4484d8 \
-    --hash=sha256:dc62c8ac1b73ec704ed1a05be0267358fd5c99d1952f30448db1637336635cf8 \
-    --hash=sha256:de2b253a3a90e1fa55eef5f9b3146bb5c722bd3400747112c9963404a2f5b9cf \
-    --hash=sha256:dedf667cded1cdac5bfd3f3c2ff30010f484faccae4e871cc8a9316d2dc27363 \
-    --hash=sha256:e09d7852100bcc3e466e63478ee18c68cc4d2ca2a978f29b90d5e2ea814f7b3e \
-    --hash=sha256:e5e1a5a99c72d1531501406fcc06b6bf699ebd079dacd6807bb43fc0ff260e5c \
-    --hash=sha256:e615032b684a1d6faffe41d64cd896801bd3f2c1b642355e9b5d11fd8d40223e \
-    --hash=sha256:e81f23b4b6f2a588f15d5cb554b2d8b482bb6044223d64b86bc7079cae9ebaad \
-    --hash=sha256:eb27128141474a1d545f0531b496c7c2f1c4beff50cb5a828f36eb62fef16c67 \
-    --hash=sha256:ed98ac527278372251fbc8f5c6c41bdf64ded1db0e6e86f9b9622744306060f6 \
-    --hash=sha256:ee2d333380f22d35a56c6461f4579cfe186e143cd0b010b9524ac027de2a34cd \
-    --hash=sha256:efd1951edab4a6cb65108d411867811f2b283f4b972337fb4269e40142f7f6a6 \
-    --hash=sha256:f369d6619b24da4df4a02455fea8641fe8324fc0100a3e0dcebc5bf55fa903f3 \
-    --hash=sha256:f42fef9bcba3c32fd4e4a23c5757fc807d218b249573aaffa8634879f95feb73 \
-    --hash=sha256:f8316e58db799a1972afbc46770dfaaf20b0847003ab80de6fcb9861194faa3f \
-    --hash=sha256:f97680c839dd9fa208e9584b1c2a5f1224bd01d31961f7f7d94984408c4a6b9e \
-    --hash=sha256:fc993a96dfc8300befd03d03df46efdb1d8d5a46911b014e956a4443035f470d \
-    --hash=sha256:fcdaa72261bff25fad93e7cb9bd7112bd4bac209148e698e380426489d8ed8a9 \
-    --hash=sha256:fe09318a28b00c6f43180d0d889df1535e98fb2d93d25955d46945f8d5410d87
     # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   taskcluster-taskgraph
+multidict==6.6.3 \
+    --hash=sha256:02fd8f32d403a6ff13864b0851f1f523d4c988051eea0471d4f1fd8010f11134 \
+    --hash=sha256:04cbcce84f63b9af41bad04a54d4cc4e60e90c35b9e6ccb130be2d75b71f8c17 \
+    --hash=sha256:056bebbeda16b2e38642d75e9e5310c484b7c24e3841dc0fb943206a72ec89d6 \
+    --hash=sha256:05db2f66c9addb10cfa226e1acb363450fab2ff8a6df73c622fefe2f5af6d4e7 \
+    --hash=sha256:0b9e59946b49dafaf990fd9c17ceafa62976e8471a14952163d10a7a630413a9 \
+    --hash=sha256:0db58da8eafb514db832a1b44f8fa7906fdd102f7d982025f816a93ba45e3dcb \
+    --hash=sha256:0f1130b896ecb52d2a1e615260f3ea2af55fa7dc3d7c3003ba0c3121a759b18b \
+    --hash=sha256:10bea2ee839a759ee368b5a6e47787f399b41e70cf0c20d90dfaf4158dfb4e55 \
+    --hash=sha256:12f4581d2930840295c461764b9a65732ec01250b46c6b2c510d7ee68872b140 \
+    --hash=sha256:1328201ee930f069961ae707d59c6627ac92e351ed5b92397cf534d1336ce557 \
+    --hash=sha256:135631cb6c58eac37d7ac0df380294fecdc026b28837fa07c02e459c7fb9c54e \
+    --hash=sha256:14117a41c8fdb3ee19c743b1c027da0736fdb79584d61a766da53d399b71176c \
+    --hash=sha256:15332783596f227db50fb261c2c251a58ac3873c457f3a550a95d5c0aa3c770d \
+    --hash=sha256:159ca68bfd284a8860f8d8112cf0521113bffd9c17568579e4d13d1f1dc76b65 \
+    --hash=sha256:18f4eba0cbac3546b8ae31e0bbc55b02c801ae3cbaf80c247fcdd89b456ff58c \
+    --hash=sha256:1bf99b4daf908c73856bd87ee0a2499c3c9a3d19bb04b9c6025e66af3fd07462 \
+    --hash=sha256:1c8082e5814b662de8589d6a06c17e77940d5539080cbab9fe6794b5241b76d9 \
+    --hash=sha256:208b9b9757060b9faa6f11ab4bc52846e4f3c2fb8b14d5680c8aac80af3dc751 \
+    --hash=sha256:20c5a0c3c13a15fd5ea86c42311859f970070e4e24de5a550e99d7c271d76318 \
+    --hash=sha256:2334cfb0fa9549d6ce2c21af2bfbcd3ac4ec3646b1b1581c88e3e2b1779ec92b \
+    --hash=sha256:233ad16999afc2bbd3e534ad8dbe685ef8ee49a37dbc2cdc9514e57b6d589ced \
+    --hash=sha256:274d416b0df887aef98f19f21578653982cfb8a05b4e187d4a17103322eeaf8f \
+    --hash=sha256:295adc9c0551e5d5214b45cf29ca23dbc28c2d197a9c30d51aed9e037cb7c578 \
+    --hash=sha256:2e4cc8d848cd4fe1cdee28c13ea79ab0ed37fc2e89dd77bac86a2e7959a8c3bc \
+    --hash=sha256:346055630a2df2115cd23ae271910b4cae40f4e336773550dca4889b12916e75 \
+    --hash=sha256:35712f1748d409e0707b165bf49f9f17f9e28ae85470c41615778f8d4f7d9609 \
+    --hash=sha256:3713303e4a6663c6d01d648a68f2848701001f3390a030edaaf3fc949c90bf7c \
+    --hash=sha256:37b09ca60998e87734699e88c2363abfd457ed18cfbf88e4009a4e83788e63ed \
+    --hash=sha256:3893a0d7d28a7fe6ca7a1f760593bc13038d1d35daf52199d431b61d2660602b \
+    --hash=sha256:41bb9d1d4c303886e2d85bade86e59885112a7f4277af5ad47ab919a2251f306 \
+    --hash=sha256:42ca5aa9329a63be8dc49040f63817d1ac980e02eeddba763a9ae5b4027b9c9c \
+    --hash=sha256:43571f785b86afd02b3855c5ac8e86ec921b760298d6f82ff2a61daf5a35330b \
+    --hash=sha256:448e4a9afccbf297577f2eaa586f07067441e7b63c8362a3540ba5a38dc0f14a \
+    --hash=sha256:4ef421045f13879e21c994b36e728d8e7d126c91a64b9185810ab51d474f27e7 \
+    --hash=sha256:500b84f51654fdc3944e936f2922114349bf8fdcac77c3092b03449f0e5bc2b3 \
+    --hash=sha256:531e331a2ee53543ab32b16334e2deb26f4e6b9b28e41f8e0c87e99a6c8e2d69 \
+    --hash=sha256:53becb01dd8ebd19d1724bebe369cfa87e4e7f29abbbe5c14c98ce4c383e16cd \
+    --hash=sha256:540d3c06d48507357a7d57721e5094b4f7093399a0106c211f33540fdc374d55 \
+    --hash=sha256:555ff55a359302b79de97e0468e9ee80637b0de1fce77721639f7cd9440b3a10 \
+    --hash=sha256:5633a82fba8e841bc5c5c06b16e21529573cd654f67fd833650a215520a6210e \
+    --hash=sha256:5bd8d6f793a787153956cd35e24f60485bf0651c238e207b9a54f7458b16d539 \
+    --hash=sha256:61af8a4b771f1d4d000b3168c12c3120ccf7284502a94aa58c68a81f5afac090 \
+    --hash=sha256:639ecc9fe7cd73f2495f62c213e964843826f44505a3e5d82805aa85cac6f89e \
+    --hash=sha256:67c92ed673049dec52d7ed39f8cf9ebbadf5032c774058b4406d18c8f8fe7063 \
+    --hash=sha256:68e9e12ed00e2089725669bdc88602b0b6f8d23c0c95e52b95f0bc69f7fe9b55 \
+    --hash=sha256:6c1e61bb4f80895c081790b6b09fa49e13566df8fbff817da3f85b3a8192e36b \
+    --hash=sha256:70b72e749a4f6e7ed8fb334fa8d8496384840319512746a5f42fa0aec79f4d61 \
+    --hash=sha256:70d974eaaa37211390cd02ef93b7e938de564bbffa866f0b08d07e5e65da783d \
+    --hash=sha256:712b348f7f449948e0a6c4564a21c7db965af900973a67db432d724619b3c680 \
+    --hash=sha256:72d8815f2cd3cf3df0f83cac3f3ef801d908b2d90409ae28102e0553af85545a \
+    --hash=sha256:7394888236621f61dcdd25189b2768ae5cc280f041029a5bcf1122ac63df79f9 \
+    --hash=sha256:73ab034fb8d58ff85c2bcbadc470efc3fafeea8affcf8722855fb94557f14cc5 \
+    --hash=sha256:766a4a5996f54361d8d5a9050140aa5362fe48ce51c755a50c0bc3706460c430 \
+    --hash=sha256:769841d70ca8bdd140a715746199fc6473414bd02efd678d75681d2d6a8986c5 \
+    --hash=sha256:775b464d31dac90f23192af9c291dc9f423101857e33e9ebf0020a10bfcf4144 \
+    --hash=sha256:798a9eb12dab0a6c2e29c1de6f3468af5cb2da6053a20dfa3344907eed0937cc \
+    --hash=sha256:7af039820cfd00effec86bda5d8debef711a3e86a1d3772e85bea0f243a4bd65 \
+    --hash=sha256:7c6df517cf177da5d47ab15407143a89cd1a23f8b335f3a28d57e8b0a3dbb884 \
+    --hash=sha256:81ef2f64593aba09c5212a3d0f8c906a0d38d710a011f2f42759704d4557d3f2 \
+    --hash=sha256:877443eaaabcd0b74ff32ebeed6f6176c71850feb7d6a1d2db65945256ea535c \
+    --hash=sha256:8db10f29c7541fc5da4defd8cd697e1ca429db743fa716325f236079b96f775a \
+    --hash=sha256:8df25594989aebff8a130f7899fa03cbfcc5d2b5f4a461cf2518236fe6f15961 \
+    --hash=sha256:900eb9f9da25ada070f8ee4a23f884e0ee66fe4e1a38c3af644256a508ad81ca \
+    --hash=sha256:934796c81ea996e61914ba58064920d6cad5d99140ac3167901eb932150e2e56 \
+    --hash=sha256:94c47ea3ade005b5976789baaed66d4de4480d0a0bf31cef6edaa41c1e7b56a6 \
+    --hash=sha256:9c19cea2a690f04247d43f366d03e4eb110a0dc4cd1bbeee4d445435428ed35b \
+    --hash=sha256:9e236a7094b9c4c1b7585f6b9cca34b9d833cf079f7e4c49e6a4a6ec9bfdc68f \
+    --hash=sha256:9e864486ef4ab07db5e9cb997bad2b681514158d6954dd1958dfb163b83d53e6 \
+    --hash=sha256:9ed948328aec2072bc00f05d961ceadfd3e9bfc2966c1319aeaf7b7c21219183 \
+    --hash=sha256:9f5b28c074c76afc3e4c610c488e3493976fe0e596dd3db6c8ddfbb0134dcac5 \
+    --hash=sha256:9f97e181f344a0ef3881b573d31de8542cc0dbc559ec68c8f8b5ce2c2e91646d \
+    --hash=sha256:a2be5b7b35271f7fff1397204ba6708365e3d773579fe2a30625e16c4b4ce817 \
+    --hash=sha256:ab0a34a007704c625e25a9116c6770b4d3617a071c8a7c30cd338dfbadfe6485 \
+    --hash=sha256:acf6b97bd0884891af6a8b43d0f586ab2fcf8e717cbd47ab4bdddc09e20652d8 \
+    --hash=sha256:b1db4d2093d6b235de76932febf9d50766cf49a5692277b2c28a501c9637f616 \
+    --hash=sha256:b24576f208793ebae00280c59927c3b7c2a3b1655e443a25f753c4611bc1c373 \
+    --hash=sha256:b8fee016722550a2276ca2cb5bb624480e0ed2bd49125b2b73b7010b9090e888 \
+    --hash=sha256:b9cbc60010de3562545fa198bfc6d3825df430ea96d2cc509c39bd71e2e7d648 \
+    --hash=sha256:b9fe5a0e57c6dbd0e2ce81ca66272282c32cd11d31658ee9553849d91289e1c1 \
+    --hash=sha256:bb933c891cd4da6bdcc9733d048e994e22e1883287ff7540c2a0f3b117605092 \
+    --hash=sha256:bc7f6fbc61b1c16050a389c630da0b32fc6d4a3d191394ab78972bf5edc568c2 \
+    --hash=sha256:bd0578596e3a835ef451784053cfd327d607fc39ea1a14812139339a18a0dbc3 \
+    --hash=sha256:bf9bd1fd5eec01494e0f2e8e446a74a85d5e49afb63d75a9934e4a5423dba21d \
+    --hash=sha256:c60b401f192e79caec61f166da9c924e9f8bc65548d4246842df91651e83d600 \
+    --hash=sha256:c8161b5a7778d3137ea2ee7ae8a08cce0010de3b00ac671c5ebddeaa17cefd22 \
+    --hash=sha256:cdf22e4db76d323bcdc733514bf732e9fb349707c98d341d40ebcc6e9318ef3d \
+    --hash=sha256:ce8b7693da41a3c4fde5871c738a81490cea5496c671d74374c8ab889e1834fb \
+    --hash=sha256:d04d01f0a913202205a598246cf77826fe3baa5a63e9f6ccf1ab0601cf56eca0 \
+    --hash=sha256:d25594d3b38a2e6cabfdcafef339f754ca6e81fbbdb6650ad773ea9775af35ab \
+    --hash=sha256:d4e47d8faffaae822fb5cba20937c048d4f734f43572e7079298a6c39fb172cb \
+    --hash=sha256:dbc7cf464cc6d67e83e136c9f55726da3a30176f020a36ead246eceed87f1cd8 \
+    --hash=sha256:dd7793bab517e706c9ed9d7310b06c8672fd0aeee5781bfad612f56b8e0f7d14 \
+    --hash=sha256:e098c17856a8c9ade81b4810888c5ad1914099657226283cab3062c0540b0643 \
+    --hash=sha256:e0cb0ab69915c55627c933f0b555a943d98ba71b4d1c57bc0d0a66e2567c7471 \
+    --hash=sha256:e252017a817fad7ce05cafbe5711ed40faeb580e63b16755a3a24e66fa1d87c0 \
+    --hash=sha256:e2db616467070d0533832d204c54eea6836a5e628f2cb1e6dfd8cd6ba7277cb7 \
+    --hash=sha256:e4e15d2138ee2694e038e33b7c3da70e6b0ad8868b9f8094a72e1414aeda9c1a \
+    --hash=sha256:e5511cb35f5c50a2db21047c875eb42f308c5583edf96bd8ebf7d770a9d68f6d \
+    --hash=sha256:e5e8523bb12d7623cd8300dbd91b9e439a46a028cd078ca695eb66ba31adee3c \
+    --hash=sha256:e5f481cccb3c5c5e5de5d00b5141dc589c1047e60d07e85bbd7dea3d4580d63f \
+    --hash=sha256:e924fb978615a5e33ff644cc42e6aa241effcf4f3322c09d4f8cebde95aff5f8 \
+    --hash=sha256:e93089c1570a4ad54c3714a12c2cef549dc9d58e97bcded193d928649cab78e9 \
+    --hash=sha256:e995a34c3d44ab511bfc11aa26869b9d66c2d8c799fa0e74b28a473a692532d6 \
+    --hash=sha256:ef43b5dd842382329e4797c46f10748d8c2b6e0614f46b4afe4aee9ac33159df \
+    --hash=sha256:ef58340cc896219e4e653dade08fea5c55c6df41bcc68122e3be3e9d873d9a7b \
+    --hash=sha256:f114d8478733ca7388e7c7e0ab34b72547476b97009d643644ac33d4d3fe1821 \
+    --hash=sha256:f3aa090106b1543f3f87b2041eef3c156c8da2aed90c63a2fbed62d875c49c37 \
+    --hash=sha256:f3fc723ab8a5c5ed6c50418e9bfcd8e6dceba6c271cee6728a10a4ed8561520c \
+    --hash=sha256:f54cb79d26d0cd420637d184af38f0668558f3c4bbe22ab7ad830e67249f2e0b \
+    --hash=sha256:fc9dc435ec8699e7b602b94fe0cd4703e69273a01cbc34409af29e7820f777f1
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   aiohttp
     #   yarl
 packaging==25.0 \
     --hash=sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484 \
     --hash=sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
 pexpect==4.9.0 \
     --hash=sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523 \
     --hash=sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
 propcache==0.3.2 \
     --hash=sha256:035e631be25d6975ed87ab23153db6a73426a48db688070d925aa27e996fe93c \
     --hash=sha256:03c89c1b14a5452cf15403e291c0ccd7751d5b9736ecb2c5bab977ad6c5bcd81 \
@@ -1010,12 +1120,20 @@ propcache==0.3.2 \
     --hash=sha256:fb075ad271405dcad8e2a7ffc9a750a3bf70e533bd86e89f0603e607b93aa64c \
     --hash=sha256:fd3e6019dc1261cd0291ee8919dd91fbab7b169bb76aeef6c716833a3f65d206
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   aiohttp
     #   yarl
 ptyprocess==0.7.0 \
     --hash=sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35 \
     --hash=sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220
-    # via pexpect
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   pexpect
 pycares==4.9.0 \
     --hash=sha256:08048e223615d4aef3dac81fe0ea18fb18d6fc97881f1eb5be95bb1379969b8d \
     --hash=sha256:0b8bd9a3ee6e9bc990e1933dc7e7e2f44d4184f49a90fa444297ac12ab6c0c84 \
@@ -1093,32 +1211,55 @@ pycares==4.9.0 \
     --hash=sha256:f71d31cbbe066657a2536c98aad850724a9ab7b1cd2624f491832ae9667ea8e7 \
     --hash=sha256:faa9de8e647ed06757a2c117b70a7645a755561def814da6aca0d766cf71a402 \
     --hash=sha256:fcbda3fdf44e94d3962ca74e6ba3dc18c0d7029106f030d61c04c0876f319403
-    # via aiodns
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   aiodns
 pycparser==2.22 \
     --hash=sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6 \
     --hash=sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc
-    # via cffi
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   cffi
 pygments==2.19.2 \
     --hash=sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887 \
     --hash=sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b
-    # via rich
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   rich
 pyjwt==2.10.1 \
     --hash=sha256:3cc5772eb20009233caf06e9d8a0577824723b44e6648ee0a2aedb6cf9381953 \
     --hash=sha256:dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   github3-py
     #   simple-github
 python-dateutil==2.9.0.post0 \
     --hash=sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3 \
     --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   arrow
     #   github3-py
     #   taskcluster
 python-slugify==8.0.4 \
     --hash=sha256:276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8 \
     --hash=sha256:59202371d1d05b54a9e7720c5e038f928f45daaffe41dd10822f3907b937c856
-    # via cookiecutter
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   cookiecutter
 pyyaml==6.0.2 \
     --hash=sha256:01179a4a8559ab5de078078f37e5c1a30d76bb88519906844fd7bdea1b7729ff \
     --hash=sha256:0833f8694549e586547b576dcfaba4a6b55b9e96098b36cdc7ebefe667dfed48 \
@@ -1174,27 +1315,41 @@ pyyaml==6.0.2 \
     --hash=sha256:f753120cb8181e736c57ef7636e83f31b9c0d1722c516f7e86cf15b7aa57ff12 \
     --hash=sha256:ff3824dc5261f50c9b0dfb3be22b4567a6f938ccce4587b38952d85fd9e9afe4
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/scriptworker_client/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   cookiecutter
     #   taskcluster-taskgraph
 redo==3.0.0 \
     --hash=sha256:52a14200004d6708924a547b31b7d1c717cb36b944f3a5c7b176e0d61ab81eef \
     --hash=sha256:66905396b2882577fa4bf7edb90fee081db2b98992d303f12e3f898ac7f7bd56
-    # via taskcluster-taskgraph
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   taskcluster-taskgraph
 referencing==0.36.2 \
     --hash=sha256:df2e89862cd09deabbdba16944cc3f10feb6b3e6f18e902f7cc25609a34775aa \
     --hash=sha256:e8699adbbf8b5c7de96d8ffa0eb5c158b3beafce084968e2ea8bb08c6794dcd0
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   jsonschema
     #   jsonschema-specifications
 requests==2.32.4 \
     --hash=sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c \
     --hash=sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   cookiecutter
     #   github3-py
-    #   gql
     #   requests-hawk
     #   requests-toolbelt
     #   simple-github
@@ -1203,23 +1358,31 @@ requests==2.32.4 \
 requests-hawk==1.2.1 \
     --hash=sha256:ad9205042c94bdb15afaa19b0780e11077b24d9e5cffac1fb3d26cb08aa435b7 \
     --hash=sha256:afe8add3c72a21405543a07464b62e36a5f378585e5cf3b54b1307e884f67324
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
 requests-toolbelt==1.0.0 \
     --hash=sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6 \
     --hash=sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06
-    # via gql
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
 rfc3339-validator==0.1.4 \
     --hash=sha256:138a2abdf93304ad60530167e51d2dfb9549521a836871b88d7f4695d0022f6b \
     --hash=sha256:24f6ec1eda14ef823da9e36ec7113124b39c04d50a4d3d3a3c2859577e7791fa
-    # via jsonschema
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 rfc3986-validator==0.1.1 \
     --hash=sha256:2f235c432ef459970b4306369336b9d5dbdda31b510ca1e327636e01f528bfa9 \
     --hash=sha256:3d44bde7921b3b9ec3ae4e3adca370438eccebc676456449b145d533b240d055
-    # via jsonschema
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 rich==14.0.0 \
     --hash=sha256:1c9491e1951aac09caffd42f448ee3d04e58923ffe14993f6e83068dc395d7e0 \
     --hash=sha256:82f1bc23a6a21ebca4ae0c45af9bdbc492ed20231dcb63f297d6d1021a9d5725
-    # via cookiecutter
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   cookiecutter
 rpds-py==0.25.1 \
     --hash=sha256:0317177b1e8691ab5879f4f33f4b6dc55ad3b344399e23df2e499de7b10a548d \
     --hash=sha256:036ded36bedb727beeabc16dc1dad7cb154b3fa444e936a03b67a86dc6a5066e \
@@ -1339,17 +1502,28 @@ rpds-py==0.25.1 \
     --hash=sha256:f73ce1512e04fbe2bc97836e89830d6b4314c171587a99688082d090f934d20a \
     --hash=sha256:ff7c23ba0a88cb7b104281a99476cccadf29de2a0ef5ce864959a52675b1ca83
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   jsonschema
     #   referencing
 simple-github==2.2.1 \
     --hash=sha256:417e870918190789cac1c51b2ecb72d9c9c62634e604fc3d60c076b465eed7e8 \
     --hash=sha256:88addb238a5d32b1a0f85eff6bc69496c8a1b27e40fd9f3a172a3049f5a588b7
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/scriptworker_client/requirements/base.in
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   mohawk
     #   mozfile
     #   python-dateutil
@@ -1358,63 +1532,99 @@ slugid==2.0.0 \
     --hash=sha256:a950d98b72691178bdd4d6c52743c4a2aa039207cf7a97d71060a111ff9ba297 \
     --hash=sha256:aec8b0e01c4ad32e38e12d609eab3ec912fd129aaf6b2ded0199b56a5f8fd67c
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   taskcluster
     #   taskcluster-taskgraph
 sniffio==1.3.1 \
     --hash=sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2 \
     --hash=sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc
-    # via anyio
-taskcluster==85.0.1 \
-    --hash=sha256:1f855f973bf1ad8014213e204cf5cc10bf0c1eace18ddff9c09f422afddac231 \
-    --hash=sha256:9145e4df4f25f0b1e1370cb8265838b06c3451e975cd20980edfec47c10a52bc
     # via
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
-    #   -r https://raw.githubusercontent.com/mozilla-releng/scriptworker-scripts/8710b835463b6002b6397eed09f3219d39b17c86/iscript/requirements/base.in
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   anyio
+taskcluster==86.0.2 \
+    --hash=sha256:072f3374b6137442c5ed3ce826e7f0b3c51cf618f48b9a2e346592bc5192421e \
+    --hash=sha256:5e0b36ee2e9513a12647c2a40ab29efc5ae495fa0cee945ab60b941a014baca1
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 taskcluster-taskgraph==14.4.1 \
     --hash=sha256:9ea58e096f41293b3f870a5b7f4765a5bf55a250ae5a35325a81ab8cfe1cdc89 \
     --hash=sha256:c20f28bb180950e22fd8478dca6218b29db6a1c76fcf2e4f2b7730f33983d891
-    # via -r https://raw.githubusercontent.com/mozilla-releng/scriptworker/237ab41dd3f90f95c6c441ac8fc95958cbfc95a2/requirements.txt
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \
     --hash=sha256:b25e122ecec249c4299ac7b20b08db76e3e2025bdaeb699a9d444556de5fd367 \
     --hash=sha256:f66dcbd6572a6216ab65949f0fa0b91f2df647918028436c384e6af5cd12ae2b
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   taskcluster
     #   taskcluster-taskgraph
 text-unidecode==1.3 \
     --hash=sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8 \
     --hash=sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93
-    # via python-slugify
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   python-slugify
 types-python-dateutil==2.9.0.20250516 \
     --hash=sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5 \
     --hash=sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93
-    # via arrow
-typing-extensions==4.14.0 ; python_full_version < '3.13' \
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   arrow
+typing-extensions==4.14.0 \
     --hash=sha256:8676b788e32f02ab42d9e7c61324048ae4c6d844a399eebace3d4979d75ceef4 \
     --hash=sha256:a1514509136dd0b477638fc68d6a91497af5076466ad0fa6c338e44e359944af
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   anyio
+    #   graphql-core
+    #   multidict
     #   referencing
+    #   rich
 uri-template==1.3.0 \
     --hash=sha256:0e00f8eb65e18c7de20d595a14336e9f337ead580c70934141624b6d1ffdacc7 \
     --hash=sha256:a44a133ea12d44a0c0f06d7d42a52d71282e77e2f937d8abd5655b8d56fc1363
-    # via jsonschema
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 uritemplate==4.2.0 \
     --hash=sha256:480c2ed180878955863323eea31b0ede668795de182617fef9c6ca09e6ec9d0e \
     --hash=sha256:962201ba1c4edcab02e60f9a0d3821e82dfc5d2d6662a21abd533879bdb8a686
-    # via github3-py
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   github3-py
 urllib3==2.5.0 \
     --hash=sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760 \
     --hash=sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc
-    # via requests
+    # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   requests
 voluptuous==0.15.2 \
     --hash=sha256:016348bc7788a9af9520b1764ebd4de0df41fe2138ebe9e06fa036bf86a65566 \
     --hash=sha256:6ffcab32c4d3230b4d2af3a577c87e1908a714a11f6f95570456b1849b0279aa
-    # via taskcluster-taskgraph
+    # via
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
+    #   taskcluster-taskgraph
 webcolors==24.11.1 \
     --hash=sha256:515291393b4cdf0eb19c155749a096f779f7d909f7cceea072791cb9095b92e9 \
     --hash=sha256:ecb3d768f32202af770477b8b65f318fa4f566c22948673a977b00d589dd80f6
-    # via jsonschema
+    # via -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
 yarl==1.20.1 \
     --hash=sha256:03aa1e041727cb438ca762628109ef1333498b122e4c76dd858d186a37cec845 \
     --hash=sha256:041eaa14f73ff5a8986b4388ac6bb43a77f2ea09bf1913df7a35d4646db69e53 \
@@ -1521,5 +1731,10 @@ yarl==1.20.1 \
     --hash=sha256:fe41919b9d899661c5c28a8b4b0acf704510b88f27f0934ac7a7bebdd8938d5e \
     --hash=sha256:ff70f32aa316393eaf8222d518ce9118148eddb8a53073c2403863b41033eed5
     # via
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   --override /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/iscript.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker-client.txt
+    #   -r /var/folders/lk/654lw2p9223cl3k551c80fv40000gn/T/tmp864s60ea/scriptworker.txt
     #   aiohttp
     #   gql
