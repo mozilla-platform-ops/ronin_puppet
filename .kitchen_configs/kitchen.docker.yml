@@ -9,6 +9,9 @@ driver:
   # - fails on circleci if left enabled
   # - now enabled if needed automatically in `bin/kitchen_docker`
   # docker_platform: linux/amd64
+  #
+  # on m1 macs, nothing even starts on amd64 now...
+  # docker_platform: linux/arm64
   run_command: /bin/systemd
   cap_add:
     - SYS_ADMIN
@@ -86,6 +89,9 @@ platforms:
   - name: ubuntu-22.04
     provisioner:
       custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2204_talos"'
+  - name: ubuntu-24.04
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2404_talos"'
 
 verifier:
   name: inspec
@@ -106,9 +112,11 @@ suites:
     includes:
       - ubuntu-18.04
       - ubuntu-22.04
+      - ubuntu-24.04
   - name: bitbar
     provisioner:
       custom_options: '-e "include roles_profiles::roles::bitbar_devicepool"'
     includes:
       - ubuntu-22.04  # no more 1804 bitbar
+      # - ubuntu-24.04  # TODO
     attributes:

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+# set -x
 
 # dockerfile specifies this dir as a bind mount for caching debs
 mkdir -p /tmp/docker/var/cache/apt
@@ -13,8 +14,15 @@ temp_kitchen_config="/tmp/ronin_puppet_kitchen_docker_temp_config.yml"
 # add docker_platform if we're on arm64
 if [[ "$(uname -m)" == "arm64" ]]; then
     echo "This system is running on arm64 architecture."
+
+    # old way, force to amd64 to work around tc installation not picking correct arch
+    # echo "Modifying kitchen.docker.yml to use linux/amd64 platform."
+    # sed 's/# docker_platform: linux\/amd64$/docker_platform: linux\/amd64/' "${kitchen_config}" > "${temp_kitchen_config}"
+
+    # new way, use arm64
     echo "Modifying kitchen.docker.yml to use linux/arm64 platform."
-    sed 's/# docker_platform: linux\/amd64$/docker_platform: linux\/amd64/' "${kitchen_config}" > "${temp_kitchen_config}"
+    sed 's/# docker_platform: linux\/arm64$/docker_platform: linux\/arm64/' "${kitchen_config}" > "${temp_kitchen_config}"
+
     export KITCHEN_YAML="${temp_kitchen_config}"
     # for testing
     # grep docker_platform ${KITCHEN_YAML}
