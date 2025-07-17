@@ -187,7 +187,12 @@ class linux_packages::py3 {
           package { 'python3':
             ensure => present,
           }
+
           package { 'python3-pip':
+            ensure => present,
+          }
+          # `python3 -m pip` giving error: `pynacl 1.5.0 requires cffi, which is not installed.`
+          package { 'python3-cffi':
             ensure => present,
           }
 
@@ -211,12 +216,16 @@ class linux_packages::py3 {
             provider => pip3,
           }
         }
-        '22.04': {
+        '24.04': {
           # ships with py3.10
           package { 'python3':
             ensure => present,
           }
           package { 'python3-pip':
+            ensure => present,
+          }
+          # `python3 -m pip` giving error: `pynacl 1.5.0 requires cffi, which is not installed.`
+          package { 'python3-cffi':
             ensure => present,
           }
 
