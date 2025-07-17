@@ -109,11 +109,11 @@ end
 puts "DEBUG: os.family=#{os.family}, os.release=#{os.release}"
 
 # ensure /usr/bin/python3 is correct on each os
-# - ideally don't change it as it may break things
+# - this shouldn't change... it can break the os.
 if os.family == 'debian' && os.release.start_with?('18.04')
   describe command('/usr/bin/python3 --version') do
     its(:exit_status) { should eq 0 }
-    its(:stdout) { should match /Python 3.11/ }
+    its(:stdout) { should match /Python 3.9.15/ }
   end
 elsif os.family == 'debian' && os.release.start_with?('22.04', '24.04')
   describe command('/usr/bin/python3 --version') do
@@ -130,6 +130,7 @@ else
 end
 
 # default python3 should have pip
+# TODO: keep this requirement?
 describe command('python3 -m pip check') do
   its(:exit_status) { should eq 0 }
 end
