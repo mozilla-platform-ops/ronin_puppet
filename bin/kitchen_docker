@@ -32,5 +32,13 @@ else
     export KITCHEN_YAML="${kitchen_config}"
 fi
 
+# if command is test, alert that results on arm64 will be different and recommend circleci run.
+if [[ "$1" == "test" && "$(uname -m)" == "arm64" ]]; then
+    echo ""
+    echo "Warning: Test results on arm64 can be misleading because we don't have arm64"
+    echo "binaries and/or detection everywhere. Everything should work on CircleCI."
+    echo ""
+fi
+
 # set CI=true so our spec_helper can disable problematic tests
 CI=TRUE bundle exec kitchen "$@"
