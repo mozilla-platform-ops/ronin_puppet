@@ -19,6 +19,16 @@ class linux_packages::git {
             os_version_specific    => false,
           }
         }
+        '22.04': {
+    package { 'git':
+        ensure => present,
+    }
+        }
+        '24.04': {
+    package { 'git':
+        ensure => present,
+    }
+        }
         default: {
           fail("cannot install on ${facts['os']['release']['full']}")
         }
