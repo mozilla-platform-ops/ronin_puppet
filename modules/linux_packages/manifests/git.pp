@@ -20,13 +20,29 @@ class linux_packages::git {
           }
         }
         '22.04': {
-          package { 'git':
-            ensure => present,
+          $temp_dir = '/tmp/git_242'
+
+          $pkgs_and_chksums_hash = {
+            'git_2.42.0-0ppa1~ubuntu18.04.1_amd64.deb' => '40e17918bff5544c252005433a565eecfe653228048108d7ff79de0548b9d552',
+          'git-man_2.42.0-0ppa1~ubuntu18.04.1_all.deb' => '56e6d53f07e3ed67b2e5c7602674f3951014d3591b6dcab5013ed69540784e3c' }
+
+          packages::linux_package_from_s3_multi { 'install git_242' :
+            packages_and_checksums => $pkgs_and_chksums_hash,
+            temp_dir               => $temp_dir,
+            os_version_specific    => false,
           }
         }
         '24.04': {
-          package { 'git':
-            ensure => present,
+          $temp_dir = '/tmp/git_242'
+
+          $pkgs_and_chksums_hash = {
+            'git_2.42.0-0ppa1~ubuntu18.04.1_amd64.deb' => '40e17918bff5544c252005433a565eecfe653228048108d7ff79de0548b9d552',
+          'git-man_2.42.0-0ppa1~ubuntu18.04.1_all.deb' => '56e6d53f07e3ed67b2e5c7602674f3951014d3591b6dcab5013ed69540784e3c' }
+
+          packages::linux_package_from_s3_multi { 'install git_242' :
+            packages_and_checksums => $pkgs_and_chksums_hash,
+            temp_dir               => $temp_dir,
+            os_version_specific    => false,
           }
         }
         default: {
