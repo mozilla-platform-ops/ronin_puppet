@@ -33,6 +33,8 @@ class roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker {
 
             require linux_talos
 
+            require linux_directory_cleaner
+
             class { 'puppet::atboot':
                 telegraf_user     => lookup('telegraf.user'),
                 telegraf_password => lookup('telegraf.password'),
