@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker {
+class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker {
   # TODO: make these args to this module and use in call in gecko_t_linux_talos?
-  $worker_type  = 'gecko-t-linux-talos-2204'
+  $worker_type  = 'gecko-t-linux-talos-2404'
   $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
   case $facts['os']['name'] {
