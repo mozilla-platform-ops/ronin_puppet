@@ -115,10 +115,15 @@ if os.family == 'debian' && os.release.start_with?('18.04')
     its(:exit_status) { should eq 0 }
     its(:stdout) { should match /Python 3.9.15/ }
   end
-elsif os.family == 'debian' && os.release.start_with?('22.04', '24.04')
+elsif os.family == 'debian' && os.release.start_with?('22.04')
   describe command('/usr/bin/python3 --version') do
     its(:exit_status) { should eq 0 }
     its(:stdout) { should match /Python 3.10/ }
+  end
+elsif os.family == 'debian' && os.release.start_with?('24.04')
+  describe command('/usr/bin/python3 --version') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match /Python 3.12/ }
   end
 else
   # shouldn't be here
