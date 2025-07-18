@@ -6,7 +6,7 @@ class linux_packages::sox {
   case $facts['os']['name'] {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
-        '18.04', '22.04': {
+        '18.04', '22.04', '24.04': {
           package {
             ['libsox-fmt-alsa', 'libsox-fmt-base', 'libsox3', 'sox']:
               ensure => 'latest';

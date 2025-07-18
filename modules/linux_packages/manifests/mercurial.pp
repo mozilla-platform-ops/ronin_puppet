@@ -11,15 +11,15 @@ class linux_packages::mercurial ( Enum['present', 'absent'] $pkg_ensure = 'prese
           include linux_packages::python2_mercurial
           include linux_packages::python3_mercurial
 
-      # the binary just calls the installed python module,
-      # but it points at py2 on 1804
+          # the binary just calls the installed python module,
+          # but it points at py2 on 1804
 
           package {
-              'mercurial':
-                  ensure => $pkg_ensure;
+            'mercurial':
+              ensure => $pkg_ensure;
           }
         }
-        '22.04': {
+        '22.04', '24.04': {
           include linux_packages::python3_mercurial
 
           # the binary just calls the installed python module

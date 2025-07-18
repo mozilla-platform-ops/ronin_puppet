@@ -7,7 +7,6 @@ class linux_packages::imagemagick {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
         '18.04': {
-
           # 6.9
           package { 'imagemagick':
             ensure => present,
@@ -15,14 +14,14 @@ class linux_packages::imagemagick {
           # 7.0, 'Complete portable application on Linux'
           #   from https://imagemagick.org/script/download.php
           packages::linux_package_from_s3 { 'magick-v7.0.10-31':
-              private             => false,
-              os_version_specific => false,
-              type                => 'bin',
-              file_destination    => '/usr/local/bin/magick',
-              checksum            => '87431900e4446517630adb0bceef8f08634e6cd444513482f8f45c4b245b8c65',  # sha256
+            private             => false,
+            os_version_specific => false,
+            type                => 'bin',
+            file_destination    => '/usr/local/bin/magick',
+            checksum            => '87431900e4446517630adb0bceef8f08634e6cd444513482f8f45c4b245b8c65',  # sha256
           }
         }
-        '22.04': {
+        '22.04', '24.04': {
           # 6.9
           package { 'imagemagick':
             ensure => present,

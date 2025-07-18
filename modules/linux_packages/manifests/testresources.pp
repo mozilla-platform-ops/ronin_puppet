@@ -22,7 +22,7 @@ class linux_packages::testresources {
               ensure => present;
           }
         }
-        '22.04': {
+        '22.04', '24.04': {
           package {
             'python3-testresources':
               ensure => present;
