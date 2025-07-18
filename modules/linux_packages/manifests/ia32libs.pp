@@ -18,7 +18,7 @@ class linux_packages::ia32libs {
               ensure => 'latest';
           }
         }
-        '22.04': {
+        '22.04', '24.04': {
           true
         }
 

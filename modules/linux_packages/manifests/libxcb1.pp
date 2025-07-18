@@ -6,7 +6,7 @@ class linux_packages::libxcb1 {
   case $facts['os']['name'] {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
-        '18.04', '22.04': {
+        '18.04', '22.04', '24.04': {
           package {
             'libxcb1':
               ensure => 'latest';

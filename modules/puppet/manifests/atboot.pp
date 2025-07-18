@@ -32,7 +32,7 @@ class puppet::atboot (
     }
     'Ubuntu': {
       case $facts['os']['release']['full'] {
-        '18.04', '22.04': {
+        '18.04', '22.04', '24.04': {
           include linux_packages::puppet
 
           # On Ubuntu 18.04 and 22.04 puppet runs by systemd and on successful result
