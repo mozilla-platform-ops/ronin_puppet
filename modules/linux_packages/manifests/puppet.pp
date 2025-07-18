@@ -141,7 +141,7 @@ class linux_packages::puppet {
             # 1. if changing version, also ensure this is in sync with
             # provisioners/linux/bootstrap_linux.sh
             # 2. if upgrading, make sure to purge the old versioned release deb (see above)
-            ensure    => '8.00-1noble',
+            ensure    => '8.10.0-1noble',
             name      => 'puppet-agent',
             require   => Exec['apt_update'],
             subscribe => Package['puppet repo deb'],
