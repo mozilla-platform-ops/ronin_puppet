@@ -231,23 +231,23 @@ class linux_packages::py3 {
 
           # update some pips that prevent other pip installations (psutil) from failing
 
-          package { 'python3-pip-specific-version':
-            ensure   => '22.3.1',
-            name     => 'pip',
-            provider => pip3,
-          }
+          # package { 'python3-pip-specific-version':
+          #   ensure   => '22.3.1',
+          #   name     => 'pip',
+          #   provider => pip3,
+          # }
 
-          package { 'python3-distlib':
-            ensure   => '0.3.6',
-            name     => 'distlib',
-            provider => pip3,
-          }
+          # package { 'python3-distlib':
+          #   ensure   => '0.3.6',
+          #   name     => 'distlib',
+          #   provider => pip3,
+          # }
 
-          package { 'python3-setuptools':
-            ensure   => '65.5.0',
-            name     => 'setuptools',
-            provider => pip3,
-          }
+          # package { 'python3-setuptools':
+          #   ensure   => '65.5.0',
+          #   name     => 'setuptools',
+          #   provider => pip3,
+          # }
         }
         default: {
           fail("${facts['os']['release']['major']} not supported")
