@@ -320,6 +320,7 @@ workflows:
               kitchen_target: ["linux-netperf-ubuntu-1804",
                                "linux-perf-ubuntu-1804",
                                "linux-perf-ubuntu-2204",
+                               "linux-perf-ubuntu-2404",
                                "bitbar-ubuntu-2204"]
           requires:
             - pre_commit
