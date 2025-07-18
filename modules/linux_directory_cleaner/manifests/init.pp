@@ -2,12 +2,39 @@ class linux_directory_cleaner (
   Boolean $enabled = true,
 ) {
   if $enabled {
-    # Install the directory_cleaner package using pip3
-    package { 'python3-directory_cleaner':
-      ensure   => '0.2.0',
-      name     => 'directory_cleaner',
-      provider => pip3,
-      require  => Class['linux_packages::py3', 'linux_python'],
+    # block checking for ubuntu, then ubuntu 18.04, 20.04, 22.04. 24.04 should be a separate case.
+    case $facts['os']['name'] {
+      'Ubuntu': {
+        case $facts['os']['release']['full'] {
+          '24.04': {
+            # Install the directory_cleaner package using apt
+
+            # TODO: on 2404 we need to create a venv
+
+            # package { 'directory_cleaner':
+            #   ensure   => latest,
+            #   provider => apt,
+            #   require  => Class['linux_packages::py3'],
+            # }
+
+          }
+          '18.04', '22.04': {
+            # Install the directory_cleaner package using pip3
+            package { 'python3-directory_cleaner':
+              ensure   => '0.2.0',
+              name     => 'directory_cleaner',
+              provider => pip3,
+              require  => Class['linux_packages::py3', 'linux_python'],
+            }
+          }
+          default: {
+            fail("Unsupported Ubuntu version: ${facts['os']['release']['full']}")
+          }
+        }
+      }
+      default: {
+        fail("Cannot install directory_cleaner on ${facts['os']['name']}")
+      }
     }
 
     # Create necessary directories
