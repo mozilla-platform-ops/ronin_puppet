@@ -11,7 +11,15 @@ class linux_gui_wayland (
     'Ubuntu': {
       case $facts['os']['release']['full'] {
         '24.04': {
-          # TODO: do something here... at a minimum set a resolution
+          # TODO: set resolutions
+
+          # install fonts (used to be installed by ubuntu-desktop in <2204?)
+          $packages = ['fonts-kacst', 'fonts-kacst-one', 'fonts-liberation', 'fonts-stix',
+          'fonts-unfonts-core', 'fonts-unfonts-extra', 'fonts-vlgothic']
+
+          package { $packages:
+            ensure => installed,
+          }
         }
         default: {
           fail ("linux_gui_wayland does not support Ubuntu version ${facts['os']['release']['full']}")
