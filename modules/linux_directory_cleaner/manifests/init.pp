@@ -2,24 +2,46 @@ class linux_directory_cleaner (
   Boolean $enabled = true,
 ) {
   if $enabled {
+    # create the directory_cleaner directory
+    file { '/opt/directory_cleaner':
+      ensure => directory,
+      owner  => 'root',
+      group  => 'admin',
+      mode   => '0755',
+    }
+
     # block checking for ubuntu, then ubuntu 18.04, 20.04, 22.04. 24.04 should be a separate case.
     case $facts['os']['name'] {
       'Ubuntu': {
         case $facts['os']['release']['full'] {
           '24.04': {
-            # Install the directory_cleaner package using apt
+            # install into a venv
 
-            # TODO: on 2404 we need to create a venv
+            # if /opt/directory_cleaner/venv doesn't exist, create it
+            exec { 'create_directory_cleaner_venv':
+              command => '/usr/bin/python3 -m venv /opt/directory_cleaner/venv',
+              creates => '/opt/directory_cleaner/venv',
+              require => File['/opt/directory_cleaner'],
+            }
 
-            # package { 'directory_cleaner':
-            #   ensure   => latest,
-            #   provider => apt,
-            #   require  => Class['linux_packages::py3'],
-            # }
+            # install the directory_cleaner package into the venv
+            exec { 'install_directory_cleaner':
+              command => '/opt/directory_cleaner/venv/bin/pip install directory_cleaner',
+              path    => ['/usr/bin', '/bin', '/opt/directory_cleaner/venv/bin'],
+              creates => '/opt/directory_cleaner/venv/lib/python3.10/site-packages/directory_cleaner',
+              require => Exec['create_directory_cleaner_venv'],
+            }
 
+            # create a symlink to /usr/local/bin/directory_cleaner
+            file { '/usr/local/bin/directory_cleaner':
+              ensure  => link,
+              target  => '/opt/directory_cleaner/venv/bin/directory_cleaner',
+              require => Exec['install_directory_cleaner'],
+            }
           }
           '18.04', '22.04': {
-            # Install the directory_cleaner package using pip3
+            # install into the system Python3 environment
+
             package { 'python3-directory_cleaner':
               ensure   => '0.2.0',
               name     => 'directory_cleaner',
@@ -38,12 +60,6 @@ class linux_directory_cleaner (
     }
 
     # Create necessary directories
-    file { '/opt/directory_cleaner':
-      ensure => directory,
-      owner  => 'root',
-      group  => 'admin',
-      mode   => '0755',
-    }
 
     file { '/opt/directory_cleaner/configs':
       ensure  => directory,
@@ -55,7 +71,7 @@ class linux_directory_cleaner (
 
     # Define the content of the file to be created
     $config_content = @("EOF")
-  exclusion_patterns = []
+        exclusion_patterns = []
 EOF
 
     # Create the configuration file
@@ -79,7 +95,7 @@ EOF
 
     # Define the systemd service content
     $systemd_service_content = @("EOF")
-[Unit]
+      [Unit]
 Description=Clean directory at startup
 Before=run-puppet.service
 
