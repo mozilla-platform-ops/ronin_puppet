@@ -40,5 +40,24 @@ if [[ "$1" == "test" || "$1" == "converge" && "$(uname -m)" == "arm64" ]]; then
     echo ""
 fi
 
+PROXY_PORT=8123
+# check if the proxy is running, port 8123
+if nc -z localhost $PROXY_PORT; then
+    echo "Using proxy at localhost:$PROXY_PORT"
+    export http_proxy=http://localhost:$PROXY_PORT
+    export https_proxy=http://localhost:$PROXY_PORT
+else
+    echo "No proxy running at localhost:$PROXY_PORT, proceeding without proxy."
+    unset http_proxy
+    unset https_proxy
+fi
+
+# if the proxy is running, use it in the .kitchen.docker.yml file
+if [[ -n "$http_proxy" ]]; then
+    echo "Using proxy in kitchen config."
+    # Uncomment the proxy block in temp_kitchen_config
+    sed -i '' '/^[[:space:]]*# \(forward:\|env:\|HTTP_PROXY:\|HTTPS_PROXY:\|NO_PROXY:\)/s/^[[:space:]]*# //' "${temp_kitchen_config}"
+fi
+
 # set CI=true so our spec_helper can disable problematic tests
 CI=TRUE bundle exec kitchen "$@"
