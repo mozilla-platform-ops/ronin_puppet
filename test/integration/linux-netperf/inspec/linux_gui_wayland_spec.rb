@@ -1,7 +1,5 @@
 require_relative 'spec_helper'
 
-# template
-#
 
 if os.family == 'debian' && (os.release.start_with?('18.04') or os.release.start_with?('22.04'))
   # don't do anything here
