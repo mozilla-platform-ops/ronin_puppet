@@ -25,7 +25,7 @@ class linux_packages::py3 {
           }
 
           file { '/opt/relops_py3915/py3915_install.sh':
-            ensure => present,
+            ensure => file,
             group  => 'root',
             mode   => '0755',
             owner  => 'root',
@@ -165,8 +165,8 @@ class linux_packages::py3 {
 
           # pip install above creates /usr/local/bin/pip (that points to py3), and messes with everything, so remove it.
           file { '/usr/local/bin/pip':
-              ensure  => absent,
-              require => Package['python3-pip-specific-version'],
+            ensure  => absent,
+            require => Package['python3-pip-specific-version'],
           }
 
           # remove old /opt/py3 dirs
@@ -174,7 +174,6 @@ class linux_packages::py3 {
           file { '/opt/relops_py3/':
             ensure => absent,
             force  => true,
-
           }
           file { '/opt/relops_py38/':
             ensure => absent,
@@ -217,17 +216,11 @@ class linux_packages::py3 {
           }
         }
         '24.04': {
-          # ships with py3.10
-          package { 'python3':
-            ensure => present,
-          }
-          package { 'python3-pip':
-            ensure => present,
-          }
-          # `python3 -m pip check` giving error: `pynacl 1.5.0 requires cffi, which is not installed.`
-          package { 'python3-cffi':
-            ensure => present,
-          }
+          # ships with py3.12
+          $packages = ['python3', 'python3-pip','python3.12-venv',
+            # `python3 -m pip check` giving error: `pynacl 1.5.0 requires cffi, which is not installed.`
+            'python3-cffi',
+          ]
 
           # update some pips that prevent other pip installations (psutil) from failing
 
