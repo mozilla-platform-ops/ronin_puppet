@@ -222,6 +222,10 @@ class linux_packages::py3 {
             'python3-cffi',
           ]
 
+          package { $packages:
+            ensure => present,
+          }
+
           # update some pips that prevent other pip installations (psutil) from failing
 
           # package { 'python3-pip-specific-version':
