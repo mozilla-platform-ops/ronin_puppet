@@ -20,6 +20,20 @@ class linux_gui_wayland (
           package { $packages:
             ensure => installed,
           }
+
+          # pip.conf
+          file {
+            ["${builder_home}/.pip"]:
+              ensure => directory,
+              group  => $builder_group,
+              mode   => '0755',
+              owner  => $builder_user;
+            "${builder_home}/.pip/pip.conf":
+              owner  => $builder_user,
+              group  => $builder_group,
+              mode   => '0644',
+              source => "puppet:///modules/${module_name}/pip.conf";
+          }
         }
         default: {
           fail ("linux_gui_wayland does not support Ubuntu version ${facts['os']['release']['full']}")
