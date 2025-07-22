@@ -8,7 +8,7 @@ class roles_profiles::roles::gecko_t_linux_2404_talos_wayland {
   # linux build/test worker stuff
   include roles_profiles::profiles::cltbld_user
   include roles_profiles::profiles::vnc
-  include roles_profiles::profiles::gui
+  include roles_profiles::profiles::gui_wayland
   include roles_profiles::profiles::google_chrome
 
   # nrpe and checks
