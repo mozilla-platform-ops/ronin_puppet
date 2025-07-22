@@ -78,8 +78,8 @@ if [[ -n "$http_proxy" ]]; then
     # Remove START_PROXY_BLOCK and END_PROXY_BLOCK lines
     # sed -i '' '/START_PROXY_BLOCK\|END_PROXY_BLOCK/d' "${temp_kitchen_config}"
 
-    # call $kitchen_config/uncomment_proxy.py
-    python3 "${root_dir}/.kitchen/uncomment_proxy.py" "${temp_kitchen_config}"
+    # call $kitchen_config/add_proxy_entries.py
+    python3 "${root_dir}/.kitchen/add_proxy_entries.py" "${temp_kitchen_config}"
 fi
 
 # set CI=true so our spec_helper can disable problematic tests
