@@ -120,6 +120,18 @@ class linux_gui (
         provider => 'shell',
       }
 
+      # TODO: 2404: force to x11 from wayland
+      case $facts['os']['release']['full'] {
+        '24.04': {
+          # force to x11 from wayland
+          info('Forcing X11 for Ubuntu 24.04')
+        }
+        default: {
+          # No action needed for other versions
+          info("No action needed for Ubuntu ${facts['os']['release']['full']}")
+        }
+      }
+
       case $facts['os']['release']['full'] {
         '18.04', '22.04': {
           $gpu_bus_id = 'PCI:0:02:0'
