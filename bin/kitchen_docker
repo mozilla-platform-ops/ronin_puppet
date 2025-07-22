@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-# set -x
+set -x
 
 # dockerfile specifies this dir as a bind mount for caching debs
 mkdir -p /tmp/docker/var/cache/apt
@@ -10,6 +10,12 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="${script_dir}/.."
 kitchen_config="${root_dir}/.kitchen_configs/kitchen.docker.yml"
 temp_kitchen_config="/tmp/ronin_puppet_kitchen_docker_temp_config.yml"
+
+# check for yq
+if ! command -v yq &> /dev/null; then
+    echo "yq command not found. Please install yq to format the YAML file."
+    exit 1
+fi
 
 # add docker_platform if we're on arm64
 if [[ "$(uname -m)" == "arm64" ]]; then
@@ -52,11 +58,28 @@ else
     unset https_proxy
 fi
 
-# if the proxy is running, use it in the .kitchen.docker.yml file
+# create a venv for ruamel.yaml if it doesn't exist
+if [ ! -d "${root_dir}/venv" ]; then
+    echo "Creating virtual environment for ruamel.yaml..."
+    python3 -m venv "${root_dir}/venv"
+    source "${root_dir}/venv/bin/activate"
+    pip install --upgrade pip
+    pip install ruamel.yaml
+else
+    echo "Using existing virtual environment for ruamel.yaml."
+    source "${root_dir}/venv/bin/activate"
+fi
+
+# if the proxy is running, use it in the temp kitchen config file
 if [[ -n "$http_proxy" ]]; then
     echo "Using proxy in kitchen config."
-    # Uncomment the proxy block in temp_kitchen_config
-    sed -i '' '/^[[:space:]]*# \(forward:\|env:\|HTTP_PROXY:\|HTTPS_PROXY:\|NO_PROXY:\)/s/^[[:space:]]*# //' "${temp_kitchen_config}"
+    # Uncomment lines between START_PROXY_BLOCK and END_PROXY_BLOCK, preserving indentation
+    # sed -i '' '/# START_PROXY_BLOCK/,/# END_PROXY_BLOCK/s/^\([[:space:]]*\)#\([[:space:]]*\)/\1/' "${temp_kitchen_config}"
+    # Remove START_PROXY_BLOCK and END_PROXY_BLOCK lines
+    # sed -i '' '/START_PROXY_BLOCK\|END_PROXY_BLOCK/d' "${temp_kitchen_config}"
+
+    # call $kitchen_config/uncomment_proxy.py
+    python3 "${root_dir}/.kitchen/uncomment_proxy.py" "${temp_kitchen_config}"
 fi
 
 # set CI=true so our spec_helper can disable problematic tests
