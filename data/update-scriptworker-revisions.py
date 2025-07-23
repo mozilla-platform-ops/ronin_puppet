@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Updates common.yaml scriptworker{,-scripts} revisions with latest master/main commit hashes
+Updates common.yaml scriptworker-scripts revisions with latest master/main commit hashes
 """
 
 import asyncio
@@ -9,11 +9,6 @@ from os import path
 import subprocess
 
 DIRECTIVES = [
-    {
-        "common_key": "scriptworker_revision",
-        "repo": "mozilla-releng/scriptworker",
-        "branch": "main",
-    },
     {
         "common_key": "scriptworker_scripts_revision",
         "repo": "mozilla-releng/scriptworker-scripts",
@@ -62,8 +57,6 @@ async def main():
         ]
         print(f"Running command: {cmd}")
         subprocess.run(cmd)
-
-    print("Ready to run ./modules/signing_worker/files/update-requirements.sh")
 
 
 if __name__ == "__main__":
