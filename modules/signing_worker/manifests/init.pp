@@ -22,7 +22,7 @@ define signing_worker (
   String $group = 'staff',
   Variant[String, Undef] $ed_key_filename = undef,
 ) {
-  $virtualenv_dir           = "${scriptworker_base}/virtualenv"
+  $virtualenv_dir           = "${scriptworker_base}/.venv"
   $certs_dir                = "${scriptworker_base}/certs"
   $requirements             = "${scriptworker_base}/requirements.txt"
   $scriptworker_config_file = "${scriptworker_base}/scriptworker.yaml"
@@ -73,9 +73,6 @@ define signing_worker (
     mode   => '0700',
   }
 
-  $scriptworker_clone_dir = "${scriptworker_base}/scriptworker"
-  $scriptworker_scripts_clone_dir = "${scriptworker_base}/scriptworker-scripts"
-
   $tc_scope_prefix = $cot_product ? {
     'firefox' => $worker_config['ff_taskcluster_scope_prefix'],
     'thunderbird' => $worker_config['tb_taskcluster_scope_prefix'],
@@ -95,59 +92,28 @@ define signing_worker (
     'adhoc' => $worker_config['adhoc_taskcluster_access_token'],
   }
 
-  file { $requirements:
-    source => "puppet:///modules/${module_name}/requirements.${role}.txt",
-    owner  => $user,
-    group  => $group,
+  # TODO: Remove this once the new virtualenvs (.venv) have been deployed
+  file { "${scriptworker_base}/virtualenv":
+    ensure    => 'absent',
+    recurse   => true,
+    purge     => true,
+    force     => true,
+    max_files => 100000,
   }
 
   # Setting up the virtualenv happens in 3 stages:
   # 1) Create it
-  # 2) Install indirect dependencies (which have their own requirements file)
-  # 3) Install direct dependencies
-  # We cannot combine these into one requirements file because the indirect
-  # dependencies use hash pinning, while the direct ones cannot, because they're
-  # installed in editable mode.
+  # 2) Clone the scriptworker-scripts repo
+  # 3) Install iscript and its dependencies
+  $scriptworker_scripts_clone_dir = "${scriptworker_base}/scriptworker-scripts"
+
   exec { "install ${scriptworker_base} virtualenv":
-    command => "python3 -m virtualenv ${virtualenv_dir}",
+    command => 'uv venv',
     cwd     => $scriptworker_base,
     user    => $user,
     group   => $group,
-    onlyif  => "test ! -f ${virtualenv_dir}/bin/activate",
+    onlyif  => 'test ! -f .venv/bin/activate',
     path    => ['/usr/local/bin', '/bin', '/usr/sbin'],
-  }
-  exec { "install ${scriptworker_base} requirements":
-    command     => "${virtualenv_dir}/bin/pip install -r ${requirements}",
-    cwd         => $scriptworker_base,  # new
-    user        => $user,
-    group       => $group,
-    refreshonly => true,
-    subscribe   => [File[$requirements], Exec["install ${scriptworker_base} virtualenv"]],
-    require     => [File[$requirements], Exec["install ${scriptworker_base} virtualenv"]],
-  }
-
-  vcsrepo { $scriptworker_clone_dir:
-    ensure   => latest,
-    provider => git,
-    source   => 'https://github.com/mozilla-releng/scriptworker',
-    revision => $worker_config['scriptworker_revision'],
-    user     => $user,
-    group    => $group,
-    require  => File[$scriptworker_base],
-  }
-  $sw_deps = [
-    Vcsrepo[$scriptworker_clone_dir],
-    Exec["install ${scriptworker_base} virtualenv"],
-    Exec["install ${scriptworker_base} requirements"],
-  ]
-  exec { "install ${scriptworker_base} scriptworker":
-    command     => "${virtualenv_dir}/bin/pip install .",
-    cwd         => $scriptworker_clone_dir,
-    user        => $user,
-    group       => $group,
-    refreshonly => true,
-    subscribe   => $sw_deps,
-    require     => $sw_deps,
   }
 
   vcsrepo { $scriptworker_scripts_clone_dir:
@@ -162,34 +128,19 @@ define signing_worker (
   $ss_deps = [
     Vcsrepo[$scriptworker_scripts_clone_dir],
     Exec["install ${scriptworker_base} virtualenv"],
-    Exec["install ${scriptworker_base} requirements"],
   ]
-  exec { "install ${scriptworker_base} mozbuild":
-    command     => "${virtualenv_dir}/bin/pip install .",
-    cwd         => "${scriptworker_scripts_clone_dir}/vendored/mozbuild",
-    user        => $user,
-    group       => $group,
-    refreshonly => true,
-    subscribe   => $ss_deps,
-    require     => $ss_deps,
-  }
-  exec { "install ${scriptworker_base} scriptworker_client":
-    command     => "${virtualenv_dir}/bin/pip install .",
-    cwd         => "${scriptworker_scripts_clone_dir}/scriptworker_client",
-    user        => $user,
-    group       => $group,
-    refreshonly => true,
-    subscribe   => $ss_deps,
-    require     => $ss_deps,
-  }
   exec { "install ${scriptworker_base} iscript":
-    command     => "${virtualenv_dir}/bin/pip install .",
-    cwd         => "${scriptworker_scripts_clone_dir}/iscript",
+    command     => 'uv sync --active --locked --inexact --package iscript --extra scriptworker',
+    cwd         => $scriptworker_scripts_clone_dir,
+    environment => [
+      "VIRTUAL_ENV=${scriptworker_base}/.venv",
+    ],
     user        => $user,
     group       => $group,
     refreshonly => true,
     subscribe   => $ss_deps,
     require     => $ss_deps,
+    path        => ['/usr/local/bin', '/bin', '/usr/sbin'],
   }
 
   if $widevine_filename {
@@ -228,13 +179,17 @@ define signing_worker (
       force   => true,
     }
     exec { "install ${scriptworker_base} widevine":
-      command     => "${virtualenv_dir}/bin/pip install .",
+      command     => 'uv pip install .',
       cwd         => $widevine_clone_dir,
+      environment => [
+        "VIRTUAL_ENV=${scriptworker_base}/.venv",
+      ],
       user        => $user,
       group       => $group,
       refreshonly => true,
       subscribe   => [Exec["clone widevine ${scriptworker_base}"], Exec["install ${scriptworker_base} virtualenv"]],
       require     => [Exec["clone widevine ${scriptworker_base}"], Exec["install ${scriptworker_base} virtualenv"]],
+      path        => ['/usr/local/bin', '/bin', '/usr/sbin'],
     }
   }
 
@@ -288,12 +243,6 @@ define signing_worker (
     refreshonly => true,
     subscribe   => [
       Exec["install ${scriptworker_base} iscript"],
-      # Requirements could include scriptworker dependencies, so restart
-      # the long-running daemon on requirements changes. Don't restart on
-      # iscript or scriptworker_client changes, because we'll pick those
-      # up during the next task run.
-      Exec["install ${scriptworker_base} requirements"],
-      Exec["install ${scriptworker_base} scriptworker"],
       File[$launchd_script],
       File[$launchctl_wrapper],
       File[$scriptworker_config_file],
