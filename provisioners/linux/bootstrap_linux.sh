@@ -10,8 +10,19 @@
 # Prerequisites:
 #  * wget
 
+# usage during development:
+#  PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git" \
+#  PUPPET_BRANCH="aerickson-071825-2404_pt2" \
+#  ./bootstrap_linux.sh
+
 set -e
 # set -x
+
+# if we're not on linux, exit with warning
+if [ "$(uname -s)" != "Linux" ]; then
+    echo "This script is intended to run on Linux hosts only."
+    exit 1
+fi
 
 # check for /root/vault.yaml
 if [ ! -f /root/vault.yaml ]; then
@@ -168,26 +179,36 @@ TMP_PUPPET_DIR=$(mktemp -d /tmp/puppet_working.XXXXXX)
 
 # Download puppet repository and extract
 function get_puppet_repo {
-    TMP_DL_DIR=$(mktemp -d -t puppet_download.XXXXXXX)
-    [ -d "${TMP_DL_DIR}" ] || fail "Failed to mktemp download dir"
+    # if PUPPET_BRANCH is master, grab the tarball, otherwise clone
+    if [ "$PUPPET_BRANCH" = "master" ]; then
+        echo "Puppet branch is master, downloading tarball"
 
-    # Download the puppet repo tarball directly from github
-    # We don't use git because some oses don't have git installed by default
-    # In the future, we may publish master branch to s3 or some other highly available service since
-    # Github has rate limits on downloads.
-    while true; do
-        echo "Downloading puppet repo: ${PUPPET_REPO_BUNDLE}"
-        if HTTP_RES_CODE=$(curl -sL "$PUPPET_REPO_BUNDLE" -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ "$HTTP_RES_CODE" = "200" ]]; then
-            break
-        else
-            echo "Failed to download puppet repo.  Sleep for 30 seconds before trying again"
-            sleep 30
-        fi
-    done
-    # Extract the puppet repo tarball
-    tar -zxf "${TMP_DL_DIR}/puppet.tar.gz" --strip 1 -C "${TMP_PUPPET_DIR}" || fail "Failed to extract puppet tar.gz"
-    # Clean up the download dir
-    rm -rf "${TMP_DL_DIR}"
+        TMP_DL_DIR=$(mktemp -d -t puppet_download.XXXXXXX)
+        [ -d "${TMP_DL_DIR}" ] || fail "Failed to mktemp download dir"
+
+        # Download the puppet repo tarball directly from github
+        # We don't use git because some oses don't have git installed by default
+        # In the future, we may publish master branch to s3 or some other highly available service since
+        # Github has rate limits on downloads.
+        while true; do
+            echo "Downloading puppet repo: ${PUPPET_REPO_BUNDLE}"
+            if HTTP_RES_CODE=$(curl -sL "$PUPPET_REPO_BUNDLE" -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ "$HTTP_RES_CODE" = "200" ]]; then
+                break
+            else
+                echo "Failed to download puppet repo.  Sleep for 30 seconds before trying again"
+                sleep 30
+            fi
+        done
+        # Extract the puppet repo tarball
+        tar -zxf "${TMP_DL_DIR}/puppet.tar.gz" --strip 1 -C "${TMP_PUPPET_DIR}" || fail "Failed to extract puppet tar.gz"
+        # Clean up the download dir
+        rm -rf "${TMP_DL_DIR}"
+    else
+        echo "Puppet branch is $PUPPET_BRANCH, cloning repository"
+
+        # Clone the puppet repo
+        git clone --depth 1 --branch "$PUPPET_BRANCH" "$PUPPET_REPO" "$TMP_PUPPET_DIR" || fail "Failed to clone puppet repo"
+    fi
 
     # Change to puppet dir
     cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
