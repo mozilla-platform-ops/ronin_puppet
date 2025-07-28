@@ -13,6 +13,12 @@
 set -e
 # set -x
 
+# check for /root/vault.yaml
+if [ ! -f /root/vault.yaml ]; then
+    echo "Missing /root/vault.yaml, this file is required for the bootstrap script to run."
+    exit 1
+fi
+
 # if on ubuntu 22.04, install puppet 8, else install puppet 7
 if [ -f /etc/os-release ]; then
     . /etc/os-release
@@ -31,11 +37,8 @@ if [ "$VERSION_ID" = "24.04" ]; then
     apt-get update
     apt-get remove -y puppet
     apt-get install -y puppet-agent
-    # having issues with ntp, punt for now...
-    # TODO: ensure something is keeping time
-    # it's timesyncd, see `systemctl status systemd-timesyncd`
-    # TODO: place the mozilla ntp server config
-    # /etc/systemd/timesyncd.conf.d/mozilla.conf
+    # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
+    # place our config and restart the service
     mkdir -p /etc/systemd/timesyncd.conf.d
     echo -e "[Time]\nNTP=ntp.build.mozilla.org" >/etc/systemd/timesyncd.conf.d/mozilla.conf
     systemctl restart systemd-timesyncd
