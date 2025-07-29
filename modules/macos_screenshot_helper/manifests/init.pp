@@ -30,7 +30,7 @@ class macos_screenshot_helper (
 
   exec { 'bootstrap screenshot helper':
     command => "/bin/launchctl bootstrap gui/555 '${launchagent_path}'",
-    unless  => "/bin/launchctl print gui/555/com.mozilla.screencapture | /usr/bin/grep -q 'PID'",
+    unless  => "/bin/launchctl print gui/555/com.mozilla.screencapture 2>/dev/null | /usr/bin/grep -q 'com.apple.xpc.activity'",
     require => File[$launchagent_path],
     path    => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
   }
