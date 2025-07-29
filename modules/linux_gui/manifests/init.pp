@@ -126,6 +126,13 @@ class linux_gui (
           # TODO: force to x11 from wayland
           info('Forcing X11 for Ubuntu 24.04')
 
+          # /etc/gdm3/custom.conf: used to disable Wayland
+          file { '/etc/gdm3/custom.conf':
+            ensure => file,
+            source => 'puppet:///modules/linux_gui/gdm3-custom.conf',
+            notify => Service['gdm3'];
+          }
+
           # packages to remove
           # sudo apt remove --autoremove gnome-initial-setup
           # about:
@@ -134,6 +141,10 @@ class linux_gui (
           package { $remove_packages:
             ensure => absent,
           }
+
+          # debugging systemd-networkd-wait-online hanging during boot...
+          # `Ubuntu can use either systemd-networkd (default on servers) or NetworkManager (default on desktops) to manage networking.`
+          #   see https://askubuntu.com/questions/1217252/boot-process-hangs-at-systemd-networkd-wait-online
         }
         default: {
           # No action needed for other versions
