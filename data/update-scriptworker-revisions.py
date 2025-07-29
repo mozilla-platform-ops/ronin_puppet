@@ -52,7 +52,7 @@ async def main():
             "-i",  # in-place
             "",
             "-E",  # extended
-            f"s/(.*{directive['common_key']}\: ).*/\\1\"{directive['sha']}\"/g",
+            f"s/(.*{directive['common_key']}\\: ).*/\\1\"{directive['sha']}\"/g",
             common_yaml,
         ]
         print(f"Running command: {cmd}")
@@ -60,4 +60,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.run(main())
