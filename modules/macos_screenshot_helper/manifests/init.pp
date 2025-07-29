@@ -1,4 +1,6 @@
 class macos_screenshot_helper (
+
+  Boolean $enabled = true,
   String $screenshot_dir    = '/Users/cltbld/Desktop',
   String $trigger_file      = '/Users/cltbld/.trigger_screenshot',
   String $script_path       = '/Users/cltbld/bin/capture-on-demand.sh',
