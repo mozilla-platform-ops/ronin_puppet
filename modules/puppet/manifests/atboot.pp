@@ -59,7 +59,7 @@ class puppet::atboot (
             '/lib/systemd/system/run-puppet.service':
               owner   => 'root',
               group   => 'root',
-              source  => 'puppet:///modules/puppet/puppet.service',
+              source  => 'puppet:///modules/puppet/puppet_2404.service',
               notify  => Exec['reload systemd'],
               require => Class['linux_packages::puppet'];
             '/usr/local/bin/run-puppet.sh':
