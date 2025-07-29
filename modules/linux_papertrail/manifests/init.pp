@@ -16,6 +16,7 @@ class linux_papertrail (
           if (! $papertrail_host.empty) and ($papertrail_port != -1) {
             # nmap provides ncat
             include linux_packages::nmap
+            include linux_packages::ncat
 
             # NOTE: puppet 6.1+ will reload systemd automatically
 
