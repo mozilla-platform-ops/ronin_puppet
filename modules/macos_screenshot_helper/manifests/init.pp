@@ -29,10 +29,10 @@ class macos_screenshot_helper (
   }
 
   exec { 'bootstrap screenshot helper':
-    command => "/usr/bin/launchctl bootstrap gui/501 '${launchagent_path}'",
+    command => "/bin/launchctl bootstrap gui/501 '${launchagent_path}'",
     user    => 'cltbld',
-    unless  => "/usr/bin/launchctl print gui/501/com.mozilla.screencapture | /usr/bin/grep -q 'PID'",
+    unless  => "/bin/launchctl print gui/501/com.mozilla.screencapture | /usr/bin/grep -q 'PID'",
     require => File[$launchagent_path],
-    path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+    path    => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
   }
 }
