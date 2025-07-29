@@ -25,6 +25,13 @@ PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
 
+# detect if python3 is available and set it to PYTHON_BIN
+if command -v python3 &> /dev/null; then
+    PYTHON_BIN=$(command -v python3)
+else
+    PYTHON_BIN=$(command -v python)
+fi
+
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
     echo "Loading settings from /etc/puppet/ronin_settings..."
@@ -98,7 +105,7 @@ function email_report {
 
     SENDER="root@${FQDN}"
     RECEIVER="${PUPPET_MAIL}"
-    python <<EOF
+    $PYTHON_BIN <<EOF
 import smtplib
 
 msg = """From: ${SENDER}
