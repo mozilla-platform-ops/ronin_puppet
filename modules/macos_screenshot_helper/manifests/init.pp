@@ -5,6 +5,7 @@ class macos_screenshot_helper (
   String $script_path       = '/Users/cltbld/bin/capture-on-demand.sh',
   String $launchagent_path  = '/Users/cltbld/Library/LaunchAgents/com.mozilla.screencapture.plist',
 ) {
+
   file { '/Users/cltbld/bin':
     ensure => directory,
     owner  => 'cltbld',
@@ -28,10 +29,12 @@ class macos_screenshot_helper (
     source => 'puppet:///modules/macos_screenshot_helper/com.mozilla.screencapture.plist',
   }
 
-  exec { 'bootstrap screenshot helper':
-    command => "/bin/launchctl bootstrap gui/555 '${launchagent_path}'",
-    unless  => "/bin/launchctl print gui/555/com.mozilla.screencapture 2>/dev/null | /usr/bin/grep -q 'com.apple.xpc.activity'",
-    require => File[$launchagent_path],
+  exec { 'ensure screenshot agent running':
+    command => "/bin/launchctl bootout gui/555 com.mozilla.screencapture 2>/dev/null; \
+                /bin/launchctl enable gui/555/com.mozilla.screencapture; \
+                /bin/launchctl kickstart -k gui/555/com.mozilla.screencapture",
+    unless  => "/bin/launchctl print gui/555/com.mozilla.screencapture 2>/dev/null | /usr/bin/grep -q 'PID'",
     path    => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+    require => File[$launchagent_path],
   }
 }
