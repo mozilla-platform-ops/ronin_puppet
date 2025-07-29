@@ -130,7 +130,7 @@ class linux_gui (
           file { '/etc/gdm3/custom.conf':
             ensure => file,
             source => 'puppet:///modules/linux_gui/gdm3-custom.conf',
-            notify => Service['gdm3'];
+            # notify => Service['gdm3'];
           }
 
           # packages to remove
