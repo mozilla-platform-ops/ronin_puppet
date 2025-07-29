@@ -42,7 +42,7 @@ class linux_gui::appearance {
           }
         }
         '24.04': {
-          # TODO: see if this works (it's the 1804 file at this new path)
+          # TODO: verify this works (it's the 1804 file at this new path)
           file {
             '/etc/polkit-1/localauthority.conf.d/45-allow.colord.conf':
               source => 'puppet:///modules/linux_gui/colord.pkla';

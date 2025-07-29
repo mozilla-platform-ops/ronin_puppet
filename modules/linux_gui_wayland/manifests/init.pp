@@ -21,6 +21,15 @@ class linux_gui_wayland (
             ensure => installed,
           }
 
+          # packages to remove
+          # sudo apt remove --autoremove gnome-initial-setup
+          # about:
+          #   gnome-initial-setup: popus up first-start dialog
+          $remove_packages = ['gnome-initial-setup']
+          package { $remove_packages:
+            ensure => absent,
+          }
+
           # pip.conf
           file {
             ["${builder_home}/.pip"]:
