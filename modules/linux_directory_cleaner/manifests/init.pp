@@ -21,7 +21,9 @@ class linux_directory_cleaner (
             exec { 'create_directory_cleaner_venv':
               command => '/usr/bin/python3 -m venv /opt/directory_cleaner/venv',
               creates => '/opt/directory_cleaner/venv',
-              require => File['/opt/directory_cleaner'],
+              require => [File['/opt/directory_cleaner'],
+                Class['linux_packages::py3'],
+              Class['linux_python']],
             }
 
             # install the directory_cleaner package into the venv
