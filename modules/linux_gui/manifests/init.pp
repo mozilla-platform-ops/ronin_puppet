@@ -120,7 +120,6 @@ class linux_gui (
         provider => 'shell',
       }
 
-      # TODO: 2404: force to x11 from wayland
       case $facts['os']['release']['full'] {
         '24.04': {
           # TODO: force to x11 from wayland
