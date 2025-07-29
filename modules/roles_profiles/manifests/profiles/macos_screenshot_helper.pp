@@ -3,8 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::macos_screenshot_helper {
-
-    class { 'macos_screenshot_helper':
-                enabled    => true,
-            }
+  class { 'macos_screenshot_helper':
+    enabled => true,
+  }
 }
