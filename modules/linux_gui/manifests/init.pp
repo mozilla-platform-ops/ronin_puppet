@@ -131,7 +131,7 @@ class linux_gui (
             owner  => 'root',
             group  => 'root',
             mode   => '0644',
-            source => "puppet:///modules/${module_name}/gdm3_custom.conf",
+            source => "puppet:///modules/${module_name}/gdm3-custom.conf",
             # notify => Service['gdm3'];
           }
 
