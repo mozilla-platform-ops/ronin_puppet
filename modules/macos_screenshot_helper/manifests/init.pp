@@ -1,5 +1,4 @@
 class macos_screenshot_helper (
-
   Boolean $enabled = true,
   String $screenshot_dir    = '/Users/cltbld/Desktop',
   String $trigger_file      = '/Users/cltbld/.trigger_screenshot',
@@ -7,7 +6,7 @@ class macos_screenshot_helper (
   String $launchagent_path  = '/Users/cltbld/Library/LaunchAgents/com.mozilla.screencapture.plist',
 ) {
 
-  file { ['/Users/cltbld/bin', '/Users/cltbld/Library/LaunchAgents']:
+  file { '/Users/cltbld/bin':
     ensure => directory,
     owner  => 'cltbld',
     group  => 'staff',
