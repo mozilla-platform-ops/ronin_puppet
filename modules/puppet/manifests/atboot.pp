@@ -35,6 +35,14 @@ class puppet::atboot (
         '18.04', '22.04', '24.04': {
           include linux_packages::puppet
 
+          # ensure /etc/puppet exists
+          file { '/etc/puppet':
+            ensure => directory,
+            owner  => 'root',
+            group  => 'root',
+            mode   => '0755',
+          }
+
           # On Ubuntu 18.04 and 22.04 puppet runs by systemd and on successful result
           # notifies dependent services
           file {
