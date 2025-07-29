@@ -31,9 +31,25 @@ class linux_gui::appearance {
       }
 
       # avoid auth prompt to create a color managed device
-      file {
-        '/etc/polkit-1/localauthority/50-local.d/45-allow.colord.pkla':
-          source => 'puppet:///modules/linux_gui/colord.pkla';
+      # the path changes between 18.04 and 24.04
+      #   18.04-22.04: /etc/polkit-1/localauthority/50-local.d/45-allow.colord.pkla
+      #   24.04: /etc/polkit-1/localauthority.conf.d/45-allow.colord.conf
+      case $facts['os']['release']['full'] {
+        '18.04', '22.04': {
+          file {
+            '/etc/polkit-1/localauthority/50-local.d/45-allow.colord.pkla':
+              source => 'puppet:///modules/linux_gui/colord.pkla';
+          }
+        }
+        '24.04': {
+          file {
+            '/etc/polkit-1/localauthority.conf.d/45-allow.colord.conf':
+              source => 'puppet:///modules/linux_gui/colord.conf';
+          }
+        }
+        default: {
+          fail("Don't know how to set up colord policy on ${facts['os']['release']['full']}")
+        }
       }
 
       # the disable_services class handles disabling the update/upgrade notifications
