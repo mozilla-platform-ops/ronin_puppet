@@ -147,6 +147,20 @@ class linux_gui (
           # debugging systemd-networkd-wait-online hanging during boot...
           # `Ubuntu can use either systemd-networkd (default on servers) or NetworkManager (default on desktops) to manage networking.`
           #   see https://askubuntu.com/questions/1217252/boot-process-hangs-at-systemd-networkd-wait-online
+          #
+          # export SYSTEMD_LOG_LEVEL=debug
+          # networkctl
+
+          # TODO: copy this to the wayland config (or pull out into a 2404 specific class)
+          # having two subsystems managing the network is not a good idea... disable systemd-networkd
+          #
+          # systemctl disable systemd-networkd.service
+          exec { 'disable systemd-networkd':
+            command  => 'systemctl disable systemd-networkd.service',
+            onlyif   => 'systemctl is-active systemd-networkd.service',
+            path     => ['/bin'],
+            provider => 'shell',
+          }
         }
         default: {
           # No action needed for other versions
