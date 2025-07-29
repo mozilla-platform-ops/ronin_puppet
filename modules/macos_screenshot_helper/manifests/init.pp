@@ -29,10 +29,12 @@ class macos_screenshot_helper (
     source => 'puppet:///modules/macos_screenshot_helper/com.mozilla.screencapture.plist',
   }
 
-  exec { 'ensure screenshot agent running':
-    command => "/bin/launchctl bootout gui/555 com.mozilla.screencapture 2>/dev/null; \
-                /bin/launchctl enable gui/555/com.mozilla.screencapture; \
-                /bin/launchctl kickstart -k gui/555/com.mozilla.screencapture",
+  exec { 'load or restart screenshot agent':
+    command => "if /bin/launchctl print gui/555/com.mozilla.screencapture 2>/dev/null; then
+                  /bin/launchctl kickstart -k gui/555/com.mozilla.screencapture;
+                else
+                  /bin/launchctl bootstrap gui/555 '${launchagent_path}';
+                fi",
     unless  => "/bin/launchctl print gui/555/com.mozilla.screencapture 2>/dev/null | /usr/bin/grep -q 'PID'",
     path    => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
     require => File[$launchagent_path],
