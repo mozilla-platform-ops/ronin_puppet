@@ -33,5 +33,6 @@ class macos_screenshot_helper (
     user    => 'cltbld',
     unless  => "/usr/bin/launchctl print gui/501/com.mozilla.screencapture | /usr/bin/grep -q 'PID'",
     require => File[$launchagent_path],
+    path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
   }
 }
