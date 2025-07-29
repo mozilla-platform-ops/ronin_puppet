@@ -5,7 +5,6 @@ class macos_screenshot_helper (
   String $script_path       = '/Users/cltbld/bin/capture-on-demand.sh',
   String $launchagent_path  = '/Users/cltbld/Library/LaunchAgents/com.mozilla.screencapture.plist',
 ) {
-
   file { '/Users/cltbld/bin':
     ensure => directory,
     owner  => 'cltbld',
@@ -30,9 +29,9 @@ class macos_screenshot_helper (
   }
 
   exec { 'bootstrap screenshot helper':
-    command => "launchctl bootstrap gui/501 '${launchagent_path}'",
+    command => "/usr/bin/launchctl bootstrap gui/501 '${launchagent_path}'",
     user    => 'cltbld',
-    unless  => "launchctl print gui/501/com.mozilla.screencapture | grep -q 'PID'",
+    unless  => "/usr/bin/launchctl print gui/501/com.mozilla.screencapture | /usr/bin/grep -q 'PID'",
     require => File[$launchagent_path],
   }
 }
