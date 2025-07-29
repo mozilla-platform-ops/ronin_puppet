@@ -129,7 +129,7 @@ class linux_gui (
           # /etc/gdm3/custom.conf: used to disable Wayland
           file { '/etc/gdm3/custom.conf':
             ensure => file,
-            source => "puppet:///modules/${module_name}/gdm3-custom.conf",
+            source => "puppet:///modules/${module_name}/gdm3_custom.conf",
             # notify => Service['gdm3'];
           }
 
