@@ -11,7 +11,7 @@ Environment=XAUTHORITY=<%= @builder_home %>/.Xauthority
 ExecStartPre=/bin/mkdir -p /run/user/<%= @builder_uid %>
 ExecStartPre=/bin/chown <%= @builder_uid %>:<%= @builder_gid %> /run/user/<%= @builder_uid %>
 ExecStartPre=/bin/chmod 700 /run/user/<%= @builder_uid %>
-ExecStart=/usr/bin/dbus-run-session -- gnome-session --session=gnome
+ExecStart=/usr/bin/dbus-run-session -- gnome-session --session=ubuntu
 Restart=always
 
 [Install]
