@@ -416,6 +416,14 @@ class linux_gui (
             path    => ['/usr/bin', '/bin'],
           }
 
+          # ensure ~/.config/systemd/user/ exists
+          file { "${builder_home}/.config/systemd/user":
+            ensure => directory,
+            owner  => $builder_user,
+            group  => $builder_group,
+            mode   => '0755',
+          }
+
           # add a builder-user gnome-session service
           file { "${builder_home}/.config/systemd/user/gnome-session-x11.service":
             ensure  => file,
