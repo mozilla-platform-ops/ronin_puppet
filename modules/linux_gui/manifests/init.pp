@@ -437,18 +437,26 @@ class linux_gui (
             require => Exec["enable-linger-${builder_user}"],
           }
 
-          # reload the user systemd daemon
-          exec { 'daemon-reload-gnome-session-x11-service':
-            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=/run/user/${builder_uid} systemctl --user daemon-reload",
-            path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
-            require => File["${builder_home}/.config/systemd/user/gnome-session-x11.service"],
+          # the enablement script does:
+          #   reload the user systemd daemon
+          #   enable and start the user service
+          #
+          # for some reason the commands need to be run rapidly after each other to work
+
+          # place enablement script
+          file { "${module_name}/enable-gnome-session-x11-service.sh":
+            ensure => file,
+            owner  => $builder_user,
+            group  => $builder_group,
+            mode   => '0755',
+            source => "puppet:///modules/${module_name}/enable-gnome-session-x11-service.sh",
           }
 
-          # enable and start the user service
-          exec { 'enable-gnome-session-x11-service':
-            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=/run/user/${builder_uid} systemctl --user enable --now gnome-session-x11.service",
+          # run enablement script
+          exec { 'run-enable-gnome-session-x11-service':
+            command => "sudo -u ${builder_user} ${module_name}/enable-gnome-session-x11-service.sh",
             path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
-            require => Exec['daemon-reload-gnome-session-x11-service'],
+            require => File["${module_name}/enable-gnome-session-x11-service.sh"],
           }
         }
         default: {
