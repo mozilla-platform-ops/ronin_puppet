@@ -382,6 +382,22 @@ class linux_gui (
           #   # notify => Service['gdm3'];
           # }
 
+          #
+          #
+          # WAYLAND STUFF
+          #
+          #
+
+          # install additional packages
+          package { [
+              'gnome-session',
+              'gnome-shell',
+              'gnome-panel',
+              'gnome-settings-daemon',
+            ]:
+              ensure => installed,
+          }
+
           # packages to remove
           # sudo apt remove --autoremove gnome-initial-setup
           # about:
