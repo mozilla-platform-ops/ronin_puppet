@@ -444,7 +444,7 @@ class linux_gui (
               "XDG_RUNTIME_DIR=/run/user/${builder_uid}",
               "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${builder_uid}/bus",
             ],
-            path        => ['/usr/bin', '/bin'],
+            path        => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
             user        => $builder_user,
             require     => File["${builder_home}/.config/systemd/user/gnome-session-x11.service"],
           }
