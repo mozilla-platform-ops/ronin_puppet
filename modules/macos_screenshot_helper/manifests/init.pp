@@ -6,8 +6,9 @@ class macos_screenshot_helper (
   String $launchagent_path  = '/Users/cltbld/Library/LaunchAgents/com.mozilla.screencapture.plist',
 ) {
   if $enabled {
-    $macos_version = $facts['os']['release']['major']
-    if $macos_version =~ /^(10\.15|11)$/ {
+    $macos_major = $facts['os']['release']['major']
+
+    if $macos_major in ['10', '11'] {
       $cltbld_uid = '36'
     } else {
       $cltbld_uid = '555'
