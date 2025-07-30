@@ -40,11 +40,11 @@ class linux_gui (
           # Bug 859972: xrestop is needed for talos data collection
           include linux_packages::xrestop
 
+          # Bug 1027345
+          # Auto-detection of X settings works fine, but it would be
+          # better to have all needed settings generated from the template.
+          # Special-casing NVidia GPUs for now.
           file {
-            # Bug 1027345
-            # Auto-detection of X settings works fine, but it would be
-            # better to have all needed settings generated from the template.
-            # Special-casing NVidia GPUs for now.
             '/etc/X11/Xwrapper.config':
               content => template("${module_name}/Xwrapper.config.erb"),
               notify  => Service['x11'];
@@ -213,11 +213,11 @@ class linux_gui (
           $use_nvidia = false
           $on_gpu = true
 
+          # Bug 1027345
+          # Auto-detection of X settings works fine, but it would be
+          # better to have all needed settings generated from the template.
+          # Special-casing NVidia GPUs for now.
           file {
-            # Bug 1027345
-            # Auto-detection of X settings works fine, but it would be
-            # better to have all needed settings generated from the template.
-            # Special-casing NVidia GPUs for now.
             '/etc/X11/Xwrapper.config':
               content => template("${module_name}/Xwrapper.config.erb"),
               notify  => Service['x11'];
