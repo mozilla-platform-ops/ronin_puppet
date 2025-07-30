@@ -6,7 +6,12 @@ class macos_screenshot_helper (
   String $launchagent_path  = '/Users/cltbld/Library/LaunchAgents/com.mozilla.screencapture.plist',
 ) {
   if $enabled {
-    $cltbld_uid = inline_epp('<%- `id -u cltbld`.strip %>')
+    $macos_version = $facts['os']['release']['major']
+    if $macos_version =~ /^(10\.15|11)$/ {
+      $cltbld_uid = '36'
+    } else {
+      $cltbld_uid = '555'
+    }
 
     file { '/Users/cltbld/bin':
       ensure => directory,
