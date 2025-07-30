@@ -427,6 +427,14 @@ class linux_gui (
               mode   => '0755',
           }
 
+          # ensure ~/.Xauthority exists
+          file { "${builder_home}/.Xauthority":
+            ensure => file,
+            owner  => $builder_user,
+            group  => $builder_group,
+            mode   => '0600',
+          }
+
           # add a builder-user gnome-session service
           file { "${builder_home}/.config/systemd/user/gnome-session-x11.service":
             ensure  => file,
