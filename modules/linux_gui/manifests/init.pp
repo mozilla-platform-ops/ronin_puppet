@@ -449,7 +449,7 @@ class linux_gui (
             owner  => $builder_user,
             group  => $builder_group,
             mode   => '0755',
-            source => "puppet:///modules/${module_name}/enable-gnome-session-x11-service.sh",
+            source => "puppet:///modules/${module_name}/enable_gnome_session_x11_service.sh",
           }
 
           # run enablement script
