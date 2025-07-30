@@ -418,7 +418,6 @@ class linux_gui (
 
           # ensure ~/.config/systemd/user/ exists
           file { [
-              "${builder_home}/.config",
               "${builder_home}/.config/systemd",
               "${builder_home}/.config/systemd/user",
             ]:
