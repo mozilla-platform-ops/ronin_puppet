@@ -6,14 +6,13 @@ class macos_screenshot_helper (
   String $launchagent_path  = '/Users/cltbld/Library/LaunchAgents/com.mozilla.screencapture.plist',
 ) {
   if $enabled {
-    $macos_major = $facts['os']['release']['major']
+    $darwin_major = Integer($facts['os']['release']['major'])
 
-    if $macos_major in ['10', '11'] {
+    if $darwin_major <= 20 {
       $cltbld_uid = '36'
     } else {
       $cltbld_uid = '555'
     }
-
     file { '/Users/cltbld/bin':
       ensure => directory,
       owner  => 'cltbld',
