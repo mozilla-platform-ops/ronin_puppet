@@ -205,6 +205,8 @@ class linux_gui (
           $screen_height = 1200
           $screen_depth  = 32
           $refresh       = 60
+          $builder_uid = getent('passwd', $builder_user)['uid']
+          $builder_gid = getent('passwd', $builder_user)['gid']
 
           # The new moonshot hardware GPU workers have an intel gpu.
           $use_nvidia = false
@@ -307,7 +309,7 @@ class linux_gui (
               content => template("${module_name}/xvfb.service.erb"),
               notify  => Service['xvfb'];
             '/lib/systemd/system/Xsession.service':
-              content => template("${module_name}/Xsession.service.erb"),
+              content => template("${module_name}/Xsession.service_2404.erb"),
               notify  => Service['Xsession'];
             '/lib/systemd/system/changeresolution.service':
               content => template("${module_name}/changeresolution.service.erb"),
@@ -404,6 +406,34 @@ class linux_gui (
             onlyif   => 'systemctl is-active systemd-networkd.service',
             path     => ['/bin'],
             provider => 'shell',
+          }
+
+          # allow builder user to linger (allows `systemd --user` services to work without a login)
+          exec { "enable-linger-${builder_user}":
+            command => "/usr/bin/loginctl enable-linger ${builder_user}",
+            unless  => "/usr/bin/loginctl show-user ${builder_user} | grep -q 'Linger=yes'",
+            path    => ['/usr/bin', '/bin'],
+          }
+
+          # add a builder-user gnome-session service
+          file { "${builder_home}/.config/systemd/user/gnome-session-x11.service":
+            ensure  => file,
+            owner   => $builder_user,
+            group   => $builder_group,
+            mode    => '0644',
+            content => template("${module_name}/gnome-session-x11.service.erb"),
+            require => Exec["enable-linger-${builder_user}"],
+          }
+
+          # reload and enable the user service
+          exec { 'enable-gnome-session-x11-service':
+            command     => "runuser -l ${builder_user} -c 'systemctl --user daemon-reload && systemctl --user enable --now gnome-session-x11.service'",
+            environment => [
+              "XDG_RUNTIME_DIR=/run/user/${builder_uid}",
+              "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${builder_uid}/bus",
+            ],
+            user        => $builder_user,
+            require     => File["${builder_home}/.config/systemd/user/gnome-session-x11.service"],
           }
         }
         default: {
