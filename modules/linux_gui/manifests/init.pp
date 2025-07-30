@@ -437,16 +437,18 @@ class linux_gui (
             require => Exec["enable-linger-${builder_user}"],
           }
 
-          # reload and enable the user service
+          # reload the user systemd daemon
+          exec { 'daemon-reload-gnome-session-x11-service':
+            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=/run/user/${builder_uid} systemctl --user daemon-reload",
+            path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            require => File["${builder_home}/.config/systemd/user/gnome-session-x11.service"],
+          }
+
+          # enable and start the user service
           exec { 'enable-gnome-session-x11-service':
-            command     => "runuser -l ${builder_user} -c 'systemctl --user daemon-reload && systemctl --user enable --now gnome-session-x11.service'",
-            environment => [
-              "XDG_RUNTIME_DIR=/run/user/${builder_uid}",
-              "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${builder_uid}/bus",
-            ],
-            path        => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
-            user        => $builder_user,
-            require     => File["${builder_home}/.config/systemd/user/gnome-session-x11.service"],
+            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=/run/user/${builder_uid} systemctl --user enable --now gnome-session-x11.service",
+            path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
+            require => Exec['daemon-reload-gnome-session-x11-service'],
           }
         }
         default: {
