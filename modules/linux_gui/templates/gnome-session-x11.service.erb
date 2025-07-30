@@ -7,6 +7,7 @@ Wants=graphical.target
 Environment=DISPLAY=:0
 Environment=XDG_SESSION_TYPE=x11
 Environment=XDG_RUNTIME_DIR=/run/user/<%= @builder_uid %>
+Environment=XAUTHORITY=<%= @builder_home %>/.Xauthority
 ExecStartPre=/bin/mkdir -p /run/user/<%= @builder_uid %>
 ExecStartPre=/bin/chown <%= @builder_uid %>:<%= @builder_gid %> /run/user/<%= @builder_uid %>
 ExecStartPre=/bin/chmod 700 /run/user/<%= @builder_uid %>
