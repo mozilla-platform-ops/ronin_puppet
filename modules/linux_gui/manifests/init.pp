@@ -444,7 +444,7 @@ class linux_gui (
           # for some reason the commands need to be run rapidly after each other to work
 
           # place enablement script
-          file { "${module_name}/enable-gnome-session-x11-service.sh":
+          file { '/usr/local/bin/enable-gnome-session-x11-service.sh':
             ensure => file,
             owner  => $builder_user,
             group  => $builder_group,
@@ -454,9 +454,9 @@ class linux_gui (
 
           # run enablement script
           exec { 'run-enable-gnome-session-x11-service':
-            command => "sudo -u ${builder_user} ${module_name}/enable-gnome-session-x11-service.sh",
-            path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin'],
-            require => File["${module_name}/enable-gnome-session-x11-service.sh"],
+            command => "sudo -u ${builder_user} enable-gnome-session-x11-service.sh",
+            path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'],
+            require => File['/usr/local/bin/enable-gnome-session-x11-service.sh'],
           }
         }
         default: {
