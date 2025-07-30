@@ -393,7 +393,7 @@ class linux_gui (
               'gnome-session',
               'gnome-shell',
               'gnome-panel',
-              'gnome-settings-daemon',
+              # 'gnome-settings-daemon',  # handled elsewhere
             ]:
               ensure => installed,
           }
