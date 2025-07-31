@@ -11,6 +11,8 @@ export SCRIPT_UID
 export DISPLAY=:0
 export XDG_SESSION_TYPE=x11
 export XDG_RUNTIME_DIR=/run/user/$SCRIPT_UID
+# TODO: needed?
+export DESKTOP_SESSION=ubuntu
 
 # Optional: clean up old state
 rm -f "$XDG_RUNTIME_DIR/gnome-shell-disable-extensions"

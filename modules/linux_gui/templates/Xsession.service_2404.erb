@@ -17,7 +17,8 @@ GuessMainPID=no
 # old
 # ExecStart=/bin/su - -c "DISPLAY=:0 /etc/X11/Xsession" <%= @builder_user %>
 ExecStart=/bin/su - -c "DISPLAY=:0 /usr/local/bin/gnome_headless_session.sh" <%= @builder_user %>
-ExecStartPost=/bin/su - -c "systemctl --user start gnome-session-x11.service" <%= @builder_user %>
+# why do we need this also now? above is starting a gnome-session
+# ExecStartPost=/bin/su - -c "systemctl --user start gnome-session-x11.service" <%= @builder_user %>
 
 [Install]
 WantedBy=multi-user.target
