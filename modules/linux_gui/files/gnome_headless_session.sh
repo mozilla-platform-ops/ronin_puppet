@@ -3,17 +3,17 @@
 # instead of using /etc/X11/Xsession, craft our own session script
 
 # get uid of script
-SCRIPT_UID=""
 SCRIPT_UID=$(id -u)
 export SCRIPT_UID
 
-# set env vars
-export DISPLAY=:0
-export XDG_SESSION_TYPE=x11
-export XDG_RUNTIME_DIR=/run/user/$SCRIPT_UID
-export XAUTHORITY=$HOME/.Xauthority
-# TODO: needed?
-export DESKTOP_SESSION=ubuntu
+# Set env vars if not already set
+export DISPLAY=${DISPLAY:-:0}
+export XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
+export XDG_SESSION_TYPE=${XDG_SESSION_TYPE:-x11}
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$SCRIPT_UID}
+export DESKTOP_SESSION=${DESKTOP_SESSION:-ubuntu}
+export XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-ubuntu:GNOME}
+export GNOME_SHELL_SESSION_MODE=${GNOME_SHELL_SESSION_MODE:-ubuntu}
 
 # Optional: clean up old state
 rm -f "$XDG_RUNTIME_DIR/gnome-shell-disable-extensions"
