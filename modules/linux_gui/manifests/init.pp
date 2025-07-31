@@ -301,7 +301,7 @@ class linux_gui (
           file {
             '/etc/X11/xorg.conf':
               ensure  => file,
-              content => template("${module_name}/xorg.conf.erb"),
+              content => template("${module_name}/xorg.conf_2404.erb"),
               notify  => Service['x11'];
             '/lib/systemd/system/x11.service':
               content => template("${module_name}/x11.service.erb"),
