@@ -451,6 +451,15 @@ class linux_gui (
             mode   => '0600',
           }
 
+          # add gnome-headless-session.sh
+          file { '/usr/local/bin/gnome-headless-session.sh':
+            ensure => file,
+            owner  => $builder_user,
+            group  => $builder_group,
+            mode   => '0755',
+            source => "puppet:///modules/${module_name}/gnome-headless-session.sh",
+          }
+
           # add a builder-user gnome-session service
           file { "${builder_home}/.config/systemd/user/gnome-session-x11.service":
             ensure  => file,
