@@ -219,8 +219,8 @@ class linux_gui (
           # Special-casing NVidia GPUs for now.
           file {
             '/etc/X11/Xwrapper.config':
-              content => template("${module_name}/Xwrapper.config.erb"),
-              notify  => Service['x11'];
+              content => template("${module_name}/Xwrapper.config.erb");
+            # notify  => Service['x11'];
 
             # this is the EDID data from an Extron EDID adapter configured for 1200x1600
             '/etc/X11/edid.bin':
