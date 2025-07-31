@@ -76,6 +76,7 @@ function Register-FailureAndMaybePXE {
         Write-Log -message "$regName failure detected. Rebooting system (1st failure)." -severity 'ERROR'
         Set-ItemProperty -Path $regPath -Name $regName -Value 1 -Force
         Restart-Computer -Force
+        Exit
     }
 }
 
@@ -94,7 +95,7 @@ if ($env:gw_initiated -ne 'true') {
 }
 
 # Check for generic-worker process
-Write-Log -message "Checking for 'generic-worker' process..." -severity 'DEBUG'
+# Write-Log -message "Checking for 'generic-worker' process..." -severity 'DEBUG'
 $process = Get-Process -Name "generic-worker" -ErrorAction SilentlyContinue
 if (-not $process) {
     Write-Log -message "generic-worker has not started." -severity 'WARN'
@@ -102,6 +103,7 @@ if (-not $process) {
 }
 
 # Success path – clear failure flags
+Write-Log -message "Generic-worker process is up and running." -severity 'DEBUG'
 $regPath = "HKLM:\SOFTWARE\Mozilla\Ronin\GW_check_failures"
 $failKeys = @('gw_initiated_failed', 'process_failed')
 foreach ($key in $failKeys) {
