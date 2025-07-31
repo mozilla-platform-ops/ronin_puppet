@@ -32,10 +32,20 @@ else
     PYTHON_BIN=$(command -v python)
 fi
 
+# show header (send to stderr to avoid appearing in log output?)
+cat <<'EOF' >&2
+                                     _
+ ___ _ _ ___ ___ ___ _ _ ___ ___ ___| |_
+|  _| | |   |___| . | | | . | . | -_|  _|
+|_| |___|_|_|   |  _|___|  _|  _|___|_|
+                |_|     |_| |_|
+
+EOF
+
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
     # ascii art heredoc
-    cat <<'EOF'
+    cat <<'EOF' >&2
                              __    __
 .-----.--.--.-----.----.----|__.--|  .-----.
 |  _  |  |  |  -__|   _|   _|  |  _  |  -__|
