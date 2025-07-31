@@ -56,9 +56,6 @@ EOF
     source /etc/puppet/ronin_settings
 fi
 
-# newline to break things up
-echo ""
-
 # Extract username from puppet_repo
 puppet_env=$(extract_username "${PUPPET_REPO}")
 
