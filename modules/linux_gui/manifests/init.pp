@@ -451,6 +451,11 @@ class linux_gui (
             mode   => '0600',
           }
 
+          # install lightweight settings daemon
+          package { 'xsettingsd':
+            ensure => installed,
+          }
+
           # add gnome-headless-session.sh
           file { '/usr/local/bin/gnome_headless_session.sh':
             ensure => file,
