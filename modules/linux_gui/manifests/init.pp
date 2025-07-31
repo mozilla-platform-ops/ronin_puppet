@@ -246,12 +246,12 @@ class linux_gui (
             '/usr/share/X11/xorg.conf.d/99-serverflags.conf':
               source => "puppet:///modules/${module_name}/99-serverflags.conf";
 
-            "${builder_home}/.xsessionrc":
-              content => "DESKTOP_SESSION=ubuntu\n",
-              owner   => $builder_user,
-              group   => $builder_group,
-              mode    => '0644',
-              notify  => Service['x11'];
+            # "${builder_home}/.xsessionrc":
+            #   content => "DESKTOP_SESSION=ubuntu\n",
+            #   owner   => $builder_user,
+            #   group   => $builder_group,
+            #   mode    => '0644',
+            #   notify  => Service['x11'];
 
             # make sure the builder user doesn't have any funny business
             ["${builder_home}/.xsession",
@@ -309,9 +309,13 @@ class linux_gui (
             '/lib/systemd/system/xvfb.service':
               content => template("${module_name}/xvfb.service.erb"),
               notify  => Service['xvfb'];
-            '/lib/systemd/system/Xsession.service':
-              content => template("${module_name}/Xsession.service_2404.erb"),
-              notify  => Service['Xsession'];
+            '/lib/systemd/system/gdm_alternate':
+              content => template("${module_name}/gdm_alternate.service.erb"),
+              notify  => Service['gdm_alternate'];
+            # disabled, using gdm service now. see below.
+            # '/lib/systemd/system/Xsession.service':
+            #   content => template("${module_name}/Xsession.service_2404.erb"),
+            #   notify  => Service['Xsession'];
             '/lib/systemd/system/changeresolution.service':
               content => template("${module_name}/changeresolution.service.erb"),
               notify  => Service['changeresolution'];
@@ -347,12 +351,13 @@ class linux_gui (
               enable   => $xvfb_enable,
               require  => File['/lib/systemd/system/xvfb.service'],
               notify   => Service['Xsession'];
-            'Xsession':
-              # we do not ensure this is running; the system will start
-              # it after puppet is done
-              provider => 'systemd',
-              enable   => true,
-              require  => File['/lib/systemd/system/Xsession.service'];
+            # using gdm now
+            # 'Xsession':
+            #   # we do not ensure this is running; the system will start
+            #   # it after puppet is done
+            #   provider => 'systemd',
+            #   enable   => true,
+            #   require  => File['/lib/systemd/system/Xsession.service'];
             'changeresolution':
               # To force resolution to 1600x1200 for Intel driver, we will use a service to run some xrander
               # commands after the Xsession service will be started
@@ -372,15 +377,13 @@ class linux_gui (
           # TODO: force to x11 from wayland
           # info('Forcing X11 for Ubuntu 24.04')
 
-          # # TODO: we don't run gdm, so this does nothiing. our systemd target disables it.
-          # # /etc/gdm3/custom.conf: used to disable Wayland
-          # file { '/etc/gdm3/custom.conf':
-          #   owner  => 'root',
-          #   group  => 'root',
-          #   mode   => '0644',
-          #   source => "puppet:///modules/${module_name}/gdm3-custom.conf",
-          #   # notify => Service['gdm3'];
-          # }
+          file { '/etc/gdm3/custom.conf':
+            owner  => 'root',
+            group  => 'root',
+            mode   => '0644',
+            source => "puppet:///modules/${module_name}/gdm3-custom.conf.erb",
+            notify => Service['gdm3'];
+          }
 
           #
           #
@@ -426,11 +429,11 @@ class linux_gui (
           }
 
           # allow builder user to linger (allows `systemd --user` services to work without a login)
-          exec { "enable-linger-${builder_user}":
-            command => "/usr/bin/loginctl enable-linger ${builder_user}",
-            unless  => "/usr/bin/loginctl show-user ${builder_user} | grep -q 'Linger=yes'",
-            path    => ['/usr/bin', '/bin'],
-          }
+          # exec { "enable-linger-${builder_user}":
+          #   command => "/usr/bin/loginctl enable-linger ${builder_user}",
+          #   unless  => "/usr/bin/loginctl show-user ${builder_user} | grep -q 'Linger=yes'",
+          #   path    => ['/usr/bin', '/bin'],
+          # }
 
           # ensure ~/.config/systemd/user/ exists
           file { [
@@ -443,73 +446,49 @@ class linux_gui (
               mode   => '0755',
           }
 
-          # ensure ~/.Xauthority exists
-          file { "${builder_home}/.Xauthority":
-            ensure => file,
-            owner  => $builder_user,
-            group  => $builder_group,
-            mode   => '0600',
-          }
+          # # ensure ~/.Xauthority exists
+          # file { "${builder_home}/.Xauthority":
+          #   ensure => file,
+          #   owner  => $builder_user,
+          #   group  => $builder_group,
+          #   mode   => '0600',
+          # }
 
-          # install lightweight settings daemon
-          package { 'xsettingsd':
-            ensure => installed,
-          }
+          # # install lightweight settings daemon
+          # package { 'xsettingsd':
+          #   ensure => installed,
+          # }
 
           # add gnome-headless-session.sh
-          file { '/usr/local/bin/gnome_headless_session.sh':
-            ensure => file,
-            owner  => $builder_user,
-            group  => $builder_group,
-            mode   => '0755',
-            source => "puppet:///modules/${module_name}/gnome_headless_session.sh",
-          }
-
-          # add a builder-user gnome-session service
-          file { "${builder_home}/.config/systemd/user/gnome-session-x11.service":
-            ensure  => file,
-            owner   => $builder_user,
-            group   => $builder_group,
-            mode    => '0644',
-            content => template("${module_name}/gnome-session-x11.service.erb"),
-            require => Exec["enable-linger-${builder_user}"],
-          }
-
-          # sudo -u cltbld XDG_RUNTIME_DIR="/run/user/$(id -u cltbld)" systemctl --user daemon-reload
-          # sudo -u cltbld XDG_RUNTIME_DIR="/run/user/$(id -u cltbld)" systemctl --user enable --now gnome-session-x11.service
-          exec { 'reload-user-systemd-daemon':
-            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=\"/run/user/$(id -u ${builder_user})\" systemctl --user daemon-reload",
-            path    => ['/usr/bin', '/bin'],
-          }
-
-          exec { 'enable-gnome-session-x11-service':
-            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=\"/run/user/$(id -u ${builder_user})\" systemctl --user enable --now gnome-session-x11.service",
-            path    => ['/usr/bin', '/bin'],
-            require => Exec['reload-user-systemd-daemon'],
-          }
-
-          # TODO: ridiculous to have to split this into a script... all we're doing is a daemon reload... why would that make it work.
-
-          # the enablement script does:
-          #   reload the user systemd daemon
-          #   enable and start the user service
-          #
-          # for some reason the commands need to be run rapidly after each other to work
-
-          # place enablement script
-          # file { '/usr/local/bin/enable-gnome-session-x11-service.sh':
+          # file { '/usr/local/bin/gnome_headless_session.sh':
           #   ensure => file,
           #   owner  => $builder_user,
           #   group  => $builder_group,
           #   mode   => '0755',
-          #   source => "puppet:///modules/${module_name}/enable_gnome_session_x11_service.sh",
+          #   source => "puppet:///modules/${module_name}/gnome_headless_session.sh",
           # }
 
-          # # run enablement script
-          # exec { 'run-enable-gnome-session-x11-service':
-          #   command => "sudo -u ${builder_user} enable-gnome-session-x11-service.sh",
-          #   path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'],
-          #   require => File['/usr/local/bin/enable-gnome-session-x11-service.sh'],
+          # # add a builder-user gnome-session service
+          # file { "${builder_home}/.config/systemd/user/gnome-session-x11.service":
+          #   ensure  => file,
+          #   owner   => $builder_user,
+          #   group   => $builder_group,
+          #   mode    => '0644',
+          #   content => template("${module_name}/gnome-session-x11.service.erb"),
+          #   require => Exec["enable-linger-${builder_user}"],
+          # }
+
+          # # sudo -u cltbld XDG_RUNTIME_DIR="/run/user/$(id -u cltbld)" systemctl --user daemon-reload
+          # # sudo -u cltbld XDG_RUNTIME_DIR="/run/user/$(id -u cltbld)" systemctl --user enable --now gnome-session-x11.service
+          # exec { 'reload-user-systemd-daemon':
+          #   command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=\"/run/user/$(id -u ${builder_user})\" systemctl --user daemon-reload",
+          #   path    => ['/usr/bin', '/bin'],
+          # }
+
+          # exec { 'enable-gnome-session-x11-service':
+          #   command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=\"/run/user/$(id -u ${builder_user})\" systemctl --user enable --now gnome-session-x11.service",
+          #   path    => ['/usr/bin', '/bin'],
+          #   require => Exec['reload-user-systemd-daemon'],
           # }
 
           # check on service with:
