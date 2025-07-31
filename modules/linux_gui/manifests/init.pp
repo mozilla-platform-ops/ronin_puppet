@@ -349,8 +349,7 @@ class linux_gui (
               require  => File['/lib/systemd/system/xvfb.service'];
             'gdm3':
               ensure   => running,
-              enable   => true,
-              require  => File['/lib/systemd/system/gdm3.service'];
+              enable   => true;
             # notify   => Service['Xsession'];
             # using gdm now
             # 'Xsession':
