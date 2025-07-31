@@ -340,14 +340,14 @@ class linux_gui (
               ensure   => $x11_ensure,
               provider => 'systemd',
               enable   => $x11_enable,
-              require  => File['/lib/systemd/system/x11.service'],
-              notify   => Service['Xsession'];
+              require  => File['/lib/systemd/system/x11.service'];
+            # notify   => Service['Xsession']
             'xvfb':
               ensure   => $xvfb_ensure,
               provider => 'systemd',
               enable   => $xvfb_enable,
-              require  => File['/lib/systemd/system/xvfb.service'],
-              notify   => Service['Xsession'];
+              require  => File['/lib/systemd/system/xvfb.service'];
+            # notify   => Service['Xsession'];
             # using gdm now
             # 'Xsession':
             #   # we do not ensure this is running; the system will start
