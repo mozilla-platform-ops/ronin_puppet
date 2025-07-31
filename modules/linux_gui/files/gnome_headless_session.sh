@@ -11,14 +11,19 @@ export SCRIPT_UID
 export DISPLAY=:0
 export XDG_SESSION_TYPE=x11
 export XDG_RUNTIME_DIR=/run/user/$SCRIPT_UID
+export XAUTHORITY=$HOME/.Xauthority
 # TODO: needed?
 export DESKTOP_SESSION=ubuntu
 
 # Optional: clean up old state
 rm -f "$XDG_RUNTIME_DIR/gnome-shell-disable-extensions"
 
+# Preload xsettingsd (simpler than gsd-xsettings in headless mode)
+xsettingsd &
+
 # Start required pieces
-/usr/libexec/gsd-xsettings --replace &
+# using xsettingsd instead, see above
+# /usr/libexec/gsd-xsettings --replace &
 /usr/libexec/gsd-power &
 /usr/libexec/gsd-media-keys &
 /usr/libexec/gsd-usb-protection &
