@@ -480,6 +480,7 @@ class linux_gui (
           exec { 'enable-gnome-session-x11-service':
             command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=\"/run/user/$(id -u ${builder_user})\" systemctl --user enable --now gnome-session-x11.service",
             path    => ['/usr/bin', '/bin'],
+            require => Exec['reload-user-systemd-daemon'],
           }
 
           # TODO: ridiculous to have to split this into a script... all we're doing is a daemon reload... why would that make it work.
