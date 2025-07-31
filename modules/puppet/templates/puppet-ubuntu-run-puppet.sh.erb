@@ -54,6 +54,8 @@ if [ -f "/etc/puppet/ronin_settings" ]; then
 EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
+    echo "  Environment variables set from /etc/puppet/ronin_settings:"
+    env | grep -Ff <(grep -o '^[A-Za-z_][A-Za-z0-9_]*' /etc/puppet/ronin_settings)
 fi
 
 # Extract username from puppet_repo
