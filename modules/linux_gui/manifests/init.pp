@@ -470,6 +470,20 @@ class linux_gui (
             require => Exec["enable-linger-${builder_user}"],
           }
 
+          # sudo -u cltbld XDG_RUNTIME_DIR="/run/user/$(id -u cltbld)" systemctl --user daemon-reload
+          # sudo -u cltbld XDG_RUNTIME_DIR="/run/user/$(id -u cltbld)" systemctl --user enable --now gnome-session-x11.service
+          exec { 'reload-user-systemd-daemon':
+            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=\"/run/user/$(id -u ${builder_user})\" systemctl --user daemon-reload",
+            path    => ['/usr/bin', '/bin'],
+          }
+
+          exec { 'enable-gnome-session-x11-service':
+            command => "sudo -u ${builder_user} XDG_RUNTIME_DIR=\"/run/user/$(id -u ${builder_user})\" systemctl --user enable --now gnome-session-x11.service",
+            path    => ['/usr/bin', '/bin'],
+          }
+
+          # TODO: ridiculous to have to split this into a script... all we're doing is a daemon reload... why would that make it work.
+
           # the enablement script does:
           #   reload the user systemd daemon
           #   enable and start the user service
@@ -477,20 +491,20 @@ class linux_gui (
           # for some reason the commands need to be run rapidly after each other to work
 
           # place enablement script
-          file { '/usr/local/bin/enable-gnome-session-x11-service.sh':
-            ensure => file,
-            owner  => $builder_user,
-            group  => $builder_group,
-            mode   => '0755',
-            source => "puppet:///modules/${module_name}/enable_gnome_session_x11_service.sh",
-          }
+          # file { '/usr/local/bin/enable-gnome-session-x11-service.sh':
+          #   ensure => file,
+          #   owner  => $builder_user,
+          #   group  => $builder_group,
+          #   mode   => '0755',
+          #   source => "puppet:///modules/${module_name}/enable_gnome_session_x11_service.sh",
+          # }
 
-          # run enablement script
-          exec { 'run-enable-gnome-session-x11-service':
-            command => "sudo -u ${builder_user} enable-gnome-session-x11-service.sh",
-            path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'],
-            require => File['/usr/local/bin/enable-gnome-session-x11-service.sh'],
-          }
+          # # run enablement script
+          # exec { 'run-enable-gnome-session-x11-service':
+          #   command => "sudo -u ${builder_user} enable-gnome-session-x11-service.sh",
+          #   path    => ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'],
+          #   require => File['/usr/local/bin/enable-gnome-session-x11-service.sh'],
+          # }
 
           # check on service with:
           #   sudo -u cltbld XDG_RUNTIME_DIR=/run/user/$(id -u cltbld) systemctl --user status gnome-session-x11.service
