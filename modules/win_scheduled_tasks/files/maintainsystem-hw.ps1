@@ -480,6 +480,8 @@ function StartGenericWorker {
 
         Set-Location -Path $GW_dir
 
+        [Environment]::SetEnvironmentVariable('gw_initiated', 'true', 'Machine')
+
         & $GW_dir\generic-worker.exe run --config generic-worker.config 2>&1 | Out-File -FilePath generic-worker.log -Encoding utf8
         $exitCode = $LASTEXITCODE
 
