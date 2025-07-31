@@ -301,14 +301,14 @@ class linux_gui (
           file {
             '/etc/X11/xorg.conf':
               ensure  => file,
-              content => template("${module_name}/xorg.conf_2404.erb"),
-              notify  => Service['x11'];
-            '/lib/systemd/system/x11.service':
-              content => template("${module_name}/x11.service.erb"),
-              notify  => Service['x11'];
-            '/lib/systemd/system/xvfb.service':
-              content => template("${module_name}/xvfb.service.erb"),
-              notify  => Service['xvfb'];
+              content => template("${module_name}/xorg.conf_2404.erb");
+              # notify  => Service['x11'];
+            # '/lib/systemd/system/x11.service':
+            #   content => template("${module_name}/x11.service.erb");
+              # notify  => Service['x11'];
+            # '/lib/systemd/system/xvfb.service':
+            #   content => template("${module_name}/xvfb.service.erb"),
+            #   notify  => Service['xvfb'];
             # disabled, using gdm service now.
             # '/lib/systemd/system/Xsession.service':
             #   content => template("${module_name}/Xsession.service_2404.erb"),
