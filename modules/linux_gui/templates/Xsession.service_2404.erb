@@ -14,9 +14,18 @@ TimeoutSec=5min
 IgnoreSIGPIPE=no
 KillMode=process
 GuessMainPID=no
-# old
+# v1
 # ExecStart=/bin/su - -c "DISPLAY=:0 /etc/X11/Xsession" <%= @builder_user %>
+#
+# v2
+#  - didn't work either. same problem. (non ubuntu session that can't launch apps)
 ExecStart=/bin/su - -c "DISPLAY=:0 /usr/local/bin/gnome_headless_session.sh" <%= @builder_user %>
+#
+# v3: use systemd-run
+#   sudo -u cltbld XDG_RUNTIME_DIR=/run/user/$(id -u cltbld) \
+#     systemd-run --user --scope /usr/local/bin/gnome_headless_session.sh
+#
+ExecStart=/bin/sudo -u cltbld systemd-run --user --scope /usr/local/bin/gnome_headless_session.sh
 # why do we need this also now? above is starting a gnome-session
 # ExecStartPost=/bin/su - -c "systemctl --user start gnome-session-x11.service" <%= @builder_user %>
 

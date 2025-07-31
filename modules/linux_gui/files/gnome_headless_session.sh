@@ -19,15 +19,18 @@ export DESKTOP_SESSION=ubuntu
 rm -f "$XDG_RUNTIME_DIR/gnome-shell-disable-extensions"
 
 # Preload xsettingsd (simpler than gsd-xsettings in headless mode)
-xsettingsd &
+# xsettingsd &
+# note: didn't work for replacing `gsd-xsettings`
 
 # Start required pieces
-# using xsettingsd instead, see above
-# /usr/libexec/gsd-xsettings --replace &
+/usr/libexec/gsd-xsettings --replace &
 /usr/libexec/gsd-power &
 /usr/libexec/gsd-media-keys &
 /usr/libexec/gsd-usb-protection &
 /usr/libexec/gsd-color &
 
 # Start GNOME
-exec dbus-run-session -- gnome-session --session=ubuntu
+# dbus-run is handled by systemd-run a level up
+# exec dbus-run-session -- gnome-session --session=ubuntu
+#
+exec gnome-session --session=ubuntu
