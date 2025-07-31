@@ -16,7 +16,7 @@ KillMode=process
 GuessMainPID=no
 # old
 # ExecStart=/bin/su - -c "DISPLAY=:0 /etc/X11/Xsession" <%= @builder_user %>
-ExecStart=/bin/su - -c "DISPLAY=:0 /usr/local/bin/gnome-headless-session.sh" <%= @builder_user %>
+ExecStart=/bin/su - -c "DISPLAY=:0 /usr/local/bin/gnome_headless_session.sh" <%= @builder_user %>
 ExecStartPost=/bin/su - -c "systemctl --user start gnome-session-x11.service" <%= @builder_user %>
 
 [Install]
