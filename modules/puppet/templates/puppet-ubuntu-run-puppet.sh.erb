@@ -40,7 +40,6 @@ cat <<'EOF' >&2
   |   _|  |  |     |______|  _  |  |  |  _  |  _  |  -__|   _|
   |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
                           |__|        |__|  |__|
-
 EOF
 
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
@@ -56,6 +55,9 @@ EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
 fi
+
+# newline to break things up
+echo ""
 
 # Extract username from puppet_repo
 puppet_env=$(extract_username "${PUPPET_REPO}")
