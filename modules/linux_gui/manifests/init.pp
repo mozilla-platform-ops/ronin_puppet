@@ -336,20 +336,20 @@ class linux_gui (
           default => true }
 
           service {
-            'x11':
-              ensure   => $x11_ensure,
-              provider => 'systemd',
-              enable   => $x11_enable,
-              require  => File['/lib/systemd/system/x11.service'];
-            # notify   => Service['Xsession']
-            'xvfb':
-              ensure   => $xvfb_ensure,
-              provider => 'systemd',
-              enable   => $xvfb_enable,
-              require  => File['/lib/systemd/system/xvfb.service'];
+            # 'x11':
+            #   ensure   => $x11_ensure,
+            #   provider => 'systemd',
+            #   enable   => $x11_enable,
+            #   require  => File['/lib/systemd/system/x11.service'];
+            # # notify   => Service['Xsession']
+            # 'xvfb':
+            #   ensure   => $xvfb_ensure,
+            #   provider => 'systemd',
+            #   enable   => $xvfb_enable,
+            #   require  => File['/lib/systemd/system/xvfb.service'];
             'gdm3':
-              ensure   => running,
-              enable   => true;
+              ensure => running,
+              enable => true;
             # notify   => Service['Xsession'];
             # using gdm now
             # 'Xsession':
