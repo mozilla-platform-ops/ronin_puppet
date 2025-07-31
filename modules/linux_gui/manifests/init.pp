@@ -378,11 +378,11 @@ class linux_gui (
           # info('Forcing X11 for Ubuntu 24.04')
 
           file { '/etc/gdm3/custom.conf':
-            owner  => 'root',
-            group  => 'root',
-            mode   => '0644',
-            source => "puppet:///modules/${module_name}/gdm3_custom.conf.erb",
-            notify => Service['gdm3'];
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0644',
+            content => template("${module_name}/gdm3_custom.conf.erb"),
+            notify  => Service['gdm3'];
           }
 
           #
