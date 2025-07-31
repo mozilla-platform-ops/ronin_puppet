@@ -309,10 +309,7 @@ class linux_gui (
             '/lib/systemd/system/xvfb.service':
               content => template("${module_name}/xvfb.service.erb"),
               notify  => Service['xvfb'];
-            '/lib/systemd/system/gdm_alternate':
-              content => template("${module_name}/gdm_alternate.service.erb"),
-              notify  => Service['gdm_alternate'];
-            # disabled, using gdm service now. see below.
+            # disabled, using gdm service now.
             # '/lib/systemd/system/Xsession.service':
             #   content => template("${module_name}/Xsession.service_2404.erb"),
             #   notify  => Service['Xsession'];
