@@ -25,7 +25,7 @@ rm -rf /opt/worker/tasks/task_*
 find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
-/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill -r -domain local -domain system -domain user
+python3 /usr/local/bin/lsdb.py --delete-stale
 
 if [ -x /usr/local/bin/run-puppet.sh ]; then
     /usr/local/bin/run-puppet.sh
