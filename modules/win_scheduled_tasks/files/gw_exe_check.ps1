@@ -80,6 +80,12 @@ function Register-FailureAndMaybePXE {
     }
 }
 
+$bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+If ($bootstrap_stage -neq 'complete') {
+    Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Exit-PSSession
+}
+
 # Uptime check — allow 15-minute grace period before enforcing logic
 $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
 $uptimeMinutes = (New-TimeSpan -Start $lastBoot -End (Get-Date)).TotalMinutes
