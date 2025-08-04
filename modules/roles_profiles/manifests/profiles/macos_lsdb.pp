@@ -4,6 +4,6 @@
 
 class roles_profiles::profiles::macos_lsdb {
   class { 'macos_lsdb':
-    enabled    => true,
+    enabled => true,
   }
 }
