@@ -21,7 +21,10 @@ class roles_profiles::profiles::gui {
             builder_user  => 'cltbld',
             builder_group => 'cltbld',
             builder_home  => '/home/cltbld',
-            require       => Class['linux_packages::ubuntu_desktop'];
+            require       => [
+              Class['linux_packages::ubuntu_desktop'],
+              User['cltbld'],
+            ],
         }
       } else {
         fail("${$facts['os']['release']['full']} not supported")
