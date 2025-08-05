@@ -367,7 +367,7 @@ class linux_gui (
               # To force resolution to 1600x1200 for Intel driver, we will use a service to run some xrander
               # commands after the Xsession service will be started
               provider => 'systemd',
-              enable   => true,
+              enable   => false,  # AJE: disabled for testing
               require  => File['/lib/systemd/system/changeresolution.service'];
           }
 

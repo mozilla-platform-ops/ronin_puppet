@@ -16,7 +16,7 @@ TimeoutSec=5min
 IgnoreSIGPIPE=no
 KillMode=process
 GuessMainPID=no
-# Waiting 10 seconds befor start the script (x11 and Xsession are not initialized instant)
+# Waiting 10 seconds before starting the script
 ExecStart=/bin/sleep 10 ; /bin/bash /usr/local/bin/changeresolution.sh
 
 [Install]
