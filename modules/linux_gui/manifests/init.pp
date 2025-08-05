@@ -313,6 +313,12 @@ class linux_gui (
               ensure => absent;
           }
 
+          # gdm service (mostly for notifying below)
+          service { 'gdm3':
+            ensure => running,
+            enable => true,
+          }
+
           # force to x11 from wayland
           file { '/etc/gdm3/custom.conf':
             owner   => 'root',
