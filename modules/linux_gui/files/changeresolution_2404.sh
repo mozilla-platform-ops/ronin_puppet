@@ -27,15 +27,16 @@ if [ -z "$OUTPUT" ]; then
 fi
 
 # Generate the mode using cvt
-CVT_OUTPUT=$(cvt 1600 1200 60 | grep Modeline | sed 's/Modeline //' | sed 's/"//g')
+# CVT_OUTPUT=$(cvt 1600 1200 60 | grep Modeline | sed 's/Modeline //' | sed 's/"//g')
 GTF_OUTPUT=$(gtf 1600 1200 60 | grep Modeline | sed 's/Modeline //' | sed 's/"//g')
 
 # Extract the mode name and mode parameters separately
 # read MODE_NAME MODE_PARAMS <<< "$CVT_OUTPUT"
-read -r MODE_NAME2 MODE_PARAMS2 <<< "$GTF_OUTPUT"
+MODE_NAME2=$(echo "$GTF_OUTPUT" | awk '{print $1}')
+MODE_PARAMS2=$(echo "$GTF_OUTPUT" | cut -d' ' -f2-)
 
-echo "cvt: $CVT_OUTPUT"
-echo "gtf: $GTF_OUTPUT"
+# echo "cvt: $CVT_OUTPUT"
+# echo "gtf: $GTF_OUTPUT"
 #exit 0
 
 # Create and apply the mode
