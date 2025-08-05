@@ -17,5 +17,5 @@ class roles_profiles::roles::gecko_t_linux_2404_talos_wayland {
   #include ::fw::roles::linux_taskcluster_worker
 
   # talos stuff
-  include roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker
+  include roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker_wayland
 }
