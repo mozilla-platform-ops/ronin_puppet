@@ -76,6 +76,10 @@ class linux_gui (
             '/usr/share/X11/xorg.conf.d/99-serverflags.conf':
               source => "puppet:///modules/${module_name}/99-serverflags.conf";
 
+            # how resolution is set on 2404
+            '/usr/share/X11/xorg.conf.d/50-display.conf':
+              source => "puppet:///modules/${module_name}/50-display.conf";
+
             "${builder_home}/.xsessionrc":
               content => "DESKTOP_SESSION=ubuntu\n",
               owner   => $builder_user,
