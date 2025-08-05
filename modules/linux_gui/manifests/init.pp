@@ -209,8 +209,8 @@ class linux_gui (
           $screen_depth  = 32
           $refresh       = 60
           # TODO?: use puppetlabs-stdlib eventually
-          $builder_uid = generate('/usr/bin/id', '-u', $builder_user).strip
-          $builder_gid = generate('/usr/bin/id', '-g', $builder_user).strip
+          # $builder_uid = generate('/usr/bin/id', '-u', $builder_user).strip
+          # $builder_gid = generate('/usr/bin/id', '-g', $builder_user).strip
 
           # The new moonshot hardware GPU workers have an intel gpu.
           $use_nvidia = false
