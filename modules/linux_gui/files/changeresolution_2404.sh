@@ -41,6 +41,14 @@ MODE_PARAMS2=$(echo "$GTF_OUTPUT" | cut -d ' ' -f 5-)
 
 # Create and apply the mode
 # shellcheck disable=SC2086
-xrandr --newmode "$MODE_NAME2" $MODE_PARAMS2
+
+# check if "$MODE_NAME2" is already defined
+if xrandr | grep -q "$MODE_NAME2"; then
+    echo "Mode $MODE_NAME2 already exists."
+else
+    echo "Adding new mode: $MODE_NAME2 with parameters: $MODE_PARAMS2"
+    xrandr --newmode "$MODE_NAME2" $MODE_PARAMS2
+fi
+
 xrandr --addmode "$OUTPUT" "$MODE_NAME2"
 xrandr --output "$OUTPUT" --crtc 0 --mode "$MODE_NAME2"
