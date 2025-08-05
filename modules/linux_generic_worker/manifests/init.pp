@@ -8,7 +8,7 @@
 class linux_generic_worker (
   String $taskcluster_client_id,
   String $taskcluster_access_token,
-  String $livelog_secret,
+  String $livelog_secret,  # TODO: remove, not needed any longer
   String $worker_group,
   String $worker_type,
   String $quarantine_client_id,
