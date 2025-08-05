@@ -66,6 +66,13 @@ provisioner:
             quarantine_client_id: '3333'
             quarantine_access_token: 'Q_TOKEN'
             bugzilla_api_key: 'BZ_KEY'
+          gecko_t_linux_talos_2404:
+            taskcluster_client_id: '123'
+            taskcluster_access_token: 'foo'
+            livelog_secret: 'haha'
+            quarantine_client_id: '3333'
+            quarantine_access_token: 'Q_TOKEN'
+            bugzilla_api_key: 'BZ_KEY'
   puppet_verbose: true
   # explodes if version specified, see https://github.com/petems/puppet-install-shell/issues/137
   # puppet_version: 7
