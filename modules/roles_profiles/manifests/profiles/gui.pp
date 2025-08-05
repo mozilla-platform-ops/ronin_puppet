@@ -15,6 +15,7 @@ class roles_profiles::profiles::gui {
       # this is for x11, see gui_wayland.pp for wayland
       include linux_packages::ubuntu_desktop
       if $facts['os']['release']['full'] in ['18.04', '22.04', '24.04'] {
+        include roles_profiles::profiles::cltbld_user
         class {
           'linux_gui':
             # TODO: use hiera data
