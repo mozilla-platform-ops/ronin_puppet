@@ -5,6 +5,7 @@
 class roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker {
   # TODO: make these args to this module and use in call in gecko_t_linux_talos?
   $worker_type  = 'gecko-t-linux-talos-2204'
+  $worker_type_under = regsubst($worker_type, '-', '_', 'G')
   $worker_group = regsubst($facts['networking']['fqdn'], '.*\.releng\.(.+)\.mozilla\..*', '\1')
 
   case $facts['os']['name'] {
@@ -49,12 +50,12 @@ class roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker {
         },
       }
 
-      $taskcluster_client_id    = lookup("generic_worker.${worker_type}.taskcluster_client_id")
-      $taskcluster_access_token = lookup("generic_worker.${worker_type}.taskcluster_access_token")
-      $livelog_secret           = lookup("generic_worker.${worker_type}.livelog_secret")
-      $quarantine_client_id     = lookup("generic_worker.${worker_type}.quarantine_client_id")
-      $quarantine_access_token  = lookup("generic_worker.${worker_type}.quarantine_access_token")
-      $bugzilla_api_key         = lookup("generic_worker.${worker_type}.bugzilla_api_key")
+      $taskcluster_client_id    = lookup("generic_worker.${worker_type_under}.taskcluster_client_id")
+      $taskcluster_access_token = lookup("generic_worker.${worker_type_under}.taskcluster_access_token")
+      $livelog_secret           = lookup("generic_worker.${worker_type_under}.livelog_secret")
+      $quarantine_client_id     = lookup("generic_worker.${worker_type_under}.quarantine_client_id")
+      $quarantine_access_token  = lookup("generic_worker.${worker_type_under}.quarantine_access_token")
+      $bugzilla_api_key         = lookup("generic_worker.${worker_type_under}.bugzilla_api_key")
 
       class { 'linux_generic_worker':
         taskcluster_client_id     => $taskcluster_client_id,
