@@ -40,6 +40,7 @@ MODE_PARAMS2=$(echo "$GTF_OUTPUT" | cut -d ' ' -f 5-)
 #exit 0
 
 # Create and apply the mode
-xrandr --newmode "$MODE_NAME2" "$MODE_PARAMS2"
+# shellcheck disable=SC2086
+xrandr --newmode "$MODE_NAME2" $MODE_PARAMS2
 xrandr --addmode "$OUTPUT" "$MODE_NAME2"
 xrandr --output "$OUTPUT" --crtc 0 --mode "$MODE_NAME2"
