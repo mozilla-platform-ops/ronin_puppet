@@ -49,12 +49,12 @@ class roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker {
         },
       }
 
-      $taskcluster_client_id    = lookup('generic_worker.gecko_t_linux_talos.taskcluster_client_id')
-      $taskcluster_access_token = lookup('generic_worker.gecko_t_linux_talos.taskcluster_access_token')
-      $livelog_secret           = lookup('generic_worker.gecko_t_linux_talos.livelog_secret')
-      $quarantine_client_id     = lookup('generic_worker.gecko_t_linux_talos.quarantine_client_id')
-      $quarantine_access_token  = lookup('generic_worker.gecko_t_linux_talos.quarantine_access_token')
-      $bugzilla_api_key         = lookup('generic_worker.gecko_t_linux_talos.bugzilla_api_key')
+      $taskcluster_client_id    = lookup("generic_worker.${worker_type}.taskcluster_client_id")
+      $taskcluster_access_token = lookup("generic_worker.${worker_type}.taskcluster_access_token")
+      $livelog_secret           = lookup("generic_worker.${worker_type}.livelog_secret")
+      $quarantine_client_id     = lookup("generic_worker.${worker_type}.quarantine_client_id")
+      $quarantine_access_token  = lookup("generic_worker.${worker_type}.quarantine_access_token")
+      $bugzilla_api_key         = lookup("generic_worker.${worker_type}.bugzilla_api_key")
 
       class { 'linux_generic_worker':
         taskcluster_client_id     => $taskcluster_client_id,
