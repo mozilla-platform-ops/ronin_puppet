@@ -33,7 +33,7 @@ GTF_OUTPUT=$(gtf 1600 1200 60 | grep Modeline | sed 's/Modeline //' | sed 's/"//
 # Extract the mode name and mode parameters separately
 # read MODE_NAME MODE_PARAMS <<< "$CVT_OUTPUT"
 MODE_NAME2=$(echo "$GTF_OUTPUT" | awk '{print $1}')
-MODE_PARAMS2=$(echo "$GTF_OUTPUT" | cut -d ' ' -f3-)
+MODE_PARAMS2=$(echo "$GTF_OUTPUT" | cut -d ' ' -f 5-)
 
 # echo "cvt: $CVT_OUTPUT"
 # echo "gtf: $GTF_OUTPUT"
