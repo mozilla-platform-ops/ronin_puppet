@@ -31,6 +31,9 @@ class linux_generic_worker (
   # include httpd
   include shared
 
+  # set hostname (not sure how this was working before)
+  $hostname = $facts['networking']['hostname']
+
   class { 'packages::linux_generic_worker':
     generic_worker_version    => $generic_worker_version,
     generic_worker_sha256     => $generic_worker_sha256,
