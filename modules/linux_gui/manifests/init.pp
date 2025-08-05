@@ -4,10 +4,13 @@
 
 # for x11, see linux_gui_wayland for wayland
 
+# @param builder_user The username of the builder user account.
+# @param builder_group The group name of the builder user account.
+# @param builder_home The home directory of the builder user account.
 class linux_gui (
-  $builder_user,
-  $builder_group,
-  $builder_home
+  String $builder_user,
+  String $builder_group,
+  String $builder_home
 ) {
   case $facts['os']['name'] {
     'Ubuntu': {
@@ -272,6 +275,7 @@ class linux_gui (
             # TODO: should be in linux base
             # RELOPS-1318: We used to disable autospawn in client.conf, but may be causing issues. Removed this in relops-1318.
             ["${builder_home}/.pip",
+              # TODO: remove pulse stuff, uses pipwire now
             "${builder_home}/.config/pulse"]:
               ensure => directory,
               group  => $builder_group,
@@ -284,28 +288,29 @@ class linux_gui (
               source => "puppet:///modules/${module_name}/pip.conf";
           }
 
+          # TODO: remove pulse stuff, uses pipwire now
           # RELOPS-1318: Let's make sure pulse client.conf is not present
           file { "${builder_home}/.config/pulse/client.conf":
             ensure => absent,
           }
 
           # disable gdm (we run our own X server)
-          exec { 'set systemctl default to multi-user vs graphical':
-            command  => 'systemctl set-default multi-user.target',
-            onlyif   => 'if [[ `systemctl get-default` == "multi-user.target" ]]; then exit 1 ; else exit 0; fi;',
-            path     => ['/bin'],
-            provider => 'shell',
-          }
+          # exec { 'set systemctl default to multi-user vs graphical':
+          #   command  => 'systemctl set-default multi-user.target',
+          #   onlyif   => 'if [[ `systemctl get-default` == "multi-user.target" ]]; then exit 1 ; else exit 0; fi;',
+          #   path     => ['/bin'],
+          #   provider => 'shell',
+          # }
 
           $gpu_bus_id = 'PCI:0:02:0'
           file {
-            '/etc/X11/xorg.conf':
-              ensure  => file,
-              content => template("${module_name}/xorg.conf_2404.erb");
-              # notify  => Service['x11'];
+            # '/etc/X11/xorg.conf':
+            #   ensure  => file,
+            #   content => template("${module_name}/xorg.conf_2404.erb");
+            # notify  => Service['x11'];
             # '/lib/systemd/system/x11.service':
             #   content => template("${module_name}/x11.service.erb");
-              # notify  => Service['x11'];
+            # notify  => Service['x11'];
             # '/lib/systemd/system/xvfb.service':
             #   content => template("${module_name}/xvfb.service.erb"),
             #   notify  => Service['xvfb'];
