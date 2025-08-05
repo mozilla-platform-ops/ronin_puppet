@@ -319,7 +319,7 @@ class linux_gui (
             #   content => template("${module_name}/Xsession.service_2404.erb"),
             #   notify  => Service['Xsession'];
             '/lib/systemd/system/changeresolution.service':
-              content => template("${module_name}/changeresolution.service.erb"),
+              content => template("${module_name}/changeresolution.service_2404.erb"),
               notify  => Service['changeresolution'];
             '/usr/local/bin/changeresolution.sh':
               source => 'puppet:///modules/linux_gui/changeresolution.sh',
