@@ -33,6 +33,9 @@ class linux_talos () {
           packages => ['v4l2loopback-dkms'];
       }
 
+      # TODO: setup sound loop devices?
+      #  see https://github.com/mozilla-platform-ops/worker-images/blob/main/scripts/linux/ubuntu-2404-amd64-gui/old/70-additional-talos-reqs.sh
+
       # directories expected by talos
       file {
         ['/builds',
