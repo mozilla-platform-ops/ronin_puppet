@@ -20,8 +20,6 @@ set -x
 
 export DEBIAN_FRONTEND=noninteractive
 export APT_ARGS='-o Dpkg::Options::=--force-confold'
-# shellcheck disable=SC2089
-APT_GET_CMD='"DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confnew"'
 
 # if we're not on linux, exit with warning
 if [ "$(uname -s)" != "Linux" ]; then
@@ -52,9 +50,9 @@ if [ "$VERSION_ID" = "24.04" ]; then
     # update apt and install puppet-agent and ntp
     apt-get update
     # shellcheck disable=SC2090
-    $APT_GET_CMD remove -y puppet
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
     # shellcheck disable=SC2090
-    $APT_GET_CMD install -y puppet-agent
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent
     # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
     # place our config and restart the service
     mkdir -p /etc/systemd/timesyncd.conf.d
@@ -68,9 +66,9 @@ elif [ "$VERSION_ID" = "18.04" ]; then
     # update apt and install puppet-agent and ntp
     apt-get update
     # shellcheck disable=SC2090
-    $APT_GET_CMD remove -y puppet
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
     # shellcheck disable=SC2090
-    $APT_GET_CMD install -y puppet-agent ntp
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent ntp
 
     # get clock synced. if clock is way off, run-puppet.sh will never finish
     # it's git clone because the SSL cert will appear invalid.
