@@ -18,6 +18,9 @@
 set -e
 set -x
 
+export DEBIAN_FRONTEND=noninteractive
+export APT_ARGS='-o Dpkg::Options::=--force-confold'
+
 # if we're not on linux, exit with warning
 if [ "$(uname -s)" != "Linux" ]; then
     echo "This script is intended to run on Linux hosts only."
