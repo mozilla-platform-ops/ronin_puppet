@@ -16,7 +16,7 @@
 #  ./bootstrap_linux.sh
 
 set -e
-# set -x
+set -x
 
 # if we're not on linux, exit with warning
 if [ "$(uname -s)" != "Linux" ]; then
