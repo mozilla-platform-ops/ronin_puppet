@@ -131,20 +131,24 @@ echo ""
 # if ronin_settings_present == 0
 if [ $RONIN_SETTINGS_PRESENT -eq 0 ]; then
   echo "  master:"
-  echo "    ssh $REMOTE_SSH_USER@$THE_HOST sudo $BOOTSTRAP_FILE_REMOTE"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST
+  echo "      sudo bash
+  echo "      $BOOTSTRAP_FILE_REMOTE"
   echo ""
   echo "  branch:"
-  echo "    ssh $REMOTE_SSH_USER@$THE_HOST sudo \\"
-  echo "      PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' \\"
-  echo "      PUPPET_BRANCH='YOUR_BRANCH' $BOOTSTRAP_FILE_REMOTE"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
+  echo "      sudo bash"
+  echo "        PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' \\"
+  echo "          PUPPET_BRANCH='YOUR_BRANCH' $BOOTSTRAP_FILE_REMOTE"
 elif [ $RONIN_SETTINGS_PRESENT -eq 1 ]; then
   echo "  master:"
   echo "    ssh $REMOTE_SSH_USER@$THE_HOST $BOOTSTRAP_FILE_REMOTE"
   echo ""
   echo "  branch:"
-  echo "    ssh $REMOTE_SSH_USER@$THE_HOST sudo \\"
-  echo "      PUPPET_REPO='$PUPPET_REPO' \\"
-  echo "      PUPPET_BRANCH='$PUPPET_BRANCH' $BOOTSTRAP_FILE_REMOTE"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
+  echo "      sudo bash"
+  echo "        PUPPET_REPO='$PUPPET_REPO' \\"
+  echo "          PUPPET_BRANCH='$PUPPET_BRANCH' $BOOTSTRAP_FILE_REMOTE"
   echo ""
   echo "  * ronin-settings delivered, so even master (above) will eventually use the settings."
 fi
