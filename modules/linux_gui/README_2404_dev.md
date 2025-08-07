@@ -1,20 +1,16 @@
-# worklog.md
+# README_2404_dev.md
 
-for 2404 x11/wayland
+Documents the development process for 2404 X11.
 
-## x11
-
-working in linux_gui module
-
-### how 1804 works
+## how 1804 works
 
 1. start Xorg x11 server as root (x11vnc points at this)
 2. start gnome Xssession on Xorg server
 3. cltbld user autostarts gnome-terminal that runs start-worker-runner-wrapper
 
-### 2404 things tried
+## 2404 things tried
 
-#### xorg with Xsession (like 1804)
+### xorg with Xsession (like 1804)
 
 1. start Xorg x11 server as root (x11vnc points at this)
 2. start gnome Xssession on Xorg server
@@ -33,7 +29,7 @@ problems:
 
 current problems: can get it to boot up what looks like a barebones gnome session (apps won't launch though), but not a full ubuntu desktop. tons of errors in the gnome-session logs about not being able to contact services. indicative of session without logind, pam, etc permissions/connections setup.
 
-##### how do the cloud wayland images handle this?
+#### how do the cloud wayland images handle this?
 
 g-w multi uses gdm to do autologin.
 
@@ -41,7 +37,7 @@ why is 2404 hardware is harder?
 - GPU?
 - need simple/insecure g-w for talos perf (until we implement and test out g-w multi single user)
 
-#### gdm-launched gnome
+### gdm-launched gnome
 
 1. start gdm
 2. gdm autologins the cltbld user
@@ -49,6 +45,10 @@ why is 2404 hardware is harder?
 
 current problems: can't get x11vnc working to see if it's working.
 
-#### plain old gdm on main display
+### plain old gdm on main display
 
 Discussed with windows team and no security concern running on the main VGA output (actually required to use KVMs). Seems to just work as expected. Need to figure out x11, but should be ok.
+
+## final implementation
+
+We use the plain old gdm on the main display.
