@@ -92,7 +92,10 @@ class roles_profiles::profiles::cltbld_user {
         # require => User['cltbld'],
       }
 
-      $sudo_commands = ['/sbin/reboot']
+      $sudo_commands = [
+        '/sbin/reboot',
+        '/usr/local/bin/run-puppet.sh',
+      ]
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',
@@ -110,7 +113,7 @@ class roles_profiles::profiles::cltbld_user {
       $homedir      = '/home/cltbld'
 
       group { 'cltbld':
-        name      => 'cltbld',
+        name => 'cltbld',
       }
 
       # Create the cltbld user

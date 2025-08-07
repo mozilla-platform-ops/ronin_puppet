@@ -28,7 +28,7 @@ find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf
 python3 /usr/local/bin/lsdb.py --delete-stale
 
 if [ -x /usr/local/bin/run-puppet.sh ]; then
-    /usr/local/bin/run-puppet.sh
+    sudo /usr/local/bin/run-puppet.sh
 else
     echo "run-puppet.sh not found, skipping Puppet run."
 fi
