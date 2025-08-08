@@ -62,9 +62,108 @@ if os.family == 'debian' && (os.release.start_with?('18.04') or os.release.start
     its('content') { should match(/Wants=display-manager.service colord.service/) }
   end
 elsif os.family == 'debian' && os.release.start_with?('24.04')
-  # don't do anything here
-  #
-  # see linux_gui_wayland_spec.rb for 24.04 specifics
+  # packages
+  describe package('xrestop') do
+    it { should be_installed }
+  end
+
+  describe package('gnome-settings-daemon') do
+    it { should be_installed }
+  end
+
+  describe package('gnome-session') do
+    it { should be_installed }
+  end
+
+  describe package('gnome-shell') do
+    it { should be_installed }
+  end
+
+  describe package('gnome-panel') do
+    it { should be_installed }
+  end
+
+  describe package('gnome-initial-setup') do
+    it { should_not be_installed }
+  end
+
+  # files
+  describe file('/etc/X11/Xwrapper.config') do
+    it { should exist }
+  end
+
+  describe file('/etc/X11/edid.bin') do
+    it { should exist }
+  end
+
+  describe file('/etc/xdg/autostart/org.gnome.DejaDup.Monitor.desktop') do
+    it { should exist }
+  end
+
+  describe file('/etc/xdg/autostart/update-notifier.desktop') do
+    it { should exist }
+  end
+
+  describe file('/etc/xdg/autostart/gnome-software-service.desktop') do
+    it { should exist }
+  end
+
+  describe file('/usr/share/X11/xorg.conf.d/99-serverflags.conf') do
+    it { should exist }
+  end
+
+  describe file('/usr/share/X11/xorg.conf.d/50-display.conf') do
+    it { should exist }
+  end
+
+  describe file('/home/cltbld/.fonts.conf') do
+    it { should exist }
+  end
+
+  describe file('/home/cltbld/.pip/pip.conf') do
+    it { should exist }
+  end
+
+  describe file('/home/cltbld/.config/pulse/client.conf') do
+    it { should_not exist }
+  end
+
+  describe file('/etc/gdm3/custom.conf') do
+    it { should exist }
+  end
+
+  # directories
+  describe file('/home/cltbld/.pip') do
+    it { should be_directory }
+  end
+
+  describe file('/home/cltbld/.config/pulse') do
+    it { should be_directory }
+  end
+
+  describe file('/home/cltbld/.config/systemd') do
+    it { should be_directory }
+  end
+
+  describe file('/home/cltbld/.config/systemd/user') do
+    it { should be_directory }
+  end
+
+  # services
+  describe service('gdm3') do
+    it { should be_enabled }
+    it { should be_running }
+  end
+
+  # nvidia packages should be absent
+  describe command('dpkg -l | grep nvidia-') do
+    its(:stdout) { should eq "" }
+  end
+
+  # systemd-networkd should be disabled
+  describe service('systemd-networkd') do
+    it { should_not be_enabled }
+  end
 else
   # shouldn't be here
   # for other OS families or versions, show error
