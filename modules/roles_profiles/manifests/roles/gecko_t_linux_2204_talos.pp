@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::gecko_t_linux_talos {
+class roles_profiles::roles::gecko_t_linux_2204_talos {
 
     include ::roles_profiles::profiles::linux_base
 
@@ -18,5 +18,6 @@ class roles_profiles::roles::gecko_t_linux_talos {
     #include ::fw::roles::linux_taskcluster_worker
 
     # talos stuff
-    include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
+    include ::roles_profiles::profiles::gecko_t_linux_2204_talos_generic_worker
+
 }
