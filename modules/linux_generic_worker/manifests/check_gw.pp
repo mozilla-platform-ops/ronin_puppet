@@ -10,45 +10,65 @@
 #   - fix hosts with bad ntp
 
 class linux_generic_worker::check_gw () {
+  require linux_packages::py3
+  require linux_packages::psutil_py3
 
-    require linux_packages::py3
-    require linux_packages::psutil_py3
+  # block for ubuntu and then selecting between 24.04 and 18.04,22.04
+  case $facts['os']['name'] {
+    'Ubuntu': {
+      # 24 install via apt, 18 and 22 install via pip3
+      if $facts['os']['release']['full'] == '24.04' {
+        # package { 'python3-pendulum':
+        #   ensure   => latest,
+        #   provider => apt,
+        #   require  => Class['linux_packages::py3'],
+        # }
 
-    $pips = [ 'pendulum' ]
-    package { $pips:
-        ensure   => installed,
-        provider => pip3,
-        require  => Class['linux_packages::py3'],
+        # the bug mentions this has been fixed in 20.04... so do nothing.
+      } elsif $facts['os']['release']['full'] in ['18.04', '20.04', '22.04'] {
+        $pips = ['pendulum']
+        package { $pips:
+          ensure   => installed,
+          provider => pip3,
+          require  => Class['linux_packages::py3'],
+        }
+
+        file {
+          default:
+            owner => 'root',
+            group => 'root',
+            mode  => '0644';
+
+          ['/opt/relops-check_gw']:
+            ensure => directory,
+            mode   => '0755';
+
+          '/opt/relops-check_gw/check_gw.py':
+            ensure => file,
+            mode   => '0755',
+            source => "puppet:///modules/${module_name}/check_gw.py";
+
+          '/lib/systemd/system/check_gw.service':
+            source => "puppet:///modules/${module_name}/check_gw.service",
+            notify => Exec['reload systemd'];
+
+          '/lib/systemd/system/check_gw.timer':
+            source => "puppet:///modules/${module_name}/check_gw.timer",
+            notify => Exec['reload systemd'];
+        }
+
+        service { 'check_gw.timer':
+          enable   => true,
+          provider => 'systemd',
+          require  => File['/lib/systemd/system/check_gw.timer'];
+        }
+      }
+      else {
+        fail("Cannot install check_gw deps on ${facts['os']['name']} ${facts['os']['release']['major']}")
+      }
     }
-
-    file {
-      default:
-          owner => 'root',
-          group => 'root',
-          mode  => '0644';
-
-      ['/opt/relops-check_gw']:
-        ensure => directory,
-        mode   => '0755';
-
-      '/opt/relops-check_gw/check_gw.py':
-        ensure => present,
-        mode   => '0755',
-        source => "puppet:///modules/${module_name}/check_gw.py";
-
-      '/lib/systemd/system/check_gw.service':
-        source => "puppet:///modules/${module_name}/check_gw.service",
-        notify => Exec['reload systemd'];
-
-      '/lib/systemd/system/check_gw.timer':
-        source => "puppet:///modules/${module_name}/check_gw.timer",
-        notify => Exec['reload systemd'];
+    default: {
+      fail("Cannot install check_gw deps on ${facts['os']['name']}")
     }
-
-    service { 'check_gw.timer':
-      enable   => true,
-      provider => 'systemd',
-      require  => File['/lib/systemd/system/check_gw.timer'];
-    }
-
+  }
 }
