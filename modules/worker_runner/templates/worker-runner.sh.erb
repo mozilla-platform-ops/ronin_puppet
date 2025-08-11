@@ -25,7 +25,10 @@ rm -rf /opt/worker/tasks/task_*
 find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
-python3 /usr/local/bin/lsdb.py --delete-stale
+if [ -x  /usr/local/bin/lsdb.py ]; then
+    python3 /usr/local/bin/lsdb.py --delete-stale
+else
+    echo "lsdb.py not found, skipping launch services cleanup."
 
 if [ -x /usr/local/bin/run-puppet.sh ]; then
     sudo /usr/local/bin/run-puppet.sh
