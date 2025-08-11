@@ -13,7 +13,7 @@ class win_filesystem::cache_mozilla_unified {
   }
 
   # Set permissions on the checkout directory (initial)
-  acl { "${checkout_path}_initial":
+  acl { 'mozilla_unified_checkout_initial_perms':
     target      => $checkout_path,
     permissions => {
       identity                   => 'everyone',
