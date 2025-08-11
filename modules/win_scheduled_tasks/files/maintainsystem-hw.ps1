@@ -460,6 +460,12 @@ function StartGenericWorker {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+
+        $regPath = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
+        $regName = 'gw_panic'
+
+        Write-Log -message "gw_panic reg value at start: $((Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue).$regName)" -severity 'DEBUG'
+
         # Check for user profile issues
         $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
         Select-Object -First 1 |
@@ -490,6 +496,8 @@ function StartGenericWorker {
 
         $regPath = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
         $regName = 'gw_panic'
+
+        Write-Log -message "gw_panic reg value at start: $((Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue).$regName)" -severity 'DEBUG'
 
         switch ($exitCode) {
             68 {
