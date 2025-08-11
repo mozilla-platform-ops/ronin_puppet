@@ -3,9 +3,28 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Variables from Puppet
-$HgExePath = '<%= @hg_exe_path %>'
-$RepositoryUrl = '<%= @mozilla_unified_url %>'
-$CheckoutPath = '<%= @checkout_path %>'
+$HgExePath = '<%= $hg_exe_path %>'
+$RepositoryUrl = '<%= $mozilla_unified_url %>'
+$CheckoutPath = '<%= $checkout_path %>'
+
+
+# Check if hg.exe exists
+if (-not (Test-Path $HgExePath)) {
+    Write-Log "ERROR: Mercurial executable not found at: $HgExePath"
+    exit 1
+}
+    
+Write-Log "Mercurial executable found"
+    
+# Check if .hg directory already exists (repository already cloned)
+$hgDir = Join-Path $CheckoutPath ".hg"
+if (Test-Path $hgDir) {
+    Write-Log "Repository already exists at $CheckoutPath, skipping clone"
+    exit 0
+}
+    
+Write-Log "Starting clone operation..."
+    
 # Execute the clone command
 $process = Start-Process -FilePath $HgExePath -ArgumentList "clone", $RepositoryUrl, $CheckoutPath -Wait -PassThru -NoNewWindow
     
