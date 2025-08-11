@@ -31,7 +31,7 @@ class win_filesystem::cache_mozilla_unified {
     command => "hg clone ${mozilla_unified_url} ${checkout_path}",
     creates => "${checkout_path}\\.hg",  # Only run if .hg directory doesn't exist
     timeout => 3600,  # 1 hour timeout for large clone
-    require => [File[$checkout_path], Acl["${checkout_path}_initial"]],
+    require => [File[$checkout_path], Acl["mozilla_unified_checkout_initial_perms"]],
   }
 
   # Ensure permissions are applied to all files after clone
