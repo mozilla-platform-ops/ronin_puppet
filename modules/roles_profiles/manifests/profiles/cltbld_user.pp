@@ -11,7 +11,7 @@ class roles_profiles::profiles::cltbld_user {
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
-      $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '${salt}', '-6', '-rounds', '${iterations}', '${password}']).read.chomp %>")
+      $password_hash = $password
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {
@@ -37,8 +37,7 @@ class roles_profiles::profiles::cltbld_user {
         }
         '20','21','22', '23', '24': {
           exec { 'create_macos_user':
-            # UID needs to be > 501 for LaunchAgents to function
-            command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password_hash}'",
+            command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password}'",
             unless  => '/usr/bin/dscl . -read /Users/cltbld',
           }
           class { 'macos_utils::autologin_user':
