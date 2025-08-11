@@ -11,7 +11,7 @@ class roles_profiles::profiles::cltbld_user {
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
-      $password_hash = inline_template("<%= `/usr/bin/openssl passwd -6 '#{@password}'`.chomp %>")
+      $password_hash = inline_template("<%= require 'crypt'; Crypt::SHA512.new(@password).to_s %>")
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {
