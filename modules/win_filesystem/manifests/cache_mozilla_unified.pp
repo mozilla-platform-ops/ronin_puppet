@@ -28,7 +28,7 @@ class win_filesystem::cache_mozilla_unified {
 
   # Perform the full hg clone
   exec { 'clone_mozilla_unified':
-    command => "hg clone ${mozilla_unified_url} ${checkout_path}",
+    command => "\"C:\\Program Files\\Mercurial\\hg.exe\" clone ${mozilla_unified_url} ${checkout_path}",
     creates => "${checkout_path}\\.hg",  # Only run if .hg directory doesn't exist
     timeout => 3600,  # 1 hour timeout for large clone
     require => [File[$checkout_path], Acl["mozilla_unified_checkout_initial_perms"]],

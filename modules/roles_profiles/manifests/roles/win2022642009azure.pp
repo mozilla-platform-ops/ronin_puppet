@@ -30,11 +30,13 @@ class roles_profiles::roles::win2022642009azure {
             include roles_profiles::profiles::power_management
             include roles_profiles::profiles::scheduled_tasks
             include roles_profiles::profiles::azure_vm_agent
-            include roles_profiles::profiles::cache_vcs_checkout
 
             # Adminstration
             include roles_profiles::profiles::logging
             include roles_profiles::profiles::mercurial
+
+            # VCS
+            include roles_profiles::profiles::cache_vcs_checkout
 
             # Worker
             include roles_profiles::profiles::google_auth
