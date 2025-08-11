@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::cache_vcs_checkout {
+  require roles_profiles::profiles::mercurial
   case $facts['os']['name'] {
     'Windows': {
       include win_filesystem::cache_mozilla_unified

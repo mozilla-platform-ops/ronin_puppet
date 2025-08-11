@@ -12,3 +12,9 @@ if (-not (Test-Path $HgExePath)) {
     Write-Log "ERROR: Mercurial executable not found at: $HgExePath"
     exit 1
 }
+
+$process = Start-Process -FilePath $HgExePath -ArgumentList @("clone", $RepositoryUrl, $CheckoutPath) -NoNewWindow -Wait
+if ($process.ExitCode -ne 0) {
+    Write-Log "ERROR: Failed to clone repository from $RepositoryUrl to $CheckoutPath"
+    exit 1
+}

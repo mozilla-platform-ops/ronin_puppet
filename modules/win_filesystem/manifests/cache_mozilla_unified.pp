@@ -47,8 +47,7 @@ class win_filesystem::cache_mozilla_unified {
     require  => [
       File[$checkout_path],
       File[$clone_script],
-      Acl['mozilla_unified_checkout_initial_perms'],
-      Class['win_packages::mercurial'],
+      Acl['mozilla_unified_checkout_initial_perms']
     ],
   }
 
