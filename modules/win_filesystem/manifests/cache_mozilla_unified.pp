@@ -27,10 +27,10 @@ class win_filesystem::cache_mozilla_unified {
     require => File[$checkout_path],
   }
 
-  # Perform the full hg clone
+  # Perform the full hg clone using PowerShell script
   exec { 'clone_mozilla_unified':
-    command  => "& \"${hg_exe_path}\" clone ${mozilla_unified_url} \"${checkout_path}\"",
-    provider => 'powershell',
+    command  => file('win_filesystem/clone_mozilla_unified.ps1'),
+    provider => powershell,
     creates  => "${checkout_path}\\.hg",  # Only run if .hg directory doesn't exist
     timeout  => 3600,  # 1 hour timeout for large clone
     require  => [File[$checkout_path], Acl["mozilla_unified_checkout_initial_perms"]],
