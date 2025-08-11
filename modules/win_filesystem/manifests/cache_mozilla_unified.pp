@@ -8,7 +8,7 @@ class win_filesystem::cache_mozilla_unified {
   $mozilla_unified_url = 'https://hg.mozilla.org/mozilla-unified'
   $hg_exe_path = 'C:\\Program Files\\Mercurial\\hg.exe'
   $clone_script = "${facts['custom_win_roninprogramdata']}\\clone_mozilla_unified.ps1"
-  
+
   # Create the checkout directory
   file { $checkout_path:
     ensure => directory,
@@ -25,7 +25,7 @@ class win_filesystem::cache_mozilla_unified {
       affects                    => 'all',
       inherit_parent_permissions => true,
     },
-    require => File[$checkout_path],
+    require     => File[$checkout_path],
   }
 
   # Create the PowerShell script from template
@@ -44,7 +44,12 @@ class win_filesystem::cache_mozilla_unified {
     command  => $clone_script,
     creates  => "${checkout_path}\\.hg",  # Only run if .hg directory doesn't exist
     timeout  => 3600,  # 1 hour timeout for large clone
-    require  => [File[$checkout_path], File[$clone_script], Acl["mozilla_unified_checkout_initial_perms"]],
+    require  => [
+      File[$checkout_path],
+      File[$clone_script],
+      Acl['mozilla_unified_checkout_initial_perms'],
+      Class['win_packages::mercurial'],
+    ],
   }
 
   # Ensure permissions are applied to all files after clone
@@ -58,7 +63,7 @@ class win_filesystem::cache_mozilla_unified {
       affects                    => 'all',
       inherit_parent_permissions => true,
     },
-    require => Exec['clone_mozilla_unified'],
+    require     => Exec['clone_mozilla_unified'],
   }
 
   # Set the VCS_CHECKOUT environment variable
