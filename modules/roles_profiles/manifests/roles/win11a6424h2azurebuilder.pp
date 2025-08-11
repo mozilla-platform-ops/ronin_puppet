@@ -29,6 +29,7 @@ class roles_profiles::roles::win11a6424h2azurebuilder {
       include roles_profiles::profiles::power_management
       include roles_profiles::profiles::scheduled_tasks
       include roles_profiles::profiles::azure_vm_agent
+      include roles_profiles::profiles::cache_vcs_checkout
 
       # Adminstration
       include roles_profiles::profiles::logging
