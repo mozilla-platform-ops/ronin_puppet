@@ -22,7 +22,7 @@ rm <%= @data_dir %>/tasks-resolved-count.txt
 rm -rf /opt/worker/tasks/task_*
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
-find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
+# find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then
