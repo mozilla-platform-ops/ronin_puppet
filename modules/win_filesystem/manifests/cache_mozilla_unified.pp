@@ -42,7 +42,6 @@ class win_filesystem::cache_mozilla_unified {
   exec { 'clone_mozilla_unified':
     provider => powershell,
     command  => $clone_script,
-    creates  => "${checkout_path}\\.hg",  # Only run if .hg directory doesn't exist
     timeout  => 3600,  # 1 hour timeout for large clone
     require  => [
       File[$checkout_path],
