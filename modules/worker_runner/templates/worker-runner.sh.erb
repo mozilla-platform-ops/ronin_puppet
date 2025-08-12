@@ -29,6 +29,7 @@ if [ -x  /usr/local/bin/lsdb.py ]; then
     python3 /usr/local/bin/lsdb.py --delete-stale
 else
     echo "lsdb.py not found, skipping launch services cleanup."
+fi
 
 if [ -x /usr/local/bin/run-puppet.sh ]; then
     sudo /usr/local/bin/run-puppet.sh
