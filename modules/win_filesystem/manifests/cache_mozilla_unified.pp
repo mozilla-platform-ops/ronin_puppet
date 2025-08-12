@@ -28,19 +28,19 @@ class win_filesystem::cache_mozilla_unified {
   }
 
   # Perform the full hg clone using inline PowerShell command
-  exec { 'clone_mozilla_unified':
-    provider => powershell,
-    command  => @("POWERSHELL"),
-      if (-not (Test-Path '${hg_exe_path}')) { 
-        Write-Error 'Mercurial executable not found at: ${hg_exe_path}'; 
-        exit 1 
-      };
-      & '${hg_exe_path}' clone '${mozilla_unified_url}' '${checkout_path}'
-      POWERSHELL
-    creates  => "${checkout_path}\\.hg",  # Only run if .hg directory doesn't exist
-    timeout  => 3600,  # 1 hour timeout for large clone
-    require  => [File[$checkout_path], Acl['mozilla_unified_checkout_initial_perms']],
-  }
+  # exec { 'clone_mozilla_unified':
+  #   provider => powershell,
+  #   command  => @("POWERSHELL"),
+  #     if (-not (Test-Path '${hg_exe_path}')) { 
+  #       Write-Error 'Mercurial executable not found at: ${hg_exe_path}'; 
+  #       exit 1 
+  #     };
+  #     & '${hg_exe_path}' clone '${mozilla_unified_url}' '${checkout_path}'
+  #     POWERSHELL
+  #   creates  => "${checkout_path}\\.hg",  # Only run if .hg directory doesn't exist
+  #   timeout  => 3600,  # 1 hour timeout for large clone
+  #   require  => [File[$checkout_path], Acl['mozilla_unified_checkout_initial_perms']],
+  # }
 
   # Ensure permissions are applied to all files after clone
   acl { $checkout_path:
