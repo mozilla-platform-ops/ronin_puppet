@@ -464,8 +464,6 @@ function StartGenericWorker {
         $regPath = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
         $regName = 'gw_panic'
 
-        Write-Log -message "gw_panic reg value at start: $((Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue).$regName)" -severity 'DEBUG'
-
         # Check for user profile issues
         $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
         Select-Object -First 1 |
@@ -493,11 +491,6 @@ function StartGenericWorker {
         [Environment]::SetEnvironmentVariable('gw_initiated', 'true', 'Machine')
 
         Write-Log -message ('{0} :: GW exited with code {1}' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
-
-        $regPath = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
-        $regName = 'gw_panic'
-
-        Write-Log -message "gw_panic reg value at start: $((Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue).$regName)" -severity 'DEBUG'
 
         switch ($exitCode) {
             68 {
@@ -540,7 +533,7 @@ function StartGenericWorker {
                     Restart-Computer -Force
                 } else {
                     Write-Log -message ('{0} :: Repeated panic, triggering PXE boot' -f $($MyInvocation.MyCommand.Name)) -severity 'FATAL'
-                    Set-PxeBoot
+                    Set-PXE
                     Start-Sleep -Seconds 3
                     Restart-Computer -Force
                 }
