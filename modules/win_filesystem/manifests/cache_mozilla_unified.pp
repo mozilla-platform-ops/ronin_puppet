@@ -52,8 +52,7 @@ class win_filesystem::cache_mozilla_unified {
       child_types                => 'all',
       affects                    => 'all',
       inherit_parent_permissions => true,
-    },
-    require     => Exec['clone_mozilla_unified'],
+    }
   }
 
   # Set the VCS_CHECKOUT environment variable
@@ -62,6 +61,6 @@ class win_filesystem::cache_mozilla_unified {
     variable  => 'VCS_CHECKOUT',
     value     => $checkout_path,
     mergemode => clobber,
-    require   => [Exec['clone_mozilla_unified'], Acl[$checkout_path]],
+    require   => Acl[$checkout_path],
   }
 }
