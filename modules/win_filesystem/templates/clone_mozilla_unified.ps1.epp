@@ -13,8 +13,4 @@ if (-not (Test-Path $HgExePath)) {
     exit 1
 }
 
-$process = Start-Process -FilePath $HgExePath -ArgumentList @("clone", $RepositoryUrl, $CheckoutPath) -NoNewWindow -Wait -Passthru
-if ($process.ExitCode -ne 0) {
-    Write-Log "ERROR: Failed to clone repository from $RepositoryUrl to $CheckoutPath"
-    exit 1
-}
+Start-Process -FilePath $HgExePath -ArgumentList @("clone", $RepositoryUrl, $CheckoutPath) -NoNewWindow -Wait
