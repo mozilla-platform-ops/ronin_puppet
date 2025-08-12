@@ -43,11 +43,7 @@ class win_filesystem::cache_mozilla_unified {
     provider => powershell,
     command  => $clone_script,
     timeout  => 3600,  # 1 hour timeout for large clone
-    require  => [
-      File[$checkout_path],
-      File[$clone_script],
-      Acl['mozilla_unified_checkout_initial_perms']
-    ],
+    require  => [File[$checkout_path],File[$clone_script],Acl['mozilla_unified_checkout_initial_perms']],
   }
 
   # Ensure permissions are applied to all files after clone
