@@ -12,12 +12,7 @@ class win_mozilla_build::hg_files {
 
   case $facts['custom_win_location'] {
     'azure': {
-      if $facts['custom_win_os_arch'] != 'aarch64' {
-        $cache_drive = 'd:'
-      }
-      else {
-        $cache_drive = 'c:'
-      }
+      $cache_drive = 'c:'
     }
     'datacenter': {
       $cache_drive = 'c:'
@@ -29,10 +24,6 @@ class win_mozilla_build::hg_files {
 
   file { "${cache_drive}\\hg-shared":
     ensure => directory,
-  }
-  # Resource from counsyl-windows
-  windows::environment { 'HG_CACHE':
-    value => "${cache_drive}\\hg-cache",
   }
   # Reference  https://bugzilla.mozilla.org/show_bug.cgi?id=1305485#c5
   file { "${mozbld}\\robustcheckout.py":
