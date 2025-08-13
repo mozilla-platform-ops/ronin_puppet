@@ -36,13 +36,12 @@ repos:
       #    - id: tflint
 - repo: local
   hooks:
+    # banglines are a unix thing, so not as valuable for windows
     - id: erb-no-shebang
       name: .erb files must not have a shebang
       language: pygrep
       entry: '^#!'
       files: \.erb$
-- repo: local
-  hooks:
     - id: forbid-scriptlike-erb
       name: Disallow script-like ERB filenames
       language: system
