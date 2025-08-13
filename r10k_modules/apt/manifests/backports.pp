@@ -1,18 +1,10 @@
 # @summary Manages backports.
 #
-# @example Set up a backport for linuxmint qiana
-#   apt::backports { 'qiana':
-#     location => 'http://us.archive.ubuntu.com/ubuntu',
-#     release  => 'trusty-backports',
-#     repos    => 'main universe multiverse restricted',
-#     key      => {
-#       id     => '630239CC130E1A7FD81A27B140976EAF437D05B5',
-#       server => 'hkps.pool.sks-keyservers.net',
-#     },
-#   }
+# @example Set up a backport source for Ubuntu
+#   include apt::backports
 #
 # @param location
-#   Specifies an Apt repository containing the backports to manage. Valid options: a string containing a URL. Default value for Debian and 
+#   Specifies an Apt repository containing the backports to manage. Valid options: a string containing a URL. Default value for Debian and
 #   Ubuntu varies:
 #
 #   - Debian: 'http://deb.debian.org/debian'
@@ -20,86 +12,108 @@
 #   - Ubuntu: 'http://archive.ubuntu.com/ubuntu'
 #
 # @param release
-#   Specifies a distribution of the Apt repository containing the backports to manage. Used in populating the `source.list` configuration file. 
-#   Default: on Debian and Ubuntu, '${lsbdistcodename}-backports'. We recommend keeping this default, except on other operating 
+#   Specifies a distribution of the Apt repository containing the backports to manage. Used in populating the `sources.list` configuration file.
+#   Default: on Debian and Ubuntu, `${fact('os.distro.codename')}-backports`. We recommend keeping this default, except on other operating
 #   systems.
 #
 # @param repos
-#   Specifies a component of the Apt repository containing the backports to manage. Used in populating the `source.list` configuration file. 
+#   Specifies a component of the Apt repository containing the backports to manage. Used in populating the `sources.list` configuration file.
 #   Default value for Debian and Ubuntu varies:
-#   
-#   - Debian: 'main contrib non-free'
+#
+#   - Debian: 'main contrib non-free non-free-firmware'
 #
 #   - Ubuntu: 'main universe multiverse restricted'
 #
 # @param key
-#   Specifies a key to authenticate the backports. Valid options: a string to be passed to the id parameter of the apt::key defined type, or a 
-#   hash of parameter => value pairs to be passed to apt::key's id, server, content, source, and/or options parameters. Default value
-#   for Debian and Ubuntu varies:
+#   Specifies a key to authenticate the backports. Valid options: a string to be passed to the id parameter of the apt::key defined type, or a
+#   hash of parameter => value pairs to be passed to apt::key's id, server, content, source, and/or options parameters.
 #
-#   - Debian: 'A1BD8E9D78F7FE5C3E65D8AF8B48AD6246925553'
-#
-#   - Ubuntu: '630239CC130E1A7FD81A27B140976EAF437D05B5'
+# @param keyring
+#   Absolute path to a file containing the PGP keyring used to sign this
+#   repository. Value is passed to the apt::source and used to set signed-by on
+#   the source entry.
 #
 # @param pin
-#   Specifies a pin priority for the backports. Valid options: a number or string to be passed to the `id` parameter of the `apt::pin` defined 
+#   Specifies a pin priority for the backports. Valid options: a number or string to be passed to the `id` parameter of the `apt::pin` defined
 #   type, or a hash of `parameter => value` pairs to be passed to `apt::pin`'s corresponding parameters.
 #
+# @param include
+#   Specifies whether to include 'deb' or 'src', or both.
+#
 class apt::backports (
-  Optional[String] $location                    = undef,
-  Optional[String] $release                     = undef,
-  Optional[String] $repos                       = undef,
-  Optional[Variant[String, Hash]] $key          = undef,
-  Optional[Variant[Integer, String, Hash]] $pin = 200,
-){
+  Optional[Stdlib::HTTPUrl] $location = undef,
+  Optional[String[1]] $release = undef,
+  Optional[String[1]] $repos = undef,
+  Optional[Variant[String[1], Hash]] $key = undef,
+  Stdlib::AbsolutePath $keyring = "/usr/share/keyrings/${facts['os']['name'].downcase}-archive-keyring.gpg",
+  Variant[Integer, String[1], Hash] $pin = 200,
+  Hash $include = {},
+) {
+  include apt
+
   if $location {
     $_location = $location
   }
+
   if $release {
     $_release = $release
   }
+
   if $repos {
     $_repos = $repos
   }
-  if $key {
-    $_key = $key
-  }
-  if (!($facts['lsbdistid'] == 'Debian' or $facts['lsbdistid'] == 'Ubuntu')) {
-    unless $location and $release and $repos and $key {
-      fail(translate('If not on Debian or Ubuntu, you must explicitly pass location, release, repos, and key'))
+
+  if (!($facts['os']['name'] == 'Debian' or $facts['os']['name'] == 'Ubuntu')) {
+    unless $location and $release and $repos {
+      fail('If not on Debian or Ubuntu, you must explicitly pass location, release, and repos')
     }
   }
+
   unless $location {
-    $_location = $::apt::backports['location']
+    $_location = $apt::backports['location']
   }
+
   unless $release {
-    $_release = "${facts['lsbdistcodename']}-backports"
+    if fact('os.distro.codename') {
+      $_release = "${fact('os.distro.codename')}-backports"
+    } else {
+      fail('os.distro.codename fact not available: release parameter required')
+    }
   }
+
   unless $repos {
-    $_repos = $::apt::backports['repos']
+    $_repos = $apt::backports['repos']
   }
-  unless $key {
-    $_key =  $::apt::backports['key']
+
+  $_keyring = if $key {
+    undef
+  } else {
+    $keyring
   }
 
   if $pin =~ Hash {
     $_pin = $pin
   } elsif $pin =~ Numeric or $pin =~ String {
-    # apt::source defaults to pinning to origin, but we should pin to release
-    # for backports
+    $pin_type = $facts['os']['name'] ? {
+      'Debian' => 'codename',
+      'Ubuntu' => 'release',
+    }
+
     $_pin = {
       'priority' => $pin,
-      'release'  => $_release,
+      $pin_type  => $_release,
     }
   } else {
-    fail(translate('pin must be either a string, number or hash'))
+    fail('pin must be either a string, number or hash')
   }
 
   apt::source { 'backports':
     location => $_location,
     release  => $_release,
     repos    => $_repos,
-    key      => $_key,
+    include  => $include,
+    key      => $key,
+    keyring  => $_keyring,
     pin      => $_pin,
   }
 }
