@@ -48,11 +48,13 @@ repos:
       language: system
       entry: |
         bash -c '
+        ret=0
         for f in "$@"; do
           if [[ "$f" =~ \.(sh|bash|zsh|ps1|cmd)\.erb$ ]]; then
             echo "Disallowed ERB filename (scripts should not be templated): $f"
-            exit 1
+            ret=1
           fi
         done
+        exit $ret
         '
       files: \.(sh|bash|zsh|ps1|cmd)\.erb$
