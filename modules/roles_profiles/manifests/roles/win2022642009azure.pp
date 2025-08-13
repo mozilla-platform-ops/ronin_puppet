@@ -35,7 +35,6 @@ class roles_profiles::roles::win2022642009azure {
             include roles_profiles::profiles::logging
             include roles_profiles::profiles::mercurial
 
-
             # Worker
             include roles_profiles::profiles::google_auth
             include roles_profiles::profiles::git
