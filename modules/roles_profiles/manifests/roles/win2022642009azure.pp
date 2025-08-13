@@ -35,8 +35,6 @@ class roles_profiles::roles::win2022642009azure {
             include roles_profiles::profiles::logging
             include roles_profiles::profiles::mercurial
 
-            # VCS
-            include roles_profiles::profiles::cache_vcs_checkout
 
             # Worker
             include roles_profiles::profiles::google_auth

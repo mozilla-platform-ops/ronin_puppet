@@ -34,9 +34,6 @@ class roles_profiles::roles::win11a6424h2azurebuilder {
       include roles_profiles::profiles::logging
       include roles_profiles::profiles::mercurial
 
-      # VCS
-      include roles_profiles::profiles::cache_vcs_checkout
-
       # Worker
       include roles_profiles::profiles::google_auth
       include roles_profiles::profiles::git
