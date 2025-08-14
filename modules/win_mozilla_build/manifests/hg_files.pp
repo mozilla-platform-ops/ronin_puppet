@@ -12,7 +12,12 @@ class win_mozilla_build::hg_files {
 
   case $facts['custom_win_location'] {
     'azure': {
-      $cache_drive = 'c:'
+      if $facts['custom_win_os_arch'] != 'aarch64' {
+        $cache_drive = 'd:'
+      }
+      else {
+        $cache_drive = 'c:'
+      }
     }
     'datacenter': {
       $cache_drive = 'c:'
