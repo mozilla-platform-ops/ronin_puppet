@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_filesystem::copy_vcs_checkout_to_cache {
-  $source_path = 'C:\\hg-shared'
-  $destination_path = 'D:\\hg-shared'
+  $source_path = 'C:\\vcs-checkout'
+  $destination_path = 'D:\\vcs-checkout'
 
   # Create destination directory
   file { $destination_path:
