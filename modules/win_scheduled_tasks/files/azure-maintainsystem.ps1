@@ -553,7 +553,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
-    LinkZY2D
+    #LinkZY2D
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
