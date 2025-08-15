@@ -13,7 +13,7 @@ class win_filesystem::copy_vcs_checkout_to_cache {
 
   # Move the hg-shared directory using PowerShell
   exec { 'move_hg_shared_to_cache':
-    command  => "if (Test-Path '${source_path}') { Move-Item -Path '${source_path}\\*' -Destination '${destination_path}' -Force; Remove-Item '${source_path}' -Force }",
+    command  => "Move-Item -Path '${source_path}\\*' -Destination '${destination_path}' -Force; Remove-Item '${source_path}' -Recurse -Force",
     provider => powershell,
     onlyif   => "Test-Path '${source_path}'",
     require  => File[$destination_path],
