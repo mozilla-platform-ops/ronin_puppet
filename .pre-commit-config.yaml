@@ -57,3 +57,8 @@ repos:
         exit $ret
         '
       files: \.(sh|bash|zsh|ps1|cmd)\.erb$
+    - id: erb_template_script_checker
+      name: Check ERB template scripts
+      language: system
+      entry: .pre-commit/erb_template_script_checker.py
+      types: [file]
