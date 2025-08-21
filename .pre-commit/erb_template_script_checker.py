@@ -57,6 +57,8 @@ def main():
             print(f"Checking Bash ERB template: {file_path}")
             rendered = render_erb(file_path)
             if rendered is None or not check_bash_syntax(rendered):
+                print(f"Bash ERB template failed: {file_path}")
+                print(f"rendered content:\n{rendered}")
                 failed = True
         # TODO: re-enable ps1 scanning
         # - current issue: powershell does more advanced syntax checking than bash syntax checking
