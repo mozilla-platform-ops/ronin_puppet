@@ -12,6 +12,52 @@ groups:
       - macmini-m4-10.test.releng.mslv.mozilla.com
       - macmini-m4-11.test.releng.mslv.mozilla.com
       - macmini-m4-12.test.releng.mslv.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1500_m4_staging
+
+  - name: gecko-t-osx-1500-m4
+    targets:
+      - macmini-m4-13.test.releng.mslv.mozilla.com
+      - macmini-m4-14.test.releng.mslv.mozilla.com
+      - macmini-m4-15.test.releng.mslv.mozilla.com
+      - macmini-m4-16.test.releng.mslv.mozilla.com
+      - macmini-m4-17.test.releng.mslv.mozilla.com
+      - macmini-m4-18.test.releng.mslv.mozilla.com
+      - macmini-m4-19.test.releng.mslv.mozilla.com
+      - macmini-m4-20.test.releng.mslv.mozilla.com
+      - macmini-m4-21.test.releng.mslv.mozilla.com
+      - macmini-m4-22.test.releng.mslv.mozilla.com
+      - macmini-m4-23.test.releng.mslv.mozilla.com
+      - macmini-m4-24.test.releng.mslv.mozilla.com
+      - macmini-m4-25.test.releng.mslv.mozilla.com
+      - macmini-m4-26.test.releng.mslv.mozilla.com
+      - macmini-m4-27.test.releng.mslv.mozilla.com
+      - macmini-m4-28.test.releng.mslv.mozilla.com
+      - macmini-m4-29.test.releng.mslv.mozilla.com
+      - macmini-m4-30.test.releng.mslv.mozilla.com
+      - macmini-m4-31.test.releng.mslv.mozilla.com
+      - macmini-m4-32.test.releng.mslv.mozilla.com
+      - macmini-m4-33.test.releng.mslv.mozilla.com
+      - macmini-m4-34.test.releng.mslv.mozilla.com
+      - macmini-m4-35.test.releng.mslv.mozilla.com
+      - macmini-m4-36.test.releng.mslv.mozilla.com
+      - macmini-m4-37.test.releng.mslv.mozilla.com
+      - macmini-m4-38.test.releng.mslv.mozilla.com
+      - macmini-m4-39.test.releng.mslv.mozilla.com
+      - macmini-m4-40.test.releng.mslv.mozilla.com
+      - macmini-m4-41.test.releng.mslv.mozilla.com
+      - macmini-m4-42.test.releng.mslv.mozilla.com
+      - macmini-m4-43.test.releng.mslv.mozilla.com
+      - macmini-m4-44.test.releng.mslv.mozilla.com
+      - macmini-m4-45.test.releng.mslv.mozilla.com
+      - macmini-m4-46.test.releng.mslv.mozilla.com
+      - macmini-m4-47.test.releng.mslv.mozilla.com
+      - macmini-m4-48.test.releng.mslv.mozilla.com
+      - macmini-m4-49.test.releng.mslv.mozilla.com
+      - macmini-m4-50.test.releng.mslv.mozilla.com
+      - macmini-m4-51.test.releng.mslv.mozilla.com
+      - macmini-m4-52.test.releng.mslv.mozilla.com
+      - macmini-m4-53.test.releng.mslv.mozilla.com
       - macmini-m4-60.test.releng.mdc1.mozilla.com
       - macmini-m4-61.test.releng.mdc1.mozilla.com
       - macmini-m4-62.test.releng.mdc1.mozilla.com
@@ -63,51 +109,5 @@ groups:
       - macmini-m4-108.test.releng.mdc1.mozilla.com
       - macmini-m4-109.test.releng.mdc1.mozilla.com
       - macmini-m4-110.test.releng.mdc1.mozilla.com
-    facts:
-      puppet_role: gecko_t_osx_1500_m4_staging
-
-  - name: gecko-t-osx-1500-m4
-    targets:
-      - macmini-m4-13.test.releng.mslv.mozilla.com
-      - macmini-m4-14.test.releng.mslv.mozilla.com
-      - macmini-m4-15.test.releng.mslv.mozilla.com
-      - macmini-m4-16.test.releng.mslv.mozilla.com
-      - macmini-m4-17.test.releng.mslv.mozilla.com
-      - macmini-m4-18.test.releng.mslv.mozilla.com
-      - macmini-m4-19.test.releng.mslv.mozilla.com
-      - macmini-m4-20.test.releng.mslv.mozilla.com
-      - macmini-m4-21.test.releng.mslv.mozilla.com
-      - macmini-m4-22.test.releng.mslv.mozilla.com
-      - macmini-m4-23.test.releng.mslv.mozilla.com
-      - macmini-m4-24.test.releng.mslv.mozilla.com
-      - macmini-m4-25.test.releng.mslv.mozilla.com
-      - macmini-m4-26.test.releng.mslv.mozilla.com
-      - macmini-m4-27.test.releng.mslv.mozilla.com
-      - macmini-m4-28.test.releng.mslv.mozilla.com
-      - macmini-m4-29.test.releng.mslv.mozilla.com
-      - macmini-m4-30.test.releng.mslv.mozilla.com
-      - macmini-m4-31.test.releng.mslv.mozilla.com
-      - macmini-m4-32.test.releng.mslv.mozilla.com
-      - macmini-m4-33.test.releng.mslv.mozilla.com
-      - macmini-m4-34.test.releng.mslv.mozilla.com
-      - macmini-m4-35.test.releng.mslv.mozilla.com
-      - macmini-m4-36.test.releng.mslv.mozilla.com
-      - macmini-m4-37.test.releng.mslv.mozilla.com
-      - macmini-m4-38.test.releng.mslv.mozilla.com
-      - macmini-m4-39.test.releng.mslv.mozilla.com
-      - macmini-m4-40.test.releng.mslv.mozilla.com
-      - macmini-m4-41.test.releng.mslv.mozilla.com
-      - macmini-m4-42.test.releng.mslv.mozilla.com
-      - macmini-m4-43.test.releng.mslv.mozilla.com
-      - macmini-m4-44.test.releng.mslv.mozilla.com
-      - macmini-m4-45.test.releng.mslv.mozilla.com
-      - macmini-m4-46.test.releng.mslv.mozilla.com
-      - macmini-m4-47.test.releng.mslv.mozilla.com
-      - macmini-m4-48.test.releng.mslv.mozilla.com
-      - macmini-m4-49.test.releng.mslv.mozilla.com
-      - macmini-m4-50.test.releng.mslv.mozilla.com
-      - macmini-m4-51.test.releng.mslv.mozilla.com
-      - macmini-m4-52.test.releng.mslv.mozilla.com
-      - macmini-m4-53.test.releng.mslv.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1500_m4
