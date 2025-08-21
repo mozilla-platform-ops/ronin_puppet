@@ -59,11 +59,16 @@ def main():
             if rendered is None or not check_bash_syntax(rendered):
                 failed = True
         # TODO: re-enable ps1 scanning
-        elif path.suffixes[-2:] == ['.ps1', '.erb']:
-            print(f"Checking PowerShell ERB template: {file_path}")
-            rendered = render_erb(file_path)
-            if rendered is None or not check_powershell_syntax(rendered):
-                failed = True
+        # - current issue: powershell does more advanced syntax checking than bash syntax checking
+        #  - detects if path is bad... unsure how to make this technique work.
+        #
+        # elif path.suffixes[-2:] == ['.ps1', '.erb']:
+        #     print(f"Checking PowerShell ERB template: {file_path}")
+        #     rendered = render_erb(file_path)
+        #     if rendered is None or not check_powershell_syntax(rendered):
+        #         print(f"PowerShell ERB template failed: {file_path}")
+        #         print(f"rendered content:\n{rendered}")
+        #         failed = True
         else:
             #print(f"Skipping unsupported file: {file_path}")
             pass
