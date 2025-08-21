@@ -12,6 +12,11 @@ groups:
       - macmini-m4-10.test.releng.mslv.mozilla.com
       - macmini-m4-11.test.releng.mslv.mozilla.com
       - macmini-m4-12.test.releng.mslv.mozilla.com
+      - macmini-m4-111.test.releng.mdc1.mozilla.com
+      - macmini-m4-112.test.releng.mdc1.mozilla.com
+      - macmini-m4-113.test.releng.mdc1.mozilla.com
+      - macmini-m4-114.test.releng.mdc1.mozilla.com
+      - macmini-m4-115.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1500_m4_staging
 
