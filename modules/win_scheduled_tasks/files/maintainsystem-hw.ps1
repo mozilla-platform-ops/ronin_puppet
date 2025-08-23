@@ -253,35 +253,6 @@ function Puppet-Run {
     }
 }
 
-function StartWorkerRunner {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        ## Checking for issues with the user profile.
-        $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
-        Select-Object -First 1 |
-        ForEach-Object { $_.TimeCreated }
-        $eventIDs = @(1511, 1515)
-
-        $events = Get-WinEvent -LogName "Application" |
-        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
-        Sort-Object TimeCreated -Descending | Select-Object -First 1
-
-        if ($events) {
-            Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Restart-Computer -Force
-            exit
-        }
-        Start-Service -Name worker-runner
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-
 function CompareConfig {
     param (
         [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
@@ -520,20 +491,26 @@ function StartGenericWorker {
             69 {
                 Write-Log -message ('{0} :: Panic exit code 69 detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
 
+                # Ensure the key exists
                 if (!(Test-Path $regPath)) {
                     New-Item -Path $regPath -Force | Out-Null
                 }
 
-                $currentValue = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue
+                # Read as int; if missing stays $null
+                $current = Get-ItemPropertyValue -Path $regPath -Name $regName -ErrorAction SilentlyContinue
+                $current = if ($null -eq $current) { $null } else { [int]$current }
 
-                if ($null -eq $currentValue -or $currentValue.$regName -ne 1) {
-                    Set-ItemProperty -Path $regPath -Name $regName -Value 1
-                    Write-Log -message ('{0} :: First panic, setting reg key and rebooting' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                if ($null -eq $current -or $current -eq 0) {
+                    # First panic -> create/set DWORD=1 and reboot
+                    New-ItemProperty -Path $regPath -Name $regName -PropertyType DWord -Value 1 -Force | Out-Null
+                    Write-Log -message ('{0} :: First panic, set {1}\{2}=1 (DWORD) and rebooting' -f $($MyInvocation.MyCommand.Name), $regPath, $regName) -severity 'ERROR'
                     Start-Sleep -Seconds 3
                     Restart-Computer -Force
                 } else {
-                    Write-Log -message ('{0} :: Repeated panic, triggering PXE boot' -f $($MyInvocation.MyCommand.Name)) -severity 'FATAL'
+                    # Repeated panic -> PXE and reboot; record 2 for diagnostics
+                    Write-Log -message ('{0} :: Repeated panic (current={1}), triggering PXE boot' -f $($MyInvocation.MyCommand.Name), $current) -severity 'FATAL'
                     Set-PXE
+                    New-ItemProperty -Path $regPath -Name $regName -PropertyType DWord -Value 2 -Force | Out-Null
                     Start-Sleep -Seconds 3
                     Restart-Computer -Force
                 }
