@@ -36,27 +36,31 @@ repos:
       #    - id: tflint
 - repo: local
   hooks:
-    # banglines are a unix thing, so not as valuable for windows
-    - id: erb-no-shebang
-      name: .erb files must not have a shebang
-      language: pygrep
-      entry: '^#!'
-      files: \.erb$
-    - id: forbid-scriptlike-erb
-      name: Disallow script-like ERB filenames
-      language: system
-      entry: |
-        bash -c '
-        ret=0
-        for f in "$@"; do
-          if [[ "$f" =~ \.(sh|bash|zsh|ps1|cmd)\.erb$ ]]; then
-            echo "Disallowed ERB filename (scripts should not be templated): $f"
-            ret=1
-          fi
-        done
-        exit $ret
-        '
-      files: \.(sh|bash|zsh|ps1|cmd)\.erb$
+    # pre-commit hooks that will block erb scripts
+    # - enable once we've gotten rid of them all
+    #   - https://mozilla-hub.atlassian.net/browse/RELOPS-1832
+    #   - https://mozilla-hub.atlassian.net/browse/RELOPS-1833
+    #
+    # - id: erb-no-shebang
+    #   name: .erb files must not have a shebang
+    #   language: pygrep
+    #   entry: '^#!'
+    #   files: \.erb$
+    # - id: forbid-scriptlike-erb
+    #   name: Disallow script-like ERB filenames
+    #   language: system
+    #   entry: |
+    #     bash -c '
+    #     ret=0
+    #     for f in "$@"; do
+    #       if [[ "$f" =~ \.(sh|bash|zsh|ps1|cmd)\.erb$ ]]; then
+    #         echo "Disallowed ERB filename (scripts should not be templated): $f"
+    #         ret=1
+    #       fi
+    #     done
+    #     exit $ret
+    #     '
+    #   files: \.(sh|bash|zsh|ps1|cmd)\.erb$
     - id: erb_template_script_checker
       name: Check ERB template scripts
       language: system
