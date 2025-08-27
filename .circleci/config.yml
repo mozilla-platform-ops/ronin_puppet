@@ -179,7 +179,14 @@ jobs:
           command: |
             export PATH="$HOME/.tfenv/bin:$PATH"
             pip install pre-commit
-            pre-commit run --from-ref original/master --to-ref HEAD --verbose
+            if [ "$(git rev-parse --abbrev-ref HEAD)" = "master" ]; then
+                # if we're on master, run against the last commit, else diff from master to HEAD
+                pre-commit run --from-ref HEAD~1 --to-ref HEAD --verbose
+            else
+                # testing to make sure above works...
+                pre-commit run --from-ref HEAD~1 --to-ref HEAD --verbose
+                # pre-commit run --from-ref original/master --to-ref HEAD --verbose
+            fi
   r10k_install:
     executor: ubuntu-2004
     steps:
