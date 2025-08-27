@@ -42,19 +42,19 @@ repos:
     #   - https://mozilla-hub.atlassian.net/browse/RELOPS-1833
     #
     # - id: erb-no-shebang
-    #   name: .erb files must not have a shebang
+    #   name: .erb and .epp files must not have a shebang
     #   language: pygrep
     #   entry: '^#!'
     #   files: \.(erb|epp)$
     # - id: forbid-scriptlike-erb
-    #   name: Disallow script-like ERB filenames
+    #   name: Disallow script-like ERB/EPP filenames
     #   language: system
     #   entry: |
     #     bash -c '
     #     ret=0
     #     for f in "$@"; do
     #       if [[ "$f" =~ \.(sh|bash|zsh|ps1|cmd)\.erb$ ]]; then
-    #         echo "Disallowed ERB filename (scripts should not be templated): $f"
+    #         echo "Disallowed ERB/EPP filename (scripts should not be templated): $f"
     #         ret=1
     #       fi
     #     done
