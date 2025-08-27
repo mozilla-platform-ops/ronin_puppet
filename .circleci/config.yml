@@ -176,6 +176,8 @@ jobs:
       - run: git fetch --all
       - run:
           name: Run pre-commit
+          # ideally this would run `pre-commit run --all-files` on master, but we have
+          #   too many failures already in the repo.
           command: |
             set -x
             export PATH="$HOME/.tfenv/bin:$PATH"
