@@ -176,10 +176,19 @@ jobs:
       - run: git fetch --all
       - run:
           name: Run pre-commit
+          # ideally this would run `pre-commit run --all-files` on master, but we have
+          #   too many failures already in the repo.
           command: |
+            set -x
             export PATH="$HOME/.tfenv/bin:$PATH"
             pip install pre-commit
-            pre-commit run --from-ref original/master --to-ref HEAD --verbose
+            # if we're on master, run against the last commit, else
+            #   (we're on a pr and) diff from master to HEAD.
+            if [ "$(git rev-parse --abbrev-ref HEAD)" = "master" ]; then
+                pre-commit run --from-ref HEAD~1 --to-ref HEAD --verbose
+            else
+                pre-commit run --from-ref original/master --to-ref HEAD --verbose
+            fi
   r10k_install:
     executor: ubuntu-2004
     steps:
