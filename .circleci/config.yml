@@ -177,6 +177,7 @@ jobs:
       - run:
           name: Run pre-commit
           command: |
+            set -x
             export PATH="$HOME/.tfenv/bin:$PATH"
             pip install pre-commit
             if [ "$(git rev-parse --abbrev-ref HEAD)" = "master" ]; then
