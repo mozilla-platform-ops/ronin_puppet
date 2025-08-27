@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-# filepath: .pre-commit/erb_template_script_checker.py
+# filepath: .pre-commit/templated_script_checker.py
+
+# renders templated scripts and checks their syntax
+# currently supports bash (.sh.erb, .sh.epp)
+#
+# FUTURE: powershell (.ps1.erb) and batch files (.bat.erb)
+#   - requires `pwsh` to be installed for powershell checking
 
 import subprocess
 import sys
@@ -53,17 +59,18 @@ def main():
     failed = False
     for file_path in sys.argv[1:]:
         path = Path(file_path)
-        if path.suffixes[-2:] == ['.sh', '.erb']:
-            print(f"Checking Bash ERB template: {file_path}")
+        if (path.suffixes[-2:] == ['.sh', '.erb'] or
+            (path.suffixes[-3:] == ['.sh', '.epp'])):
+            print(f"Checking Bash ERB/EPP template: {file_path}")
             rendered = render_erb(file_path)
             if rendered is None or not check_bash_syntax(rendered):
-                print(f"Bash ERB template failed: {file_path}")
+                print(f"Bash ERB/EPP template failed: {file_path}")
                 print(f"rendered content:\n{rendered}")
                 failed = True
+        # TODO: also handle .bat files
         # TODO: re-enable ps1 scanning
         # - current issue: powershell does more advanced syntax checking than bash syntax checking
         #  - detects if path is bad... unsure how to make this technique work.
-        #
         # elif path.suffixes[-2:] == ['.ps1', '.erb']:
         #     print(f"Checking PowerShell ERB template: {file_path}")
         #     rendered = render_erb(file_path)
