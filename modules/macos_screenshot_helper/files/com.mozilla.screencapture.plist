@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.mozilla.screencapture</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/cltbld/bin/capture-on-demand.sh</string>
+  </array>
+  <key>WatchPaths</key>
+  <array>
+    <string>/Users/cltbld/.trigger_screenshot</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>
