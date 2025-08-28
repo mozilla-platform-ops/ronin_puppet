@@ -8,7 +8,7 @@ class linux_gui(
     $builder_home
 ) {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             # used in templates
             $screen_width  = 1600
@@ -121,8 +121,8 @@ class linux_gui(
                 provider => 'shell',
             }
 
-            case $::operatingsystemrelease {
-                '18.04': {
+            case $facts['os']['release']['full'] {
+                '18.04', '22.04': {
                     $gpu_bus_id = 'PCI:0:02:0'
                     file {
                         '/etc/X11/xorg.conf':
@@ -188,12 +188,12 @@ class linux_gui(
                     }
                 }
                 default: {
-                    fail ("Cannot install on Ubuntu version ${::operatingsystemrelease}")
+                    fail ("Cannot install on Ubuntu version ${facts['os']['release']['full']}")
                 }
             }
         }
         default: {
-            fail("gui is not supported on ${::operatingsystem}")
+            fail("gui is not supported on ${facts['os']['name']}")
         }
     }
 }

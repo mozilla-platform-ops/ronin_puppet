@@ -9,10 +9,10 @@ class linux_packages::py3 {
         '18.04': {
           # py3.6
           package { 'python3':
-            ensure   => present,
+            ensure => present,
           }
           package { 'python3-pip':
-            ensure   => present,
+            ensure => present,
           }
 
           # py3.9, from deadsnakes ppa
@@ -181,6 +181,73 @@ class linux_packages::py3 {
             force  => true,
           }
           # TODO: cleanup relops_py39
+        }
+        '22.04': {
+          # ships with py3.10
+          package { 'python3':
+            ensure => present,
+          }
+
+          package { 'python3-pip':
+            ensure => present,
+          }
+          # `python3 -m pip check` giving error: `pynacl 1.5.0 requires cffi, which is not installed.`
+          package { 'python3-cffi':
+            ensure => present,
+          }
+
+          # update some pips that prevent other pip installations (psutil) from failing
+
+          package { 'python3-pip-specific-version':
+            ensure   => '22.3.1',
+            name     => 'pip',
+            provider => pip3,
+          }
+
+          package { 'python3-distlib':
+            ensure   => '0.3.6',
+            name     => 'distlib',
+            provider => pip3,
+          }
+
+          package { 'python3-setuptools':
+            ensure   => '65.5.0',
+            name     => 'setuptools',
+            provider => pip3,
+          }
+        }
+        '24.04': {
+          # ships with py3.10
+          package { 'python3':
+            ensure => present,
+          }
+          package { 'python3-pip':
+            ensure => present,
+          }
+          # `python3 -m pip check` giving error: `pynacl 1.5.0 requires cffi, which is not installed.`
+          package { 'python3-cffi':
+            ensure => present,
+          }
+
+          # update some pips that prevent other pip installations (psutil) from failing
+
+          package { 'python3-pip-specific-version':
+            ensure   => '22.3.1',
+            name     => 'pip',
+            provider => pip3,
+          }
+
+          package { 'python3-distlib':
+            ensure   => '0.3.6',
+            name     => 'distlib',
+            provider => pip3,
+          }
+
+          package { 'python3-setuptools':
+            ensure   => '65.5.0',
+            name     => 'setuptools',
+            provider => pip3,
+          }
         }
         default: {
           fail("${facts['os']['release']['major']} not supported")
