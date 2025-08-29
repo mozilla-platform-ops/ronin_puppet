@@ -5,8 +5,7 @@
 class win_filesystem::configure_nvme_disk {
   # https://learn.microsoft.com/en-us/azure/virtual-machines/enable-nvme-temp-faqs
   exec { 'configure_nvme_disk':
-    command     => file('win_filesystem/configure_nvme_disk.ps1'),
-    provider    => powershell,
-    refreshonly => true,
+    command  => file('win_filesystem/configure_nvme_disk.ps1'),
+    provider => powershell,
   }
 }
