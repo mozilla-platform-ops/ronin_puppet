@@ -7,6 +7,12 @@ If (-Not (Test-Path "D:\")) {
     #Create a new disk, initialize, partition, and format
     $Disk = New-VirtualDisk -FriendlyName NVMeTemporary -StoragePoolFriendlyName NVMePool -NumberOfColumns @($RawNvmeDisks).count  -PhysicalDiskRedundancy 0 -ResiliencySettingName "Simple" -UseMaximumSize
     $Disk | Initialize-Disk 
+    # Move CD-ROM from D: to Z: if it exists there
+    $CdRomDrive = Get-WmiObject -Class Win32_Volume | Where-Object {$_.DriveLetter -eq "D:" -and $_.DriveType -eq 5}
+    if ($CdRomDrive) {
+        $CdRomDrive.DriveLetter = "E:"
+        $CdRomDrive.Put()
+    }
     #Create a partition and format. Ignore the pop-up. 
     New-Partition -DiskId $Disk.UniqueId -DriveLetter D -UseMaximumSize | Format-Volume
 }
