@@ -488,8 +488,13 @@ function StartGenericWorker {
                 StartGenericWorker
                 return
             }
-            69 {
-                Write-Log -message ('{0} :: Panic exit code 69 detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+
+            { $_ -in 0, 69 } {
+                if ($exitCode -eq 0) {
+                    Write-Log -message ('{0} :: Exit code 0 treated as panic (69).' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                } else {
+                    Write-Log -message ('{0} :: Panic exit code 69 detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                }
 
                 # Ensure the key exists
                 if (!(Test-Path $regPath)) {
@@ -508,15 +513,16 @@ function StartGenericWorker {
                     Restart-Computer -Force
                 } else {
                     # Repeated panic -> PXE and reboot; record 2 for diagnostics
-                    Write-Log -message ('{0} :: Repeated panic (current={1}), triggering PXE boot' -f $($MyInvocation.MyCommand.Name), $current) -severity 'FATAL'
+                    Write-Log -message ('{0} :: Repeated panic (current={1}), triggering PXE boot' -f $($MyInvocation.MyCommand.Name), $current) -severity 'ERROR'
                     Set-PXE
                     New-ItemProperty -Path $regPath -Name $regName -PropertyType DWord -Value 2 -Force | Out-Null
                     Start-Sleep -Seconds 3
                     Restart-Computer -Force
                 }
             }
+
             default {
-                # Clear panic state if it’s not a 69
+                # Clear panic state if it’s not a 69/0
                 if (Test-Path "$regPath") {
                     Remove-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue
                     Write-Log -message ('{0} :: Clearing panic reg key due to normal exit code {1}' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
