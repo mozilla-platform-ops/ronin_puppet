@@ -47,9 +47,9 @@ switch -Wildcard ($DhcpDomain) {
 
 if ($location -eq "azure") {
   $metaData = Get-AzureInstanceMetadata
-  $vmSize = $metaData.compute.vmSize
+  [string]$vmSize = $metaData.compute.vmSize
 } 
 else {
-  $vmsize = ""
+  [string]$vmSize = ""
 }
-write-host "custom_win_vmSize=$vmsize"
+write-host "custom_win_vmSize=$vmSize"
