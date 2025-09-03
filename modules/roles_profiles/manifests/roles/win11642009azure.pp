@@ -23,7 +23,7 @@ class roles_profiles::roles::win11642009azure {
       ## errors if we don't have this, adding this
       include roles_profiles::profiles::mozilla_maintenance_service
       ## We need hg-cache and pip-cache, so re-run this but just do the pip/hg stuff
-      include roles_profiles::profiles::mozbuild_post_boostrap_new
+      include roles_profiles::profiles::mozbuild_post_boostrap
     }
     default: {
       # Install MS tools earlier
@@ -52,7 +52,7 @@ class roles_profiles::roles::win11642009azure {
 
       # Worker
       include roles_profiles::profiles::git
-      include roles_profiles::profiles::mozilla_build_new
+      include roles_profiles::profiles::mozilla_build
       include roles_profiles::profiles::mozilla_maintenance_service
       include roles_profiles::profiles::windows_worker_runner
     }
