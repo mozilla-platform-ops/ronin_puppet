@@ -32,7 +32,7 @@ $SchTasksList = @(
 )
 
 Foreach ($Item in $SchTasksList) {
-    $TaskObject = Get-ScheduledTask $Item
+    $TaskObject = Get-ScheduledTask $Item -ErrorAction SilentlyContinue
     If ($TaskObject) {
         Disable-ScheduledTask -InputObject $TaskObject | Out-Null
     }
