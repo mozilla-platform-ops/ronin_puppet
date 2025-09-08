@@ -17,38 +17,6 @@ New-ItemProperty -Path $pol -Name 'DisableFileSyncNGSC' -PropertyType DWord -Val
 # Clean incorrect Wow6432Node path (if previously set)
 Remove-Item -Path 'HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive' -Recurse -Force
 
-Write-Host "== Default profile: remove first-run hooks for new users =="
-$defaultHive = 'HKU\Default'
-$defaultNtUsr = 'C:\Users\Default\NTUSER.DAT'
-if (Test-Path $defaultNtUsr) {
-    reg load $defaultHive $defaultNtUsr | Out-Null
-
-    # Known values
-    reg delete "$defaultHive\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveSetup" /f | Out-Null
-    reg delete "$defaultHive\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce" /v "OneDrive" /f | Out-Null
-
-    # Remove any other values that point to OneDriveSetup.exe
-    foreach ($rk in @(
-            "Registry::$defaultHive\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-            "Registry::$defaultHive\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
-        )) {
-        if (Test-Path $rk) {
-            $props = (Get-ItemProperty -Path $rk | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)
-            foreach ($name in $props) {
-                $val = (Get-ItemPropertyValue -Path $rk -Name $name)
-                if ($val -match 'OneDriveSetup\.exe') {
-                    Remove-ItemProperty -Path $rk -Name $name -Force
-                }
-            }
-        }
-    }
-
-    reg unload $defaultHive | Out-Null
-}
-else {
-    Write-Warning "Default profile hive not found at $defaultNtUsr"
-}
-
 Write-Host "== Machine-level Run/RunOnce cleanup =="
 foreach ($rk in @(
         'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
