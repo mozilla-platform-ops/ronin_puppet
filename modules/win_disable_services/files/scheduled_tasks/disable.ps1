@@ -21,6 +21,7 @@ $SchTasksList = @(
     "Sqm-Tasks",
     "SR",
     "StartComponentCleanup",
+    "SmartScreenSpecific",
     "WindowsActionDialog",
     "WinSAT",
     "XblGameSaveTask",
