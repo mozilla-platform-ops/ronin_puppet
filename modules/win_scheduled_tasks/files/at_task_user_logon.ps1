@@ -89,10 +89,12 @@ $Accessibility = Get-ItemProperty -Path "HKCU:\Control Panel\Accessibility"
 ## Show scrollbars permanently
 switch ($os_version) {
     "win_10_2009" {
-        continue
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
     }
     "win_11_2009" {
-        continue
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
     }
     "win_2022" {
         ## Disable Server Manager Dashboard
