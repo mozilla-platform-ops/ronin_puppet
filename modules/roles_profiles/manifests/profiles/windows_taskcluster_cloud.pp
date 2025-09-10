@@ -22,7 +22,8 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
   $livelog_name          = lookup('windows.taskcluster.livelog.name.amd64')
 
   ## Proxy
-  $proxy_name            = lookup('windows.taskcluster.proxy.name.amd64')
+  $taskcluster_proxy_name = lookup('windows.taskcluster.proxy.name.amd64')
+  $taskcluster_proxy_exe = "${generic_worker_dir}\\taskcluster-proxy.exe"
 
   ## Worker Runner
   $worker_runner_dir     = lookup('windows.dir.worker_runner')
@@ -76,7 +77,7 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
 
   class { 'win_taskcluster_cloud::proxy':
     proxy_exe_path   => $taskcluster_proxy_exe,
-    proxy_exe_source => "${ext_pkg_src_loc}/v${taskcluster_version}/${proxy_name}",
+    proxy_exe_source => "${ext_pkg_src_loc}/v${taskcluster_version}/${taskcluster_proxy_name}",
   }
 
   class { 'win_taskcluster_cloud::livelog':
