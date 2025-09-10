@@ -13,7 +13,6 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
 
   ## Taskcluster variables from hiera
   $taskcluster_version    = lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.version'])
-  $taskcluster_root_url  = lookup('windows.taskcluster.root_url')
 
   ## Generic Worker
   $generic_worker_dir    = lookup('windows.dir.generic_worker')
@@ -35,16 +34,12 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
   $worker_runner_nssm_service_start = 'SERVICE_AUTO_START'
   $worker_runner_nssm_service_type  = 'SERVICE_WIN32_OWN_PROCESS'
   $worker_runner_nssm_app_exit      = 'Default Exit'
-  $runner_log            = "${worker_runner_dir}\\worker-runner-service.log"
 
   ## Taskcluster paths
-  $cache_dir             = "${facts['custom_win_systemdrive']}\\\\cache"
   $gw_log_file           = "${generic_worker_dir}\\generic-worker-service.log"
   $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
   $worker_runner_exe_path       = "${worker_runner_dir}\\start-worker.exe"
-  $downloads_dir         = "${facts['custom_win_systemdrive']}\\\\downloads"
   $ed25519signingkey_path     = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\ed25519-private.key"
-  $cache_dir             = "${facts['custom_win_systemdrive']}\\\\cache"
   $gw_config_file        = "${generic_worker_dir}\\generic-worker-config.yml"
   $gw_app_parameters     = "run --config ${gw_config_file} --worker-runner-protocol-pipe \\\\.\\pipe\\generic-worker --with-worker-runner"
   $gw_nssm_service_start = 'SERVICE_DEMAND_START'
@@ -53,12 +48,6 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
 
   ## Facts from modules/win_shared/facts.d/*
   $livelog_exe           = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe"
-  $location              = $facts['custom_win_location']
-  $task_dir              = "${facts['custom_win_systemdrive']}\\\\"
-  $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
-  $taskcluster_proxy_exe = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe"
-  $worker_id             = $facts['networking']['hostname']
-  $worker_pool_id        = $facts['custom_win_worker_pool_id']
 
   ## Standalone variables
   $init                  = 'task-user-init.cmd'
