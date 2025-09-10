@@ -6,7 +6,7 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
   ## NSSM
   $nssm_dir              = lookup('windows.dir.nssm')
   $nssm_version          = lookup('windows.nssm.version')
-  $nssm_exe              = "${nssm_dir}\\nssm-${nssm_version}\\${arch}\\nssm.exe"
+  $nssm_exe              = "${nssm_dir}\\nssm-${nssm_version}\\win64\\nssm.exe"
 
   ## External URLs
   $ext_pkg_src_loc       = lookup('windows.taskcluster.package_source')
