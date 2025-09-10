@@ -59,11 +59,6 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
   $taskcluster_proxy_exe = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe"
   $worker_id             = $facts['networking']['hostname']
   $worker_pool_id        = $facts['custom_win_worker_pool_id']
-  if $facts['os']['architecture'] == 'x86' {
-    $arch = 'win32'
-  } else {
-    $arch = 'win64'
-  }
 
   ## Standalone variables
   $init                  = 'task-user-init.cmd'
