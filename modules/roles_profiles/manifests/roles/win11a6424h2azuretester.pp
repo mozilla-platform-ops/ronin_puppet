@@ -50,7 +50,7 @@ class roles_profiles::roles::win11a6424h2azuretester {
       include roles_profiles::profiles::git
       include roles_profiles::profiles::mozilla_build
       include roles_profiles::profiles::mozilla_maintenance_service
-      include roles_profiles::profiles::windows_worker_runner
+      include roles_profiles::profiles::windows_taskcluster_cloud
     }
   }
 }
