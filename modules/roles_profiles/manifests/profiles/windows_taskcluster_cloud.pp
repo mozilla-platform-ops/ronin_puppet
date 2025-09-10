@@ -94,5 +94,9 @@ class roles_profiles::profiles::windows_taskcluster_cloud {
     worker_runner_nssm_service_type  => $worker_runner_nssm_service_type,
     worker_runner_nssm_app_exit      => $worker_runner_nssm_app_exit,
     worker_runner_log                => $worker_runner_log,
+    nssm_exe                         => $nssm_exe,
+    worker_runner_provider           => $worker_runner_provider,
+    worker_runner_implementation     => $worker_runner_implementation,
+    gw_config_file                   => $gw_config_file,
   }
 }
