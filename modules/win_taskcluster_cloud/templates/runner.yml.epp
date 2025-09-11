@@ -1,8 +1,0 @@
-provider:
-    providerType: <%= $win_taskcluster_cloud::worker_runner::worker_runner_provider %>
-worker:
-    implementation: <%= $win_taskcluster_cloud::worker_runner::worker_runner_implementation %>
-    service: "Generic Worker"
-    configPath: <%= $win_taskcluster_cloud::worker_runner::gw_config_file %>
-    protocolPipe: \\.\pipe\generic-worker
-cacheOverRestarts: true
