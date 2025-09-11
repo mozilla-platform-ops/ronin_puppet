@@ -41,55 +41,55 @@ class win_taskcluster_cloud::worker_runner (
       command => "${nssm_exe} install worker-runner ${worker_runner_exe_path}",
     }
     exec { 'set_runner_app_dir':
-      command => "${nssm_exe} set AppDirectory ${worker_runner_dir}",
+      command => "${nssm_exe} set \"Worker Runner\" AppDirectory ${worker_runner_dir}",
     }
     exec { 'set_runner_app_params':
-      command => "${nssm_exe} set AppParameters ${worker_runner_yaml_path}",
+      command => "${nssm_exe} set \"Worker Runner\" AppParameters ${worker_runner_yaml_path}",
     }
     exec { 'set_runner_display_name':
-      command => "${nssm_exe} set DisplayName \"Worker Runner\"",
+      command => "${nssm_exe} set \"Worker Runner\" DisplayName \"Worker Runner\"",
     }
     exec { 'set_runner_description':
-      command => "${nssm_exe} set Description \"Interface between workers and Taskcluster services\"",
+      command => "${nssm_exe} set \"Worker Runner\" Description \"Interface between workers and Taskcluster services\"",
     }
     exec { 'set_runner_start':
-      command => "${nssm_exe} set Start ${worker_runner_nssm_service_start}",
+      command => "${nssm_exe} set \"Worker Runner\" Start ${worker_runner_nssm_service_start}",
     }
     exec { 'set_runner_type':
-      command => "${nssm_exe} set Type ${worker_runner_nssm_service_type}",
+      command => "${nssm_exe} set \"Worker Runner\" Type ${worker_runner_nssm_service_type}",
     }
     exec { 'set_runner_appnoconsole':
-      command => "${nssm_exe} set AppNoConsole 1",
+      command => "${nssm_exe} set \"Worker Runner\" AppNoConsole 1",
     }
     exec { 'set_runner_appaffinity':
-      command => "${nssm_exe} set AppAffinity All",
+      command => "${nssm_exe} set \"Worker Runner\" AppAffinity All",
     }
     exec { 'set_runner_appstopmethodskip':
-      command => "${nssm_exe} set AppStopMethodSkip 0",
+      command => "${nssm_exe} set \"Worker Runner\" AppStopMethodSkip 0",
     }
     exec { 'set_runner_appexit':
-      command => "${nssm_exe} set AppExit ${worker_runner_nssm_app_exit}",
+      command => "${nssm_exe} set \"Worker Runner\" AppExit ${worker_runner_nssm_app_exit}",
     }
     exec { 'set_runner_restart_delay':
-      command => "${nssm_exe} set AppRestartDelay 0",
+      command => "${nssm_exe} set \"Worker Runner\" AppRestartDelay 0",
     }
     exec { 'set_runner_stdout':
-      command => "${nssm_exe} set AppStdout ${worker_runner_log}",
+      command => "${nssm_exe} set \"Worker Runner\" AppStdout ${worker_runner_log}",
     }
     exec { 'set_runner_stderror':
-      command => "${nssm_exe} set AppStderr ${worker_runner_log}",
+      command => "${nssm_exe} set \"Worker Runner\" AppStderr ${worker_runner_log}",
     }
     exec { 'set_runner_rotate_file':
-      command => "${nssm_exe} set AppRotateFiles 1",
+      command => "${nssm_exe} set \"Worker Runner\" AppRotateFiles 1",
     }
     exec { 'set_runner_rotate_online':
-      command => "${nssm_exe} set AppRotateOnline 1",
+      command => "${nssm_exe} set \"Worker Runner\" AppRotateOnline 1",
     }
     exec { 'set_runner_rotate_seconds':
-      command => "${nssm_exe} set AppRotateSeconds 3600",
+      command => "${nssm_exe} set \"Worker Runner\" AppRotateSeconds 3600",
     }
     exec { 'set_runner_rotate_bytes':
-      command => "${nssm_exe} set AppRotateBytes 0",
+      command => "${nssm_exe} set \"Worker Runner\" AppRotateBytes 0",
     }
   }
 }
