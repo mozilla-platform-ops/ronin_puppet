@@ -116,3 +116,18 @@ groups:
       - macmini-m4-110.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1500_m4
+
+  - name: gecko-1-b-osx-arm64
+    targets:
+      - macmini-m4-121.test.releng.mdc1.mozilla.com
+      - macmini-m4-122.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_1_b_osx_arm64
+
+  - name: gecko-3-b-osx-arm64
+    targets:
+      - macmini-m4-120.test.releng.mdc1.mozilla.com
+      - macmini-m4-123.test.releng.mdc1.mozilla.com
+      - macmini-m4-124.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_3_b_osx_arm64
