@@ -22,9 +22,6 @@ worker:
 packages_classes:
   - mercurial
   - nodejs
-  # - python2
-  # - python2_psutil
-  # - python2_zstandard
   - python3
   - python3_psutil
   - python3_zstandard
@@ -39,8 +36,6 @@ packages_classes:
 packages::google_chrome::version: v80.0.3987.106
 packages::mercurial::version: 6.4.5
 packages::nodejs::version: 12.11.1
-packages::python2::version: 2.7.18
-packages::python2_zstandard::version: 0.11.1
 packages::python3::version: 3.11.0
 packages::python3_zstandard::version: 0.22.0
 packages::virtualenv::version: 16.4.3
