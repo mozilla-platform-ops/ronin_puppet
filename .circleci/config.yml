@@ -321,7 +321,7 @@ workflows:
                                "linux-perf-ubuntu-1804",
                               #  "linux-perf-ubuntu-2204",  # not going to use this, so disable
                                "linux-perf-ubuntu-2404",
-                               "linux-perf-wayland-ubuntu-2404",
+                              #  "linux-perf-wayland-ubuntu-2404",  # disabled for now, needs more work
                                "bitbar-ubuntu-2204"]
           requires:
             - pre_commit
