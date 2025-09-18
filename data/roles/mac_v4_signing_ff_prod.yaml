@@ -8,6 +8,3 @@ packages::vault::version: 1.7.3
 papertrail:
   host: "%{lookup('vault_secrets::papertrail.data.host')}"
   port: "%{lookup('vault_secrets::papertrail.data.port')}"
-
-notarization:
-  password: "%{lookup('vault_secrets::notarization.data.password')}"

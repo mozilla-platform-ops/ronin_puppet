@@ -9,7 +9,6 @@ repos:
   # - id: detect-private-key
   - id: end-of-file-fixer
   - id: trailing-whitespace
-
 - repo: https://github.com/chriskuehl/puppet-pre-commit-hooks.git
   rev: v2.2.0
   hooks:
@@ -29,10 +28,41 @@ repos:
   rev: 3.0.0
   hooks:
     - id: shellcheck
-
 - repo: https://github.com/gruntwork-io/pre-commit
   rev: v0.1.30
   hooks:
     - id: terraform-fmt
     - id: terraform-validate
       #    - id: tflint
+- repo: local
+  hooks:
+    # pre-commit hooks that will block erb scripts
+    # - enable once we've gotten rid of them all
+    #   - https://mozilla-hub.atlassian.net/browse/RELOPS-1832
+    #   - https://mozilla-hub.atlassian.net/browse/RELOPS-1833
+    #
+    # - id: erb-no-shebang
+    #   name: .erb and .epp files must not have a shebang
+    #   language: pygrep
+    #   entry: '^#!'
+    #   files: \.(erb|epp)$
+    # - id: forbid-scriptlike-erb
+    #   name: Disallow script-like ERB/EPP filenames
+    #   language: system
+    #   entry: |
+    #     bash -c '
+    #     ret=0
+    #     for f in "$@"; do
+    #       if [[ "$f" =~ \.(sh|bash|zsh|ps1|cmd)\.erb$ ]]; then
+    #         echo "Disallowed ERB/EPP filename (scripts should not be templated): $f"
+    #         ret=1
+    #       fi
+    #     done
+    #     exit $ret
+    #     '
+    #   files: \.(sh|bash|zsh|ps1|cmd)\.(erb|epp)$
+    - id: templated-script-checker
+      name: Syntax check ERB/EPP-templated scripts
+      language: system
+      entry: .pre-commit/templated_script_checker.py
+      types: [file]

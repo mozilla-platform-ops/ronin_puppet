@@ -11,7 +11,7 @@ class roles_profiles::profiles::cltbld_user {
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
-      $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '${salt}', '-6', '-rounds', '${iterations}', '${password}']).read.chomp %>")
+      $password_hash = inline_template("<%= `python3 -c 'import crypt; print(crypt.crypt(\"#{@password}\", crypt.mksalt(crypt.METHOD_SHA512)))'`.chomp %>")
 
       # Create the cltbld user
       case $facts['os']['release']['major'] {
@@ -37,9 +37,9 @@ class roles_profiles::profiles::cltbld_user {
         }
         '20','21','22', '23', '24': {
           exec { 'create_macos_user':
-            # UID needs to be > 501 for LaunchAgents to function
             command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password_hash}'",
-            unless  => '/usr/bin/dscl . -read /Users/cltbld',
+            unless  => "/usr/bin/dscl . -read /Users/${account_username}",
+            path    => ['/usr/bin', '/usr/sbin'],
           }
           class { 'macos_utils::autologin_user':
             user       => $account_username,
@@ -92,7 +92,10 @@ class roles_profiles::profiles::cltbld_user {
         # require => User['cltbld'],
       }
 
-      $sudo_commands = ['/sbin/reboot']
+      $sudo_commands = [
+        '/sbin/reboot',
+        '/usr/local/bin/run-puppet.sh',
+      ]
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',
@@ -110,7 +113,7 @@ class roles_profiles::profiles::cltbld_user {
       $homedir      = '/home/cltbld'
 
       group { 'cltbld':
-        name      => 'cltbld',
+        name => 'cltbld',
       }
 
       # Create the cltbld user
