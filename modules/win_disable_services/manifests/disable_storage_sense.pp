@@ -5,18 +5,16 @@
 class win_disable_services::disable_storage_sense {
   # Disable Storage Sense entirely at the system level
   # When disabled, Storage Sense is turned off for the machine and users can't enable it
-  registry_value { 'HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\StorageSense\\AllowStorageSenseGlobal':
-    ensure => present,
-    type   => dword,
-    data   => '0',
+  registry_value { 'HKLM\SOFTWARE\Policies\Microsoft\Windows\StorageSense\AllowStorageSenseGlobal':
+    type => dword,
+    data => '0',
   }
 
   # Disable Storage Sense temporary files cleanup
   # When disabled, Storage Sense won't delete temporary files and users can't enable this setting
-  registry_value { 'HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\StorageSense\\AllowStorageSenseTemporaryFilesCleanup':
-    ensure => present,
-    type   => dword,
-    data   => '0',
+  registry_value { 'HKLM\SOFTWARE\Policies\Microsoft\Windows\StorageSense\AllowStorageSenseTemporaryFilesCleanup':
+    type => dword,
+    data => '0',
   }
 }
 # Bug List
