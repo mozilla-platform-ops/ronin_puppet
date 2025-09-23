@@ -183,6 +183,8 @@ switch ($os_version) {
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
         Disable-OneDrive
         ## Disable Storage Sense
+        ## https://bugzilla.mozilla.org/show_bug.cgi?id=1893092#c140 localappdata gets cleaned up
+        ## https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-storage
         Disable-StorageSense
     }
     "win_10_2009" {
