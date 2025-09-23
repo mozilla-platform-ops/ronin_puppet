@@ -47,10 +47,6 @@ class roles_profiles::profiles::disable_services {
         ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool 
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499 
         include win_disable_services::disable_scheduled_tasks
-        ## Disable Storage Sense
-        ## https://bugzilla.mozilla.org/show_bug.cgi?id=1893092#c140 localappdata gets cleaned up
-        ## https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-storage
-        include win_disable_services::disable_storage_sense
         if ($facts['custom_win_location'] == 'azure') {
           include win_scheduled_tasks::kill_local_clipboard
         }
