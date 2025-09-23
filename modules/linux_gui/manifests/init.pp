@@ -375,6 +375,25 @@ class linux_gui (
               group  => $builder_group,
               mode   => '0755',
           }
+
+          # place apparmor rules that allow our development builds of firefox to work
+          file { '/etc/apparmor.d/firefox-local':
+            ensure => file,
+            owner  => 'root',
+            group  => 'root',
+            mode   => '0644',
+            source => "puppet:///modules/${module_name}/apparmor-firefox-local",
+            # no notify, we reboot the system later to apply
+            # sudo systemctl restart apparmor.service
+            notify => Exec['restart apparmor service'],
+            }
+
+            exec { 'restart apparmor service':
+              command     => 'systemctl restart apparmor.service',
+              refreshonly => true,
+              user        => 'root',
+              path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+            }
         }
         default: {
           fail ("Cannot install on Ubuntu version ${facts['os']['release']['full']}")

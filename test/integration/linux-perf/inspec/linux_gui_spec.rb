@@ -165,6 +165,11 @@ elsif os.family == 'debian' && os.release.start_with?('24.04')
   describe service('systemd-networkd') do
     it { should_not be_enabled }
   end
+
+  # apparmor profile should be present
+  describe file('/etc/apparmor.d/firefox-local') do
+    it { should exist }
+  end
 else
   # shouldn't be here
   # for other OS families or versions, show error
