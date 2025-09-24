@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+# set -x
 
 # dockerfile specifies this dir as a bind mount for caching debs
 mkdir -p /tmp/docker/var/cache/apt
@@ -10,11 +11,24 @@ root_dir="${script_dir}/.."
 kitchen_config="${root_dir}/.kitchen_configs/kitchen.docker.yml"
 temp_kitchen_config="/tmp/ronin_puppet_kitchen_docker_temp_config.yml"
 
+# check for yq
+if ! command -v yq &> /dev/null; then
+    echo "yq command not found. Please install yq to format the YAML file."
+    exit 1
+fi
+
 # add docker_platform if we're on arm64
 if [[ "$(uname -m)" == "arm64" ]]; then
     echo "This system is running on arm64 architecture."
+
+    # old way, force to amd64 to work around tc installation not picking correct arch
+    # echo "Modifying kitchen.docker.yml to use linux/amd64 platform."
+    # sed 's/# docker_platform: linux\/amd64$/docker_platform: linux\/amd64/' "${kitchen_config}" > "${temp_kitchen_config}"
+
+    # new way, use arm64
     echo "Modifying kitchen.docker.yml to use linux/arm64 platform."
-    sed 's/# docker_platform: linux\/amd64$/docker_platform: linux\/amd64/' "${kitchen_config}" > "${temp_kitchen_config}"
+    sed 's/# docker_platform: linux\/arm64$/docker_platform: linux\/arm64/' "${kitchen_config}" > "${temp_kitchen_config}"
+
     export KITCHEN_YAML="${temp_kitchen_config}"
     # for testing
     # grep docker_platform ${KITCHEN_YAML}
@@ -22,6 +36,50 @@ if [[ "$(uname -m)" == "arm64" ]]; then
 else
     # echo "This system is not running on arm64 architecture."
     export KITCHEN_YAML="${kitchen_config}"
+fi
+
+# if command is test or converge, alert that results on arm64 will be different and recommend circleci run.
+if [[ "$1" == "test" || "$1" == "converge" && "$(uname -m)" == "arm64" ]]; then
+    echo ""
+    echo "Warning: Test results on arm64 can be misleading because we don't have arm64"
+    echo "binaries and/or detection everywhere. Everything should work on CircleCI."
+    echo ""
+fi
+
+PROXY_PORT=8123
+# check if the proxy is running, port 8123
+if nc -z localhost $PROXY_PORT; then
+    echo "Using proxy at localhost:$PROXY_PORT"
+    export http_proxy=http://localhost:$PROXY_PORT
+    export https_proxy=http://localhost:$PROXY_PORT
+else
+    echo "No proxy running at localhost:$PROXY_PORT, proceeding without proxy."
+    unset http_proxy
+    unset https_proxy
+fi
+
+# create a venv for ruamel.yaml if it doesn't exist
+if [ ! -d "${root_dir}/venv" ]; then
+    echo "Creating virtual environment for ruamel.yaml..."
+    python3 -m venv "${root_dir}/venv"
+    source "${root_dir}/venv/bin/activate"
+    pip install --upgrade pip
+    pip install ruamel.yaml
+else
+    echo "Using existing virtual environment for ruamel.yaml."
+    source "${root_dir}/venv/bin/activate"
+fi
+
+# if the proxy is running, use it in the temp kitchen config file
+if [[ -n "$http_proxy" ]]; then
+    echo "Using proxy in kitchen config."
+    # Uncomment lines between START_PROXY_BLOCK and END_PROXY_BLOCK, preserving indentation
+    # sed -i '' '/# START_PROXY_BLOCK/,/# END_PROXY_BLOCK/s/^\([[:space:]]*\)#\([[:space:]]*\)/\1/' "${temp_kitchen_config}"
+    # Remove START_PROXY_BLOCK and END_PROXY_BLOCK lines
+    # sed -i '' '/START_PROXY_BLOCK\|END_PROXY_BLOCK/d' "${temp_kitchen_config}"
+
+    # call $kitchen_config/add_proxy_entries.py
+    python3 "${root_dir}/.kitchen/add_proxy_entries.py" "${temp_kitchen_config}"
 fi
 
 # set CI=true so our spec_helper can disable problematic tests

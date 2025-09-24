@@ -6,21 +6,20 @@
 #   variables like this should be set in profile modules.
 #   these make testing difficult (this block must be
 #   copy/pasted into every puppet-kitchen manifests).
-case $::operatingsystem {
-    'Windows': {
-    }
-    'Darwin': {
-        # Set toplevel variables for Darwin
-        $root_user  = 'root'
-        $root_group = 'wheel'
-
-    }
-    'Ubuntu': {
-        $root_user = 'root'
-        $root_group = 'root'
-    }
-    default: {
-    }
+case $facts['os']['name'] {
+  'Windows': {
+  }
+  'Darwin': {
+    # Set toplevel variables for Darwin
+    $root_user  = 'root'
+    $root_group = 'wheel'
+  }
+  'Ubuntu': {
+    $root_user = 'root'
+    $root_group = 'root'
+  }
+  default: {
+  }
 }
 
 # node /vagrantup.com/ {

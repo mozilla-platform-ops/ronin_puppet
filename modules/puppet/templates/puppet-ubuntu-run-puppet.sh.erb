@@ -25,10 +25,40 @@ PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
 
+# detect if python3 is available and set it to PYTHON_BIN
+if command -v python3 &> /dev/null; then
+    PYTHON_BIN=$(command -v python3)
+else
+    PYTHON_BIN=$(command -v python)
+fi
+
+# show header (send to stderr to avoid appearing in log output?)
+# pyfiglet font is cricket
+cat <<'EOF' >&2
+                                                         __
+  .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
+  |   _|  |  |     |______|  _  |  |  |  _  |  _  |  -__|   _|
+  |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
+                          |__|        |__|  |__|
+EOF
+
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
+    # ascii art heredoc
+    cat <<'EOF' >&2
+                                     __    __
+        .-----.--.--.-----.----.----|__.--|  .-----.
+        |  _  |  |  |  -__|   _|   _|  |  _  |  -__|
+        |_____|\___/|_____|__| |__| |__|_____|_____|
+
+EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
+    # show env vars of interest
+    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
+    echo "  PUPPET_REPO=$PUPPET_REPO"
+    echo "  PUPPET_MAIL=$PUPPET_MAIL"
+    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
 fi
 
 # Extract username from puppet_repo
@@ -98,7 +128,7 @@ function email_report {
 
     SENDER="root@${FQDN}"
     RECEIVER="${PUPPET_MAIL}"
-    python <<EOF
+    $PYTHON_BIN <<EOF
 import smtplib
 
 msg = """From: ${SENDER}
@@ -111,9 +141,10 @@ ${ERR_MSG}
 try:
    smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
    smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
-   print "Successfully sent email"
-except SMTPException:
-   print "Error: unable to send email"
+   print("Successfully sent email")
+except smtplib.SMTPException as e:
+   print("Error: unable to send email")
+   print(e)
 EOF
 }
 
