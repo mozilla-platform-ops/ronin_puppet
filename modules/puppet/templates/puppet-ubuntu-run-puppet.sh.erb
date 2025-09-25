@@ -201,13 +201,16 @@ function run_puppet {
 
     PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
-    set -x
-    pwd  # to aid in debugging
+
+    # debugging
+    PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
+    echo "current directory is: $(pwd)"
+    echo "puppet command to run is: ${PUPPET_CMD}"
+
     # START: don't separate these two commands
-    $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
+    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}"
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
     # END: don't separate these two commands
-    set +x
     PUPPET_RUN_DURATION=$SECONDS
     echo "puppet retval is $retval"
     # just in case, if there were any errors logged, flag it as an error run
