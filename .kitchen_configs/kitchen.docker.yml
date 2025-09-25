@@ -97,6 +97,8 @@ provisioner:
   verify_host_key: false
   resolve_with_librarian_puppet: false
   resolve_with_r10k: false
+  puppet_detailed_exitcodes: true
+
 
 platforms:
   - name: ubuntu-18.04

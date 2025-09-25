@@ -22,6 +22,7 @@ provisioner:
   resolve_with_r10k: false
   update_package_repos: false
   verify_host_key: false
+  puppet_detailed_exitcodes: true
 
 verifier:
   name: serverspec
