@@ -208,6 +208,7 @@ function run_puppet {
     # just in case, if there were any errors logged, flag it as an error run
     if grep -q "^Error:" "${TMP_LOG}"
     then
+        echo "Error found in puppet log, setting retval to 1"
         retval=1
     fi
 
