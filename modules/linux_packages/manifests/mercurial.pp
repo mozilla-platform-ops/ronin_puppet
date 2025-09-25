@@ -6,15 +6,31 @@
 class linux_packages::mercurial ( Enum['present', 'absent'] $pkg_ensure = 'present') {
   case $facts['os']['name'] {
     'Ubuntu': {
-      include linux_packages::python2_mercurial
-      include linux_packages::python3_mercurial
+      case $facts['os']['release']['full'] {
+        '18.04': {
+          include linux_packages::python2_mercurial
+          include linux_packages::python3_mercurial
 
-      # the binary just calls the installed python module,
-      # but it points at py2 on 1804
+          # the binary just calls the installed python module,
+          # but it points at py2 on 1804
 
-      package {
-        'mercurial':
-          ensure => $pkg_ensure;
+          package {
+            'mercurial':
+              ensure => $pkg_ensure;
+          }
+        }
+        '22.04', '24.04': {
+          include linux_packages::python3_mercurial
+
+          # the binary just calls the installed python module
+          package {
+            'mercurial':
+              ensure => $pkg_ensure;
+          }
+        }
+        default: {
+          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
+        }
       }
     }
     default: {

@@ -3,10 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::nodejs {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
-      case $::operatingsystemrelease {
-        '18.04':  {
+      case $facts['os']['release']['full'] {
+        '18.04', '22.04', '24.04':  {
           package {
             'nodejs':
               ensure => latest;
@@ -16,12 +16,12 @@ class linux_packages::nodejs {
           }
         }
         default: {
-          fail("Ubuntu ${::operatingsystemrelease} is not supported")
+          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
         }
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }
