@@ -205,7 +205,7 @@ function run_puppet {
     pwd  # to aid in debugging
     # START: don't separate these two commands
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
-    retval=$?
+    retval=${PIPESTATUS[0]}
     # END: don't separate these two commands
     set +x
     PUPPET_RUN_DURATION=$SECONDS
