@@ -202,8 +202,10 @@ function run_puppet {
     PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
     set -x
+    # START: don't separate these two commands
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     retval=$?
+    # END: don't separate these two commands
     set +x
     PUPPET_RUN_DURATION=$SECONDS
     echo "puppet retval is $retval"
