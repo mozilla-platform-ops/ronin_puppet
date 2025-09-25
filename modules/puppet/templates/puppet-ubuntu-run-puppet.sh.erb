@@ -214,13 +214,15 @@ function run_puppet {
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
     echo "puppet command done. retval is $retval"
-    # just in case, if there were any errors logged, flag it as an error run
-    if grep -q "^Error:" "${TMP_LOG}"
-    then
-        echo "Error found in puppet log, setting retval to 1"
-        retval=1
+    # if retval is zero, check the logs for errors
+    if [ $retval -eq 0 ]; then
+        # just in case, if there were any errors logged, flag it as an error run
+        if grep -q "^Error:" "${TMP_LOG}"
+        then
+            echo "Error found in puppet log, setting retval to 1"
+            retval=1
+        fi
     fi
-
     LOG_OUT=$(cat "${TMP_LOG}")
     rm "${TMP_LOG}"
     case $retval in
