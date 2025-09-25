@@ -203,8 +203,8 @@ function run_puppet {
     SECONDS=0
     set -x
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
-    set +x
     retval=$?
+    set +x
     PUPPET_RUN_DURATION=$SECONDS
     echo "puppet retval is $retval"
     # just in case, if there were any errors logged, flag it as an error run
