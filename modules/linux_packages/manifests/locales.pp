@@ -3,15 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::locales {
-  case $facts['os']['name'] {
+  case $::operatingsystem {
     'Ubuntu': {
       package {
-        'locales':
-          ensure => present;
+          'locales':
+              ensure => present;
       }
     }
     default: {
-      fail("Cannot install on ${facts['os']['name']}")
+      fail("Cannot install on ${::operatingsystem}")
     }
   }
 }

@@ -3,12 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::sudo {
-  case $facts['os']['name'] {
-    'Darwin', 'Ubuntu': {
-      include sudo
+
+    case $::operatingsystem {
+        'Darwin', 'Ubuntu': {
+            include sudo
+        }
+        default: {
+            fail("${::operatingsystem} not supported")
+        }
     }
-    default: {
-      fail("${facts['os']['name']} not supported")
-    }
-  }
 }

@@ -3,7 +3,9 @@
 # Test whether a given class or definition is defined
 require 'puppet/parser/functions'
 
-Puppet::Parser::Functions.newfunction(:defined_with_params, type: :rvalue, doc: <<-DOC
+Puppet::Parser::Functions.newfunction(:defined_with_params,
+                                      type: :rvalue,
+                                      doc: <<-DOC,
     @summary
       Takes a resource reference and an optional hash of attributes.
 
@@ -23,11 +25,12 @@ Puppet::Parser::Functions.newfunction(:defined_with_params, type: :rvalue, doc: 
     @return [Boolean]
       returns `true` or `false`
 DOC
-) do |vals|
+                                     ) do |vals|
   reference, params = vals
   raise(ArgumentError, 'Must specify a reference') unless reference
-
-  params = {} if !params || params == ''
+  if !params || params == ''
+    params = {}
+  end
   ret = false
 
   if Puppet::Util::Package.versioncmp(Puppet.version, '4.6.0') >= 0

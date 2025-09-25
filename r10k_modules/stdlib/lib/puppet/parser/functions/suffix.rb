@@ -22,18 +22,24 @@ module Puppet::Parser::Functions
 
     ```['a', 'b', 'c'].map |$x| { "${x}p" }```
 
-  DOC
+    DOC
   ) do |arguments|
     # Technically we support two arguments but only first is mandatory ...
     raise(Puppet::ParseError, "suffix(): Wrong number of arguments given (#{arguments.size} for 1)") if arguments.empty?
 
     enumerable = arguments[0]
 
-    raise Puppet::ParseError, "suffix(): expected first argument to be an Array or a Hash, got #{enumerable.inspect}" unless enumerable.is_a?(Array) || enumerable.is_a?(Hash)
+    unless enumerable.is_a?(Array) || enumerable.is_a?(Hash)
+      raise Puppet::ParseError, "suffix(): expected first argument to be an Array or a Hash, got #{enumerable.inspect}"
+    end
 
     suffix = arguments[1] if arguments[1]
 
-    raise Puppet::ParseError, "suffix(): expected second argument to be a String, got #{suffix.inspect}" if suffix && !(suffix.is_a? String)
+    if suffix
+      unless suffix.is_a? String
+        raise Puppet::ParseError, "suffix(): expected second argument to be a String, got #{suffix.inspect}"
+      end
+    end
 
     result = if enumerable.is_a?(Array)
                # Turn everything into string same as join would do ...
@@ -42,10 +48,10 @@ module Puppet::Parser::Functions
                  suffix ? i + suffix : i
                end
              else
-               enumerable.to_h do |k, v|
+               Hash[enumerable.map do |k, v|
                  k = k.to_s
                  [suffix ? k + suffix : k, v]
-               end
+               end]
              end
 
     return result

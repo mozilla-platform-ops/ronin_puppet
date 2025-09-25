@@ -32,9 +32,11 @@ module Puppet::Parser::Functions
       % as file location
         validate_cmd($haproxycontent, '/usr/sbin/haproxy -f % -c', 'Haproxy failed to validate config content')
 
-  DOC
+    DOC
   ) do |args|
-    raise Puppet::ParseError, "validate_cmd(): wrong number of arguments (#{args.length}; must be 2 or 3)" if (args.length < 2) || (args.length > 3)
+    if (args.length < 2) || (args.length > 3)
+      raise Puppet::ParseError, "validate_cmd(): wrong number of arguments (#{args.length}; must be 2 or 3)"
+    end
 
     msg = args[2] || "validate_cmd(): failed to validate content with command #{args[1].inspect}"
 
@@ -53,16 +55,16 @@ module Puppet::Parser::Functions
                                       "#{checkscript} #{tmpfile.path}"
                                     end
 
-      if Puppet::Util::Execution.respond_to?(:execute)
+      if Puppet::Util::Execution.respond_to?('execute')
         Puppet::Util::Execution.execute(check_with_correct_location)
       else
         Puppet::Util.execute(check_with_correct_location)
       end
-    rescue Puppet::ExecutionFailure => e
-      msg += "\n#{e}"
+    rescue Puppet::ExecutionFailure => detail
+      msg += "\n#{detail}"
       raise Puppet::ParseError, msg
-    rescue StandardError => e
-      msg += "\n#{e.class.name} #{e}"
+    rescue StandardError => detail
+      msg += "\n#{detail.class.name} #{detail}"
       raise Puppet::ParseError, msg
     ensure
       tmpfile.unlink

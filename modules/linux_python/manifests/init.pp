@@ -4,7 +4,7 @@ class linux_python () {
   case $facts['os']['name'] {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
-        '18.04', '22.04', '24.04' : {
+        '18.04' : {
           file {
             '/root/.pip':
               ensure => directory,

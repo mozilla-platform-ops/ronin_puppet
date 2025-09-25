@@ -3,20 +3,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::timezone {
-  case $facts['os']['name'] {
-    'Darwin': {
-      class { 'macos_timezone':
-        timezone => 'GMT',
-      }
+
+    case $::operatingsystem {
+        'Darwin': {
+            class { 'macos_timezone':
+                timezone => 'GMT',
+            }
+        }
+        'Ubuntu': {
+            class { 'timezone':
+                timezone   => 'UTC',
+                rtc_is_utc => true,
+            }
+        }
+        default: {
+            fail("${::operatingsystem} not supported")
+        }
     }
-    'Ubuntu': {
-      class { 'timezone':
-        timezone   => 'UTC',
-        rtc_is_utc => true,
-      }
-    }
-    default: {
-      fail("${facts['os']['name']} not supported")
-    }
-  }
 }

@@ -3,16 +3,19 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::securitize {
-  case $facts['os']['name'] {
-    'Ubuntu': {
-      # relops user is created by kickstart script
-      include users::remove_relops_pw
-      include users::add_relops_keys_to_relops_user
-      include users::remove_root_pw
-      include users::remove_root_keys
+
+    case $::operatingsystem {
+        'Ubuntu': {
+
+            # relops user is created by kickstart script
+            include users::remove_relops_pw
+            include users::add_relops_keys_to_relops_user
+            include users::remove_root_pw
+            include users::remove_root_keys
+
+        }
+        default: {
+            fail("${::operatingsystem} not supported")
+        }
     }
-    default: {
-      fail("${facts['os']['name']} not supported")
-    }
-  }
 }

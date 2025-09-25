@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # This module installs and enables Linux kernel modules
-define kernelmodule ($module=$title, $module_args='', $packages=null) {
-  case $facts['os']['name'] {
+define kernelmodule($module=$title, $module_args='', $packages=null) {
+  case $::operatingsystem {
     'Ubuntu': {
       exec {
         "modprobe-${module}":
@@ -29,9 +29,10 @@ define kernelmodule ($module=$title, $module_args='', $packages=null) {
             notify => Exec["modprobe-${module}"];
         }
       }
+
     }
     default: {
-      fail("${facts['os']['name']} is not supported")
+      fail("${::operatingsystem} is not supported")
     }
   }
 }

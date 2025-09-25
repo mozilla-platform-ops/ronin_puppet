@@ -33,7 +33,7 @@ module Puppet::Parser::Functions
         function for reading a file with binary (non UTF-8) content.
 
     @return [String] The encoded/decoded value
-  DOC
+    DOC
 
     require 'base64'
 
@@ -41,9 +41,13 @@ module Puppet::Parser::Functions
 
     actions = ['encode', 'decode']
 
-    raise Puppet::ParseError, "base64(): the first argument must be one of 'encode' or 'decode'" unless actions.include?(args[0])
+    unless actions.include?(args[0])
+      raise Puppet::ParseError, "base64(): the first argument must be one of 'encode' or 'decode'"
+    end
 
-    raise Puppet::ParseError, 'base64(): the second argument must be a string to base64' unless args[1].is_a?(String)
+    unless args[1].is_a?(String)
+      raise Puppet::ParseError, 'base64(): the second argument must be a string to base64'
+    end
 
     method = ['default', 'strict', 'urlsafe']
 
@@ -53,7 +57,9 @@ module Puppet::Parser::Functions
                       args[2]
                     end
 
-    raise Puppet::ParseError, "base64(): the third argument must be one of 'default', 'strict', or 'urlsafe'" unless method.include?(chosen_method)
+    unless method.include?(chosen_method)
+      raise Puppet::ParseError, "base64(): the third argument must be one of 'default', 'strict', or 'urlsafe'"
+    end
 
     case args[0]
     when 'encode'
