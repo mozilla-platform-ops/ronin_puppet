@@ -16,7 +16,10 @@ class linux_papertrail (
           if (! $papertrail_host.empty) and ($papertrail_port != -1) {
             # nmap provides ncat
             include linux_packages::nmap
-            include linux_packages::ncat
+            # ncat is only available on 22.04 and 24.04, not 18.04
+            if $facts['os']['release']['full'] in ['22.04', '24.04'] {
+              include linux_packages::ncat
+            }
 
             # NOTE: puppet 6.1+ will reload systemd automatically
 
