@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_talos () {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
       include linux_packages::nodejs
       include linux_packages::xvfb
@@ -21,11 +21,11 @@ class linux_talos () {
       # TODO: pull these two packages out and contain them in the kernelmodule defined type?
       # this provides lsmod and modprobe (maybe only missing on VM's?)
       package { 'kmod' :
-          ensure => latest
+        ensure => latest,
       }
       # modprobe fails without this
       package { 'linux-generic' :
-        ensure => latest
+        ensure => latest,
       }
 
       kernelmodule {
@@ -33,15 +33,18 @@ class linux_talos () {
           packages => ['v4l2loopback-dkms'];
       }
 
+      # TODO: setup sound loop devices?
+      #  see https://github.com/mozilla-platform-ops/worker-images/blob/main/scripts/linux/ubuntu-2404-amd64-gui/old/70-additional-talos-reqs.sh
+
       # directories expected by talos
       file {
-        [ '/builds',
+        ['/builds',
           '/builds/slave',
           '/builds/slave/talos-data',
           '/builds/slave/talos-data/talos',
           '/builds/git-shared',
           '/builds/hg-shared',
-          '/builds/tooltool_cache' ]:
+        '/builds/tooltool_cache']:
           ensure => directory,
           # TODO: replace with hiera lookup
           owner  => 'cltbld',
@@ -50,7 +53,7 @@ class linux_talos () {
       }
     }
     default: {
-      fail("${module_name} not supported under ${::operatingsystem}")
+      fail("${module_name} not supported under ${facts['os']['name']}")
     }
   }
 }

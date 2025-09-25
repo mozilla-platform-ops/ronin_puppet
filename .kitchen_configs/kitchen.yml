@@ -53,6 +53,8 @@ provisioner:
   verify_host_key: false
   resolve_with_librarian_puppet: false
   resolve_with_r10k: false
+  puppet_detailed_exitcodes: true
+  puppet_whitelist_exit_code: [0, 2]
 
 verifier:
   name: inspec
@@ -82,6 +84,12 @@ suites:
       custom_options: '-e "include roles_profiles::roles::gecko_t_linux_talos"'
     includes:
       - ubuntu1804
+    attributes:
+  - name: linux
+    provisioner:
+      custom_options: '-e "include roles_profiles::roles::gecko_t_linux_2204_talos"'
+    includes:
+      - ubuntu2204
     attributes:
   - name: bitbar
     provisioner:

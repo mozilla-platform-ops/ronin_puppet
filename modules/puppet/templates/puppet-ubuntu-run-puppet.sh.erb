@@ -25,10 +25,40 @@ PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
 
+# detect if python3 is available and set it to PYTHON_BIN
+if command -v python3 &> /dev/null; then
+    PYTHON_BIN=$(command -v python3)
+else
+    PYTHON_BIN=$(command -v python)
+fi
+
+# show header (send to stderr to avoid appearing in log output?)
+# pyfiglet font is cricket
+cat <<'EOF' >&2
+                                                         __
+  .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
+  |   _|  |  |     |______|  _  |  |  |  _  |  _  |  -__|   _|
+  |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
+                          |__|        |__|  |__|
+EOF
+
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
+    # ascii art heredoc
+    cat <<'EOF' >&2
+                                     __    __
+        .-----.--.--.-----.----.----|__.--|  .-----.
+        |  _  |  |  |  -__|   _|   _|  |  _  |  -__|
+        |_____|\___/|_____|__| |__| |__|_____|_____|
+
+EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
+    # show env vars of interest
+    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
+    echo "  PUPPET_REPO=$PUPPET_REPO"
+    echo "  PUPPET_MAIL=$PUPPET_MAIL"
+    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
 fi
 
 # Extract username from puppet_repo
@@ -98,7 +128,7 @@ function email_report {
 
     SENDER="root@${FQDN}"
     RECEIVER="${PUPPET_MAIL}"
-    python <<EOF
+    $PYTHON_BIN <<EOF
 import smtplib
 
 msg = """From: ${SENDER}
@@ -111,9 +141,10 @@ ${ERR_MSG}
 try:
    smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
    smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
-   print "Successfully sent email"
-except SMTPException:
-   print "Error: unable to send email"
+   print("Successfully sent email")
+except smtplib.SMTPException as e:
+   print("Error: unable to send email")
+   print(e)
 EOF
 }
 
@@ -170,26 +201,39 @@ function run_puppet {
 
     PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
-    $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
-    PUPPET_RUN_DURATION=$SECONDS
-    retval=$?
-    # just in case, if there were any errors logged, flag it as an error run
-    if grep -q "^Error:" "${TMP_LOG}"
-    then
-        retval=1
-    fi
 
+    # debugging
+    PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
+    echo "current directory is: $(pwd)"
+    echo "puppet command to run is: ${PUPPET_CMD}"
+
+    echo "running puppet command..."
+    # START: don't separate these two commands
+    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}"
+    retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
+    # END: don't separate these two commands
+    PUPPET_RUN_DURATION=$SECONDS
+    echo "puppet command done. retval is $retval"
+    # if retval is zero, check the logs for errors
+    if [ $retval -eq 0 ]; then
+        # just in case, if there were any errors logged, flag it as an error run
+        if grep -q "^Error:" "${TMP_LOG}"
+        then
+            echo "Error found in puppet log, setting retval to 1"
+            retval=1
+        fi
+    fi
     LOG_OUT=$(cat "${TMP_LOG}")
     rm "${TMP_LOG}"
     case $retval in
         0|2)
-            notify_telegraf "puppet_ronin_apply_success" "1"
+            # notify_telegraf "puppet_ronin_apply_success" "1"
             # If puppet run is successful, report puppet run duration metric
-            notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
+            # notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
             return 0
             ;;
         *)
-            notify_telegraf "puppet_ronin_apply_failure" "1"
+            # notify_telegraf "puppet_ronin_apply_failure" "1"
             email_report "Puppet apply failed on ${FQDN}" "${LOG_OUT}"
             return 1
             ;;
