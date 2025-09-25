@@ -18,7 +18,6 @@ module Puppet::Parser::Functions
   DOC
   ) do |arguments|
     raise ArgumentError, 'Wrong number of arguments. 1 or 2 arguments should be provided.' unless arguments.length >= 1
-
     require 'yaml'
 
     begin
@@ -28,7 +27,6 @@ module Puppet::Parser::Functions
       # do not have Psych available.
     rescue StandardError, Psych::SyntaxError => e # rubocop:disable Lint/ShadowedException : See above
       raise e unless arguments[1]
-
       arguments[1]
     end
   end

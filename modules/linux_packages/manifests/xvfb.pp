@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::xvfb {
-  case $facts['os']['name'] {
+  case $::operatingsystem {
     'Ubuntu': {
       package {
         ['xauth', 'xvfb']:
@@ -11,7 +11,7 @@ class linux_packages::xvfb {
       }
     }
     default: {
-      fail("Cannot install on ${facts['os']['name']}")
+      fail("Cannot install on ${::operatingsystem}")
     }
   }
 }

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class linux_packages::libglib20_bin {
-  case $facts['os']['name'] {
-    'Ubuntu': {
-      package {
-        'libglib2.0-bin':
-          ensure => latest;
-      }
-    }
+    case $::operatingsystem {
+        'Ubuntu': {
+            package {
+                'libglib2.0-bin':
+                    ensure => latest;
+            }
+        }
 
-    default: {
-      fail("Cannot install on ${facts['os']['name']}")
+        default: {
+            fail("Cannot install on ${::operatingsystem}")
+        }
     }
-  }
 }

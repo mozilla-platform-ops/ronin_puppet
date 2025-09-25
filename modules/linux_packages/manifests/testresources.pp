@@ -9,32 +9,19 @@
 # see https://bugs.launchpad.net/launchpadlib/+bug/1019700
 
 class linux_packages::testresources {
-  case $facts['os']['name'] {
+  case $::operatingsystem {
     'Ubuntu': {
-      case $facts['os']['release']['full'] {
-        '18.04': {
-          package {
-            'python-testresources':
-              ensure => present;
-          }
-          package {
-            'python3-testresources':
-              ensure => present;
-          }
-        }
-        '22.04', '24.04': {
-          package {
-            'python3-testresources':
-              ensure => present;
-          }
-        }
-        default: {
-          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
-        }
+      package {
+        'python-testresources':
+          ensure => present;
+      }
+      package {
+        'python3-testresources':
+          ensure => present;
       }
     }
     default: {
-      fail("Cannot install on ${facts['os']['name']}")
+      fail("Cannot install on ${::operatingsystem}")
     }
   }
 }

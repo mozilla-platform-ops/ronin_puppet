@@ -4,9 +4,9 @@
 
 # ia32-libs are needed by b2g emulator tests
 class linux_packages::ia32libs {
-  case $facts['os']['name'] {
+  case $::operatingsystem {
     'Ubuntu': {
-      case $facts['os']['release']['full'] {
+      case $::operatingsystemrelease {
         '18.04': {
           # from Alin Selagea, 2017-03-14:
           # In ubuntu 16.04, ia32-libs was replaced with lib32z1 lib32ncurses5
@@ -18,40 +18,13 @@ class linux_packages::ia32libs {
               ensure => 'latest';
           }
         }
-        '22.04', '24.04': {
-          true
-        }
-
-        # Note from Michelle Goossens at 2023-01-31:
-        # This block is purely for lib32ncurse5, which we may no longer need at all (or in 32 bits).
-        # '22.04': {
-        #   # from Michelle Goossens, 2023-01-20:
-        #   # lib32ncurses5 no longer exists in Ubuntu 22.04. I assume that
-        #   # we want libncurses5 in 32 bit, so we install the i386 variant.
-        #   exec {
-        #     'add i386 packages':
-        #         path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
-        #         user    => $::user,
-        #         command => 'sudo dpkg --add-architecture i386',
-        #   }
-        #   exec {
-        #     'apt update after adding i386':
-        #         path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
-        #         user    => $::user,
-        #         command => 'sudo apt update',
-        #   }
-        #   package {
-        #     'libncurses5:i386':
-        #       ensure => 'latest';
-        #   }
-        # }
         default: {
-          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
+          fail("Ubuntu ${::operatingsystemrelease} is not supported")
         }
       }
     }
     default: {
-      fail("Cannot install on ${facts['os']['name']}")
+      fail("Cannot install on ${::operatingsystem}")
     }
   }
 }

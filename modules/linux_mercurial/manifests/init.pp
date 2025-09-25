@@ -5,30 +5,9 @@
 class linux_mercurial {
   include shared
 
-  # install via pip on <2204, via package on 2404+
-  case $facts['os']['name'] {
-    'Ubuntu': {
-      case $facts['os']['release']['full'] {
-        '18.04', '22.04': {
-          # install mercurial (not via package)
-          class { 'linux_packages::mercurial' :
-            pkg_ensure => 'absent',
-          }
-        }
-        '24.04': {
-          # install mercurial via package
-          class { 'linux_packages::mercurial' :
-            pkg_ensure => 'present',
-          }
-        }
-        default: {
-          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
-        }
-      }
-    }
-    default: {
-      fail("Cannot install on ${facts['os']['name']}")
-    }
+  # install mercurial (not via package)
+  class { 'linux_packages::mercurial' :
+    pkg_ensure       => 'absent',
   }
 
   $hgext_dir       = '/usr/local/lib/hgext'

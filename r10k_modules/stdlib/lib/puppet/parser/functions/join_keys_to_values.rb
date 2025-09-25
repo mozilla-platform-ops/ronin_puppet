@@ -24,18 +24,24 @@ module Puppet::Parser::Functions
     line breaks, delimiters around arrays and hash entries, between key/values in hash entries, and individual
     formatting of values in the array) - see the `new` function for `String` and its formatting
     options for `Array` and `Hash`.
-  DOC
+    DOC
   ) do |arguments|
     # Validate the number of arguments.
-    raise(Puppet::ParseError, "join_keys_to_values(): Takes exactly two arguments, but #{arguments.size} given.") if arguments.size != 2
+    if arguments.size != 2
+      raise(Puppet::ParseError, "join_keys_to_values(): Takes exactly two arguments, but #{arguments.size} given.")
+    end
 
     # Validate the first argument.
     hash = arguments[0]
-    raise(TypeError, "join_keys_to_values(): The first argument must be a hash, but a #{hash.class} was given.") unless hash.is_a?(Hash)
+    unless hash.is_a?(Hash)
+      raise(TypeError, "join_keys_to_values(): The first argument must be a hash, but a #{hash.class} was given.")
+    end
 
     # Validate the second argument.
     separator = arguments[1]
-    raise(TypeError, "join_keys_to_values(): The second argument must be a string, but a #{separator.class} was given.") unless separator.is_a?(String)
+    unless separator.is_a?(String)
+      raise(TypeError, "join_keys_to_values(): The second argument must be a string, but a #{separator.class} was given.")
+    end
 
     # Join the keys to their values.
     hash.map { |k, v|

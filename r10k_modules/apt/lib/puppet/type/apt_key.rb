@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'pathname'
 require 'puppet/parameter/boolean'
 
@@ -25,10 +23,15 @@ Puppet::Type.newtype(:apt_key) do
   ensurable
 
   validate do
-    raise(_('ensure => absent and refresh => true are mutually exclusive')) if self[:refresh] == true && self[:ensure] == :absent
-    raise(_('The properties content and source are mutually exclusive.')) if self[:content] && self[:source]
-
-    warning(_('The id should be a full fingerprint (40 characters), see README.')) if self[:id].length < 40
+    if self[:refresh] == true && self[:ensure] == :absent
+      raise(_('ensure => absent and refresh => true are mutually exclusive'))
+    end
+    if self[:content] && self[:source]
+      raise(_('The properties content and source are mutually exclusive.'))
+    end
+    if self[:id].length < 40
+      warning(_('The id should be a full fingerprint (40 characters), see README.'))
+    end
   end
 
   newparam(:id, namevar: true) do
@@ -56,14 +59,16 @@ Puppet::Type.newtype(:apt_key) do
   end
 
   autorequire(:file) do
-    self[:source] if self[:source] && Pathname.new(self[:source]).absolute?
+    if self[:source] && Pathname.new(self[:source]).absolute?
+      self[:source]
+    end
   end
 
   newparam(:server) do
     desc 'The key server to fetch the key from based on the ID. It can either be a domain name or url.'
     defaultto :'keyserver.ubuntu.com'
 
-    newvalues(%r{\A((hkp|hkps|http|https)://)?([a-z\d])([a-z\d-]{0,61}\.)+[a-z\d]+(:\d{2,5})?(/[a-zA-Z\d\-_.]+)*/?$})
+    newvalues(%r{\A((hkp|http|https)://)?([a-z\d])([a-z\d-]{0,61}\.)+[a-z\d]+(:\d{2,5})?$})
   end
 
   newparam(:options) do
@@ -72,12 +77,6 @@ Puppet::Type.newtype(:apt_key) do
 
   newparam(:refresh, boolean: true, parent: Puppet::Parameter::Boolean) do
     desc 'When true, recreate an existing expired key'
-    defaultto false
-  end
-
-  newparam(:weak_ssl, boolean: true, parent: Puppet::Parameter::Boolean) do
-    desc 'When true and source uses https, accepts download of keys without SSL verification'
-    defaultto false
   end
 
   newproperty(:fingerprint) do

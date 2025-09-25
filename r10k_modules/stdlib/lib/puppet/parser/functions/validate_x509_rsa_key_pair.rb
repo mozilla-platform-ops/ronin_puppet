@@ -7,17 +7,15 @@ module Puppet::Parser::Functions
   newfunction(:validate_x509_rsa_key_pair, doc: <<-DOC
     @summary
       Validates a PEM-formatted X.509 certificate and RSA private key using
-      OpenSSL.
-
-    Verifies that the certficate's signature was created from the
-    supplied key.
+      OpenSSL. Verifies that the certficate's signature was created from the
+      supplied key.
 
     @return
       Fail compilation if any value fails this check.
 
     ```validate_x509_rsa_key_pair($cert, $key)```
 
-  DOC
+    DOC
   ) do |args|
     require 'openssl'
 
@@ -29,7 +27,9 @@ module Puppet::Parser::Functions
     end
 
     args.each do |arg|
-      raise Puppet::ParseError, "#{arg.inspect} is not a string." unless arg.is_a?(String)
+      unless arg.is_a?(String)
+        raise Puppet::ParseError, "#{arg.inspect} is not a string."
+      end
     end
 
     begin
@@ -44,6 +44,8 @@ module Puppet::Parser::Functions
       raise Puppet::ParseError, "Not a valid RSA key: #{e}"
     end
 
-    raise Puppet::ParseError, 'Certificate signature does not match supplied key' unless cert.verify(key)
+    unless cert.verify(key)
+      raise Puppet::ParseError, 'Certificate signature does not match supplied key'
+    end
   end
 end

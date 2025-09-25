@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::llvm {
-  case $facts['os']['name'] {
+  case $::operatingsystem {
     'Ubuntu': {
       package {
         'llvm-dev':
@@ -11,7 +11,7 @@ class linux_packages::llvm {
       }
     }
     default: {
-      fail("Cannot install on ${facts['os']['name']}")
+      fail("Cannot install on ${::operatingsystem}")
     }
   }
 }

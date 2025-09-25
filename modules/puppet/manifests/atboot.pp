@@ -32,18 +32,10 @@ class puppet::atboot (
     }
     'Ubuntu': {
       case $facts['os']['release']['full'] {
-        '18.04', '22.04', '24.04': {
+        '18.04': {
           include linux_packages::puppet
 
-          # ensure /etc/puppet exists
-          file { '/etc/puppet':
-            ensure => directory,
-            owner  => 'root',
-            group  => 'root',
-            mode   => '0755',
-          }
-
-          # On Ubuntu 18.04 and 22.04 puppet runs by systemd and on successful result
+          # On Ubuntu 18.04 puppet runs by systemd and on successful result
           # notifies dependent services
           file {
             '/usr/local/bin/change_workertype.py':
@@ -59,7 +51,7 @@ class puppet::atboot (
             '/lib/systemd/system/run-puppet.service':
               owner   => 'root',
               group   => 'root',
-              source  => 'puppet:///modules/puppet/puppet_2404.service',
+              source  => 'puppet:///modules/puppet/puppet.service',
               notify  => Exec['reload systemd'],
               require => Class['linux_packages::puppet'];
             '/usr/local/bin/run-puppet.sh':

@@ -22,18 +22,20 @@ module Puppet::Parser::Functions
 
     ```Timestamp()```
 
-  DOC
+    DOC
   ) do |arguments|
     # The Time Zone argument is optional ...
     time_zone = arguments[0] if arguments[0]
 
-    raise(Puppet::ParseError, "time(): Wrong number of arguments given #{arguments.size} for 0 or 1") if !arguments.empty? && (arguments.size != 1)
+    if !arguments.empty? && (arguments.size != 1)
+      raise(Puppet::ParseError, "time(): Wrong number of arguments given #{arguments.size} for 0 or 1")
+    end
 
     time = Time.new
 
     # There is probably a better way to handle Time Zone ...
     if time_zone && !time_zone.empty?
-      original_zone = ENV.fetch('TZ', nil)
+      original_zone = ENV['TZ']
 
       local_time = time.clone
       local_time = local_time.utc
