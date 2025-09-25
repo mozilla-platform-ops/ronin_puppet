@@ -207,12 +207,13 @@ function run_puppet {
     echo "current directory is: $(pwd)"
     echo "puppet command to run is: ${PUPPET_CMD}"
 
+    echo "running puppet command..."
     # START: don't separate these two commands
     $PUPPET_CMD 2>&1 | tee "${TMP_LOG}"
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
-    echo "puppet retval is $retval"
+    echo "puppet command done. retval is $retval"
     # just in case, if there were any errors logged, flag it as an error run
     if grep -q "^Error:" "${TMP_LOG}"
     then
