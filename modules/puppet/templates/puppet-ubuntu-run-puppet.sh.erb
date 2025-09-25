@@ -204,6 +204,7 @@ function run_puppet {
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     PUPPET_RUN_DURATION=$SECONDS
     retval=$?
+    echo "puppet retval is $retval"
     # just in case, if there were any errors logged, flag it as an error run
     if grep -q "^Error:" "${TMP_LOG}"
     then
