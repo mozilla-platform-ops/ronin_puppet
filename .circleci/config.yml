@@ -52,6 +52,12 @@ commands:
               echo "Nothing to do for forked PRs, so marking this step successful"
               circleci step halt
             fi
+  install_rosetta:
+    steps:
+      - run:
+          name: Install Rosetta 2
+          command: |
+            /usr/sbin/softwareupdate --install-rosetta --agree-to-license
   install_macos_puppet:
     parameters:
       puppet_version:
@@ -236,6 +242,7 @@ jobs:
           role: << parameters.role >>
       - gem_cache
       - install_macos_puppet
+      - install_rosetta
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
