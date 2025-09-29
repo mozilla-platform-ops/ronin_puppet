@@ -226,6 +226,7 @@ jobs:
       - apt_cache_save
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
+      CI: true  # disables some puppet steps from running that fail on ci, specs also inspect this env var
   macos_integration_tests:
     parameters:
       os:
