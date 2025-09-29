@@ -31,7 +31,7 @@ class grub (
             command     => '/usr/sbin/update-grub',
             subscribe   => File['/etc/default/grub'],
             refreshonly => true,
-            unless      => 'test -n "$CI"',
+            unless      => '/usr/bin/test -n "$CI"',
           }
         }
         default: {
