@@ -21,6 +21,9 @@ class grub (
             'grub2-common':
               ensure => present;
           }
+          exec { 'debug-ci':
+            command => '/bin/echo "CI=$CI"',
+          }
           file {
             '/etc/default/grub':
               ensure  => file,
@@ -28,10 +31,11 @@ class grub (
               notify  => Exec['update-grub'];
           }
           exec { 'update-grub':
-            command     => '/usr/sbin/update-grub',
-            subscribe   => File['/etc/default/grub'],
-            refreshonly => true,
-            unless      => '/usr/bin/test -n "$CI"',
+            command       => '/usr/sbin/update-grub',
+            subscribe     => File['/etc/default/grub'],
+            refreshonly   => true,
+            unless        => '/usr/bin/test -n "$CI"',
+              environment => ['CI'],
           }
         }
         default: {
