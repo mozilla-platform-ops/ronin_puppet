@@ -99,6 +99,8 @@ provisioner:
   resolve_with_r10k: false
   puppet_detailed_exitcodes: true
   puppet_whitelist_exit_code: [0, 2]
+  install_custom_facts: true
+  custom_facts: {'running_in_test_kitchen': true}
 
 
 platforms:
