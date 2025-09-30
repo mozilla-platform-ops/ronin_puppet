@@ -34,10 +34,6 @@ executors:
     macos:
       xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
     resource_class: macos.m1.medium.gen1
-  macos-1100: &1100
-    macos:
-      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
-    resource_class: macos.m1.medium.gen1
 
 commands:
   early_return_for_forked_pull_requests:
@@ -308,16 +304,6 @@ workflows:
               os: [macos-1015]
               suite: ["default"]
               role: ["gecko_t_osx_1015_r8"]
-          # context: slack-secrets
-          requires:
-            - pre_commit
-            - r10k_install
-      - macos_integration_tests:
-          matrix:
-            parameters:
-              os: [macos-1100]
-              suite: ["default"]
-              role: ["gecko_t_osx_1100_m1"]
           # context: slack-secrets
           requires:
             - pre_commit
