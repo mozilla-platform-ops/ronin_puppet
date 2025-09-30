@@ -383,17 +383,17 @@ class linux_gui (
             group  => 'root',
             mode   => '0644',
             source => "puppet:///modules/${module_name}/apparmor-firefox-local",
-            # no notify, we reboot the system later to apply
-            # sudo systemctl restart apparmor.service
-            notify => Exec['restart apparmor service'],
-            }
-
+          }
+          # if not in test-kitchen/ci, restart apparmor
+          if $facts['running_in_test_kitchen'] != 'true' {
             exec { 'restart apparmor service':
               command     => 'systemctl restart apparmor.service',
-              refreshonly => true,
               user        => 'root',
               path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+              subscribe   => File['/etc/apparmor.d/firefox-local'],
+              refreshonly => true,
             }
+          }
         }
         default: {
           fail ("Cannot install on Ubuntu version ${facts['os']['release']['full']}")
