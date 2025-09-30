@@ -7,14 +7,6 @@ define kernelmodule ($module=$title, $module_args='', $packages=null) {
   case $facts['os']['name'] {
     'Ubuntu': {
       exec {
-        "modprobe-${module}":
-          command     => "modprobe ${module} ${module_args}",
-          unless      => "lsmod | grep -qw ^${module}",
-          refreshonly => true,
-          path        => '/sbin:/bin:/usr/bin';
-      }
-
-      exec {
         "add-${module}-to-etc-modules":
           command => "echo ${module} >> /etc/modules",
           unless  => "grep -qw ^${module} /etc/modules",
@@ -26,7 +18,17 @@ define kernelmodule ($module=$title, $module_args='', $packages=null) {
         package {
           $packages:
             ensure => latest,
-            notify => Exec["modprobe-${module}"];
+            # notify => Exec["modprobe-${module}"];
+        }
+        if $facts['running_in_test_kitchen'] != 'true' {
+          exec {
+            "modprobe-${module}":
+              command     => "modprobe ${module} ${module_args}",
+              unless      => "lsmod | grep -qw ^${module}",
+              refreshonly => true,
+              path        => '/sbin:/bin:/usr/bin',
+              subscribe   => Package[$packages];
+          }
         }
       }
     }
