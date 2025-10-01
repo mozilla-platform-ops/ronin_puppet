@@ -45,10 +45,10 @@ queries_11_12_13=(
     "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/sbin/sshd',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1705002869);"
 )
 
-# queries_14_user=(
-#         "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
-#         "REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,X'fade0c00000000280000000100000008000000147f41aa3c67a93ccd54d2e21d25ba664a2db38497',NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);"
-#     )
+queries_14_user=(
+        "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
+        "REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,X'fade0c00000000280000000100000008000000147f41aa3c67a93ccd54d2e21d25ba664a2db38497',NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);"
+    )
 
 queries_14_system=(
     "REPLACE INTO access VALUES('kTCCServiceScreenCapture','/bin/bash',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e62617368000000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',0);"
@@ -74,9 +74,9 @@ elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 ]]; then
     for query in "${queries_14_system[@]}"; do
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
-    # for query in "${queries_14_user[@]}"; do
-    #     execute_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
-    # done
+    for query in "${queries_14_user[@]}"; do
+        execute_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
+    done
 else
     echo "Unsupported macOS version: $macos_version"
     exit 1

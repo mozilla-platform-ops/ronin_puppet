@@ -4,7 +4,7 @@
 
 class roles_profiles::roles::gecko_t_osx_1500_m4_staging {
   include macos_utils::disable_bluetooth_setup
-  #include roles_profiles::profiles::cltbld_user
+  include roles_profiles::profiles::cltbld_user
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_directory_cleaner
   include roles_profiles::profiles::macos_gw_checker
@@ -18,9 +18,9 @@ class roles_profiles::roles::gecko_t_osx_1500_m4_staging {
   include roles_profiles::profiles::packages_installed
   include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::relops_users
-  #include roles_profiles::profiles::safaridriver
+  include roles_profiles::profiles::safaridriver
   include roles_profiles::profiles::sudo
-  #include roles_profiles::profiles::talos
+  include roles_profiles::profiles::talos
   include roles_profiles::profiles::timezone
   include roles_profiles::profiles::users
   include roles_profiles::profiles::vnc
