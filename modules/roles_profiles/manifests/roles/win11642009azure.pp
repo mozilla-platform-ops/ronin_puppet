@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-class roles_profiles::roles::win116424h2azure {
+class roles_profiles::roles::win11642009azure {
   case $facts['custom_win_bootstrap_stage'] {
     'complete': {
       ## Cache drive will change based on packer provision or worker manager provisioning
@@ -16,18 +16,14 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::gpu_drivers
       ## Change log level from verbose to whatever hiera lookup is
       include roles_profiles::profiles::logging
-      ## We need to configure the cache drive and hg-shared in this profile
-      include roles_profiles::profiles::mozbuild_post_boostrap
       ## Set network to private
       include roles_profiles::profiles::network
-      ## Let's assume the services keep spawning, so kill them again
-      include roles_profiles::profiles::disable_services
       ## set UTC
       include roles_profiles::profiles::ntp
       ## errors if we don't have this, adding this
       include roles_profiles::profiles::mozilla_maintenance_service
-      # Skip OOBE
-      include roles_profiles::profiles::oobe
+      ## We need hg-cache and pip-cache, so re-run this but just do the pip/hg stuff
+      include roles_profiles::profiles::mozbuild_post_boostrap
     }
     default: {
       # Install MS tools earlier
@@ -47,8 +43,8 @@ class roles_profiles::roles::win116424h2azure {
       include roles_profiles::profiles::virtual_drivers
       include roles_profiles::profiles::gpu_drivers
 
-      # Skip OOBE
-      include roles_profiles::profiles::oobe
+      # WebView
+      #include roles_profiles::profiles::webview2
 
       # Adminstration
       include roles_profiles::profiles::logging

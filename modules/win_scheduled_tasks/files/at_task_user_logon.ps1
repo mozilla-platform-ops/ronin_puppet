@@ -89,65 +89,12 @@ $Accessibility = Get-ItemProperty -Path "HKCU:\Control Panel\Accessibility"
 ## Show scrollbars permanently
 switch ($os_version) {
     "win_10_2009" {
-        ## If it's not there already, create it
-        if ($null -eq $Accessibility.DynamicScrollbars) {
-            Try {
-                New-ItemProperty -Path "HKCU:\Control Panel\Accessibility" -Name "DynamicScrollbars" -Value 0 -ErrorAction Stop
-                #Write-Log -message  ('{0} :: Scrollbars successfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            }
-            Catch {
-                Write-Log -message  ('{0} :: Scrollbars unsuccessfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            }
-        }
-        else {
-            ## If it's already there, make sure it's 0
-            if ($Accessibility.DynamicScrollbars -eq 0) {
-                #Write-Log -message  ('{0} :: Scrollbars already set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                continue
-            }
-        }
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
     }
     "win_11_2009" {
-        ## If it's not there already, create it
-        if ($null -eq $Accessibility.DynamicScrollbars) {
-            Try {
-                New-ItemProperty -Path "HKCU:\Control Panel\Accessibility" -Name "DynamicScrollbars" -Value 0 -ErrorAction Stop
-                #Write-Log -message  ('{0} :: Scrollbars successfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            }
-            Catch {
-                Write-Log -message  ('{0} :: Scrollbars unsuccessfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            }
-        }
-        else {
-            ## If it's already there, make sure it's 0
-            if ($Accessibility.DynamicScrollbars -eq 0) {
-                #Write-Log -message  ('{0} :: Scrollbars already set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                continue
-            }
-        }
-    }
-    "win_10_2009" {
-        ## If it's not there already, create it
-        if ($null -eq $Accessibility.DynamicScrollbars) {
-            Try {
-                New-ItemProperty -Path "HKCU:\Control Panel\Accessibility" -Name "DynamicScrollbars" -Value 0 -ErrorAction Stop
-                #Write-Log -message  ('{0} :: Scrollbars successfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            }
-            Catch {
-                Write-Log -message  ('{0} :: Scrollbars unsuccessfully set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            }
-        }
-        else {
-            ## If it's already there, make sure it's 0
-            if ($Accessibility.DynamicScrollbars -eq 0) {
-                #Write-Log -message  ('{0} :: Scrollbars already set to always show' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                continue
-            }
-        }
-    }
-    "win_2012" {
-        ## Ensure strong encryption
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
     }
     "win_2022" {
         ## Disable Server Manager Dashboard

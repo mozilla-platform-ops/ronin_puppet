@@ -18,6 +18,8 @@ class roles_profiles::roles::win10642009azure {
       include roles_profiles::profiles::logging
       ## Set network to private
       include roles_profiles::profiles::network
+      ## Let's assume the services keep spawning, so kill them again
+      include roles_profiles::profiles::disable_services
       ## set UTC
       include roles_profiles::profiles::ntp
       ## errors if we don't have this, adding this
