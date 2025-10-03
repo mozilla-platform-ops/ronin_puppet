@@ -61,8 +61,6 @@ EOF
     echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
 fi
 
-echo "ROLE: ${ROLE}"
-
 # Extract username from puppet_repo
 puppet_env=$(extract_username "${PUPPET_REPO}")
 
@@ -89,6 +87,7 @@ fi
 
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
+echo "ROLE: ${ROLE}"
 
 # Return true is valid IP and not APIPA address
 function valid_ip {
