@@ -14,12 +14,21 @@ set -e
 #     ControlPersist yes
 #
 
+# 18.04
+REMOTE_SSH_USER="root"
+# 24.04
+REMOTE_SSH_USER="relops"
+
 # local files
 BOOTSTRAP_FILE="bootstrap_linux.sh"
 SECRETS_FILE="vault.yaml"
+RONIN_SETTINGS="ronin_settings"
 
 # remote files
-ROLE_FILE="/etc/puppet_role"
+ROLE_FILE_REMOTE="/etc/puppet_role"
+SECRETS_FILE_REMOTE="/root/vault.yaml"
+RONIN_SETTINGS_REMOTE="/etc/puppet/ronin_settings"
+BOOTSTRAP_FILE_REMOTE="/tmp/bootstrap.sh"
 
 
 # ensure critical scripts/files exist
@@ -60,28 +69,55 @@ ssh-keyscan -H "${THE_HOST}" >> ~/.ssh/known_hosts
 
 # ensure we're not bootstrapping a host that's already been done
 # shellcheck disable=SC2029
-if ssh root@"$THE_HOST" "test -e $ROLE_FILE"; then
+if ssh "$REMOTE_SSH_USER"@"$THE_HOST" "test -e $ROLE_FILE_REMOTE"; then
   echo "ERROR: Host already has a puppet role set... Exiting!"
   exit 1
 fi
 
 # TODO: check that we're on 1804 also
 
-
 # send stuff out
 
+# remove an existing boostrap file
+# shellcheck disable=SC2029
+ssh "$REMOTE_SSH_USER"@"$THE_HOST" "rm -f $BOOTSTRAP_FILE_REMOTE"
+
 # place bootsrap
-scp "$BOOTSTRAP_FILE" root@"$THE_HOST":/root/bootstrap.sh
-ssh root@"$THE_HOST" chmod 755 /root/bootstrap.sh
+# shellcheck disable=SC2029
+scp "$BOOTSTRAP_FILE" "$REMOTE_SSH_USER"@"$THE_HOST":$BOOTSTRAP_FILE_REMOTE
+# shellcheck disable=SC2029
+ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 755 $BOOTSTRAP_FILE_REMOTE"
 
 # place secrets
 # TODO: generate vault.yml with vault data
-scp "$SECRETS_FILE" root@"$THE_HOST":/root/vault.yaml
-ssh root@"$THE_HOST" chmod 640 /root/vault.yaml
+scp "$SECRETS_FILE" "$REMOTE_SSH_USER"@"$THE_HOST":/tmp/vault.yaml
+# shellcheck disable=SC2029
+ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo mv /tmp/vault.yaml $SECRETS_FILE_REMOTE"
+# shellcheck disable=SC2029
+ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 640 $SECRETS_FILE_REMOTE"
 
 # finally, place role
 # shellcheck disable=SC2029
-ssh root@"$THE_HOST" "echo $THE_ROLE > $ROLE_FILE"
+ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo sh -c 'echo $THE_ROLE > $ROLE_FILE_REMOTE'"
+
+# if the ronin_settings file exists, copy it into place
+RONIN_SETTINGS_PRESENT=0
+if [ -e "$RONIN_SETTINGS" ]; then
+  RONIN_SETTINGS_PRESENT=1
+  wait_secs=10
+  # source the file
+  # shellcheck disable=SC1090
+  source "$RONIN_SETTINGS"
+  echo "Found ronin_settings file, copying to remote host in ${wait_secs} seconds..."
+  sleep ${wait_secs}
+  echo "Copying..."
+  # shellcheck disable=SC2029
+  scp "$RONIN_SETTINGS" "$REMOTE_SSH_USER"@"$THE_HOST":/tmp/ronin_settings
+  # shellcheck disable=SC2029
+  ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo mv /tmp/ronin_settings $RONIN_SETTINGS_REMOTE"
+  # shellcheck disable=SC2029
+  ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 640 $RONIN_SETTINGS_REMOTE"
+fi
 
 echo ""
 echo "    ____       ___                          ____"
@@ -90,12 +126,29 @@ echo "  / / / / _ \/ / / | / / _ \/ ___/ _ \/ __  / /"
 echo " / /_/ /  __/ / /| |/ /  __/ /  /  __/ /_/ /_/"
 echo "/_____/\___/_/_/ |___/\___/_/   \___/\__,_(_)"
 echo ""
-echo "now run one of the following:"
+echo "You can now run one of the following:"
 echo ""
-echo "  master:"
-echo "    ssh root@$THE_HOST /root/bootstrap.sh"
-echo ""
-echo "  branch:"
-echo "    ssh root@$THE_HOST \\"
-echo "      PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' \\"
-echo "      PUPPET_BRANCH='YOUR_BRANCH' /root/bootstrap.sh"
+# if ronin_settings_present == 0
+if [ $RONIN_SETTINGS_PRESENT -eq 0 ]; then
+  echo "  master:"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST
+  echo "      sudo bash
+  echo "      $BOOTSTRAP_FILE_REMOTE"
+  echo ""
+  echo "  branch:"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
+  echo "      sudo bash"
+  echo "        PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' \\"
+  echo "          PUPPET_BRANCH='YOUR_BRANCH' $BOOTSTRAP_FILE_REMOTE"
+elif [ $RONIN_SETTINGS_PRESENT -eq 1 ]; then
+  echo "  master:"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST $BOOTSTRAP_FILE_REMOTE"
+  echo ""
+  echo "  branch:"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
+  echo "      sudo bash"
+  echo "        PUPPET_REPO='$PUPPET_REPO' \\"
+  echo "          PUPPET_BRANCH='$PUPPET_BRANCH' $BOOTSTRAP_FILE_REMOTE"
+  echo ""
+  echo "  WARNING: ronin-settings delivered ($RONIN_SETTINGS_REMOTE), so even master (above) will eventually use the settings."
+fi

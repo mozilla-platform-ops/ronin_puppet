@@ -3,13 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::locale {
-
-    case $::operatingsystem {
-        'Ubuntu': {
-            include locale
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+  case $facts['os']['name'] {
+    'Ubuntu': {
+      include locale
     }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }

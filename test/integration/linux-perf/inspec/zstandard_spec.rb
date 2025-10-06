@@ -14,5 +14,5 @@ end
 
 describe bash('zstd --version') do
   its('exit_status') { should eq 0 }
-  its('stdout') { should match /zstd command line interface/ }
+  its('stdout') { should match /zstd command line interface|Zstandard CLI/ }
 end

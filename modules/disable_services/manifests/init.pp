@@ -8,7 +8,7 @@ class disable_services () {
       # These packages are required by ubuntu-desktop, so we can't uninstall them.
       # Instead, install but disable them.
       case $facts['os']['release']['full'] {
-        '18.04', '22.04': {
+        '18.04', '22.04', '24.04': {
           # acpi removed because it can't be disabled this way
           #   (never worked in build-puppet/16.04)
           $install_and_disable = ['cups', 'anacron',

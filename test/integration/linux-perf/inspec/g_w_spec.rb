@@ -50,12 +50,24 @@ describe file('/etc/start-worker.yml') do
 end
 
 # check_gw
+#
 
-describe file('/opt/relops-check_gw/check_gw.py') do
-  it { should exist }
-  it { should be_executable }
-end
+if os.family == 'debian' && (os.release.start_with?('18.04') or os.release.start_with?('22.04'))
+  describe file('/opt/relops-check_gw/check_gw.py') do
+    it { should exist }
+    it { should be_executable }
+  end
 
-describe service('check_gw.timer') do
-  it { should be_enabled }
+  describe service('check_gw.timer') do
+    it { should be_enabled }
+  end
+elsif os.family == 'debian' && os.release.start_with?('24.04')
+  # we don't install check_gw service on 24.04
+else
+  # shouldn't be here
+  # for other OS families or versions, show error
+  describe command('false') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should_not match /NONO/ }
+  end
 end
