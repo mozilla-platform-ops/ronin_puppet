@@ -18,6 +18,7 @@ class roles_profiles::profiles::worker {
                 worker_id             => lookup('worker.worker_id'),
                 generic_worker_engine => lookup('worker.generic_worker_engine'),
                 idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
+                task_user_password    => lookup('cltbld_user.unhashedpassword')
             }
             # TODO: don't assume these are need with all workers. break out into another profile?
             include mercurial::system_hgrc
