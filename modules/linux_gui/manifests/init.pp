@@ -384,6 +384,14 @@ class linux_gui (
             mode   => '0644',
             source => "puppet:///modules/${module_name}/apparmor-firefox-local",
           }
+          # the same for chrome
+          file { '/etc/apparmor.d/chrome-local':
+            ensure => file,
+            owner  => 'root',
+            group  => 'root',
+            mode   => '0644',
+            source => "puppet:///modules/${module_name}/apparmor-chrome-local",
+          }
           # if not in test-kitchen/ci, restart apparmor
           if $facts['running_in_test_kitchen'] != 'true' {
             exec { 'restart apparmor service':
