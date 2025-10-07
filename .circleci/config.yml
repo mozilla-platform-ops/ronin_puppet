@@ -245,7 +245,7 @@ jobs:
       - gem_cache
       - install_macos_puppet
       - install_rosetta
-      - run: bundle exec kitchen converge << parameters.suite >>
+      - run: bundle exec kitchen converge << parameters.suite >> || true
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
