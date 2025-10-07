@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::macos_disable_spotlight {
-  class { 'macos_bin_signer':
+  class { 'macos_disable_spotlight':
     enabled => true,
   }
 }
