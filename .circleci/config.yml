@@ -22,7 +22,8 @@ executors:
     docker:
       # see https://github.com/mozilla-platform-ops/relops_infra_as_code/tree/master/docker/dockerfiles/circleci-ubuntu-2004
       - image: mozillarelops/circleci-ubuntu-2004:v0.1.0
-  ubuntu-2004:
+  ubuntu-default:
+    # currently default is ubuntu 2204
     machine:
       image: default
   # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
@@ -31,6 +32,10 @@ executors:
       xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
     resource_class: macos.m1.medium.gen1
   macos-1015: &1015
+    macos:
+      xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
+    resource_class: macos.m1.medium.gen1
+  macos-1100: &1100
     macos:
       xcode: 13.4.1  # 4/24/24: OS X 12.6.1, no older available
     resource_class: macos.m1.medium.gen1
@@ -48,6 +53,12 @@ commands:
               echo "Nothing to do for forked PRs, so marking this step successful"
               circleci step halt
             fi
+  install_rosetta:
+    steps:
+      - run:
+          name: Install Rosetta 2
+          command: |
+            /usr/sbin/softwareupdate --install-rosetta --agree-to-license
   install_macos_puppet:
     parameters:
       puppet_version:
@@ -186,14 +197,14 @@ jobs:
                 pre-commit run --from-ref original/master --to-ref HEAD --verbose
             fi
   r10k_install:
-    executor: ubuntu-2004
+    executor: ubuntu-default
     steps:
       - export_env_vars
       - checkout
       - gem_cache
       - run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
   linux_integration_tests:
-    executor: ubuntu-2004
+    executor: ubuntu-default
     parameters:
       kitchen_target:
         type: string
@@ -216,6 +227,7 @@ jobs:
       - apt_cache_save
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
+      CI: true111
   macos_integration_tests:
     parameters:
       os:
@@ -232,6 +244,7 @@ jobs:
           role: << parameters.role >>
       - gem_cache
       - install_macos_puppet
+      - install_rosetta
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
@@ -304,6 +317,16 @@ workflows:
               os: [macos-1015]
               suite: ["default"]
               role: ["gecko_t_osx_1015_r8"]
+          # context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - macos_integration_tests:
+          matrix:
+            parameters:
+              os: [macos-1100]
+              suite: ["default"]
+              role: ["gecko_t_osx_1100_m1"]
           # context: slack-secrets
           requires:
             - pre_commit
