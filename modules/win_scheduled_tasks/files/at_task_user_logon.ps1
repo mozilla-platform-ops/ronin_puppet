@@ -7,6 +7,61 @@
 NOTE: This script is specific for items that can't be done until the user environment is in place.
 #>
 
+function Disable-OneDrive {
+    [CmdletBinding()]
+    param (
+        
+    )
+
+    $ErrorActionPreference = 'SilentlyContinue'
+
+    Stop-Process -Name OneDrive -Force
+    Stop-Process -Name OneDriveSetup -Force
+    Stop-Process -Name explorer -Force
+
+    $pol = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
+    New-Item -Path $pol -Force | Out-Null
+    New-ItemProperty -Path $pol -Name 'DisableFileSyncNGSC' -PropertyType DWord -Value 1 -Force | Out-Null
+    # Clean incorrect Wow6432Node path (if previously set)
+    Remove-Item -Path 'HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive' -Recurse -Force
+
+    foreach ($rk in @(
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce'
+        )) {
+        if (Test-Path $rk) {
+            $props = (Get-ItemProperty -Path $rk | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)
+            foreach ($name in $props) {
+                $val = (Get-ItemPropertyValue -Path $rk -Name $name)
+                if ($val -match 'OneDriveSetup\.exe') {
+                    Remove-ItemProperty -Path $rk -Name $name -Force
+                }
+            }
+        }
+    }
+
+    Get-ScheduledTask -ErrorAction SilentlyContinue |
+    Where-Object { $_.TaskName -like 'OneDrive*' -or $_.TaskPath -like '\Microsoft\OneDrive\*' } |
+    Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+    $sys32 = "$env:WINDIR\System32\OneDriveSetup.exe"
+    $wow64 = "$env:WINDIR\SysWOW64\OneDriveSetup.exe"
+    if (Test-Path $sys32) { & $sys32 /uninstall }
+    if (Test-Path $wow64) { & $wow64 /uninstall }
+
+    Remove-Item -LiteralPath "$env:LOCALAPPDATA\Microsoft\OneDrive" -Recurse -Force
+    Remove-Item -LiteralPath "$env:PROGRAMDATA\Microsoft OneDrive" -Recurse -Force
+    Remove-Item -LiteralPath "$env:SYSTEMDRIVE\OneDriveTemp" -Recurse -Force
+    if (Test-Path "$env:USERPROFILE\OneDrive") {
+        if ((Get-ChildItem "$env:USERPROFILE\OneDrive" -Recurse | Measure-Object).Count -eq 0) {
+            Remove-Item -LiteralPath "$env:USERPROFILE\OneDrive" -Recurse -Force
+        }
+    }
+
+    Start-Process explorer.exe
+
+}
+
 function Write-Log {
     param (
         [string] $message,
@@ -83,18 +138,13 @@ while ($true) {
     }
 }
 
-## Accessibilty keys in HKCU
-$Accessibility = Get-ItemProperty -Path "HKCU:\Control Panel\Accessibility"
-
 ## Show scrollbars permanently
 switch ($os_version) {
     "win_10_2009" {
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
+        Disable-OneDrive
     }
     "win_11_2009" {
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
+        Disable-OneDrive
     }
     "win_2022" {
         ## Disable Server Manager Dashboard
