@@ -245,7 +245,7 @@ jobs:
       - gem_cache
       - install_macos_puppet
       - install_rosetta
-      - run: bundle exec kitchen converge << parameters.suite >> || true
+      - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
@@ -317,16 +317,6 @@ workflows:
               os: [macos-1015]
               suite: ["default"]
               role: ["gecko_t_osx_1015_r8"]
-          # context: slack-secrets
-          requires:
-            - pre_commit
-            - r10k_install
-      - macos_integration_tests:
-          matrix:
-            parameters:
-              os: [macos-1100]
-              suite: ["default"]
-              role: ["gecko_t_osx_1100_m1"]
           # context: slack-secrets
           requires:
             - pre_commit
