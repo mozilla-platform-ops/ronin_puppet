@@ -1,3 +1,42 @@
+function Write-Log {
+    param (
+        [string] $message,
+        [string] $severity = 'INFO',
+        [string] $source = 'BootStrap',
+        [string] $logName = 'Application'
+    )
+    if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
+        New-EventLog -LogName $logName -Source $source
+    }
+    switch ($severity) {
+        'DEBUG' {
+            $entryType = 'SuccessAudit'
+            $eventId = 2
+            break
+        }
+        'WARN' {
+            $entryType = 'Warning'
+            $eventId = 3
+            break
+        }
+        'ERROR' {
+            $entryType = 'Error'
+            $eventId = 4
+            break
+        }
+        default {
+            $entryType = 'Information'
+            $eventId = 1
+            break
+        }
+    }
+    Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
+    if ([Environment]::UserInteractive) {
+        $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
+        Write-Host  -object $message -ForegroundColor $fc
+    }
+}
+
 $apps = @{
     "Bing Search"                            = @{
         "VDIState"    = "Unchanged"
@@ -254,15 +293,18 @@ $apps = @{
 Foreach ($Key in $apps.Keys) {
     $Item = $apps[$Key]             
     Write-Host "Removing Provisioned Package $Key"
+    Write-Log -Message ("{0} :: Removing Provisioned Package {1}" -f $($MyInvocation.MyCommand.Name), $Key) -severity 'DEBUG'
     Get-AppxProvisionedPackage -Online | 
     Where-Object { $_.PackageName -like ("*{0}*" -f $Key) } | 
     Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
             
     Write-Host "Attempting to remove [All Users] $Key - $($Item.Description)"
+    Write-Log -Message ("{0} :: Attempting to remove [All Users] {1} - {2}" -f $($MyInvocation.MyCommand.Name), $Key, $Item.Description) -severity 'DEBUG'
     Get-AppxPackage -AllUsers -Name ("*{0}*" -f $Key) | 
     Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue 
             
     Write-Host "Attempting to remove $Key - $($Item.Description)"
+    Write-Log -Message ("{0} :: Attempting to remove {1} - {2}" -f $($MyInvocation.MyCommand.Name), $Key, $Item.Description) -severity 'DEBUG'
     Get-AppxPackage -Name ("*{0}*" -f $Key) | 
     Remove-AppxPackage -ErrorAction SilentlyContinue | Out-Null
     
