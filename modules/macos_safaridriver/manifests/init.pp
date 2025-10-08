@@ -11,6 +11,8 @@ class macos_safaridriver (
     'Darwin': {
       case $facts['os']['release']['major'] {
         '19','20','21','22','23','24': {
+          require roles_profiles::profiles::cltbld_user
+
           $perm_script = '/usr/local/bin/add_tcc_perms.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
