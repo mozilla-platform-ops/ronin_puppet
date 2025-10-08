@@ -227,7 +227,7 @@ jobs:
       - apt_cache_save
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
-      CI: true111
+      CI: true111  # used to signal to kitchen that we're in CI
   macos_integration_tests:
     parameters:
       os:
@@ -250,7 +250,7 @@ jobs:
       - store_test_results:
           path: rspec
     environment:
-      CI: true222
+      CI: true222  # used to signal to kitchen that we're in CI
       KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:

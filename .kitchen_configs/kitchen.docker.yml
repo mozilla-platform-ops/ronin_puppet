@@ -100,6 +100,7 @@ provisioner:
   puppet_detailed_exitcodes: true
   puppet_whitelist_exit_code: [0, 2]
   install_custom_facts: true
+  # this lets spec tests know we're in CI
   custom_facts: {'running_in_test_kitchen': true}
 
 
