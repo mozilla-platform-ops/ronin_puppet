@@ -11,6 +11,8 @@ class macos_safaridriver (
     'Darwin': {
       case $facts['os']['release']['major'] {
         '19','20','21','22','23','24': {
+          # hmm, this sort of hardcodes the user, but not sure how to set up the proper
+          # ordering here
           require roles_profiles::profiles::cltbld_user
 
           $perm_script = '/usr/local/bin/add_tcc_perms.sh'
