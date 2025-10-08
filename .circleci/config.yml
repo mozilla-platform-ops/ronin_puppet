@@ -250,6 +250,7 @@ jobs:
       - store_test_results:
           path: rspec
     environment:
+      CI: true222
       KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
       PUPPET_ROLE: << parameters.role >>
 #      - slack/status:
