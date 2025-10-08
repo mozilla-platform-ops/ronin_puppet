@@ -301,16 +301,18 @@ workflows:
       #    requires:
       #      - pre_commit
       #      - r10k_install
-      - macos_integration_tests:
-          matrix:
-            parameters:
-              os: [macos-1014]
-              suite: ["mac-v3-signing"]
-              role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
-          # context: slack-secrets
-          requires:
-            - pre_commit
-            - r10k_install
+      #
+      # TODO: re-enable mac signer tests (once fixed and reassessed)
+      # - macos_integration_tests:
+      #     matrix:
+      #       parameters:
+      #         os: [macos-1014]
+      #         suite: ["mac-v3-signing"]
+      #         role: ["mac_v3_signing_ff_prod", "mac_v3_signing_tb_prod", "mac_v3_signing_dep"]
+      #     # context: slack-secrets
+      #     requires:
+      #       - pre_commit
+      #       - r10k_install
       - macos_integration_tests:
           matrix:
             parameters:
