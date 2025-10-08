@@ -59,7 +59,7 @@ $SchTasksList = @(
     # "SpeechModelDownloadTask",
     # "Sqm-Tasks",
     # "SR",
-    "SilentCleanupTask",
+    "SilentCleanup",
     "StartComponentCleanup"
     # "SmartScreenSpecific",
     # "WindowsActionDialog",
