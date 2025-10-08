@@ -37,17 +37,16 @@ function Write-Log {
     }
 }
 
-Foreach ($Item in @("SilentCleanup","StartComponentCleanup")) {
+$tasks = @(
+    "SilentCleanup",
+    "StartComponentCleanup",
+    "CleanupTemporaryState"
+)
+
+Foreach ($Item in $tasks) {
     $TaskObject = Get-ScheduledTask $Item -ErrorAction SilentlyContinue
     If ($TaskObject) {
         Write-Log -Message ("{0} :: Disabling Scheduled Task: {1}" -f $($MyInvocation.MyCommand.Name), $TaskObject.TaskName) -severity 'DEBUG'
         Disable-ScheduledTask -InputObject $TaskObject | Out-Null
     }
-}
-
-## Microsoft has a space in account cleanup scheduled task
-$Acc_TaskObject = Get-ScheduledTask "Account Cleanup" -ErrorAction SilentlyContinue
-If ($Acc_TaskObject) {
-    Write-Log -Message ("{0} :: Disabling Scheduled Task: {1}" -f $($MyInvocation.MyCommand.Name), $Acc_TaskObject.TaskName) -severity 'DEBUG'
-    Disable-ScheduledTask -InputObject $Acc_TaskObject | Out-Null
 }
