@@ -39,7 +39,7 @@ function Write-Log {
 
 $tasks = @(
     "SilentCleanup",
-    "StartComponentCleanup",
+    #"StartComponentCleanup",
     "CleanupTemporaryState"
 )
 
