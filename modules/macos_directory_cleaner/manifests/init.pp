@@ -1,6 +1,7 @@
 class macos_directory_cleaner (
   Boolean $enabled = true,
 ) {
+  require packages::python3  # try to fix ordering in kitchen
   require roles_profiles::profiles::pipconf  # Ensures pipconf runs first
 
   # Install the directory_cleaner package using pip3
