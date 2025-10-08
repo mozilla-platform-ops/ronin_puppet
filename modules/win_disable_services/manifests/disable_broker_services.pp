@@ -27,4 +27,8 @@ class win_disable_services::disable_broker_services {
       data   => '0',
     }
   }
+
+  # Ensure services are stopped in the correct order (dependent services first)
+  Service['BrokerInfrastructure'] -> Service['SystemEventsBroker']
+  Service['TimeBrokerSvc'] -> Service['SystemEventsBroker']
 }
