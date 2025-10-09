@@ -222,28 +222,28 @@ switch ($os_version) {
 
 do {
     if (-not (Test-Path "C:\worker-runner\current-task-user.json")) {
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Waiting for current-task-user.json to be created", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        Write-Log -Message ('{0} :: Waiting for {1} to be created - {2:o}' -f $($MyInvocation.MyCommand.Name), "current-task-user.json", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
         Start-Sleep -Seconds 5
     }
 } until (Test-Path "C:\worker-runner\current-task-user.json")
 
-
 $TaskName = "minimize_cmd_$($localuser)"
 while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
-    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Waiting for $localuser to be created", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    Write-Log -Message ('{0} :: Waiting for {1} to be created - {2:o}' -f $($MyInvocation.MyCommand.Name), $localuser, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     Start-Sleep -Seconds 5
 }
-Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Found current-task-user $localuser", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+Write-Log -Message ('{0} :: Found current-task-user {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), $localuser, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     
 ## Initialize the scheduled task to minimize cmd windows
+Write-Log -Message ('{0} :: Running Set-TaskUserScript -LocalUser {1} -TaskName {2} -ScriptPath {3} - {4:o}' -f $($MyInvocation.MyCommand.Name), $localuser, $TaskName, $ScriptPath, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
 Set-TaskUserScript -LocalUser $localuser -TaskName $TaskName -ScriptPath $ScriptPath
 
 try {
     Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
-    Write-Log -message  ('{0} :: Started Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $User) -severity 'ERROR'
+    Write-Log -message  ('{0} :: Started Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'ERROR'
 }
 catch {
-    Write-Log -message  ('{0} :: Unable to start Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $User) -severity 'ERROR'
+    Write-Log -message  ('{0} :: Unable to start Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'ERROR'
 }
 
 Write-Log -message  ('{0} :: Completed at_task_user_logon.ps1' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'

@@ -13,6 +13,7 @@ class roles_profiles::profiles::scheduled_tasks {
         'datacenter': {
           #$startup_script = 'maintainsystem-hw.ps1'
           $startup_script = 'maintainsystem-reftester.ps1'
+          include win_scheduled_tasks::minimize_cmd
         }
         default: {
           $startup_script = 'maintainsystem.ps1'
