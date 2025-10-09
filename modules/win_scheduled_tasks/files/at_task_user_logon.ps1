@@ -101,6 +101,71 @@ function Write-Log {
     }
 }
 
+function Set-TaskUserScript {
+    [CmdletBinding()]
+    param (
+        [String]
+        $TaskName,
+        [String]
+        $LocalUser,
+        [String]
+        $ScriptPath
+    )
+    
+    if ( -Not (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) ) {
+        $taskDescription = "Minimize the cmd.exe window that pops up when running a task in generic worker"
+    
+        $actionSplat = @{
+            Execute  = "Powershell.exe"
+            Argument = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$ScriptPath`""
+        }
+
+        try {
+            $action = New-ScheduledTaskAction @actionSplat -ErrorAction Stop
+            Write-Log -message  ('{0} :: Created Scheduled Task Action for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+        catch {
+            Write-Log -message  ('{0} :: Unable to create Scheduled Task Action for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+
+        $settingsSplat = @{
+            AllowStartIfOnBatteries    = $true
+            DontStopIfGoingOnBatteries = $true
+            StartWhenAvailable         = $true
+            DontStopOnIdleEnd          = $true
+            MultipleInstances          = "IgnoreNew"
+        }
+
+        try {
+            $settings = New-ScheduledTaskSettingsSet @settingsSplat -ErrorAction Stop
+            Write-Log -message  ('{0} :: Created Scheduled Task Settings Set for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+        catch {
+            Write-Log -message  ('{0} :: Unable to create Scheduled Task Settings Set for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+
+        $taskSplat = @{
+            TaskName    = $TaskName
+            Action      = $action
+            Settings    = $settings
+            Description = $taskDescription
+            User        = $LocalUser
+        }
+    
+        try {
+            ## Suppress the output
+            $task = Register-ScheduledTask @taskSplat -Force -ErrorAction Stop
+            Write-Log -message  ('{0} :: Registered Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+        catch {
+            Write-Log -message  ('{0} :: Unable to register Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+    }
+    else {
+        Write-Log -message  ('{0} :: Scheduled Task {1} already exists for {2}' -f $($MyInvocation.MyCommand.Name), $TaskName, $LocalUser) -severity 'DEBUG'
+    }
+}
+
 # Windows release ID.
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
@@ -108,6 +173,7 @@ $release_id = $release_key.ReleaseId
 $caption = ((Get-WmiObject Win32_OperatingSystem).caption)
 $caption = $caption.ToLower()
 $os_caption = $caption -replace ' ', '_'
+$scriptPath = "$env:programdata\PuppetLabs\ronin\minimize_cmd.ps1"
 
 if ($os_caption -like "*windows_10*") {
     $os_version = ( -join ( "win_10_", $release_id))
@@ -138,7 +204,6 @@ while ($true) {
     }
 }
 
-## Show scrollbars permanently
 switch ($os_version) {
     "win_10_2009" {
         Disable-OneDrive
@@ -151,6 +216,31 @@ switch ($os_version) {
         Get-ScheduledTask -TaskName ServerManager | Disable-ScheduledTask -Verbose
     }
     Default {
-        Write-Log -message  ('{0} :: Skipping at task user logon for {1}' -f $($MyInvocation.MyCommand.Name),$os_version) -severity 'DEBUG'
+        Write-Log -Message ('{0} :: No specific actions for OS caption {1}' -f $($MyInvocation.MyCommand.Name), $os_caption) -severity 'DEBUG'
     }
 }
+
+if (Test-Path "C:\worker-runner\current-task-user.json") {
+    $TaskName = "minimize_cmd_$($localuser)"
+    while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Waiting for $localuser to be created", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        Start-Sleep -Seconds 5
+    }
+    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Found current-task-user $localuser", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    
+    ## Initialize the scheduled task to minimize cmd windows
+    Set-TaskUserScript -LocalUser $localuser -TaskName $TaskName -ScriptPath $ScriptPath
+
+    try {
+        Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+        Write-Log -message  ('{0} :: Started Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $User) -severity 'ERROR'
+    }
+    catch {
+        Write-Log -message  ('{0} :: Unable to start Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $User) -severity 'ERROR'
+    }
+}
+else {
+    Write-Log -message  ('{0} :: current-task-user.json not found, skipping minimize_cmd scheduled task creation' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+}
+
+Write-Log -message  ('{0} :: Completed at_task_user_logon.ps1' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
