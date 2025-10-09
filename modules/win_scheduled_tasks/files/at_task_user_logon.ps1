@@ -220,6 +220,11 @@ switch ($os_version) {
     }
 }
 
+## Get the scheduled tasks from the other task users and delet them
+Get-ScheduledTask | 
+Where-Object { $_.TaskName -like "minimize_cmd_*" } | 
+Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
 do {
     if (-not (Test-Path "C:\worker-runner\current-task-user.json")) {
         Write-Log -Message ('{0} :: Waiting for {1} to be created - {2:o}' -f $($MyInvocation.MyCommand.Name), "current-task-user.json", (Get-Date).ToUniversalTime()) -severity 'DEBUG'

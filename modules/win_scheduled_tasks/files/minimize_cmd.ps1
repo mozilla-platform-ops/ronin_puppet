@@ -126,32 +126,23 @@ public static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }
 
-## Minimize the cmd.exe window that pops up when running a task
-## Wait until the process with path C:\task_* is found, then hide cmd.exe
-do {
-    $taskProcess = Get-Process | Where-Object { $_.Path -like "C:\task_*" }
-    if (-not $taskProcess) {
-        Write-Log -Message ('{0} :: Waiting for process with path matching C:\task_*' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Start-Sleep -Seconds 5
+while ($true) {
+    ## Minimize the cmd.exe window that pops up when running a task
+    ## Check every 5 seconds for cmd.exe and suppress it
+    
+    $cmdproc = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq "C:\windows\System32\cmd.exe" }
+    
+    if ($null -ne $cmdproc) {
+        Write-Log -Message ('{0} :: Found {1} cmd.exe process(es), hiding window(s)' -f $($MyInvocation.MyCommand.Name), $cmdproc.Count) -severity 'DEBUG'
+        $cmdproc | Set-WindowState -State HIDE
     }
-} until ($taskProcess)
-
-$cmdproc = Get-Process | Where-Object { $PSItem.Path -eq "C:\windows\System32\cmd.exe" }
-if ($null -ne $cmdproc) {
-    Write-Log -Message ('{0} :: Hiding cmd.exe window' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    $cmdproc | Set-WindowState -State HIDE
+    
+    ## Now let's kill explorer while we're at it
+    $explorerProc = Get-Process -Name "explorer" -ErrorAction SilentlyContinue
+    if ($null -ne $explorerProc) {
+        Write-Log -Message ('{0} :: Stopping explorer process' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        $explorerProc | Stop-Process -Force
+    }
+    
+    Start-Sleep -Seconds 5
 }
-else {
-    do {
-        $cmdprocess = Get-Process | Where-Object { $PSItem.Path -eq "C:\windows\System32\cmd.exe" }
-        if (-not $cmdprocess) {
-            Write-Log -Message ('{0} :: Waiting for process of cmd.exe to hide' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Start-Sleep -Seconds 5
-        }
-    } until ($cmdprocess)
-    Write-Log -Message ('{0} :: Hiding cmd.exe window' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    $cmdprocess | Set-WindowState -State HIDE
-}
-
-## Now let's kill explorer while we're at it
-Get-Process "explorer" | Stop-Process -Force
