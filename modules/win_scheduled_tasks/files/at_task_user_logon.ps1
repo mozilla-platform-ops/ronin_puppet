@@ -227,6 +227,8 @@ do {
     }
 } until (Test-Path "C:\worker-runner\current-task-user.json")
 
+$localuser = (Get-Content -Path "C:\worker-runner\current-task-user.json" | ConvertFrom-Json).name
+
 $TaskName = "minimize_cmd_$($localuser)"
 while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
     Write-Log -Message ('{0} :: Waiting for {1} to be created - {2:o}' -f $($MyInvocation.MyCommand.Name), $localuser, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
