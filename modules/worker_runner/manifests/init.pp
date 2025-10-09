@@ -98,15 +98,31 @@ class worker_runner (
                 $arch_name = 'amd64'
             }
 
-            $taskcluster_binaries = [ 'start-worker', 'generic-worker-multiuser', 'generic-worker-simple', 'livelog', 'taskcluster-proxy' ]
+            # Determine architecture
+            if /^Apple.*/ in $facts['processors']['models'] {
+            $arch_name = 'arm64'
+            } else {
+            $arch_name = 'amd64'
+            }
+
+            # Taskcluster binaries to install
+            $taskcluster_binaries = [
+            'start-worker',
+            'generic-worker-multiuser',
+            'generic-worker-simple',
+            'livelog',
+            'taskcluster-proxy',
+            ]
+
+            # Install binaries directly from GitHub releases
             $taskcluster_binaries.each |String $bin| {
-                $pkg_name = "${bin}-${taskcluster_version}-${arch_name}"
-                packages::macos_package_from_s3 { $pkg_name:
-                    private             => false,
-                    os_version_specific => false,
-                    type                => 'bin',
-                    file_destination    => "/usr/local/bin/${bin}",
-                }
+            packages::macos_taskcluster_binary { $bin:
+                version          => $taskcluster_version,
+                arch             => $arch_name,
+                file_destination => "/usr/local/bin/${bin}",
+                # optionally add checksum lookups here:
+                # sha256 => lookup("taskcluster::sha256::${bin}-${arch_name}", undef, undef),
+            }
             }
 
             # Create worker data dir
