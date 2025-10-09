@@ -128,13 +128,13 @@ public static extern bool SetForegroundWindow(IntPtr hWnd);
 
 ## Minimize the cmd.exe window that pops up when running a task
 ## Wait until the process with path C:\task_* is found, then hide cmd.exe
-# do {
-#     $taskProcess = Get-Process | Where-Object { $_.Path -like "C:\task_*" }
-#     if (-not $taskProcess) {
-#         Write-Log -Message ('{0} :: Waiting for process with path matching C:\task_*' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-#         Start-Sleep -Seconds 5
-#     }
-# } until ($taskProcess)
+do {
+    $taskProcess = Get-Process | Where-Object { $_.Path -like "C:\task_*" }
+    if (-not $taskProcess) {
+        Write-Log -Message ('{0} :: Waiting for process with path matching C:\task_*' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        Start-Sleep -Seconds 5
+    }
+} until ($taskProcess)
 
 $cmdproc = Get-Process | Where-Object { $PSItem.Path -eq "C:\windows\System32\cmd.exe" }
 if ($null -ne $cmdproc) {
@@ -152,3 +152,6 @@ else {
     Write-Log -Message ('{0} :: Hiding cmd.exe window' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $cmdprocess | Set-WindowState -State HIDE
 }
+
+## Now let's kill explorer while we're at it
+Get-Process "explorer" | Stop-Process -Force
