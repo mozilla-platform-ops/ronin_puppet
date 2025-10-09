@@ -53,6 +53,8 @@ provisioner:
   verify_host_key: false
   resolve_with_librarian_puppet: false
   resolve_with_r10k: false
+  puppet_detailed_exitcodes: true
+  puppet_whitelist_exit_code: [0, 2]
 
 verifier:
   name: inspec
