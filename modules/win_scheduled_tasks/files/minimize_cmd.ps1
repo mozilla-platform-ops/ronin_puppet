@@ -137,12 +137,12 @@ while ($true) {
         $cmdproc | Set-WindowState -State HIDE
     }
     
-    ## Now let's kill explorer while we're at it
-    $explorerProc = Get-Process -Name "explorer" -ErrorAction SilentlyContinue
-    if ($null -ne $explorerProc) {
-        Write-Log -Message ('{0} :: Stopping explorer process' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        $explorerProc | Stop-Process -Force
-    }
+    # ## Now let's kill explorer while we're at it
+    # $explorerProc = Get-Process -Name "explorer" -ErrorAction SilentlyContinue
+    # if ($null -ne $explorerProc) {
+    #     Write-Log -Message ('{0} :: Stopping explorer process' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    #     $explorerProc | Stop-Process -Force
+    # }
     
     Start-Sleep -Seconds 5
 }
