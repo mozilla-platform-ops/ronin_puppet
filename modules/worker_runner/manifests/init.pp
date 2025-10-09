@@ -91,13 +91,6 @@ class worker_runner (
                 $launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
             }
 
-            # arm64 if Apple processor
-            if /^Apple.*/ in $facts['processors']['models'] {
-                $arch_name = 'arm64'
-            } else {
-                $arch_name = 'amd64'
-            }
-
             # Determine architecture
             if /^Apple.*/ in $facts['processors']['models'] {
             $arch_name = 'arm64'
