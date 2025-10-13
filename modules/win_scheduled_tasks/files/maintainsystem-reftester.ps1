@@ -43,6 +43,35 @@ function Write-Log {
     }
 }
 
+function Disable-Firewall {
+    <#
+    .SYNOPSIS
+        Disables Windows Firewall for all profiles (Domain, Private, Public)
+    .DESCRIPTION
+        PowerShell-friendly method to disable Windows Firewall using Set-NetFirewallProfile cmdlet.
+        This replaces the legacy cmd.exe method: netsh firewall set notifications mode = disable profile = all
+    .EXAMPLE
+        Disable-Firewall
+    #>
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        try {
+            # Disable firewall for all profiles: Domain, Private, and Public
+            Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled False
+            Write-Log -message ('{0} :: Windows Firewall disabled for all profiles (Domain, Private, Public)' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        catch {
+            Write-Log -message ('{0} :: Failed to disable Windows Firewall. Error: {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+            throw
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 function Run-MaintainSystem {
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -534,7 +563,7 @@ If ($bootstrap_stage -eq 'complete') {
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
-
+    Disable-Firewall
     Start-WorkerRunner
     Start-Sleep -Seconds 30
     Register-TaskUserScript -LocalUser $loggedInUser
