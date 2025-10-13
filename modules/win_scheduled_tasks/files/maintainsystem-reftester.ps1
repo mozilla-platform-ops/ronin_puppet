@@ -253,7 +253,7 @@ function Puppet-Run {
     }
 }
 
-function StartWorkerRunner {
+function Start-WorkerRunner {
     param (
     )
     begin {
@@ -403,11 +403,109 @@ function Test-ConnectionUntilOnline {
     throw "Connection timeout."
 }
 
+function Set-TaskUserBackgroundScript {
+    [CmdletBinding()]
+    param (
+        [String]
+        $TaskName = "task_user_background_script",
+        [String]
+        $LocalUser,
+        [String]
+        $ScriptPath
+    )
+    
+    if ( -Not (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) ) {
+        $taskDescription = "Minimize the cmd.exe window that pops up when running a task in generic worker"
+    
+        $actionSplat = @{
+            Execute  = "Powershell.exe"
+            Argument = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$ScriptPath`""
+        }
+
+        try {
+            $action = New-ScheduledTaskAction @actionSplat -ErrorAction Stop
+            Write-Log -message  ('{0} :: Created Scheduled Task Action for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+        catch {
+            Write-Log -message  ('{0} :: Unable to create Scheduled Task Action for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+
+        $settingsSplat = @{
+            AllowStartIfOnBatteries    = $true
+            DontStopIfGoingOnBatteries = $true
+            StartWhenAvailable         = $true
+            DontStopOnIdleEnd          = $true
+            MultipleInstances          = "IgnoreNew"
+        }
+
+        try {
+            $settings = New-ScheduledTaskSettingsSet @settingsSplat -ErrorAction Stop
+            Write-Log -message  ('{0} :: Created Scheduled Task Settings Set for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+        catch {
+            Write-Log -message  ('{0} :: Unable to create Scheduled Task Settings Set for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+
+        $taskSplat = @{
+            TaskName    = $TaskName
+            Action      = $action
+            Settings    = $settings
+            Description = $taskDescription
+            User        = $LocalUser
+        }
+    
+        try {
+            ## Suppress the output
+            $task = Register-ScheduledTask @taskSplat -Force -ErrorAction Stop
+            Write-Log -message  ('{0} :: Registered Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+        catch {
+            Write-Log -message  ('{0} :: Unable to register Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $LocalUser) -severity 'ERROR'
+        }
+    }
+    else {
+        Write-Log -message  ('{0} :: Scheduled Task {1} already exists for {2}' -f $($MyInvocation.MyCommand.Name), $TaskName, $LocalUser) -severity 'DEBUG'
+    }
+}
+
+function Register-TaskUserScript {
+    [CmdletBinding()]
+    param (
+        [String]
+        $TaskName = "task_user_background_script",
+        [String]
+        $LocalUser,
+        [String]
+        $ScriptPath = "$env:programdata\PuppetLabs\ronin\task_user_background_script.ps1"
+    )
+
+    ## Get the scheduled tasks from the other task users and delete them
+    Get-ScheduledTask | 
+    Where-Object { $_.TaskName -like "*task_user*" } | 
+    Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+    while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
+        Write-Log -Message ('{0} :: Waiting for {1} to be created - {2:o}' -f $($MyInvocation.MyCommand.Name), $localuser, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        Start-Sleep -Seconds 5
+    }
+    Write-Log -Message ('{0} :: Found current-task-user {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), $localuser, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        
+    ## Initialize the scheduled task to minimize cmd windows
+    Write-Log -Message ('{0} :: Running Set-TaskUserBackgroundScript -LocalUser {1} -TaskName {2} -ScriptPath {3} - {4:o}' -f $($MyInvocation.MyCommand.Name), $localuser, $TaskName, $ScriptPath, (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    Set-TaskUserBackgroundScript -LocalUser $localuser -TaskName $TaskName -ScriptPath $ScriptPath
+
+    try {
+        Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+        Write-Log -message  ('{0} :: Started Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'ERROR'
+    }
+    catch {
+        Write-Log -message  ('{0} :: Unable to start Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'ERROR'
+    }
+}
+
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
-$hardware = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Manufacturer, Model
-$model = $hardware.Model
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
 if ($refresh_rate -ne "60") {
     Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
@@ -437,10 +535,22 @@ If ($bootstrap_stage -eq 'complete') {
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
 
-    StartWorkerRunner
-    start-sleep -s 30
-    while ($true) {
+    Start-WorkerRunner
+    Start-Sleep -Seconds 30
+    Register-TaskUserScript -LocalUser $loggedInUser
 
+    while ($true) {
+        ## If the scheduled task that runs in the background as the user isn't running, catch it here
+        if ((Get-ScheduledTask -TaskName $TaskName).State -ne "Running") {
+            Write-Log -message  ('{0} :: Scheduled Task {1} is not running. Starting it.' -f $($MyInvocation.MyCommand.Name), $TaskName) -severity 'DEBUG'
+            try {
+                Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+                Write-Log -message  ('{0} :: Started Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'ERROR'
+            }
+            catch {
+                Write-Log -message  ('{0} :: Unable to start Scheduled Task for {1}' -f $($MyInvocation.MyCommand.Name), $localuser) -severity 'ERROR'
+            }
+        }
         $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
         Select-Object -First 1 |
         ForEach-Object { $_.TimeCreated }
