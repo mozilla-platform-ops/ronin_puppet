@@ -166,6 +166,15 @@ function Set-TaskUserScript {
     }
 }
 
+function Get-LoggedInUser {
+    [CmdletBinding()]
+    param (
+
+    )
+
+    @(((query user) -replace '\s{20,39}', ',,') -replace '\s{2,}', ',' | ConvertFrom-Csv)
+}
+
 # Windows release ID.
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
@@ -224,6 +233,18 @@ switch ($os_version) {
 Get-ScheduledTask | 
 Where-Object { $_.TaskName -like "minimize_cmd_*" } | 
 Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+for ($i = 0; $i -lt 3; $i++) {
+    $loggedInUser = (Get-LoggedInUser).UserName -replace ">"
+    if ($loggedInUser -notmatch "task") {
+        Write-Log -message  ('{0} :: User logged in: {1}' -f $($MyInvocation.MyCommand.Name), $loggedInUser) -severity 'DEBUG'
+        Start-Sleep -Seconds 10
+    }
+    else {
+        Write-Log -message  ('{0} :: User logged in: {1}' -f $($MyInvocation.MyCommand.Name), $loggedInUser) -severity 'DEBUG'
+        break
+    }
+}
 
 do {
     if (-not (Test-Path "C:\worker-runner\current-task-user.json")) {
