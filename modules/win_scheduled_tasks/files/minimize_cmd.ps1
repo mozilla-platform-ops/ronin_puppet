@@ -126,6 +126,9 @@ public static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }
 
+## Set Cursor Position
+Add-Type -AssemblyName System.Windows.Forms
+
 while ($true) {
     ## Minimize the cmd.exe window that pops up when running a task
     ## Check every 5 seconds for cmd.exe and suppress it
@@ -136,6 +139,12 @@ while ($true) {
     if ($null -ne $cmdproc) {
         Write-Log -Message ('{0} :: Found {1} cmd.exe process(es), hiding window(s)' -f $($MyInvocation.MyCommand.Name), $cmdproc.Count) -severity 'DEBUG'
         $cmdproc | Set-WindowState -State HIDE
+    }
+
+    $currentPos = [System.Windows.Forms.Cursor]::Position
+    if ($currentPos.X -ne 1010 -and $currentPos.Y -ne 10) {
+        Write-Log -Message ('{0} :: Moving cursor from X={1}, Y={2} to X=1010, Y=10' -f $($MyInvocation.MyCommand.Name), $currentPos.X, $currentPos.Y) -severity 'DEBUG'
+        [System.Windows.Forms.Cursor]::Position = New-Object System.Drawing.Point(1010, 10)
     }
 
     # if ($null -ne $explorerProc) {
