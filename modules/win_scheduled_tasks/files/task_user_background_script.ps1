@@ -133,13 +133,13 @@ while ($true) {
     ## Minimize the cmd.exe window that pops up when running a task
     ## Check every 5 seconds for cmd.exe and suppress it
     
-    # $cmdproc = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq "C:\windows\System32\cmd.exe" }
-    # #$explorerProc = Get-Process -Name "explorer" -ErrorAction SilentlyContinue
+    $cmdproc = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq "C:\windows\System32\cmd.exe" }
+    #$explorerProc = Get-Process -Name "explorer" -ErrorAction SilentlyContinue
     
-    # if ($null -ne $cmdproc) {
-    #     Write-Log -Message ('{0} :: Found {1} cmd.exe process(es), hiding window(s)' -f $($MyInvocation.MyCommand.Name), $cmdproc.Count) -severity 'DEBUG'
-    #     $cmdproc | Set-WindowState -State HIDE
-    # }
+    if ($null -ne $cmdproc) {
+        Write-Log -Message ('{0} :: Found {1} cmd.exe process(es), hiding window(s)' -f $($MyInvocation.MyCommand.Name), $cmdproc.Count) -severity 'DEBUG'
+        $cmdproc | Set-WindowState -State HIDE
+    }
 
     $currentPos = [System.Windows.Forms.Cursor]::Position
     if ($currentPos.X -ne 1010 -and $currentPos.Y -ne 10) {
