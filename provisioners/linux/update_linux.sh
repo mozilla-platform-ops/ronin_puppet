@@ -3,6 +3,13 @@
 set -e
 # set -x
 
+#
+# update_linux.sh
+#   - updates vault.yaml
+#   - fix clock
+#   - can optionally set/update the role of a host
+#
+
 # local files
 # BOOTSTRAP_FILE="bootstrap_linux.sh"
 SECRETS_FILE="vault.yaml"
@@ -39,11 +46,10 @@ fi
 
 # set -x
 
-# # sync clock
-# ssh "$THE_HOST" sudo /etc/init.d/ntp stop
-# # runs once and force allows huge skews
-# ssh "$THE_HOST" sudo ntpd -q -g
-# ssh "$THE_HOST" sudo /etc/init.d/ntp start
+# sync clock
+# - we leave systemd-timesyncd.service enabled during this, seems to work...
+# run once and force allow huge time skews
+ssh "$THE_HOST" sudo ntpd -q -g
 
 # deliver secrets
 scp "$SECRETS_FILE" "$THE_HOST":/tmp/vault.yaml
@@ -51,7 +57,6 @@ ssh "$THE_HOST" sudo mv /tmp/vault.yaml /root/vault.yaml
 ssh "$THE_HOST" sudo chmod 640 /root/vault.yaml
 
 # finally, place role
-
 if [ -n "$THE_ROLE" ]; then
   # get the current role on the host
   # shellcheck disable=SC2029
