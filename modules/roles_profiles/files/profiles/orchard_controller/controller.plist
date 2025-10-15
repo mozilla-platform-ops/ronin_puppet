@@ -7,9 +7,7 @@
   <array>
     <string>/opt/homebrew/bin/orchard</string>
     <string>controller</string>
-    <string>--data=/opt/orchard/data</string>
-    <string>--listen=:8443</string>
-    <string>--registry=:5000</string>
+    <!-- Default port :8443 is fine; no need to specify -->
   </array>
   <key>EnvironmentVariables</key>
   <dict>
