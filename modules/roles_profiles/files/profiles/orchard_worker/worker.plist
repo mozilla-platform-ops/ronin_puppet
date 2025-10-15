@@ -2,25 +2,41 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key><string>com.moz.orchard.worker</string>
+  <key>Label</key>
+  <string>com.moz.orchard.worker</string>
+
   <key>ProgramArguments</key>
   <array>
     <string>/opt/homebrew/bin/orchard</string>
     <string>worker</string>
     <string>run</string>
-    <string>--controller=https://macmini-m4-194.test.releng.mdc1.mozilla.com:6120</string>
+    <string>--controller-address=https://macmini-m4-194.test.releng.mdc1.mozilla.com:6120</string>
     <string>--insecure</string>
   </array>
-  <key>WorkingDirectory</key><string>/opt/orchard</string>
+
+  <key>WorkingDirectory</key>
+  <string>/opt/orchard</string>
+
   <key>EnvironmentVariables</key>
   <dict>
-    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
-    <key>HOME</key><string>/var/root</string>
-    <key>ORCHARD_HOME</key><string>/opt/orchard</string>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>/var/root</string>
+    <key>ORCHARD_HOME</key>
+    <string>/opt/orchard</string>
   </dict>
-  <key>RunAtLoad</key><true/>
-  <key>KeepAlive</key><true/>
-  <key>StandardOutPath</key><string>/opt/orchard/logs/worker.out</string>
-  <key>StandardErrorPath</key><string>/opt/orchard/logs/worker.err</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/opt/orchard/logs/worker.out</string>
+
+  <key>StandardErrorPath</key>
+  <string>/opt/orchard/logs/worker.err</string>
 </dict>
 </plist>
