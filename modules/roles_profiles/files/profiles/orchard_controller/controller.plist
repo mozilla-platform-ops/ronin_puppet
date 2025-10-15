@@ -11,10 +11,11 @@
     <string>--data-dir=/opt/orchard/data</string>
     <string>--listen=:6120</string>
   </array>
+  <key>WorkingDirectory</key><string>/opt/orchard</string>
   <key>EnvironmentVariables</key>
   <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
     <key>ORCHARD_HOME</key><string>/opt/orchard</string>
-    <key>ORCHARD_LICENSE_TIER</key><string>free</string>
   </dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
