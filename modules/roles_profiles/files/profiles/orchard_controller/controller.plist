@@ -7,7 +7,8 @@
   <array>
     <string>/opt/homebrew/bin/orchard</string>
     <string>controller</string>
-    <!-- Default port :8443 is fine; no need to specify -->
+    <string>run</string>
+    <string>--data-dir=/opt/orchard/data</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
