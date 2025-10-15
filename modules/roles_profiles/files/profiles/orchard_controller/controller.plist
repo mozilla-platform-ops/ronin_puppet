@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.moz.orchard.controller</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/orchard/bin/orchard-controller-<%= @version %></string>
+    <string>--listen=:8443</string>
+    <string>--registry=:5000</string>
+    <string>--data=/opt/orchard/data</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/opt/orchard/logs/controller.out</string>
+  <key>StandardErrorPath</key><string>/opt/orchard/logs/controller.err</string>
+</dict>
+</plist>
