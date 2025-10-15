@@ -1,16 +1,32 @@
 # Installs or verifies Homebrew using the Kandji silent installer script.
-# This profile is idempotent and safe to re-run.
+# Apple Silicon–native version that installs into /opt/homebrew.
 #
-# It will:
-#   • Deploy install_homebrew.sh to /usr/local/bin
-#   • Execute the script if /opt/homebrew/bin/brew does not exist
-#   • Leave a log at /Library/Logs/homebrew_install.log
+# Actions:
+#   • Ensure /opt/homebrew/bin exists
+#   • Deploy install_homebrew.sh to /opt/homebrew/bin
+#   • Execute the installer if /opt/homebrew/bin/brew does not exist
+#   • Log output to /Library/Logs/homebrew_install.log
+#
+# Idempotent — safe to rerun.
+# Requires: modules/roles_profiles/files/profiles/homebrew/install_homebrew.sh
 
 class roles_profiles::profiles::homebrew_install {
-  $installer_path = '/usr/local/bin/install_homebrew.sh'
+  # --------------------------------------------------------------------------
+  # Variables
+  # --------------------------------------------------------------------------
+  $installer_path = '/opt/homebrew/bin/install_homebrew.sh'
   $brew_path      = '/opt/homebrew/bin/brew'
 
-  # Ensure we have somewhere to store logs
+  # --------------------------------------------------------------------------
+  # Ensure directories exist
+  # --------------------------------------------------------------------------
+  file { '/opt/homebrew/bin':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'wheel',
+    mode   => '0755',
+  }
+
   file { '/Library/Logs':
     ensure => directory,
     owner  => 'root',
@@ -18,7 +34,9 @@ class roles_profiles::profiles::homebrew_install {
     mode   => '0755',
   }
 
-  # Copy the script into place
+  # --------------------------------------------------------------------------
+  # Deploy Kandji installer script
+  # --------------------------------------------------------------------------
   file { $installer_path:
     ensure => file,
     source => 'puppet:///modules/roles_profiles/profiles/homebrew/install_homebrew.sh',
@@ -27,14 +45,20 @@ class roles_profiles::profiles::homebrew_install {
     mode   => '0755',
   }
 
-  # Run installer if brew is missing
+  # --------------------------------------------------------------------------
+  # Execute installer only if brew is missing
+  # --------------------------------------------------------------------------
   exec { 'install_homebrew':
     command   => $installer_path,
     creates   => $brew_path,
-    path      => ['/bin','/usr/bin','/usr/local/bin'],
-    timeout   => 1800,  # 30-minute safety window
+    path      => ['/bin','/usr/bin','/opt/homebrew/bin'],
+    timeout   => 1800,   # up to 30 minutes
     logoutput => true,
+    require   => File[$installer_path],
   }
 
+  # --------------------------------------------------------------------------
+  # Log notice for visibility
+  # --------------------------------------------------------------------------
   notice("Homebrew verified or installed using Kandji script at ${installer_path}")
 }
