@@ -16,10 +16,18 @@ date > $last_premature_end
 #(find /private/var/folders/ -nouser -delete; echo "Finished clearing old cache files" ) &
 
 # Removing the tasks-resolved-count.txt allows the worker to exit properly when numberOfTasksToRun is reached
-rm <%= @data_dir %>/tasks-resolved-count.txt
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    rm -f <%= @gw_root_dir %>/tasks-resolved-count.txt
+else
+    rm -f <%= @data_dir %>/tasks-resolved-count.txt
+fi
 
 # Clear up previous task dirs
-rm -rf /opt/worker/tasks/task_*
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    rm -rf <%= @task_dir %>/<%= @task_user %>
+else
+    rm -rf <%= @task_dir %>/task_*
+fi
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
 # find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
@@ -35,6 +43,11 @@ if [ -x /usr/local/bin/run-puppet.sh ]; then
     sudo /usr/local/bin/run-puppet.sh
 else
     echo "run-puppet.sh not found, skipping Puppet run."
+fi
+
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    # Run worker from <%= @gw_root_dir %> when in multiuser-static mode
+    cd <%= @gw_root_dir %>
 fi
 
 # First run worker runner, passing through any arguments handed to this
