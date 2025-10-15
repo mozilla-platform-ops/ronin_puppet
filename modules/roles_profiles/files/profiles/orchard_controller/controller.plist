@@ -3,27 +3,17 @@
 <plist version="1.0">
 <dict>
   <key>Label</key><string>com.moz.orchard.controller</string>
+
   <key>ProgramArguments</key>
   <array>
-    <string>/opt/homebrew/bin/orchard</string>
-    <string>controller</string>
-    <string>run</string>
-    <string>--data-dir=/opt/orchard/data</string>
-    <string>--listen=:6120</string>
+    <string>/opt/orchard/run-controller.sh</string>
   </array>
 
-  <!-- These two lines are critical -->
   <key>WorkingDirectory</key><string>/opt/orchard</string>
-
-  <key>EnvironmentVariables</key>
-  <dict>
-    <key>HOME</key><string>/var/root</string>
-    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
-    <key>ORCHARD_HOME</key><string>/opt/orchard</string>
-  </dict>
 
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
+
   <key>StandardOutPath</key><string>/opt/orchard/logs/controller.out</string>
   <key>StandardErrorPath</key><string>/opt/orchard/logs/controller.err</string>
 </dict>
