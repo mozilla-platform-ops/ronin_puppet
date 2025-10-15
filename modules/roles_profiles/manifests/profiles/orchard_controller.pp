@@ -1,17 +1,5 @@
 # Orchard controller profile.
-# Installs Orchard via Homebrew and manages the controller service on macOS.
-#
-# Assumes:
-#   • Homebrew already installed in /opt/homebrew (by roles_profiles::profiles::homebrew_install)
-#   • Default admin account is "admin"
-#   • LaunchDaemon plist located at:
-#       modules/roles_profiles/files/profiles/orchard_controller/controller.plist
-#
-# This class:
-#   1. Fixes ownership of /opt/homebrew for the admin user
-#   2. Installs Orchard via Homebrew (as admin)
-#   3. Creates /opt/orchard data and log directories
-#   4. Deploys and enables the LaunchDaemon for the Orchard controller
+# Installs Orchard via Homebrew (cirruslabs/cli tap) and manages the controller service on macOS.
 
 class roles_profiles::profiles::orchard_controller {
   # --------------------------------------------------------------------------
@@ -20,7 +8,7 @@ class roles_profiles::profiles::orchard_controller {
   $controller_url = 'https://macmini-m4-194.test.releng.mdc1.mozilla.com'
 
   # --------------------------------------------------------------------------
-  # Ensure Homebrew permissions are correct
+  # Ensure correct Homebrew ownership
   # --------------------------------------------------------------------------
   exec { 'fix_homebrew_permissions':
     command => '/usr/sbin/chown -R admin:admin /opt/homebrew',
@@ -29,7 +17,24 @@ class roles_profiles::profiles::orchard_controller {
   }
 
   # --------------------------------------------------------------------------
-  # Install Orchard via Homebrew under the admin user context
+  # Add CirrusLabs tap (required for orchard and tart)
+  # --------------------------------------------------------------------------
+  exec { 'tap_cirruslabs_cli':
+    command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew tap cirruslabs/cli"',
+    unless      => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew tap | /usr/bin/grep -q cirruslabs/cli"',
+    path        => ['/bin','/usr/bin','/opt/homebrew/bin'],
+    environment => [
+      'HOME=/Users/admin',
+      'USER=admin',
+      'LOGNAME=admin',
+    ],
+    timeout     => 120,
+    logoutput   => true,
+    require     => Exec['fix_homebrew_permissions'],
+  }
+
+  # --------------------------------------------------------------------------
+  # Install Orchard via Homebrew under admin user context
   # --------------------------------------------------------------------------
   exec { 'install_orchard_via_brew':
     command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install orchard"',
@@ -42,11 +47,11 @@ class roles_profiles::profiles::orchard_controller {
     ],
     timeout     => 900,
     logoutput   => true,
-    require     => Exec['fix_homebrew_permissions'],
+    require     => Exec['tap_cirruslabs_cli'],
   }
 
   # --------------------------------------------------------------------------
-  # Directories for Orchard controller data/logs
+  # Directories for Orchard data/logs
   # --------------------------------------------------------------------------
   file { ['/opt/orchard','/opt/orchard/data','/opt/orchard/logs']:
     ensure => directory,
@@ -56,7 +61,7 @@ class roles_profiles::profiles::orchard_controller {
   }
 
   # --------------------------------------------------------------------------
-  # Deploy LaunchDaemon plist for Orchard controller
+  # LaunchDaemon for Orchard controller
   # --------------------------------------------------------------------------
   file { '/Library/LaunchDaemons/com.moz.orchard.controller.plist':
     ensure  => file,
@@ -68,7 +73,7 @@ class roles_profiles::profiles::orchard_controller {
   }
 
   # --------------------------------------------------------------------------
-  # Enable and start the LaunchDaemon
+  # Start and enable the LaunchDaemon
   # --------------------------------------------------------------------------
   service { 'com.moz.orchard.controller':
     ensure   => running,
@@ -77,5 +82,5 @@ class roles_profiles::profiles::orchard_controller {
     require  => File['/Library/LaunchDaemons/com.moz.orchard.controller.plist'],
   }
 
-  notice("Orchard controller installed via Homebrew and running at ${controller_url}")
+  notice("Orchard controller installed via Homebrew (cirruslabs/cli tap) and running at ${controller_url}")
 }
