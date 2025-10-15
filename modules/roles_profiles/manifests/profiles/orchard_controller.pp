@@ -13,9 +13,16 @@ class roles_profiles::profiles::orchard_controller {
   # roles_profiles::profiles::homebrew_install profile.
 
   exec { 'install_orchard_via_brew':
-    command => '/opt/homebrew/bin/brew install orchard',
-    unless  => '/opt/homebrew/bin/brew list orchard >/dev/null 2>&1',
-    path    => ['/bin','/usr/bin','/opt/homebrew/bin'],
+    command     => '/opt/homebrew/bin/brew install orchard',
+    unless      => '/opt/homebrew/bin/brew list orchard >/dev/null 2>&1',
+    path        => ['/bin','/usr/bin','/opt/homebrew/bin'],
+    environment => [
+      'HOME=/var/root',          # Homebrew requires HOME to exist
+      'USER=root',
+      'LOGNAME=root',
+    ],
+    timeout     => 900,
+    logoutput   => true,
   }
 
   # --------------------------------------------------------------------------
