@@ -10,8 +10,8 @@
     <string>/opt/homebrew/bin/orchard</string>
     <string>worker</string>
     <string>run</string>
-    <string>--controller-address=https://macmini-m4-194.test.releng.mdc1.mozilla.com:6120</string>
-    <string>--insecure</string>
+    <string>https://macmini-m4-194.test.releng.mdc1.mozilla.com:6120</string>
+    <string>--no-pki</string>
   </array>
 
   <key>WorkingDirectory</key>
