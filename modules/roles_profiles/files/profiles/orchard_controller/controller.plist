@@ -9,6 +9,7 @@
     <string>controller</string>
     <string>run</string>
     <string>--data-dir=/opt/orchard/data</string>
+    <string>--listen=:6120</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
