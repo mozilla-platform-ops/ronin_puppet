@@ -5,6 +5,7 @@ class roles_profiles::roles::win116424h2hwalpha {
   include roles_profiles::profiles::ssh
   # System
   include roles_profiles::profiles::disable_services
+  include roles_profiles::profiles::oobe
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
