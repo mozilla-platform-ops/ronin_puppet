@@ -1,0 +1,10 @@
+docker:
+  package_name: docker
+  service_name: colima
+  registry_port: 5000
+  registry_network: host
+
+oci_registry:
+  enable_delete: true
+  registry_dir: /opt/registry/data
+  registry_name: tart-registry
