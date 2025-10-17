@@ -50,7 +50,7 @@ class roles_profiles::profiles::tart (
   # ---------------------------------------------------------------------------
   exec { 'validate_tart_pkg':
     command   => '/usr/bin/stat -f%z /var/tmp/tart-latest.pkg | /usr/bin/awk "{if ($1 < 100000) exit 1}"',
-    unless    => '/opt/homebrew/bin/tart --version >/dev/null 2>&1',
+    unless    => 'test -x /opt/homebrew/bin/tart',
     path      => ['/usr/bin','/bin'],
     require   => Exec['download_tart_pkg'],
     logoutput => true,
