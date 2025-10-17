@@ -26,15 +26,16 @@ class roles_profiles::profiles::homebrew_silent_install {
   # Run the installer only if Homebrew is missing
   exec { 'install_homebrew':
     command => '/opt/homebrew/bin/install_homebrew.sh',
-    unless  => '/opt/homebrew/bin/brew --version >/dev/null 2>&1',
-    path    => ['/opt/homebrew/bin','/usr/bin','/bin','/usr/sbin','/sbin'],
+    unless  => 'test -x /opt/homebrew/bin/brew',
+    # ❗ exclude /opt/homebrew/bin from PATH for first run
+    path    => ['/usr/bin','/bin','/usr/sbin','/sbin'],
     require => File['/opt/homebrew/bin/install_homebrew.sh'],
   }
 
-  # Add an explicit fact to verify functionality (optional future use)
+  # Verify Homebrew after installation (non-blocking)
   exec { 'verify_homebrew_functionality':
     command     => '/opt/homebrew/bin/brew --version',
-    onlyif      => '/opt/homebrew/bin/brew --version >/dev/null 2>&1',
+    onlyif      => 'test -x /opt/homebrew/bin/brew',
     path        => ['/opt/homebrew/bin','/usr/bin','/bin','/usr/sbin','/sbin'],
     logoutput   => false,
     refreshonly => true,
