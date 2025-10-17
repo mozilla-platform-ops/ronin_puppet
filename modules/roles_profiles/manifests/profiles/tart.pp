@@ -31,12 +31,12 @@ class roles_profiles::profiles::tart (
   # Install Tart directly via exec to avoid brew provider path issues
   # ---------------------------------------------------------------------------
   exec { 'install_tart_via_brew':
-    command     => '/opt/homebrew/bin/brew install --quiet tart || true',
+    command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install --quiet tart || true"',
     unless      => '/opt/homebrew/bin/brew list tart >/dev/null 2>&1',
-    environment => ['HOME=/var/root'],
+    environment => ['HOME=/Users/admin'],
     require     => Exec['install_homebrew'],
     logoutput   => true,
-}
+  }
 
   # ---------------------------------------------------------------------------
   # Configure registry connection file
