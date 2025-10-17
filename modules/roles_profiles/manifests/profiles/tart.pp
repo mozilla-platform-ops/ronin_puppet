@@ -9,7 +9,7 @@ class roles_profiles::profiles::tart (
 ) {
 
   # ---------------------------------------------------------------------------
-  # Define a sane execution path and set defaults for all Exec/Package resources
+  # Define a sane execution path and defaults for all Exec/Package resources
   # ---------------------------------------------------------------------------
   Exec {
     path => [
@@ -37,14 +37,6 @@ class roles_profiles::profiles::tart (
   package { 'tart':
     ensure   => $version,
     provider => brew,
-    path     => [
-      '/opt/homebrew/bin',
-      '/usr/local/bin',
-      '/usr/bin',
-      '/bin',
-      '/usr/sbin',
-      '/sbin'
-    ],
     require  => Exec['install_homebrew'],
   }
 
