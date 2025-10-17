@@ -51,8 +51,8 @@ class roles_profiles::profiles::tart (
   exec { 'install_tart_direct':
     command   => '/usr/sbin/installer -verboseR -pkg /var/tmp/tart-latest.pkg -target /',
     creates   => '/opt/homebrew/bin/tart',
-    path      => ['/usr/bin','/bin','/usr/sbin','/sbin','/opt/homebrew/bin'],
-    unless    => '/opt/homebrew/bin/tart --version >/dev/null 2>&1',
+    path      => ['/usr/bin','/bin','/usr/sbin','/sbin'],
+    unless    => 'test -x /opt/homebrew/bin/tart',
     require   => Exec['download_tart_pkg'],
     logoutput => true,
     before    => [ File['/etc/tart_registry.conf'], File['/Library/LaunchDaemons/com.mozilla.tartworker.plist'] ],
@@ -68,7 +68,7 @@ class roles_profiles::profiles::tart (
     path        => ['/usr/bin','/bin'],
   }
 
-  # Explicitly chain execution order
+  # Explicit ordering
   Exec['download_tart_pkg'] -> Exec['install_tart_direct'] -> Exec['cleanup_tart_pkg']
 
   # ---------------------------------------------------------------------------
