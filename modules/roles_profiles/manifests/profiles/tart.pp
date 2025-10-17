@@ -1,4 +1,5 @@
-# Installs Tart, configures registry access, and sets up a LaunchDaemon
+# Installs Tart directly from Cirrus Labs GitHub releases,
+# configures registry access, and sets up a LaunchDaemon
 # so each macOS worker runs Tart automatically.
 
 class roles_profiles::profiles::tart (
@@ -23,7 +24,7 @@ class roles_profiles::profiles::tart (
   }
 
   # ---------------------------------------------------------------------------
-  # Ensure Homebrew is installed before using it
+  # Ensure Homebrew prerequisites are in place (we still use it for env setup)
   # ---------------------------------------------------------------------------
   require roles_profiles::profiles::homebrew_silent_install
 
@@ -37,15 +38,40 @@ class roles_profiles::profiles::tart (
   }
 
   # ---------------------------------------------------------------------------
-  # Install Tart via Homebrew (executed as admin)
+  # Download the Tart .pkg from Cirrus Labs GitHub releases
   # ---------------------------------------------------------------------------
-  exec { 'install_tart_via_brew':
-    command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install --quiet tart || true"',
-    unless      => '/opt/homebrew/bin/brew list tart >/dev/null 2>&1',
-    environment => ['HOME=/Users/admin'],
-    require     => [Exec['install_homebrew'], File['/opt/homebrew/bin']],
-    logoutput   => true,
+  exec { 'download_tart_pkg':
+    command   => '/usr/bin/curl -L -o /tmp/tart-latest.pkg https://github.com/cirruslabs/tart/releases/latest/download/tart.pkg',
+    creates   => '/tmp/tart-latest.pkg',
+    path      => ['/usr/bin','/bin'],
+    logoutput => true,
   }
+
+  # ---------------------------------------------------------------------------
+  # Install Tart directly via the downloaded .pkg
+  # ---------------------------------------------------------------------------
+  exec { 'install_tart_direct':
+    command   => '/usr/sbin/installer -pkg /tmp/tart-latest.pkg -target /',
+    creates   => '/opt/homebrew/bin/tart',
+    path      => ['/usr/bin','/bin','/usr/sbin','/sbin','/opt/homebrew/bin'],
+    unless    => '/opt/homebrew/bin/tart --version >/dev/null 2>&1',
+    require   => Exec['download_tart_pkg'],
+    logoutput => true,
+    before    => [ File['/etc/tart_registry.conf'], File['/Library/LaunchDaemons/com.mozilla.tartworker.plist'] ],
+    notify    => Exec['cleanup_tart_pkg'],
+  }
+
+  # ---------------------------------------------------------------------------
+  # Cleanup the .pkg after successful installation
+  # ---------------------------------------------------------------------------
+  exec { 'cleanup_tart_pkg':
+    command     => '/bin/rm -f /tmp/tart-latest.pkg',
+    refreshonly => true,
+    path        => ['/usr/bin','/bin'],
+  }
+
+  # Ensure ordering for clarity
+  Exec['download_tart_pkg'] -> Exec['install_tart_direct'] -> Exec['cleanup_tart_pkg']
 
   # ---------------------------------------------------------------------------
   # Configure registry connection file
@@ -56,7 +82,7 @@ class roles_profiles::profiles::tart (
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
-    require => Exec['install_tart_via_brew'],
+    require => Exec['install_tart_direct'],
   }
 
   # ---------------------------------------------------------------------------
@@ -68,6 +94,6 @@ class roles_profiles::profiles::tart (
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
-    require => Exec['install_tart_via_brew'],
+    require => Exec['install_tart_direct'],
   }
 }
