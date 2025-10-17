@@ -39,9 +39,20 @@ class roles_profiles::profiles::tart (
   # Download the Tart .pkg from Cirrus Labs GitHub releases
   # ---------------------------------------------------------------------------
   exec { 'download_tart_pkg':
-    command   => '/usr/bin/curl -L -o /var/tmp/tart-latest.pkg https://github.com/cirruslabs/tart/releases/latest/download/tart.pkg',
+    command   => '/usr/bin/curl -fL --retry 3 --retry-delay 5 -o /var/tmp/tart-latest.pkg https://github.com/cirruslabs/tart/releases/latest/download/tart.pkg && /bin/ls -lh /var/tmp/tart-latest.pkg',
     creates   => '/var/tmp/tart-latest.pkg',
     path      => ['/usr/bin','/bin'],
+    logoutput => true,
+  }
+
+  # ---------------------------------------------------------------------------
+  # Validate that the package file looks sane before install
+  # ---------------------------------------------------------------------------
+  exec { 'validate_tart_pkg':
+    command   => '/usr/bin/stat -f%z /var/tmp/tart-latest.pkg | /usr/bin/awk "{if ($1 < 100000) exit 1}"',
+    unless    => '/opt/homebrew/bin/tart --version >/dev/null 2>&1',
+    path      => ['/usr/bin','/bin'],
+    require   => Exec['download_tart_pkg'],
     logoutput => true,
   }
 
@@ -49,11 +60,11 @@ class roles_profiles::profiles::tart (
   # Install Tart directly via the downloaded .pkg
   # ---------------------------------------------------------------------------
   exec { 'install_tart_direct':
-    command   => '/usr/sbin/installer -verboseR -pkg /var/tmp/tart-latest.pkg -target /',
+    command   => '/usr/sbin/installer -verboseR -pkg /var/tmp/tart-latest.pkg -target / || (echo "Tart installer failed, removing bad pkg" && /bin/rm -f /var/tmp/tart-latest.pkg && exit 1)',
     creates   => '/opt/homebrew/bin/tart',
     path      => ['/usr/bin','/bin','/usr/sbin','/sbin'],
     unless    => 'test -x /opt/homebrew/bin/tart',
-    require   => Exec['download_tart_pkg'],
+    require   => Exec['validate_tart_pkg'],
     logoutput => true,
     before    => [ File['/etc/tart_registry.conf'], File['/Library/LaunchDaemons/com.mozilla.tartworker.plist'] ],
     notify    => Exec['cleanup_tart_pkg'],
@@ -69,7 +80,7 @@ class roles_profiles::profiles::tart (
   }
 
   # Explicit ordering
-  Exec['download_tart_pkg'] -> Exec['install_tart_direct'] -> Exec['cleanup_tart_pkg']
+  Exec['download_tart_pkg'] -> Exec['validate_tart_pkg'] -> Exec['install_tart_direct'] -> Exec['cleanup_tart_pkg']
 
   # ---------------------------------------------------------------------------
   # Configure registry connection file
