@@ -49,9 +49,9 @@ class roles_profiles::profiles::tart (
   # Validate that the package file looks sane before install
   # ---------------------------------------------------------------------------
   exec { 'validate_tart_pkg':
-    command   => '/usr/bin/stat -f%z /var/tmp/tart-latest.pkg | /usr/bin/awk "{if ($1 < 100000) exit 1}"',
+    command   => "/bin/bash -c \"size=\$(stat -f%z /var/tmp/tart-latest.pkg); if [ \${size:-0} -lt 100000 ]; then echo 'Tart pkg too small ('\${size}' bytes)'; exit 1; fi\"",
     unless    => 'test -x /opt/homebrew/bin/tart',
-    path      => ['/usr/bin','/bin'],
+    path      => ['/usr/bin','/bin','/bin/bash'],
     require   => Exec['download_tart_pkg'],
     logoutput => true,
   }
