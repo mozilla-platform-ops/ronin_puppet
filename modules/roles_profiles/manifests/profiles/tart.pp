@@ -9,21 +9,17 @@ class roles_profiles::profiles::tart (
 ) {
 
   # ---------------------------------------------------------------------------
-  # Define a sane execution path and defaults for all Exec/Package resources
+  # Define a sane execution path for all execs
   # ---------------------------------------------------------------------------
   Exec {
     path => [
-      '/opt/homebrew/bin',   # Apple Silicon default
-      '/usr/local/bin',      # Intel macOS default
+      '/opt/homebrew/bin',
+      '/usr/local/bin',
       '/usr/bin',
       '/bin',
       '/usr/sbin',
-      '/sbin'
+      '/sbin',
     ],
-  }
-
-  Package {
-    provider => brew,
   }
 
   # ---------------------------------------------------------------------------
@@ -32,12 +28,13 @@ class roles_profiles::profiles::tart (
   require roles_profiles::profiles::homebrew_silent_install
 
   # ---------------------------------------------------------------------------
-  # Install Tart via Homebrew
+  # Install Tart directly via exec to avoid brew provider path issues
   # ---------------------------------------------------------------------------
-  package { 'tart':
-    ensure   => $version,
-    provider => brew,
-    require  => Exec['install_homebrew'],
+  exec { 'install_tart_via_brew':
+    command   => '/opt/homebrew/bin/brew install --quiet tart || true',
+    unless    => '/opt/homebrew/bin/brew list tart >/dev/null 2>&1',
+    require   => Exec['install_homebrew'],
+    logoutput => true,
   }
 
   # ---------------------------------------------------------------------------
@@ -49,7 +46,7 @@ class roles_profiles::profiles::tart (
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
-    require => Package['tart'],
+    require => Exec['install_tart_via_brew'],
   }
 
   # ---------------------------------------------------------------------------
@@ -61,6 +58,6 @@ class roles_profiles::profiles::tart (
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
-    require => Package['tart'],
+    require => Exec['install_tart_via_brew'],
   }
 }
