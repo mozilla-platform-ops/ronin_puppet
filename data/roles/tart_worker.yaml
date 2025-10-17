@@ -1,5 +1,5 @@
 tart:
   version: latest
-  registry_host: registry.local
+  registry_host: 10.49.56.161
   registry_port: 5000
   insecure: true
