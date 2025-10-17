@@ -28,9 +28,9 @@ class roles_profiles::profiles::tart (
   require roles_profiles::profiles::homebrew_silent_install
 
   # ---------------------------------------------------------------------------
-  # Re-parameterize existing resource to adjust ownership for Homebrew
+  # Adjust ownership of /opt/homebrew/bin declared in homebrew_silent_install
   # ---------------------------------------------------------------------------
-  File['/opt/homebrew/bin'] {
+  File <| title == '/opt/homebrew/bin' |> {
     owner => 'admin',
     group => 'admin',
     mode  => '0755',
