@@ -9,7 +9,7 @@ class roles_profiles::profiles::tart (
 ) {
 
   # ---------------------------------------------------------------------------
-  # Define a sane execution path for all execs
+  # Default execution PATH for all exec resources
   # ---------------------------------------------------------------------------
   Exec {
     path => [
@@ -28,17 +28,18 @@ class roles_profiles::profiles::tart (
   require roles_profiles::profiles::homebrew_silent_install
 
   # ---------------------------------------------------------------------------
-  # Install Tart directly via exec to avoid brew provider path issues
+  # Re-parameterize existing resource to adjust ownership for Homebrew
   # ---------------------------------------------------------------------------
-  # Ensure Homebrew bin dir is writable by admin before installing Tart
-file { '/opt/homebrew/bin':
-    ensure => directory,
-    owner  => 'admin',
-    group  => 'admin',
-    mode   => '0755',
+  File['/opt/homebrew/bin'] {
+    owner => 'admin',
+    group => 'admin',
+    mode  => '0755',
   }
 
-exec { 'install_tart_via_brew':
+  # ---------------------------------------------------------------------------
+  # Install Tart via Homebrew (executed as admin)
+  # ---------------------------------------------------------------------------
+  exec { 'install_tart_via_brew':
     command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install --quiet tart || true"',
     unless      => '/opt/homebrew/bin/brew list tart >/dev/null 2>&1',
     environment => ['HOME=/Users/admin'],

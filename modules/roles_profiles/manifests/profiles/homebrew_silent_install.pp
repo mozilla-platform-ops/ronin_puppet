@@ -5,7 +5,7 @@
 
 class roles_profiles::profiles::homebrew_silent_install {
 
-  # Ensure both /opt and /opt/homebrew exist before creating /opt/homebrew/bin
+  # Ensure /opt and /opt/homebrew paths exist
   file { ['/opt', '/opt/homebrew', '/opt/homebrew/bin']:
     ensure => directory,
     owner  => 'root',
@@ -25,19 +25,10 @@ class roles_profiles::profiles::homebrew_silent_install {
 
   # Run the installer only if Homebrew is missing
   exec { 'install_homebrew':
-    command => '/opt/homebrew/bin/install_homebrew.sh',
-    unless  => 'test -x /opt/homebrew/bin/brew',
-    # ❗ exclude /opt/homebrew/bin from PATH for first run
-    path    => ['/usr/bin','/bin','/usr/sbin','/sbin'],
-    require => File['/opt/homebrew/bin/install_homebrew.sh'],
-  }
-
-  # Verify Homebrew after installation (non-blocking)
-  exec { 'verify_homebrew_functionality':
-    command     => '/opt/homebrew/bin/brew --version',
-    onlyif      => 'test -x /opt/homebrew/bin/brew',
-    path        => ['/opt/homebrew/bin','/usr/bin','/bin','/usr/sbin','/sbin'],
-    logoutput   => false,
-    refreshonly => true,
+    command   => '/opt/homebrew/bin/install_homebrew.sh',
+    unless    => 'test -x /opt/homebrew/bin/brew',
+    path      => ['/usr/bin','/bin','/usr/sbin','/sbin'],
+    require   => File['/opt/homebrew/bin/install_homebrew.sh'],
+    logoutput => true,
   }
 }
