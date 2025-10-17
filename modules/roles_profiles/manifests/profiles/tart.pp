@@ -30,11 +30,19 @@ class roles_profiles::profiles::tart (
   # ---------------------------------------------------------------------------
   # Install Tart directly via exec to avoid brew provider path issues
   # ---------------------------------------------------------------------------
-  exec { 'install_tart_via_brew':
+  # Ensure Homebrew bin dir is writable by admin before installing Tart
+file { '/opt/homebrew/bin':
+    ensure => directory,
+    owner  => 'admin',
+    group  => 'admin',
+    mode   => '0755',
+  }
+
+exec { 'install_tart_via_brew':
     command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install --quiet tart || true"',
     unless      => '/opt/homebrew/bin/brew list tart >/dev/null 2>&1',
     environment => ['HOME=/Users/admin'],
-    require     => Exec['install_homebrew'],
+    require     => [Exec['install_homebrew'], File['/opt/homebrew/bin']],
     logoutput   => true,
   }
 
