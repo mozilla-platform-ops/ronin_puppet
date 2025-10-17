@@ -24,13 +24,11 @@ class roles_profiles::profiles::tart (
   }
 
   # ---------------------------------------------------------------------------
-  # Ensure Homebrew prerequisites are in place (we still use it for env setup)
+  # Ensure Homebrew prerequisites are in place (directory + permissions)
   # ---------------------------------------------------------------------------
   require roles_profiles::profiles::homebrew_silent_install
 
-  # ---------------------------------------------------------------------------
   # Adjust ownership of /opt/homebrew/bin declared in homebrew_silent_install
-  # ---------------------------------------------------------------------------
   File <| title == '/opt/homebrew/bin' |> {
     owner => 'admin',
     group => 'admin',
@@ -41,8 +39,8 @@ class roles_profiles::profiles::tart (
   # Download the Tart .pkg from Cirrus Labs GitHub releases
   # ---------------------------------------------------------------------------
   exec { 'download_tart_pkg':
-    command   => '/usr/bin/curl -L -o /tmp/tart-latest.pkg https://github.com/cirruslabs/tart/releases/latest/download/tart.pkg',
-    creates   => '/tmp/tart-latest.pkg',
+    command   => '/usr/bin/curl -L -o /var/tmp/tart-latest.pkg https://github.com/cirruslabs/tart/releases/latest/download/tart.pkg',
+    creates   => '/var/tmp/tart-latest.pkg',
     path      => ['/usr/bin','/bin'],
     logoutput => true,
   }
@@ -51,7 +49,7 @@ class roles_profiles::profiles::tart (
   # Install Tart directly via the downloaded .pkg
   # ---------------------------------------------------------------------------
   exec { 'install_tart_direct':
-    command   => '/usr/sbin/installer -pkg /tmp/tart-latest.pkg -target /',
+    command   => '/usr/sbin/installer -verboseR -pkg /var/tmp/tart-latest.pkg -target /',
     creates   => '/opt/homebrew/bin/tart',
     path      => ['/usr/bin','/bin','/usr/sbin','/sbin','/opt/homebrew/bin'],
     unless    => '/opt/homebrew/bin/tart --version >/dev/null 2>&1',
@@ -65,12 +63,12 @@ class roles_profiles::profiles::tart (
   # Cleanup the .pkg after successful installation
   # ---------------------------------------------------------------------------
   exec { 'cleanup_tart_pkg':
-    command     => '/bin/rm -f /tmp/tart-latest.pkg',
+    command     => '/bin/rm -f /var/tmp/tart-latest.pkg',
     refreshonly => true,
     path        => ['/usr/bin','/bin'],
   }
 
-  # Ensure ordering for clarity
+  # Explicitly chain execution order
   Exec['download_tart_pkg'] -> Exec['install_tart_direct'] -> Exec['cleanup_tart_pkg']
 
   # ---------------------------------------------------------------------------
