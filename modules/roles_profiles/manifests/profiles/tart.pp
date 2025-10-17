@@ -49,7 +49,7 @@ class roles_profiles::profiles::tart (
   # ---------------------------------------------------------------------------
   exec { 'install_tart_via_tap':
     command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install cirruslabs/cli/tart || true"',
-    unless      => '/opt/homebrew/bin/tart --version >/dev/null 2>&1',
+    unless      => 'test -x /opt/homebrew/bin/tart',
     environment => ['HOME=/Users/admin'],
     require     => Exec['brew_tap_cirruslabs_cli'],
     logoutput   => true,
