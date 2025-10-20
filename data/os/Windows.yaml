@@ -87,8 +87,8 @@ windows:
   googlechrome:
     version: 'latest'
   gpu:
-    name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
-    display_name: "NVIDIA Graphics Driver 538.15"
+    name: "553.62_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 553.62"
   hg:
     version: '6.9'
   nssm:
