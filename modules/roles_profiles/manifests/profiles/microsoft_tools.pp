@@ -28,6 +28,8 @@ class roles_profiles::profiles::microsoft_tools {
             include win_packages::vc_redist_x64
           }
           else {
+            include win_packages::vc_redist_x86
+            include win_packages::vc_redist_x64
             include win_packages::vc_redist_2022_x64
             include win_packages::vc_redist_2022_x86
           }
