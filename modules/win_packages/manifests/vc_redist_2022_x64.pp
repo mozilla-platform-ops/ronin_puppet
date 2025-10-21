@@ -4,6 +4,7 @@
 
 class win_packages::vc_redist_2022_x64 {
   if $facts['os']['name'] == 'Windows' {
+    require win_packages::vc_redist_x86
     win_packages::win_exe_pkg { 'vc_redist_2022_x64':
       pkg                    => 'VC_redist.x64.14.44.35211.0.exe',
       install_options_string => "/install /passive /norestart /log ${facts['custom_win_roninlogdir']}\\vc_redist_2022_x64-install.log",
