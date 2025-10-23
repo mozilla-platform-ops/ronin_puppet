@@ -462,6 +462,10 @@ If ($bootstrap_stage -eq 'complete') {
         if ($null -ne $process) {
             Stop-Process -Name $processname -force
         }
+        $explorer = Get-Process -Name "explorer" -ErrorAction SilentlyContinue
+        if ($null -ne $explorer) {
+            Stop-Process -Name $explorer -force
+        }
         if ($null -eq $gw) {
             # Wait to supress meesage if check is cuaght during a reboot.
             start-sleep -s 45
