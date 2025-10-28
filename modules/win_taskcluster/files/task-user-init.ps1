@@ -92,29 +92,6 @@ function Disable-OneDrive {
 
 }
 
-function Disable-StorageSense {
-    [CmdletBinding()]
-    param (
-        
-    )
-    
-    try {
-        New-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\StorageSense' -Name 'AllowStorageSenseGlobal' -Value 0 -Force
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Set AllowStorageSenseGlobal to 0", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    catch {
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Failed to set AllowStorageSenseGlobal to 0", (Get-Date).ToUniversalTime()) -severity 'ERROR'
-    }
-
-    try {
-        New-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\StorageSense' -Name 'AllowStorageSenseTemporaryFilesCleanup' -Value 0 -Force
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Set AllowStorageSenseTemporaryFilesCleanup to 0", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    catch {
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Failed to set AllowStorageSenseTemporaryFilesCleanup to 0", (Get-Date).ToUniversalTime()) -severity 'ERROR'
-    }
-}
-
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
@@ -182,10 +159,6 @@ switch ($os_version) {
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
         Disable-OneDrive
-        ## Disable Storage Sense
-        ## https://bugzilla.mozilla.org/show_bug.cgi?id=1893092#c140 localappdata gets cleaned up
-        ## https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-storage
-        Disable-StorageSense
     }
     "win_10_2009" {
         ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
