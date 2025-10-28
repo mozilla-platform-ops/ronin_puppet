@@ -18,8 +18,20 @@ driver:
   mount: type=bind,source=/tmp/docker/var/cache/apt,destination=/var/cache/apt
   provision_command:
     - rm -f /etc/apt/apt.conf.d/docker-clean
-    - apt-get update
-    - apt-get install dbus
+    # Use Ubuntu rotating mirror list to avoid 429s on archive.ubuntu.com
+    - sed -i 's|http://archive.ubuntu.com/ubuntu/|mirror://mirrors.ubuntu.com/mirrors.txt|g' /etc/apt/sources.list
+    # Harden apt against transient HTTP issues
+    - |
+      cat >/etc/apt/apt.conf.d/80-retries <<'EOF'
+      Acquire::Retries "6";
+      Acquire::http::Pipeline-Depth "0";
+      Acquire::http::No-Cache "true";
+      Acquire::http::Timeout "30";
+      EOF
+    # Clean then update with retries; install dbus leanly
+    - rm -rf /var/lib/apt/lists/*
+    - apt-get -o Acquire::Retries=6 update -y
+    - DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=6 install -y --no-install-recommends dbus
 
 provisioner:
   name: puppet_apply
@@ -102,7 +114,6 @@ provisioner:
   install_custom_facts: true
   # this lets spec tests know we're in CI
   custom_facts: {'running_in_test_kitchen': true}
-
 
 platforms:
   - name: ubuntu-18.04
