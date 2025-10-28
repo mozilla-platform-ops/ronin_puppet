@@ -28,6 +28,16 @@ driver:
       Acquire::http::No-Cache "true";
       Acquire::http::Timeout "30";
       EOF
+    # In containers, avoid giant kernel/firmware/microcode/GRUB pulls
+    - apt-get -o Acquire::Retries=6 update -y
+    - |
+      apt-mark hold \
+        linux-firmware \
+        'linux-*' \
+        intel-microcode \
+        amd64-microcode \
+        'grub-*' \
+        thermald || true
     # Clean then update with retries; install dbus leanly
     - rm -rf /var/lib/apt/lists/*
     - apt-get -o Acquire::Retries=6 update -y
