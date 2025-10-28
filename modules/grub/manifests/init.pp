@@ -21,16 +21,18 @@ class grub (
             'grub2-common':
               ensure => present;
           }
-          file {
-            '/etc/default/grub':
-              ensure  => file,
-              content => template('grub/default-grub.erb'),
-              notify  => Exec['update-grub'];
+          file { '/etc/default/grub':
+            ensure  => file,
+            content => template('grub/default-grub.erb'),
           }
-          exec { 'update-grub':
-            command     => '/usr/sbin/update-grub',
-            subscribe   => File['/etc/default/grub'],
-            refreshonly => true,
+          # update grub if we're not in test-kitchen/integration tests/CI
+          #   - not surprisingly, we can't update grub on a vm
+          if $facts['running_in_test_kitchen'] != 'true' {
+            exec { 'update-grub':
+              command     => '/usr/sbin/update-grub',
+              subscribe   => File['/etc/default/grub'],
+              refreshonly => true,
+            }
           }
         }
         default: {

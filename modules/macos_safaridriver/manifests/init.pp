@@ -39,14 +39,17 @@ class macos_safaridriver (
             # TODO: only run if needed, use semaphore?
           }
 
-          # needs to run as cltbld via launchctl or won't work
-          exec { 'execute enable remote automation script':
-            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
-            require => File[$enable_script],
-            cwd     => "/Users/${user_running_safari}",
-            # semaphore and semaphore dir are created in script
-            unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
-            # logoutput => true,
+          # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
+          if $facts['running_in_test_kitchen'] != 'true' {
+            # needs to run as cltbld via launchctl or won't work
+            exec { 'execute enable remote automation script':
+              command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
+              require => File[$enable_script],
+              cwd     => "/Users/${user_running_safari}",
+              # semaphore and semaphore dir are created in script
+              unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
+              # logoutput => true,
+            }
           }
 
           sudo::custom { 'allow_safari_updates':
