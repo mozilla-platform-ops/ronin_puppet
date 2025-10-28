@@ -18,5 +18,3 @@ win-worker:
   ## Use to overwrite values in the Windows yaml file.
   ## Replace windows. with win-worker.variant.
   variant:
-    taskcluster:
-      version: "99.99.99"
