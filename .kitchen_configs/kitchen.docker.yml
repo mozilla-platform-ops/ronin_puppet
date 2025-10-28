@@ -18,31 +18,16 @@ driver:
   mount: type=bind,source=/tmp/docker/var/cache/apt,destination=/var/cache/apt
   provision_command:
     - rm -f /etc/apt/apt.conf.d/docker-clean
-    # Harden apt against transient HTTP issues
-    - |
-      cat >/etc/apt/apt.conf.d/80-retries <<'EOF'
-      Acquire::Retries "6";
-      Acquire::http::Pipeline-Depth "0";
-      Acquire::http::No-Cache "true";
-      Acquire::http::Timeout "30";
-      EOF
-    # Use the mirror list but exclude archive.ubuntu.com
-    - |
-      CODENAME="$(. /etc/os-release && echo $UBUNTU_CODENAME)"
-      # Backup original list
-      cp /etc/apt/sources.list /etc/apt/sources.list.bak
-      # Build a new mirror file excluding archive.ubuntu.com
-      curl -fsSL http://mirrors.ubuntu.com/mirrors.txt | grep -v 'archive.ubuntu.com' > /tmp/mirrors.txt || echo 'http://archive.ubuntu.com/ubuntu/' > /tmp/mirrors.txt
-      sed -i "s|http://archive.ubuntu.com/ubuntu/|mirror://mirrors.ubuntu.com/mirrors.txt|g" /etc/apt/sources.list
-      # Replace mirror list with our filtered one
-      sed -i "s|mirror://mirrors.ubuntu.com/mirrors.txt|mirror://$(cat /tmp/mirrors.txt | head -n 1 | sed 's|http://||;s|/$||')/ubuntu/|g" /etc/apt/sources.list
-      # Ensure security repo still exists
-      grep -q "^deb http://security.ubuntu.com/ubuntu ${CODENAME}-security" /etc/apt/sources.list || \
-        echo "deb http://security.ubuntu.com/ubuntu ${CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-    - rm -rf /var/lib/apt/lists/*
-    # Clean then update with retries; install dbus leanly
+    # apt: retries/timeouts (single-line, sh-safe)
+    - sh -c 'printf "%s\n" "Acquire::Retries \"6\";" "Acquire::http::Pipeline-Depth \"0\";" "Acquire::http::No-Cache \"true\";" "Acquire::http::Timeout \"30\";" > /etc/apt/apt.conf.d/80-retries'
+    # fetch mirror list and drop archive.ubuntu.com; if fetch fails, fall back to unfiltered (still better than hardcoding)
+    - sh -c 'curl -fsSL http://mirrors.ubuntu.com/mirrors.txt | grep -v "archive.ubuntu.com" > /etc/apt/mirrors.filtered || echo "http://mirrors.ubuntu.com/ubuntu/" > /etc/apt/mirrors.filtered'
+    # use the local filtered mirror list via mirror://file:
+    - sed -i "s|http://archive.ubuntu.com/ubuntu/|mirror://file:/etc/apt/mirrors.filtered|g" /etc/apt/sources.list
+    # clean lists, then update with retries
     - rm -rf /var/lib/apt/lists/*
     - apt-get -o Acquire::Retries=6 update -y
+    # your original intent, but calmer for CI
     - DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=6 install -y --no-install-recommends dbus
 
 provisioner:
