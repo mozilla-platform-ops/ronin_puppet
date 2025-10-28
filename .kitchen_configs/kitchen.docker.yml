@@ -18,8 +18,6 @@ driver:
   mount: type=bind,source=/tmp/docker/var/cache/apt,destination=/var/cache/apt
   provision_command:
     - rm -f /etc/apt/apt.conf.d/docker-clean
-    # Use Ubuntu rotating mirror list to avoid 429s on archive.ubuntu.com
-    - sed -i 's|http://archive.ubuntu.com/ubuntu/|mirror://mirrors.ubuntu.com/mirrors.txt|g' /etc/apt/sources.list
     # Harden apt against transient HTTP issues
     - |
       cat >/etc/apt/apt.conf.d/80-retries <<'EOF'
@@ -28,16 +26,20 @@ driver:
       Acquire::http::No-Cache "true";
       Acquire::http::Timeout "30";
       EOF
-    # In containers, avoid giant kernel/firmware/microcode/GRUB pulls
-    - apt-get -o Acquire::Retries=6 update -y
+    # Use the mirror list but exclude archive.ubuntu.com
     - |
-      apt-mark hold \
-        linux-firmware \
-        'linux-*' \
-        intel-microcode \
-        amd64-microcode \
-        'grub-*' \
-        thermald || true
+      CODENAME="$(. /etc/os-release && echo $UBUNTU_CODENAME)"
+      # Backup original list
+      cp /etc/apt/sources.list /etc/apt/sources.list.bak
+      # Build a new mirror file excluding archive.ubuntu.com
+      curl -fsSL http://mirrors.ubuntu.com/mirrors.txt | grep -v 'archive.ubuntu.com' > /tmp/mirrors.txt || echo 'http://archive.ubuntu.com/ubuntu/' > /tmp/mirrors.txt
+      sed -i "s|http://archive.ubuntu.com/ubuntu/|mirror://mirrors.ubuntu.com/mirrors.txt|g" /etc/apt/sources.list
+      # Replace mirror list with our filtered one
+      sed -i "s|mirror://mirrors.ubuntu.com/mirrors.txt|mirror://$(cat /tmp/mirrors.txt | head -n 1 | sed 's|http://||;s|/$||')/ubuntu/|g" /etc/apt/sources.list
+      # Ensure security repo still exists
+      grep -q "^deb http://security.ubuntu.com/ubuntu ${CODENAME}-security" /etc/apt/sources.list || \
+        echo "deb http://security.ubuntu.com/ubuntu ${CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+    - rm -rf /var/lib/apt/lists/*
     # Clean then update with retries; install dbus leanly
     - rm -rf /var/lib/apt/lists/*
     - apt-get -o Acquire::Retries=6 update -y
