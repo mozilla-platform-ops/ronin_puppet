@@ -12,7 +12,7 @@ updates:
     open-pull-requests-limit: 5
     target-branch: "master"
     labels:
-      - "dependencies" 
+      - "dependencies"
       - "python"
     commit-message:
       prefix: "python"
