@@ -1,6 +1,5 @@
 # Ronin Puppet: the masterless puppet collection
 
-[![CircleCI Status](https://circleci.com/gh/mozilla-platform-ops/ronin_puppet.svg?style=svg)](https://app.circleci.com/pipelines/github/mozilla-platform-ops/ronin_puppet)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 ## structure
@@ -50,11 +49,10 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 [kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to
 automate running convergence and serverspec tests for each role.
 
-The repo contains configurations for Test Kitchen to use Vagant, Docker, and Mac instances.
+The repo contains configurations for Test Kitchen to use Vagrant and Docker.
 
 - ./bin/kitchen: Uses Vagrant and VirtualBox. Configured in .kitchen_configs/kitchen.yml.
 - ./bin/kitchen_docker: Uses Docker. Configured in .kitchen_configs/kitchen_docker.yml.
-- (no binary): Uses CircleCI Mac instances. Configured in .kitchen_configs/kitchen.macos.circleci.yml.
 
 We use Vagrant/VirutalBox and Docker for a few reasons:
 
