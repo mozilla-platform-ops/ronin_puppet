@@ -37,41 +37,13 @@ function Write-Log {
     }
 }
 
-$SchTasksList = @(
-    "AnalyzeSystem",
-    "Cellular",
-    "Consolidator",
-    "Diagnostics",
-    "FamilySafetyMonitor",
-    "FamilySafetyRefreshTask",
-    "MapsToastTask",
-    "Microsoft Compatibility Appraiser",
-    "Microsoft Compatibility Appraiser Exp",
-    "Microsoft-Windows-DiskDiagnosticDataCollector",
-    "NotificationTask",
-    "ProcessMemoryDiagnosticEvents",
-    "Proxy",
-    "QueueReporting",
-    "RecommendedTroubleshootingScanner",
-    "RegIdleBackup",
-    "RunFullMemoryDiagnostic",
-    "ScheduledDefrag",
-    "SpeechModelDownloadTask",
-    "Sqm-Tasks",
-    "SR",
-    "StartComponentCleanup",
-    "SmartScreenSpecific",
-    "WindowsActionDialog",
-    "WinSAT",
-    "XblGameSaveTask",
-    "UsbCeip",
-    "VerifyWinRE",
-    "Work Folders Logon Synchronization",
-    "Work Folders Maintenance Work",
-    "Restore"
+$tasks = @(
+    "SilentCleanup",
+    #"StartComponentCleanup",
+    "CleanupTemporaryState"
 )
 
-Foreach ($Item in $SchTasksList) {
+Foreach ($Item in $tasks) {
     $TaskObject = Get-ScheduledTask $Item -ErrorAction SilentlyContinue
     If ($TaskObject) {
         Write-Log -Message ("{0} :: Disabling Scheduled Task: {1}" -f $($MyInvocation.MyCommand.Name), $TaskObject.TaskName) -severity 'DEBUG'
