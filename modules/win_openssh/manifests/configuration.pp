@@ -4,7 +4,7 @@
 
 class win_openssh::configuration {
   registry_key { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH':
-    ensure  => present,
+    ensure => present,
   }
   registry_value { 'HKEY_LOCAL_MACHINE\SOFTWARE\OpenSSH\DefaultShell':
     ensure => present,

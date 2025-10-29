@@ -27,6 +27,19 @@ More information:
 
 ## testing
 
+### GitHub Actions
+
+The repository uses GitHub Actions to automatically run pre-commit hooks on pull requests. The workflow:
+
+- Runs only on files that were modified in the pull request (excludes `r10k_modules/`)
+- Validates Puppet manifests, ERB templates, and EPP templates
+- Runs puppet-lint with auto-fixing enabled
+- Checks shell scripts with shellcheck
+- Validates JSON and YAML files
+- Formats and validates Terraform files
+
+The pre-commit configuration is defined in `.pre-commit-config.yaml`.
+
 ### vagrant
 
 [Vagrant](https://www.vagrantup.com/) is useful for testing the full masterless bootstrapping process.

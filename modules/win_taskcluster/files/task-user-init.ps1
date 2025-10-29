@@ -40,7 +40,7 @@ function Write-Log {
 function Disable-OneDrive {
     [CmdletBinding()]
     param (
-        
+
     )
 
     $ErrorActionPreference = 'SilentlyContinue'
@@ -201,7 +201,7 @@ switch ($base_image) {
         catch {
             Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
-        } 
+        }
     }
     "win11642009hwrefalpha" {
         ## Install appx package for av1 extension
@@ -213,7 +213,7 @@ switch ($base_image) {
         catch {
             Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
-        } 
+        }
     }
     default {
         continue

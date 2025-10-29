@@ -23,17 +23,17 @@ class win_taskcluster::generic_worker (
     ensure => directory,
   }
   file { $gw_exe_path:
-    source  => $gw_exe_source,
+    source => $gw_exe_source,
   }
   exec { 'generate_ed25519_keypair':
     command => "${gw_exe_path} new-ed25519-keypair --file ${ed25519private}",
     creates => $ed25519private,
   }
   file { "${generic_worker_dir}\\task-user-init.cmd":
-    content   => file("win_taskcluster/${init_file}"),
+    content => file("win_taskcluster/${init_file}"),
   }
   # C:\generic-worker\task-user-init.ps1
   file { "${generic_worker_dir}\\task-user-init.ps1":
-    content   => file('win_taskcluster/task-user-init.ps1'),
+    content => file('win_taskcluster/task-user-init.ps1'),
   }
 }

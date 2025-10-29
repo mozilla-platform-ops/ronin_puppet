@@ -20,7 +20,7 @@ class windows::java(
   if $arch {
     $java_arch = $arch
   } else {
-    case $::architecture {
+    case $facts['os']['architecture'] {
       'x64': {
         $java_arch = 'x64'
       }
@@ -28,7 +28,7 @@ class windows::java(
         $java_arch = 'i586'
       }
       default: {
-        fail("Unknown architecture for JRE: ${::architecture}")
+        fail("Unknown architecture for JRE: ${facts['os']['architecture']}")
       }
     }
   }
