@@ -43,6 +43,9 @@ class roles_profiles::profiles::disable_services {
         ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499 
         include win_disable_services::uninstall_appx_packages
+        ## https://bugzilla.mozilla.org/show_bug.cgi?id=1921101 
+        ## Disable Logon Animation
+        include win_disable_services::disable_logon_animation
         if ($facts['custom_win_location'] == 'azure') {
           include win_scheduled_tasks::kill_local_clipboard
         }
