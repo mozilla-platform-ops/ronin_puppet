@@ -1,0 +1,50 @@
+version: 2
+updates:
+
+
+  # Python dependencies (.dev-requirements.txt) - root only
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "11:00"
+    open-pull-requests-limit: 5
+    target-branch: "master"
+    labels:
+      - "dependencies" 
+      - "python"
+    commit-message:
+      prefix: "python"
+      include: "scope"
+
+  # GitHub Actions workflows (if any are added in the future)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "12:00"
+    open-pull-requests-limit: 5
+    target-branch: "master"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Individual module Gemfiles in modules/ directory
+  - package-ecosystem: "bundler"
+    directory: "/modules"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    target-branch: "master"
+    labels:
+      - "dependencies"
+      - "ruby"
+      - "module"
+    commit-message:
+      prefix: "ruby"
+      include: "scope"

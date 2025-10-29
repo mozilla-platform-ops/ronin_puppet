@@ -127,3 +127,17 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
   - https://www.puppet.com/docs/puppet/7/style_guide.html#style_guide_modules-documenting-code
 - generate docs
   - https://www.puppet.com/docs/puppet/7/puppet_strings.html
+
+## dependency management
+
+### Dependabot
+
+This repository uses [Dependabot](https://docs.github.com/en/code-security/dependabot) to automatically create pull requests for dependency updates. The configuration is located in `.github/dependabot.yml`.
+
+Dependabot monitors:
+- **Puppet modules** (via `Puppetfile`) - checked weekly on Mondays at 09:00
+- **Ruby gems** (via `.gemfile` and module `Gemfile`s) - checked weekly/monthly
+- **Python packages** (via `.dev-requirements.txt`) - checked weekly on Mondays at 11:00
+- **GitHub Actions** (if any are added) - checked weekly on Mondays at 12:00
+
+**Note**: The `r10k_modules/` directory is intentionally excluded from Dependabot updates as these are managed externally.
