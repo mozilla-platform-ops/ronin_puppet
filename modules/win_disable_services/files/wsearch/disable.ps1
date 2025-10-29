@@ -3,7 +3,7 @@ if ($service.Status -ne "Stopped") {
     Stop-Service "wsearch" -Force
     $service.WaitForStatus('Stopped', "00:02:00")
     $service | Set-Service -StartupType Disabled
-    
+
     takeown /f "C:\WINDOWS\system32\SearchIndexer.exe" /a
     icacls "C:\WINDOWS\system32\SearchIndexer.exe" /grant "Administrators:F"
     Rename-Item -Path "C:\WINDOWS\system32\SearchIndexer.exe" "C:\WINDOWS\system32\SearchIndexer.exe.bak"
