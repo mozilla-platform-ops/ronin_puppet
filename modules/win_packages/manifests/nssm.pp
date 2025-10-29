@@ -4,7 +4,7 @@
 
 class win_packages::nssm {
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
 
         $version = '2.24-103-gdee49fc'
 
@@ -14,6 +14,6 @@ class win_packages::nssm {
             destination => "${facts['custom_win_systemdrive']}\\nssm\\",
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }
