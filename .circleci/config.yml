@@ -1,0 +1,18 @@
+version: 2.1
+
+jobs:
+  hello_world:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Hello World
+          command: |
+            echo "CircleCI integration disabled - this is a placeholder job"
+            echo "Repository: ronin_puppet"
+            echo "Status: No CI/CD required"
+
+workflows:
+  placeholder:
+    jobs:
+      - hello_world
