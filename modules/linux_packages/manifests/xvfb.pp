@@ -5,6 +5,10 @@
 class linux_packages::xvfb {
   case $facts['os']['name'] {
     'Ubuntu': {
+      exec { 'apt-update-xvfb':
+        command => '/usr/bin/apt-get update',
+        # just use inherent ordering, see if it works
+      }
       package {
         ['xauth', 'xvfb']:
           ensure => latest;
