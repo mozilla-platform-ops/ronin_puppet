@@ -4,12 +4,12 @@
 
 class roles_profiles::profiles::motd {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin', 'Ubuntu': {
             include motd::base
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

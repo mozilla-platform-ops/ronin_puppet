@@ -3,11 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class disable_services() {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             # These packages are required by ubuntu-desktop, so we can't uninstall them.
             # Instead, install but disable them.
-            case $::operatingsystemrelease {
+            case $facts['os']['release']['full'] {
                 '18.04': {
                     # acpi removed because it can't be disabled this way
                     #   (never worked in build-puppet/16.04)
@@ -68,12 +68,12 @@ class disable_services() {
                     }
                 }
                 default: {
-                    fail("Unrecognized Ubuntu version ${::operatingsystemrelease}")
+                    fail("Unrecognized Ubuntu version ${facts['os']['release']['full']}")
                 }
             }
         }
         default: {
-            fail("gui is not supported on ${::operatingsystem}")
+            fail("gui is not supported on ${facts['os']['name']}")
         }
     }
 }

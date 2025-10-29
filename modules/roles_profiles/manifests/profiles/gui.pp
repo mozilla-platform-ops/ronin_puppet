@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::gui {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             class { 'macos_mobileconfig_profiles::desktop_background':
                 ensure => 'absent',
@@ -24,7 +24,7 @@ class roles_profiles::profiles::gui {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

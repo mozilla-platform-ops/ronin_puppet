@@ -10,7 +10,7 @@ class pf {
             $osx_ver = 'mojave'
         }
         default: {
-            fail("OSX ${::macosx_productversion_major} is not supported")
+            fail("OSX ${facts['os']['macosx']['version']['major']} is not supported")
         }
     }
 

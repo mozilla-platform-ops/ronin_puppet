@@ -4,13 +4,13 @@
 
 class roles_profiles::profiles::packages_installed {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             $package_list = lookup('packages_classes', Array[String], 'unique', [])
             map ($package_list) | $package | { "packages::${package}" }.include
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 

@@ -8,7 +8,7 @@ class roles_profiles::profiles::logging_papertrail (
     Array   $systemd_units = [],  # optional, only show these units
     Array   $syslog_identifiers = [],  # optional, display these syslog identifiers also
 ) {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             # TODO: check release/version
 
@@ -20,7 +20,7 @@ class roles_profiles::profiles::logging_papertrail (
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

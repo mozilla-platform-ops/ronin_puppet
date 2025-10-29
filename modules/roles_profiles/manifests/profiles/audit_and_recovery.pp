@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::audit_and_recovery {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             if ($facts['custom_win_location'] == 'datacenter') {
                 include win_maintenance::moonshot_scripts
@@ -13,7 +13,7 @@ class roles_profiles::profiles::audit_and_recovery {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

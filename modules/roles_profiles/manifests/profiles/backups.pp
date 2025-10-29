@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::backups {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             $borgmatic_config               = lookup('borgmatic_config')
@@ -24,7 +24,7 @@ class roles_profiles::profiles::backups {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

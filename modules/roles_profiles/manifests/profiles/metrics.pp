@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::metrics {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             class { 'telegraf':
@@ -38,7 +38,7 @@ class roles_profiles::profiles::metrics {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 

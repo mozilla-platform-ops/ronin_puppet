@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::duo {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             class { 'duo::duo_unix':
                 enabled  => true,
@@ -15,7 +15,7 @@ class roles_profiles::profiles::duo {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

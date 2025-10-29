@@ -4,12 +4,12 @@
 
 class macos_utils::enable_dev_tools_security {
 
-    if $::operatingsystem == 'Darwin' {
+    if $facts['os']['name'] == 'Darwin' {
         exec { 'DevToolsSecurity':
             command => '/usr/sbin/DevToolsSecurity -enable',
             onlyif  => '/bin/bash -c \'[[ "$(/usr/sbin/DevToolsSecurity -status)" =~ "disabled" ]]\'',
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

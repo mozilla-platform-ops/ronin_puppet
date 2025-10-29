@@ -5,7 +5,7 @@
 define signing_worker::notarization_user (
   String $user,
 ) {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             # Make sure the users profile is required
             # That is where the user virtual resources are generated
@@ -25,7 +25,7 @@ define signing_worker::notarization_user (
             include macos_utils::enable_dev_tools_security
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

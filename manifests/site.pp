@@ -6,7 +6,7 @@
 #   variables like this should be set in profile modules.
 #   these make testing difficult (this block must be
 #   copy/pasted into every puppet-kitchen manifests).
-case $::operatingsystem {
+case $facts['os']['name'] {
     'Windows': {
     }
     'Darwin': {

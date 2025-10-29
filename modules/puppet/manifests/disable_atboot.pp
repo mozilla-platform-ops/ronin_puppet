@@ -4,7 +4,7 @@
 
 class puppet::disable_atboot {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             file {
                 '/Library/LaunchDaemons/com.mozilla.atboot_puppet.plist':
@@ -20,7 +20,7 @@ class puppet::disable_atboot {
             }
         }
         default: {
-            fail("${module_name} does not support ${::operatingsystem}")
+            fail("${module_name} does not support ${facts['os']['name']}")
         }
     }
 

@@ -7,7 +7,7 @@
 
 class roles_profiles::profiles::microsoft_network_services {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             include win_kms
             if $facts['custom_win_kms_activated'] != 'activated' {
@@ -26,7 +26,7 @@ class roles_profiles::profiles::microsoft_network_services {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1562040
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

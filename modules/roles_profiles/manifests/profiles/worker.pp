@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::worker {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             class { 'worker_runner':
@@ -24,7 +24,7 @@ class roles_profiles::profiles::worker {
             include mercurial::ext::robustcheckout
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

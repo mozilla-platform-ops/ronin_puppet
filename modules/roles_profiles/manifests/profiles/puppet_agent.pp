@@ -7,7 +7,7 @@ class roles_profiles::profiles::puppet_agent {
     $package_version = lookup('puppet_agent.package_version')
     $collection      = split($package_version, '[.]')[0]
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             class {'::puppet_agent':
                 collection      => "puppet${collection}",
@@ -17,7 +17,7 @@ class roles_profiles::profiles::puppet_agent {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

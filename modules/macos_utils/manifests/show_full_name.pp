@@ -4,7 +4,7 @@
 
 class macos_utils::show_full_name {
 
-    if $::operatingsystem == 'Darwin' {
+    if $facts['os']['name'] == 'Darwin' {
         macos_utils::defaults { 'show_full_name':
             domain   => '/Library/Preferences/com.apple.loginwindow',
             key      => 'SHOWFULLNAME',
@@ -12,6 +12,6 @@ class macos_utils::show_full_name {
             val_type => 'int'
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::git {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
       package {
           'git':
@@ -11,7 +11,7 @@ class linux_packages::git {
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }

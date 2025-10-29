@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::timezone {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             class { 'macos_timezone':
                 timezone => 'GMT',
@@ -17,7 +17,7 @@ class roles_profiles::profiles::timezone {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

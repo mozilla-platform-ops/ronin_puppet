@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::users {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin', 'Ubuntu': {
             # Fetch a hash of all users and their keys
             # Then instant the all_users class which generates
@@ -24,7 +24,7 @@ class roles_profiles::profiles::users {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

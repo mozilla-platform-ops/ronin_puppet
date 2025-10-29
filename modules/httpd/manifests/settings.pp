@@ -4,7 +4,7 @@
 
 class httpd::settings {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             $group      = 'wheel'
             $owner      = 'root'
@@ -12,7 +12,7 @@ class httpd::settings {
             $conf_d_dir = '/etc/apache2/other'
         }
         default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
+            fail("${module_name} not supported under ${facts['os']['name']}")
         }
     }
 }

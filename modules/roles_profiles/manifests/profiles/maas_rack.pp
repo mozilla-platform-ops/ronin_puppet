@@ -4,12 +4,12 @@
 
 class roles_profiles::profiles::maas_rack {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu':{
             include maas::rack
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

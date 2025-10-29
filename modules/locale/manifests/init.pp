@@ -4,7 +4,7 @@
 
 # Set up locale settings
 class locale() {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             include linux_packages::locales
 
@@ -25,7 +25,7 @@ class locale() {
             }
         }
         default: {
-            notice("Don't know how to set up locale on ${::operatingsystem}.")
+            notice("Don't know how to set up locale on ${facts['os']['name']}.")
         }
     }
 }

@@ -6,9 +6,9 @@ class grub (
     $log_aggregator_host = 'log-aggregator2.srv.releng.mdc2.mozilla.com',
     $log_aggregator_port = 514,
 ){
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
-            case $::operatingsystemrelease {
+            case $facts['os']['release']['full'] {
                 '18.04': {
 
                     # 1804/lvm/efi has issues with setting a timeout.
@@ -35,12 +35,12 @@ class grub (
                     }
                 }
                 default: {
-                    fail("cannot install on ${::operatingsystemrelease}")
+                    fail("cannot install on ${facts['os']['release']['full']}")
                 }
             }
         }
         default: {
-            fail("cannot install on ${::operatingsystem}")
+            fail("cannot install on ${facts['os']['name']}")
         }
     }
 }

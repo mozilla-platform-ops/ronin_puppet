@@ -24,7 +24,7 @@ class roles_profiles::profiles::nuc_management {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

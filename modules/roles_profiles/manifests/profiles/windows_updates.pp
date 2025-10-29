@@ -5,7 +5,7 @@
 class roles_profiles::profiles::windows_updates {
 
     # This is temporary. Updates should be manged by WSUS.
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             if $facts['custom_win_location'] == 'azure' {
                 if $facts['custom_win_release_id'] == '1803' {
@@ -15,7 +15,7 @@ class roles_profiles::profiles::windows_updates {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

@@ -6,7 +6,7 @@ class win_scheduled_tasks::clean_profilelist {
 
     $clean_profilelist_ps1 = "${facts['custom_win_roninprogramdata']}\\clean_profilelist.ps1"
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         file { $clean_profilelist_ps1:
             content => file('win_scheduled_tasks/clean_profilelist.ps1'),
         }
@@ -23,6 +23,6 @@ class win_scheduled_tasks::clean_profilelist {
             user      => 'system',
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

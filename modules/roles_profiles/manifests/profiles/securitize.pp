@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::securitize {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
 
             # relops user is created by kickstart script
@@ -15,7 +15,7 @@ class roles_profiles::profiles::securitize {
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

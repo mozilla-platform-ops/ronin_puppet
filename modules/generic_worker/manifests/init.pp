@@ -75,7 +75,7 @@ class generic_worker (
             path      => $ed25519_signing_key;
     }
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             $reboot_command = '/usr/bin/sudo /sbin/reboot'
@@ -117,7 +117,7 @@ class generic_worker (
             }
         }
         default: {
-            fail("${module_name} is not supported on ${::operatingsystem}")
+            fail("${module_name} is not supported on ${facts['os']['name']}")
         }
     }
 }

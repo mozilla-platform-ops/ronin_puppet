@@ -5,7 +5,7 @@
 class users::add_relops_keys_to_relops_user {
 
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             # Make sure the users profile is required
             # That is where the user virtual resources are generated
@@ -38,7 +38,7 @@ class users::add_relops_keys_to_relops_user {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 

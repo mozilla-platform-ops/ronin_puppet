@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::ec2_instance_configuration {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
 
             $instance_name      = $facts['custom_win_instance_id']
@@ -26,7 +26,7 @@ class roles_profiles::profiles::ec2_instance_configuration {
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1563289
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

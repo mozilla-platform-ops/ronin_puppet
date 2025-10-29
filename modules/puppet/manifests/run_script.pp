@@ -13,9 +13,9 @@ class puppet::run_script (
     # puppet is assumed present
     # - caller should include setup or other module if installation is desired
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
-            case $::operatingsystemrelease {
+            case $facts['os']['release']['full'] {
                 '18.04': {
                     file {
                         '/usr/local/bin/run-puppet.sh':
@@ -26,12 +26,12 @@ class puppet::run_script (
                     }
                 }
                 default: {
-                    fail("puppet::run_script support missing for ${::operatingsystemrelease}")
+                    fail("puppet::run_script support missing for ${facts['os']['release']['full']}")
                 }
             }
         }
         default: {
-            fail("${module_name} does not support ${::operatingsystem}")
+            fail("${module_name} does not support ${facts['os']['name']}")
         }
     }
 

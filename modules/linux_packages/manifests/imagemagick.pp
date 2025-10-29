@@ -6,7 +6,7 @@ class linux_packages::imagemagick {
 
     # 6.9
     package { 'imagemagick':
-        ensure   => present,
+        ensure => present,
     }
 
     # 7.0, 'Complete portable application on Linux'

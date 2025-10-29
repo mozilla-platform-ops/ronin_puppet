@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::signing_users {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             # Make sure the users profile is required
             # That is where the user virtual resources are generated
@@ -24,7 +24,7 @@ class roles_profiles::profiles::signing_users {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::relops_users {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             # Make sure the users profile is required
             # That is where the user virtual resources are generated
@@ -57,7 +57,7 @@ class roles_profiles::profiles::relops_users {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

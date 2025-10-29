@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_talos () {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
       include linux_packages::nodejs
       include linux_packages::xvfb
@@ -50,7 +50,7 @@ class linux_talos () {
       }
     }
     default: {
-      fail("${module_name} not supported under ${::operatingsystem}")
+      fail("${module_name} not supported under ${facts['os']['name']}")
     }
   }
 }

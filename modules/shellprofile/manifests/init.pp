@@ -6,7 +6,7 @@ class shellprofile {
 
     include shellprofile::settings
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin', 'Ubuntu': {
             file {
                 $shellprofile::settings::profile_d:
@@ -29,7 +29,7 @@ class shellprofile {
             }
         }
         default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
+            fail("${module_name} not supported under ${facts['os']['name']}")
         }
     }
 }

@@ -15,12 +15,12 @@ define users::single_user (
     # include resources common to ALL users
     include users::global
 
-    $group = $::operatingsystem ? {
+    $group = $facts['os']['name'] ? {
         'Darwin' => 'staff',
         default  => $user
     }
 
-    $home = $::operatingsystem ? {
+    $home = $facts['os']['name'] ? {
         'Darwin' => "/Users/${user}",
         default  => "/home/${user}"
     }

@@ -5,7 +5,7 @@
 class users::remove_root_keys {
 
   file { '/root/.ssh/authorized_keys':
-    ensure   => absent,
+    ensure => absent,
   }
 
 }

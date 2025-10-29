@@ -11,7 +11,7 @@ class macos_utils::set_desktop_background (
         content => file('macos_utils/mac_desktop_image.py'),
     }
 
-    if $::operatingsystem == 'Darwin' {
+    if $facts['os']['name'] == 'Darwin' {
         # su to get user desktop environment. exec's user option cannot do this
         exec { 'execute python script to apply macos desktop background':
             command => "/usr/bin/su - cltbld -c '/usr/bin/python ${bg_script} -v -s ${image}'",
@@ -19,6 +19,6 @@ class macos_utils::set_desktop_background (
             unless  => "/usr/bin/su - cltbld -c '/usr/bin/python ${bg_script} -v -c ${image}'",
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

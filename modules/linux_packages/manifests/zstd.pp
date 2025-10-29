@@ -5,7 +5,7 @@
 class linux_packages::zstd {
 
     package { 'zstd':
-        ensure   => present,
+        ensure => present,
     }
 
 }

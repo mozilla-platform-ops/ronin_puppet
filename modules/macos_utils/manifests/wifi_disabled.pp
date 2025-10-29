@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class macos_utils::wifi_disabled {
-    if $::operatingsystem == 'Darwin' {
+    if $facts['os']['name'] == 'Darwin' {
         if $::networking['en0'] {
             exec {
                 'disable-wifi':
@@ -12,6 +12,6 @@ class macos_utils::wifi_disabled {
             }
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

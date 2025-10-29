@@ -4,7 +4,7 @@
 
 # This module installs and enables Linux kernel modules
 define kernelmodule($module=$title, $module_args='', $packages=null) {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
       exec {
         "modprobe-${module}":
@@ -32,7 +32,7 @@ define kernelmodule($module=$title, $module_args='', $packages=null) {
 
     }
     default: {
-      fail("${::operatingsystem} is not supported")
+      fail("${facts['os']['name']} is not supported")
     }
   }
 }

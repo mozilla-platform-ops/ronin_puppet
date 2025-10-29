@@ -10,9 +10,9 @@ class macos_timezone (
     String $timezone = 'GMT'
 ) {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
-            if ($::timezone != $timezone) {
+            if ($facts['timezone'] != $timezone) {
                 macos_utils::systemsetup {
                     'timezone':
                         setting => $timezone;
@@ -20,7 +20,7 @@ class macos_timezone (
             }
         }
         default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
+            fail("${module_name} not supported under ${facts['os']['name']}")
         }
     }
 

@@ -26,7 +26,7 @@ define fw::rules (
             }
         }
         default: {
-            fail("This ${::operatingsystem} is not supported")
+            fail("This ${facts['os']['name']} is not supported")
         }
     }
 

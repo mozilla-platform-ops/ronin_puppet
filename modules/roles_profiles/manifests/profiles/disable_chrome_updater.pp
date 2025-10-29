@@ -6,7 +6,7 @@ class roles_profiles::profiles::disable_chrome_updater (
     Boolean $purge = true,
 ) {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             # For new users (potentially created by multiuser generic-worker),
             # executing Chrome will install the updater and create a user launch agent to run updates.
@@ -57,7 +57,7 @@ class roles_profiles::profiles::disable_chrome_updater (
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

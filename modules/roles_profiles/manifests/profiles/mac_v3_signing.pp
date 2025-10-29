@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::mac_v3_signing {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             $worker_type  = 'mac-v3-signing'
@@ -136,7 +136,7 @@ class roles_profiles::profiles::mac_v3_signing {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

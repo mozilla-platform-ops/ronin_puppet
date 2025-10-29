@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class macos_utils::bonjour_advertisements_disabled {
-    if $::operatingsystem == 'Darwin' {
+    if $facts['os']['name'] == 'Darwin' {
         macos_utils::defaults { 'disable-bonjour-multicast-advertisements':
             domain => '/Library/Preferences/com.apple.mDNSResponder',
             key    => 'NoMulticastAdvertisements',
@@ -15,6 +15,6 @@ class macos_utils::bonjour_advertisements_disabled {
             enable => true;
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

@@ -5,7 +5,7 @@
 class linux_packages::ffmpeg {
 
     package { 'ffmpeg':
-        ensure   => present,
+        ensure => present,
     }
 
 }

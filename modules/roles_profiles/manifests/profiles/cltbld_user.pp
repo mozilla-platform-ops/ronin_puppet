@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::cltbld_user {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             $password     = lookup('cltbld_user.password')
             $salt         = lookup('cltbld_user.salt')
@@ -79,7 +79,7 @@ class roles_profiles::profiles::cltbld_user {
             $homedir      = '/home/cltbld'
 
             group { 'cltbld':
-                name      => 'cltbld'
+                name => 'cltbld'
             }
 
             # Create the cltbld user
@@ -103,7 +103,7 @@ class roles_profiles::profiles::cltbld_user {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

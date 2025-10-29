@@ -5,7 +5,7 @@
 class linux_packages::py2 {
 
     package { 'python':
-        ensure   => present,
+        ensure => present,
     }
     package { 'python-pip':
         ensure => present,

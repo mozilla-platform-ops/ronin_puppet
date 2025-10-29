@@ -55,16 +55,16 @@ class win_taskcluster::worker_runner (
     ensure => directory,
   }
   file { $runner_exe_path:
-    source  => $runner_exe_source,
+    source => $runner_exe_source,
   }
   if $provider == 'standalone' {
     file { $runner_yml:
-      content   => epp('win_taskcluster/standalone_runner.yml.epp'),
+      content => epp('win_taskcluster/standalone_runner.yml.epp'),
     }
   }
   else {
     file { $runner_yml:
-      content   => epp('win_taskcluster/runner.yml.epp'),
+      content => epp('win_taskcluster/runner.yml.epp'),
     }
   }
   # Worker-runner/Go need the config file to have UNIX-style line endings

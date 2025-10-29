@@ -72,7 +72,7 @@ class fluentd (
 
         }
         default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
+            fail("${module_name} not supported under ${facts['os']['name']}")
         }
     }
 }

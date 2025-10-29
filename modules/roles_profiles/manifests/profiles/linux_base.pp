@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::linux_base {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             include ::roles_profiles::profiles::locale
             include ::roles_profiles::profiles::timezone
@@ -27,7 +27,7 @@ class roles_profiles::profiles::linux_base {
             # - repo pinning
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

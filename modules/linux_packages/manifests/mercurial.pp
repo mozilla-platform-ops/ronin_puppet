@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::mercurial {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
       include linux_packages::python2_mercurial
       include linux_packages::python3_mercurial
@@ -16,7 +16,7 @@ class linux_packages::mercurial {
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }

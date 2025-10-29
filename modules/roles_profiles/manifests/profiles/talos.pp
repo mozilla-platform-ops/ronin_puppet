@@ -5,14 +5,14 @@
 class roles_profiles::profiles::talos {
     require roles_profiles::profiles::cltbld_user
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             class { 'talos':
                 user => 'cltbld',
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

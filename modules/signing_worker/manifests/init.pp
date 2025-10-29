@@ -37,7 +37,7 @@ define signing_worker (
     # Dep workers have a non-deterministic suffix
     $worker_id = "${facts['networking']['hostname']}${worker_id_suffix}"
     $worker_type = "${worker_type_prefix}${worker_config['worker_type']}"
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.mdc1\.mozilla\.com/: {
             $worker_group = mdc1
         }

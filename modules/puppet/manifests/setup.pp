@@ -4,7 +4,7 @@
 
 class puppet::setup {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             # pass
         }
@@ -37,7 +37,7 @@ class puppet::setup {
             }
         }
         default: {
-            fail("${module_name} does not support ${::operatingsystem}")
+            fail("${module_name} does not support ${facts['os']['name']}")
         }
     }
 

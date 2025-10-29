@@ -13,7 +13,7 @@ class win_packages::performance_tool_kit (
         install_options => ['/quiet'],
       }
       file { $moz_profile_file:
-        source  => $moz_profile_source,
+        source => $moz_profile_source,
       }
       exec { 'install_moz_profile':
         command     => "${facts[custom_win_system32]}\\wbem\\mofcomp.exe ${moz_profile_file}",

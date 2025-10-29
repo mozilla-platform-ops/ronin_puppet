@@ -10,7 +10,7 @@ class macos_utils::autologin_user (
 
     include stdlib
 
-    if $::operatingsystem == 'Darwin' {
+    if $facts['os']['name'] == 'Darwin' {
         if $remove == true {
             $defaults_cmd = '/usr/bin/defaults'
             $domain = '/Library/Preferences/com.apple.loginwindow'
@@ -39,6 +39,6 @@ class macos_utils::autologin_user (
             }
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

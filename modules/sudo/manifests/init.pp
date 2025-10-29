@@ -16,7 +16,7 @@ class sudo {
         mode  => '0440',
     }
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             concat::fragment { '00-base':
                 target  => '/etc/sudoers',
@@ -30,7 +30,7 @@ class sudo {
             }
         }
         default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
+            fail("${module_name} not supported under ${facts['os']['name']}")
         }
     }
 

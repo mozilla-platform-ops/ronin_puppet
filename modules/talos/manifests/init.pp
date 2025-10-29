@@ -5,7 +5,7 @@
 class talos (
     String $user,
 ) {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             $builds_dir = $facts['os']['macosx']['version']['major'] ? {
                 '11' => '/opt/builds',
@@ -36,7 +36,7 @@ class talos (
             }
         }
         default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
+            fail("${module_name} not supported under ${facts['os']['name']}")
         }
     }
 }

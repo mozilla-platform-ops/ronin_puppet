@@ -13,7 +13,7 @@ define macos_utils::logrotate (
     Enum['present', 'absent'] $ensure = 'present',
 ) {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             file { "/etc/newsyslog.d/${title}.conf":
                 ensure  => $ensure,
@@ -21,7 +21,7 @@ define macos_utils::logrotate (
             }
         }
         default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
+            fail("${module_name} not supported under ${facts['os']['name']}")
         }
     }
 

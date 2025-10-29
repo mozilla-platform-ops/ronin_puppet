@@ -6,7 +6,7 @@ class roles_profiles::profiles::remove_bootstrap_user {
 
     $user = 'relops'
 
-    if $::operatingsystem == 'Darwin' {
+    if $facts['os']['name'] == 'Darwin' {
         exec { "${user}_admin_group":
             command => "/usr/bin/dscl . -delete /Users/${user} || rm /private/var/db/dslocal/nodes/Default/users/${user}.plist",
             onlyif  => "/usr/bin/id ${user}",

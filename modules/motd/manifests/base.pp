@@ -5,7 +5,7 @@
 class motd::base {
     include motd::settings
 
-    $group = $::operatingsystem ? {
+    $group = $facts['os']['name'] ? {
         'Darwin' => 'wheel',
         default  => 'root'
     }

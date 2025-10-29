@@ -15,7 +15,7 @@ class win_packages::sevenzip {
     default: {
       $pkg = '7z2500-x64.msi'
       win_packages::win_msi_pkg { '7-Zip 25.00 (x64 edition)':
-        pkg                    => $pkg,
+        pkg             => $pkg,
         install_options => ['/quiet'],
       }
     }

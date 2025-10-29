@@ -78,7 +78,7 @@ class worker_runner (
     $worker_runner_conf      = "${data_dir}/worker-runner-config.yaml"
     $ed25519_signing_key     = "${data_dir}/generic-worker.ed25519.signing.key"
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             if $generic_worker_engine == 'multiuser' {
@@ -177,7 +177,7 @@ class worker_runner (
             }
         }
         default: {
-            fail("${module_name} is not supported on ${::operatingsystem}")
+            fail("${module_name} is not supported on ${facts['os']['name']}")
         }
     }
 

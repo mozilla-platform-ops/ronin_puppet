@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::bitbar_devicepool {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             class { 'puppet::run_script':
                 puppet_repo   => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
@@ -14,7 +14,7 @@ class roles_profiles::profiles::bitbar_devicepool {
             include bitbar_devicepool
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

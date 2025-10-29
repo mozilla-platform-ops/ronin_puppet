@@ -7,7 +7,7 @@ define signing_worker::system_user (
     String $salt,
     String $iterations,
 ) {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             # Create the cltbld user
@@ -54,7 +54,7 @@ define signing_worker::system_user (
 
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

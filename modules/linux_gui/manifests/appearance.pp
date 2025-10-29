@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 class linux_gui::appearance {
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             include linux_packages::libglib20_bin
 
@@ -53,7 +53,7 @@ class linux_gui::appearance {
             }
         }
         default: {
-            fail("Don't know how to set up GUI appearance on ${::operatingsystem}")
+            fail("Don't know how to set up GUI appearance on ${facts['os']['name']}")
         }
     }
 }

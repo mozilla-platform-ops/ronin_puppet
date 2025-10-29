@@ -5,13 +5,13 @@
 class bitbar_devicepool::telegraf {
 
   # install telegraf
-  $_operatingsystem = downcase($facts['operatingsystem'])
+  $_operatingsystem = downcase($facts['os']['name'])
   $telegraf_repo_location        = 'https://repos.influxdata.com/'
 
   apt::source { 'influxdata':
     comment  => 'Mirror for InfluxData packages',
     location => "${telegraf_repo_location}${_operatingsystem}",
-    release  => $facts['lsbdistcodename'],
+    release  => $facts['os']['distro']['codename'],
     repos    => 'stable',
     key      => {
       'id'     => '05CE15085FC09D18E99EFB22684A14CF2582E0C5',

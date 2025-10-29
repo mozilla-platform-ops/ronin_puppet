@@ -4,12 +4,12 @@
 
 class roles_profiles::profiles::locale {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             include locale
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

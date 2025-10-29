@@ -4,13 +4,13 @@
 
 class roles_profiles::profiles::vault_agent {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
             include packages::vault
             include vault_agent
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

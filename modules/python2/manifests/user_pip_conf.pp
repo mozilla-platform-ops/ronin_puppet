@@ -8,7 +8,7 @@ define python2::user_pip_conf (
     Array $user_python_repositories = [ 'https://pypi.pub.build.mozilla.org/pub/', ],
 ) {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin':
         {
             file {

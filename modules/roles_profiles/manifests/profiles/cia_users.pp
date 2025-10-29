@@ -4,7 +4,7 @@
 
 class roles_profiles::profiles::cia_users {
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Ubuntu': {
             # Make sure the users profile is required
             # That is where the user virtual resources are generated
@@ -21,7 +21,7 @@ class roles_profiles::profiles::cia_users {
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

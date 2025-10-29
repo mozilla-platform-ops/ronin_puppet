@@ -9,7 +9,7 @@
 # see https://bugs.launchpad.net/launchpadlib/+bug/1019700
 
 class linux_packages::testresources {
-  case $::operatingsystem {
+  case $facts['os']['name'] {
     'Ubuntu': {
       package {
         'python-testresources':
@@ -21,7 +21,7 @@ class linux_packages::testresources {
       }
     }
     default: {
-      fail("Cannot install on ${::operatingsystem}")
+      fail("Cannot install on ${facts['os']['name']}")
     }
   }
 }

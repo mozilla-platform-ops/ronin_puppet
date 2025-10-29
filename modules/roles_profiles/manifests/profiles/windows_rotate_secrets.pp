@@ -8,7 +8,7 @@ class roles_profiles::profiles::windows_rotate_secrets {
 # File comparison will be needed added for the target file.
 # Leaving in place until Vault is in use on Windows hardware
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Windows': {
             class { 'win_shared::gpg_files':
                 file_name   => "${facts['custom_win_gw_workertype']}_vault.yaml.gpg",
@@ -20,7 +20,7 @@ class roles_profiles::profiles::windows_rotate_secrets {
       #  This should be removed from the role after the file is updated
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }

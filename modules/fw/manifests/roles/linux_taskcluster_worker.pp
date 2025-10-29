@@ -4,7 +4,7 @@
 
 class fw::roles::linux_taskcluster_worker {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.(mdc1|mdc2)\.mozilla\.com/: {
             include ::fw::profiles::nrpe_from_nagios
             include ::fw::profiles::vnc_from_anywhere_logging

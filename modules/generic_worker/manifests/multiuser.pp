@@ -53,7 +53,7 @@ class generic_worker::multiuser (
             path      => $ed25519_signing_key;
     }
 
-    case $::operatingsystem {
+    case $facts['os']['name'] {
         'Darwin': {
 
             $reboot_command = '/usr/bin/sudo /sbin/reboot'
@@ -62,36 +62,36 @@ class generic_worker::multiuser (
 
                 # Ensure old plist and config files doesn’t exists, and deletes them, if necessary.
                 '/Library/LaunchAgents/net.generic.worker.plist':
-                    ensure  => absent;
+                    ensure => absent;
                 '/etc/generic-worker.config':
-                    ensure  => absent;
+                    ensure => absent;
 
                 '/Library/LaunchDaemons/com.mozilla.genericworker.plist':
                     ensure  => present,
                     content => template('generic_worker/generic-worker.plist.multiuser.erb'),
                     mode    => '0644',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    owner   => $facts['root_user'],
+                    group   => $facts['root_group'];
 
                 '/usr/local/bin/run-generic-worker.sh':
                     ensure  => present,
                     content => template('generic_worker/run-generic-worker.sh.multiuser.erb'),
                     mode    => '0755',
-                    owner   => $::root_user,
-                    group   => $::root_group;
+                    owner   => $facts['root_user'],
+                    group   => $facts['root_group'];
 
                 '/etc/generic-worker':
                     ensure => directory,
                     mode   => '0600',
-                    owner  => $::root_user,
-                    group  => $::root_group;
+                    owner  => $facts['root_user'],
+                    group  => $facts['root_group'];
 
                 '/etc/generic-worker/config':
                     ensure  => present,
                     content => template('generic_worker/generic-worker.config.multiuser.erb'),
                     mode    => '0600',
-                    owner   => $::root_user,
-                    group   => $::root_group,
+                    owner   => $facts['root_user'],
+                    group   => $facts['root_group'],
                     #show_diff => false,
                     require => File['/etc/generic-worker'];
 
@@ -107,8 +107,8 @@ class generic_worker::multiuser (
                 '/var/log/generic-worker':
                     ensure => directory,
                     mode   => '0777',
-                    owner  => $::root_user,
-                    group  => $::root_group;
+                    owner  => $facts['root_user'],
+                    group  => $facts['root_group'];
 
                 '/var/opt':
                     ensure => directory,
@@ -129,8 +129,8 @@ class generic_worker::multiuser (
                 $data_dir:
                     ensure => directory,
                     mode   => '0777',
-                    owner  => $::root_user,
-                    group  => $::root_group;
+                    owner  => $facts['root_user'],
+                    group  => $facts['root_group'];
             }
 
             # service { 'com.mozilla.genericworker':
@@ -147,7 +147,7 @@ class generic_worker::multiuser (
             }
         }
         default: {
-            fail("${module_name} is not supported on ${::operatingsystem}")
+            fail("${module_name} is not supported on ${facts['os']['name']}")
         }
     }
 }

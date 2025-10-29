@@ -7,10 +7,10 @@ class linux_packages::py3 {
     # py3.6
 
     package { 'python3':
-        ensure   => present,
+        ensure => present,
     }
     package { 'python3-pip':
-        ensure   => present,
+        ensure => present,
     }
 
     # py3.8, from deadsnakes ppa
