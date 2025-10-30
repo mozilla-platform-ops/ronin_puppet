@@ -2,7 +2,7 @@ docker:
   package_name: docker
   service_name: colima
   registry_port: 5000
-  registry_network: host
+  registry_network: bridge
 
 oci_registry:
   enable_delete: true
