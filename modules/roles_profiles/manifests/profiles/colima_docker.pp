@@ -31,9 +31,9 @@ class roles_profiles::profiles::colima_docker (
     require => Exec['install_docker_colima'],
   }
 
-  # Start Colima as admin user with proper PATH
+  # Start Colima as admin user with proper PATH and increased disk size
   exec { 'start_colima':
-    command   => '/usr/bin/su - admin -c "PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/colima start --arch aarch64 --vm-type vz --cpu 4 --memory 8 --network-address"',
+    command   => '/usr/bin/su - admin -c "PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/colima start --arch aarch64 --vm-type vz --cpu 4 --memory 8 --disk 100 --network-address"',
     unless    => '/usr/bin/su - admin -c "PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/colima status" | grep -q "running"',
     path      => ['/opt/homebrew/bin','/usr/local/bin','/usr/bin','/bin'],
     require   => Exec['verify_docker_colima'],
