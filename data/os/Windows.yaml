@@ -54,7 +54,7 @@ windows:
     package_source: "https://github.com/taskcluster/generic-worker/releases/download"
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
-    version: "91.1.0"
+    version: "91.1.1"
     generic-worker:
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
