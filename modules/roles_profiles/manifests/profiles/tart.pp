@@ -1,6 +1,6 @@
 # Installs Tart from Cirrus Labs' official Homebrew tap,
-# configures registry access, and sets up a LaunchDaemon
-# so each macOS worker runs Tart automatically.
+# configures registry access, and sets up LaunchDaemons
+# so two macOS Tart VMs run automatically after Puppet apply.
 
 class roles_profiles::profiles::tart (
   String  $version        = lookup('tart.version', { default_value => 'latest' }),
@@ -10,7 +10,7 @@ class roles_profiles::profiles::tart (
 ) {
 
   # ---------------------------------------------------------------------------
-  # Default execution PATH for all exec resources
+  # Default PATH for all Exec resources
   # ---------------------------------------------------------------------------
   Exec {
     path => [
@@ -45,7 +45,7 @@ class roles_profiles::profiles::tart (
   }
 
   # ---------------------------------------------------------------------------
-  # Install Tart from the Cirrus Labs tap
+  # Install Tart from Cirrus Labs tap
   # ---------------------------------------------------------------------------
   exec { 'install_tart_via_tap':
     command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install cirruslabs/cli/tart || true"',
@@ -68,7 +68,7 @@ class roles_profiles::profiles::tart (
   }
 
   # ---------------------------------------------------------------------------
-  # Drop LaunchDaemon plist for Tart worker
+  # First LaunchDaemon: com.mozilla.tartworker (VM #1)
   # ---------------------------------------------------------------------------
   file { '/Library/LaunchDaemons/com.mozilla.tartworker.plist':
     ensure  => file,
@@ -77,5 +77,36 @@ class roles_profiles::profiles::tart (
     group   => 'wheel',
     mode    => '0644',
     require => Exec['install_tart_via_tap'],
+  }
+
+  # ---------------------------------------------------------------------------
+  # Second LaunchDaemon: com.mozilla.tartworker2 (VM #2)
+  # ---------------------------------------------------------------------------
+  file { '/Library/LaunchDaemons/com.mozilla.tartworker2.plist':
+    ensure  => file,
+    source  => 'puppet:///modules/roles_profiles/profiles/tartworker/com.mozilla.tartworker2.plist',
+    owner   => 'root',
+    group   => 'wheel',
+    mode    => '0644',
+    require => Exec['install_tart_via_tap'],
+  }
+
+  # ---------------------------------------------------------------------------
+  # Load both LaunchDaemons immediately (no reboot needed)
+  # ---------------------------------------------------------------------------
+  exec { 'load_tart_daemon_1':
+    command   => '/bin/launchctl bootstrap system /Library/LaunchDaemons/com.mozilla.tartworker.plist',
+    unless    => '/bin/launchctl list | grep -q com.mozilla.tartworker',
+    path      => ['/bin', '/usr/bin', '/usr/sbin', '/sbin'],
+    require   => File['/Library/LaunchDaemons/com.mozilla.tartworker.plist'],
+    logoutput => true,
+  }
+
+  exec { 'load_tart_daemon_2':
+    command   => '/bin/launchctl bootstrap system /Library/LaunchDaemons/com.mozilla.tartworker2.plist',
+    unless    => '/bin/launchctl list | grep -q com.mozilla.tartworker2',
+    path      => ['/bin', '/usr/bin', '/usr/sbin', '/sbin'],
+    require   => File['/Library/LaunchDaemons/com.mozilla.tartworker2.plist'],
+    logoutput => true,
   }
 }
