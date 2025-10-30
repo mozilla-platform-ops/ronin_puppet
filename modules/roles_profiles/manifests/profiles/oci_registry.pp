@@ -6,6 +6,7 @@ class roles_profiles::profiles::oci_registry (
   String  $registry_dir     = lookup('oci_registry.registry_dir', { default_value => '/opt/registry/data' }),
   String  $registry_name    = lookup('oci_registry.registry_name', { default_value => 'tart-registry' }),
 ) {
+  # Ensure data directory exists
   file { $registry_dir:
     ensure => directory,
     owner  => 'root',
@@ -13,11 +14,18 @@ class roles_profiles::profiles::oci_registry (
     mode   => '0755',
   }
 
+  # Use a heredoc for the docker run command
+  $docker_run_cmd = @("CMD"/L)
+    docker run -d --network ${registry_network} \
+      -p ${registry_port}:${registry_port} \
+      --restart=always --name ${registry_name} \
+      -v ${registry_dir}:/var/lib/registry \
+      -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} \
+      -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2
+    | CMD
+
   exec { 'run_registry_container':
-    command => "docker run -d --network ${registry_network} -p ${registry_port}:${registry_port} " +
-    "--restart=always --name ${registry_name} " +
-    "-e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} " +
-    "-e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2",
+    command => $docker_run_cmd,
     unless  => "docker ps --filter 'name=${registry_name}' --format '{{.Names}}' | grep -q ${registry_name}",
     path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
     require => Class['roles_profiles::profiles::colima_docker'],
