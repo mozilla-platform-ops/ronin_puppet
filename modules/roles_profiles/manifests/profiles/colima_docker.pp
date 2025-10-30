@@ -5,6 +5,7 @@
 class roles_profiles::profiles::colima_docker (
   String $package_name = lookup('docker.package_name'),
   String $service_name = lookup('docker.service_name'),
+  Integer $disk_size   = lookup('docker.disk_size', { default_value => 100 }),
 ) {
   # Ensure Homebrew exists (declared in homebrew_silent_install)
   if !defined(File['/opt/homebrew/bin']) {
@@ -33,7 +34,7 @@ class roles_profiles::profiles::colima_docker (
 
   # Start Colima as admin user with proper PATH and increased disk size
   exec { 'start_colima':
-    command   => '/usr/bin/su - admin -c "PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/colima start --arch aarch64 --vm-type vz --cpu 4 --memory 8 --disk 100 --network-address"',
+    command   => "/usr/bin/su - admin -c \"PATH=/opt/homebrew/bin:\\\$PATH /opt/homebrew/bin/colima start --arch aarch64 --vm-type vz --cpu 4 --memory 8 --disk ${disk_size} --network-address\"",
     unless    => '/usr/bin/su - admin -c "PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/colima status" | grep -q "running"',
     path      => ['/opt/homebrew/bin','/usr/local/bin','/usr/bin','/bin'],
     require   => Exec['verify_docker_colima'],

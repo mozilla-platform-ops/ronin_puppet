@@ -3,6 +3,7 @@ docker:
   service_name: colima
   registry_port: 5000
   registry_network: bridge
+  disk_size: 100
 
 oci_registry:
   enable_delete: true
