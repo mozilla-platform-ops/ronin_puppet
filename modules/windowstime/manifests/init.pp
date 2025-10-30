@@ -41,8 +41,8 @@
 #
 class windowstime (
   Optional[Hash] $servers,
-  Optional[String] $timezone = undef,
   Optional[Array] $timezones,
+  Optional[String] $timezone = undef,
 ) {
 
   $regvalue = maptoreg($servers)
