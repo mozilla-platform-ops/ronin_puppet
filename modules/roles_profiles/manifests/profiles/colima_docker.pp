@@ -23,18 +23,18 @@ class roles_profiles::profiles::colima_docker (
     require   => File['/opt/homebrew/bin'],
   }
 
-  # Verify both binaries exist
+  # Verify both binaries exist - run colima version as admin user to have proper $HOME
   exec { 'verify_docker_colima':
-    command => '/opt/homebrew/bin/docker --version && /opt/homebrew/bin/colima version',
-    unless  => '/opt/homebrew/bin/docker --version >/dev/null 2>&1 && /opt/homebrew/bin/colima version >/dev/null 2>&1',
+    command => "/opt/homebrew/bin/docker --version && /usr/bin/su - admin -c '/opt/homebrew/bin/colima version'",
+    unless  => "/opt/homebrew/bin/docker --version >/dev/null 2>&1 && /usr/bin/su - admin -c '/opt/homebrew/bin/colima version >/dev/null 2>&1'",
     path    => ['/opt/homebrew/bin','/usr/local/bin','/usr/bin','/bin'],
     require => Exec['install_docker_colima'],
   }
 
   # Start Colima
   exec { 'start_colima':
-    command   => '/opt/homebrew/bin/colima start --arch aarch64 --vm-type vz --cpu 4 --memory 8 --network-address',
-    unless    => '/opt/homebrew/bin/colima status | grep -q "running"',
+    command   => '/usr/bin/su - admin -c "/opt/homebrew/bin/colima start --arch aarch64 --vm-type vz --cpu 4 --memory 8 --network-address"',
+    unless    => '/usr/bin/su - admin -c "/opt/homebrew/bin/colima status" | grep -q "running"',
     path      => ['/opt/homebrew/bin','/usr/local/bin','/usr/bin','/bin'],
     require   => Exec['verify_docker_colima'],
     logoutput => true,

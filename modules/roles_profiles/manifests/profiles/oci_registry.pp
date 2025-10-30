@@ -16,7 +16,7 @@ class roles_profiles::profiles::oci_registry (
 
   # Use a heredoc for the docker run command
   $docker_run_cmd = @("CMD"/L)
-    docker run -d --network ${registry_network} \
+    /opt/homebrew/bin/docker run -d --network ${registry_network} \
       -p ${registry_port}:${registry_port} \
       --restart=always --name ${registry_name} \
       -v ${registry_dir}:/var/lib/registry \
@@ -26,7 +26,7 @@ class roles_profiles::profiles::oci_registry (
 
   exec { 'run_registry_container':
     command => $docker_run_cmd,
-    unless  => "docker ps --filter 'name=${registry_name}' --format '{{.Names}}' | grep -q ${registry_name}",
+    unless  => "/opt/homebrew/bin/docker ps --filter 'name=${registry_name}' --format '{{.Names}}' | grep -q ${registry_name}",
     path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
     require => Class['roles_profiles::profiles::colima_docker'],
   }
@@ -35,8 +35,9 @@ class roles_profiles::profiles::oci_registry (
     ensure     => running,
     enable     => true,
     hasrestart => true,
-    start      => "docker start ${registry_name}",
-    stop       => "docker stop ${registry_name}",
-    status     => "docker ps --filter 'name=${registry_name}' --format '{{.Names}}' | grep -q ${registry_name}",
+    start      => "/opt/homebrew/bin/docker start ${registry_name}",
+    stop       => "/opt/homebrew/bin/docker stop ${registry_name}",
+    status     => "/opt/homebrew/bin/docker ps --filter 'name=${registry_name}' --format '{{.Names}}' | grep -q ${registry_name}",
+    path       => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
   }
 }
