@@ -14,7 +14,7 @@ class roles_profiles::profiles::oci_registry (
     mode   => '0755',
   }
 
-  # Stop & remove any existing registry container cleanly
+  # Remove any existing container first
   exec { 'remove_old_registry_container':
     command   => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker rm -f ${registry_name} || true'",
     onlyif    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps -a --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
@@ -23,38 +23,31 @@ class roles_profiles::profiles::oci_registry (
     require   => Class['roles_profiles::profiles::colima_docker'],
   }
 
-  # Command to run the new registry container (escaped properly to avoid Puppet parsing errors)
-  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH " +
-  "/opt/homebrew/bin/docker run -d --network ${registry_network} " +
-  "-p ${registry_port}:${registry_port} --restart=always --name ${registry_name} " +
-  "-v ${registry_dir}:/var/lib/registry " +
-  "-e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} " +
-  "-e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} " +
-  "registry:2'"
+  # Build the docker run command safely via sprintf
+  $docker_run_cmd = sprintf(
+    "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:%%s /opt/homebrew/bin/docker run -d --network %s -p %d:%d --restart=always --name %s -v %s:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:%d -e REGISTRY_STORAGE_DELETE_ENABLED=%s registry:2'",
+    '$PATH', $registry_network, $registry_port, $registry_port, $registry_name, $registry_dir, $registry_port, $enable_delete
+  )
 
-  # Run the registry container if it isn't already running
   exec { 'run_registry_container':
     command   => $docker_run_cmd,
-    unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH " +
-    "/opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path      => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
+    unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
+    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
     logoutput => on_failure,
     require   => Exec['remove_old_registry_container'],
   }
 
-  # Restart the container if it exists but isn't running
   exec { 'ensure_registry_running':
     command   => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker start ${registry_name}'",
     unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path      => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
+    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
     logoutput => on_failure,
     require   => Exec['run_registry_container'],
   }
 
-  # Verify the registry is responding on localhost
   exec { 'verify_registry':
     command   => "/usr/bin/curl -fsSL http://localhost:${registry_port}/v2/ || (echo 'Registry not reachable' && exit 1)",
-    path      => ['/usr/bin', '/bin'],
+    path      => ['/usr/bin','/bin'],
     tries     => 3,
     try_sleep => 5,
     logoutput => on_failure,
