@@ -23,18 +23,8 @@ class roles_profiles::profiles::oci_registry (
     require   => Class['roles_profiles::profiles::colima_docker'],
   }
 
-  # Build the docker run command with correct argument ordering
-  $docker_run_cmd = sprintf(
-    "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:%%s /opt/homebrew/bin/docker run -d --network %s -p %s:%s --restart=always --name %s -v %s:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:%s -e REGISTRY_STORAGE_DELETE_ENABLED=%s registry:2'",
-    '$PATH',
-    $registry_network,
-    $registry_port,
-    $registry_port,
-    $registry_name,
-    $registry_dir,
-    $registry_port,
-    $enable_delete
-  )
+  # Build the docker run command
+  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker run -d --network ${registry_network} -p ${registry_port}:${registry_port} --restart=always --name ${registry_name} -v ${registry_dir}:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2'"
 
   # Run the registry container
   exec { 'run_registry_container':
