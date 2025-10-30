@@ -24,13 +24,11 @@ class roles_profiles::profiles::oci_registry (
     require => Class['roles_profiles::profiles::colima_docker'],
   }
 
-  service { 'docker-registry':
-    ensure     => running,
-    enable     => true,
-    hasrestart => true,
-    start      => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker start ${registry_name}'",
-    stop       => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker stop ${registry_name}'",
-    status     => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path       => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
+  # Ensure the container is running (in case it stopped)
+  exec { 'ensure_registry_running':
+    command => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker start ${registry_name}'",
+    unless  => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
+    path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
+    require => Exec['run_registry_container'],
   }
 }
