@@ -14,29 +14,47 @@ class roles_profiles::profiles::oci_registry (
     mode   => '0755',
   }
 
-  # Remove any existing container to allow recreation with new settings
+  # Stop & remove any existing registry container cleanly
   exec { 'remove_old_registry_container':
-    command => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker rm -f ${registry_name} || true'",
-    onlyif  => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps -a --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
-    require => Class['roles_profiles::profiles::colima_docker'],
+    command   => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker rm -f ${registry_name} || true'",
+    onlyif    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps -a --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
+    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
+    logoutput => on_failure,
+    require   => Class['roles_profiles::profiles::colima_docker'],
   }
 
-  # Docker run command - run as admin user who owns the colima instance
-  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker run -d --network ${registry_network} -p ${registry_port}:${registry_port} --restart=always --name ${registry_name} -v ${registry_dir}:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2'"
+  # Command to run the new registry container
+  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker run -d --network ${registry_network} " +
+  "-p ${registry_port}:${registry_port} --restart=always --name ${registry_name} " +
+  "-v ${registry_dir}:/var/lib/registry " +
+  "-e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} " +
+  "-e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} " +
+  "registry:2'"
 
+  # Run the registry container if it isn't already running
   exec { 'run_registry_container':
-    command => $docker_run_cmd,
-    unless  => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
-    require => Exec['remove_old_registry_container'],
+    command   => $docker_run_cmd,
+    unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
+    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
+    logoutput => on_failure,
+    require   => Exec['remove_old_registry_container'],
   }
 
-  # Ensure the container is running (in case it stopped)
+  # Restart the container if it exists but isn't running
   exec { 'ensure_registry_running':
-    command => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker start ${registry_name}'",
-    unless  => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
-    require => Exec['run_registry_container'],
+    command   => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker start ${registry_name}'",
+    unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
+    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
+    logoutput => on_failure,
+    require   => Exec['run_registry_container'],
+  }
+
+  # Optionally verify the registry responds on localhost:5000
+  exec { 'verify_registry':
+    command   => "/usr/bin/curl -fsSL http://localhost:${registry_port}/v2/ || (echo 'Registry not reachable' && exit 1)",
+    path      => ['/usr/bin','/bin'],
+    tries     => 3,
+    try_sleep => 5,
+    require   => Exec['ensure_registry_running'],
   }
 }
