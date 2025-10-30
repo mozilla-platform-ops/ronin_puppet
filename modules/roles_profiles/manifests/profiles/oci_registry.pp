@@ -14,19 +14,12 @@ class roles_profiles::profiles::oci_registry (
     mode   => '0755',
   }
 
-  # Use a heredoc for the docker run command
-  $docker_run_cmd = @("CMD"/L)
-    /opt/homebrew/bin/docker run -d --network ${registry_network} \
-      -p ${registry_port}:${registry_port} \
-      --restart=always --name ${registry_name} \
-      -v ${registry_dir}:/var/lib/registry \
-      -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} \
-      -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2
-    | CMD
+  # Docker run command - run as admin user who owns the colima instance
+  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker run -d --network ${registry_network} -p ${registry_port}:${registry_port} --restart=always --name ${registry_name} -v ${registry_dir}:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2'"
 
   exec { 'run_registry_container':
     command => $docker_run_cmd,
-    unless  => "/opt/homebrew/bin/docker ps --filter 'name=${registry_name}' --format '{{.Names}}' | grep -q ${registry_name}",
+    unless  => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
     path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
     require => Class['roles_profiles::profiles::colima_docker'],
   }
@@ -35,9 +28,9 @@ class roles_profiles::profiles::oci_registry (
     ensure     => running,
     enable     => true,
     hasrestart => true,
-    start      => "/opt/homebrew/bin/docker start ${registry_name}",
-    stop       => "/opt/homebrew/bin/docker stop ${registry_name}",
-    status     => "/opt/homebrew/bin/docker ps --filter 'name=${registry_name}' --format '{{.Names}}' | grep -q ${registry_name}",
+    start      => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker start ${registry_name}'",
+    stop       => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker stop ${registry_name}'",
+    status     => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
     path       => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
   }
 }
