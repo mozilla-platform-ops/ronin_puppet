@@ -6,7 +6,7 @@ class roles_profiles::profiles::oci_registry (
   String  $registry_dir     = lookup('oci_registry.registry_dir', { default_value => '/opt/registry/data' }),
   String  $registry_name    = lookup('oci_registry.registry_name', { default_value => 'tart-registry' }),
 ) {
-  # Ensure data directory exists
+  # Ensure the data directory exists
   file { $registry_dir:
     ensure => directory,
     owner  => 'root',
@@ -18,13 +18,14 @@ class roles_profiles::profiles::oci_registry (
   exec { 'remove_old_registry_container':
     command   => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker rm -f ${registry_name} || true'",
     onlyif    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps -a --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
+    path      => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
     logoutput => on_failure,
     require   => Class['roles_profiles::profiles::colima_docker'],
   }
 
-  # Command to run the new registry container
-  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker run -d --network ${registry_network} " +
+  # Command to run the new registry container (escaped properly to avoid Puppet parsing errors)
+  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH " +
+  "/opt/homebrew/bin/docker run -d --network ${registry_network} " +
   "-p ${registry_port}:${registry_port} --restart=always --name ${registry_name} " +
   "-v ${registry_dir}:/var/lib/registry " +
   "-e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} " +
@@ -34,8 +35,9 @@ class roles_profiles::profiles::oci_registry (
   # Run the registry container if it isn't already running
   exec { 'run_registry_container':
     command   => $docker_run_cmd,
-    unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
+    unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH " +
+    "/opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
+    path      => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
     logoutput => on_failure,
     require   => Exec['remove_old_registry_container'],
   }
@@ -44,17 +46,18 @@ class roles_profiles::profiles::oci_registry (
   exec { 'ensure_registry_running':
     command   => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker start ${registry_name}'",
     unless    => "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker ps --filter name=${registry_name} --format {{.Names}}' | grep -q ${registry_name}",
-    path      => ['/opt/homebrew/bin','/usr/bin','/bin'],
+    path      => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
     logoutput => on_failure,
     require   => Exec['run_registry_container'],
   }
 
-  # Optionally verify the registry responds on localhost:5000
+  # Verify the registry is responding on localhost
   exec { 'verify_registry':
     command   => "/usr/bin/curl -fsSL http://localhost:${registry_port}/v2/ || (echo 'Registry not reachable' && exit 1)",
-    path      => ['/usr/bin','/bin'],
+    path      => ['/usr/bin', '/bin'],
     tries     => 3,
     try_sleep => 5,
+    logoutput => on_failure,
     require   => Exec['ensure_registry_running'],
   }
 }
