@@ -1,36 +1,29 @@
 # Installs Docker and Colima using Homebrew and ensures Colima is running.
 #
-# This version avoids Puppet’s default `pkgdmg` provider (which fails on macOS)
-# and runs Homebrew commands as the admin user, which actually owns /opt/homebrew.
-#
-# Logs appear in Puppet output; no manual Docker/Colima installation needed.
+# This version runs Homebrew as the admin user (owner of /opt/homebrew) and
+# avoids duplicate file declarations. Requires homebrew_silent_install to run first.
 class roles_profiles::profiles::colima_docker (
   String $package_name = lookup('docker.package_name'),
   String $service_name = lookup('docker.service_name'),
 ) {
-
-  # Path to Homebrew binary
-  $brew_path = '/opt/homebrew/bin/brew'
-
-  # Sanity-check: make sure the brew path exists
-  file { '/opt/homebrew/bin':
-    ensure => directory,
-    owner  => 'admin',
-    group  => 'staff',
-    mode   => '0755',
+  # Ensure Homebrew exists (declared in homebrew_silent_install)
+  if !defined(File['/opt/homebrew/bin']) {
+    fail('Expected File[/opt/homebrew/bin] to be managed by homebrew_silent_install')
   }
 
-  # Install Docker and Colima via Homebrew under the admin user.
-  # Using `su - admin` ensures Homebrew runs in the proper environment.
+  $brew_path = '/opt/homebrew/bin/brew'
+
+  # Install Docker and Colima via Homebrew under the admin user
   exec { 'install_docker_colima':
     command   => "/usr/bin/su - admin -c '${brew_path} install ${package_name} colima || true'",
     unless    => "/usr/bin/su - admin -c '${brew_path} list --formula | grep -E \"(${package_name}|colima)\"'",
     path      => ['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin'],
-    timeout   => 0, # allow long installs
+    timeout   => 0,
     logoutput => true,
+    require   => File['/opt/homebrew/bin'],
   }
 
-  # Verify Docker responds before continuing (idempotent check)
+  # Verify both binaries exist
   exec { 'verify_docker_colima':
     command => '/opt/homebrew/bin/docker --version && /opt/homebrew/bin/colima version',
     unless  => '/opt/homebrew/bin/docker --version >/dev/null 2>&1 && /opt/homebrew/bin/colima version >/dev/null 2>&1',
@@ -38,7 +31,7 @@ class roles_profiles::profiles::colima_docker (
     require => Exec['install_docker_colima'],
   }
 
-  # Start Colima with proper settings if not already running
+  # Start Colima
   exec { 'start_colima':
     command   => '/opt/homebrew/bin/colima start --arch aarch64 --vm-type vz --cpu 4 --memory 8 --network-address',
     unless    => '/opt/homebrew/bin/colima status | grep -q "running"',
