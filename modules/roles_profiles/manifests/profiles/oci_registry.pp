@@ -24,7 +24,12 @@ class roles_profiles::profiles::oci_registry (
   }
 
   # Build the docker run command
-  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker run -d --network ${registry_network} -p ${registry_port}:${registry_port} --restart=always --name ${registry_name} -v ${registry_dir}:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2'"
+  $docker_run_cmd = "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:\$PATH /opt/homebrew/bin/docker run -d \
+  --network ${registry_network} -p ${registry_port}:${registry_port} \
+  --restart=always --name ${registry_name} \
+  -v ${registry_dir}:/var/lib/registry \
+  -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} \
+  -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2'"
 
   # Run the registry container
   exec { 'run_registry_container':

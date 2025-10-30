@@ -7,5 +7,5 @@ docker:
 
 oci_registry:
   enable_delete: true
-  registry_dir: /mnt/lima-colima/registry
+  rregistry_dir: /Users/admin/.colima/default/volumes/colima/registry
   registry_name: tart-registry
