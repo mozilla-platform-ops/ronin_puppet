@@ -23,9 +23,9 @@ class roles_profiles::profiles::oci_registry (
     require   => Class['roles_profiles::profiles::colima_docker'],
   }
 
-  # Build the docker run command safely via sprintf
+  # Build docker run command using safe string substitution (all as %s)
   $docker_run_cmd = sprintf(
-    "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:%%s /opt/homebrew/bin/docker run -d --network %s -p %d:%d --restart=always --name %s -v %s:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:%d -e REGISTRY_STORAGE_DELETE_ENABLED=%s registry:2'",
+    "/usr/bin/su - admin -c 'PATH=/opt/homebrew/bin:%%s /opt/homebrew/bin/docker run -d --network %s -p %s:%s --restart=always --name %s -v %s:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:%s -e REGISTRY_STORAGE_DELETE_ENABLED=%s registry:2'",
     '$PATH', $registry_network, $registry_port, $registry_port, $registry_name, $registry_dir, $registry_port, $enable_delete
   )
 
