@@ -92,6 +92,21 @@ function Disable-OneDrive {
 
 }
 
+$DhcpDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'DhcpDomain')
+$NVDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain')
+
+switch -Regex ($true) {
+    ($DhcpDomain -match "cloudapp\.net") {
+        $location = "azure"
+    }
+    ($DhcpDomain -match "microsoft") {
+        $location = "azure"
+    }
+    default {
+        $location = "datacenter"
+    }
+}
+
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
@@ -151,14 +166,18 @@ switch ($os_version) {
         }
 
         ## set git config
+        ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        if ($location -eq "azure") {
+            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        }
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        Disable-OneDrive
+        if ($location -eq "azure") {
+            Disable-OneDrive
+        }
     }
     "win_10_2009" {
         ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
@@ -178,12 +197,16 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        if ($location -eq "azure") {
+            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        }
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        Disable-OneDrive
+        if ($location -eq "azure") {
+            Disable-OneDrive
+        }
+        
     }
     Default {}
 }
