@@ -206,7 +206,7 @@ switch ($os_version) {
         if ($location -eq "azure") {
             Disable-OneDrive
         }
-        
+
     }
     Default {}
 }
