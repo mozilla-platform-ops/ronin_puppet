@@ -168,9 +168,9 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        if ($location -eq "azure") {
-            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        }
+        # if ($location -eq "azure") {
+        #     explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        # }
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
@@ -196,9 +196,9 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        if ($location -eq "azure") {
-            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        }
+        # if ($location -eq "azure") {
+        #     explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        # }
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
