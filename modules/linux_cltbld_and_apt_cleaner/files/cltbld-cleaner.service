@@ -18,9 +18,12 @@ Type=oneshot
 User=root
 StandardOutput=journal
 StandardError=journal
-TimeoutStartSec=1800      # Allow up to 30m runtime
-TimeoutStopSec=60         # Give 60s for graceful shutdown after SIGTERM
-KillSignal=SIGTERM        # Send SIGTERM first
+# Allow up to 30m runtime
+TimeoutStartSec=1800
+# Give 60s for graceful shutdown after SIGTERM
+TimeoutStopSec=60
+# Send SIGTERM first
+KillSignal=SIGTERM
 ExecStart=/usr/sbin/cltbld-and-apt-cleaner.sh
 
 [Install]
