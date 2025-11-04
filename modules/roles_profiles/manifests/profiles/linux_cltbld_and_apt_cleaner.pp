@@ -4,6 +4,6 @@
 
 class roles_profiles::profiles::linux_cltbld_and_apt_cleaner {
   class { 'linux_cltbld_and_apt_cleaner':
-    enabled => true,
+    # enabled => true,
   }
 }
