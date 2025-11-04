@@ -32,7 +32,7 @@ class linux_cltbld_and_apt_cleaner {
   }
 
   # Ensure systemd reloads the service files
-  exec { 'systemd-reload':
+  exec { 'lcaac-systemd-reload':
     command     => '/bin/systemctl daemon-reload',
     refreshonly => true,
     subscribe   => File['/etc/systemd/system/cltbld-cleaner.service'],
@@ -43,6 +43,6 @@ class linux_cltbld_and_apt_cleaner {
     # don't ensure running, we want it to run once at startup
     # ensure  => 'running',
     enable  => true,
-    require => Exec['systemd-reload'],
+    require => Exec['lcaac-systemd-reload'],
   }
 }
