@@ -47,7 +47,7 @@ function Disable-OneDrive {
 
     Stop-Process -Name OneDrive -Force
     Stop-Process -Name OneDriveSetup -Force
-    Stop-Process -Name explorer -Force
+    #Stop-Process -Name explorer -Force
 
     $pol = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
     New-Item -Path $pol -Force | Out-Null
@@ -88,7 +88,7 @@ function Disable-OneDrive {
         }
     }
 
-    Start-Process explorer.exe
+    #Start-Process explorer.exe
 
 }
 
