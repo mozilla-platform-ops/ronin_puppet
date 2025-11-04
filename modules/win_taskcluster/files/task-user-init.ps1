@@ -40,7 +40,7 @@ function Write-Log {
 function Disable-OneDrive {
     [CmdletBinding()]
     param (
-        
+
     )
 
     $ErrorActionPreference = 'SilentlyContinue'
@@ -92,26 +92,18 @@ function Disable-OneDrive {
 
 }
 
-function Disable-StorageSense {
-    [CmdletBinding()]
-    param (
-        
-    )
-    
-    try {
-        New-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\StorageSense' -Name 'AllowStorageSenseGlobal' -Value 0 -Force
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Set AllowStorageSenseGlobal to 0", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    catch {
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Failed to set AllowStorageSenseGlobal to 0", (Get-Date).ToUniversalTime()) -severity 'ERROR'
-    }
+$DhcpDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'DhcpDomain')
+$NVDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain')
 
-    try {
-        New-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\StorageSense' -Name 'AllowStorageSenseTemporaryFilesCleanup' -Value 0 -Force
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Set AllowStorageSenseTemporaryFilesCleanup to 0", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+switch -Regex ($true) {
+    ($DhcpDomain -match "cloudapp\.net") {
+        $location = "azure"
     }
-    catch {
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Failed to set AllowStorageSenseTemporaryFilesCleanup to 0", (Get-Date).ToUniversalTime()) -severity 'ERROR'
+    ($DhcpDomain -match "microsoft") {
+        $location = "azure"
+    }
+    default {
+        $location = "datacenter"
     }
 }
 
@@ -174,18 +166,18 @@ switch ($os_version) {
         }
 
         ## set git config
+        ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        if ($location -eq "azure") {
+            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        }
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        Disable-OneDrive
-        ## Disable Storage Sense
-        ## https://bugzilla.mozilla.org/show_bug.cgi?id=1893092#c140 localappdata gets cleaned up
-        ## https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-storage
-        Disable-StorageSense
+        if ($location -eq "azure") {
+            Disable-OneDrive
+        }
     }
     "win_10_2009" {
         ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
@@ -205,12 +197,16 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        if ($location -eq "azure") {
+            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        }
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        Disable-OneDrive
+        if ($location -eq "azure") {
+            Disable-OneDrive
+        }
+
     }
     Default {}
 }
@@ -228,7 +224,7 @@ switch ($base_image) {
         catch {
             Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
-        } 
+        }
     }
     "win11642009hwrefalpha" {
         ## Install appx package for av1 extension
@@ -240,7 +236,7 @@ switch ($base_image) {
         catch {
             Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
-        } 
+        }
     }
     default {
         continue
