@@ -93,7 +93,6 @@ function Disable-OneDrive {
 }
 
 $DhcpDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'DhcpDomain')
-$NVDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain')
 
 switch -Regex ($true) {
     ($DhcpDomain -match "cloudapp\.net") {
