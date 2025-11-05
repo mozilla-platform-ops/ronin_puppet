@@ -1,5 +1,7 @@
 tart:
-  version: latest
-  registry_host: 10.49.56.161
+  version: '2.30.0'
+  registry_host: '10.49.56.161'
   registry_port: 5000
+  oci_image: 'sequoia-tester:prod-latest'
+  worker_count: 2
   insecure: true
