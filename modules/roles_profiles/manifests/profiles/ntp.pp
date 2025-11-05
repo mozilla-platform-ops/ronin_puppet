@@ -23,11 +23,8 @@ class roles_profiles::profiles::ntp {
           }
         }
         /^24\.04/: {
-          # ntp has issues
-          #
-          # if 24.04+, use chrony package
-          # TODO: add class that configures timesyncd (2404's default)
-          #   - bootstrap does it for now, but not long term solution
+          # uses timedatectl and timesyncd
+          require 'linux_ntp'
         }
         default: {
           fail("Unsupported Ubuntu version for NTP: ${facts['os']['release']['full']}")
