@@ -22,6 +22,13 @@ class linux_ntp {
             group  => 'root',
             mode   => '0644',
           }
+          # systemctl restart systemd-timesyncd
+          service { 'systemd-timesyncd':
+            ensure    => 'running',
+            enable    => true,
+            # subscribe will make this restart the service
+            subscribe => File['/etc/systemd/timesyncd.conf.d/mozilla.conf'],
+          }
         }
         default: {
           fail("Unsupported Ubuntu version for NTP setup: ${facts['os']['release']['full']}")
