@@ -1,112 +1,115 @@
-# Installs Tart from Cirrus Labs' official Homebrew tap,
-# configures registry access, and sets up LaunchDaemons
-# so two macOS Tart VMs run automatically after Puppet apply.
-
 class roles_profiles::profiles::tart (
-  String  $version        = lookup('tart.version', { default_value => 'latest' }),
-  String  $registry_host  = lookup('tart.registry_host', { default_value => 'registry.local' }),
+  String  $version        = lookup('tart.version', { default_value => '2.30.0' }),
+  String  $registry_host  = lookup('tart.registry_host', { default_value => '10.49.56.161' }),
   Integer $registry_port  = lookup('tart.registry_port', { default_value => 5000 }),
+  String  $oci_image      = lookup('tart.oci_image', { default_value => 'sequoia-tester:prod-latest' }),
+  Integer $worker_count   = lookup('tart.worker_count', { default_value => 2 }),
   Boolean $insecure       = lookup('tart.insecure', { default_value => true }),
 ) {
+  # Install Tart
+  $tart_url = "https://github.com/cirruslabs/tart/releases/download/${version}/tart.tar.gz"
+  $install_dir = '/Applications'
+  $bin_path = '/usr/local/bin/tart'
 
-  # ---------------------------------------------------------------------------
-  # Default PATH for all Exec resources
-  # ---------------------------------------------------------------------------
-  Exec {
-    path => [
-      '/opt/homebrew/bin',
-      '/usr/local/bin',
-      '/usr/bin',
-      '/bin',
-      '/usr/sbin',
-      '/sbin',
-    ],
+  # Download and install Tart
+  exec { 'download_tart':
+    command => "curl -L -o /tmp/tart.tar.gz ${tart_url}",
+    path    => ['/usr/bin', '/bin', '/usr/local/bin'],
+    creates => '/tmp/tart.tar.gz',
+    unless  => "test -f ${bin_path} && ${bin_path} --version | grep -q ${version}",
   }
 
-  # ---------------------------------------------------------------------------
-  # Ensure Homebrew is installed and writable
-  # ---------------------------------------------------------------------------
-  require roles_profiles::profiles::homebrew_silent_install
-
-  File <| title == '/opt/homebrew/bin' |> {
-    owner => 'admin',
-    group => 'admin',
-    mode  => '0755',
+  exec { 'extract_tart':
+    command => 'tar -xzf /tmp/tart.tar.gz -C /tmp/',
+    path    => ['/usr/bin', '/bin'],
+    require => Exec['download_tart'],
+    unless  => "test -f ${bin_path} && ${bin_path} --version | grep -q ${version}",
   }
 
-  # ---------------------------------------------------------------------------
-  # Add Cirrus Labs Homebrew tap if not present
-  # ---------------------------------------------------------------------------
-  exec { 'brew_tap_cirruslabs_cli':
-    command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew tap cirruslabs/cli"',
-    unless      => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew tap | grep -q cirruslabs/cli"',
-    environment => ['HOME=/Users/admin'],
-    logoutput   => true,
+  exec { 'install_tart':
+    command => "rm -rf ${install_dir}/Tart.app && mv /tmp/Tart.app ${install_dir}/Tart.app",
+    path    => ['/usr/bin', '/bin'],
+    require => Exec['extract_tart'],
+    unless  => "test -f ${bin_path} && ${bin_path} --version | grep -q ${version}",
   }
 
-  # ---------------------------------------------------------------------------
-  # Install Tart from Cirrus Labs tap
-  # ---------------------------------------------------------------------------
-  exec { 'install_tart_via_tap':
-    command     => '/usr/bin/su - admin -c "/opt/homebrew/bin/brew install cirruslabs/cli/tart || true"',
-    unless      => 'test -x /opt/homebrew/bin/tart',
-    environment => ['HOME=/Users/admin'],
-    require     => Exec['brew_tap_cirruslabs_cli'],
-    logoutput   => true,
+  exec { 'remove_quarantine_tart':
+    command => "xattr -dr com.apple.quarantine ${install_dir}/Tart.app",
+    path    => ['/usr/bin', '/bin'],
+    require => Exec['install_tart'],
+    onlyif  => "test -d ${install_dir}/Tart.app",
   }
 
-  # ---------------------------------------------------------------------------
-  # Configure registry connection file
-  # ---------------------------------------------------------------------------
-  file { '/etc/tart_registry.conf':
+  file { $bin_path:
+    ensure  => link,
+    target  => "${install_dir}/Tart.app/Contents/MacOS/tart",
+    require => Exec['install_tart'],
+  }
+
+  # Create pull/setup script
+  $insecure_flag = $insecure ? {
+    true  => '--insecure',
+    false => '',
+  }
+
+  file { '/usr/local/bin/tart-pull-image.sh':
     ensure  => file,
-    content => "registry=${registry_host}:${registry_port}\ninsecure=${insecure}\n",
-    owner   => 'root',
-    group   => 'wheel',
-    mode    => '0644',
-    require => Exec['install_tart_via_tap'],
+    mode    => '0755',
+    content => epp('roles_profiles/tart/tart-pull-image.sh.epp', {
+        registry_host => $registry_host,
+        registry_port => $registry_port,
+        oci_image     => $oci_image,
+        worker_count  => $worker_count,
+        insecure_flag => $insecure_flag,
+        bin_path      => $bin_path,
+    }),
   }
 
-  # ---------------------------------------------------------------------------
-  # First LaunchDaemon: com.mozilla.tartworker (VM #1)
-  # ---------------------------------------------------------------------------
-  file { '/Library/LaunchDaemons/com.mozilla.tartworker.plist':
+  # Create manual update script
+  file { '/usr/local/bin/tart-update-vms.sh':
     ensure  => file,
-    source  => 'puppet:///modules/roles_profiles/profiles/tartworker/com.mozilla.tartworker.plist',
-    owner   => 'root',
-    group   => 'wheel',
-    mode    => '0644',
-    require => Exec['install_tart_via_tap'],
+    mode    => '0755',
+    content => epp('roles_profiles/tart/tart-update-vms.sh.epp', {
+        registry_host => $registry_host,
+        registry_port => $registry_port,
+        oci_image     => $oci_image,
+        worker_count  => $worker_count,
+        insecure_flag => $insecure_flag,
+        bin_path      => $bin_path,
+    }),
   }
 
-  # ---------------------------------------------------------------------------
-  # Second LaunchDaemon: com.mozilla.tartworker2 (VM #2)
-  # ---------------------------------------------------------------------------
-  file { '/Library/LaunchDaemons/com.mozilla.tartworker2.plist':
-    ensure  => file,
-    source  => 'puppet:///modules/roles_profiles/profiles/tartworker/com.mozilla.tartworker2.plist',
-    owner   => 'root',
-    group   => 'wheel',
-    mode    => '0644',
-    require => Exec['install_tart_via_tap'],
+  # Initial VM setup
+  exec { 'pull_initial_image':
+    command => '/usr/local/bin/tart-pull-image.sh',
+    path    => ['/usr/bin', '/bin', '/usr/local/bin'],
+    require => [File['/usr/local/bin/tart-pull-image.sh'], File[$bin_path]],
+    unless  => "${bin_path} list | grep -q sequoia-tester-1",
   }
 
-  # ---------------------------------------------------------------------------
-  # Load both LaunchDaemons immediately (no reboot needed)
-  # ---------------------------------------------------------------------------
-  exec { 'load_tart_daemon_1':
-    command   => '/bin/launchctl bootstrap system /Library/LaunchDaemons/com.mozilla.tartworker.plist',
-    unless    => '/bin/launchctl list | grep -q com.mozilla.tartworker',
-    path      => ['/bin', '/usr/bin', '/usr/sbin', '/sbin'],
-    require   => File['/Library/LaunchDaemons/com.mozilla.tartworker.plist'],
-    logoutput => true,
-  }
+  # Create LaunchDaemons for each worker
+  Integer[1, $worker_count].each |$i| {
+    $vm_name = "sequoia-tester-${i}"
 
-  exec { 'load_tart_daemon_2':
-    command   => '/bin/launchctl bootstrap system /Library/LaunchDaemons/com.mozilla.tartworker2.plist',
-    unless    => '/bin/launchctl list | grep -q com.mozilla.tartworker2',
-    path      => ['/bin', '/usr/bin', '/usr/sbin', '/sbin'],
-    require   => File['/Library/LaunchDaemons/com.mozilla.tartworker2.plist'],
-    logoutput => true,
+    file { "/Library/LaunchDaemons/com.mozilla.tartworker-${i}.plist":
+      ensure  => file,
+      content => epp('roles_profiles/tart/com.mozilla.tartworker.plist.epp', {
+          worker_id => $i,
+          vm_name   => $vm_name,
+          bin_path  => $bin_path,
+      }),
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0644',
+      require => Exec['pull_initial_image'],
+      notify  => Exec["load_tartworker_${i}"],
+    }
+
+    exec { "load_tartworker_${i}":
+      command     => "launchctl load /Library/LaunchDaemons/com.mozilla.tartworker-${i}.plist",
+      path        => ['/bin', '/usr/bin'],
+      refreshonly => true,
+      unless      => "launchctl list | grep -q com.mozilla.tartworker-${i}",
+    }
   }
 }

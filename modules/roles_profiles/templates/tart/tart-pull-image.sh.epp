@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+
+REGISTRY="<%= $registry_host %>:<%= $registry_port %>"
+IMAGE="<%= $oci_image %>"
+WORKER_COUNT=<%= $worker_count %>
+BIN_PATH="<%= $bin_path %>"
+INSECURE_FLAG="<%= $insecure_flag %>"
+
+echo "📦 Pulling latest VM image from OCI registry..."
+"${BIN_PATH}" pull ${INSECURE_FLAG} "${REGISTRY}/${IMAGE}"
+
+echo "🔄 Setting up worker VMs..."
+for i in $(seq 1 ${WORKER_COUNT}); do
+  VM_NAME="sequoia-tester-${i}"
+
+  # Check if VM exists
+  if "${BIN_PATH}" list | grep -q "^${VM_NAME}$"; then
+    echo "✅ ${VM_NAME} already exists, skipping..."
+    continue
+  fi
+
+  echo "🎲 Cloning ${VM_NAME}..."
+  "${BIN_PATH}" clone "${REGISTRY}/${IMAGE}" "${VM_NAME}"
+done
+
+echo "✅ VM setup complete!"
