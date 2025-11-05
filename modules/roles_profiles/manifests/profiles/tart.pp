@@ -13,47 +13,27 @@ class roles_profiles::profiles::tart (
     unless  => 'test -d /usr/local/bin',
   }
 
-  # Install Tart
-  $tart_url = "https://github.com/cirruslabs/tart/releases/download/${version}/tart.tar.gz"
+  # Install Tart - use a single exec like your working script
   $install_dir = '/Applications'
   $bin_path = '/usr/local/bin/tart'
 
-  # Download Tart
-  exec { 'download_tart':
-    command => "curl -L -o /tmp/tart.tar.gz '${tart_url}'",
-    path    => ['/usr/bin', '/bin', '/usr/local/bin'],
-    unless  => "test -f ${bin_path} && ${bin_path} --version | grep -q '${version}'",
-  }
-
-  # Extract Tart (GitHub releases are just gzipped, not tar.gz)
-  exec { 'extract_tart':
-    command => 'mkdir -p /tmp/tart_extract && tar -xzf /tmp/tart.tar.gz -C /tmp/tart_extract',
-    path    => ['/usr/bin', '/bin'],
-    require => Exec['download_tart'],
-    unless  => "test -f ${bin_path} && ${bin_path} --version | grep -q '${version}'",
-  }
-
-  # Install Tart app
   exec { 'install_tart':
-    command => 'rm -rf /Applications/Tart.app && mv /tmp/tart_extract/Tart.app /Applications/Tart.app',
-    path    => ['/usr/bin', '/bin'],
-    require => Exec['extract_tart'],
-    unless  => "test -f ${bin_path} && ${bin_path} --version | grep -q '${version}'",
-  }
-
-  # Remove quarantine
-  exec { 'remove_quarantine_tart':
-    command => 'xattr -dr com.apple.quarantine /Applications/Tart.app',
-    path    => ['/usr/bin', '/bin'],
-    require => Exec['install_tart'],
-    onlyif  => 'test -d /Applications/Tart.app',
-  }
-
-  # Create symlink
-  file { $bin_path:
-    ensure  => link,
-    target  => '/Applications/Tart.app/Contents/MacOS/tart',
-    require => [Exec['install_tart'], Exec['create_usr_local_bin']],
+    command => "/bin/bash -c '\
+      set -e; \
+      TMP_DIR=\$(mktemp -d); \
+      cd \$TMP_DIR; \
+      curl -L -o tart.tar.gz https://github.com/cirruslabs/tart/releases/download/${version}/tart.tar.gz; \
+      tar -xzf tart.tar.gz; \
+      rm -rf ${install_dir}/Tart.app; \
+      mv Tart.app ${install_dir}/Tart.app; \
+      xattr -dr com.apple.quarantine ${install_dir}/Tart.app || true; \
+      mkdir -p /usr/local/bin; \
+      ln -sf ${install_dir}/Tart.app/Contents/MacOS/tart ${bin_path}; \
+      cd /; \
+      rm -rf \$TMP_DIR'",
+    path    => ['/usr/bin', '/bin', '/usr/local/bin'],
+    unless  => "test -f ${bin_path} && ${bin_path} --version 2>/dev/null | grep -q '${version}'",
+    timeout => 600,
   }
 
   # Create pull/setup script
@@ -73,7 +53,7 @@ class roles_profiles::profiles::tart (
         insecure_flag => $insecure_flag,
         bin_path      => $bin_path,
     }),
-    require => Exec['create_usr_local_bin'],
+    require => Exec['install_tart'],
   }
 
   # Create manual update script
@@ -88,14 +68,14 @@ class roles_profiles::profiles::tart (
         insecure_flag => $insecure_flag,
         bin_path      => $bin_path,
     }),
-    require => Exec['create_usr_local_bin'],
+    require => Exec['install_tart'],
   }
 
   # Initial VM setup
   exec { 'pull_initial_image':
     command => '/usr/local/bin/tart-pull-image.sh',
     path    => ['/usr/bin', '/bin', '/usr/local/bin'],
-    require => [File['/usr/local/bin/tart-pull-image.sh'], File[$bin_path]],
+    require => [File['/usr/local/bin/tart-pull-image.sh']],
     timeout => 1800, # 30 minutes for large image pulls
     unless  => "${bin_path} list | grep -q sequoia-tester-1",
   }
