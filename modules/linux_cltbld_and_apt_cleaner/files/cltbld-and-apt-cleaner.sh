@@ -34,4 +34,6 @@ apt-get clean
 echo "Cleanup complete. Elapsed: ${SECONDS}s"
 echo "Rebooting in 5 minutes..."
 shutdown -r +5 "System will reboot in 5 minutes due to high disk usage cleanup."
+# keep the script runnning for 5 minutes to allow the shutdown command to complete
+sleep 300
 exit 0
