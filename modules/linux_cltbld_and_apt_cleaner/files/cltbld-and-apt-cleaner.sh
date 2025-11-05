@@ -32,3 +32,6 @@ echo "Cleaning up apt/deb..."
 apt-get autoremove -y
 apt-get clean
 echo "Cleanup complete. Elapsed: ${SECONDS}s"
+echo "Rebooting in 5 minutes..."
+shutdown -r +5 "System will reboot in 5 minutes due to high disk usage cleanup."
+exit 0
