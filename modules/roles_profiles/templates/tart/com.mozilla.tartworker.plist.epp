@@ -11,13 +11,15 @@
         <string>--no-graphics</string>
         <string><%= $vm_name %></string>
     </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/admin</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/var/log/tartworker-<%= $worker_id %>.out</string>
+    <string>/Users/admin/Library/Logs/tartworker-<%= $worker_id %>.out</string>
     <key>StandardErrorPath</key>
-    <string>/var/log/tartworker-<%= $worker_id %>.err</string>
+    <string>/Users/admin/Library/Logs/tartworker-<%= $worker_id %>.err</string>
 </dict>
 </plist>
