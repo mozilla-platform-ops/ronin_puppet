@@ -106,10 +106,10 @@ class roles_profiles::profiles::tart (
     }
 
     exec { "load_tartworker_${i}":
-      command     => "su - ${user} -c 'launchctl load /Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist'",
+      command     => "su - ${user} -c 'launchctl unload /Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist 2>/dev/null || true; launchctl load /Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist'",
       path        => ['/bin', '/usr/bin'],
       refreshonly => true,
-      unless      => "su - ${user} -c 'launchctl list' | grep -q com.mozilla.tartworker-${i}",
+      require     => File["/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist"],
     }
   }
 }
