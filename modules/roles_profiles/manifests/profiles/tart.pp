@@ -83,6 +83,14 @@ class roles_profiles::profiles::tart (
   Integer[1, $worker_count].each |$i| {
     $vm_name = "sequoia-tester-${i}"
 
+    # Ensure each VM has a unique MAC and serial before boot
+    exec { "randomize_mac_${i}":
+      command => "su - ${user} -c '${bin_path} set ${vm_name} --random-mac --random-serial'",
+      path    => ['/usr/bin', '/bin', '/usr/local/bin'],
+      require => Exec['pull_initial_image'],
+      unless  => "su - ${user} -c '${bin_path} get ${vm_name}' | grep -q 'mac_address'",
+    }
+
     file { "/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist":
       ensure  => file,
       content => epp('roles_profiles/tart/com.mozilla.tartworker.plist.epp', {
@@ -93,7 +101,7 @@ class roles_profiles::profiles::tart (
       owner   => $user,
       group   => 'staff',
       mode    => '0644',
-      require => [Exec['pull_initial_image'], File["/Users/${user}/Library/LaunchAgents"]],
+      require => [Exec["randomize_mac_${i}"], File["/Users/${user}/Library/LaunchAgents"]],
       notify  => Exec["load_tartworker_${i}"],
     }
 
