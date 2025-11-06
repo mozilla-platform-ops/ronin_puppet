@@ -1,10 +1,11 @@
 class roles_profiles::profiles::tart (
-  String  $version        = lookup('tart.version', { default_value => '2.30.0' }),
-  String  $registry_host  = lookup('tart.registry_host', { default_value => '10.49.56.161' }),
-  Integer $registry_port  = lookup('tart.registry_port', { default_value => 5000 }),
-  String  $oci_image      = lookup('tart.oci_image', { default_value => 'sequoia-tester:prod-latest' }),
-  Integer $worker_count   = lookup('tart.worker_count', { default_value => 2 }),
-  Boolean $insecure       = lookup('tart.insecure', { default_value => true }),
+  String  $version        = '2.30.0',
+  String  $registry_host  = '10.49.56.161',
+  Integer $registry_port  = 5000,
+  String  $oci_image      = 'sequoia-tester:prod-latest',
+  Integer $worker_count   = 2,
+  Boolean $insecure       = true,
+  String  $user           = 'admin',
 ) {
   # Ensure /usr/local/bin exists first
   exec { 'create_usr_local_bin':
@@ -16,23 +17,12 @@ class roles_profiles::profiles::tart (
   # Install Tart - use a single exec like your working script
   $install_dir = '/Applications'
   $bin_path = '/usr/local/bin/tart'
+  $tart_url = "https://github.com/cirruslabs/tart/releases/download/${version}/tart.tar.gz"
 
   exec { 'install_tart':
-    command => "/bin/bash -c '\
-      set -e; \
-      TMP_DIR=\$(mktemp -d); \
-      cd \$TMP_DIR; \
-      curl -L -o tart.tar.gz https://github.com/cirruslabs/tart/releases/download/${version}/tart.tar.gz; \
-      tar -xzf tart.tar.gz; \
-      rm -rf ${install_dir}/Tart.app; \
-      mv Tart.app ${install_dir}/Tart.app; \
-      xattr -dr com.apple.quarantine ${install_dir}/Tart.app || true; \
-      mkdir -p /usr/local/bin; \
-      ln -sf ${install_dir}/Tart.app/Contents/MacOS/tart ${bin_path}; \
-      cd /; \
-      rm -rf \$TMP_DIR'",
+    command => "/bin/bash -c 'set -e && TMP_DIR=\$(mktemp -d) && cd \$TMP_DIR && curl -L -o tart.tar.gz ${tart_url} && tar -xzf tart.tar.gz && rm -rf ${install_dir}/Tart.app && mv Tart.app ${install_dir}/Tart.app && xattr -dr com.apple.quarantine ${install_dir}/Tart.app || true && mkdir -p /usr/local/bin && ln -sf ${install_dir}/Tart.app/Contents/MacOS/tart ${bin_path} && cd / && rm -rf \$TMP_DIR'",
     path    => ['/usr/bin', '/bin', '/usr/local/bin'],
-    unless  => "test -f ${bin_path} && ${bin_path} --version 2>/dev/null | grep -q '${version}'",
+    unless  => "test -f ${bin_path}",
     timeout => 600,
   }
 
@@ -67,42 +57,51 @@ class roles_profiles::profiles::tart (
         worker_count  => $worker_count,
         insecure_flag => $insecure_flag,
         bin_path      => $bin_path,
+        user          => $user,
     }),
     require => Exec['install_tart'],
   }
 
-  # Initial VM setup
-  exec { 'pull_initial_image':
-    command => '/usr/local/bin/tart-pull-image.sh',
-    path    => ['/usr/bin', '/bin', '/usr/local/bin'],
-    require => [File['/usr/local/bin/tart-pull-image.sh']],
-    timeout => 1800, # 30 minutes for large image pulls
-    unless  => "${bin_path} list | grep -q sequoia-tester-1",
+  # Ensure LaunchAgents directory exists for user
+  file { "/Users/${user}/Library/LaunchAgents":
+    ensure => directory,
+    owner  => $user,
+    group  => 'staff',
+    mode   => '0755',
   }
 
-  # Create LaunchDaemons for each worker
+  # Initial VM setup - run as user, not root
+  exec { 'pull_initial_image':
+    command => "su - ${user} -c '/usr/local/bin/tart-pull-image.sh'",
+    path    => ['/usr/bin', '/bin', '/usr/local/bin'],
+    require => [File['/usr/local/bin/tart-pull-image.sh']],
+    timeout => 1800,
+    unless  => "su - ${user} -c '${bin_path} list' | grep -q sequoia-tester-1",
+  }
+
+  # Create LaunchAgents for each worker (runs as user, not root)
   Integer[1, $worker_count].each |$i| {
     $vm_name = "sequoia-tester-${i}"
 
-    file { "/Library/LaunchDaemons/com.mozilla.tartworker-${i}.plist":
+    file { "/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist":
       ensure  => file,
       content => epp('roles_profiles/tart/com.mozilla.tartworker.plist.epp', {
           worker_id => $i,
           vm_name   => $vm_name,
           bin_path  => $bin_path,
       }),
-      owner   => 'root',
-      group   => 'wheel',
+      owner   => $user,
+      group   => 'staff',
       mode    => '0644',
-      require => Exec['pull_initial_image'],
+      require => [Exec['pull_initial_image'], File["/Users/${user}/Library/LaunchAgents"]],
       notify  => Exec["load_tartworker_${i}"],
     }
 
     exec { "load_tartworker_${i}":
-      command     => "launchctl load /Library/LaunchDaemons/com.mozilla.tartworker-${i}.plist",
+      command     => "su - ${user} -c 'launchctl load /Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist'",
       path        => ['/bin', '/usr/bin'],
       refreshonly => true,
-      unless      => "launchctl list | grep -q com.mozilla.tartworker-${i}",
+      unless      => "su - ${user} -c 'launchctl list' | grep -q com.mozilla.tartworker-${i}",
     }
   }
 }
