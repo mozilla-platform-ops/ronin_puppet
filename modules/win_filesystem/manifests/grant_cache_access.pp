@@ -2,24 +2,35 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_filesystem::grant_cache_access {
-  if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
+# @summary Grants full access permissions to the hg-shared directory on the cache drive
+#
+# @param cache_drive
+#   Optional drive letter (e.g., 'D:' or 'Y:') to use for the cache drive.
+#   If not specified, will auto-detect based on Azure location, OS version, or system drive.
+#
+class win_filesystem::grant_cache_access (
+  Optional[String] $cache_drive = undef,
+) {
+  # Determine cache_drive with fallback logic if not provided
+  if $cache_drive {
+    $_cache_drive = $cache_drive
+  } elsif ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
     ## 2012 r2 still uses y: for the cache drive
     case $facts['custom_win_os_version'] {
       'win_2012': {
-        $cache_drive  = 'Y:'
+        $_cache_drive = 'Y:'
       }
       default: {
-        $cache_drive  = 'D:'
+        $_cache_drive = 'D:'
       }
     }
   } else {
-    $cache_drive  = $facts['custom_win_systemdrive']
+    $_cache_drive = $facts['custom_win_systemdrive']
   }
 
   # Resource from puppetlabs-acl
-  acl { "${cache_drive}\\hg-shared":
-    target      => "${cache_drive}\\hg-shared",
+  acl { "${_cache_drive}\\hg-shared":
+    target      => "${_cache_drive}\\hg-shared",
     permissions => {
       identity                   => 'everyone',
       rights                     => ['full'],
