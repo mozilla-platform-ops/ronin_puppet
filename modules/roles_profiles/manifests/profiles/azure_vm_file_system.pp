@@ -8,6 +8,9 @@ class roles_profiles::profiles::azure_vm_file_system {
     'builder':{
       include win_filesystem::configure_nvme_disk
     }
+    'tester':{
+      include win_filesystem::configure_nvme_disk
+    }
     default: {
       # No special file system configuration needed for this VM size
     }
