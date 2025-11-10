@@ -5,8 +5,8 @@ Updates common.yaml scriptworker-scripts revisions with latest master/main commi
 
 import asyncio
 import aiohttp
-from os import path
-import subprocess
+from os import path, replace
+import re
 
 DIRECTIVES = [
     {
@@ -46,17 +46,22 @@ async def main():
             if d["repo"] in r:
                 d["sha"] = r[d["repo"]]
 
+    # Read the file
+    with open(common_yaml, "r") as f:
+        content = f.read()
+
+    # Apply replacements
     for directive in DIRECTIVES:
-        cmd = [
-            "sed",
-            "-i",  # in-place
-            "",
-            "-E",  # extended
-            f"s/(.*{directive['common_key']}\\: ).*/\\1\"{directive['sha']}\"/g",
-            common_yaml,
-        ]
-        print(f"Running command: {cmd}")
-        subprocess.run(cmd)
+        pattern = f"(.*{directive['common_key']}: ).*"
+        replacement = rf'\1"{directive["sha"]}"'
+        content = re.sub(pattern, replacement, content)
+        print(f"Replaced {directive['common_key']} with {directive['sha']}")
+
+    # Write the file atomically (to tmp first, then override whole file)
+    tmp_common_yaml = f"{common_yaml}.tmp"
+    with open(tmp_common_yaml, "w") as f:
+        f.write(content)
+    replace(tmp_common_yaml, common_yaml)
 
 
 if __name__ == "__main__":
