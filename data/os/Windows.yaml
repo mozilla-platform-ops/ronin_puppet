@@ -54,7 +54,7 @@ windows:
     package_source: "https://github.com/taskcluster/generic-worker/releases/download"
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
-    version: "88.0.5"
+    version: "91.1.1"
     generic-worker:
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
@@ -86,9 +86,9 @@ windows:
     version: '2.49.0'
   googlechrome:
     version: 'latest'
-  gpu-latest:
-    name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
-    display_name: "NVIDIA Graphics Driver 538.15"
+  gpu:
+    name: "553.62_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 553.62"
   hg:
     version: '6.9'
   nssm:

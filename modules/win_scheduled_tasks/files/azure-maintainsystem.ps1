@@ -557,55 +557,6 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
-  # wait and check if GW has started
-  # Followed by additional checks to ensure VM is productive if up
-  Start-Sleep -Seconds 10
-  ## if it doesn't start at this point, we need to figure out what's going on
-  ## TODO: Check worker-runner-service logs
-  while ($true) {
-    $gw = (Get-process -name "generic-worker" -ErrorAction SilentlyContinue )
-    ## If generic worker isn't found, we have to reasons:
-    ## Exit Status 72, which indicates an azure vm scheduled event
-    ## Exit Status 67, which indicates generic worker requested a reboot
-    if ($null -eq $gw) {
-      ## check to see if there are any scheduled events
-      ## https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events
-      $events = Get-AzureInstanceMetadataScheduledEvents -ApiVersion "2020-07-01"
-      ## if there are scheduled events, log it here
-      if ($null -ne $events.events) {
-        ## Get the first event
-        $first = $events.events[0]
-        Write-Log -Message ('{0} :: Azure VM Maintenance identified: {1}' -f $($MyInvocation.MyCommand.Name), $first.eventtype) -severity 'DEBUG'
-        ## Start the Azure VM Maintenance event
-        ## https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events#start-an-event
-        ## There could be multiple events, so just pick the eventId of the first one
-        $scheduled_event_post = Set-AzureInstanceMetadataScheduledEvents -EventID ($first.EventId | Select-Object -First 1)
-        ## Check to see if it actually started
-        switch ($scheduled_event_post.StatusCode) {
-          200 {
-            Write-Log -Message ('{0} :: Azure VM Maintenance initiated by azuremaintain-system :: Status Code: 200' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          }
-          400 {
-            Write-Log -Message ('{0} :: Azure VM Maintenance malformed payload :: Status Code: 400' -f $MyInvocation.MyCommand.Name) -severity 'DEBUG'
-          }
-          Default {
-            Write-Log -Message ('{0} :: Azure VM Maintenance unable to determine initiating maintenance event' -f $MyInvocation.MyCommand.Name) -severity 'DEBUG'
-          }
-        }
-        # Wait to supress meesage if check is caught during a reboot.
-        # When generic worker requests a reboot, generic worker is stopped and the VM is rebooted.
-        # This might seem like the worker is unproductive, but really it's rebooting
-        # TO-DO: Identify when exit status 67 is returned and handle it here
-        Start-Sleep -Seconds 45
-        Write-Log -message ('{0} :: UNPRODUCTIVE: Generic-worker process not found after expected time' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        #start-sleep -s 3
-        shutdown @('-s', '-t', '0', '-c', 'Shutdown: Worker is unproductive', '-f', '-d', '4:5')
-      }
-      else {
-        Start-Sleep -Seconds 1
-      }
-    }
-  }
 }
 else {
   Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'

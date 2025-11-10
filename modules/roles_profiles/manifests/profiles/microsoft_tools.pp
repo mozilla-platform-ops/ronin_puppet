@@ -20,21 +20,26 @@ class roles_profiles::profiles::microsoft_tools {
           ## For now don't look for it after bootstrap.
           if $facts['custom_win_bootstrap_stage'] != 'complete' {
             include win_packages::dxsdk_jun10
-            if $facts['custom_win_os_arch'] != 'aarch64' {
-              #include win_packages::win_10_sdk
-            }
-            #include win_packages::win_11_sdk
           }
           include win_packages::binscope
           # Required by rustc (tooltool artefact)
-          include win_packages::vc_redist_x86
-          include win_packages::vc_redist_x64
+          if $facts['custom_win_os_arch'] == 'aarch64' {
+            include win_packages::vc_redist_x86
+            include win_packages::vc_redist_x64
+          }
+          else {
+            include win_packages::vc_redist_2022_x64
+            include win_packages::vc_redist_2022_x86
+          }
         }
         'tester':{
           # Hardware testers don't need the windows sdk so skip installing them completely
-          if $facts['custom_win_location'] == 'azure' {
-            if $facts['custom_win_os_arch'] != 'aarch64' {
+          if $facts['custom_win_location'] == 'azure' and $facts['custom_win_os_arch'] != 'aarch64' {
+            if $facts['custom_win_display_version'] == '24H2' {
               include win_packages::win_11_sdk
+            } else {
+              ## we still install win10 sdk on win11-64-2009
+              include win_packages::win_10_sdk
             }
           }
         }

@@ -51,10 +51,10 @@ class  win_generic_worker::generic_worker (
         show_diff => false,
     }
     file { $livelog_exe:
-        source  => $livelog_exe_source,
+        source => $livelog_exe_source,
     }
     file { $taskcluster_proxy_exe:
-        source  => $taskcluster_proxy_source,
+        source => $taskcluster_proxy_source,
     }
     if ($current_gw_version != $desired_gw_version) {
             exec { 'purge_old_gw_exe':
@@ -79,9 +79,9 @@ class  win_generic_worker::generic_worker (
         creates => $ed25519signingkey,
     }
     file { $init_path:
-        content   => file("win_generic_worker/${init_file}"),
+        content => file("win_generic_worker/${init_file}"),
     }
     file { $init_ps:
-        content   => file('win_generic_worker/task-user-init.ps1'),
+        content => file('win_generic_worker/task-user-init.ps1'),
     }
 }

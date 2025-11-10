@@ -37,10 +37,79 @@ function Write-Log {
     }
 }
 
+function Disable-OneDrive {
+    [CmdletBinding()]
+    param (
+
+    )
+
+    $ErrorActionPreference = 'SilentlyContinue'
+
+    Stop-Process -Name OneDrive -Force
+    Stop-Process -Name OneDriveSetup -Force
+    Stop-Process -Name explorer -Force
+
+    $pol = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
+    New-Item -Path $pol -Force | Out-Null
+    New-ItemProperty -Path $pol -Name 'DisableFileSyncNGSC' -PropertyType DWord -Value 1 -Force | Out-Null
+    # Clean incorrect Wow6432Node path (if previously set)
+    Remove-Item -Path 'HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\OneDrive' -Recurse -Force
+
+    foreach ($rk in @(
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce'
+        )) {
+        if (Test-Path $rk) {
+            $props = (Get-ItemProperty -Path $rk | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)
+            foreach ($name in $props) {
+                $val = (Get-ItemPropertyValue -Path $rk -Name $name)
+                if ($val -match 'OneDriveSetup\.exe') {
+                    Remove-ItemProperty -Path $rk -Name $name -Force
+                }
+            }
+        }
+    }
+
+    Get-ScheduledTask -ErrorAction SilentlyContinue |
+    Where-Object { $_.TaskName -like 'OneDrive*' -or $_.TaskPath -like '\Microsoft\OneDrive\*' } |
+    Unregister-ScheduledTask -Confirm:$false -ErrorAction SilentlyContinue
+
+    $sys32 = "$env:WINDIR\System32\OneDriveSetup.exe"
+    $wow64 = "$env:WINDIR\SysWOW64\OneDriveSetup.exe"
+    if (Test-Path $sys32) { & $sys32 /uninstall }
+    if (Test-Path $wow64) { & $wow64 /uninstall }
+
+    Remove-Item -LiteralPath "$env:LOCALAPPDATA\Microsoft\OneDrive" -Recurse -Force
+    Remove-Item -LiteralPath "$env:PROGRAMDATA\Microsoft OneDrive" -Recurse -Force
+    Remove-Item -LiteralPath "$env:SYSTEMDRIVE\OneDriveTemp" -Recurse -Force
+    if (Test-Path "$env:USERPROFILE\OneDrive") {
+        if ((Get-ChildItem "$env:USERPROFILE\OneDrive" -Recurse | Measure-Object).Count -eq 0) {
+            Remove-Item -LiteralPath "$env:USERPROFILE\OneDrive" -Recurse -Force
+        }
+    }
+
+    Start-Process explorer.exe
+
+}
+
+$DhcpDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'DhcpDomain')
+$NVDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain')
+
+switch -Regex ($true) {
+    ($DhcpDomain -match "cloudapp\.net") {
+        $location = "azure"
+    }
+    ($DhcpDomain -match "microsoft") {
+        $location = "azure"
+    }
+    default {
+        $location = "datacenter"
+    }
+}
+
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
-$win_os_build = [System.Environment]::OSVersion.Version.build
 $currentuser = whoami.exe
 
 # OS caption
@@ -96,16 +165,18 @@ switch ($os_version) {
             }
         }
 
-        ## Test for the value set in at_task_user_logon.ps1 step
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Checking if scrollbar was set in at_task_user_logon.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+        ## set git config
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
-        if ($d -ne 0) {
-            Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-            New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0
+        if ($location -eq "azure") {
+            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        }
+        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
+        ## OneDriveSetup keeps causing issues, so disable it here
+        ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
+        if ($location -eq "azure") {
+            Disable-OneDrive
         }
     }
     "win_10_2009" {
@@ -123,21 +194,19 @@ switch ($os_version) {
             }
         }
 
-        ## Test for the value set in at_task_user_logon.ps1 step
-        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Checking if scrollbar was set in at_task_user_logon.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        $d = Get-ItemPropertyValue -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' #-Value 0
-        if ($d -ne 0) {
-            Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-            New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0
+        if ($location -eq "azure") {
+            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
         }
-    }
-    "win_2012" {
-        ## prevent Git repos from being seen as unsafe after copied
-        git config --global --add safe.directory '*'
+        New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
+        ## OneDriveSetup keeps causing issues, so disable it here
+        ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
+        if ($location -eq "azure") {
+            Disable-OneDrive
+        }
+
     }
     Default {}
 }
@@ -155,7 +224,7 @@ switch ($base_image) {
         catch {
             Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
-        } 
+        }
     }
     "win11642009hwrefalpha" {
         ## Install appx package for av1 extension
@@ -167,7 +236,7 @@ switch ($base_image) {
         catch {
             Write-Log -Message ('{0} :: Could not install av1 extension' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Write-Log -Message ('{0} :: Error: {1}' -f $($MyInvocation.MyCommand.Name), $_) -severity 'DEBUG'
-        } 
+        }
     }
     default {
         continue

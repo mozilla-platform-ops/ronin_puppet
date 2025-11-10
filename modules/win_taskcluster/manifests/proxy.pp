@@ -21,6 +21,6 @@ class win_taskcluster::proxy (
         }
     }
     file { $proxy_exe_path:
-        source  => $proxy_exe_source,
+        source => $proxy_exe_source,
     }
 }
