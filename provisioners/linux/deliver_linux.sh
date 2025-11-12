@@ -131,8 +131,8 @@ echo ""
 # if ronin_settings_present == 0
 if [ $RONIN_SETTINGS_PRESENT -eq 0 ]; then
   echo "  master:"
-  echo "    ssh $REMOTE_SSH_USER@$THE_HOST
-  echo "      sudo bash
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
+  echo "      sudo bash"
   echo "      $BOOTSTRAP_FILE_REMOTE"
   echo ""
   echo "  branch:"
