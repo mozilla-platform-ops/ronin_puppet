@@ -358,10 +358,21 @@ class linux_gui (
           # having two subsystems managing the network is not a good idea... disable systemd-networkd
           #
           # systemctl disable systemd-networkd.service
+
+          # this causes issues on first converge (we lose dns resolution after disabling networkd)
+          #
+          # exec { 'disable systemd-networkd':
+          #   command  => 'systemctl disable systemd-networkd.service',
+          #   onlyif   => 'systemctl is-active systemd-networkd.service',
+          #   path     => ['/bin'],
+          #   provider => 'shell',
+          # }
+          #
+          # better: only disable if NetworkManager is active (which it should be on reboot)
           exec { 'disable systemd-networkd':
-            command  => 'systemctl disable systemd-networkd.service',
-            onlyif   => 'systemctl is-active systemd-networkd.service',
-            path     => ['/bin'],
+            command  => 'systemctl disable systemd-networkd.service && systemctl stop systemd-networkd.service',
+            onlyif   => 'systemctl is-active systemd-networkd.service && systemctl is-active NetworkManager.service',
+            path     => ['/bin', '/usr/bin'],
             provider => 'shell',
           }
 
