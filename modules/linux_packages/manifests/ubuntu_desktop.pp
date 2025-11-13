@@ -31,10 +31,14 @@ class linux_packages::ubuntu_desktop {
           # sudo systemctl restart systemd-resolved
           # sudo systemctl restart NetworkManager
           # sudo netplan apply
-          exec { 'simulate reboot after ubuntu-desktop install':
-            command     => '/usr/bin/systemctl restart systemd-networkd && /usr/bin/systemctl restart systemd-resolved && /usr/bin/systemctl restart NetworkManager && /usr/sbin/netplan apply',
-            refreshonly => true,
-            subscribe   => Package['ubuntu-desktop'],
+          #
+          # note: CI doesn't like this, but it makes hw systems happy.
+          if $facts['running_in_test_kitchen'] != 'true' {
+            exec { 'simulate reboot after ubuntu-desktop install':
+              command     => '/usr/bin/systemctl restart systemd-networkd && /usr/bin/systemctl restart systemd-resolved && /usr/bin/systemctl restart NetworkManager && /usr/sbin/netplan apply',
+              refreshonly => true,
+              subscribe   => Package['ubuntu-desktop'],
+            }
           }
         }
         default: {
