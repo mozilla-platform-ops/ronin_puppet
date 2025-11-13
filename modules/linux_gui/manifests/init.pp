@@ -369,12 +369,16 @@ class linux_gui (
           # }
           #
           # better: only disable if NetworkManager is active (which it should be on reboot)
-          exec { 'disable systemd-networkd':
-            command  => 'systemctl disable systemd-networkd.service && systemctl stop systemd-networkd.service',
-            onlyif   => 'systemctl is-active systemd-networkd.service && systemctl is-active NetworkManager.service',
-            path     => ['/bin', '/usr/bin'],
-            provider => 'shell',
-          }
+          #   issue: still kills dns resolution on first puppet run
+          # exec { 'disable systemd-networkd':
+          #   command  => 'systemctl disable systemd-networkd.service && systemctl stop systemd-networkd.service',
+          #   onlyif   => 'systemctl is-active systemd-networkd.service && systemctl is-active NetworkManager.service',
+          #   path     => ['/bin', '/usr/bin'],
+          #   provider => 'shell',
+          # }
+          #
+          # try 3: just let it be disabled naturally
+          # TODO: verify that this works
 
           # ensure ~/.config/systemd/user/ exists
           file { [
