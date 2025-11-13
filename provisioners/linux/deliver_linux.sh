@@ -144,7 +144,7 @@ elif [ $RONIN_SETTINGS_PRESENT -eq 1 ]; then
   echo "  master:"
   echo "    ssh $REMOTE_SSH_USER@$THE_HOST $BOOTSTRAP_FILE_REMOTE"
   echo ""
-  echo "  branch:"
+  echo "  branch (uses the branch the ronin_settings file specifies):"
   echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
   echo "      sudo bash"
   echo "        PUPPET_REPO='$PUPPET_REPO' \\"
