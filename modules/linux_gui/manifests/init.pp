@@ -358,15 +358,12 @@ class linux_gui (
           # having two subsystems managing the network is not a good idea... disable systemd-networkd
           #
           # systemctl disable systemd-networkd.service
-
-          # this causes issues on first converge (we lose dns resolution after disabling networkd)
-          #
-          # exec { 'disable systemd-networkd':
-          #   command  => 'systemctl disable systemd-networkd.service',
-          #   onlyif   => 'systemctl is-active systemd-networkd.service',
-          #   path     => ['/bin'],
-          #   provider => 'shell',
-          # }
+          exec { 'disable systemd-networkd':
+            command  => 'systemctl disable systemd-networkd.service',
+            onlyif   => 'systemctl is-active systemd-networkd.service',
+            path     => ['/bin'],
+            provider => 'shell',
+          }
           #
           # better: only disable if NetworkManager is active (which it should be on reboot)
           #   issue: still kills dns resolution on first puppet run
@@ -379,6 +376,7 @@ class linux_gui (
           #
           # try 3: just let it be disabled naturally
           # TODO: verify that this works
+          # - still causes dns resolution issues
 
           # ensure ~/.config/systemd/user/ exists
           file { [
