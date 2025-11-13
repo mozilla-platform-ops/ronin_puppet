@@ -292,6 +292,7 @@ echo "Success. Rebooting..."
 # Success! Let's reboot
 /sbin/reboot --force &>/dev/null &
 
+set +x
 echo "   _____                                __"
 echo "  / ___/__  _______________  __________/ /"
 echo "  \__ \/ / / / ___/ ___/ _ \/ ___/ ___/ /"
