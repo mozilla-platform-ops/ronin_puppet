@@ -150,5 +150,7 @@ elif [ $RONIN_SETTINGS_PRESENT -eq 1 ]; then
   echo "        PUPPET_REPO='$PUPPET_REPO' \\"
   echo "          PUPPET_BRANCH='$PUPPET_BRANCH' $BOOTSTRAP_FILE_REMOTE"
   echo ""
-  echo "  WARNING: ronin-settings delivered ($RONIN_SETTINGS_REMOTE), so even master (above) will eventually use the settings."
+  echo "NOTE: A ronin-settings file was delivered ($RONIN_SETTINGS_REMOTE), so even if"
+  echo "the 'master' commands are used the host will use the ronin-settings file on the"
+  echo "next run-puppet.sh run."
 fi
