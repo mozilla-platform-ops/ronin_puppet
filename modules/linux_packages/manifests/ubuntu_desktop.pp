@@ -46,25 +46,25 @@ class linux_packages::ubuntu_desktop {
             exec { 'restart systemd-networkd':
               command     => '/usr/bin/systemctl restart systemd-networkd',
               refreshonly => true,
-              require     => Package['ubuntu-desktop'],
+              subscribe   => Package['ubuntu-desktop'],
               logoutput   => true,
             }
             exec { 'restart systemd-resolved':
               command     => '/usr/bin/systemctl restart systemd-resolved',
               refreshonly => true,
-              require     => Exec['restart systemd-networkd'],
+              subscribe   => Exec['restart systemd-networkd'],
               logoutput   => true,
             }
             exec { 'restart NetworkManager':
               command     => '/usr/bin/systemctl restart NetworkManager',
               refreshonly => true,
-              require     => Exec['restart systemd-resolved'],
+              subscribe   => Exec['restart systemd-resolved'],
               logoutput   => true,
             }
             exec { 'apply netplan':
               command     => '/usr/sbin/netplan apply',
               refreshonly => true,
-              require     => Exec['restart NetworkManager'],
+              subscribe   => Exec['restart NetworkManager'],
               logoutput   => true,
             }
           }
