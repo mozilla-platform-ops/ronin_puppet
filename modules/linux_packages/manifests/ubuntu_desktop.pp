@@ -34,10 +34,38 @@ class linux_packages::ubuntu_desktop {
           #
           # note: CI doesn't like this, but it makes hw systems happy.
           if $facts['running_in_test_kitchen'] != 'true' {
-            exec { 'simulate reboot after ubuntu-desktop install':
-              command     => '/usr/bin/systemctl restart systemd-networkd && /usr/bin/systemctl restart systemd-resolved && /usr/bin/systemctl restart NetworkManager && /usr/sbin/netplan apply',
+            # usually works
+            #
+            # exec { 'simulate reboot after ubuntu-desktop install':
+            #   command     => '/usr/bin/systemctl restart systemd-networkd && /usr/bin/systemctl restart systemd-resolved && /usr/bin/systemctl restart NetworkManager && /usr/sbin/netplan apply',
+            #   refreshonly => true,
+            #   subscribe   => Package['ubuntu-desktop'],
+            # }
+            #
+            # try breaking it up, see if it helps
+            exec { 'restart systemd-networkd':
+              command     => '/usr/bin/systemctl restart systemd-networkd',
               refreshonly => true,
-              subscribe   => Package['ubuntu-desktop'],
+              require     => Package['ubuntu-desktop'],
+              logoutput   => true,
+            }
+            exec { 'restart systemd-resolved':
+              command     => '/usr/bin/systemctl restart systemd-resolved',
+              refreshonly => true,
+              require     => Exec['restart systemd-networkd'],
+              logoutput   => true,
+            }
+            exec { 'restart NetworkManager':
+              command     => '/usr/bin/systemctl restart NetworkManager',
+              refreshonly => true,
+              require     => Exec['restart systemd-resolved'],
+              logoutput   => true,
+            }
+            exec { 'apply netplan':
+              command     => '/usr/sbin/netplan apply',
+              refreshonly => true,
+              require     => Exec['restart NetworkManager'],
+              logoutput   => true,
             }
           }
         }
