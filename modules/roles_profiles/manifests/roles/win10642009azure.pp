@@ -5,6 +5,8 @@
 class roles_profiles::roles::win10642009azure {
   case $facts['custom_win_bootstrap_stage'] {
     'complete': {
+      # Configure partition if using sku with NVMe
+      include roles_profiles::profiles::azure_vm_file_system
       ## Cache drive will change based on packer provision or worker manager provisioning
       include roles_profiles::profiles::error_reporting
       ## Keep it in here to disable 8dot3 and disablelastaccess and grant cache permissions for hg
@@ -28,6 +30,8 @@ class roles_profiles::roles::win10642009azure {
       include roles_profiles::profiles::mozbuild_post_boostrap
     }
     default: {
+      # Configure partition if using sku with NVMe
+      include roles_profiles::profiles::azure_vm_file_system
       # Install MS tools earlier
       include roles_profiles::profiles::microsoft_tools
 
