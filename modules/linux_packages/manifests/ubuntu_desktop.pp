@@ -33,7 +33,7 @@ class linux_packages::ubuntu_desktop {
           # sudo netplan apply
           #
           # note: CI doesn't like this, but it makes hw systems happy.
-          if $facts['running_in_test_kitchen'] != 'true' {
+          unless $facts['running_in_test_kitchen'] {
             # usually works
             #
             # exec { 'simulate reboot after ubuntu-desktop install':
@@ -52,19 +52,22 @@ class linux_packages::ubuntu_desktop {
             exec { 'restart systemd-resolved':
               command     => '/usr/bin/systemctl restart systemd-resolved',
               refreshonly => true,
-              subscribe   => Exec['restart systemd-networkd'],
+              subscribe   => Package['ubuntu-desktop'],
+              require     => Exec['restart systemd-networkd'],
               logoutput   => on_failure,
             }
             exec { 'restart NetworkManager':
               command     => '/usr/bin/systemctl restart NetworkManager',
               refreshonly => true,
-              subscribe   => Exec['restart systemd-resolved'],
+              subscribe   => Package['ubuntu-desktop'],
+              require     => Exec['restart systemd-resolved'],
               logoutput   => on_failure,
             }
             exec { 'apply netplan':
               command     => '/usr/sbin/netplan apply',
               refreshonly => true,
-              subscribe   => Exec['restart NetworkManager'],
+              subscribe   => Package['ubuntu-desktop'],
+              require     => Exec['restart NetworkManager'],
               logoutput   => on_failure,
             }
           }
