@@ -35,18 +35,16 @@ class linux_packages::openvox {
           #   source => "https://apt.voxpupuli.org/${deb_name}",
           # }
           # use an exec and wget instead
-          exec { 'openvox_repo_deb':
+          exec { 'get_openvox_release_deb_file':
             command => "/usr/bin/wget -O /tmp/${deb_name} https://apt.voxpupuli.org/${deb_name}",
             creates => '/etc/apt/sources.list.d/openvox8-release.list',
             require => Package[$packages_to_purge],
           }
-          package { 'openvox repo deb':
-            ensure      => installed,
-            provider    => dpkg,
-            source      => "/tmp/${deb_name}",
-            notify      => Exec['apt_update'],
+          exec { 'install_openvox_release_deb':
+            command     => "/usr/bin/dpkg -i /tmp/${deb_name}",
+            creates     => '/etc/apt/sources.list.d/openvox8-release.list',
             # only run this if the exec above runs (which only runs if the 'creates' file is missing)
-            subscribe   => Exec['openvox_repo_deb'],
+            subscribe   => Exec['get_openvox_release_deb_file'],
             refreshonly => true,
           }
 
@@ -55,7 +53,7 @@ class linux_packages::openvox {
             ensure    => installed,
             name      => 'openvox-agent',
             require   => Exec['apt_update'],
-            subscribe => Package['openvox repo deb'],
+            subscribe => Exec['install_openvox_release_deb'],
           }
         }
         default: {
