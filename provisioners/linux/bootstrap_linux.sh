@@ -273,15 +273,6 @@ fi
 # https://stackoverflow.com/questions/36908041/git-could-not-expand-include-path-gitcinclude-fatal-bad-config-file-line
 rm -rf /usr/local/git/etc/gitconfig
 
-# If this is running on MacOs 10.14 Mojave, we need to monkey patch the directroyservice resource provider
-# otherwise user creation fails.
-# https://tickets.puppetlabs.com/browse/PUP-9502
-# https://tickets.puppetlabs.com/browse/PUP-9449
-if [ $OS == "darwin" ] && [ "$(facter os.macosx.version.major)" == "10.14" ]; then
-    echo "Monkey patching directoryservice.rb: https://tickets.puppetlabs.com/browse/PUP-9502, https://tickets.puppetlabs.com/browse/PUP-9449"
-    sed -i '.bak' 's/-merge/-create/g' '/opt/puppetlabs/puppet/lib/ruby/vendor_ruby/puppet/provider/user/directoryservice.rb'
-fi
-
 # Create a temp dir for executing puppet
 TMP_PUPPET_DIR=$(mktemp -d /tmp/puppet_working.XXXXXX)
 [ -d "${TMP_PUPPET_DIR}" ] || fail "Failed to mktemp puppet working dir"
@@ -291,15 +282,6 @@ while ! run_puppet; do
     echo "Puppet run failed; re-trying after 10m"
     sleep 600
 done
-
-# Once puppet has completed its initial run we can remove the bootstrap init files
-# If it is intended for the host to run puppet after it first puppet
-# provisioning, puppet will have already set that up
-case "$OS" in
-darwin)
-    rm -rf /Library/LaunchDaemons/org.mozilla.bootstrap_linux.plist*
-    ;;
-esac
 
 # Remove the temp working puppet dir
 rm -rf "$TMP_PUPPET_DIR"
