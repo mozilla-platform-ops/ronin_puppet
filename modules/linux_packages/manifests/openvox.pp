@@ -29,11 +29,11 @@ class linux_packages::openvox {
           # fetch and install the openvox repo deb
           $deb_name = 'openvox8-release-ubuntu24.04.deb'
           file { 'openvox_repo_deb':
-            ensure    => 'file',
-            path      => "/tmp/${deb_name}",
-            mode      => 'a+r',
-            source    => "https://apt.voxpupuli.org/${deb_name}",
-            subscribe => Package[$packages_to_purge],
+            ensure => 'file',
+            path   => "/tmp/${deb_name}",
+            mode   => 'a+r',
+            source => "https://apt.voxpupuli.org/${deb_name}",
+            unless => 'dpkg -l | grep -q "^ii.*openvox8-release"',
           }
           package { 'openvox repo deb':
             ensure    => installed,
@@ -41,6 +41,7 @@ class linux_packages::openvox {
             source    => "/tmp/${deb_name}",
             notify    => Exec['apt_update'],
             subscribe => File['openvox_repo_deb'],
+            unless    => 'dpkg -l | grep -q "^ii.*openvox8-release"',
           }
 
           # install openvox-agent
