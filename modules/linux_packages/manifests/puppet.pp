@@ -22,7 +22,6 @@ class linux_packages::puppet {
             # purge openvox packages so we can rollback if needed
             'openvox7-release',
             'openvox8-release',
-            'openvox-agent',
           ]
 
           package { $packages_to_purge:
@@ -72,7 +71,6 @@ class linux_packages::puppet {
             'puppet',
             # purge openvox packages so we can rollback if needed
             'openvox8-release',
-            'openvox-agent',
           ]
 
           package { $packages_to_purge:
@@ -122,7 +120,6 @@ class linux_packages::puppet {
             'puppet',
             # purge openvox packages so we can rollback if needed
             'openvox8-release',
-            'openvox-agent',
           ]
 
           package { $packages_to_purge:
