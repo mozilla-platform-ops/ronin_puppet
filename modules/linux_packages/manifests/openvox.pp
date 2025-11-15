@@ -8,7 +8,8 @@ class linux_packages::openvox {
         '24.04': {
           # Purge puppet packages first
           $packages_to_purge = [
-            # don't remove this, hope openvox-agent defines it as a conflict (and removes it)
+            # don't remove this, openvox-agent defines it as a conflict and removes it
+            # - removing explicitly here breaks puppet. has to be done atomically by apt.
             # 'puppet-agent',
             'puppet-release',
             'puppet5-release',
