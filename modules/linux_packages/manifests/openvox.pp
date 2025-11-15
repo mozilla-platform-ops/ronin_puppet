@@ -47,6 +47,7 @@ class linux_packages::openvox {
             creates     => '/etc/apt/sources.list.d/openvox8-release.list',
             # only run this if the exec above runs (which only runs if the 'creates' file is missing)
             subscribe   => Exec['get_openvox_release_deb_file'],
+            notify      => Exec['apt_update'],
             refreshonly => true,
           }
 
