@@ -215,6 +215,12 @@ function get_puppet_repo {
 
         # Clone the puppet repo
         git clone --depth 1 --branch "$PUPPET_BRANCH" "$PUPPET_REPO" "$TMP_PUPPET_DIR" || fail "Failed to clone puppet repo"
+        echo "Puppet repo cloned successfully. Git info:"
+        cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
+        branch=$(git rev-parse --abbrev-ref HEAD) || fail "Failed to get branch"
+        commit=$(git rev-parse --short HEAD) || fail "Failed to get commit"
+        echo "Branch: ${branch} Commit: ${commit}"
+        cd - >/dev/null || exit 1
     fi
 
     # Change to puppet dir
