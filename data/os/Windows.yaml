@@ -71,7 +71,7 @@ windows:
       implementation: "generic-worker"
     ## set to 1800 for testing
     ## long term should be 14400
-    hardware_idle_timeout: 1800
+    hardware_idle_timeout: 14400
 
 
   # Mozilla-Build
