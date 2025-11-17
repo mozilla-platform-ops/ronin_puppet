@@ -54,19 +54,24 @@ windows:
     package_source: "https://github.com/taskcluster/generic-worker/releases/download"
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
+    download_url: "https://github.com/taskcluster/taskcluster/releases/download"
     version: "93.1.2"
     generic-worker:
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
+        arm64: "generic-worker-multiuser-windows-arm64"
     proxy:
       name:
         amd64: "taskcluster-proxy-windows-amd64"
+        arm64: "taskcluster-proxy-windows-arm64"
     livelog:
       name:
         amd64: "livelog-windows-amd64"
+        arm64: "livelog-windows-arm64"
     worker_runner:
       name:
         amd64: "start-worker-windows-amd64"
+        arm64: "start-worker-windows-arm64"
       provider: "azure"
       implementation: "generic-worker"
     hardware_idle_timeout: 0
