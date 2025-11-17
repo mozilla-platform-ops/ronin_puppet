@@ -55,7 +55,7 @@ windows:
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
     download_url: "https://github.com/taskcluster/taskcluster/releases/download"
-    version: "93.1.2"
+    version: "93.1.4"
     generic-worker:
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
