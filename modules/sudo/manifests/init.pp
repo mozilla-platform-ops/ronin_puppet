@@ -34,7 +34,9 @@ class sudo {
   }
 
   file { '/etc/sudoers.d':
-    ensure => absent,
-    force  => true,
+    ensure  => absent,
+    force   => true,
+    # Ensure /etc/sudoers.d is removed after /etc/sudoers is managed
+    require => Concat['/etc/sudoers'],
   }
 }
