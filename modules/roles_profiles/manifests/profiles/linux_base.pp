@@ -12,6 +12,11 @@ class roles_profiles::profiles::linux_base {
       require roles_profiles::profiles::timezone
       require roles_profiles::profiles::ntp
       require roles_profiles::profiles::motd
+
+      # Ensure relops_users and sudo are completely done before users/securitize
+      Class['roles_profiles::profiles::relops_users'] -> Class['roles_profiles::profiles::users']
+      Class['roles_profiles::profiles::sudo'] -> Class['roles_profiles::profiles::securitize']
+
       # both of these remove the bootstrap accounts/sudoers, so run later
       require roles_profiles::profiles::users
       require roles_profiles::profiles::securitize
