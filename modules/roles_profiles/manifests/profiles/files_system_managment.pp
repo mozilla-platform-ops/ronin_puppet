@@ -8,7 +8,18 @@ class roles_profiles::profiles::files_system_managment {
       include win_filesystem::disable8dot3
       include win_filesystem::disablelastaccess
       if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-        include win_filesystem::grant_cache_access
+        $func = lookup('win-worker.function')
+        case $func {
+          'builder':{
+            if $facts['custom_win_os_arch'] != 'aarch64' {
+              include win_filesystem::copy_vcs_checkout_to_cache
+            }
+            include win_filesystem::grant_cache_access
+          }
+          default: {
+            notice("Skipping VCS cache management for worker function: ${func}")
+          }
+        }
       }
       if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_d_drive'] == 'exists') {
         win_filesystem::set_paging_file { 'azure_paging_file':
