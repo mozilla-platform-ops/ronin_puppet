@@ -5,6 +5,12 @@
 class win_os_settings::skip_oobe {
   $oobe_key = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\OOBE"
 
+  registry_value { "${oobe_key}\\HideOOBE":
+    ensure => present,
+    type   => 'dword',
+    data   => 1,
+  }
+
   registry_value { "${oobe_key}\\HideEULAPage":
     ensure => present,
     type   => 'dword',
