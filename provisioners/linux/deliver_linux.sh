@@ -63,7 +63,7 @@ fi
 # check host
 
 # cleanup ssh key, it will be new after kickstarting
-ssh-keygen -R "${THE_HOST}"
+ssh-keygen -R "${THE_HOST}" || true
 # readd to avoid prompts
 ssh-keyscan -H "${THE_HOST}" >> ~/.ssh/known_hosts
 
