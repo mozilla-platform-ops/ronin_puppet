@@ -353,30 +353,18 @@ class linux_gui (
           #
           # export SYSTEMD_LOG_LEVEL=debug
           # networkctl
-
-          # TODO: copy this to the wayland config (or pull out into a 2404 specific class)
-          # having two subsystems managing the network is not a good idea... disable systemd-networkd
           #
-          # systemctl disable systemd-networkd.service
+          # TLDR: having two subsystems managing the network is not a good idea... disable systemd-networkd
+          #
+          # TODO: copy this to the wayland config (or pull out into a 2404 specific class)
+          # TODO: do this in linux_packages::ubuntu_desktop? strange to do here?
+          #
           exec { 'disable systemd-networkd':
             command  => 'systemctl disable systemd-networkd.service',
             onlyif   => 'systemctl is-active systemd-networkd.service',
             path     => ['/bin'],
             provider => 'shell',
           }
-          #
-          # better: only disable if NetworkManager is active (which it should be on reboot)
-          #   issue: still kills dns resolution on first puppet run
-          # exec { 'disable systemd-networkd':
-          #   command  => 'systemctl disable systemd-networkd.service && systemctl stop systemd-networkd.service',
-          #   onlyif   => 'systemctl is-active systemd-networkd.service && systemctl is-active NetworkManager.service',
-          #   path     => ['/bin', '/usr/bin'],
-          #   provider => 'shell',
-          # }
-          #
-          # try 3: just let it be disabled naturally
-          # TODO: verify that this works
-          # - still causes dns resolution issues
 
           # ensure ~/.config/systemd/user/ exists
           file { [
