@@ -20,9 +20,10 @@ class linux_packages::ubuntu_desktop {
               ensure => latest;
           }
 
-          # TODO: on 2404, we install via a server image with systemctl-networkd providing networking by default
-          # when we install the desktop package, NetworkManager is installed and it causes the system to fail to
-          # handle DNS resolution until rebooted.
+          # TODO: on 2404, we install via a server image with systemctl-networkd providing networking.
+          # when we install the desktop package, NetworkManager is installed and we remove systemctl-networkd
+          # (in linux_gui).
+          # this causes the system to fail to handle DNS resolution until rebooted.
           #
           # Simulate a reboot.
           #
@@ -34,15 +35,6 @@ class linux_packages::ubuntu_desktop {
           #
           # note: CI doesn't like this, but it makes hw systems happy.
           unless $facts['running_in_test_kitchen'] {
-            # usually works
-            #
-            # exec { 'simulate reboot after ubuntu-desktop install':
-            #   command     => '/usr/bin/systemctl restart systemd-networkd && /usr/bin/systemctl restart systemd-resolved && /usr/bin/systemctl restart NetworkManager && /usr/sbin/netplan apply',
-            #   refreshonly => true,
-            #   subscribe   => Package['ubuntu-desktop'],
-            # }
-            #
-            # try breaking it up, see if it helps
             exec { 'restart systemd-networkd':
               command     => '/usr/bin/systemctl restart systemd-networkd',
               refreshonly => true,
