@@ -69,6 +69,22 @@ groups:
     facts:
       puppet_role: gecko_t_osx_1500_m4
 
+  - name: gecko-t-osx-1500-m4-ipv6
+    targets:
+      - macmini-m4-174.test.releng.mdc1.mozilla.com
+      - macmini-m4-175.test.releng.mdc1.mozilla.com
+      - macmini-m4-176.test.releng.mdc1.mozilla.com
+      - macmini-m4-177.test.releng.mdc1.mozilla.com
+      - macmini-m4-178.test.releng.mdc1.mozilla.com
+      - macmini-m4-179.test.releng.mdc1.mozilla.com
+      - macmini-m4-180.test.releng.mdc1.mozilla.com
+      - macmini-m4-181.test.releng.mdc1.mozilla.com
+      - macmini-m4-182.test.releng.mdc1.mozilla.com
+      - macmini-m4-183.test.releng.mdc1.mozilla.com
+
+    facts:
+      puppet_role: gecko_t_osx_1500_m4_ipv6
+
   - name: gecko-1-b-osx-arm64
     targets:
       - macmini-m4-121.test.releng.mdc1.mozilla.com
