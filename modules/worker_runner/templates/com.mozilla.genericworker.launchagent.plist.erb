@@ -1,0 +1,25 @@
+<%# This Source Code Form is subject to the terms of the Mozilla Public
+<%# License, v. 2.0. If a copy of the MPL was not distributed with this
+<%# file, You can obtain one at http://mozilla.org/MPL/2.0/. -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mozilla.genericworker.launchagent</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/generic-worker-multiuser</string>
+        <string>launch-agent</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/<%= @task_user %>/gw-launch-agent.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/<%= @task_user %>/gw-launch-agent.log</string>
+</dict>
+</plist>
