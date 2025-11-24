@@ -28,14 +28,10 @@ class linux_packages::openvox {
           # dpkg -i openvox8-release-ubuntu24.04.deb
           # apt update
           # apt install openvox-agent
+          #
           # fetch and install the openvox repo deb
+          # NOTE: you need to update the references in the 2 'creates' lines below if you chabge this.
           $deb_name = 'openvox8-release-ubuntu24.04.deb'
-          # file { 'openvox_repo_deb':
-          #   ensure => 'file',
-          #   path   => "/tmp/${deb_name}",
-          #   mode   => 'a+r',
-          #   source => "https://apt.voxpupuli.org/${deb_name}",
-          # }
           # use an exec and wget instead
           exec { 'get_openvox_release_deb_file':
             command => "/usr/bin/wget -O /tmp/${deb_name} https://apt.voxpupuli.org/${deb_name}",
