@@ -19,3 +19,7 @@ win-worker:
   ## Use to overwrite values in the Windows yaml file.
   ## Replace windows. with win-worker.variant.
   variant:
+
+# Taskcluster worker configuration - build from source
+roles_profiles::profiles::windows_worker_runner::build_from_source: 'true'
+roles_profiles::profiles::windows_worker_runner::taskcluster_ref: 'main'
