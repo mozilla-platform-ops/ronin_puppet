@@ -72,7 +72,7 @@ Write-Log -Message ("Updated PATH: {0}" -f $env:PATH) -severity DEBUG
 # Step 1: Clone or update repository
 if (Test-Path $BuildDir) {
     Write-Log -Message "Build directory already exists, checking if it's a git repository..." -severity INFO
-    
+
     Push-Location $BuildDir
     try {
         git rev-parse --is-inside-work-tree 2>&1 | Out-Null
@@ -158,9 +158,9 @@ try {
         ".\workers\generic-worker"
     )
     Write-Log -Message ("Build command: go {0}" -f ($buildArgs -join ' ')) -severity DEBUG
-    
+
     $buildProcess = Start-Process -FilePath "go" -ArgumentList $buildArgs -NoNewWindow -Wait -PassThru -RedirectStandardOutput "$env:TEMP\go-build-stdout.log" -RedirectStandardError "$env:TEMP\go-build-stderr.log"
-    
+
     # Log the output
     if (Test-Path "$env:TEMP\go-build-stdout.log") {
         Get-Content "$env:TEMP\go-build-stdout.log" | ForEach-Object { Write-Log -Message $_ -severity DEBUG }
@@ -170,7 +170,7 @@ try {
         Get-Content "$env:TEMP\go-build-stderr.log" | ForEach-Object { Write-Log -Message $_ -severity DEBUG }
         Remove-Item "$env:TEMP\go-build-stderr.log" -Force -ErrorAction SilentlyContinue
     }
-    
+
     if ($buildProcess.ExitCode -ne 0) {
         Write-Log -Message ("Failed to build generic-worker. Exit code: {0}" -f $buildProcess.ExitCode) -severity ERROR
         exit 1
