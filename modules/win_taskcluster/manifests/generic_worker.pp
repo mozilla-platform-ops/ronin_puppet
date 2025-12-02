@@ -65,6 +65,7 @@ class win_taskcluster::generic_worker (
     }
 
     $scripts_dir = "${generic_worker_dir}\\scripts"
+    $build_script_path = "${scripts_dir}\\build-taskcluster-from-source.ps1"
 
     # Ensure chocolatey is available
     include chocolatey
@@ -81,48 +82,25 @@ class win_taskcluster::generic_worker (
       ensure => directory,
     }
 
-    # Deploy PowerShell scripts
-    file { "${scripts_dir}\\clone-taskcluster-repo.ps1":
-      source => 'puppet:///modules/win_taskcluster/clone-taskcluster-repo.ps1',
+    # Deploy unified build script
+    file { $build_script_path:
+      source => 'puppet:///modules/win_taskcluster/build-taskcluster-from-source.ps1',
     }
 
-    file { "${scripts_dir}\\checkout-taskcluster-ref.ps1":
-      source => 'puppet:///modules/win_taskcluster/checkout-taskcluster-ref.ps1',
-    }
-
-    file { "${scripts_dir}\\build-generic-worker.ps1":
-      source => 'puppet:///modules/win_taskcluster/build-generic-worker.ps1',
-    }
-
-    exec { 'clone_taskcluster_repo':
-      command  => "${scripts_dir}\\clone-taskcluster-repo.ps1 -RepoUrl '${taskcluster_repo}' -BuildDir '${build_dir}'",
-      provider => powershell,
-      require  => File["${scripts_dir}\\clone-taskcluster-repo.ps1"],
-      creates  => $build_dir,
-    }
-
-    exec { 'checkout_taskcluster_ref':
-      command  => "${scripts_dir}\\checkout-taskcluster-ref.ps1 -BuildDir '${build_dir}' -GitRef '${ref_to_checkout}'",
-      provider => powershell,
-      require  => [Exec['clone_taskcluster_repo'], File["${scripts_dir}\\checkout-taskcluster-ref.ps1"]],
-      unless   => "Set-Location '${build_dir}'; if ((git rev-parse --abbrev-ref HEAD) -eq '${ref_to_checkout}') { exit 0 } else { exit 1 }",
-    }
-
-    $refresh_path = "\$env:PATH = [System.Environment]::GetEnvironmentVariable('PATH','Machine'); "
-    $build_script = "& \"${scripts_dir}\\build-generic-worker.ps1\""
-    $build_params = "-BuildDir \"${build_dir}\" -OutputPath \"${gw_exe_path}\""
-    $build_command = "${refresh_path}${build_script} ${build_params}"
+    # Build generic-worker from source
+    $build_params = "-BuildDir \"${build_dir}\" -GenericWorkerDir \"${generic_worker_dir}\""
+    $build_params_full = "${build_params} -TaskclusterRepo \"${taskcluster_repo}\" -TaskclusterRef \"${ref_to_checkout}\""
 
     exec { 'build_generic_worker':
-      command  => $build_command,
+      command  => "${build_script_path} ${build_params_full}",
       provider => powershell,
       require  => [
         File[$generic_worker_dir],
-        Exec['checkout_taskcluster_ref'],
+        File[$build_script_path],
         Package['golang'],
-        File["${scripts_dir}\\build-generic-worker.ps1"],
       ],
       creates  => $gw_exe_path,
+      timeout  => 1800,
     }
 
     # Set dependency for keypair generation when building from source
