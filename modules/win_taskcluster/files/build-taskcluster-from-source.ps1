@@ -148,13 +148,13 @@ try {
     Write-Log -Message "Running go build..." -severity INFO
     $ldflagsValue = "`"-X main.revision=$revision`""
     $buildArgs = @(
-        "build"
-        "-tags"
-        "multiuser"
-        "-o"
-        $OutputPath
-        "-ldflags"
-        $ldflagsValue
+        "build",
+        "-tags",
+        "multiuser",
+        "-o",
+        $OutputPath,
+        "-ldflags",
+        $ldflagsValue,
         ".\workers\generic-worker"
     )
     Write-Log -Message ("Build command: go {0}" -f ($buildArgs -join ' ')) -severity DEBUG
