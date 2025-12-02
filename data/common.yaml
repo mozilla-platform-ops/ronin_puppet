@@ -163,28 +163,28 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'gecko-signing-mac14m2'
-        scriptworker_scripts_revision: "39884b9efb0b01afb4cdb69ac9fa89bffcd11b4f"
+        scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
     tb-prod:
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'comm-signing-mac14m2'
-        scriptworker_scripts_revision: "39884b9efb0b01afb4cdb69ac9fa89bffcd11b4f"
+        scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
     vpn-prod:
         vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'mozillavpn-signing-mac14m2'
-        scriptworker_scripts_revision: "39884b9efb0b01afb4cdb69ac9fa89bffcd11b4f"
+        scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
     adhoc-prod:
         adhoc_taskcluster_scope_prefix: 'project:adhoc:releng:signing:'
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'adhoc-signing-mac14m2'
-        scriptworker_scripts_revision: "39884b9efb0b01afb4cdb69ac9fa89bffcd11b4f"
+        scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
     dep:
         ff_taskcluster_scope_prefix: 'project:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
@@ -194,7 +194,7 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'signing-mac14m2'
-        scriptworker_scripts_revision: "39884b9efb0b01afb4cdb69ac9fa89bffcd11b4f"
+        scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
 
 signingworker_roles:
     ff-prod:
