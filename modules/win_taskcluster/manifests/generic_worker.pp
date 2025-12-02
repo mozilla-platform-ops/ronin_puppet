@@ -109,7 +109,7 @@ class win_taskcluster::generic_worker (
     }
 
     exec { 'build_generic_worker':
-      command  => "${scripts_dir}\\build-generic-worker.ps1 -BuildDir '${build_dir}' -OutputPath '${gw_exe_path}'",
+      command  => "\"${scripts_dir}\\build-generic-worker.ps1\" -BuildDir \"${build_dir}\" -OutputPath \"${gw_exe_path}\"",
       provider => powershell,
       require  => [
         File[$generic_worker_dir],
