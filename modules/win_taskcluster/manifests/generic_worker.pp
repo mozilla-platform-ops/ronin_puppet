@@ -66,10 +66,14 @@ class win_taskcluster::generic_worker (
 
     $scripts_dir = "${generic_worker_dir}\\scripts"
 
+    # Ensure chocolatey is available
+    include chocolatey
+
     # Install Go via chocolatey
     package { 'golang':
       ensure   => latest,
       provider => chocolatey,
+      require  => Class['chocolatey'],
     }
 
     # Create scripts directory
