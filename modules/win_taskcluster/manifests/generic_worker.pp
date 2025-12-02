@@ -108,8 +108,13 @@ class win_taskcluster::generic_worker (
       unless   => "Set-Location '${build_dir}'; if ((git rev-parse --abbrev-ref HEAD) -eq '${ref_to_checkout}') { exit 0 } else { exit 1 }",
     }
 
+    $refresh_path = "\$env:PATH = [System.Environment]::GetEnvironmentVariable('PATH','Machine'); "
+    $build_script = "& \"${scripts_dir}\\build-generic-worker.ps1\""
+    $build_params = "-BuildDir \"${build_dir}\" -OutputPath \"${gw_exe_path}\""
+    $build_command = "${refresh_path}${build_script} ${build_params}"
+
     exec { 'build_generic_worker':
-      command  => "\"${scripts_dir}\\build-generic-worker.ps1\" -BuildDir \"${build_dir}\" -OutputPath \"${gw_exe_path}\"",
+      command  => $build_command,
       provider => powershell,
       require  => [
         File[$generic_worker_dir],
