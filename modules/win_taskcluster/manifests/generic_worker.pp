@@ -119,15 +119,23 @@ class win_taskcluster::generic_worker (
       ],
       creates  => $gw_exe_path,
     }
+
+    # Set dependency for keypair generation when building from source
+    $gw_exe_dependency = Exec['build_generic_worker']
   } else {
     # Download generic-worker binary from release
     file { $gw_exe_path:
       source => $gw_exe_source,
     }
+
+    # Set dependency for keypair generation when downloading binary
+    $gw_exe_dependency = File[$gw_exe_path]
   }
+
   exec { 'generate_ed25519_keypair':
     command => "${gw_exe_path} new-ed25519-keypair --file ${ed25519private}",
     creates => $ed25519private,
+    require => $gw_exe_dependency,
   }
   file { "${generic_worker_dir}\\task-user-init.cmd":
     content => file("win_taskcluster/${init_file}"),
