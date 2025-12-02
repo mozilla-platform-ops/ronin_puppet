@@ -2,7 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::windows_worker_runner {
+# @summary Installs and configures Taskcluster worker components on Windows
+#
+# @param build_from_source
+#   If set to 'true', builds generic-worker from source instead of downloading a release binary
+#
+# @param taskcluster_repo
+#   The git repository URL for the Taskcluster project (used when building from source)
+#
+# @param taskcluster_ref
+#   The git ref (branch, tag, or commit) to checkout when building from source
+#
+class roles_profiles::profiles::windows_worker_runner (
+  Optional[String] $build_from_source = undef,
+  String $taskcluster_repo = 'https://github.com/taskcluster/taskcluster',
+  Optional[String] $taskcluster_ref = undef,
+) {
   case $facts['os']['name'] {
     'Windows': {
       $nssm_dir              = lookup('windows.dir.nssm')
@@ -138,6 +153,9 @@ class roles_profiles::profiles::windows_worker_runner {
         gw_exe_source      => "${ext_pkg_src_loc}${desired_gw_version}/${gw_name}",
         init_file          => $init,
         gw_exe_path        => $gw_exe_path,
+        build_from_source  => $build_from_source,
+        taskcluster_repo   => $taskcluster_repo,
+        taskcluster_ref    => $taskcluster_ref,
       }
       class { 'win_taskcluster::proxy':
         generic_worker_dir    => $generic_worker_dir,
