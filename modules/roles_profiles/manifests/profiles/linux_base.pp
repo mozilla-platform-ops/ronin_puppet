@@ -7,13 +7,17 @@ class roles_profiles::profiles::linux_base {
     'Ubuntu': {
       # use require (vs include) as we want ordering
       require roles_profiles::profiles::relops_users
+      require roles_profiles::profiles::users
       require roles_profiles::profiles::sudo
       require roles_profiles::profiles::locale
       require roles_profiles::profiles::timezone
       require roles_profiles::profiles::ntp
       require roles_profiles::profiles::motd
-      # both of these remove the bootstrap accounts/sudoers, so run later
-      require roles_profiles::profiles::users
+
+      Class['roles_profiles::profiles::sudo'] -> Class['roles_profiles::profiles::securitize']
+      Class['roles_profiles::profiles::relops_users'] -> Class['roles_profiles::profiles::securitize']
+
+      # this removes the bootstrap accounts, so run later
       require roles_profiles::profiles::securitize
 
       require disable_services

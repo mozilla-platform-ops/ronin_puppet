@@ -19,6 +19,9 @@ class linux_packages::puppet {
             'puppet5-agent',
             # we don't need the full package and it conflicts with puppet-agent
             'puppet',
+            # purge openvox packages so we can rollback if needed
+            'openvox7-release',
+            'openvox8-release',
           ]
 
           package { $packages_to_purge:
@@ -66,6 +69,8 @@ class linux_packages::puppet {
             'puppet5-agent',
             # we don't need the full package and it conflicts with puppet-agent
             'puppet',
+            # purge openvox packages so we can rollback if needed
+            'openvox8-release',
           ]
 
           package { $packages_to_purge:
@@ -113,6 +118,8 @@ class linux_packages::puppet {
             'puppet5-agent',
             # we don't need the full package and it conflicts with puppet-agent
             'puppet',
+            # purge openvox packages so we can rollback if needed
+            'openvox8-release',
           ]
 
           package { $packages_to_purge:

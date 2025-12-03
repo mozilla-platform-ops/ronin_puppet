@@ -63,7 +63,7 @@ fi
 # check host
 
 # cleanup ssh key, it will be new after kickstarting
-ssh-keygen -R "${THE_HOST}"
+ssh-keygen -R "${THE_HOST}" || true
 # readd to avoid prompts
 ssh-keyscan -H "${THE_HOST}" >> ~/.ssh/known_hosts
 
@@ -131,24 +131,24 @@ echo ""
 # if ronin_settings_present == 0
 if [ $RONIN_SETTINGS_PRESENT -eq 0 ]; then
   echo "  master:"
-  echo "    ssh $REMOTE_SSH_USER@$THE_HOST
-  echo "      sudo bash
-  echo "      $BOOTSTRAP_FILE_REMOTE"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST sudo bash $BOOTSTRAP_FILE_REMOTE"
   echo ""
   echo "  branch:"
   echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
   echo "      sudo bash"
   echo "        PUPPET_REPO='https://github.com/YOUR_ID/ronin_puppet.git' \\"
-  echo "          PUPPET_BRANCH='YOUR_BRANCH' $BOOTSTRAP_FILE_REMOTE"
+  echo "        PUPPET_BRANCH='YOUR_BRANCH' $BOOTSTRAP_FILE_REMOTE"
 elif [ $RONIN_SETTINGS_PRESENT -eq 1 ]; then
   echo "  master:"
-  echo "    ssh $REMOTE_SSH_USER@$THE_HOST $BOOTSTRAP_FILE_REMOTE"
+  echo "    ssh $REMOTE_SSH_USER@$THE_HOST sudo bash $BOOTSTRAP_FILE_REMOTE"
   echo ""
-  echo "  branch:"
+  echo "  branch (uses the branch the ronin_settings file specifies):"
   echo "    ssh $REMOTE_SSH_USER@$THE_HOST"
   echo "      sudo bash"
   echo "        PUPPET_REPO='$PUPPET_REPO' \\"
-  echo "          PUPPET_BRANCH='$PUPPET_BRANCH' $BOOTSTRAP_FILE_REMOTE"
+  echo "        PUPPET_BRANCH='$PUPPET_BRANCH' $BOOTSTRAP_FILE_REMOTE"
   echo ""
-  echo "  WARNING: ronin-settings delivered ($RONIN_SETTINGS_REMOTE), so even master (above) will eventually use the settings."
+  echo "NOTE: A ronin-settings file was delivered ($RONIN_SETTINGS_REMOTE), so even if"
+  echo "the 'master' commands are used the host will use the ronin-settings file on the"
+  echo "next run-puppet.sh run."
 fi

@@ -353,11 +353,12 @@ class linux_gui (
           #
           # export SYSTEMD_LOG_LEVEL=debug
           # networkctl
-
-          # TODO: copy this to the wayland config (or pull out into a 2404 specific class)
-          # having two subsystems managing the network is not a good idea... disable systemd-networkd
           #
-          # systemctl disable systemd-networkd.service
+          # TLDR: having two subsystems managing the network is not a good idea... disable systemd-networkd
+          #
+          # TODO: copy this to the wayland config (or pull out into a 2404 specific class)
+          # TODO: do this in linux_packages::ubuntu_desktop? strange to do here?
+          #
           exec { 'disable systemd-networkd':
             command  => 'systemctl disable systemd-networkd.service',
             onlyif   => 'systemctl is-active systemd-networkd.service',
