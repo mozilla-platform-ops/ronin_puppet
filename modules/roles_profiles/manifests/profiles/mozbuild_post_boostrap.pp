@@ -25,16 +25,9 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
     ensure => directory,
   }
 
-  acl { "${cache_drive}\\hg-shared":
-    target      => "${cache_drive}\\hg-shared",
-    permissions => {
-      identity                   => 'everyone',
-      rights                     => ['full'],
-      perm_type                  => 'allow',
-      child_types                => 'all',
-      affects                    => 'all',
-      inherit_parent_permissions => true,
-    },
+  # Use the centralized grant_cache_access class instead of duplicating ACL logic
+  class { 'win_filesystem::grant_cache_access':
+    cache_drive => $cache_drive,
   }
 
   case lookup('win-worker.function') {
