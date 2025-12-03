@@ -75,18 +75,21 @@ define signing_worker (
 
   $tc_scope_prefix = $cot_product ? {
     'firefox' => $worker_config['ff_taskcluster_scope_prefix'],
+    'enterprise' => $worker_config['enterprise_taskcluster_scope_prefix'],
     'thunderbird' => $worker_config['tb_taskcluster_scope_prefix'],
     'mozillavpn' => $worker_config['vpn_taskcluster_scope_prefix'],
     'adhoc' => $worker_config['adhoc_taskcluster_scope_prefix'],
   }
   $tc_client_id = $cot_product ? {
     'firefox' => $worker_config['ff_taskcluster_client_id'],
+    'enterprise' => $worker_config['enterprise_taskcluster_client_id'],
     'thunderbird' => $worker_config['tb_taskcluster_client_id'],
     'mozillavpn' => $worker_config['vpn_taskcluster_client_id'],
     'adhoc' => $worker_config['adhoc_taskcluster_client_id'],
   }
   $tc_access_token = $cot_product ? {
     'firefox' => $worker_config['ff_taskcluster_access_token'],
+    'enterprise' => $worker_config['enterprise_taskcluster_access_token'],
     'thunderbird' => $worker_config['tb_taskcluster_access_token'],
     'mozillavpn' => $worker_config['vpn_taskcluster_access_token'],
     'adhoc' => $worker_config['adhoc_taskcluster_access_token'],
