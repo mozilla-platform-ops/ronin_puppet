@@ -6,22 +6,23 @@ class worker_runner (
     Pattern[/^\d+\.\d+\.\d+$/] $taskcluster_version,
     Enum['aws', 'azure', 'google', 'standalone', 'static'] $provider_type,
     String $root_url,
-    String $data_dir                                   = '/opt/worker',
-    String $task_user                                  = 'cltbld',
-    Enum['simple', 'multiuser'] $generic_worker_engine = 'multiuser',
+    String $data_dir                                                       = '/opt/worker',
+    String $task_user                                                      = 'cltbld',
+    Optional[String] $task_user_password                                   = undef,
+    Enum['simple', 'multiuser', 'multiuser-static'] $generic_worker_engine = 'multiuser',
     # used by standalone
-    Optional[String] $client_id                        = undef,
-    Optional[String] $access_token                     = undef,
+    Optional[String] $client_id                                            = undef,
+    Optional[String] $access_token                                         = undef,
     # used by static
-    Optional[String] $provider_id                      = undef,
-    Optional[String] $static_secret                    = undef,
+    Optional[String] $provider_id                                          = undef,
+    Optional[String] $static_secret                                        = undef,
     # used by both standalone and static
-    Optional[String] $worker_pool_id                   = undef,
-    Optional[String] $worker_group                     = undef,
-    Optional[String] $worker_id                        = undef,
-    Optional[Hash] $provider_metadata                  = undef,
-    Optional[Hash] $worker_location                    = undef,
-    Optional[Integer] $idle_timeout_secs               = undef,
+    Optional[String] $worker_pool_id                                       = undef,
+    Optional[String] $worker_group                                         = undef,
+    Optional[String] $worker_id                                            = undef,
+    Optional[Hash] $provider_metadata                                      = undef,
+    Optional[Hash] $worker_location                                        = undef,
+    Optional[Integer] $idle_timeout_secs                                   = undef,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -75,13 +76,15 @@ class worker_runner (
     $cache_dir               = "${data_dir}/cache"
     $downloads_dir           = "${data_dir}/downloads"
     $log_dir                 = "${data_dir}/logs"
+    $gw_root_dir             = '/var/root'
     $worker_runner_conf      = "${data_dir}/worker-runner-config.yaml"
     $ed25519_signing_key     = "${data_dir}/generic-worker.ed25519.signing.key"
 
     case $facts['os']['name'] {
         'Darwin': {
 
-            if $generic_worker_engine == 'multiuser' {
+            # Matches both multiuser and multiuser-static
+            if $generic_worker_engine =~ /^multiuser/ {
                 $owner        = 'root'
                 $group        = 'wheel'
                 $launch_plist = '/Library/LaunchDaemons/org.mozilla.worker-runner.plist'
@@ -133,9 +136,10 @@ class worker_runner (
             }
 
             # Generate an ed25519 key
+            $gw_binary = regsubst($generic_worker_engine, '-static$', '')
             exec { 'create ed25519 signing key':
                 cwd     => $data_dir,
-                command => "/usr/local/bin/generic-worker-${generic_worker_engine} new-ed25519-keypair --file ${ed25519_signing_key}",
+                command => "/usr/local/bin/generic-worker-${gw_binary} new-ed25519-keypair --file ${ed25519_signing_key}",
                 unless  => "/bin/test -f ${ed25519_signing_key}",
             }
 
@@ -166,6 +170,31 @@ class worker_runner (
                 mode    => '0644',
                 owner   => $owner,
                 group   => $group,
+            }
+
+            # Generic Worker multiuser-static requirements
+            # for taskcluster versions v86.0.0 and greater
+            if $generic_worker_engine == 'multiuser-static' and versioncmp($taskcluster_version, '86.0.0') >= 0 {
+                # LaunchAgent to execute tasks with desktop access
+                # Generic Worker creates this file automatically but
+                # not if running in this static user mode, so we
+                # manually create it here
+                file { "/Users/${task_user}/Library/LaunchAgents/com.mozilla.genericworker.launchagent.plist":
+                    ensure  => present,
+                    content => template("${module_name}/com.mozilla.genericworker.launchagent.plist.erb"),
+                    mode    => '0644',
+                    owner   => $task_user,
+                    group   => 'staff',
+                }
+
+                # Create next-task-user.json file to run all tasks as static user
+                file { "${gw_root_dir}/next-task-user.json":
+                    ensure  => file,
+                    content => template("${module_name}/next-task-user.json.erb"),
+                    mode    => '0600',
+                    owner   => 'root',
+                    group   => 'wheel',
+                }
             }
 
             # Worker runner wrapper script
