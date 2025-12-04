@@ -25,10 +25,8 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
     ensure => directory,
   }
 
-  # Use the centralized grant_cache_access class instead of duplicating ACL logic
-  class { 'win_filesystem::grant_cache_access':
-    cache_drive => $cache_drive,
-  }
+  # ACL permissions are handled by roles_profiles::profiles::files_system_managment
+  # which includes win_filesystem::grant_cache_access
 
   case lookup('win-worker.function') {
     'builder': {
