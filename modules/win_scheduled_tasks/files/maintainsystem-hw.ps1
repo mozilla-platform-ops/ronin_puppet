@@ -455,7 +455,8 @@ function StartGenericWorker {
         Set-Location -Path $GW_dir
 
         # Launch GW
-        & $GW_dir\generic-worker.exe run --config generic-worker.config 2>&1 | Out-File -FilePath generic-worker.log -Encoding utf8
+        #& $GW_dir\generic-worker.exe run --config generic-worker.config 2>&1 | Out-File -FilePath generic-worker.log -Encoding utf8
+        $GW_dir\generic-worker.exe run --config generic-worker.config | Out-File -FilePath generic-worker.log -Encoding utf8
         $exitCode = $LASTEXITCODE
 
         # This is used by the GW check script to prevent premature reboot
