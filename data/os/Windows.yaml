@@ -56,6 +56,7 @@ windows:
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
     download_url: "https://github.com/taskcluster/taskcluster/releases/download"
     version: "93.1.4"
+    hw_version: "93.1.4"
     generic-worker:
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
@@ -74,7 +75,9 @@ windows:
         arm64: "start-worker-windows-arm64"
       provider: "azure"
       implementation: "generic-worker"
-    hardware_idle_timeout: 0
+    ## set to 1800 for testing
+    ## long term should be 14400
+    hardware_idle_timeout: 14400
 
 
   # Mozilla-Build

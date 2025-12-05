@@ -253,35 +253,6 @@ function Puppet-Run {
     }
 }
 
-function StartWorkerRunner {
-    param (
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        ## Checking for issues with the user profile.
-        $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
-        Select-Object -First 1 |
-        ForEach-Object { $_.TimeCreated }
-        $eventIDs = @(1511, 1515)
-
-        $events = Get-WinEvent -LogName "Application" |
-        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
-        Sort-Object TimeCreated -Descending | Select-Object -First 1
-
-        if ($events) {
-            Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Restart-Computer -Force
-            exit
-        }
-        Start-Service -Name worker-runner
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-
 function CompareConfig {
     param (
         [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
@@ -452,7 +423,6 @@ function CompareConfig {
     }
 }
 
-
 function StartGenericWorker {
     param (
         [string] $GW_dir = "$env:systemdrive\generic-worker"
@@ -461,6 +431,10 @@ function StartGenericWorker {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
     process {
+
+        $regPath = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
+        $regName = 'gw_panic'
+
         # Check for user profile issues
         $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
         Select-Object -First 1 |
@@ -480,14 +454,18 @@ function StartGenericWorker {
 
         Set-Location -Path $GW_dir
 
+        # Launch GW
         & $GW_dir\generic-worker.exe run --config generic-worker.config 2>&1 | Out-File -FilePath generic-worker.log -Encoding utf8
+        #$GW_dir\generic-worker.exe run --config generic-worker.config | Out-File -FilePath generic-worker.log -Encoding utf8
         $exitCode = $LASTEXITCODE
+
+        # This is used by the GW check script to prevent premature reboot
+        [Environment]::SetEnvironmentVariable('gw_initiated', 'true', 'Machine')
 
         Write-Log -message ('{0} :: GW exited with code {1}' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
 
         switch ($exitCode) {
             68 {
-
                 Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Checking for latest Config.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
                 CompareConfig -PAT (Get-Content "D:\Secrets\pat.txt")
 
@@ -497,19 +475,60 @@ function StartGenericWorker {
                 if (Test-Path $src) {
                     Copy-Item -Path $src -Destination $dest -Force
                     Write-Log -message ('{0} :: File copied successfully' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                }
-                else {
+                } else {
                     Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
                 }
 
-                ## Restart Explorer/close out exisiting windows
                 Stop-Process -Name explorer -Force
 
                 Start-Sleep -s 2
+
+                # Clear gw_initiated before restarting generic-worker
+                [Environment]::SetEnvironmentVariable('gw_initiated', $null, 'Machine')
+
                 StartGenericWorker
                 return
             }
+
+            { $_ -in 0, 69 } {
+                if ($exitCode -eq 0) {
+                    Write-Log -message ('{0} :: Exit code 0 treated as panic (69).' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                } else {
+                    Write-Log -message ('{0} :: Panic exit code 69 detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                }
+
+                # Ensure the key exists
+                if (!(Test-Path $regPath)) {
+                    New-Item -Path $regPath -Force | Out-Null
+                }
+
+                # Read as int; if missing stays $null
+                $current = Get-ItemPropertyValue -Path $regPath -Name $regName -ErrorAction SilentlyContinue
+                $current = if ($null -eq $current) { $null } else { [int]$current }
+
+                if ($null -eq $current -or $current -eq 0) {
+                    # First panic -> create/set DWORD=1 and reboot
+                    New-ItemProperty -Path $regPath -Name $regName -PropertyType DWord -Value 1 -Force | Out-Null
+                    Write-Log -message ('{0} :: First panic, set {1}\{2}=1 (DWORD) and rebooting' -f $($MyInvocation.MyCommand.Name), $regPath, $regName) -severity 'ERROR'
+                    Start-Sleep -Seconds 3
+                    Restart-Computer -Force
+                } else {
+                    # Repeated panic -> PXE and reboot; record 2 for diagnostics
+                    Write-Log -message ('{0} :: Repeated panic (current={1}), triggering PXE boot' -f $($MyInvocation.MyCommand.Name), $current) -severity 'ERROR'
+                    Set-PXE
+                    New-ItemProperty -Path $regPath -Name $regName -PropertyType DWord -Value 2 -Force | Out-Null
+                    Start-Sleep -Seconds 3
+                    Restart-Computer -Force
+                }
+            }
+
             default {
+                # Clear panic state if it’s not a 69/0
+                if (Test-Path "$regPath") {
+                    Remove-ItemProperty -Path $regPath -Name $regName -ErrorAction SilentlyContinue
+                    Write-Log -message ('{0} :: Clearing panic reg key due to normal exit code {1}' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+                }
+
                 Write-Log -message ('{0} :: Non-idle exit code {1}. Rebooting' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
                 Start-Sleep -Seconds 1
                 Restart-Computer -Force
