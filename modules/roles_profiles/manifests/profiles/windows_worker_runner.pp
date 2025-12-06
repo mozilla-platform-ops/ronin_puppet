@@ -143,18 +143,18 @@ class roles_profiles::profiles::windows_worker_runner {
         generic_worker_dir    => $generic_worker_dir,
         desired_proxy_version => $desired_proxy_version,
         current_proxy_version => $facts['custom_win_taskcluster_proxy_version'],
-        proxy_exe_source      => "${ext_pkg_src_loc}${desired_proxy_version}/${proxy_name}",
+        proxy_exe_source      => "${ext_pkg_src_loc}/${desired_proxy_version}/${proxy_name}",
       }
       class { 'win_taskcluster::livelog':
         generic_worker_dir => $generic_worker_dir,
-        livelog_exe_source => "${ext_pkg_src_loc}${livelog_version}/${livelog_name}",
+        livelog_exe_source => "${ext_pkg_src_loc}/${livelog_version}/${livelog_name}",
       }
       class { 'win_taskcluster::worker_runner':
         # Runner EXE
         worker_runner_dir      => $worker_runner_dir,
         desired_runner_version => $desired_rnr_version,
         current_runner_version => $facts['custom_win_runner_version'],
-        runner_exe_source      => "${ext_pkg_src_loc}${desired_rnr_version}/${runner_name}",
+        runner_exe_source      => "${ext_pkg_src_loc}/${desired_rnr_version}/${runner_name}",
         runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
         runner_yml             => "${worker_runner_dir}\\runner.yml",
         # Runner service install
