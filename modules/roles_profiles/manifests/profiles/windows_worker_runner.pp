@@ -11,7 +11,7 @@ class roles_profiles::profiles::windows_worker_runner {
 
       case $facts['custom_win_location'] {
         'datacenter': {
-          $ext_pkg_src_loc = lookup('windows.taskcluster.relops_s3')
+          $ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
           $provider = 'standalone'
         }
         default: {
