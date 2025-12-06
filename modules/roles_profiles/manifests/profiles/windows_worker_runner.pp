@@ -135,7 +135,7 @@ class roles_profiles::profiles::windows_worker_runner {
         generic_worker_dir => $generic_worker_dir,
         desired_gw_version => $desired_gw_version,
         current_gw_version => $facts['custom_win_genericworker_version'],
-        gw_exe_source      => "${ext_pkg_src_loc}${desired_gw_version}/${gw_name}",
+        gw_exe_source      => "${ext_pkg_src_loc}/${desired_gw_version}/${gw_name}",
         init_file          => $init,
         gw_exe_path        => $gw_exe_path,
       }
