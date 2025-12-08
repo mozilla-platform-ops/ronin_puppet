@@ -12,6 +12,8 @@ class roles_profiles::profiles::scheduled_tasks {
         }
         'datacenter': {
           $startup_script = 'maintainsystem-hw.ps1'
+          include win_scheduled_tasks::self_redeploy_check
+          include win_scheduled_tasks::gw_exe_check
         }
         default: {
           $startup_script = 'maintainsystem.ps1'
