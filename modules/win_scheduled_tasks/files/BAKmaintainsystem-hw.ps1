@@ -87,38 +87,38 @@ function CompareConfigBasic {
                     })[0]
             }
             catch {
-                Write-Log -message ('{0} :: Failed to get IP address' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+                Write-Log -message "Failed to get IP address" -severity 'ERROR'
             }
         }
 
         if (-not $IPAddress) {
-            Write-Log -message ('{0} :: No IP Address could be determined.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message "No IP Address could be determined." -severity 'ERROR'
             Restart-Computer -Force
             return
         }
 
-        Write-Log -message ('{0} :: IP Address: {1}' -f $MyInvocation.MyCommand.Name, $IPAddress) -severity 'INFO'
+        Write-Log -message "IP Address: $IPAddress" -severity 'INFO'
 
         try {
             $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
         }
         catch {
-            Write-Log -message ('{0} :: DNS resolution failed.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message "DNS resolution failed." -severity 'ERROR'
             Restart-Computer -Force
             return
         }
 
-        Write-Log -message ('{0} :: Resolved Name: {1}' -f $MyInvocation.MyCommand.Name, $ResolvedName) -severity 'INFO'
+        Write-Log -message "Resolved Name: $ResolvedName" -severity 'INFO'
 
         $index = $ResolvedName.IndexOf('.')
         if ($index -lt 0) {
-            Write-Log -message ('{0} :: Invalid hostname format.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message "Invalid hostname format." -severity 'ERROR'
             Restart-Computer -Force
             return
         }
 
         $worker_node_name = $ResolvedName.Substring(0, $index)
-        Write-Log -message ('{0} :: Host name set to: {1}' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'INFO'
+        Write-Log -message "Host name set to: $worker_node_name" -severity 'INFO'
 
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
@@ -146,14 +146,14 @@ function CompareConfigBasic {
                 }
             }
             catch {
-                Write-Log -message ('{0} :: Attempt {1}: Failed to fetch YAML - {2}' -f $MyInvocation.MyCommand.Name, ($attempt + 1), $_) -severity 'WARN'
+                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
                 Start-Sleep -Seconds $retryDelay
                 $attempt++
             }
         }
 
         if (-not $success) {
-            Write-Log -message ('{0} :: YAML could not be loaded. Forcing PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message "YAML could not be loaded. Forcing PXE + reboot." -severity 'ERROR'
             Set-PXE
             Restart-Computer -Force
             return
@@ -172,45 +172,45 @@ function CompareConfigBasic {
         }
 
         if (-not $found) {
-            Write-Log -message ('{0} :: Node not found in YAML. Forcing PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message "Node not found in YAML. Forcing PXE + reboot." -severity 'ERROR'
             Set-PXE
             Restart-Computer -Force
             return
         }
 
-        Write-Log -message ('{0} :: === Configuration Comparison ===' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
+        Write-Log -message "=== Configuration Comparison ===" -severity 'INFO'
 
         if ($localPool -ne $WorkerPool) {
-            Write-Log -message ('{0} :: Worker Pool MISMATCH!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
             $SETPXE = $true
         }
         else {
-            Write-Log -message ('{0} :: Worker Pool Match: {1}' -f $MyInvocation.MyCommand.Name, $WorkerPool) -severity 'INFO'
+            Write-Log -message "Worker Pool Match: $WorkerPool" -severity 'INFO'
         }
 
         if ([string]::IsNullOrWhiteSpace($yamlHash) -or $localHash -ne $yamlHash) {
-            Write-Log -message ('{0} :: Git Hash MISMATCH or missing YAML hash!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Write-Log -message ('{0} :: Local: {1}' -f $MyInvocation.MyCommand.Name, $localHash) -severity 'WARN'
-            Write-Log -message ('{0} :: YAML : {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'WARN'
+            Write-Log -message "Git Hash MISMATCH or missing YAML hash!" -severity 'ERROR'
+            Write-Log -message "Local: $localHash" -severity 'WARN'
+            Write-Log -message "YAML : $yamlHash" -severity 'WARN'
             $SETPXE = $true
         }
         else {
-            Write-Log -message ('{0} :: Git Hash Match: {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'INFO'
+            Write-Log -message "Git Hash Match: $yamlHash" -severity 'INFO'
         }
 
         if (!(Test-Path $yamlImageDir)) {
-            Write-Log -message ('{0} :: Image directory missing: {1}' -f $MyInvocation.MyCommand.Name, $yamlImageDir) -severity 'ERROR'
+            Write-Log -message "Image directory missing: $yamlImageDir" -severity 'ERROR'
             $SETPXE = $true
         }
 
         if ($SETPXE) {
-            Write-Log -message ('{0} :: Configuration mismatch — initiating PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message "Configuration mismatch — initiating PXE + reboot." -severity 'ERROR'
             Set-PXE
             Restart-Computer -Force
             return
         }
 
-        Write-Log -message ('{0} :: Configuration is correct. No reboot required.' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
+        Write-Log -message "Configuration is correct. No reboot required." -severity 'INFO'
     }
 
     end {
