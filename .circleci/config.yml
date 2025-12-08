@@ -96,7 +96,8 @@ commands:
             hdiutil mount puppet-bolt-3.29.0-1.osx12.dmg
             sudo -E installer -pkg "/Volumes/puppet-bolt-3.29.0-1.osx12/puppet-bolt-3.29.0-1-installer.pkg" -target /
             # Install gems needed for hiera vault
-            sudo /opt/puppetlabs/puppet/bin/gem install vault debouncer
+            sudo /opt/puppetlabs/puppet/bin/gem install vault -v 0.18.2
+            sudo /opt/puppetlabs/puppet/bin/gem install debouncer
   apt_cache_restore:
     steps:
       - run: mkdir -p /tmp/docker/var/cache/apt
