@@ -166,7 +166,7 @@ function run_puppet {
             # notify_telegraf "puppet_ronin_apply_success" "1"
             # If puppet run is successful, report puppet run duration metric
             # notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
-            echo "retval of 0 (no changes) or 2 (changes applied) indicates success"
+            echo "- a retval of 0 (no changes) or 2 (changes applied) indicates success"
             return 0
             ;;
         *)
