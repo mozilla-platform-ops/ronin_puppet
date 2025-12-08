@@ -55,6 +55,55 @@ function Run-MaintainSystem {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Invoke-DownloadWithRetryGithub {
+    Param(
+        [Parameter(Mandatory)] [string] $Url,
+        [Alias("Destination")] [string] $Path,
+        [string] $PAT
+    )
+    if (-not $Path) {
+        $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
+        $re = "[{0}]" -f [RegEx]::Escape($invalidChars)
+        $fileName = [IO.Path]::GetFileName($Url) -replace $re
+        if ([String]::IsNullOrEmpty($fileName)) { $fileName = [System.IO.Path]::GetRandomFileName() }
+        $Path = Join-Path -Path "${env:Temp}" -ChildPath $fileName
+    }
+    Write-Host "Downloading package from $Url to $Path..."
+    $interval = 30
+    $downloadStartTime = Get-Date
+    for ($retries = 20; $retries -gt 0; $retries--) {
+        try {
+            $attemptStartTime = Get-Date
+            $Headers = @{
+                Accept                 = "application/vnd.github+json"
+                Authorization          = "Bearer $($PAT)"
+                "X-GitHub-Api-Version" = "2022-11-28"
+            }
+            $response = Invoke-WebRequest -Uri $Url -Headers $Headers -OutFile $Path
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Host "Package downloaded in $attemptSeconds seconds"
+            Write-Host "Status: $($response.statuscode)"
+            break
+        } catch {
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Warning "Package download failed in $attemptSeconds seconds"
+            Write-Host "Status: $($response.statuscode)"
+            Write-Warning $_.Exception.Message
+            if ($_.Exception.InnerException.Response.StatusCode -eq [System.Net.HttpStatusCode]::NotFound) {
+                Write-Warning "Request returned 404 Not Found. Aborting download."
+                $retries = 0
+            }
+        }
+        if ($retries -eq 0) {
+            $totalSeconds = [math]::Round(($(Get-Date) - $downloadStartTime).TotalSeconds, 2)
+            throw "Package download failed after $totalSeconds seconds"
+        }
+        Write-Warning "Waiting $interval seconds before retrying (retries left: $retries)..."
+        Start-Sleep -Seconds $interval
+    }
+    return $Path
+}
+
 function CompareConfigBasic {
     param (
         [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
@@ -66,11 +115,13 @@ function CompareConfigBasic {
     }
 
     process {
-        $yaml = $null
+
         $SETPXE = $false
+        $yaml = $null
         $yamlHash = $null
         $IPAddress = $null
 
+        # === Retrieve IP address ===
         $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() |
             Where-Object { $_.Name -match "ethernet" }
 
@@ -99,11 +150,13 @@ function CompareConfigBasic {
 
         Write-Log -message ('{0} :: IP Address: {1}' -f $MyInvocation.MyCommand.Name, $IPAddress) -severity 'INFO'
 
+
+        # === Resolve DNS to get worker name ===
         try {
             $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
         }
         catch {
-            Write-Log -message ('{0} :: DNS resolution failed.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message ('{0} :: DNS resolution failed' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Restart-Computer -Force
             return
         }
@@ -120,59 +173,68 @@ function CompareConfigBasic {
         $worker_node_name = $ResolvedName.Substring(0, $index)
         Write-Log -message ('{0} :: Host name set to: {1}' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'INFO'
 
+
+        # === Load local ronin puppet values ===
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
-        $maxRetries = 5
-        $retryDelay = 10
-        $attempt = 0
-        $success = $false
 
-        while ($attempt -lt $maxRetries -and -not $success) {
-            try {
-                $Headers = @{
-                    Accept                 = "application/vnd.github+json"
-                    Authorization          = "Bearer $($PAT)"
-                    "X-GitHub-Api-Version" = "2022-11-28"
-                }
-                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop -Headers $Headers
-                $yaml = $response.Content | ConvertFrom-Yaml
-
-                if ($yaml) {
-                    $success = $true
-                }
-                else {
-                    throw "YAML content empty"
-                }
-            }
-            catch {
-                Write-Log -message ('{0} :: Attempt {1}: Failed to fetch YAML - {2}' -f $MyInvocation.MyCommand.Name, ($attempt + 1), $_) -severity 'WARN'
-                Start-Sleep -Seconds $retryDelay
-                $attempt++
-            }
-        }
-
-        if (-not $success) {
-            Write-Log -message ('{0} :: YAML could not be loaded. Forcing PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+        # === Load PAT for YAML download ===
+        $patFile = "D:\Secrets\pat.txt"
+        if (-not (Test-Path $patFile)) {
+            Write-Log -message ('{0} :: PAT file missing: {1}' -f $MyInvocation.MyCommand.Name, $patFile) -severity 'ERROR'
             Set-PXE
             Restart-Computer -Force
             return
         }
 
+        $PAT = Get-Content $patFile -ErrorAction Stop
+
+
+        # === Download YAML using unified retry function ===
+        $tempYamlPath = "$env:TEMP\pools.yml"
+
+        $splat = @{
+            Url  = $yaml_url
+            Path = $tempYamlPath
+            PAT  = $PAT
+        }
+
+        if (-not (Invoke-DownloadWithRetryGithub @splat)) {
+            Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Set-PXE
+            Restart-Computer -Force
+            return
+        }
+
+
+        # === Parse YAML ===
+        try {
+            $yaml = Get-Content $tempYamlPath -Raw | ConvertFrom-Yaml
+        }
+        catch {
+            Write-Log -message ('{0} :: YAML parsing failed: {1}' -f $MyInvocation.MyCommand.Name, $_) -severity 'ERROR'
+            Set-PXE
+            Restart-Computer -Force
+            return
+        }
+
+
+        # === Lookup this worker in pools.yml ===
         $found = $false
         foreach ($pool in $yaml.pools) {
             if ($pool.nodes -contains $worker_node_name) {
-                $WorkerPool  = $pool.name
-                $yamlHash    = $pool.hash
-                $yamlImageName = $pool.image
-                $yamlImageDir  = "D:\" + $yamlImageName
+                $WorkerPool     = $pool.name
+                $yamlHash       = $pool.hash
+                $yamlImageName  = $pool.image
+                $yamlImageDir   = "D:\" + $yamlImageName
                 $found = $true
                 break
             }
         }
 
         if (-not $found) {
-            Write-Log -message ('{0} :: Node not found in YAML. Forcing PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message ('{0} :: Node not found in YAML. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Set-PXE
             Restart-Computer -Force
             return
@@ -180,6 +242,8 @@ function CompareConfigBasic {
 
         Write-Log -message ('{0} :: === Configuration Comparison ===' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
 
+
+        # === Compare pool ===
         if ($localPool -ne $WorkerPool) {
             Write-Log -message ('{0} :: Worker Pool MISMATCH!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             $SETPXE = $true
@@ -188,6 +252,8 @@ function CompareConfigBasic {
             Write-Log -message ('{0} :: Worker Pool Match: {1}' -f $MyInvocation.MyCommand.Name, $WorkerPool) -severity 'INFO'
         }
 
+
+        # === Compare puppet githash ===
         if ([string]::IsNullOrWhiteSpace($yamlHash) -or $localHash -ne $yamlHash) {
             Write-Log -message ('{0} :: Git Hash MISMATCH or missing YAML hash!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Write-Log -message ('{0} :: Local: {1}' -f $MyInvocation.MyCommand.Name, $localHash) -severity 'WARN'
@@ -198,11 +264,15 @@ function CompareConfigBasic {
             Write-Log -message ('{0} :: Git Hash Match: {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'INFO'
         }
 
+
+        # === Verify local puppet image directory exists ===
         if (!(Test-Path $yamlImageDir)) {
             Write-Log -message ('{0} :: Image directory missing: {1}' -f $MyInvocation.MyCommand.Name, $yamlImageDir) -severity 'ERROR'
             $SETPXE = $true
         }
 
+
+        # === If anything mismatched, PXE reboot ===
         if ($SETPXE) {
             Write-Log -message ('{0} :: Configuration mismatch — initiating PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Set-PXE
@@ -217,6 +287,7 @@ function CompareConfigBasic {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+
 function Remove-OldTaskDirectories {
     param (
         [string[]] $targets = @('Z:\task_*', 'C:\Users\task_*')
@@ -247,166 +318,6 @@ function Remove-OldTaskDirectories {
             }
             else {
                 Write-Log -message ('{0} :: no task directories detected matching pattern: {1}' -f $($MyInvocation.MyCommand.Name), $target) -severity 'DEBUG'
-            }
-        }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-function Check-RoninNodeOptions {
-    param (
-        [string] $inmutable = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable,
-        [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        Write-Host $inmutable
-        if ($inmutable -eq 'true') {
-            Write-Log -message  ('{0} :: Node is set to be inmutable' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Remove-Item -path $lock -ErrorAction SilentlyContinue
-            write-host New-item -path $flagfile
-            Exit-PSSession
-        }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-
-Function UpdateRonin {
-    param (
-        [string] $sourceOrg,
-        [string] $sourceRepo,
-        [string] $sourceBranch,
-        [string] $ronin_repo = "$env:systemdrive\ronin"
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-        $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation').Organisation } else { 'mozilla-platform-ops' })
-        $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository').Repository } else { 'ronin_puppet' })
-        $sourceBranch = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch').Branch } else { 'master' })
-
-        Set-Location $ronin_repo
-        git config --global --add safe.directory "C:/ronin"
-        git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
-        $git_exit = $LastExitCode
-        if ($git_exit -eq 0) {
-            $git_hash = (git rev-parse --verify HEAD)
-            Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
-            Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-        }
-        else {
-            # Fall back to clone if pull fails
-            Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
-            Write-Log -message  ('{0} :: Deleting old repository and cloning repository .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-            Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
-            Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
-            #Remove-Item -Recurse -Force $ronin_repo
-            Start-Sleep -s 2
-            git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
-            Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
-            Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
-        }
-    }
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-function Puppet-Run {
-    param (
-        [int] $exit,
-        [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
-        [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
-        [string] $run_to_success = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").runtosuccess,
-        [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
-        [string] $logdir = "$env:systemdrive\logs",
-        [string] $fail_dir = "$env:systemdrive\fail_logs",
-        [string] $log_file = "$datetime-puppetrun.log",
-        [string] $datetime = (get-date -format yyyyMMdd-HHmm),
-        [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
-    )
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-    process {
-
-        Check-RoninNodeOptions
-        UpdateRonin
-
-        # Setting Env variabes for PuppetFile install and Puppet run
-        # The ssl variables are needed for R10k
-        Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        $env:path = "$($env:ProgramFiles)\Puppet Labs\Puppet\puppet\bin;$($env:ProgramFiles)\Puppet Labs\Puppet\bin;$env:path"
-
-        $env:SSL_CERT_FILE = "$($env:ProgramFiles)\Puppet Labs\Puppet\puppet\ssl\cert.pem"
-        $env:SSL_CERT_DIR  = "$($env:ProgramFiles)\Puppet Labs\Puppet\puppet\ssl"
-        $env:FACTER_env_windows_installdir = "$($env:ProgramFiles)\Puppet Labs\Puppet"
-        $env:PL_BASEDIR = "$($env:ProgramFiles)\Puppet Labs\Puppet"
-        $env:PUPPET_DIR = "$($env:ProgramFiles)\Puppet Labs\Puppet"
-        $env:RUBYLIB = "$($env:ProgramFiles)\Puppet Labs\Puppet\lib"
-
-        $env:USERNAME = "Administrator"
-        $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
-
-        # This is temporary and should be removed after the cloud_windows branch is merged
-        # Hiera lookups will fail after the merge if this is not in place following the merge
-        <#
-      if((test-path $env:systemdrive\ronin\win_hiera.yaml)) {
-          $hiera = "win_hiera.yaml"
-      } else {
-          $hiera = "hiera.yaml"
-      }
-      #>
-        # this will break Win 10 1803 if this is merged into the master brnach
-        $hiera = "hiera.yaml"
-
-        # Needs to be removed from path or a wrong puppet file will be used
-        $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
-        If (!(test-path $fail_dir)) {
-            New-Item -ItemType Directory -Force -Path $fail_dir
-        }
-        Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
-        Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=$hiera --logdest $logdir\$log_file
-        [int]$puppet_exit = $LastExitCode
-
-        if ($run_to_success -eq 'true') {
-            if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
-                if ($last_exit -eq 0) {
-                    Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                    Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
-                    Remove-Item $lock -ErrorAction SilentlyContinue
-                    # If the Puppet run fails send logs to papertrail
-                    # Nxlog watches $fail_dir for files names *-puppetrun.log
-                    Move-Item $logdir\$log_file -Destination $fail_dir
-                    shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-                }
-                elseif ($last_exit -ne 0) {
-                    Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
-                    Remove-Item $lock
-                    Move-Item $logdir\$log_file -Destination $fail_dir
-                    Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                    Start-Sleep 600
-                    shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-                }
-            }
-            elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
-                Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
-                Remove-Item -path $lock
-                New-item -path $flagfile
-            }
-            else {
-                Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $last_exit
-                Move-Item $logdir\$log_file -Destination $fail_dir
-                Remove-Item -path $lock
-                shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
             }
         }
     }
