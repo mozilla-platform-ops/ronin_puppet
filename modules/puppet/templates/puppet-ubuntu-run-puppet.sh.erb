@@ -152,10 +152,10 @@ function run_puppet {
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
     case $retval in
-        0) explanation="(no changes needed)" ;;
-        2) explanation="(changes applied)" ;;
+        0) explanation="(success. no changes needed)" ;;
+        2) explanation="(success. changes applied)" ;;
         *)
-            explanation="" ;;
+            explanation="(unknown/failure)" ;;
     esac
     echo "puppet command done. retval is $retval ${explanation}"
     # if retval is zero, check the logs for errors
