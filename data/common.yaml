@@ -57,6 +57,20 @@ scriptworker_users:
       cot_product: "firefox"
       widevine_filename: "widevine_dep.crt"
       keychain_filename: "dep-signing.keychain"
+    enterprisebld:
+      home: /builds/enterprisebld
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
+        - mac_geckodriver
+        - mac_single_file
+      dmg_prefix: "dep"
+      worker_type_prefix: "dep-enterprise-"
+      cot_product: "enterprise"
+      widevine_filename: "widevine_dep.crt"
+      keychain_filename: "dep-signing.keychain"
     tbbld:
       home: /builds/tb-dep
       supported_behaviors:
@@ -187,6 +201,7 @@ scriptworker_config:
         scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
     dep:
         ff_taskcluster_scope_prefix: 'project:releng:signing:'
+        enterprise_taskcluster_scope_prefix: 'project:enterprise:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         adhoc_taskcluster_scope_prefix: 'project:adhoc:releng:signing:'
