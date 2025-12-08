@@ -238,34 +238,6 @@ else
     # echo "yq command not found, gh pat auth disabled"
 fi
 
-# gh auth defaults to enabled
-GH_PAT_AUTH=1
-
-# add a way of disabling GH PAT AUTH (even if yq is present)
-SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
-if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
-    echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
-    # disable gh pat auth
-    GH_PAT_AUTH=0
-    # unset any existing git config for extraHeader
-    git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
-fi
-
-# if YQ_PRESENT=1, then check to see if our keys are present
-if [ "$YQ_PRESENT" = "1" ] && [ "$GH_PAT_AUTH" = "1" ]; then
-    echo "- GitHub PAT authentication is enabled."
-    # check if keys are present in config file
-    # TODO: add actual key checking logic here
-    GH_PAT=$(yq -er .github.pat /root/vault.yaml)
-    GH_PAT_USER=$(yq -er .github.pat_user /root/vault.yaml)
-    # if they're both non-empty, set GH_PAT_AUTH=1
-    if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
-        # set the git config for extraHeader
-        b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
-        git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
-    fi
-fi
-
 # Create working dir if it doesn't exist and cd into it
 mkdir -p "${WORKING_DIR}" || fail
 cd "${WORKING_DIR}" || fail
@@ -284,6 +256,36 @@ fi
 
 echo "ROLE: ${ROLE}"
 echo ""
+
+# gh auth defaults to enabled
+GH_PAT_AUTH=1
+
+# add a way of disabling GH PAT AUTH (even if yq is present)
+SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
+if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
+    echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
+    # disable gh pat auth
+    GH_PAT_AUTH=0
+    # unset any existing git config for extraHeader
+    git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
+fi
+
+# if YQ_PRESENT=1 and GH_PAT_AUTH=1, proceed with configuring GH PAT auth
+if [ "$YQ_PRESENT" = "1" ] && [ "$GH_PAT_AUTH" = "1" ]; then
+    # check if keys are present in config file
+    # TODO: add actual key checking logic here
+    GH_PAT=$(yq -er .github.pat /root/vault.yaml)
+    GH_PAT_USER=$(yq -er .github.pat_user /root/vault.yaml)
+    # if they're both non-empty, set the extraHeader config
+    if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
+        # base64 encode the credentials
+        b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
+        git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
+        echo "GitHub PAT authentication is enabled."
+    else
+        echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
+    fi
+fi
 
 # block_on_network
 
