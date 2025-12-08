@@ -125,6 +125,8 @@ EOF
 
 function run_puppet {
 
+    echo "current directory is: $(pwd)"
+
     # Always bring the puppet git up-to-sync before executing puppet
     if ! update_puppet; then
         echo "Failed to update puppet"
@@ -140,7 +142,6 @@ function run_puppet {
 
     # debugging
     PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
-    echo "current directory is: $(pwd)"
     echo "puppet command to run is: ${PUPPET_CMD}"
 
     echo "running puppet command..."
