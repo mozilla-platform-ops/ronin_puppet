@@ -239,8 +239,8 @@ if [ "$YQ_PRESENT" = "1" ]; then
     # check if keys are present in config file
     # TODO: add actual key checking logic here
     :
-    GH_PAT=$(yq -e .github.pat /root/vault.yaml)
-    GH_PAT_USER=$(yq -e .github.pat_user /root/vault.yaml)
+    GH_PAT=$(yq -er .github.pat /root/vault.yaml)
+    GH_PAT_USER=$(yq -er .github.pat_user /root/vault.yaml)
     # if they're both non-empty, set GH_PAT_AUTH=1
     if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
         GH_PAT_AUTH=1
