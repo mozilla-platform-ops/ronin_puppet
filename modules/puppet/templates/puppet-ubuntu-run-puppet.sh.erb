@@ -231,10 +231,14 @@ export LANG=en_US.UTF-8
 # check if yq is installed
 if command -v yq &> /dev/null; then
     YQ_PRESENT=1
-    echo "yq command found, YQ_PRESENT=1"
-    # gh pat auth can continue
-    GH_PAT_AUTH=1
+    # echo "yq command found, YQ_PRESENT=1"
+else
+    YQ_PRESENT=0
+    # echo "yq command not found, gh pat auth disabled"
 fi
+
+# gh auth defaults to enabled
+GH_PAT_AUTH=1
 
 # add a way of disabling GH PAT AUTH (even if yq is present)
 SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
@@ -247,7 +251,7 @@ if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
 fi
 
 # if YQ_PRESENT=1, then check to see if our keys are present
-if [ "$GH_PAT_AUTH" = "1" ]; then
+if [ "$YQ_PRESENT" = "1" ] && [ "$GH_PAT_AUTH" = "1" ]; then
     echo "Configuring git to use GitHub PAT for authentication"
     # check if keys are present in config file
     # TODO: add actual key checking logic here
