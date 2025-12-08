@@ -274,11 +274,11 @@ if [ -f "${ROLE_FILE}" ]; then
 else
     fail "Failed to find puppet role file ${ROLE_FILE}"
 fi
-echo ""
 
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
 echo "ROLE: ${ROLE}"
+echo ""
 
 # block_on_network
 
