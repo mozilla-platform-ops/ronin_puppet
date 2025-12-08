@@ -130,6 +130,7 @@ function run_puppet {
         echo "Failed to update puppet"
         return 1
     fi
+    echo ""
 
     TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
