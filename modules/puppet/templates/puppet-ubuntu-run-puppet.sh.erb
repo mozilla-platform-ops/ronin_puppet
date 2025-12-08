@@ -197,6 +197,14 @@ else
     PYTHON_BIN=$(command -v python)
 fi
 
+# check if yq is installed
+if command -v yq &> /dev/null; then
+    YQ_PRESENT=1
+else
+    YQ_PRESENT=0
+    echo "yq command not found, gh pat auth disabled"
+fi
+
 # show header (send to stderr to avoid appearing in log output?)
 # pyfiglet font is cricket
 cat <<'EOF' >&2
@@ -237,15 +245,6 @@ FQDN=$(${FACTER_BIN} networking.fqdn)
 
 export LANG=en_US.UTF-8
 
-# check if yq is installed
-if command -v yq &> /dev/null; then
-    YQ_PRESENT=1
-    # echo "yq command found, YQ_PRESENT=1"
-else
-    YQ_PRESENT=0
-    # echo "yq command not found, gh pat auth disabled"
-fi
-
 # Create working dir if it doesn't exist and cd into it
 mkdir -p "${WORKING_DIR}" || fail
 cd "${WORKING_DIR}" || fail
@@ -275,7 +274,7 @@ if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
     echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
     # disable gh pat auth
     GH_PAT_AUTH=0
-    # unset any existing git config for extraHeader
+    # for this repo, unset any existing git config for extraHeader
     git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
 fi
 # if YQ_PRESENT=1 and GH_PAT_AUTH=1, proceed with configuring GH PAT auth
@@ -288,6 +287,7 @@ if [ "$YQ_PRESENT" = "1" ] && [ "$GH_PAT_AUTH" = "1" ]; then
     if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
         # base64 encode the credentials
         b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
+        # for this repo, set the git config for extraHeader
         git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
         echo "GitHub PAT authentication is enabled."
     else
