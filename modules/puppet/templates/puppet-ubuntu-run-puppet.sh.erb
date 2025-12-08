@@ -144,6 +144,7 @@ function run_puppet {
     echo "puppet command to run is: ${PUPPET_CMD}"
 
     echo "running puppet command..."
+    echo ""
     # START: don't separate these two commands
     $PUPPET_CMD 2>&1 | tee "${TMP_LOG}"
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
