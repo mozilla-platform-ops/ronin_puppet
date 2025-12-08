@@ -150,7 +150,13 @@ function run_puppet {
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
-    echo "puppet command done. retval is $retval"
+    case $retval in
+        0) explanation="(no changes needed)" ;;
+        2) explanation="(changes applied)" ;;
+        *)
+            explanation="" ;;
+    esac
+    echo "puppet command done. retval is $retval ${explanation}"
     # if retval is zero, check the logs for errors
     if [ $retval -eq 0 ]; then
         # just in case, if there were any errors logged, flag it as an error run
@@ -167,7 +173,6 @@ function run_puppet {
             # notify_telegraf "puppet_ronin_apply_success" "1"
             # If puppet run is successful, report puppet run duration metric
             # notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
-            echo "- a retval of 0 (no changes) or 2 (changes applied) indicates success"
             return 0
             ;;
         *)
