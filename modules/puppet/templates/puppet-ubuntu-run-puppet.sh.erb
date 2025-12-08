@@ -265,9 +265,10 @@ fi
 echo "ROLE: ${ROLE}"
 echo ""
 
-# gh auth defaults to enabled
+# GitHub PAT authentication setup
+#
+# GH PAT auth defaults to enabled
 GH_PAT_AUTH=1
-
 # add a way of disabling GH PAT AUTH (even if yq is present)
 SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
 if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
@@ -277,7 +278,6 @@ if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
     # unset any existing git config for extraHeader
     git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
 fi
-
 # if YQ_PRESENT=1 and GH_PAT_AUTH=1, proceed with configuring GH PAT auth
 if [ "$YQ_PRESENT" = "1" ] && [ "$GH_PAT_AUTH" = "1" ]; then
     # check if keys are present in config file
