@@ -21,6 +21,7 @@ extract_username() {
     fi
 }
 
+set -x
 # check if yq is installed
 if ! command -v yq &> /dev/null; then
     YQ_PRESENT=1
@@ -51,6 +52,7 @@ if [ "$GH_PAT_AUTH" = "1" ]; then
     git config --system http.https://github.com/.extraHeader "Authorization: Basic $b64"
 fi
 # TODO: unset git config if GH_PAT_AUTH not set?
+set +x
 
 PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
