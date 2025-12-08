@@ -29,4 +29,6 @@ class motd::base {
 Unauthorized access prohibited
         "
     }
+    # TODO: show specific OS platform (Linux, Mac) and OS version (1804, 2404)
+    # TODO: show override info? could be incorrect if we haven't run puppet recently...
 }
