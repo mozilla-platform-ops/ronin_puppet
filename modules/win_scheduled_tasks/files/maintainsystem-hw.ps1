@@ -341,15 +341,15 @@ function Puppet-Run {
         # Setting Env variabes for PuppetFile install and Puppet run
         # The ssl variables are needed for R10k
         Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        $env:path = "$env:programfiles\Puppet Labs\Puppet\puppet\bin;$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
-        $env:SSL_CERT_FILE = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl\cert.pem"
-        $env:SSL_CERT_DIR = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl"
-        $env:FACTER_env_windows_installdir = "$env:programfiles\Puppet Labs\Puppet"
-        $env:HOMEPATH = "\Users\Administrator"
-        $env:HOMEDRIVE = "C:"
-        $env:PL_BASEDIR = "$env:programfiles\Puppet Labs\Puppet"
-        $env:PUPPET_DIR = "$env:programfiles\Puppet Labs\Puppet"
-        $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
+        $env:path = "$($env:ProgramFiles)\Puppet Labs\Puppet\puppet\bin;$($env:ProgramFiles)\Puppet Labs\Puppet\bin;$env:path"
+
+        $env:SSL_CERT_FILE = "$($env:ProgramFiles)\Puppet Labs\Puppet\puppet\ssl\cert.pem"
+        $env:SSL_CERT_DIR  = "$($env:ProgramFiles)\Puppet Labs\Puppet\puppet\ssl"
+        $env:FACTER_env_windows_installdir = "$($env:ProgramFiles)\Puppet Labs\Puppet"
+        $env:PL_BASEDIR = "$($env:ProgramFiles)\Puppet Labs\Puppet"
+        $env:PUPPET_DIR = "$($env:ProgramFiles)\Puppet Labs\Puppet"
+        $env:RUBYLIB = "$($env:ProgramFiles)\Puppet Labs\Puppet\lib"
+
         $env:USERNAME = "Administrator"
         $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
 
