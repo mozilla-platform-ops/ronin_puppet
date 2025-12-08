@@ -228,6 +228,39 @@ FQDN=$(${FACTER_BIN} networking.fqdn)
 
 export LANG=en_US.UTF-8
 
+# check if yq is installed
+if command -v yq &> /dev/null; then
+    YQ_PRESENT=1
+    echo "yq command found, YQ_PRESENT=1"
+fi
+
+# if YQ_PRESENT=1, then check to see if our keys are present
+if [ "$YQ_PRESENT" = "1" ]; then
+    # check if keys are present in config file
+    # TODO: add actual key checking logic here
+    :
+    GH_PAT=$(yq -e .github.pat /root/vault.yaml)
+    GH_PAT_USER=$(yq -e .github.pat_user /root/vault.yaml)
+    # if they're both non-empty, set GH_PAT_AUTH=1
+    if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
+        GH_PAT_AUTH=1
+    fi
+fi
+
+# if GH_PAT_AUTH=1, configure git to send an extra header with auth
+#
+# USER="x-access-token"     # or your GitHub username
+# PAT="ghp_xxx..."
+# b64=$(printf '%s:%s' "$USER" "$PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$USER" "$PAT" | base64)
+# git config --system http.https://github.com/.extraHeader "Authorization: Basic $b64"
+#
+if [ "$GH_PAT_AUTH" = "1" ]; then
+    b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
+    git config --system http.https://github.com/.extraHeader "Authorization: Basic $b64"
+fi
+# TODO: unset git config if GH_PAT_AUTH not set?
+
+
 mkdir -p "${WORKING_DIR}" || fail
 cd "${WORKING_DIR}" || fail
 
@@ -244,8 +277,6 @@ fi
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
 echo "ROLE: ${ROLE}"
-
-
 
 # block_on_network
 
