@@ -248,9 +248,9 @@ fi
 
 # if YQ_PRESENT=1, then check to see if our keys are present
 if [ "$GH_PAT_AUTH" = "1" ]; then
+    echo "Configuring git to use GitHub PAT for authentication"
     # check if keys are present in config file
     # TODO: add actual key checking logic here
-    :
     GH_PAT=$(yq -er .github.pat /root/vault.yaml)
     GH_PAT_USER=$(yq -er .github.pat_user /root/vault.yaml)
     # if they're both non-empty, set GH_PAT_AUTH=1
