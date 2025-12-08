@@ -9,7 +9,7 @@ function fail {
     exit 1
 }
 
-extract_username() {
+function extract_username() {
     local url="$1"
     if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
         echo "${BASH_REMATCH[1]}"
@@ -20,107 +20,6 @@ extract_username() {
         exit 1
     fi
 }
-
-set -x
-# check if yq is installed
-if ! command -v yq &> /dev/null; then
-    YQ_PRESENT=1
-fi
-
-# if YQ_PRESENT=1, then check to see if our keys are present
-if [ "$YQ_PRESENT" = "1" ]; then
-    # check if keys are present in config file
-    # TODO: add actual key checking logic here
-    :
-    GH_PAT=$(yq -e .github.pat /root/vault.yaml)
-    GH_PAT_USER=$(yq -e .github.pat_user /root/vault.yaml)
-    # if they're both non-empty, set GH_PAT_AUTH=1
-    if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
-        GH_PAT_AUTH=1
-    fi
-fi
-
-# if GH_PAT_AUTH=1, configure git to send an extra header with auth
-#
-# USER="x-access-token"     # or your GitHub username
-# PAT="ghp_xxx..."
-# b64=$(printf '%s:%s' "$USER" "$PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$USER" "$PAT" | base64)
-# git config --system http.https://github.com/.extraHeader "Authorization: Basic $b64"
-#
-if [ "$GH_PAT_AUTH" = "1" ]; then
-    b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
-    git config --system http.https://github.com/.extraHeader "Authorization: Basic $b64"
-fi
-# TODO: unset git config if GH_PAT_AUTH not set?
-set +x
-
-PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
-PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
-PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
-
-# detect if python3 is available and set it to PYTHON_BIN
-if command -v python3 &> /dev/null; then
-    PYTHON_BIN=$(command -v python3)
-else
-    PYTHON_BIN=$(command -v python)
-fi
-
-# show header (send to stderr to avoid appearing in log output?)
-# pyfiglet font is cricket
-cat <<'EOF' >&2
-                                                         __
-  .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
-  |   _|  |  |     |______|  _  |  |  |  _  |  _  |  -__|   _|
-  |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
-                          |__|        |__|  |__|
-EOF
-
-# Override defaults with values from /etc/puppet/ronin_settings if the file exists
-if [ -f "/etc/puppet/ronin_settings" ]; then
-    # ascii art heredoc
-    cat <<'EOF' >&2
-                                     __    __
-        .-----.--.--.-----.----.----|__.--|  .-----.
-        |  _  |  |  |  -__|   _|   _|  |  _  |  -__|
-        |_____|\___/|_____|__| |__| |__|_____|_____|
-
-EOF
-    echo "Loading settings from /etc/puppet/ronin_settings..."
-    source /etc/puppet/ronin_settings
-    # show env vars of interest
-    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
-    echo "  PUPPET_REPO=$PUPPET_REPO"
-    echo "  PUPPET_MAIL=$PUPPET_MAIL"
-    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
-fi
-
-# Extract username from puppet_repo
-puppet_env=$(extract_username "${PUPPET_REPO}")
-
-WORKING_DIR="/etc/puppet/environments/${puppet_env}/code"
-ROLE_FILE='/etc/puppet_role'
-PUPPET_BIN='/opt/puppetlabs/bin/puppet'
-FACTER_BIN='/opt/puppetlabs/bin/facter'
-FQDN=$(${FACTER_BIN} networking.fqdn)
-
-export LANG=en_US.UTF-8
-
-mkdir -p "${WORKING_DIR}" || fail
-cd "${WORKING_DIR}" || fail
-
-# Make dir world writable for puppet homebrew bug workaround
-chmod 777 .
-
-# Set role or fail if file not found
-if [ -f "${ROLE_FILE}" ]; then
-    ROLE=$(<${ROLE_FILE})
-else
-    fail "Failed to find puppet role file ${ROLE_FILE}"
-fi
-
-[ -f '/root/vault.yaml' ] || fail "Secrets file not found"
-
-echo "ROLE: ${ROLE}"
 
 # Return true is valid IP and not APIPA address
 function valid_ip {
@@ -275,6 +174,77 @@ function run_puppet {
             ;;
     esac
 }
+
+
+# Main script starts here
+PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
+PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
+PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
+
+# detect if python3 is available and set it to PYTHON_BIN
+if command -v python3 &> /dev/null; then
+    PYTHON_BIN=$(command -v python3)
+else
+    PYTHON_BIN=$(command -v python)
+fi
+
+# show header (send to stderr to avoid appearing in log output?)
+# pyfiglet font is cricket
+cat <<'EOF' >&2
+                                                         __
+  .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
+  |   _|  |  |     |______|  _  |  |  |  _  |  _  |  -__|   _|
+  |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
+                          |__|        |__|  |__|
+EOF
+
+# Override defaults with values from /etc/puppet/ronin_settings if the file exists
+if [ -f "/etc/puppet/ronin_settings" ]; then
+    # ascii art heredoc
+    cat <<'EOF' >&2
+                                     __    __
+        .-----.--.--.-----.----.----|__.--|  .-----.
+        |  _  |  |  |  -__|   _|   _|  |  _  |  -__|
+        |_____|\___/|_____|__| |__| |__|_____|_____|
+
+EOF
+    echo "Loading settings from /etc/puppet/ronin_settings..."
+    source /etc/puppet/ronin_settings
+    # show env vars of interest
+    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
+    echo "  PUPPET_REPO=$PUPPET_REPO"
+    echo "  PUPPET_MAIL=$PUPPET_MAIL"
+    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
+fi
+
+# Extract username from puppet_repo
+puppet_env=$(extract_username "${PUPPET_REPO}")
+
+WORKING_DIR="/etc/puppet/environments/${puppet_env}/code"
+ROLE_FILE='/etc/puppet_role'
+PUPPET_BIN='/opt/puppetlabs/bin/puppet'
+FACTER_BIN='/opt/puppetlabs/bin/facter'
+FQDN=$(${FACTER_BIN} networking.fqdn)
+
+export LANG=en_US.UTF-8
+
+mkdir -p "${WORKING_DIR}" || fail
+cd "${WORKING_DIR}" || fail
+
+# Make dir world writable for puppet homebrew bug workaround
+chmod 777 .
+
+# Set role or fail if file not found
+if [ -f "${ROLE_FILE}" ]; then
+    ROLE=$(<${ROLE_FILE})
+else
+    fail "Failed to find puppet role file ${ROLE_FILE}"
+fi
+
+[ -f '/root/vault.yaml' ] || fail "Secrets file not found"
+
+echo "ROLE: ${ROLE}"
+
 
 
 # block_on_network
