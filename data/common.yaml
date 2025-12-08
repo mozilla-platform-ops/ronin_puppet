@@ -169,6 +169,21 @@ scriptworker_users:
       cot_product: "adhoc"
       keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
+  enterprise-prod:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_sign
+        - mac_sign_and_pkg
+        - mac_sign_hardened
+        - mac_sign_and_pkg_hardened
+        - mac_geckodriver
+        - mac_single_file
+      dmg_prefix: "prod"
+      cot_product: "enterprise"
+      widevine_filename: "widevine_prod.crt"
+      keychain_filename: "mozilla.20240328.keychain"
+      ed_key_filename: "ed25519_privkey"
 
 scriptworker_config:
     ff-prod:
@@ -198,6 +213,13 @@ scriptworker_config:
         verify_chain_of_trust: true
         verify_cot_signature: true
         worker_type: 'adhoc-signing-mac14m2'
+        scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
+    enterprise-prod:
+        enterprise_taskcluster_scope_prefix: 'project:enterprise:releng:signing:'
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        worker_type: 'enterprise-signing-mac14m2'
         scriptworker_scripts_revision: "131ee0205228ca564f9f7dad7c962676c0ce8292"
     dep:
         ff_taskcluster_scope_prefix: 'project:releng:signing:'
@@ -294,6 +316,35 @@ signingworker_roles:
             widevine_url: 'n/a'
             omnija_url: 'n/a'
             langpack_url: 'n/a'
+            stage_widevine_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_omnija_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_langpack_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            gcp_prod_widevine_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_omnija_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_langpack_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+    enterprise-prod:
+        nightly:
+            apple_asc_provider: 'MozillaCorporation'
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.firefox-enterprise-mac-nightly'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            stage_widevine_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_omnija_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_langpack_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            gcp_prod_widevine_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_omnija_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_langpack_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            base_bundle_id: 'org.mozilla.firefox-enterprise-mac-release'
+            widevine_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            omnija_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
+            langpack_url: 'https://autograph-external.prod.autograph.services.mozaws.net'
             stage_widevine_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
             stage_omnija_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
             stage_langpack_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
