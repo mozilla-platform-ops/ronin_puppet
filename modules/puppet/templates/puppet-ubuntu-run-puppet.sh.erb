@@ -21,6 +21,24 @@ extract_username() {
     fi
 }
 
+# check if yq is installed
+if ! command -v yq &> /dev/null; then
+    YQ_PRESENT=1
+fi
+
+# if YQ_PRESENT=1, then check to see if our keys are present
+if [ "$YQ_PRESENT" = "1" ]; then
+    # check if keys are present in config file
+    # TODO: add actual key checking logic here
+    :
+    GH_PATH=$(yq -e .github.pat /root/vault.yaml)
+    GH_PAT_USER=$(yq -e .github.pat_user /root/vault.yaml)
+    # if they're both non-empty, set GH_PATH_AUTH=1
+    if [ -n "$GH_PATH" ] && [ -n "$GH_PAT_USER" ]; then
+        GH_PATH_AUTH=1
+    fi
+fi
+
 PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
 PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
 PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
@@ -164,6 +182,8 @@ function update_puppet {
         git init || return 1
         git remote add origin "${PUPPET_REPO}" || return 1
     fi
+
+    # TODO: authenticate the remote actions
 
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
