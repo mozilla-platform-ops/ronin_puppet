@@ -9,6 +9,7 @@ class scriptworker_prereqs {
     '19'    => '3.8.3',
     '21'    => '3.11.0',
     '23'    => '3.11.0',
+    '24'    => '3.11.0',
     default => fail("Unsupported macOS version: ${mac_version}"),
   }
 
@@ -18,7 +19,7 @@ class scriptworker_prereqs {
   }
 
   # Install virtualenv and setup tools symlink for macOS 14+ (mac_version 21 or 23)
-  if $mac_version in ['21', '23'] {
+  if $mac_version in ['21', '23', '24'] {
     exec { 'install python3 virtualenv':
       command => '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m pip install virtualenv',
       unless  => '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m virtualenv --version',

@@ -49,6 +49,7 @@ class roles_profiles::profiles::mac_v3_signing {
         '19'    => '',  # macOS 10.15 (assuming same as 10.14)
         '21'    => '/usr/local',  # macOS 14+
         '23'    => '/usr/local',  # macOS 14+
+        '24'    => '/usr/local',  # macOS 14+
         default => fail("Unsupported macOS version: ${mac_version}"),
       }
 
