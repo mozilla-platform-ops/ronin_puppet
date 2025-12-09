@@ -86,6 +86,9 @@ secrets: &secrets
     ff-prod:
       taskcluster_client_id: taskcluster_client_id_testing
       taskcluster_access_token: taskcluster_access_token_testing
+    enterprise-prod:
+      taskcluster_client_id: taskcluster_client_id_testing
+      taskcluster_access_token: taskcluster_access_token_testing
     tb-prod:
       tb_taskcluster_client_id: tb_taskcluster_client_id_testing
       tb_taskcluster_access_token: tb_taskcluster_access_token_testing

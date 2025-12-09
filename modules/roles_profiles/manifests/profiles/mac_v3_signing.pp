@@ -22,6 +22,7 @@ class roles_profiles::profiles::mac_v3_signing {
       $role = $facts['networking']['hostname'] ? {
         /^mac-v(3|4)-signing\d+/       => 'ff-prod',
         /^fx-mac-v(3|4)-signing\d+/    => 'ff-prod',
+        /^fx-ent-mac-v4-signing\d+/    => 'enterprise-prod',
         /^tb-mac-v(3|4)-signing\d+/    => 'tb-prod',
         /^vpn-mac-v(3|4)-signing\d+/   => 'vpn-prod',
         /^adhoc-mac-v(3|4)-signing\d+/ => 'adhoc-prod',
