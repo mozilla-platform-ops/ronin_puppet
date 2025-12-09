@@ -349,6 +349,7 @@ function StartWorkerRunner {
             exit
         }
         Start-Service -Name worker-runner
+        [Environment]::SetEnvironmentVariable('gw_initiated', 'true', 'Machine')
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
