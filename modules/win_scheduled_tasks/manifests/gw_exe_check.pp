@@ -17,10 +17,8 @@ class win_scheduled_tasks::gw_exe_check (
     arguments => "-executionpolicy bypass -File ${gw_exe_check_ps1}",
     enabled   => true,
     trigger   => [{
-      schedule         => 'daily',
-      start_time       => '00:00',
-      minutes_interval => 5,
-      minutes_duration => 1440, # 24 hours = repeat every 5 minutes all day
+      schedule      => 'boot',
+      minutes_delay => 16,   # Run once, 16 minutes after startup
     }],
     user      => 'SYSTEM',
   }

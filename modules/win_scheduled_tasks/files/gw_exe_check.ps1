@@ -94,6 +94,7 @@ if ($uptimeMinutes -lt 15) {
     exit
 }
 
+# Var set by the maintain system script
 # Check gw_initiated env var
 if ($env:gw_initiated -ne 'true') {
     Write-Log -message "Environment variable gw_initiated is not true." -severity 'WARN'
