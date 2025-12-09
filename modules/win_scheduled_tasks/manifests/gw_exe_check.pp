@@ -17,8 +17,8 @@ class win_scheduled_tasks::gw_exe_check (
     arguments => "-executionpolicy bypass -File ${gw_exe_check_ps1}",
     enabled   => true,
     trigger   => [{
-      schedule      => 'boot',
-      minutes_delay => 16,   # Run once, 16 minutes after startup
+      schedule => 'boot',
+      delay    => 'PT16M',   # ISO8601 → wait 16 minutes after startup
     }],
     user      => 'SYSTEM',
   }
