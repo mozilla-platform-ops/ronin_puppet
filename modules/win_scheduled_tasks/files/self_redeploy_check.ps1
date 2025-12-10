@@ -143,7 +143,8 @@ function CompareConfig {
                 }
             }
             catch {
-                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
+
+                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $yaml_url" -severity 'WARN'
                 Start-Sleep -Seconds $retryDelay
                 $attempt++
             }
@@ -280,4 +281,10 @@ function CompareConfig {
     }
 }
 
-CompareConfig
+$bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
+If ($bootstrap_stage -eq 'complete') {
+    CompareConfig
+else {
+    Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Exit-PSSession
+}
