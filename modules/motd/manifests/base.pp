@@ -56,7 +56,7 @@ class motd::base {
       concat::fragment { 'os-info-motd':
         target  => $motd::settings::motd_file,
         content => inline_epp('
-              <%= $facts["os"]["distro"]["description"] %>
+                    <%= $facts["os"]["distro"]["description"] %>
         '),
       }
     }  # end ubuntu case
