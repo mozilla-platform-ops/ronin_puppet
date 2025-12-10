@@ -5,16 +5,16 @@
 class win_scheduled_tasks::self_redeploy_check (
 ) {
 
-  $gw_exe_check_ps1 = "${facts['custom_win_roninprogramdata']}\\self_redeploy_check.ps1"
+  $script = "${facts['custom_win_roninprogramdata']}\\self_redeploy_check.ps1"
 
-  file { $gw_exe_check_ps1:
+  file { $script:
     content => file('win_scheduled_tasks/self_redeploy_check.ps1'),
   }
 
   scheduled_task { 'self_redeploy_check':
     ensure    => 'present',
     command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
-    arguments => "-executionpolicy bypass -File ${gw_exe_check_ps1}",
+    arguments => "-executionpolicy bypass -File ${script}",
     enabled   => true,
     trigger   => [{
       schedule         => 'daily',
