@@ -33,6 +33,10 @@ class motd::base {
 
   case $facts['os']['name'] {
     'Ubuntu': {
+      # NOTE: The MOTD greeting on Ubuntu 18+ is dynamically generated at login
+      # - /etc/motd is just appended to the end of the dynamic MOTD
+      # - see /etc/update-motd.d/ for the scripts that generate the dynamic part
+
       # same as darwin, but include os info by calling /etc/update-motd.d/00-header
       concat::fragment { 'base-motd':
         target => $motd::settings::motd_file,
@@ -45,16 +49,13 @@ class motd::base {
                 |_| |_| |_|\\___/___|_|_|_|\\__,_|  (|     | )
                                                   /'\\_   _/`\\
                                                  \\___)=(___/
+
+Unauthorized access prohibited
+
 ", }
       concat::fragment { 'os-info-motd':
         target  => $motd::settings::motd_file,
         content => inline_template("<%= %x{/etc/update-motd.d/00-header} %>\n"),
-      }
-      concat::fragment { 'unauthorized-access-motd':
-        target  => $motd::settings::motd_file,
-        content => "
-Unauthorized access prohibited
-        ",
       }
     }  # end ubuntu case
     'Darwin': {
