@@ -395,6 +395,7 @@ all_users:
 
   jcristau:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDD1coEjA0xXcjmJ7H2kJGWGCW4JkK8JMfzogw94t2VZVFEHFx1YSVE00dObjci8387V0QySsrndt8qIFIbUa4vss1+EtfOnd7kbPCXD8EoWJGv9G70OfdV1uMmDF10heZPdj3OmkWfusvGOEYaOQuuz3HQUYT3YO9F+8llFsCIsyeLj7xcAY8pGvYqj0Fh2uJAc72zetqGjvB7PKJmoYphVHLtEnW1OrvDouhk9fJL1SF06Kf0RmkI7N+bBPVcHYczwkLHY13OA0D8szHentG2557lwN/02UzlY25RNjCEBjlC4IIrVRKdgP4aBl/CijIiJ1tN40qp/edAQ0vjYnAN jcristau@mozilla.com
+    - sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIKe2mBKkR8KfSkPqDcWTUi7BO9nvqil/N2kobtAX0fkQAAAABHNzaDo= jcristau@mozilla.com
 
   jlorenzo:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgKAI4ewrAAfxgV1sE5cNwublsALzX3xYGWwU3RLoCa yubikey-mozilla-2022
