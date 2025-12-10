@@ -18,6 +18,7 @@ user_groups:
     - rcurran
   signing:
     - ahalberstadt
+    - amadan
     - bhearsum
     - borivel
     - hneiva
@@ -383,6 +384,9 @@ all_users:
 
   ahalberstadt:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDXooSVUUPBiA2IMlxCnrM/n5jNLRJ93lGgXuw9X8qS7 ahalberstadt@mozilla.com
+
+  amadan:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPqNYaktDR6phyNSAfN4VIaK8Ud4Apx7nx8Lb7L1fpL6 amadan@mozilla.com
 
   bhearsum:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOtBhVQFi++zDdhoDzh/eCVrnRwnuUAIzDa5LQr0LBjX bhearsum@mozilla.com
