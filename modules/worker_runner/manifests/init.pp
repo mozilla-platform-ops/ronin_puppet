@@ -145,11 +145,11 @@ class worker_runner (
 
             # Set permissions on ed25519 key
             file { $ed25519_signing_key:
-                ensure    => present,
                 mode      => '0600',
                 show_diff => false,
                 owner     => $owner,
                 group     => $group,
+                require   => Exec['create ed25519 signing key'],
             }
 
             # TODO: Don't assume worker config variables.  Do better at validating and inject them as needed into the worker config
