@@ -53,9 +53,18 @@ class motd::base {
            *** Unauthorized access prohibited ***
 
 ", }
+      # show DISTRIB_DESCRIPTION= info from /etc/lsb-release
       concat::fragment { 'os-info-motd':
-        target  => $motd::settings::motd_file,
-        content => inline_template("<%= %x{/etc/update-motd.d/00-header} %>\n"),
+        target => $motd::settings::motd_file,
+      content  => inline_epp('@EOT
+<% | String $lsb_release_file = "/etc/lsb-release" | -%>
+<% if file($lsb_release_file) =~ /DISTRIB_DESCRIPTION="(.*)"/m -%>
+OS: <%= $1 %>
+<% else -%>
+OS: Unknown
+<% endif -%>
+EOT
+        '),
       }
     }  # end ubuntu case
     'Darwin': {
