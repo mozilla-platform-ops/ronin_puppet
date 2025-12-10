@@ -55,15 +55,9 @@ class motd::base {
 ", }
       # show DISTRIB_DESCRIPTION= info from /etc/lsb-release
       concat::fragment { 'os-info-motd':
-        target => $motd::settings::motd_file,
-      content  => inline_epp('@EOT
-<% | String $lsb_release_file = "/etc/lsb-release" | -%>
-<% if file($lsb_release_file) =~ /DISTRIB_DESCRIPTION="(.*)"/m -%>
-OS: <%= $1 %>
-<% else -%>
-OS: Unknown
-<% endif -%>
-EOT
+        target  => $motd::settings::motd_file,
+        content => inline_epp('
+OS: <%= $facts["os"]["distro"]["description"] %>
         '),
       }
     }  # end ubuntu case
