@@ -95,6 +95,8 @@ define signing_worker (
     'adhoc' => $worker_config['adhoc_taskcluster_access_token'],
   }
 
+  $github_oauth_token = dig($worker_config, 'github_oauth_token')
+
   # TODO: Remove this once the new virtualenvs (.venv) have been deployed
   file { "${scriptworker_base}/virtualenv":
     ensure    => 'absent',
