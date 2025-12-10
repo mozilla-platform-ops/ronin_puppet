@@ -50,7 +50,7 @@ class motd::base {
                                           /'\\_   _/`\\
                                          \\___)=(___/
 
-Unauthorized access prohibited
+           *** Unauthorized access prohibited ***
 
 ", }
       concat::fragment { 'os-info-motd':
