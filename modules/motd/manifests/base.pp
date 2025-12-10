@@ -50,14 +50,12 @@ class motd::base {
                                           /'\\_   _/`\\
                                          \\___)=(___/
 
-           *** Unauthorized access prohibited ***
-
+          *** Unauthorized access prohibited ***
 ", }
       # show DISTRIB_DESCRIPTION= info from /etc/lsb-release
       concat::fragment { 'os-info-motd':
         target  => $motd::settings::motd_file,
-        content => inline_epp('
-OS: <%= $facts["os"]["distro"]["description"] %>
+        content => inline_epp('       <%= $facts["os"]["distro"]["description"] %>
         '),
       }
     }  # end ubuntu case
