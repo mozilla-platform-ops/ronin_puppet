@@ -42,7 +42,6 @@ function Write-Log {
         Write-Host -object $message -ForegroundColor $fc
     }
 }
-
 function CompareConfig {
     param (
         [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
@@ -115,67 +114,12 @@ function CompareConfig {
         # -------------------------------
         # Registry Values
         # -------------------------------
-        $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GGITHASH
+        $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
-        # ======================================================================
-        # GitHub Connectivity Diagnostics
-        # ======================================================================
-        try {
-            $uri = [uri]$yaml_url
-            $host = $uri.Host
-            Write-Log -message "GitHub diagnostics for $yaml_url" -severity 'INFO'
-            Write-Log -message "Parsed host: $host" -severity 'DEBUG'
-
-            # DNS Check
-            try {
-                $dns = Resolve-DnsName -Name $host -ErrorAction Stop
-                $ips = ($dns | Where-Object { $_.IPAddress } | Select-Object -ExpandProperty IPAddress) -join ', '
-                Write-Log -message "DNS OK: $host -> $ips" -severity 'INFO'
-            }
-            catch {
-                Write-Log -message "DNS resolution FAILED for $host: $($_.Exception.Message)" -severity 'ERROR'
-            }
-
-            # ICMP Ping
-            try {
-                $pingOk = Test-Connection -ComputerName $host -Count 2 -Quiet -ErrorAction Stop
-                if ($pingOk) {
-                    Write-Log -message "Ping to $host succeeded." -severity 'INFO'
-                }
-                else {
-                    Write-Log -message "Ping to $host FAILED." -severity 'WARN'
-                }
-            }
-            catch {
-                Write-Log -message "Ping threw exception: $($_.Exception.Message)" -severity 'WARN'
-            }
-
-            # HEAD Request
-            try {
-                $head = Invoke-WebRequest -Uri $yaml_url -Method Head -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-                Write-Log -message "HEAD request OK: HTTP $($head.StatusCode) $($head.StatusDescription)" -severity 'INFO'
-            }
-            catch {
-                $webEx = $_.Exception
-                $status = $null
-                $desc = $null
-                if ($webEx.Response) {
-                    try {
-                        $status = [int]$webEx.Response.StatusCode
-                        $desc = $webEx.Response.StatusDescription
-                    } catch {}
-                }
-                Write-Log -message "HEAD request FAILED: HTTP $status $desc - $($webEx.Message)" -severity 'ERROR'
-            }
-        }
-        catch {
-            Write-Log -message "Diagnostics block failure: $($_.Exception.Message)" -severity 'ERROR'
-        }
-
-        # ======================================================================
-        # Load YAML with retry + detailed logging
-        # ======================================================================
+        # -------------------------------
+        # Load YAML with retry
+        # -------------------------------
         $maxRetries = 5
         $retryDelay = 10
         $attempt = 0
@@ -183,47 +127,24 @@ function CompareConfig {
 
         while ($attempt -lt $maxRetries -and -not $success) {
             try {
-                Write-Log -message "Attempt $($attempt + 1): Fetching YAML from $yaml_url" -severity 'DEBUG'
-
                 $Headers = @{
                     Accept                 = "application/vnd.github+json"
                     Authorization          = "Bearer $($PAT)"
                     "X-GitHub-Api-Version" = "2022-11-28"
                 }
-
-                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -Headers $Headers -ErrorAction Stop
-
-                Write-Log -message ("Attempt {0}: HTTP {1} {2}" -f ($attempt + 1), $response.StatusCode, $response.StatusDescription) -severity 'DEBUG'
-
+                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop -Headers $Headers
                 $yaml = $response.Content | ConvertFrom-Yaml
 
                 if ($yaml) {
                     $success = $true
-                    Write-Log -message "YAML loaded successfully." -severity 'INFO'
                 }
                 else {
-                    throw "YAML was empty"
+                    throw "YAML content is empty"
                 }
             }
             catch {
-                $webEx = $_.Exception
-                $status = $null
-                $desc = $null
-                if ($webEx.Response) {
-                    try {
-                        $status = [int]$webEx.Response.StatusCode
-                        $desc = $webEx.Response.StatusDescription
-                    } catch {}
-                }
 
-                Write-Log -message (
-                    "Attempt {0}: YAML fetch FAILED. HTTP {1} {2}. {3}" -f
-                    ($attempt + 1),
-                    $status,
-                    $desc,
-                    $webEx.Message
-                ) -severity 'WARN'
-
+                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_ - $yaml_url" -severity 'WARN'
                 Start-Sleep -Seconds $retryDelay
                 $attempt++
             }
@@ -273,10 +194,10 @@ function CompareConfig {
         }
 
         # -------------------------------
-        # Compare Git Hash
+        # Compare Git Hash, including empty or null yamlHash
         # -------------------------------
         if ([string]::IsNullOrWhiteSpace($yamlHash)) {
-            Write-Log -message "YAML hash missing → mismatch" -severity 'ERROR'
+            Write-Log -message "YAML hash is missing or invalid. Treating as mismatch." -severity 'ERROR'
             $SETPXE = $true
         }
         elseif ($localHash -ne $yamlHash) {
@@ -293,15 +214,15 @@ function CompareConfig {
         # Check Image Directory
         # -------------------------------
         if (!(Test-Path $yamlImageDir)) {
-            Write-Log -message "Image Directory MISSING: $yamlImageDir" -severity 'ERROR'
+            Write-Log -message "Image Directory MISMATCH! YAML: $yamlImageDir NOT FOUND" -severity 'ERROR'
             $SETPXE = $true
         }
 
-        # ======================================================================
-        # Worker-status.json pre-reboot logic
-        # ======================================================================
+        # ====================================================================================
+        # NEW LOGIC: Evaluate worker-status.json BEFORE reboot or PXE trigger
+        # ====================================================================================
         if ($SETPXE) {
-            Write-Log -message "Configuration mismatch — evaluating worker-status.json..." -severity 'WARN'
+            Write-Log -message "Configuration mismatch detected. Evaluating worker-status.json..." -severity 'WARN'
 
             $searchPaths = @(
                 "C:\WINDOWS\SystemTemp",
@@ -322,28 +243,31 @@ function CompareConfig {
             }
 
             if (-not $workerStatus) {
-                Write-Log -message "worker-status.json NOT FOUND → immediate reboot" -severity 'ERROR'
+                Write-Log -message "worker-status.json not found. Rebooting now!" -severity 'ERROR'
                 Restart-Computer -Force
                 return
             }
 
+            # -------------------------------
+            # Parse worker-status.json
+            # -------------------------------
             try {
                 $json = Get-Content $workerStatus -Raw | ConvertFrom-Json
             }
             catch {
-                Write-Log -message "worker-status.json unreadable → reboot" -severity 'ERROR'
+                Write-Log -message "worker-status.json is unreadable. Rebooting now!" -severity 'ERROR'
                 Restart-Computer -Force
                 return
             }
 
             if (($json.currentTaskIds).Count -eq 0) {
-                Write-Log -message "No active tasks → rebooting now." -severity 'WARN'
+                Write-Log -message "No active tasks. Rebooting now!" -severity 'WARN'
                 Restart-Computer -Force
                 return
             }
             else {
                 $task = $json.currentTaskIds[0]
-                Write-Log -message "Active task $task detected — scheduling PXE." -severity 'INFO'
+                Write-Log -message "Task $task is active. Reboot will occur on next boot." -severity 'INFO'
                 Set-PXE
                 return
             }
