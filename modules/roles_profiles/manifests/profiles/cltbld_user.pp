@@ -11,6 +11,7 @@ class roles_profiles::profiles::cltbld_user {
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
       $kcpassword   = lookup('cltbld_user.kcpassword')
+      # Reverting due to https://bugzilla.mozilla.org/show_bug.cgi?id=2004631
       $password_hash = inline_template("<%= IO.popen(['openssl', 'passwd', '-6', '-salt', '${salt}', '-6', '-rounds', '${iterations}', '${password}']).read.chomp %>")
 
       # Create the cltbld user
