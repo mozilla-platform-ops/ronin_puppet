@@ -202,7 +202,7 @@ if command -v yq &> /dev/null; then
     YQ_PRESENT=1
 else
     YQ_PRESENT=0
-    echo "yq command not found, gh pat auth disabled"
+    # echo "yq command not found"
 fi
 
 # show header (send to stderr to avoid appearing in log output?)
@@ -268,6 +268,11 @@ echo ""
 #
 # GH PAT auth defaults to enabled
 GH_PAT_AUTH=1
+# if YQ_PRESENT=0, disable GH PAT auth
+if [ "$YQ_PRESENT" = "0" ]; then
+    echo "yq not present, disabling GH PAT auth configuration"
+    GH_PAT_AUTH=0
+fi
 # add a way of disabling GH PAT AUTH (even if yq is present)
 SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
 if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
@@ -278,7 +283,7 @@ if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
     git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
 fi
 # if YQ_PRESENT=1 and GH_PAT_AUTH=1, proceed with configuring GH PAT auth
-if [ "$YQ_PRESENT" = "1" ] && [ "$GH_PAT_AUTH" = "1" ]; then
+if [ "$GH_PAT_AUTH" = "1" ]; then
     # check if keys are present in config file
     # TODO: add actual key checking logic here
     GH_PAT=$(yq -er .github.pat /root/vault.yaml)
