@@ -42,6 +42,55 @@ function Write-Log {
         Write-Host -object $message -ForegroundColor $fc
     }
 }
+function Invoke-DownloadWithRetryGithub {
+    Param(
+        [Parameter(Mandatory)] [string] $Url,
+        [Alias("Destination")] [string] $Path,
+        [string] $PAT
+    )
+    if (-not $Path) {
+        $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
+        $re = "[{0}]" -f [RegEx]::Escape($invalidChars)
+        $fileName = [IO.Path]::GetFileName($Url) -replace $re
+        if ([String]::IsNullOrEmpty($fileName)) { $fileName = [System.IO.Path]::GetRandomFileName() }
+        $Path = Join-Path -Path "${env:Temp}" -ChildPath $fileName
+    }
+    Write-Host "Downloading package from $Url to $Path..."
+    $interval = 30
+    $downloadStartTime = Get-Date
+    for ($retries = 20; $retries -gt 0; $retries--) {
+        try {
+            $attemptStartTime = Get-Date
+            $Headers = @{
+                Accept                 = "application/vnd.github+json"
+                Authorization          = "Bearer $($PAT)"
+                "X-GitHub-Api-Version" = "2022-11-28"
+            }
+            $response = Invoke-WebRequest -Uri $Url -Headers $Headers -OutFile $Path
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Host "Package downloaded in $attemptSeconds seconds"
+            Write-Host "Status: $($response.statuscode)"
+            break
+        } catch {
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Warning "Package download failed in $attemptSeconds seconds"
+            Write-Host "Status: $($response.statuscode)"
+            Write-Warning $_.Exception.Message
+            if ($_.Exception.InnerException.Response.StatusCode -eq [System.Net.HttpStatusCode]::NotFound) {
+                Write-Warning "Request returned 404 Not Found. Aborting download."
+                $retries = 0
+            }
+        }
+        if ($retries -eq 0) {
+            $totalSeconds = [math]::Round(($(Get-Date) - $downloadStartTime).TotalSeconds, 2)
+            throw "Package download failed after $totalSeconds seconds"
+        }
+        Write-Warning "Waiting $interval seconds before retrying (retries left: $retries)..."
+        Start-Sleep -Seconds $interval
+    }
+    return $Path
+}
+
 function CompareConfig {
     param (
         [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
@@ -117,42 +166,11 @@ function CompareConfig {
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
-        # -------------------------------
-        # Load YAML with retry
-        # -------------------------------
-        $maxRetries = 5
-        $retryDelay = 10
-        $attempt = 0
-        $success = $false
-
-        while ($attempt -lt $maxRetries -and -not $success) {
-            try {
-                $Headers = @{
-                    Accept                 = "application/vnd.github+json"
-                    Authorization          = "Bearer $($PAT)"
-                    "X-GitHub-Api-Version" = "2022-11-28"
-                }
-                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop -Headers $Headers
-                $yaml = $response.Content | ConvertFrom-Yaml
-
-                if ($yaml) {
-                    $success = $true
-                }
-                else {
-                    throw "YAML content is empty"
-                }
-            }
-            catch {
-
-                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_ - $yaml_url" -severity 'WARN'
-                Start-Sleep -Seconds $retryDelay
-                $attempt++
-            }
-        }
-
-        if (-not $success) {
-            Write-Log -message "YAML could not be loaded after $maxRetries attempts." -severity 'ERROR'
-            $SETPXE = $true
+        if (-not (Invoke-DownloadWithRetryGithub @splat)) {
+            Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Set-PXE
+            Restart-Computer -Force
+            return
         }
 
         # -------------------------------
