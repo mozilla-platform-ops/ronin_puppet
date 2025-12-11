@@ -282,7 +282,7 @@ if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
     # for this repo, unset any existing git config for extraHeader
     git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
 fi
-# if YQ_PRESENT=1 and GH_PAT_AUTH=1, proceed with configuring GH PAT auth
+# if GH_PAT_AUTH=1, proceed with configuring GH PAT auth
 if [ "$GH_PAT_AUTH" = "1" ]; then
     # check if keys are present in config file
     # TODO: add actual key checking logic here
