@@ -144,7 +144,7 @@ function CompareConfig {
             }
             catch {
 
-                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $yaml_url" -severity 'WARN'
+                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_ - $yaml_url" -severity 'WARN'
                 Start-Sleep -Seconds $retryDelay
                 $attempt++
             }
