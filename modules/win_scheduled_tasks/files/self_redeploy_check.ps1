@@ -195,7 +195,7 @@ function CompareConfig {
 
         if (-not $found) {
             Write-Log -message "Node name not found in YAML!!" -severity 'ERROR'
-            $SETPXE = $true
+            #$SETPXE = $true
         }
 
         Write-Log -message "=== Configuration Comparison ===" -severity 'INFO'
@@ -208,7 +208,7 @@ function CompareConfig {
         }
         else {
             Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
-            $SETPXE = $true
+            #$SETPXE = $true
         }
 
         # -------------------------------
