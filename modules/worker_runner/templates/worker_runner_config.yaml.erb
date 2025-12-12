@@ -11,7 +11,7 @@ provider:
     host: "<%= @worker_group %>"
 worker:
   implementation: generic-worker
-  path: /usr/local/bin/generic-worker-<%= @generic_worker_engine %>
+  path: /usr/local/bin/generic-worker-<%= @generic_worker_engine.sub(/-static$/, '') %>
   configPath: <%= @data_dir %>/generic-worker.conf.yaml
 workerConfig:
   cachesDir: "<%= @data_dir %>/cache"
