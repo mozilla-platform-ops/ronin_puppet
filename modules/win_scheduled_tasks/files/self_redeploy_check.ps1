@@ -166,6 +166,22 @@ function CompareConfig {
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
+        $patFile = "D:\Secrets\pat.txt"
+        if (-not (Test-Path $patFile)) {
+            Write-Log -message ('{0} :: PAT file missing: {1}' -f $MyInvocation.MyCommand.Name, $patFile) -severity 'ERROR'
+            Set-PXE
+            Restart-Computer -Force
+            return
+        }
+
+        $PAT = Get-Content $patFile -ErrorAction Stop
+
+        $splat = @{
+            Url  = $yaml_url
+            Path = $tempYamlPath
+            PAT  = $PAT
+        }
+
         if (-not (Invoke-DownloadWithRetryGithub @splat)) {
             Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Set-PXE
