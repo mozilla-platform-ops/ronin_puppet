@@ -320,7 +320,7 @@ workflows:
             parameters:
               os: [macos-1015]
               suite: ["default"]
-              role: ["gecko_t_osx_1015_r8"]
+              role: ["gecko_t_osx_1015_r8", "gecko_t_osx_1400_r8", "gecko_t_osx_1500_m4"]
           # context: slack-secrets
           requires:
             - pre_commit
