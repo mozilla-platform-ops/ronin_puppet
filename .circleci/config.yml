@@ -50,7 +50,7 @@ executors:
     resource_class: macos.m1.medium.gen1
   macos-1500:
     macos:
-      xcode: 26.2.0  # 12/12/25: OS X 15.6, latest available
+      xcode: 16.4.0  # 12/12/25: OS X 15.3.2, latest OS X version available (for this class host).
     resource_class: macos.m1.medium.gen1
 
 commands:
