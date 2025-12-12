@@ -91,6 +91,41 @@ function Invoke-DownloadWithRetryGithub {
     return $Path
 }
 
+# -------------------------------------------------------------------
+# Persistent PXE Pending Flag
+# -------------------------------------------------------------------
+function Set-PXEPendingFlag {
+    param([switch]$Clear)
+
+    $regPath = "HKLM:\SOFTWARE\Mozilla\PXE"
+    $name    = "PendingPXE"
+
+    if ($Clear) {
+        if (Test-Path $regPath) {
+            Remove-ItemProperty -Path $regPath -Name $name -ErrorAction SilentlyContinue
+        }
+        return
+    }
+
+    if (-not (Test-Path $regPath)) {
+        New-Item -Path $regPath -Force | Out-Null
+    }
+
+    New-ItemProperty -Path $regPath -Name $name -Value "1" -PropertyType String -Force | Out-Null
+}
+
+function Get-PXEPendingFlag {
+    $regPath = "HKLM:\SOFTWARE\Mozilla\PXE"
+    $name    = "PendingPXE"
+
+    if (Test-Path "$regPath\$name") { return $true }
+    return $false
+}
+
+
+# -------------------------------------------------------------------
+# CompareConfig
+# -------------------------------------------------------------------
 function CompareConfig {
     param (
         [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
@@ -99,6 +134,11 @@ function CompareConfig {
 
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+
+        # Detect previous deferral due to active task
+        if (Get-PXEPendingFlag) {
+            Write-Log -message "PXE/Reboot pending task completion from previous run." -severity 'INFO'
+        }
     }
 
     process {
@@ -170,6 +210,7 @@ function CompareConfig {
         if (-not (Test-Path $patFile)) {
             Write-Log -message ('{0} :: PAT file missing: {1}' -f $MyInvocation.MyCommand.Name, $patFile) -severity 'ERROR'
             Set-PXE
+            Set-PXEPendingFlag -Clear
             Restart-Computer -Force
             return
         }
@@ -186,6 +227,7 @@ function CompareConfig {
         if (-not (Invoke-DownloadWithRetryGithub @splat)) {
             Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Set-PXE
+            Set-PXEPendingFlag -Clear
             Restart-Computer -Force
             return
         }
@@ -196,6 +238,7 @@ function CompareConfig {
         catch {
             Write-Log -message ('{0} :: YAML parsing failed: {1}' -f $MyInvocation.MyCommand.Name, $_) -severity 'ERROR'
             Set-PXE
+            Set-PXEPendingFlag -Clear
             Restart-Computer -Force
             return
         }
@@ -222,7 +265,7 @@ function CompareConfig {
 
         if (-not $found) {
             Write-Log -message "Node name not found in YAML!!" -severity 'ERROR'
-            #$SETPXE = $true
+            # $SETPXE = $true
         }
 
         Write-Log -message "=== Configuration Comparison ===" -severity 'INFO'
@@ -239,7 +282,7 @@ function CompareConfig {
         }
 
         # -------------------------------
-        # Compare Git Hash, including empty or null yamlHash
+        # Compare Git Hash
         # -------------------------------
         if ([string]::IsNullOrWhiteSpace($yamlHash)) {
             Write-Log -message "YAML hash is missing or invalid. Treating as mismatch." -severity 'ERROR'
@@ -267,6 +310,7 @@ function CompareConfig {
         # NEW LOGIC: Evaluate worker-status.json BEFORE reboot or PXE trigger
         # ====================================================================================
         if ($SETPXE) {
+
             Write-Log -message "Configuration mismatch detected. Evaluating worker-status.json..." -severity 'WARN'
 
             $searchPaths = @(
@@ -289,6 +333,7 @@ function CompareConfig {
 
             if (-not $workerStatus) {
                 Write-Log -message "worker-status.json not found. Rebooting now!" -severity 'ERROR'
+                Set-PXEPendingFlag -Clear
                 Restart-Computer -Force
                 return
             }
@@ -301,18 +346,28 @@ function CompareConfig {
             }
             catch {
                 Write-Log -message "worker-status.json is unreadable. Rebooting now!" -severity 'ERROR'
+                Set-PXEPendingFlag -Clear
                 Restart-Computer -Force
                 return
             }
 
+            # -------------------------------
+            # ACTIVE TASK HANDLING + FLAGGING
+            # -------------------------------
             if (($json.currentTaskIds).Count -eq 0) {
                 Write-Log -message "No active tasks. Rebooting now!" -severity 'WARN'
+                Set-PXEPendingFlag -Clear
                 Restart-Computer -Force
                 return
             }
             else {
                 $task = $json.currentTaskIds[0]
-                Write-Log -message "Task $task is active. Reboot will occur on next boot." -severity 'INFO'
+                Write-Log -message "Task $task is active. PXE/Reboot deferred until task completion." -severity 'INFO'
+
+                # Record pending reboot/PXE
+                Set-PXEPendingFlag
+
+                # Prepare PXE boot
                 Set-PXE
                 return
             }
