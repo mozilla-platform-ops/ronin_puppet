@@ -174,6 +174,7 @@ function CompareConfig {
             return
         }
 
+        $tempYamlPath = "$env:TEMP\pools.yml"
         $PAT = Get-Content $patFile -ErrorAction Stop
 
         $splat = @{
@@ -184,6 +185,16 @@ function CompareConfig {
 
         if (-not (Invoke-DownloadWithRetryGithub @splat)) {
             Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Set-PXE
+            Restart-Computer -Force
+            return
+        }
+
+        try {
+            $yaml = Get-Content $tempYamlPath -Raw | ConvertFrom-Yaml
+        }
+        catch {
+            Write-Log -message ('{0} :: YAML parsing failed: {1}' -f $MyInvocation.MyCommand.Name, $_) -severity 'ERROR'
             Set-PXE
             Restart-Computer -Force
             return
