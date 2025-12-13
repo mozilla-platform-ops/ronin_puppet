@@ -278,10 +278,10 @@ jobs:
       - run:
           name: update bundler
           command:  |
-            which bundle
-            BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle --version
-            BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle update --bundler
-            BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle --version
+              which bundle
+              bundle --version
+              gem install bundler
+              bundle --version
       - setup_vault:
           role: << parameters.role >>
       - gem_cache
