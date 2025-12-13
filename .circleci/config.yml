@@ -205,11 +205,11 @@ jobs:
       - checkout
       - tfutils/install:
           tf_version: 'latest'
-      - run:
-          name: setup
-          command: |
-            sudo apt update
-            sudo apt install -y ruby-full
+      # - run:
+      #     name: setup
+      #     command: |
+      #       sudo apt update
+      #       sudo apt install -y ruby-full
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
       - run: git fetch --all
       - run:
