@@ -18,7 +18,7 @@ mq=
 purge=
 robustcheckout=<%=scope.lookupvar('mercurial::settings::hgext_dir')%>/robustcheckout.py
 ; Enable sparse checkout only in macOS worker
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+<% if @facts['os']['name'] == 'Darwin' -%>
 sparse=
 <% end %>
 
