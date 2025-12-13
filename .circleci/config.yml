@@ -73,15 +73,16 @@ commands:
           command: |
             /usr/sbin/softwareupdate --install-rosetta --agree-to-license
   install_macos_puppet_dual_arch:
-    # parameters:
-    #   puppet_version:
-    #     type: enum
-    #     enum: ["7.20.0"]
-    #     default: "7.20.0"
-    #   bolt_version:
-    #     type: enum
-    #     enum: ["3.22.1"]
-    #     default: "3.22.1"
+    # TODO: use these again
+    parameters:
+      puppet_version:
+        type: enum
+        enum: ["7.20.0"]
+        default: "7.20.0"
+      bolt_version:
+        type: enum
+        enum: ["3.22.1"]
+        default: "3.22.1"
     steps:
       - run:
           name: Install puppet agent and bolt for arm64 macs
