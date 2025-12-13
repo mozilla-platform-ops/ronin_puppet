@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/test-kitchen/kitchen-docker.git
+  revision: 1c1c6a282ba52c2bf48b2ae0b181bc2fb3cf8bab
+  branch: main
+  specs:
+    kitchen-docker (3.0.0)
+      test-kitchen (>= 1.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -386,8 +394,6 @@ GEM
       inifile (~> 3.0, >= 3.0.0)
       sshkey (>= 1.0.0, < 3)
       test-kitchen (>= 1.20, < 4.0)
-    kitchen-docker (3.0.0)
-      test-kitchen (>= 1.0.0)
     kitchen-inspec (2.6.1)
       hashie (>= 3.4, <= 5.0)
       inspec (>= 2.2.64, < 7.0)
@@ -795,7 +801,7 @@ DEPENDENCIES
   debouncer
   erb
   kitchen-azurerm
-  kitchen-docker
+  kitchen-docker!
   kitchen-inspec
   kitchen-puppet
   kitchen-sync
