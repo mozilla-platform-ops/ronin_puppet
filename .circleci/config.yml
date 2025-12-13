@@ -270,15 +270,6 @@ jobs:
     steps:
       - export_env_vars
       - checkout
-      - run:
-          name: Select Ruby version
-          command: |
-            rbenv versions
-            # aerickson: picked at random, works on my mac on 12/13/25
-            rbenv install 3.4.7
-            rbenv global 3.4.7
-            rbenv rehash
-            ruby -v
       - setup_vault:
           role: << parameters.role >>
       - gem_cache
