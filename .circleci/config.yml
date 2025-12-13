@@ -275,6 +275,7 @@ jobs:
       - gem_cache
       - install_macos_puppet_dual_arch
       - install_rosetta
+      - run: bundle exec kitchen list
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
