@@ -266,9 +266,15 @@ jobs:
         type: string
       suite:
         type: string
+      bundle_gemfile:
+        type: string
+        default: ".gemfile"
     executor: << parameters.os >>
     steps:
-      - export_env_vars
+      - run:
+          name: Setup Additional Environment Variables
+          command: |
+            echo "export BUNDLE_GEMFILE=<< parameters.bundle_gemfile >>" >> $BASH_ENV
       - checkout
       - setup_vault:
           role: << parameters.role >>
@@ -348,8 +354,7 @@ workflows:
           os: macos-1015
           suite: "default-localhost"
           role: "gecko_t_osx_1015_r8"
-          env:
-            BUNDLE_GEMFILE: .gemfile.older_ruby
+          bundle_gemfile: ".gemfile.older_ruby"
           # context: slack-secrets
           requires:
             - pre_commit
