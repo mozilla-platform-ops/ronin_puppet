@@ -346,7 +346,7 @@ workflows:
       - macos_integration_tests:
           name: macos_integration_tests_1015_r8
           os: macos-1015
-          suite: "default"
+          suite: "default-localhost"
           role: "gecko_t_osx_1015_r8"
           # context: slack-secrets
           requires:
@@ -355,7 +355,7 @@ workflows:
       - macos_integration_tests:
           name: macos_integration_tests_1400_r8
           os: macos-1400
-          suite: "default"
+          suite: "default-localhost"
           role: "gecko_t_osx_1400_r8"
           # context: slack-secrets
           requires:
@@ -364,7 +364,7 @@ workflows:
       - macos_integration_tests:
           name: macos_integration_tests_1500_m4
           os: macos-1500
-          suite: "default"
+          suite: "default-localhost"
           role: "gecko_t_osx_1500_m4"
           # context: slack-secrets
           requires:
