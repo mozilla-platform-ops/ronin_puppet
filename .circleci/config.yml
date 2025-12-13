@@ -275,6 +275,13 @@ jobs:
           command: |
             echo "export BUNDLE_GEMFILE=<< parameters.bundle_gemfile >>" >> $BASH_ENV
       - checkout
+      - run:
+          name: update bundler
+          command:  |
+            which bundle
+            bundle --version
+            bundle update --bundler
+            bundle --version
       - setup_vault:
           role: << parameters.role >>
       - gem_cache
