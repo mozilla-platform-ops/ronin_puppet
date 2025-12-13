@@ -344,7 +344,7 @@ workflows:
       #       - pre_commit
       #       - r10k_install
       - macos_integration_tests:
-          name: macos_integration_tests_1015_r8
+          name: macos_integration_tests-1015_r8
           os: macos-1015
           suite: "default-localhost"
           role: "gecko_t_osx_1015_r8"
@@ -353,7 +353,7 @@ workflows:
             - pre_commit
             - r10k_install
       - macos_integration_tests:
-          name: macos_integration_tests_1400_r8
+          name: macos_integration_tests-1400_r8
           os: macos-1400
           suite: "default-localhost"
           role: "gecko_t_osx_1400_r8"
@@ -362,7 +362,7 @@ workflows:
             - pre_commit
             - r10k_install
       - macos_integration_tests:
-          name: macos_integration_tests_1500_m4
+          name: macos_integration_tests-1500_m4
           os: macos-1500
           suite: "default-localhost"
           role: "gecko_t_osx_1500_m4"
