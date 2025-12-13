@@ -154,6 +154,7 @@ commands:
       - run:
           name: Bundle Install and forced clean
           command: |
+            echo "bundle gemfile is: $BUNDLE_GEMFILE"
             bundle install
             bundle clean --force
       - save_cache:
