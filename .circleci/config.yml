@@ -348,7 +348,7 @@ workflows:
           os: macos-1015
           suite: "default-localhost"
           role: "gecko_t_osx_1015_r8"
-          environment:
+          env:
             BUNDLE_GEMFILE: .gemfile.older_ruby
           # context: slack-secrets
           requires:
