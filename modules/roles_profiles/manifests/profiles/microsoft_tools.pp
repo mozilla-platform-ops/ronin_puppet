@@ -3,35 +3,32 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::microsoft_tools {
+  case $facts['os']['name'] {
+    'Windows': {
+      # These may chnage for diffrent versions of Windows
+      # TODO: Research why we are using a pinned version and add comment why.
+      # Original source 'https://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof'
+      # When pulling from a HG repo Puppet see it the file as a new file one ach run
+      # In this case triggers the exec and adds to the local WMI repo each time
+      # For now pulling from S3
 
-    case $::operatingsystem {
-        'Windows': {
+      include win_os_settings::powershell_profile
+      if $facts['custom_win_release_id'] == '1803' {
+        include win_packages::vc_redist_x86
+        include win_packages::vc_redist_x64
+      } else {
+        include win_packages::vs_buildtools
+      }
 
-            # These may chnage for diffrent versions of Windows
-            # TODO: Research why we are using a pinned version and add comment why.
-            # Original source 'https://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof'
-            # When pulling from a HG repo Puppet see it the file as a new file one ach run
-            # In this case triggers the exec and adds to the local WMI repo each time
-            # For now pulling from S3
-
-
-            include win_os_settings::powershell_profile
-            if $facts['custom_win_release_id'] == '1803'{
-                include win_packages::vc_redist_x86
-                include win_packages::vc_redist_x64
-            } else {
-                include win_packages::vs_buildtools
-            }
-
-            class { 'win_packages::performance_tool_kit':
-                moz_profile_source => lookup('win-worker.mozilla_profile.source'),
-                moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
-            }
-            # Bug List
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+      class { 'win_packages::performance_tool_kit':
+        moz_profile_source => lookup('win-worker.mozilla_profile.source'),
+        moz_profile_file   => lookup('win-worker.mozilla_profile.local'),
+      }
+      # Bug List
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1510837
     }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }

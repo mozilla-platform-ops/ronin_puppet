@@ -3,17 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::remove_bootstrap_user {
+  $user = 'relops'
 
-    $user = 'relops'
-
-    if $::operatingsystem == 'Darwin' {
-        exec { "${user}_admin_group":
-            command => "/usr/bin/dscl . -delete /Users/${user} || rm /private/var/db/dslocal/nodes/Default/users/${user}.plist",
-            onlyif  => "/usr/bin/id ${user}",
-        }
+  if $facts['os']['name'] == 'Darwin' {
+    exec { "${user}_admin_group":
+      command => "/usr/bin/dscl . -delete /Users/${user} || rm /private/var/db/dslocal/nodes/Default/users/${user}.plist",
+      onlyif  => "/usr/bin/id ${user}",
     }
+  }
 
-    user { $user:
-        ensure => absent
-    }
+  user { $user:
+    ensure => absent,
+  }
 }

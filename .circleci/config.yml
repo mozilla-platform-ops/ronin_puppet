@@ -17,7 +17,7 @@ executors:
       - image: cimg/base:2022.09
   docker-ruby:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.4.7
   ubuntu-2004-docker:
     docker:
       # see https://github.com/mozilla-platform-ops/relops_infra_as_code/tree/master/docker/dockerfiles/circleci-ubuntu-2004
@@ -26,7 +26,11 @@ executors:
     # currently default is ubuntu 2204
     machine:
       image: default
-  # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+  # naming is very confusing, see below links for details
+  #   https://circleci.com/docs/guides/execution-managed/using-macos/
+  #
+  # these versions are old and we can't get that old on circleci any
+  #   more (so they run a more recent version of macOS)
   macos-1014: &1014
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
@@ -38,6 +42,15 @@ executors:
   macos-1100: &1100
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
+    resource_class: macos.m1.medium.gen1
+  # these versions actually map to macOS 14 and 15 respectively
+  macos-1400:
+    macos:
+      xcode: 16.1.0  # 12/12/25: OS X 14.6.1, latest 14.x available
+    resource_class: macos.m1.medium.gen1
+  macos-1500:
+    macos:
+      xcode: 16.4.0  # 12/12/25: OS X 15.3.2, latest OS X version available (for this class host).
     resource_class: macos.m1.medium.gen1
 
 commands:
@@ -59,6 +72,22 @@ commands:
           name: Install Rosetta 2
           command: |
             /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+  install_macos_puppet_dual_arch:
+    # TODO: use these again
+    parameters:
+      puppet_version:
+        type: enum
+        enum: ["7.20.0"]
+        default: "7.20.0"
+      bolt_version:
+        type: enum
+        enum: ["3.22.1"]
+        default: "3.22.1"
+    steps:
+      - run:
+          name: Install puppet agent and bolt
+          # TODO: make the script use the args
+          command: ./.circleci/install_puppet_mac.sh << parameters.puppet_version >> << parameters.bolt_version >>
   install_macos_puppet:
     parameters:
       puppet_version:
@@ -125,6 +154,7 @@ commands:
       - run:
           name: Bundle Install and forced clean
           command: |
+            echo "bundle gemfile is: $BUNDLE_GEMFILE"
             bundle install
             bundle clean --force
       - save_cache:
@@ -170,7 +200,7 @@ commands:
             terraform -chdir=test/integration/<< parameters.role >>/terraform/ apply -var="role=<< parameters.role >>" -input=false -auto-approve
 jobs:
   pre_commit:
-    executor: python
+    executor: docker-ruby
     steps:
       - checkout
       - tfutils/install:
@@ -179,17 +209,15 @@ jobs:
           name: setup
           command: |
             sudo apt update
-            sudo apt install -y ruby-full
+            sudo apt install -y python3-pip
       - run: git remote add original https://github.com/mozilla-platform-ops/ronin_puppet.git
       - run: git fetch --all
       - run:
           name: Run pre-commit
-          # ideally this would run `pre-commit run --all-files` on master, but we have
-          #   too many failures already in the repo.
           command: |
             set -x
             export PATH="$HOME/.tfenv/bin:$PATH"
-            pip install pre-commit
+            pip3 install pre-commit
             # if we're on master, run against the last commit, else
             #   (we're on a pr and) diff from master to HEAD.
             if [ "$(git rev-parse --abbrev-ref HEAD)" = "master" ]; then
@@ -237,17 +265,31 @@ jobs:
         type: string
       suite:
         type: string
+      bundle_gemfile:
+        type: string
+        default: ".gemfile"
     executor: << parameters.os >>
     steps:
-      - export_env_vars
+      - run:
+          name: Setup Additional Environment Variables
+          command: |
+            echo "export BUNDLE_GEMFILE=<< parameters.bundle_gemfile >>" >> $BASH_ENV
       - checkout
+      - run:
+          name: update bundler
+          command:  |
+              which bundle
+              bundle --version
+              gem install bundler
+              bundle --version
       - setup_vault:
           role: << parameters.role >>
       - gem_cache
-      - install_macos_puppet
+      - install_macos_puppet_dual_arch
       - install_rosetta
-      - run: bundle exec kitchen converge << parameters.suite >>
-      - run: bundle exec kitchen verify << parameters.suite >>
+      - run: BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle exec kitchen list
+      - run: BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle exec kitchen converge << parameters.suite >>
+      - run: BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
     environment:
@@ -291,20 +333,6 @@ workflows:
     jobs:
       - pre_commit
       - r10k_install
-      #- windows_integration_tests:
-      #    matrix:
-      #      parameters:
-      #        os: [win-1064-1804]
-      #        suite: ["windows"]
-      #        role: ["geckotwin10641803hw"]
-      #    context:
-      #      - slack-secrets
-      #      - puppet-test-kitchen-azure-sp
-      #    requires:
-      #      - pre_commit
-      #      - r10k_install
-      #
-      # TODO: re-enable mac signer tests (once fixed and reassessed)
       # - macos_integration_tests:
       #     matrix:
       #       parameters:
@@ -315,12 +343,42 @@ workflows:
       #     requires:
       #       - pre_commit
       #       - r10k_install
+      # - windows_integration_tests:
+      #     matrix:
+      #       parameters:
+      #         os: [win-1064-1804]
+      #         suite: ["windows"]
+      #         role: ["geckotwin10641803hw"]
+      #     context:
+      #       - slack-secrets
+      #       - puppet-test-kitchen-azure-sp
+      #     requires:
+      #       - pre_commit
+      #       - r10k_install
       - macos_integration_tests:
-          matrix:
-            parameters:
-              os: [macos-1015]
-              suite: ["default"]
-              role: ["gecko_t_osx_1015_r8"]
+          name: macos_integration_tests-1015_r8
+          os: macos-1015
+          suite: "default-localhost"
+          role: "gecko_t_osx_1015_r8"
+          bundle_gemfile: ".gemfile.older_ruby"
+          # context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - macos_integration_tests:
+          name: macos_integration_tests-1400_r8
+          os: macos-1400
+          suite: "default-localhost"
+          role: "gecko_t_osx_1400_r8"
+          # context: slack-secrets
+          requires:
+            - pre_commit
+            - r10k_install
+      - macos_integration_tests:
+          name: macos_integration_tests-1500_m4
+          os: macos-1500
+          suite: "default-localhost"
+          role: "gecko_t_osx_1500_m4"
           # context: slack-secrets
           requires:
             - pre_commit

@@ -11,14 +11,14 @@ date > $last_premature_end
 
 (find /private/var/folders/ -nouser -delete; echo "Finished clearing old cache files" ) &
 
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+<% if @facts['os']['name'] == 'Darwin' -%>
 exec 1> >(tee /var/opt/generic-worker/stdout.log >&1)
 exec 2> >(tee /var/opt/generic-worker/stderr.log >&2)
 <% end %>
 
 # First run the generic-worker, passing through any arguments handed to this
 # wrapper script...
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+<% if @facts['os']['name'] == 'Darwin' -%>
 /usr/local/bin/generic-worker "$@"
 <% else %>
 /usr/local/bin/generic-worker "$@" 2>&1 | logger -t generic-worker -s

@@ -3,14 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::vault_agent {
-
-    case $::operatingsystem {
-        'Darwin': {
-            include packages::vault
-            include vault_agent
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+  case $facts['os']['name'] {
+    'Darwin': {
+      include packages::vault
+      include vault_agent
     }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }
