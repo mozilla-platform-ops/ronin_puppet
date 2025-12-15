@@ -1,7 +1,7 @@
 GIT
-  remote: https://github.com/aerickson/kitchen-docker.git
-  revision: 9a1386c530c49a2784c051822177df3ac1a4550b
-  ref: 9a1386c530c49a2784c051822177df3ac1a4550b
+  remote: https://github.com/test-kitchen/kitchen-docker.git
+  revision: 511e4ad36856b9e2eccceb56603586e6cebd296a
+  ref: 511e4ad
   specs:
     kitchen-docker (3.0.0)
       test-kitchen (>= 1.0.0, < 4.0)
@@ -759,6 +759,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  arm64-darwin-24
 
 DEPENDENCIES
   debouncer
