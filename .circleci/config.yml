@@ -141,8 +141,9 @@ commands:
       - run:
           name: Bundle Install and forced clean
           command: |
-            bundle install
-            bundle clean --force
+            # explicitly set BUNDLE_GEMFILE to avoid issues?
+            BUNDLE_GEMFILE=.gemfile bundle install
+            BUNDLE_GEMFILE=.gemfile bundle clean --force
       - save_cache:
           paths:
             - vendor/
