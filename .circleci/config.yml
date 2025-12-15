@@ -59,6 +59,22 @@ commands:
           name: Install Rosetta 2
           command: |
             /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+  install_macos_puppet_dual_arch:
+    # TODO: use these again
+    parameters:
+      puppet_version:
+        type: enum
+        enum: ["7.20.0"]
+        default: "7.20.0"
+      bolt_version:
+        type: enum
+        enum: ["3.22.1"]
+        default: "3.22.1"
+    steps:
+      - run:
+          name: Install puppet agent and bolt
+          # TODO: make the script use the args
+          command: ./.circleci/install_puppet_mac.sh << parameters.puppet_version >> << parameters.bolt_version >>
   install_macos_puppet:
     parameters:
       puppet_version:
@@ -244,7 +260,7 @@ jobs:
       - setup_vault:
           role: << parameters.role >>
       - gem_cache
-      - install_macos_puppet
+      - install_macos_puppet_dual_arch
       - install_rosetta
       - run: bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
