@@ -1,12 +1,19 @@
 class macos_fsmonitor (
   Boolean $enabled = true,
 ) {
+  # Only require prepare_watchman_dir exec if not in CI
+  # (watchman dirs don't exist until after restart)
+  $watchman_require = $facts['running_in_test_kitchen'] ? {
+    'true'  => undef,
+    default => Exec['prepare_watchman_dir'],
+  }
+
   # Install the watchman package from S3
   packages::macos_package_from_s3 { 'watchman.pkg':
     private             => false,
     os_version_specific => false,
     type                => 'pkg',
-    require             => Exec['prepare_watchman_dir'],
+    require             => $watchman_require,
   }
 
   # these directories only exist after restart, so in ci, let's skip this
