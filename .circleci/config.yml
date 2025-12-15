@@ -34,25 +34,24 @@ executors:
   macos-1014: &1014
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
-    resource_class: macos.m1.medium.gen1
+    resource_class: m4pro.medium
   macos-1015: &1015
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
-    resource_class: macos.m1.medium.gen1
+    resource_class: m4pro.medium
   macos-1100: &1100
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
-    resource_class: macos.m1.medium.gen1
+    resource_class: m4pro.medium
   # these versions actually map to macOS 14 and 15 respectively
   macos-1400:
     macos:
       xcode: 16.1.0  # 12/12/25: OS X 14.6.1, latest 14.x available
-    resource_class: macos.m1.medium.gen1
+    resource_class: m4pro.medium
   macos-1500:
     macos:
       xcode: 16.4.0  # 12/12/25: OS X 15.3.2, latest OS X version available (for this class host).
-    resource_class: macos.m1.medium.gen1
-
+    resource_class: m4pro.medium
 commands:
   early_return_for_forked_pull_requests:
     description: >-
