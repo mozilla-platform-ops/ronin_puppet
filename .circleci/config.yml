@@ -33,20 +33,20 @@ executors:
   #   more (so they run a more recent version of macOS)
   macos-1014: &1014
     macos:
-      xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
+      xcode: 14.3.1  # 12/15/25: OS X 13.2.1, 13.2.x is oldest available
     resource_class: m4pro.medium
   macos-1015: &1015
     macos:
-      xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
+      xcode: 14.3.1  # 12/15/25: OS X 13.2.1, 13.2.x is oldest available
     resource_class: m4pro.medium
   macos-1100: &1100
     macos:
-      xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
+      xcode: 14.3.1  # 12/15/25: OS X 13.2.1, 13.2.x is oldest available
     resource_class: m4pro.medium
   # these versions actually map to macOS 14 and 15 respectively
   macos-1400:
     macos:
-      xcode: 16.1.0  # 12/12/25: OS X 14.6.1, latest 14.x available
+      xcode: 15.4.0  # 12/15/25: OS X 14.3.1, latest 14.x available
     resource_class: m4pro.medium
   macos-1500:
     macos:
