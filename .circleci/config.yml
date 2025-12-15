@@ -33,8 +33,8 @@ executors:
     resource_class: macos.m1.medium.gen1
   macos-1015: &1015
     macos:
-      xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
-    resource_class: macos.m1.medium.gen1
+      xcode: 14.3.1  # 12/15/25: OS X 13.2.1, 13 is oldest available for this machine class
+    resource_class: m4pro.medium
   macos-1100: &1100
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
