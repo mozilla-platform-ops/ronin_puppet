@@ -144,22 +144,26 @@ commands:
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
     steps:
+      - run:
+          name: Capture Ruby version for cache key
+          command: ruby --version | awk '{print $2}' > /tmp/ruby-version.txt
       - restore_cache:
           keys:
           # when lock file changes, use increasingly general patterns to restore cache
-          - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-          - v3-gem-cache-{{ arch }}-{{ .Branch }}-
-          - v3-gem-cache-{{ arch }}-
+          - v4-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version.txt" }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+          - v4-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version.txt" }}-{{ .Branch }}-
+          - v4-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version.txt" }}-
       - run:
           name: Bundle Install and forced clean
           command: |
             echo "bundle gemfile is: $BUNDLE_GEMFILE"
+            echo "Ruby version: $(cat /tmp/ruby-version.txt)"
             bundle install
             bundle clean --force
       - save_cache:
           paths:
             - vendor/
-          key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+          key: v4-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version.txt" }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
