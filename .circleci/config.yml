@@ -359,7 +359,7 @@ workflows:
           os: macos-1015
           suite: "default-localhost"
           role: "gecko_t_osx_1015_r8"
-          bundle_gemfile: ".gemfile.older_ruby"
+          # bundle_gemfile: ".gemfile.older_ruby"
           # context: slack-secrets
           requires:
             - pre_commit
