@@ -132,35 +132,22 @@ commands:
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
     steps:
-      # Cache disabled for now - using system gems instead of vendor
-      # - restore_cache:
-      #     keys:
-      #     # when lock file changes, use increasingly general patterns to restore cache
-      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-
-      #     - v3-gem-cache-{{ arch }}-
+      - restore_cache:
+          keys:
+          # when lock file changes, use increasingly general patterns to restore cache
+          - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+          - v3-gem-cache-{{ arch }}-{{ .Branch }}-
+          - v3-gem-cache-{{ arch }}-
       - run:
           name: Bundle Install
           command: |
-            echo "=== Checking for global/env bundler config ==="
-            env | grep BUNDLE || echo "No BUNDLE env vars"
-            cat ~/.bundle/config 2>/dev/null || echo "No global bundler config"
-            echo "=== Removing .bundle AND vendor to start completely fresh ==="
-            rm -rf .bundle vendor
-            echo "=== Setting bundle config (NO vendor path) ==="
-            bundle config unset path || true
             bundle config set --local gemfile .gemfile
-            echo "=== Bundle config list ==="
-            bundle config list
-            echo "=== Running bundle install ==="
             bundle install
-            echo "=== Verifying installation ==="
-            bundle exec gem list kitchen-docker
-      # Cache disabled for now - using system gems instead of vendor
-      # - save_cache:
-      #     paths:
-      #       - vendor/
-      #     key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+            bundle clean --force
+      - save_cache:
+          paths:
+            - vendor/
+          key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
@@ -277,42 +264,13 @@ jobs:
       - install_macos_puppet_dual_arch
       - install_rosetta
       - run:
-          name: Debug Ruby and bundler paths
-          command: |
-            ruby -v
-            which bundle
-            echo "=== Bundle env ==="
-            bundle env
-            echo "=== Bundle config list ==="
-            bundle config list
-            echo "=== Checking .bundle/config ==="
-            cat .bundle/config
-            ls -la vendor/ruby/ || echo "vendor/ruby/ doesn't exist"
-            find vendor -name "*kitchen-docker*" -type d 2>/dev/null || echo "kitchen-docker not found in vendor"
-      - run:
           name: Kitchen converge
           command: |
-            echo "=== Explicitly setting GEM paths to avoid Puppet's Ruby ==="
             export GEM_HOME="$HOME/.gem/ruby/3.0.0"
             export GEM_PATH="$HOME/.gem/ruby/3.0.0:$HOME/.rbenv/versions/3.0.6/lib/ruby/gems/3.0.0"
             export PATH="$HOME/.gem/ruby/3.0.0/bin:$PATH"
-            echo "=== Re-running bundle install in same step as kitchen converge ==="
-            bundle config unset path || true
             bundle config set --local gemfile .gemfile
             bundle install
-            echo "=== Ruby/Bundle being used for kitchen converge ==="
-            which ruby
-            ruby -v
-            which bundle
-            bundle -v
-            echo "=== Environment variables ==="
-            env | grep -E "(PATH|GEM|RUBY|BUNDLE)" | sort
-            echo "=== Bundler gem paths ==="
-            bundle exec gem environment
-            echo "=== Where is kitchen-docker? ==="
-            bundle exec gem which kitchen-docker || echo "kitchen-docker not found"
-            bundle show kitchen-docker || echo "bundle show failed"
-            echo "=== Running kitchen converge WITHOUT bundle exec ==="
             kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
@@ -389,20 +347,18 @@ workflows:
               suite: ["default"]
               role: ["gecko_t_osx_1015_r8"]
           # context: slack-secrets
-          # TEMP DISABLE . DON'T LAND
-          # requires:
-          #   - pre_commit
-          #   - r10k_install
-      # TEMP DISABLE . DON'T LAND
-      # - linux_integration_tests:
-      #     matrix:
-      #       parameters:
-      #         kitchen_target: ["linux-netperf-ubuntu-1804",
-      #                          "linux-perf-ubuntu-1804",
-      #                         #  "linux-perf-ubuntu-2204",  # not going to use this, so disable
-      #                          "linux-perf-ubuntu-2404",
-      #                         #  "linux-perf-wayland-ubuntu-2404",  # disabled for now, needs more work
-      #                          "bitbar-ubuntu-2204"]
-      #     requires:
-      #       - pre_commit
-      #       - r10k_install
+          requires:
+            - pre_commit
+            - r10k_install
+      - linux_integration_tests:
+          matrix:
+            parameters:
+              kitchen_target: ["linux-netperf-ubuntu-1804",
+                               "linux-perf-ubuntu-1804",
+                              #  "linux-perf-ubuntu-2204",  # not going to use this, so disable
+                               "linux-perf-ubuntu-2404",
+                              #  "linux-perf-wayland-ubuntu-2404",  # disabled for now, needs more work
+                               "bitbar-ubuntu-2204"]
+          requires:
+            - pre_commit
+            - r10k_install
