@@ -135,25 +135,31 @@ commands:
       - run:
           name: Detect Ruby version for cache key
           command: |
-            RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
-            echo "export RUBY_MINOR=$RUBY_MINOR" >> $BASH_ENV
-            echo "Ruby minor version for caching: $RUBY_MINOR"
+            ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'" > /tmp/ruby-version-cache
+            cat /tmp/ruby-version-cache
       - restore_cache:
           keys:
-          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ env.RUBY_MINOR }}-{{ checksum ".gemfile.lock" }}
-          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ env.RUBY_MINOR }}-
-          - v4-system-gem-cache-{{ arch }}-{{ env.RUBY_MINOR }}-
+          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum ".gemfile.lock" }}
+          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-
+          - v4-system-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version-cache" }}-
       - run:
-          name: Prepare for gem installation
+          name: Bundle install
           command: |
             rm -rf .bundle vendor
             bundle config unset path || true
             bundle config set --local gemfile .gemfile
+            bundle install
+      - run:
+          name: Save Ruby version for cache key
+          command: |
+            ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'" > /tmp/ruby-version-cache
       - save_cache:
           paths:
-            - ~/.gem/ruby/$RUBY_MINOR
+            - ~/.gem/ruby/3.0.0
+            - ~/.gem/ruby/3.1.0
+            - ~/.gem/ruby/3.2.0
             - ~/.rbenv/versions/*/lib/ruby/gems/*/bundler/gems
-          key: v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ env.RUBY_MINOR }}-{{ checksum ".gemfile.lock" }}
+          key: v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
