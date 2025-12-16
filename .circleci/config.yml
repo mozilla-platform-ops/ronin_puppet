@@ -135,7 +135,7 @@ commands:
       - run:
           name: Detect Ruby version for cache key
           command: |
-            RUBY_MINOR=$(ruby -e 'puts "#{RUBY_VERSION.split('.')[0..1].join('.')}.0"')
+            RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
             echo "export RUBY_MINOR=$RUBY_MINOR" >> $BASH_ENV
             echo "Ruby minor version for caching: $RUBY_MINOR"
       - restore_cache:
@@ -272,9 +272,9 @@ jobs:
       - run:
           name: Kitchen converge
           command: |
-            RUBY_MINOR=$(ruby -e 'puts "#{RUBY_VERSION.split('.')[0..1].join('.')}.0"')
+            RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
             export GEM_HOME="$HOME/.gem/ruby/$RUBY_MINOR"
-            export GEM_PATH="$HOME/.gem/ruby/$RUBY_MINOR:$(ruby -e 'puts Gem.default_dir')"
+            export GEM_PATH="$HOME/.gem/ruby/$RUBY_MINOR:$(ruby -e "puts Gem.default_dir")"
             export PATH="$HOME/.gem/ruby/$RUBY_MINOR/bin:$PATH"
             bundle config set --local gemfile .gemfile
             bundle install
