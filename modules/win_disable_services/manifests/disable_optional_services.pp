@@ -34,11 +34,11 @@ class win_disable_services::disable_optional_services {
 
     # --- UWP / Microsoft Store ecosystem ---
     'AppReadiness',         # App readiness
-    'AppXSvc',              # AppX Deployment Service
+#    'AppXSvc',              # AppX Deployment Service
     'CDPSvc',               # Connected Devices Platform Service
-    'ClipSVC',              # Client License Service (Store licensing)
+#    'ClipSVC',              # Client License Service (Store licensing)
     'CoreMessagingRegistrar', # CoreMessaging
-    'StateRepository',      # State Repository Service
+#    'StateRepository',      # State Repository Service
     'SystemEventsBroker',   # System Events Broker
     'TextInputManagementSvc', # Text Input Management
     'TimeBrokerSvc',        # Time Broker (background tasks)
@@ -58,5 +58,18 @@ class win_disable_services::disable_optional_services {
     'NgcCtnrSvc',           # Microsoft Passport Container (Windows Hello / PIN)
   ]
 
-  win_disable_services::disable_service { $services: }
+  $services_disable_only = [
+    'SystemEventsBroker',
+    'webthreatdefsvc',
+    'RmSvc',
+  ]
+
+  service { $services:
+    ensure => 'stopped',
+    enable => false,
+  }
+
+  service { $services_disable_only:
+    enable => false,
+  }
 }
