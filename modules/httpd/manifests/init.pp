@@ -3,17 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class httpd {
-
-    case $facts['os']['name'] {
-        'Darwin': {
-            service { 'httpd':
-                ensure => running,
-                name   => 'org.apache.httpd',
-                enable => true,
-            }
-        }
-        default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
-        }
+  case $facts['os']['name'] {
+    'Darwin': {
+      service { 'httpd':
+        ensure => running,
+        name   => 'org.apache.httpd',
+        enable => true,
+      }
     }
+    default: {
+      fail("${module_name} not supported under ${facts['os']['name']}")
+    }
+  }
 }

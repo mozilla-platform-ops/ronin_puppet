@@ -1,7 +1,7 @@
 GIT
-  remote: https://github.com/aerickson/kitchen-docker.git
-  revision: 9a1386c530c49a2784c051822177df3ac1a4550b
-  ref: 9a1386c530c49a2784c051822177df3ac1a4550b
+  remote: https://github.com/test-kitchen/kitchen-docker.git
+  revision: 511e4ad36856b9e2eccceb56603586e6cebd296a
+  ref: 511e4ad
   specs:
     kitchen-docker (3.0.0)
       test-kitchen (>= 1.0.0, < 4.0)
@@ -263,7 +263,9 @@ GEM
       ms_rest_azure (~> 0.12.0)
     azure_mgmt_storage (0.23.0)
       ms_rest_azure (~> 0.12.0)
+    base64 (0.3.0)
     bcrypt_pbkdf (1.1.0)
+    bigdecimal (3.3.1)
     builder (3.2.4)
     cgi (0.5.0)
     chef-config (18.1.0)
@@ -282,6 +284,7 @@ GEM
     colored2 (3.1.2)
     concurrent-ruby (1.1.10)
     cri (2.15.11)
+    csv (3.3.5)
     debouncer (0.2.2)
     declarative (0.0.20)
     deep_merge (1.2.2)
@@ -446,6 +449,7 @@ GEM
       ms_rest (~> 0.7.6)
     multi_json (1.15.0)
     multipart-post (2.2.3)
+    mutex_m (0.3.0)
     net-scp (4.0.0)
       net-ssh (>= 2.6.5, < 8.0.0)
     net-sftp (4.0.0)
@@ -759,8 +763,12 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  arm64-darwin-24
 
 DEPENDENCIES
+  base64
+  bigdecimal
+  csv
   debouncer
   erb
   kitchen-azurerm
@@ -771,6 +779,7 @@ DEPENDENCIES
   kitchen-vagrant
   kitchen-verifier-serverspec
   librarian-puppet
+  mutex_m
   puppet (= 7.8.0)
   puppet-lint (>= 2.4.2)
   puppet-strings (~> 4.1)

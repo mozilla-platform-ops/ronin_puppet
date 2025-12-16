@@ -33,8 +33,8 @@ executors:
     resource_class: macos.m1.medium.gen1
   macos-1015: &1015
     macos:
-      xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
-    resource_class: macos.m1.medium.gen1
+      xcode: 14.3.1  # 12/15/25: OS X 13.2.1, 13 is oldest available for this machine class
+    resource_class: m4pro.medium
   macos-1100: &1100
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
@@ -59,6 +59,22 @@ commands:
           name: Install Rosetta 2
           command: |
             /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+  install_macos_puppet_dual_arch:
+    # TODO: use these again
+    parameters:
+      puppet_version:
+        type: enum
+        enum: ["7.20.0"]
+        default: "7.20.0"
+      bolt_version:
+        type: enum
+        enum: ["3.22.1"]
+        default: "3.22.1"
+    steps:
+      - run:
+          name: Install puppet agent and bolt
+          # TODO: make the script use the args
+          command: ./.circleci/install_puppet_mac.sh << parameters.puppet_version >> << parameters.bolt_version >>
   install_macos_puppet:
     parameters:
       puppet_version:
@@ -116,21 +132,34 @@ commands:
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
     steps:
+      - run:
+          name: Detect Ruby version for cache key
+          command: |
+            ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'" > /tmp/ruby-version-cache
+            cat /tmp/ruby-version-cache
       - restore_cache:
           keys:
-          # when lock file changes, use increasingly general patterns to restore cache
-          - v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-          - v2-gem-cache-{{ arch }}-{{ .Branch }}-
-          - v2-gem-cache-{{ arch }}-
+          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum ".gemfile.lock" }}
+          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-
+          - v4-system-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version-cache" }}-
       - run:
-          name: Bundle Install and forced clean
+          name: Bundle install
           command: |
+            rm -rf .bundle vendor
+            bundle config unset path || true
+            bundle config set --local gemfile .gemfile
             bundle install
-            bundle clean --force
+      - run:
+          name: Save Ruby version for cache key
+          command: |
+            ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'" > /tmp/ruby-version-cache
       - save_cache:
           paths:
-            - vendor/
-          key: v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+            - ~/.gem/ruby/3.0.0
+            - ~/.gem/ruby/3.1.0
+            - ~/.gem/ruby/3.2.0
+            - ~/.rbenv/versions/*/lib/ruby/gems/*/bundler/gems
+          key: v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
@@ -244,9 +273,18 @@ jobs:
       - setup_vault:
           role: << parameters.role >>
       - gem_cache
-      - install_macos_puppet
+      - install_macos_puppet_dual_arch
       - install_rosetta
-      - run: bundle exec kitchen converge << parameters.suite >>
+      - run:
+          name: Kitchen converge
+          command: |
+            RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
+            export GEM_HOME="$HOME/.gem/ruby/$RUBY_MINOR"
+            export GEM_PATH="$HOME/.gem/ruby/$RUBY_MINOR:$(ruby -e "puts Gem.default_dir")"
+            export PATH="$HOME/.gem/ruby/$RUBY_MINOR/bin:$PATH"
+            bundle config set --local gemfile .gemfile
+            bundle install
+            kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
