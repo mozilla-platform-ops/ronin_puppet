@@ -132,25 +132,28 @@ commands:
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
     steps:
-      # Cache disabled for now - using system gems instead of vendor
-      # - restore_cache:
-      #     keys:
-      #     # when lock file changes, use increasingly general patterns to restore cache
-      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-
-      #     - v3-gem-cache-{{ arch }}-
       - run:
-          name: Bundle Install
+          name: Detect Ruby version for cache key
+          command: |
+            RUBY_MINOR=$(ruby -e 'puts "#{RUBY_VERSION.split('.')[0..1].join('.')}.0"')
+            echo "export RUBY_MINOR=$RUBY_MINOR" >> $BASH_ENV
+            echo "Ruby minor version for caching: $RUBY_MINOR"
+      - restore_cache:
+          keys:
+          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ env.RUBY_MINOR }}-{{ checksum ".gemfile.lock" }}
+          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ env.RUBY_MINOR }}-
+          - v4-system-gem-cache-{{ arch }}-{{ env.RUBY_MINOR }}-
+      - run:
+          name: Prepare for gem installation
           command: |
             rm -rf .bundle vendor
             bundle config unset path || true
             bundle config set --local gemfile .gemfile
-            bundle install
-      # Cache disabled for now - using system gems instead of vendor
-      # - save_cache:
-      #     paths:
-      #       - vendor/
-      #     key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+      - save_cache:
+          paths:
+            - ~/.gem/ruby/$RUBY_MINOR
+            - ~/.rbenv/versions/*/lib/ruby/gems/*/bundler/gems
+          key: v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ env.RUBY_MINOR }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
@@ -269,9 +272,10 @@ jobs:
       - run:
           name: Kitchen converge
           command: |
-            export GEM_HOME="$HOME/.gem/ruby/3.0.0"
-            export GEM_PATH="$HOME/.gem/ruby/3.0.0:$HOME/.rbenv/versions/3.0.6/lib/ruby/gems/3.0.0"
-            export PATH="$HOME/.gem/ruby/3.0.0/bin:$PATH"
+            RUBY_MINOR=$(ruby -e 'puts "#{RUBY_VERSION.split('.')[0..1].join('.')}.0"')
+            export GEM_HOME="$HOME/.gem/ruby/$RUBY_MINOR"
+            export GEM_PATH="$HOME/.gem/ruby/$RUBY_MINOR:$(ruby -e 'puts Gem.default_dir')"
+            export PATH="$HOME/.gem/ruby/$RUBY_MINOR/bin:$PATH"
             bundle config set --local gemfile .gemfile
             bundle install
             kitchen converge << parameters.suite >>
