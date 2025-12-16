@@ -141,8 +141,11 @@ commands:
       - run:
           name: Bundle Install
           command: |
-            echo "=== Removing .bundle to start fresh ==="
-            rm -rf .bundle
+            echo "=== Checking for global/env bundler config ==="
+            env | grep BUNDLE || echo "No BUNDLE env vars"
+            cat ~/.bundle/config 2>/dev/null || echo "No global bundler config"
+            echo "=== Removing .bundle AND vendor to start completely fresh ==="
+            rm -rf .bundle vendor
             echo "=== Setting bundle config ==="
             bundle config set --local path vendor
             bundle config set --local gemfile .gemfile
