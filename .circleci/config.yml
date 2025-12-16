@@ -156,8 +156,6 @@ commands:
       - run:
           name: Bundle Install and forced clean
           command: |
-            echo "bundle gemfile is: $BUNDLE_GEMFILE"
-            echo "Ruby version: $(cat /tmp/ruby-version.txt)"
             bundle install
             bundle clean --force
       - save_cache:
@@ -280,19 +278,14 @@ jobs:
       - checkout
       - run:
           name: update bundler
-          command:  |
-              which bundle
-              bundle --version
-              gem install bundler
-              bundle --version
+          command: gem install bundler
       - setup_vault:
           role: << parameters.role >>
       - gem_cache
       - install_macos_puppet_dual_arch
       - install_rosetta
-      - run: BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle exec kitchen list
-      - run: BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle exec kitchen converge << parameters.suite >>
-      - run: BUNDLE_GEMFILE=<< parameters.bundle_gemfile >> bundle exec kitchen verify << parameters.suite >>
+      - run: bundle exec kitchen converge << parameters.suite >>
+      - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
     environment:
