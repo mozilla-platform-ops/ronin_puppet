@@ -141,9 +141,15 @@ commands:
       - run:
           name: Bundle Install
           command: |
+            echo "=== Setting bundle config ==="
             bundle config set --local path vendor
             bundle config set --local gemfile .gemfile
+            echo "=== Bundle config list ==="
+            bundle config list
+            echo "=== Running bundle install ==="
             bundle install
+            echo "=== Verifying installation ==="
+            bundle exec gem list kitchen-docker
       - save_cache:
           paths:
             - vendor/
