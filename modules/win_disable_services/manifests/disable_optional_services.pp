@@ -65,7 +65,6 @@ class win_disable_services::disable_optional_services {
   ]
 
   service { $services:
-    ensure => 'stopped',
     enable => false,
   }
 
