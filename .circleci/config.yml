@@ -274,7 +274,12 @@ jobs:
           command: |
             ruby -v
             which bundle
-            bundle env | grep -E "(Ruby|Bundler|Path)"
+            echo "=== Bundle env ==="
+            bundle env
+            echo "=== Bundle config list ==="
+            bundle config list
+            echo "=== Checking .bundle/config ==="
+            cat .bundle/config
             ls -la vendor/ruby/ || echo "vendor/ruby/ doesn't exist"
             find vendor -name "*kitchen-docker*" -type d 2>/dev/null || echo "kitchen-docker not found in vendor"
       - run: bundle exec kitchen converge << parameters.suite >>
