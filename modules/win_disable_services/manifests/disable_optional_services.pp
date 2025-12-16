@@ -35,13 +35,13 @@ class win_disable_services::disable_optional_services {
     # --- UWP / Microsoft Store ecosystem ---
     'AppReadiness',         # App readiness
 #    'AppXSvc',              # AppX Deployment Service
-    'CDPSvc',               # Connected Devices Platform Service
+####    'CDPSvc',               # Connected Devices Platform Service
 #    'ClipSVC',              # Client License Service (Store licensing)
 ####     'CoreMessagingRegistrar', # CoreMessaging - won't disable
 #    'StateRepository',      # State Repository Service
 ####    'SystemEventsBroker',   # System Events Broker - DON'T Disable. Sched tasks depends on this
-    'TextInputManagementSvc', # Text Input Management
-    'TimeBrokerSvc',        # Time Broker (background tasks)
+####    'TextInputManagementSvc', # Text Input Management
+####    'TimeBrokerSvc',        # Time Broker (background tasks)
 
     # --- Indexing / contacts ---
     'TrkWks',               # Distributed Link Tracking Client
