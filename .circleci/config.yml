@@ -312,8 +312,8 @@ jobs:
             echo "=== Where is kitchen-docker? ==="
             bundle exec gem which kitchen-docker || echo "kitchen-docker not found"
             bundle show kitchen-docker || echo "bundle show failed"
-            echo "=== Running kitchen converge ==="
-            bundle exec kitchen converge << parameters.suite >>
+            echo "=== Running kitchen converge WITHOUT bundle exec ==="
+            kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
