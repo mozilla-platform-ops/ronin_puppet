@@ -141,6 +141,8 @@ commands:
       - run:
           name: Bundle Install
           command: |
+            echo "=== Removing .bundle to start fresh ==="
+            rm -rf .bundle
             echo "=== Setting bundle config ==="
             bundle config set --local path vendor
             bundle config set --local gemfile .gemfile
