@@ -135,9 +135,9 @@ commands:
       - restore_cache:
           keys:
           # when lock file changes, use increasingly general patterns to restore cache
-          - v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-          - v2-gem-cache-{{ arch }}-{{ .Branch }}-
-          - v2-gem-cache-{{ arch }}-
+          - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+          - v3-gem-cache-{{ arch }}-{{ .Branch }}-
+          - v3-gem-cache-{{ arch }}-
       - run:
           name: Bundle Install
           command: |
@@ -153,7 +153,7 @@ commands:
       - save_cache:
           paths:
             - vendor/
-          key: v2-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+          key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
