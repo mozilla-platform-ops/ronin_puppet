@@ -299,6 +299,11 @@ jobs:
             bundle -v
             echo "=== Environment variables ==="
             env | grep -E "(PATH|GEM|RUBY|BUNDLE)" | sort
+            echo "=== Bundler gem paths ==="
+            bundle exec gem environment
+            echo "=== Where is kitchen-docker? ==="
+            bundle exec gem which kitchen-docker || echo "kitchen-docker not found"
+            bundle show kitchen-docker || echo "bundle show failed"
             echo "=== Running kitchen converge ==="
             bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
