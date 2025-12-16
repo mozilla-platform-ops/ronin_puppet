@@ -1,36 +1,26 @@
 class macos_fsmonitor (
   Boolean $enabled = true,
 ) {
-  # Only require prepare_watchman_dir exec if not in CI
-  # (watchman dirs don't exist until after restart)
-  $watchman_require = $facts['running_in_test_kitchen'] ? {
-    'true'  => undef,
-    default => Exec['prepare_watchman_dir'],
-  }
-
   # Install the watchman package from S3
   packages::macos_package_from_s3 { 'watchman.pkg':
     private             => false,
     os_version_specific => false,
     type                => 'pkg',
-    require             => $watchman_require,
+    require             => Exec['prepare_watchman_dir'],
   }
 
-  # these directories only exist after restart, so in ci, let's skip this
-  if $facts['running_in_test_kitchen'] != 'true' {
-    # Step 1: Create the necessary directory
-    exec { 'prepare_watchman_dir':
-      command => 'sudo mkdir -p /usr/local/var/run/watchman',
-      creates => '/usr/local/var/run/watchman',
-      path    => ['/usr/bin', '/usr/local/bin'],
-    }
+  # Step 1: Create the necessary directory
+  exec { 'prepare_watchman_dir':
+    command => 'sudo mkdir -p /usr/local/var/run/watchman',
+    creates => '/usr/local/var/run/watchman',
+    path    => ['/usr/bin', '/usr/local/bin'],
+  }
 
-    # Step 2: Adjust ownership of the directory
-    exec { 'chown_watchman_dir':
-      command => 'sudo chown -R cltbld:staff /usr/local/var/run/watchman',
-      require => Exec['prepare_watchman_dir'],
-      path    => ['/usr/bin', '/usr/local/bin'],
-    }
+  # Step 2: Adjust ownership of the directory
+  exec { 'chown_watchman_dir':
+    command => 'sudo chown -R cltbld:staff /usr/local/var/run/watchman',
+    require => Exec['prepare_watchman_dir'],
+    path    => ['/usr/bin', '/usr/local/bin'],
   }
 
   # Step 3: Codesign the `watchman` binary
