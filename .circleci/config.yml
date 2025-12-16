@@ -282,7 +282,16 @@ jobs:
             cat .bundle/config
             ls -la vendor/ruby/ || echo "vendor/ruby/ doesn't exist"
             find vendor -name "*kitchen-docker*" -type d 2>/dev/null || echo "kitchen-docker not found in vendor"
-      - run: bundle exec kitchen converge << parameters.suite >>
+      - run:
+          name: Kitchen converge
+          command: |
+            echo "=== Ruby/Bundle being used for kitchen converge ==="
+            which ruby
+            ruby -v
+            which bundle
+            bundle -v
+            echo "=== Running kitchen converge ==="
+            bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
