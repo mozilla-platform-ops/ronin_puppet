@@ -292,6 +292,10 @@ jobs:
       - run:
           name: Kitchen converge
           command: |
+            echo "=== Explicitly setting GEM paths to avoid Puppet's Ruby ==="
+            export GEM_HOME="$HOME/.gem/ruby/3.0.0"
+            export GEM_PATH="$HOME/.gem/ruby/3.0.0:$HOME/.rbenv/versions/3.0.6/lib/ruby/gems/3.0.0"
+            export PATH="$HOME/.gem/ruby/3.0.0/bin:$PATH"
             echo "=== Re-running bundle install in same step as kitchen converge ==="
             bundle config unset path || true
             bundle config set --local gemfile .gemfile
