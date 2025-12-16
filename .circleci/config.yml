@@ -292,6 +292,10 @@ jobs:
       - run:
           name: Kitchen converge
           command: |
+            echo "=== Re-running bundle install in same step as kitchen converge ==="
+            bundle config unset path || true
+            bundle config set --local gemfile .gemfile
+            bundle install
             echo "=== Ruby/Bundle being used for kitchen converge ==="
             which ruby
             ruby -v
