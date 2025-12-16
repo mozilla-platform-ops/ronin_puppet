@@ -132,12 +132,13 @@ commands:
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
     steps:
-      - restore_cache:
-          keys:
-          # when lock file changes, use increasingly general patterns to restore cache
-          - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-          - v3-gem-cache-{{ arch }}-{{ .Branch }}-
-          - v3-gem-cache-{{ arch }}-
+      # Cache disabled for now - using system gems instead of vendor
+      # - restore_cache:
+      #     keys:
+      #     # when lock file changes, use increasingly general patterns to restore cache
+      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-
+      #     - v3-gem-cache-{{ arch }}-
       - run:
           name: Bundle Install
           command: |
@@ -146,8 +147,8 @@ commands:
             cat ~/.bundle/config 2>/dev/null || echo "No global bundler config"
             echo "=== Removing .bundle AND vendor to start completely fresh ==="
             rm -rf .bundle vendor
-            echo "=== Setting bundle config ==="
-            bundle config set --local path vendor
+            echo "=== Setting bundle config (NO vendor path) ==="
+            bundle config unset path || true
             bundle config set --local gemfile .gemfile
             echo "=== Bundle config list ==="
             bundle config list
@@ -155,10 +156,11 @@ commands:
             bundle install
             echo "=== Verifying installation ==="
             bundle exec gem list kitchen-docker
-      - save_cache:
-          paths:
-            - vendor/
-          key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+      # Cache disabled for now - using system gems instead of vendor
+      # - save_cache:
+      #     paths:
+      #       - vendor/
+      #     key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
