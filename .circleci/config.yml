@@ -26,7 +26,11 @@ executors:
     # currently default is ubuntu 2204
     machine:
       image: default
-  # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+  # naming is very confusing, see below links for details
+  #   https://circleci.com/docs/guides/execution-managed/using-macos/
+  #
+  # these versions are old and we can't get that old on circleci any
+  #   more (so they run a more recent version of macOS)
   macos-1014: &1014
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
@@ -39,6 +43,15 @@ executors:
     macos:
       xcode: 14.2.0  # 10/9/25: OS X 12.6.3, 12.6.x is oldest available
     resource_class: macos.m1.medium.gen1
+  # these versions actually map to macOS 14 and 15 respectively
+  macos-1400: &1400
+    macos:
+      xcode: 15.4.0  # 12/15/25: OS X 14.3.1, latest 14.x available
+    resource_class: m4pro.medium
+  macos-1500:
+    macos:
+      xcode: 16.4.0  # 12/12/25: OS X 15.3.2, latest OS X version available (for this class host).
+    resource_class: m4pro.medium
 
 commands:
   early_return_for_forked_pull_requests:
