@@ -297,6 +297,8 @@ jobs:
             ruby -v
             which bundle
             bundle -v
+            echo "=== Environment variables ==="
+            env | grep -E "(PATH|GEM|RUBY|BUNDLE)" | sort
             echo "=== Running kitchen converge ==="
             bundle exec kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
