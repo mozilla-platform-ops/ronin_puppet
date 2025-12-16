@@ -37,7 +37,7 @@ class win_disable_services::disable_optional_services {
 #    'AppXSvc',              # AppX Deployment Service
     'CDPSvc',               # Connected Devices Platform Service
 #    'ClipSVC',              # Client License Service (Store licensing)
-    'CoreMessagingRegistrar', # CoreMessaging
+####     'CoreMessagingRegistrar', # CoreMessaging
 #    'StateRepository',      # State Repository Service
 #    'SystemEventsBroker',   # System Events Broker
     'TextInputManagementSvc', # Text Input Management
