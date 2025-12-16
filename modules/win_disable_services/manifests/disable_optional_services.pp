@@ -39,7 +39,7 @@ class win_disable_services::disable_optional_services {
 #    'ClipSVC',              # Client License Service (Store licensing)
     'CoreMessagingRegistrar', # CoreMessaging
 #    'StateRepository',      # State Repository Service
-    'SystemEventsBroker',   # System Events Broker
+#    'SystemEventsBroker',   # System Events Broker
     'TextInputManagementSvc', # Text Input Management
     'TimeBrokerSvc',        # Time Broker (background tasks)
 
@@ -51,10 +51,10 @@ class win_disable_services::disable_optional_services {
     'IntelAudioService',    # Intel Audio Service
     'jhi_service',          # Intel Dynamic Application Loader Host
     'RtkAudioUniversalService', # Realtek Audio Universal Service
-    'webthreatdefsvc',      # Web Threat Defense service
+#    'webthreatdefsvc',      # Web Threat Defense service
 
     # --- Others ---
-    'RmSvc',                # Radio Management Service (airplane mode / radios)
+#    'RmSvc',                # Radio Management Service (airplane mode / radios)
     'NgcCtnrSvc',           # Microsoft Passport Container (Windows Hello / PIN)
   ]
 
