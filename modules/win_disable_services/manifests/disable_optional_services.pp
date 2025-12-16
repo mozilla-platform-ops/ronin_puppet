@@ -37,9 +37,9 @@ class win_disable_services::disable_optional_services {
 #    'AppXSvc',              # AppX Deployment Service
     'CDPSvc',               # Connected Devices Platform Service
 #    'ClipSVC',              # Client License Service (Store licensing)
-####     'CoreMessagingRegistrar', # CoreMessaging
+####     'CoreMessagingRegistrar', # CoreMessaging - won't disable
 #    'StateRepository',      # State Repository Service
-#    'SystemEventsBroker',   # System Events Broker
+####    'SystemEventsBroker',   # System Events Broker - DON'T Disable. Sched tasks depends on this
     'TextInputManagementSvc', # Text Input Management
     'TimeBrokerSvc',        # Time Broker (background tasks)
 
@@ -59,7 +59,6 @@ class win_disable_services::disable_optional_services {
   ]
 
   $services_disable_only = [
-    'SystemEventsBroker',
     'webthreatdefsvc',
     'RmSvc',
   ]
