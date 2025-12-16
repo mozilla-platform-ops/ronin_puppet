@@ -132,22 +132,25 @@ commands:
           key: v1-apt-cache-{{ arch }}-{{ .Branch }}-{{ checksum "apt_cache_debs_checksum" }}
   gem_cache:
     steps:
-      - restore_cache:
-          keys:
-          # when lock file changes, use increasingly general patterns to restore cache
-          - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
-          - v3-gem-cache-{{ arch }}-{{ .Branch }}-
-          - v3-gem-cache-{{ arch }}-
+      # Cache disabled for now - using system gems instead of vendor
+      # - restore_cache:
+      #     keys:
+      #     # when lock file changes, use increasingly general patterns to restore cache
+      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+      #     - v3-gem-cache-{{ arch }}-{{ .Branch }}-
+      #     - v3-gem-cache-{{ arch }}-
       - run:
           name: Bundle Install
           command: |
+            rm -rf .bundle vendor
+            bundle config unset path || true
             bundle config set --local gemfile .gemfile
             bundle install
-            bundle clean --force
-      - save_cache:
-          paths:
-            - vendor/
-          key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
+      # Cache disabled for now - using system gems instead of vendor
+      # - save_cache:
+      #     paths:
+      #       - vendor/
+      #     key: v3-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum ".gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
@@ -263,7 +266,15 @@ jobs:
       - gem_cache
       - install_macos_puppet_dual_arch
       - install_rosetta
-      - run: bundle exec kitchen converge << parameters.suite >>
+      - run:
+          name: Kitchen converge
+          command: |
+            export GEM_HOME="$HOME/.gem/ruby/3.0.0"
+            export GEM_PATH="$HOME/.gem/ruby/3.0.0:$HOME/.rbenv/versions/3.0.6/lib/ruby/gems/3.0.0"
+            export PATH="$HOME/.gem/ruby/3.0.0/bin:$PATH"
+            bundle config set --local gemfile .gemfile
+            bundle install
+            kitchen converge << parameters.suite >>
       - run: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
