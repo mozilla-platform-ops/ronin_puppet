@@ -122,10 +122,6 @@ function Get-PXEPendingFlag {
     return $false
 }
 
-
-# -------------------------------------------------------------------
-# CompareConfig
-# -------------------------------------------------------------------
 function CompareConfig {
     param (
         [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
@@ -178,9 +174,6 @@ function CompareConfig {
             return
         }
 
-        # -------------------------------
-        # Reverse DNS
-        # -------------------------------
         try {
             $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
         }
@@ -200,9 +193,6 @@ function CompareConfig {
         $worker_node_name = $ResolvedName.Substring(0, $index)
         Write-Log -message "Host name set to: $worker_node_name" -severity 'INFO'
 
-        # -------------------------------
-        # Registry Values
-        # -------------------------------
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
@@ -243,9 +233,6 @@ function CompareConfig {
             return
         }
 
-        # -------------------------------
-        # Find pool entry
-        # -------------------------------
         $found = $false
         if ($yaml) {
             foreach ($pool in $yaml.pools) {
@@ -270,9 +257,6 @@ function CompareConfig {
 
         Write-Log -message "=== Configuration Comparison ===" -severity 'INFO'
 
-        # -------------------------------
-        # Compare Worker Pool
-        # -------------------------------
         if ($localPool -eq $WorkerPool) {
             Write-Log -message "Worker Pool Match: $WorkerPool" -severity 'INFO'
         }
@@ -281,9 +265,6 @@ function CompareConfig {
             #$SETPXE = $true
         }
 
-        # -------------------------------
-        # Compare Git Hash
-        # -------------------------------
         if ([string]::IsNullOrWhiteSpace($yamlHash)) {
             Write-Log -message "YAML hash is missing or invalid. Treating as mismatch." -severity 'ERROR'
             $SETPXE = $true
@@ -298,17 +279,11 @@ function CompareConfig {
             Write-Log -message "Git Hash Match: $yamlHash" -severity 'INFO'
         }
 
-        # -------------------------------
-        # Check Image Directory
-        # -------------------------------
         if (!(Test-Path $yamlImageDir)) {
             Write-Log -message "Image Directory MISMATCH! YAML: $yamlImageDir NOT FOUND" -severity 'ERROR'
             $SETPXE = $true
         }
 
-        # ====================================================================================
-        # NEW LOGIC: Evaluate worker-status.json BEFORE reboot or PXE trigger
-        # ====================================================================================
         if ($SETPXE) {
 
             Write-Log -message "Configuration mismatch detected. Evaluating worker-status.json..." -severity 'WARN'
@@ -338,9 +313,6 @@ function CompareConfig {
                 return
             }
 
-            # -------------------------------
-            # Parse worker-status.json
-            # -------------------------------
             try {
                 $json = Get-Content $workerStatus -Raw | ConvertFrom-Json
             }
@@ -351,9 +323,6 @@ function CompareConfig {
                 return
             }
 
-            # -------------------------------
-            # ACTIVE TASK HANDLING + FLAGGING
-            # -------------------------------
             if (($json.currentTaskIds).Count -eq 0) {
                 Write-Log -message "No active tasks. Rebooting now!" -severity 'WARN'
                 Set-PXEPendingFlag -Clear
