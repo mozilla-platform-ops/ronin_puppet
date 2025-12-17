@@ -264,9 +264,12 @@ jobs:
             echo "Sleeping for $sleep_duration seconds..."
             sleep $sleep_duration
       - run:
+          name: Kitchen converge
           command: bundle exec kitchen converge << parameters.kitchen_target >>
           no_output_timeout: 30m
-      - run: bundle exec kitchen verify << parameters.kitchen_target >>
+      - run:
+          name: Kitchen verify
+          command: bundle exec kitchen verify << parameters.kitchen_target >>
       - apt_cache_save
     environment:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
@@ -298,7 +301,9 @@ jobs:
             bundle config set --local gemfile .gemfile
             bundle install
             kitchen converge << parameters.suite >>
-      - run: bundle exec kitchen verify << parameters.suite >>
+      - run:
+          name: Kitchen verify
+          command: bundle exec kitchen verify << parameters.suite >>
       - store_test_results:
           path: rspec
     environment:
