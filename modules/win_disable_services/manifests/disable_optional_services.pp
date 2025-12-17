@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+## "- DON'T Disable." = has adverse effects if disabled
+
 class win_disable_services::disable_optional_services {
 
   $services = [
@@ -13,7 +15,7 @@ class win_disable_services::disable_optional_services {
 
     # --- Telemetry / diagnostics ---
     'DiagTrack',            # Connected User Experiences and Telemetry
-    'DPS',                  # Diagnostic Policy Service
+    'DPS',                  # Diagnostic Policy Service - Disabled in MaintainSytems script too
     'DusmSvc',              # Data Usage
     'WdiServiceHost',       # Diagnostic System Host
 
@@ -29,32 +31,32 @@ class win_disable_services::disable_optional_services {
     # --- Wi-Fi / MS account / notifications / web accounts ---
     'WlanSvc',              # WLAN AutoConfig (Wi-Fi)
     'wlidsvc',              # Microsoft Account Sign-in Assistant
-    'WpnService',           # Windows Push Notifications System Service
+    'WpnService',           # Windows Push Notifications System Service - Disabled in MaintainSytems script too
     'TokenBroker',          # Web Account Manager
 
     # --- UWP / Microsoft Store ecosystem ---
     'AppReadiness',         # App readiness
-#    'AppXSvc',              # AppX Deployment Service
-####    'CDPSvc',               # Connected Devices Platform Service
-#    'ClipSVC',              # Client License Service (Store licensing)
-####     'CoreMessagingRegistrar', # CoreMessaging - won't disable
-#    'StateRepository',      # State Repository Service
-####    'SystemEventsBroker',   # System Events Broker - DON'T Disable. Sched tasks depends on this
-####    'TextInputManagementSvc', # Text Input Management
-####    'TimeBrokerSvc',        # Time Broker (background tasks)
+#   'AppXSvc',              # AppX Deployment Service - DON'T Disable.
+#   'CDPSvc',               # Connected Devices Platform Service - DON'T Disable.
+#   'ClipSVC',              # Client License Service (Store licensing) - DON'T Disable.
+#   'CoreMessagingRegistrar', # CoreMessaging - won't disable
+#   'StateRepository',      # State Repository Service - DON'T Disable.
+#   'SystemEventsBroker',   # System Events Broker - DON'T Disable.
+#   'TextInputManagementSvc', # Text Input Management - DON'T Disable.
+#   'TimeBrokerSvc',        # Time Broker (background tasks) - DON'T Disable.
 
     # --- Indexing / contacts ---
-    'TrkWks',               # Distributed Link Tracking Client
+    'TrkWks',               # Distributed Link Tracking Client - Disabled in MaintainSytems script too
 
     # --- Third-party / vendor helpers (excluding nxlog) ---
     'igccservice',          # Intel Graphics Command Center Service
     'IntelAudioService',    # Intel Audio Service
     'jhi_service',          # Intel Dynamic Application Loader Host
     'RtkAudioUniversalService', # Realtek Audio Universal Service
-#    'webthreatdefsvc',      # Web Threat Defense service
+#   'webthreatdefsvc',      # Web Threat Defense service - DON'T Disable.
 
     # --- Others ---
-#    'RmSvc',                # Radio Management Service (airplane mode / radios)
+#   'RmSvc',                # Radio Management Service (airplane mode / radios) - DON'T Disable.
     'NgcCtnrSvc',           # Microsoft Passport Container (Windows Hello / PIN)
     'lfsvc',                # Geolocation Service
     'PcaSvc',               # Program Compatibility Assistant Service
