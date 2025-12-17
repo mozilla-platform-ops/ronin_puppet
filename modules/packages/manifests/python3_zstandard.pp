@@ -9,7 +9,7 @@ class packages::python3_zstandard (
   require macos_xcode_tools
 
   package { 'python3-zstandard':
-    ensure   => $version,
+    ensure   => ">${version}",
     name     => 'zstandard',
     provider => pip3,
     require  => Class['packages::python3', 'macos_xcode_tools'],
