@@ -411,6 +411,52 @@ function Get-LatestGoogleChrome {
     }
 }
 
+function Disable-PerUserUwpServices {
+    [CmdletBinding()]
+    param (
+        [string[]]
+        $ServicePrefixes = @(
+            'cbdhsvc_',              # Clipboard User Service
+            'OneSyncSvc_',           # Sync Host
+            'UdkUserSvc_',           # Udk User Service
+            'PimIndexMaintenanceSvc_', # Contact/People indexing
+            'UnistoreSvc_',          # User Data Storage
+            'UserDataSvc_',          # User Data Access
+            'CDPUserSvc_',           # Connected Devices Platform (user)
+            'WpnUserService_',       # Push Notifications (user)
+            'webthreatdefusersvc_'   # Web Threat Defense (user)
+        )
+    )
+
+    foreach ($prefix in $ServicePrefixes) {
+
+        $svcList = Get-Service -Name "$prefix*" -ErrorAction SilentlyContinue
+
+        if (-not $svcList) {
+            Write-Log -message ('{0} :: No services found for prefix {1}' -f $($MyInvocation.MyCommand.Name), $prefix) -severity 'DEBUG'
+            continue
+        }
+
+        foreach ($svc in $svcList) {
+            Write-Log -message ('{0} :: Disabling per-user service {1}' -f $($MyInvocation.MyCommand.Name), $svc.Name) -severity 'DEBUG'
+            try {
+                # Disable so it will not start next logon/boot
+                Set-Service -Name $svc.Name -StartupType Disabled -ErrorAction Stop
+
+                # Try to stop it now if running
+                if ($svc.Status -eq 'Running') {
+                    Write-Log -message ('{0} :: Stopping per-user service {1}' -f $($MyInvocation.MyCommand.Name), $svc.Name) -severity 'DEBUG'
+                    Stop-Service -Name $svc.Name -Force -ErrorAction Stop
+                }
+            }
+            catch {
+                Write-Log -message ('{0} :: Failed to disable/stop service {1}: {2}' -f $($MyInvocation.MyCommand.Name), $svc.Name, $_.Exception.Message) -severity 'DEBUG'
+            }
+        }
+    }
+}
+
+
 function Set-PXE {
     param (
     )
@@ -505,6 +551,7 @@ If ($bootstrap_stage -eq 'complete') {
             break
         }
     }
+    Disable-PerUserUwpServices
 
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
