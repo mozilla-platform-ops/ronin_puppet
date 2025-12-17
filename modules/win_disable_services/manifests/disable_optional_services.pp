@@ -56,6 +56,9 @@ class win_disable_services::disable_optional_services {
     # --- Others ---
 #    'RmSvc',                # Radio Management Service (airplane mode / radios)
     'NgcCtnrSvc',           # Microsoft Passport Container (Windows Hello / PIN)
+    'lfsvc',                # Geolocation Service
+    'PcaSvc',               # Program Compatibility Assistant Service
+    'SSDPSRV',              # SSDP Discovery/UPnP Discovery
   ]
 
   $services_disable_only = [
