@@ -54,6 +54,7 @@ class macos_fsmonitor (
     command => '/usr/local/bin/pip3.11 install pywatchman==2.0.0',
     unless  => '/usr/local/bin/python3 -c "import pywatchman"',
     path    => ['/usr/local/bin', '/usr/bin'],
+    require => Class['packages::python3'],
   }
 
   # Step 6: Append fsmonitor config to existing .hgrc if enabled
