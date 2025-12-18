@@ -103,6 +103,8 @@ groups:
       - macmini-r8-198.test.releng.mdc1.mozilla.com
       - macmini-r8-199.test.releng.mdc1.mozilla.com
       - macmini-r8-200.test.releng.mdc1.mozilla.com
+      - macmini-r8-241.test.releng.mdc1.mozilla.com
+      - macmini-r8-242.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_3_b_osx_1015
 
@@ -297,8 +299,6 @@ groups:
       - macmini-r8-238.test.releng.mdc1.mozilla.com
       - macmini-r8-239.test.releng.mdc1.mozilla.com
       - macmini-r8-240.test.releng.mdc1.mozilla.com
-      - macmini-r8-241.test.releng.mdc1.mozilla.com
-      - macmini-r8-242.test.releng.mdc1.mozilla.com
       - macmini-r8-243.test.releng.mdc1.mozilla.com
       - macmini-r8-244.test.releng.mdc1.mozilla.com
       - macmini-r8-245.test.releng.mdc1.mozilla.com
