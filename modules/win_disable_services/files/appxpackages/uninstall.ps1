@@ -1,12 +1,10 @@
 #requires -RunAsAdministrator
-<#
-  Lab-only Windows 11 24H2 hardening:
 
-  - Remove a predefined set of AppX packages (inlined from ronin uninstall.ps1)
-  - Disable AppXSvc (service + registry Start=4)
-  - Install startup scheduled task (SYSTEM) to re-enforce disable every boot
-  - Validate AppXSvc is disabled; exit 0 on success, 1 on failure
-#>
+# Lab-only Windows 11 24H2 hardening:
+# - Remove predefined AppX packages (inlined from ronin uninstall.ps1)
+# - Disable AppXSvc (service + registry Start=4)
+# - Install startup scheduled task (SYSTEM) to re-enforce disable every boot
+# - Validate AppXSvc is disabled; exit 0 on success, 1 on failure
 
 $ErrorActionPreference = 'Stop'
 
@@ -17,8 +15,6 @@ function Remove-PreinstalledAppxPackages {
     [CmdletBinding()]
     param()
 
-    # Inlined from ronin_puppet win_disable_services appxpackages/uninstall.ps1,
-    # with Write-Host converted to Write-Verbose to reduce noise.
     $apps = @{
         "Bing Search" = @{
             VDIState    = "Unchanged"
@@ -133,7 +129,7 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.Windows.DevHome" = @{
             VDIState    = "Unchanged"
             URL         = "https://learn.microsoft.com/en-us/windows/dev-home/"
-            Description = "A control center providing the ability to monitor projects in your dashboard using customizable widgets and more"
+            Description = "Dev Home dashboard"
         }
         "Microsoft.Windows.Photos" = @{
             VDIState    = "Unchanged"
@@ -143,7 +139,7 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsAlarms" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/windows-alarms-clock/9wzdncrfj3pr"
-            Description = "A combination app of alarm clock, world clock, timer, and stopwatch."
+            Description = "Alarms, world clock, timer, stopwatch"
         }
         "Microsoft.WindowsCalculator" = @{
             VDIState    = "Unchanged"
@@ -153,7 +149,7 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsCamera" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/windows-camera/9wzdncrfjbbg"
-            Description = "Camera app to manage photos and video"
+            Description = "Camera app"
         }
         "microsoft.windowscommunicationsapps" = @{
             VDIState    = "Unchanged"
@@ -163,7 +159,7 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsFeedbackHub" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/feedback-hub/9nblggh4r32n"
-            Description = "App to provide Feedback on Windows and apps to Microsoft"
+            Description = "Feedback Hub"
         }
         "Microsoft.WindowsMaps" = @{
             VDIState    = "Unchanged"
@@ -173,7 +169,7 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsNotepad" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/windows-notepad/9msmlrh6lzf3"
-            Description = "Fast, simple text editor for plain text documents and source code files."
+            Description = "Notepad (Store version)"
         }
         "Microsoft.WindowsStore" = @{
             VDIState    = "Unchanged"
@@ -183,109 +179,110 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsSoundRecorder" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/windows-voice-recorder/9wzdncrfhwkn"
-            Description = "(Voice recorder)"
+            Description = "Voice recorder"
         }
         "Microsoft.WindowsTerminal" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701"
-            Description = "A terminal app featuring tabs, panes, Unicode, UTF-8 character support, and a GPU text rendering engine."
+            Description = "Windows Terminal"
         }
         "Microsoft.Winget.Platform.Source" = @{
             VDIState    = "Unchanged"
             URL         = "https://learn.microsoft.com/en-us/windows/package-manager/winget/"
-            Description = "The Winget tool enables users to manage applications on Win10 and Win11 devices. This tool is the client interface to the Windows Package Manager service"
+            Description = "Winget (Windows Package Manager) source"
         }
         "Microsoft.Xbox.TCUI" = @{
             VDIState    = "Unchanged"
             URL         = "https://docs.microsoft.com/en-us/gaming/xbox-live/features/general/tcui/live-tcui-overview"
-            Description = "XBox Title Callable UI (TCUI) enables your game code to call pre-defined user interface displays"
+            Description = "Xbox Title Callable UI"
         }
         "Microsoft.XboxIdentityProvider" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/xbox-identity-provider/9wzdncrd1hkw"
-            Description = "A system app that enables PC games to connect to Xbox Live."
+            Description = "Xbox Identity Provider"
         }
         "Microsoft.XboxSpeechToTextOverlay" = @{
             VDIState    = "Unchanged"
             URL         = "https://support.xbox.com/help/account-profile/accessibility/use-game-chat-transcription"
-            Description = "Xbox game transcription overlay"
+            Description = "Xbox game chat transcription"
         }
         "Microsoft.YourPhone" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/Your-phone/9nmpj99vjbwv"
-            Description = "Android phone to PC device interface app"
+            Description = "Phone Link"
         }
         "Microsoft.ZuneMusic" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/groove-music/9wzdncrfj3pt"
-            Description = "Groove Music app"
+            Description = "Groove Music"
         }
         "Microsoft.ZuneVideo" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/movies-tv/9wzdncrfj3p2"
-            Description = "Movies and TV app"
+            Description = "Movies & TV"
         }
         "MicrosoftCorporationII.QuickAssist" = @{
             VDIState    = "Unchanged"
             URL         = "https://apps.microsoft.com/detail/9P7BP5VNWKX5?hl=en-us&gl=US"
-            Description = "Microsoft remote help app"
+            Description = "Quick Assist"
         }
         "MicrosoftWindows.Client.WebExperience" = @{
             VDIState    = "Unchanged"
             URL         = ""
-            Description = "Windows 11 Internet information widget"
+            Description = "Windows 11 Widgets / Web Experience"
         }
         "Microsoft.XboxApp" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/store/apps/9wzdncrfjbd8"
-            Description = "Xbox 'Console Companion' app (games, friends, etc.)"
+            Description = "Xbox Console Companion"
         }
         "Microsoft.MixedReality.Portal" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/mixed-reality-portal/9ng1h8b3zc7m"
-            Description = "The app that facilitates Windows Mixed Reality setup, and serves as the command center for mixed reality experiences"
+            Description = "Mixed Reality Portal"
         }
         "Microsoft.Microsoft3DViewer" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/p/3d-viewer/9nblggh42ths"
-            Description = "App to view common 3D file types"
+            Description = "3D Viewer"
         }
         "MicrosoftTeams" = @{
             VDIState    = "Unchanged"
             URL         = "https://apps.microsoft.com/detail/xp8bt8dw290mpq"
-            Description = "Microsoft communication platform"
+            Description = "Microsoft Teams"
         }
         "MSTeams" = @{
             VDIState    = "Unchanged"
             URL         = "https://apps.microsoft.com/detail/xp8bt8dw290mpq"
-            Description = "Microsoft communication platform"
+            Description = "Microsoft Teams (alt id)"
         }
         "Microsoft.OneDriveSync" = @{
             VDIState    = "Unchanged"
             URL         = "https://docs.microsoft.com/en-us/onedrive/one-drive-sync"
-            Description = "Microsoft OneDrive sync app (included in Office 2016 or later)"
+            Description = "OneDrive sync app"
         }
         "Microsoft.Wallet" = @{
             VDIState    = "Unchanged"
             URL         = "https://www.microsoft.com/en-us/payments"
-            Description = "(Microsoft Pay) for Edge browser on certain devices"
+            Description = "Microsoft Pay"
         }
     }
 
     foreach ($Key in $apps.Keys) {
         $Item = $apps[$Key]
 
-        Write-Verbose "Removing Provisioned Package $Key"
+        # Provisioned (for new users)
         Get-AppxProvisionedPackage -Online |
             Where-Object { $_.PackageName -like ("*{0}*" -f $Key) } |
             Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
             Out-Null
 
-        Write-Verbose "Attempting to remove [All Users] $Key - $($Item.Description)"
+        # All users
         Get-AppxPackage -AllUsers -Name ("*{0}*" -f $Key) |
-            Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+            Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue |
+            Out-Null
 
-        Write-Verbose "Attempting to remove $Key - $($Item.Description)"
+        # Current user
         Get-AppxPackage -Name ("*{0}*" -f $Key) |
             Remove-AppxPackage -ErrorAction SilentlyContinue |
             Out-Null
@@ -296,7 +293,6 @@ function Disable-AppXSvcCore {
     [CmdletBinding()]
     param()
 
-    # Stop + disable via SCM
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
     if ($null -ne $svc) {
         if ($svc.Status -ne 'Stopped') {
@@ -305,7 +301,6 @@ function Disable-AppXSvcCore {
         Set-Service -Name $svcName -StartupType Disabled -ErrorAction SilentlyContinue
     }
 
-    # Registry Start=4
     if (Test-Path $svcKeyPath) {
         New-ItemProperty -Path $svcKeyPath -Name Start -Value 4 -PropertyType DWord -Force | Out-Null
     }
@@ -359,21 +354,18 @@ try {
     Unregister-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Confirm:$false -ErrorAction SilentlyContinue
 
     Register-ScheduledTask -TaskName $taskName `
-                           -TaskPath $taskPath `
-                           -Action $action `
-                           -Trigger $trigger `
-                           -RunLevel Highest `
-                           -User 'SYSTEM' `
-                           -Force | Out-Null
+        -TaskPath $taskPath `
+        -Action $action `
+        -Trigger $trigger `
+        -RunLevel Highest `
+        -User 'SYSTEM' `
+        -Force | Out-Null
 }
 
 function Test-AppXSvcDisabled {
     [CmdletBinding()]
     param()
 
-    # Returns $true if AppXSvc is either:
-    #   - Not present (already gone)
-    #   - Present, Stopped, and StartType Disabled
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
 
     if ($null -eq $svc) {
@@ -388,11 +380,11 @@ function Test-AppXSvcDisabled {
     return $false
 }
 
-# --- Main flow ---------------------------------------------------------------
+# --- Main flow ---
 
-Remove-PreinstalledAppxPackages   # Inlined ronin uninstall logic
-Disable-AppXSvcCore               # Stop, disable, set Start=4
-Ensure-AppXSvcHardeningTask       # Re-enforce on every boot
+Remove-PreinstalledAppxPackages
+Disable-AppXSvcCore
+Ensure-AppXSvcHardeningTask
 
 if (-not (Test-AppXSvcDisabled)) {
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
