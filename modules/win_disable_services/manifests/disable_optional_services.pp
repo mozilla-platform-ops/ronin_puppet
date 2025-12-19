@@ -36,7 +36,7 @@ class win_disable_services::disable_optional_services {
 
     # --- UWP / Microsoft Store ecosystem ---
     'AppReadiness',         # App readiness
-#   'AppXSvc',              # AppX Deployment Service - DON'T Disable.
+    'AppXSvc',              # AppX Deployment Service
 #   'CDPSvc',               # Connected Devices Platform Service - DON'T Disable.
 #   'ClipSVC',              # Client License Service (Store licensing) - DON'T Disable.
 #   'CoreMessagingRegistrar', # CoreMessaging - won't disable
