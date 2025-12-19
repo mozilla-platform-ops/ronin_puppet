@@ -139,7 +139,7 @@ suites:
     attributes:
     includes:
       - ubuntu-18.04
-      - ubuntu-22.04
+      # - ubuntu-22.04
       - ubuntu-24.04
   - name: linux-perf-wayland
     driver:
