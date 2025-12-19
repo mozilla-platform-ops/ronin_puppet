@@ -11,7 +11,6 @@ class roles_profiles::roles::gecko_3_b_osx_1015 {
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::packages_installed
-  include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::timezone
