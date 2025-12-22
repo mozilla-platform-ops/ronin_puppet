@@ -1,8 +1,43 @@
 # Lab-only Windows 11 24H2 hardening:
-# - Remove a predefined set of AppX packages (inlined from ronin uninstall.ps1)
+# - Remove a predefined set of AppX packages
 # - Disable AppXSvc (service + registry Start=4)
 # - Install startup scheduled task (SYSTEM) to re-enforce disable every boot
 # - Throw if AppXSvc is not disabled (Puppet will see non-zero)
+
+function Write-Log {
+    param (
+        [string] $message,
+        [string] $severity = 'INFO',
+        [string] $source   = 'BootStrap',
+        [string] $logName  = 'Application'
+    )
+
+    if (!([Diagnostics.EventLog]::Exists($logName)) -or
+        !([Diagnostics.EventLog]::SourceExists($source))) {
+        New-EventLog -LogName $logName -Source $source
+    }
+
+    switch ($severity) {
+        'DEBUG' { $entryType = 'SuccessAudit'; $eventId = 2; break }
+        'WARN'  { $entryType = 'Warning';      $eventId = 3; break }
+        'ERROR' { $entryType = 'Error';        $eventId = 4; break }
+        default { $entryType = 'Information';  $eventId = 1; break }
+    }
+
+    Write-EventLog -LogName $logName -Source $source `
+                   -EntryType $entryType -Category 0 -EventID $eventId `
+                   -Message $message
+
+    if ([Environment]::UserInteractive) {
+        $fc = @{
+            'Information' = 'White'
+            'Error'       = 'Red'
+            'Warning'     = 'DarkYellow'
+            'SuccessAudit'= 'DarkGray'
+        }[$entryType]
+        Write-Host $message -ForegroundColor $fc
+    }
+}
 
 # IMPORTANT: use 'Continue' so normal AppX noise doesn't hard-fail Puppet
 $ErrorActionPreference = 'Continue'
@@ -178,8 +213,15 @@ function Test-AppXSvcDisabled {
 
 # --- Main flow ---------------------------------------------------------------
 
+Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
+
+Write-Log -message 'uninstall_appx_packages :: Remove-PreinstalledAppxPackages' -severity 'DEBUG'
 Remove-PreinstalledAppxPackages
+
+Write-Log -message 'uninstall_appx_packages :: Disable-AppXSvcCore' -severity 'DEBUG'
 Disable-AppXSvcCore
+
+Write-Log -message 'uninstall_appx_packages :: Ensure-AppXSvcHardeningTask' -severity 'DEBUG'
 Ensure-AppXSvcHardeningTask
 
 if (-not (Test-AppXSvcDisabled)) {
@@ -187,7 +229,8 @@ if (-not (Test-AppXSvcDisabled)) {
     $status    = if ($svc) { $svc.Status }    else { 'Missing' }
     $startType = if ($svc) { $svc.StartType } else { 'Missing' }
 
+    Write-Log -message ("uninstall_appx_packages :: AppXSvc is NOT disabled. Status: {0}, StartType: {1}" -f $status, $startType) -severity 'ERROR'
     throw "AppXSvc is NOT disabled. Status: $status, StartType: $startType"
 }
 
-# No 'exit 0' – let PowerShell exit cleanly for Puppet
+Write-Log -message 'uninstall_appx_packages :: complete (AppXSvc disabled)' -severity 'DEBUG'
