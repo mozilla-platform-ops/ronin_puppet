@@ -98,3 +98,16 @@ groups:
       - macmini-m4-124.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_3_b_osx_arm64
+
+  - name: enterprise-1-b-osx-arm64
+    targets:
+      - macmini-m4-171.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: enterprise_1_b_osx_arm64
+
+  - name: enterprise-3-b-osx-arm64
+    targets:
+      - macmini-m4-172.test.releng.mdc1.mozilla.com
+      - macmini-m4-173.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: enterprise_3_b_osx_arm64
