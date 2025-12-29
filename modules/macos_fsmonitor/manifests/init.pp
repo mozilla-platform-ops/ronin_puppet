@@ -1,14 +1,23 @@
 class macos_fsmonitor (
   Boolean $enabled = true,
 ) {
+  # Only require prepare_watchman_dir exec if not in CI
+  # (watchman dirs don't exist until after restart)
+  $watchman_require = $facts['running_in_test_kitchen'] ? {
+    'true'  => undef,
+    default => Exec['prepare_watchman_dir'],
+  }
+
   # Install the watchman package from S3
   packages::macos_package_from_s3 { 'watchman.pkg':
     private             => false,
     os_version_specific => false,
     type                => 'pkg',
-    require             => Exec['prepare_watchman_dir'],
+    require             => $watchman_require,
   }
 
+  # these directories only exist after restart, so in ci, let's skip this
+  if $facts['running_in_test_kitchen'] != 'true' {
   # Step 1: Create the necessary directory
   exec { 'prepare_watchman_dir':
     command => 'sudo mkdir -p /usr/local/var/run/watchman',
@@ -21,6 +30,7 @@ class macos_fsmonitor (
     command => 'sudo chown -R cltbld:staff /usr/local/var/run/watchman',
     require => Exec['prepare_watchman_dir'],
     path    => ['/usr/bin', '/usr/local/bin'],
+  }
   }
 
   # Step 3: Codesign the `watchman` binary
@@ -44,6 +54,7 @@ class macos_fsmonitor (
     command => '/usr/local/bin/pip3.11 install pywatchman==2.0.0',
     unless  => '/usr/local/bin/python3 -c "import pywatchman"',
     path    => ['/usr/local/bin', '/usr/bin'],
+    require => Class['packages::python3'],
   }
 
   # Step 6: Append fsmonitor config to existing .hgrc if enabled

@@ -31,12 +31,15 @@ class macos_safaridriver (
             mode    => '0755',
           }
 
-          exec { 'execute perms script':
-            command => $perm_script,
-            require => File[$perm_script],
-            user    => 'root',
-            # logoutput => true,
-            # TODO: only run if needed, use semaphore?
+          # TCC.db doesn't exist yet in ci, so skip running the script
+          if $facts['running_in_test_kitchen'] != 'true' {
+            exec { 'execute perms script':
+              command => $perm_script,
+              require => File[$perm_script],
+              user    => 'root',
+              # logoutput => true,
+              # TODO: only run if needed, use semaphore?
+            }
           }
 
           # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
