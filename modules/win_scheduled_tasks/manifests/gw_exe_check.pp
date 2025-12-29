@@ -20,7 +20,7 @@ class win_scheduled_tasks::gw_exe_check (
       schedule         => 'daily',
       start_time       => '00:00',
       minutes_interval => 60,
-      minutes_duration => 1440, # 24 hours = repeat every 5 minutes all day
+      #minutes_duration => 1440, # 24 hours = repeat every 5 minutes all day
     }],
     user      => 'SYSTEM',
   }
