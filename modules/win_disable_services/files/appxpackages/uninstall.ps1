@@ -126,8 +126,11 @@ function Remove-PreinstalledAppxPackages {
         foreach ($p in $paths) {
             if (Test-Path $p) {
                 Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
+            }
         }
-    }
+        reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\OneDrive" /v DisableFileSyncNGSC /t REG_DWORD /d 1 /f
+        reg add "HKCR\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f
+        reg add "HKCR\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f
 }
 
 function Disable-AppXSvcCore {
