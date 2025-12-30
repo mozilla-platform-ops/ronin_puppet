@@ -43,6 +43,56 @@ function Write-Log {
     }
 }
 
+function Remove-OneDriveScheduledTasks {
+    [CmdletBinding()]
+    param()
+
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+
+    process {
+        try {
+            # Grab tasks that look like OneDrive across the whole Task Scheduler library
+            $tasks = @(Get-ScheduledTask -ErrorAction Stop | Where-Object {
+                $_.TaskName -match '(?i)onedrive' -or $_.TaskPath -match '(?i)onedrive'
+            })
+
+            if (-not $tasks -or $tasks.Count -eq 0) {
+                Write-Log -message ('{0} :: No OneDrive scheduled tasks found' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                return
+            }
+
+            Write-Log -message ('{0} :: Found {1} OneDrive scheduled task(s)' -f $($MyInvocation.MyCommand.Name), $tasks.Count) -severity 'INFO'
+
+            foreach ($t in $tasks) {
+                $fullName = '{0}{1}' -f $t.TaskPath, $t.TaskName
+
+                try {
+                    Disable-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue | Out-Null
+                } catch {
+                    Write-Log -message ('{0} :: Failed to disable task {1}: {2}' -f $($MyInvocation.MyCommand.Name), $fullName, $_.Exception.Message) -severity 'WARN'
+                }
+
+                try {
+                    Unregister-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
+                    Write-Log -message ('{0} :: Removed task {1}' -f $($MyInvocation.MyCommand.Name), $fullName) -severity 'INFO'
+                } catch {
+                    Write-Log -message ('{0} :: Failed to remove task {1}: {2}' -f $($MyInvocation.MyCommand.Name), $fullName, $_.Exception.Message) -severity 'WARN'
+                }
+            }
+        }
+        catch {
+            # If task scheduler bits aren't ready yet during very early bootstrap, don't hard-fail.
+            Write-Log -message ('{0} :: Could not enumerate scheduled tasks: {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
+        }
+    }
+
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 function Run-MaintainSystem {
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -549,6 +599,7 @@ If ($bootstrap_stage -eq 'complete') {
         }
     }
     Disable-PerUserUwpServices
+    Remove-OneDriveScheduledTasks
 
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
