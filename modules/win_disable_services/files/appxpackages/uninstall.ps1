@@ -50,7 +50,7 @@ function Remove-OneDriveAggressive {
     Get-Process -Name $p -ErrorAction SilentlyContinue | ForEach-Object {
       $desc = "Process $($_.Name) (Id=$($_.Id))"
       if ($PSCmdlet.ShouldProcess($desc, "Stop-Process -Force")) {
-        Try-Run { Stop-Process -Id $_.Id -Force -ErrorAction Stop } "Failed stopping $desc:"
+        Try-Run { Stop-Process -Id $_.Id -Force -ErrorAction Stop } "Failed stopping ${desc}:"
       }
     }
   }
@@ -65,8 +65,8 @@ function Remove-OneDriveAggressive {
     foreach ($t in $tasks) {
       $fullName = "$($t.TaskPath)$($t.TaskName)"
       if ($PSCmdlet.ShouldProcess("Scheduled Task $fullName", "Disable + Unregister")) {
-        Try-Run { Disable-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue | Out-Null } "Failed disabling task $fullName:"
-        Try-Run { Unregister-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null } "Failed unregistering task $fullName:"
+        Try-Run { Disable-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue | Out-Null } "Failed disabling task ${fullName}:"
+        Try-Run { Unregister-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null } "Failed unregistering task ${fullName}:"
       }
     }
 
@@ -116,7 +116,7 @@ function Remove-OneDriveAggressive {
     if (Test-Path $k) {
       foreach ($name in @("OneDrive","OneDriveSetup","Microsoft OneDrive")) {
         if ($PSCmdlet.ShouldProcess("$k\$name", "Remove-ItemProperty")) {
-          Try-Run { Remove-ItemProperty -Path $k -Name $name -ErrorAction SilentlyContinue } "Failed removing Run key value $k\$name:"
+          Try-Run { Remove-ItemProperty -Path $k -Name $name -ErrorAction SilentlyContinue } "Failed removing Run key value ${k}\${name}:"
         }
       }
     }
@@ -156,7 +156,7 @@ function Remove-OneDriveAggressive {
       Try-Run {
         New-Item -Path $k -Force | Out-Null
         New-ItemProperty -Path $k -Name "System.IsPinnedToNameSpaceTree" -PropertyType DWord -Value 0 -Force | Out-Null
-      } "Failed setting nav pane pin value at $k:"
+      } "Failed setting nav pane pin value at ${k}:"
     }
   }
 
@@ -167,7 +167,7 @@ function Remove-OneDriveAggressive {
   )) {
     if (Test-Path $k -PathType Container) {
       if ($PSCmdlet.ShouldProcess($k, "Remove-Item -Recurse -Force")) {
-        Try-Run { Remove-Item -Path $k -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing namespace key $k:"
+        Try-Run { Remove-Item -Path $k -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing namespace key ${k}:"
       }
     }
   }
@@ -187,7 +187,7 @@ function Remove-OneDriveAggressive {
   foreach ($f in ($folders | Select-Object -Unique)) {
     if (Test-Path $f) {
       if ($PSCmdlet.ShouldProcess($f, "Remove-Item -Recurse -Force")) {
-        Try-Run { Remove-Item -LiteralPath $f -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing folder $f:"
+        Try-Run { Remove-Item -LiteralPath $f -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing folder ${f}:"
       }
     }
   }
@@ -286,17 +286,19 @@ function Remove-PreinstalledAppxPackages {
             Remove-AppxPackage -ErrorAction SilentlyContinue |
             Out-Null
     }
+
     $paths = @(
         "$env:SystemRoot\System32\OneDriveSetup.exe",
         "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-        )
+    )
 
-        foreach ($p in $paths) {
-            if (Test-Path $p) {
-                Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
-            }
+    foreach ($p in $paths) {
+        if (Test-Path $p) {
+            Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
         }
-        Remove-OneDriveAggressive
+    }
+
+    Remove-OneDriveAggressive
 }
 
 function Disable-AppXSvcCore {
