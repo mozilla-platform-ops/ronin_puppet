@@ -34,7 +34,7 @@ function Write-Log {
 }
 
 function Remove-OneDriveAggressive {
-  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+  [CmdletBinding()]
   param(
     [switch]$PurgeUserData
   )
@@ -49,9 +49,7 @@ function Remove-OneDriveAggressive {
   foreach ($p in $procNames) {
     Get-Process -Name $p -ErrorAction SilentlyContinue | ForEach-Object {
       $desc = "Process $($_.Name) (Id=$($_.Id))"
-      if ($PSCmdlet.ShouldProcess($desc, "Stop-Process -Force")) {
-        Try-Run { Stop-Process -Id $_.Id -Force -ErrorAction Stop } "Failed stopping ${desc}:"
-      }
+      Try-Run { Stop-Process -Id $_.Id -Force -ErrorAction Stop } "Failed stopping ${desc}:"
     }
   }
 
@@ -64,10 +62,8 @@ function Remove-OneDriveAggressive {
 
     foreach ($t in $tasks) {
       $fullName = "$($t.TaskPath)$($t.TaskName)"
-      if ($PSCmdlet.ShouldProcess("Scheduled Task $fullName", "Disable + Unregister")) {
-        Try-Run { Disable-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue | Out-Null } "Failed disabling task ${fullName}:"
-        Try-Run { Unregister-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null } "Failed unregistering task ${fullName}:"
-      }
+      Try-Run { Disable-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue | Out-Null } "Failed disabling task ${fullName}:"
+      Try-Run { Unregister-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null } "Failed unregistering task ${fullName}:"
     }
 
     if (-not $tasks) {
@@ -79,11 +75,9 @@ function Remove-OneDriveAggressive {
 
   $winget = Get-Command winget -ErrorAction SilentlyContinue
   if ($winget) {
-    if ($PSCmdlet.ShouldProcess("OneDrive via winget", "winget uninstall Microsoft.OneDrive")) {
-      Try-Run {
-        & winget uninstall --id Microsoft.OneDrive -e --accept-source-agreements --accept-package-agreements | Out-Null
-      } "winget uninstall failed:"
-    }
+    Try-Run {
+      & winget uninstall --id Microsoft.OneDrive -e --accept-source-agreements --accept-package-agreements | Out-Null
+    } "winget uninstall failed:"
   } else {
     Write-Log -message "winget not found; skipping winget uninstall." -severity 'DEBUG' -source 'BootStrap' -logName 'Application'
   }
@@ -95,9 +89,7 @@ function Remove-OneDriveAggressive {
 
   foreach ($path in $setupPaths) {
     if (Test-Path $path) {
-      if ($PSCmdlet.ShouldProcess($path, "Run /uninstall")) {
-        Try-Run { Start-Process -FilePath $path -ArgumentList "/uninstall" -Wait -WindowStyle Hidden } "Failed running $path /uninstall:"
-      }
+      Try-Run { Start-Process -FilePath $path -ArgumentList "/uninstall" -Wait -WindowStyle Hidden } "Failed running $path /uninstall:"
     } else {
       Write-Log -message "Not found: $path" -severity 'DEBUG' -source 'BootStrap' -logName 'Application'
     }
@@ -115,9 +107,7 @@ function Remove-OneDriveAggressive {
   foreach ($k in $runKeys) {
     if (Test-Path $k) {
       foreach ($name in @("OneDrive","OneDriveSetup","Microsoft OneDrive")) {
-        if ($PSCmdlet.ShouldProcess("$k\$name", "Remove-ItemProperty")) {
-          Try-Run { Remove-ItemProperty -Path $k -Name $name -ErrorAction SilentlyContinue } "Failed removing Run key value ${k}\${name}:"
-        }
+        Try-Run { Remove-ItemProperty -Path $k -Name $name -ErrorAction SilentlyContinue } "Failed removing Run key value ${k}\${name}:"
       }
     }
   }
@@ -130,9 +120,7 @@ function Remove-OneDriveAggressive {
   foreach ($sf in $startupFolders) {
     if (Test-Path $sf) {
       Get-ChildItem -Path $sf -Filter "*OneDrive*.lnk" -ErrorAction SilentlyContinue | ForEach-Object {
-        if ($PSCmdlet.ShouldProcess($_.FullName, "Remove-Item")) {
-          Try-Run { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue } "Failed removing startup shortcut $($_.FullName):"
-        }
+        Try-Run { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue } "Failed removing startup shortcut $($_.FullName):"
       }
     }
   }
@@ -140,24 +128,20 @@ function Remove-OneDriveAggressive {
   Write-Log -message "5) Disable OneDrive via policy (prevents sign-in/sync)" -severity 'INFO' -source 'BootStrap' -logName 'Application'
 
   $policyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive"
-  if ($PSCmdlet.ShouldProcess($policyPath, "Set DisableFileSyncNGSC=1")) {
-    Try-Run {
-      New-Item -Path $policyPath -Force | Out-Null
-      New-ItemProperty -Path $policyPath -Name "DisableFileSyncNGSC" -PropertyType DWord -Value 1 -Force | Out-Null
-    } "Failed setting DisableFileSyncNGSC policy:"
-  }
+  Try-Run {
+    New-Item -Path $policyPath -Force | Out-Null
+    New-ItemProperty -Path $policyPath -Name "DisableFileSyncNGSC" -PropertyType DWord -Value 1 -Force | Out-Null
+  } "Failed setting DisableFileSyncNGSC policy:"
 
   Write-Log -message "6) Remove File Explorer integration (sidebar pin + namespace entries)" -severity 'INFO' -source 'BootStrap' -logName 'Application'
 
   $clsid = "{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
 
   foreach ($k in @("HKCR:\CLSID\$clsid","HKCR:\Wow6432Node\CLSID\$clsid")) {
-    if ($PSCmdlet.ShouldProcess($k, "Set System.IsPinnedToNameSpaceTree=0")) {
-      Try-Run {
-        New-Item -Path $k -Force | Out-Null
-        New-ItemProperty -Path $k -Name "System.IsPinnedToNameSpaceTree" -PropertyType DWord -Value 0 -Force | Out-Null
-      } "Failed setting nav pane pin value at ${k}:"
-    }
+    Try-Run {
+      New-Item -Path $k -Force | Out-Null
+      New-ItemProperty -Path $k -Name "System.IsPinnedToNameSpaceTree" -PropertyType DWord -Value 0 -Force | Out-Null
+    } "Failed setting nav pane pin value at ${k}:"
   }
 
   foreach ($k in @(
@@ -166,9 +150,7 @@ function Remove-OneDriveAggressive {
     "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$clsid"
   )) {
     if (Test-Path $k -PathType Container) {
-      if ($PSCmdlet.ShouldProcess($k, "Remove-Item -Recurse -Force")) {
-        Try-Run { Remove-Item -Path $k -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing namespace key ${k}:"
-      }
+      Try-Run { Remove-Item -Path $k -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing namespace key ${k}:"
     }
   }
 
@@ -186,20 +168,16 @@ function Remove-OneDriveAggressive {
 
   foreach ($f in ($folders | Select-Object -Unique)) {
     if (Test-Path $f) {
-      if ($PSCmdlet.ShouldProcess($f, "Remove-Item -Recurse -Force")) {
-        Try-Run { Remove-Item -LiteralPath $f -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing folder ${f}:"
-      }
+      Try-Run { Remove-Item -LiteralPath $f -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing folder ${f}:"
     }
   }
 
   Write-Log -message "8) Restart Explorer to apply UI changes" -severity 'INFO' -source 'BootStrap' -logName 'Application'
 
-  if ($PSCmdlet.ShouldProcess("explorer.exe", "Restart Explorer")) {
-    Try-Run {
-      Get-Process explorer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-      Start-Process explorer.exe
-    } "Failed restarting Explorer:"
-  }
+  Try-Run {
+    Get-Process explorer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Process explorer.exe
+  } "Failed restarting Explorer:"
 
   Write-Log -message "OneDrive removal/disable steps completed. Recommend reboot to finalize." -severity 'INFO' -source 'BootStrap' -logName 'Application'
   if (-not $PurgeUserData) {
@@ -271,7 +249,7 @@ function Remove-PreinstalledAppxPackages {
     }
 
     foreach ($Key in $apps.Keys) {
-        $Item = $apps[$Key]
+        $null = $apps[$Key] # keep, in case you add logging later
 
         Get-AppxProvisionedPackage -Online |
             Where-Object { $_.PackageName -like ("*{0}*" -f $Key) } |
@@ -315,6 +293,13 @@ function Disable-AppXSvcCore {
 
     if (Test-Path $svcKeyPath) {
         New-ItemProperty -Path $svcKeyPath -Name Start -Value 4 -PropertyType DWord -Force | Out-Null
+    }
+
+    # Best-effort: give it a moment to stop (can be sticky during provisioning)
+    for ($i=0; $i -lt 10; $i++) {
+        $s = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+        if ($null -eq $s -or $s.Status -eq 'Stopped') { break }
+        Start-Sleep -Seconds 1
     }
 }
 
@@ -379,20 +364,18 @@ function Test-AppXSvcDisabled {
     param()
 
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+    if ($null -eq $svc) { return $true }
 
-    if ($null -eq $svc) {
-        return $true
-    }
-
-    $startType = $svc.StartType.ToString()
-    if ($svc.Status -eq 'Stopped' -and $startType -eq 'Disabled') {
+    # Success condition: Disabled. It may still be Running during early provisioning.
+    if ($svc.StartType.ToString() -eq 'Disabled') {
+        if ($svc.Status -ne 'Stopped') {
+            Write-Log -message ("uninstall_appx_packages :: AppXSvc is Disabled but currently {0}. Will be enforced at next boot." -f $svc.Status) -severity 'WARN'
+        }
         return $true
     }
 
     return $false
 }
-
-# --- Main flow ---------------------------------------------------------------
 
 Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
 
