@@ -1,9 +1,3 @@
-# Lab-only Windows 11 24H2 hardening:
-# - Remove a predefined set of AppX packages
-# - Disable AppXSvc (service + registry Start=4)
-# - Install startup scheduled task (SYSTEM) to re-enforce disable every boot
-# - Throw if AppXSvc is not disabled (Puppet will see non-zero)
-
 function Write-Log {
     param (
         [string] $message,
@@ -37,6 +31,180 @@ function Write-Log {
         }[$entryType]
         Write-Host $message -ForegroundColor $fc
     }
+}
+
+function Remove-OneDriveAggressive {
+  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+  param(
+    [switch]$PurgeUserData
+  )
+
+  function Try-Run([scriptblock]$sb, [string]$onError, [string]$severity = 'WARN') {
+    try { & $sb } catch { Write-Log -message "$onError $($_.Exception.Message)" -severity $severity -source 'BootStrap' -logName 'Application' }
+  }
+
+  Write-Log -message "1) Stop OneDrive-related processes" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  $procNames = @("OneDrive","OneDriveStandaloneUpdater","OneDriveSetup")
+  foreach ($p in $procNames) {
+    Get-Process -Name $p -ErrorAction SilentlyContinue | ForEach-Object {
+      $desc = "Process $($_.Name) (Id=$($_.Id))"
+      if ($PSCmdlet.ShouldProcess($desc, "Stop-Process -Force")) {
+        Try-Run { Stop-Process -Id $_.Id -Force -ErrorAction Stop } "Failed stopping $desc:"
+      }
+    }
+  }
+
+  Write-Log -message "2) Disable and remove OneDrive scheduled tasks" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  Try-Run {
+    $tasks = Get-ScheduledTask -ErrorAction Stop | Where-Object {
+      $_.TaskName -like "OneDrive*" -or $_.TaskPath -like "*OneDrive*"
+    }
+
+    foreach ($t in $tasks) {
+      $fullName = "$($t.TaskPath)$($t.TaskName)"
+      if ($PSCmdlet.ShouldProcess("Scheduled Task $fullName", "Disable + Unregister")) {
+        Try-Run { Disable-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue | Out-Null } "Failed disabling task $fullName:"
+        Try-Run { Unregister-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null } "Failed unregistering task $fullName:"
+      }
+    }
+
+    if (-not $tasks) {
+      Write-Log -message "No OneDrive scheduled tasks found." -severity 'INFO' -source 'BootStrap' -logName 'Application'
+    }
+  } "Could not enumerate scheduled tasks:"
+
+  Write-Log -message "3) Uninstall OneDrive (winget if available, then built-in uninstallers)" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  $winget = Get-Command winget -ErrorAction SilentlyContinue
+  if ($winget) {
+    if ($PSCmdlet.ShouldProcess("OneDrive via winget", "winget uninstall Microsoft.OneDrive")) {
+      Try-Run {
+        & winget uninstall --id Microsoft.OneDrive -e --accept-source-agreements --accept-package-agreements | Out-Null
+      } "winget uninstall failed:"
+    }
+  } else {
+    Write-Log -message "winget not found; skipping winget uninstall." -severity 'DEBUG' -source 'BootStrap' -logName 'Application'
+  }
+
+  $setupPaths = @(
+    Join-Path $env:SystemRoot "System32\OneDriveSetup.exe",
+    Join-Path $env:SystemRoot "SysWOW64\OneDriveSetup.exe"
+  ) | Select-Object -Unique
+
+  foreach ($path in $setupPaths) {
+    if (Test-Path $path) {
+      if ($PSCmdlet.ShouldProcess($path, "Run /uninstall")) {
+        Try-Run { Start-Process -FilePath $path -ArgumentList "/uninstall" -Wait -WindowStyle Hidden } "Failed running $path /uninstall:"
+      }
+    } else {
+      Write-Log -message "Not found: $path" -severity 'DEBUG' -source 'BootStrap' -logName 'Application'
+    }
+  }
+
+  Write-Log -message "4) Remove OneDrive from startup/run hooks" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  $runKeys = @(
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
+    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run",
+    "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+  )
+
+  foreach ($k in $runKeys) {
+    if (Test-Path $k) {
+      foreach ($name in @("OneDrive","OneDriveSetup","Microsoft OneDrive")) {
+        if ($PSCmdlet.ShouldProcess("$k\$name", "Remove-ItemProperty")) {
+          Try-Run { Remove-ItemProperty -Path $k -Name $name -ErrorAction SilentlyContinue } "Failed removing Run key value $k\$name:"
+        }
+      }
+    }
+  }
+
+  $startupFolders = @(
+    Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup",
+    Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs\Startup"
+  )
+
+  foreach ($sf in $startupFolders) {
+    if (Test-Path $sf) {
+      Get-ChildItem -Path $sf -Filter "*OneDrive*.lnk" -ErrorAction SilentlyContinue | ForEach-Object {
+        if ($PSCmdlet.ShouldProcess($_.FullName, "Remove-Item")) {
+          Try-Run { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue } "Failed removing startup shortcut $($_.FullName):"
+        }
+      }
+    }
+  }
+
+  Write-Log -message "5) Disable OneDrive via policy (prevents sign-in/sync)" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  $policyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive"
+  if ($PSCmdlet.ShouldProcess($policyPath, "Set DisableFileSyncNGSC=1")) {
+    Try-Run {
+      New-Item -Path $policyPath -Force | Out-Null
+      New-ItemProperty -Path $policyPath -Name "DisableFileSyncNGSC" -PropertyType DWord -Value 1 -Force | Out-Null
+    } "Failed setting DisableFileSyncNGSC policy:"
+  }
+
+  Write-Log -message "6) Remove File Explorer integration (sidebar pin + namespace entries)" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  $clsid = "{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
+
+  foreach ($k in @("HKCR:\CLSID\$clsid","HKCR:\Wow6432Node\CLSID\$clsid")) {
+    if ($PSCmdlet.ShouldProcess($k, "Set System.IsPinnedToNameSpaceTree=0")) {
+      Try-Run {
+        New-Item -Path $k -Force | Out-Null
+        New-ItemProperty -Path $k -Name "System.IsPinnedToNameSpaceTree" -PropertyType DWord -Value 0 -Force | Out-Null
+      } "Failed setting nav pane pin value at $k:"
+    }
+  }
+
+  foreach ($k in @(
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$clsid",
+    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$clsid",
+    "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$clsid"
+  )) {
+    if (Test-Path $k -PathType Container) {
+      if ($PSCmdlet.ShouldProcess($k, "Remove-Item -Recurse -Force")) {
+        Try-Run { Remove-Item -Path $k -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing namespace key $k:"
+      }
+    }
+  }
+
+  Write-Log -message "7) Remove leftover folders (optional purge of user data)" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  $folders = @(
+    Join-Path $env:LOCALAPPDATA "Microsoft\OneDrive",
+    Join-Path $env:PROGRAMDATA "Microsoft OneDrive",
+    Join-Path $env:SystemDrive "OneDriveTemp"
+  )
+
+  if ($PurgeUserData) {
+    $folders += (Join-Path $env:USERPROFILE "OneDrive")
+  }
+
+  foreach ($f in ($folders | Select-Object -Unique)) {
+    if (Test-Path $f) {
+      if ($PSCmdlet.ShouldProcess($f, "Remove-Item -Recurse -Force")) {
+        Try-Run { Remove-Item -LiteralPath $f -Recurse -Force -ErrorAction SilentlyContinue } "Failed removing folder $f:"
+      }
+    }
+  }
+
+  Write-Log -message "8) Restart Explorer to apply UI changes" -severity 'INFO' -source 'BootStrap' -logName 'Application'
+
+  if ($PSCmdlet.ShouldProcess("explorer.exe", "Restart Explorer")) {
+    Try-Run {
+      Get-Process explorer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+      Start-Process explorer.exe
+    } "Failed restarting Explorer:"
+  }
+
+  Write-Log -message "OneDrive removal/disable steps completed. Recommend reboot to finalize." -severity 'INFO' -source 'BootStrap' -logName 'Application'
+  if (-not $PurgeUserData) {
+    Write-Log -message "NOTE: %UserProfile%\OneDrive was NOT deleted. Use -PurgeUserData to delete it." -severity 'WARN' -source 'BootStrap' -logName 'Application'
+  }
 }
 
 # IMPORTANT: use 'Continue' so normal AppX noise doesn't hard-fail Puppet
@@ -128,9 +296,7 @@ function Remove-PreinstalledAppxPackages {
                 Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
             }
         }
-        reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\OneDrive" /v DisableFileSyncNGSC /t REG_DWORD /d 1 /f
-        reg add "HKCR\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f
-        reg add "HKCR\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f
+        Remove-OneDriveAggressive
 }
 
 function Disable-AppXSvcCore {
