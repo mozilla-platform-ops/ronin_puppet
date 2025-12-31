@@ -33,6 +33,91 @@ function Write-Log {
     }
 }
 
+function Ensure-OneDriveTaskCleanupHardeningTask {
+    [CmdletBinding()]
+    param()
+
+    $dir  = 'C:\ProgramData\Hardening'
+    $file = Join-Path $dir 'Remove-OneDriveScheduledTasks.ps1'
+
+    Write-Log -message "OneDriveTasksHardening :: begin" -severity 'DEBUG'
+
+    try {
+        if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+
+        # Minimal self-contained script: uses schtasks.exe only and writes to Event Log using your source/logName.
+        $payload = @'
+function Write-Log {
+    param (
+        [string] $message,
+        [string] $severity = 'INFO',
+        [string] $source = 'MaintainSystem',
+        [string] $logName = 'Application'
+    )
+    try {
+        if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
+            New-EventLog -LogName $logName -Source $source
+        }
+        switch ($severity) {
+            'DEBUG' { $entryType = 'SuccessAudit'; $eventId = 2; break }
+            'WARN'  { $entryType = 'Warning';      $eventId = 3; break }
+            'ERROR' { $entryType = 'Error';        $eventId = 4; break }
+            default { $entryType = 'Information';  $eventId = 1; break }
+        }
+        Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
+    } catch { }
+}
+
+try {
+    $rows = @(schtasks.exe /Query /FO CSV /V 2>$null | ConvertFrom-Csv)
+    $targets = $rows | Where-Object {
+        ($_.TaskName -match '(?i)onedrive') -or
+        (($_.'Task To Run') -and (($_.'Task To Run') -match '(?i)onedrive(\\.exe)?')) -or
+        (($_.Actions) -and ($_.Actions -match '(?i)onedrive(\\.exe)?')) -or
+        (($_.'Task Run') -and (($_.'Task Run') -match '(?i)onedrive(\\.exe)?')) -or
+        (($_.Actions) -and ($_.Actions -match '(?i)OneDriveSetup\.exe|\\OneDrive\.exe')) -or
+        (($_.'Task To Run') -and (($_.'Task To Run') -match '(?i)OneDriveSetup\.exe|\\OneDrive\.exe'))
+    } | Select-Object -ExpandProperty TaskName -Unique
+
+    foreach ($tn in $targets) {
+        schtasks.exe /Delete /TN "$tn" /F 2>$null | Out-Null
+    }
+
+    Write-Log -message ("OneDriveTasksHardening :: removed {0} task(s)" -f ($targets.Count)) -severity 'INFO'
+} catch {
+    Write-Log -message ("OneDriveTasksHardening :: failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+}
+'@
+
+        Set-Content -Path $file -Value $payload -Encoding UTF8 -Force
+
+        $taskName = 'Remove-OneDriveScheduledTasks'
+        $taskPath = '\Hardening\'
+
+        schtasks.exe /Delete /TN "$taskPath$taskName" /F 2>$null | Out-Null
+
+        # Create: AtStartup
+        schtasks.exe /Create /F /TN "$taskPath$taskName" `
+            /SC ONSTART /RU SYSTEM /RL HIGHEST `
+            /TR "powershell.exe -NoLogo -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$file`"" `
+            2>$null | Out-Null
+
+        # Add a second trigger: AtLogOn (any user)
+        schtasks.exe /Create /F /TN "$taskPath$taskName-Logon" `
+            /SC ONLOGON /RU SYSTEM /RL HIGHEST `
+            /TR "powershell.exe -NoLogo -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$file`"" `
+            2>$null | Out-Null
+
+        Write-Log -message "OneDriveTasksHardening :: installed (ONSTART + ONLOGON)" -severity 'INFO'
+    }
+    catch {
+        Write-Log -message ("OneDriveTasksHardening :: failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+    finally {
+        Write-Log -message "OneDriveTasksHardening :: end" -severity 'DEBUG'
+    }
+}
+
 function Remove-OneDriveAggressive {
   [CmdletBinding()]
   param(
@@ -276,7 +361,7 @@ function Remove-PreinstalledAppxPackages {
         }
     }
 
-    Remove-OneDriveAggressive
+    Ensure-OneDriveTaskCleanupHardeningTask
 }
 
 function Disable-AppXSvcCore {
