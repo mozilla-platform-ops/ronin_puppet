@@ -413,7 +413,7 @@ function Remove-PreinstalledAppxPackages {
             Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
         }
     }
-    Remove-OneDriveScheduledTasks
+    #Remove-OneDriveScheduledTasks
     Ensure-OneDriveTaskCleanupHardeningTask
 }
 
