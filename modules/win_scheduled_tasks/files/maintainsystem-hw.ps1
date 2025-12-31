@@ -47,49 +47,52 @@ function Remove-OneDriveScheduledTasks {
     [CmdletBinding()]
     param()
 
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
+    Write-Log -message "OneDriveTasks :: begin" -severity 'DEBUG'
 
-    process {
-        try {
-            # Grab tasks that look like OneDrive across the whole Task Scheduler library
-            $tasks = @(Get-ScheduledTask -ErrorAction Stop | Where-Object {
-                $_.TaskName -match '(?i)onedrive' -or $_.TaskPath -match '(?i)onedrive'
-            })
+    try {
+        $rows = @(schtasks.exe /Query /FO CSV /V 2>$null | ConvertFrom-Csv)
 
-            if (-not $tasks -or $tasks.Count -eq 0) {
-                Write-Log -message ('{0} :: No OneDrive scheduled tasks found' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                return
-            }
+        if (-not $rows -or $rows.Count -eq 0) {
+            Write-Log -message "OneDriveTasks :: schtasks returned no rows" -severity 'WARN'
+            return
+        }
 
-            Write-Log -message ('{0} :: Found {1} OneDrive scheduled task(s)' -f $($MyInvocation.MyCommand.Name), $tasks.Count) -severity 'INFO'
+        # Columns vary a bit across Windows builds, so check multiple possible fields.
+        $targets = $rows | Where-Object {
+            ($_.TaskName -match '(?i)onedrive') -or
+            (($_.'Task To Run') -and (($_.'Task To Run') -match '(?i)onedrive(\\.exe)?')) -or
+            (($_.Actions) -and ($_.Actions -match '(?i)onedrive(\\.exe)?')) -or
+            (($_.'Task Run') -and (($_.'Task Run') -match '(?i)onedrive(\\.exe)?')) -or
+            # extra-tight match on known binaries
+            (($_.Actions) -and ($_.Actions -match '(?i)OneDriveSetup\.exe|\\OneDrive\.exe')) -or
+            (($_.'Task To Run') -and (($_.'Task To Run') -match '(?i)OneDriveSetup\.exe|\\OneDrive\.exe'))
+        } | Select-Object -ExpandProperty TaskName -Unique
 
-            foreach ($t in $tasks) {
-                $fullName = '{0}{1}' -f $t.TaskPath, $t.TaskName
+        if (-not $targets -or $targets.Count -eq 0) {
+            Write-Log -message "OneDriveTasks :: No matching tasks found" -severity 'DEBUG'
+            return
+        }
 
-                try {
-                    Disable-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -ErrorAction SilentlyContinue | Out-Null
-                } catch {
-                    Write-Log -message ('{0} :: Failed to disable task {1}: {2}' -f $($MyInvocation.MyCommand.Name), $fullName, $_.Exception.Message) -severity 'WARN'
+        Write-Log -message ("OneDriveTasks :: Found {0} task(s) to remove" -f $targets.Count) -severity 'INFO'
+
+        foreach ($tn in $targets) {
+            try {
+                schtasks.exe /Delete /TN "$tn" /F 2>$null | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Log -message ("OneDriveTasks :: Deleted {0}" -f $tn) -severity 'INFO'
+                } else {
+                    Write-Log -message ("OneDriveTasks :: Failed delete {0} (exit {1})" -f $tn, $LASTEXITCODE) -severity 'WARN'
                 }
-
-                try {
-                    Unregister-ScheduledTask -TaskName $t.TaskName -TaskPath $t.TaskPath -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
-                    Write-Log -message ('{0} :: Removed task {1}' -f $($MyInvocation.MyCommand.Name), $fullName) -severity 'INFO'
-                } catch {
-                    Write-Log -message ('{0} :: Failed to remove task {1}: {2}' -f $($MyInvocation.MyCommand.Name), $fullName, $_.Exception.Message) -severity 'WARN'
-                }
+            } catch {
+                Write-Log -message ("OneDriveTasks :: Exception deleting {0}: {1}" -f $tn, $_.Exception.Message) -severity 'WARN'
             }
         }
-        catch {
-            # If task scheduler bits aren't ready yet during very early bootstrap, don't hard-fail.
-            Write-Log -message ('{0} :: Could not enumerate scheduled tasks: {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
-        }
     }
-
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    catch {
+        Write-Log -message ("OneDriveTasks :: failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+    finally {
+        Write-Log -message "OneDriveTasks :: end" -severity 'DEBUG'
     }
 }
 
