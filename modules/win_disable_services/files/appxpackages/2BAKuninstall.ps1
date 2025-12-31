@@ -1,9 +1,3 @@
-# Lab-only Windows 11 24H2 hardening:
-# - Remove a predefined set of AppX packages
-# - Disable AppXSvc (service + registry Start=4)
-# - Install startup scheduled task (SYSTEM) to re-enforce disable every boot
-# - Throw if AppXSvc is not disabled (Puppet will see non-zero)
-
 function Write-Log {
     param (
         [string] $message,
@@ -103,7 +97,7 @@ function Remove-PreinstalledAppxPackages {
     }
 
     foreach ($Key in $apps.Keys) {
-        $Item = $apps[$Key]
+        $null = $apps[$Key] # keep, in case you add logging later
 
         Get-AppxProvisionedPackage -Online |
             Where-Object { $_.PackageName -like ("*{0}*" -f $Key) } |
@@ -118,14 +112,15 @@ function Remove-PreinstalledAppxPackages {
             Remove-AppxPackage -ErrorAction SilentlyContinue |
             Out-Null
     }
+
     $paths = @(
         "$env:SystemRoot\System32\OneDriveSetup.exe",
         "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-        )
+    )
 
-        foreach ($p in $paths) {
-            if (Test-Path $p) {
-                Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
+    foreach ($p in $paths) {
+        if (Test-Path $p) {
+            Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
         }
     }
 }
@@ -144,6 +139,13 @@ function Disable-AppXSvcCore {
 
     if (Test-Path $svcKeyPath) {
         New-ItemProperty -Path $svcKeyPath -Name Start -Value 4 -PropertyType DWord -Force | Out-Null
+    }
+
+    # Best-effort: give it a moment to stop (can be sticky during provisioning)
+    for ($i=0; $i -lt 10; $i++) {
+        $s = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+        if ($null -eq $s -or $s.Status -eq 'Stopped') { break }
+        Start-Sleep -Seconds 1
     }
 }
 
@@ -208,20 +210,18 @@ function Test-AppXSvcDisabled {
     param()
 
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+    if ($null -eq $svc) { return $true }
 
-    if ($null -eq $svc) {
-        return $true
-    }
-
-    $startType = $svc.StartType.ToString()
-    if ($svc.Status -eq 'Stopped' -and $startType -eq 'Disabled') {
+    # Success condition: Disabled. It may still be Running during early provisioning.
+    if ($svc.StartType.ToString() -eq 'Disabled') {
+        if ($svc.Status -ne 'Stopped') {
+            Write-Log -message ("uninstall_appx_packages :: AppXSvc is Disabled but currently {0}. Will be enforced at next boot." -f $svc.Status) -severity 'WARN'
+        }
         return $true
     }
 
     return $false
 }
-
-# --- Main flow ---------------------------------------------------------------
 
 Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
 
