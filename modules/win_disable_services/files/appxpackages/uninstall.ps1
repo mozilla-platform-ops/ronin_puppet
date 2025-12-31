@@ -118,16 +118,6 @@ function Remove-PreinstalledAppxPackages {
             Remove-AppxPackage -ErrorAction SilentlyContinue |
             Out-Null
     }
-    $paths = @(
-        "$env:SystemRoot\System32\OneDriveSetup.exe",
-        "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-        )
-
-        foreach ($p in $paths) {
-            if (Test-Path $p) {
-                Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
-        }
-    }
 }
 
 function Disable-AppXSvcCore {
