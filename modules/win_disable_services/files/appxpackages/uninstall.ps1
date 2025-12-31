@@ -118,6 +118,59 @@ try {
     }
 }
 
+function Remove-OneDriveScheduledTasks {
+    [CmdletBinding()]
+    param()
+
+    Write-Log -message "OneDriveTasks :: begin" -severity 'DEBUG'
+
+    try {
+        $rows = @(schtasks.exe /Query /FO CSV /V 2>$null | ConvertFrom-Csv)
+
+        if (-not $rows -or $rows.Count -eq 0) {
+            Write-Log -message "OneDriveTasks :: schtasks returned no rows" -severity 'WARN'
+            return
+        }
+
+        # Columns vary a bit across Windows builds, so check multiple possible fields.
+        $targets = $rows | Where-Object {
+            ($_.TaskName -match '(?i)onedrive') -or
+            (($_.'Task To Run') -and (($_.'Task To Run') -match '(?i)onedrive(\\.exe)?')) -or
+            (($_.Actions) -and ($_.Actions -match '(?i)onedrive(\\.exe)?')) -or
+            (($_.'Task Run') -and (($_.'Task Run') -match '(?i)onedrive(\\.exe)?')) -or
+            # extra-tight match on known binaries
+            (($_.Actions) -and ($_.Actions -match '(?i)OneDriveSetup\.exe|\\OneDrive\.exe')) -or
+            (($_.'Task To Run') -and (($_.'Task To Run') -match '(?i)OneDriveSetup\.exe|\\OneDrive\.exe'))
+        } | Select-Object -ExpandProperty TaskName -Unique
+
+        if (-not $targets -or $targets.Count -eq 0) {
+            Write-Log -message "OneDriveTasks :: No matching tasks found" -severity 'DEBUG'
+            return
+        }
+
+        Write-Log -message ("OneDriveTasks :: Found {0} task(s) to remove" -f $targets.Count) -severity 'INFO'
+
+        foreach ($tn in $targets) {
+            try {
+                schtasks.exe /Delete /TN "$tn" /F 2>$null | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Log -message ("OneDriveTasks :: Deleted {0}" -f $tn) -severity 'INFO'
+                } else {
+                    Write-Log -message ("OneDriveTasks :: Failed delete {0} (exit {1})" -f $tn, $LASTEXITCODE) -severity 'WARN'
+                }
+            } catch {
+                Write-Log -message ("OneDriveTasks :: Exception deleting {0}: {1}" -f $tn, $_.Exception.Message) -severity 'WARN'
+            }
+        }
+    }
+    catch {
+        Write-Log -message ("OneDriveTasks :: failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+    finally {
+        Write-Log -message "OneDriveTasks :: end" -severity 'DEBUG'
+    }
+}
+
 function Remove-OneDriveAggressive {
   [CmdletBinding()]
   param(
@@ -360,7 +413,7 @@ function Remove-PreinstalledAppxPackages {
             Start-Process $p -ArgumentList '/uninstall' -Wait -NoNewWindow
         }
     }
-
+    Remove-OneDriveScheduledTasks
     Ensure-OneDriveTaskCleanupHardeningTask
 }
 
