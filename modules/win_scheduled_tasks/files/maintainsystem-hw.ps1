@@ -603,6 +603,7 @@ If ($bootstrap_stage -eq 'complete') {
     }
     Disable-PerUserUwpServices
     Remove-OneDriveScheduledTasks
+    pause
 
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
