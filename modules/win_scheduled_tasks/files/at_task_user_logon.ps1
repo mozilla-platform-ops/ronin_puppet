@@ -165,6 +165,7 @@ function Remove-OneDriveScheduledTasks {
     } else {
         Write-Log -message "OneDriveTasks :: end (success at timeout boundary)" -severity 'INFO'
     }
+}
 
 # Windows release ID.
 # From time to time we need to have the different releases of the same OS version
