@@ -10,7 +10,7 @@ class win_scheduled_tasks::onedrive_task_deletion {
       content => file('win_scheduled_tasks/onedrive_task_deletion.ps1'),
     }
     # Resource from puppetlabs-scheduled_task
-    scheduled_task { '1drive_task_deletion':
+    scheduled_task { 'one_drive_task_deletion':
       ensure    => 'present',
       command   => "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe",
       arguments => "-executionpolicy bypass -File ${onedrive_task_deletion_ps}",
