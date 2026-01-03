@@ -45,6 +45,141 @@ $ErrorActionPreference = 'Continue'
 $svcName    = 'AppXSvc'
 $svcKeyPath = 'HKLM:\SYSTEM\CurrentControlSet\Services\AppXSvc'
 
+function Remove-EdgeScheduledTasks {
+    [CmdletBinding()]
+    param(
+        [int]$TimeoutSeconds = 180,
+        [int]$RetryIntervalSeconds = 10,
+        [int]$PerTaskDeleteTimeoutSeconds = 60,
+        [int]$PerTaskRetryIntervalSeconds = 3
+    )
+
+    # Match only the common Edge updater tasks (keeps this "safe-simple")
+    $NamePatterns = @(
+        '(?i)\\MicrosoftEdgeUpdateTaskMachineCore',
+        '(?i)\\MicrosoftEdgeUpdateTaskMachineUA',
+        '(?i)\\MicrosoftEdgeUpdateTaskMachine',     # some builds vary
+        '(?i)\\EdgeUpdate'                          # fallback
+    )
+
+    $ActionPatterns = @(
+        '(?i)msedgeupdate\.exe',
+        '(?i)microsoftedgeupdate\.exe',
+        '(?i)edgeupdate\.exe'
+    )
+
+    function Get-EdgeTaskNames {
+        try {
+            $rows = @(schtasks.exe /Query /FO CSV /V 2>$null | ConvertFrom-Csv)
+            if (-not $rows -or $rows.Count -eq 0) { return @() }
+
+            $matches = $rows | Where-Object {
+                $tn = $_.TaskName
+                $a1 = $_.'Task To Run'
+                $a2 = $_.Actions
+                $a3 = $_.'Task Run'
+
+                ($NamePatterns | Where-Object { $tn -match $_ }).Count -gt 0 -or
+                (($a1 -and (($ActionPatterns | Where-Object { $a1 -match $_ }).Count -gt 0))) -or
+                (($a2 -and (($ActionPatterns | Where-Object { $a2 -match $_ }).Count -gt 0))) -or
+                (($a3 -and (($ActionPatterns | Where-Object { $a3 -match $_ }).Count -gt 0)))
+            }
+
+            return @($matches | Select-Object -ExpandProperty TaskName -Unique)
+        }
+        catch {
+            Write-Log -message ("EdgeTasks :: enumerate failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+            return @()
+        }
+    }
+
+    function Test-TaskExists([string]$TaskName) {
+        try {
+            schtasks.exe /Query /TN "$TaskName" 1>$null 2>$null
+            return ($LASTEXITCODE -eq 0)
+        } catch {
+            return $true
+        }
+    }
+
+    function Remove-TaskWithRetries {
+        param(
+            [Parameter(Mandatory)][string]$TaskName
+        )
+
+        $deadline = (Get-Date).AddSeconds($PerTaskDeleteTimeoutSeconds)
+        $attempt  = 0
+
+        while ((Get-Date) -lt $deadline) {
+            $attempt++
+
+            try {
+                schtasks.exe /Delete /TN "$TaskName" /F 2>$null | Out-Null
+                $exit = $LASTEXITCODE
+
+                if ($exit -eq 0) {
+                    if (-not (Test-TaskExists -TaskName $TaskName)) {
+                        Write-Log -message ("EdgeTasks :: deleted {0} (attempt {1})" -f $TaskName, $attempt) -severity 'INFO'
+                        return $true
+                    }
+                    Write-Log -message ("EdgeTasks :: delete reported success but task still exists: {0} (attempt {1})" -f $TaskName, $attempt) -severity 'WARN'
+                } else {
+                    Write-Log -message ("EdgeTasks :: delete failed {0} (exit {1}, attempt {2})" -f $TaskName, $exit, $attempt) -severity 'WARN'
+                }
+            }
+            catch {
+                Write-Log -message ("EdgeTasks :: exception deleting {0} (attempt {1}): {2}" -f $TaskName, $attempt, $_.Exception.Message) -severity 'WARN'
+            }
+
+            Start-Sleep -Seconds $PerTaskRetryIntervalSeconds
+        }
+
+        Write-Log -message ("EdgeTasks :: timeout deleting {0} after {1}s" -f $TaskName, $PerTaskDeleteTimeoutSeconds) -severity 'ERROR'
+        return $false
+    }
+
+    Write-Log -message ("EdgeTasks :: begin (timeout={0}s, interval={1}s, perTaskTimeout={2}s)" -f $TimeoutSeconds, $RetryIntervalSeconds, $PerTaskDeleteTimeoutSeconds) -severity 'DEBUG'
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $pass = 0
+
+    while ((Get-Date) -lt $deadline) {
+        $pass++
+        $targets = Get-EdgeTaskNames
+
+        if (-not $targets -or $targets.Count -eq 0) {
+            Write-Log -message ("EdgeTasks :: none found (pass {0})" -f $pass) -severity 'INFO'
+            Write-Log -message "EdgeTasks :: end (success)" -severity 'DEBUG'
+            return
+        }
+
+        Write-Log -message ("EdgeTasks :: pass {0}: found {1} task(s)" -f $pass, $targets.Count) -severity 'INFO'
+
+        foreach ($tn in $targets) {
+            $null = Remove-TaskWithRetries -TaskName $tn
+        }
+
+        $stillThere = Get-EdgeTaskNames
+        if (-not $stillThere -or $stillThere.Count -eq 0) {
+            Write-Log -message ("EdgeTasks :: verification OK after pass {0}" -f $pass) -severity 'INFO'
+            Write-Log -message "EdgeTasks :: end (success)" -severity 'DEBUG'
+            return
+        }
+
+        $remaining = [math]::Max(0, [int]($deadline - (Get-Date)).TotalSeconds)
+        Write-Log -message ("EdgeTasks :: still present after pass {0} (remaining {1}s). Sleeping {2}s..." -f $pass, $remaining, $RetryIntervalSeconds) -severity 'WARN'
+        Start-Sleep -Seconds $RetryIntervalSeconds
+    }
+
+    $final = Get-EdgeTaskNames
+    if ($final -and $final.Count -gt 0) {
+        $sample = ($final | Select-Object -First 10) -join '; '
+        Write-Log -message ("EdgeTasks :: timeout after {0}s. Remaining task(s): {1}" -f $TimeoutSeconds, $sample) -severity 'ERROR'
+    } else {
+        Write-Log -message "EdgeTasks :: end (success at timeout boundary)" -severity 'INFO'
+    }
+}
+
 function Remove-PreinstalledAppxPackages {
     [CmdletBinding()]
     param()
@@ -232,5 +367,7 @@ if (-not (Test-AppXSvcDisabled)) {
     Write-Log -message ("uninstall_appx_packages :: AppXSvc is NOT disabled. Status: {0}, StartType: {1}" -f $status, $startType) -severity 'ERROR'
     throw "AppXSvc is NOT disabled. Status: $status, StartType: $startType"
 }
+
+Remove-EdgeScheduledTasks
 
 Write-Log -message 'uninstall_appx_packages :: complete (AppXSvc disabled)' -severity 'DEBUG'
