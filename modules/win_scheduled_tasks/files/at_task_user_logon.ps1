@@ -54,7 +54,8 @@ function Remove-OneDriveScheduledTasks {
         [int]$PerTaskDeleteTimeoutSeconds = 60,
         [int]$PerTaskRetryIntervalSeconds = 3
     )
-
+    ## give it a minute to for schd task to be available
+    start-sleep -s 60
     function Get-OneDriveTaskNames {
         try {
             $rows = @(schtasks.exe /Query /FO CSV /V 2>$null | ConvertFrom-Csv)
