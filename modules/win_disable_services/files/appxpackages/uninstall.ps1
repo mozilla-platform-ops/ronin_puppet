@@ -62,7 +62,9 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.549981C3F5F10"         = @{ VDIState="Unchanged"; URL="https://apps.microsoft.com/detail/cortana/9NFFX4SZZ23L?hl=en-us&gl=US"; Description="Cortana (could not update)" }
         "Microsoft.BingNews"              = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/microsoft-news/9wzdncrfhvfw"; Description="Microsoft News app" }
         "Microsoft.BingWeather"           = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/msn-weather/9wzdncrfj3q2"; Description="MSN Weather app" }
-        "Microsoft.DesktopAppInstaller"   = @{ VDIState="Unchanged"; URL="https://apps.microsoft.com/detail/9NBLGGH4NNS1"; Description="Microsoft App Installer for Windows 10 makes sideloading Windows apps easy" }
+        ## Doesn't actually gets removed
+        ## Comment out for now
+        #"Microsoft.DesktopAppInstaller"   = @{ VDIState="Unchanged"; URL="https://apps.microsoft.com/detail/9NBLGGH4NNS1"; Description="Microsoft App Installer for Windows 10 makes sideloading Windows apps easy" }
         "Microsoft.GetHelp"               = @{ VDIState="Unchanged"; URL="https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/customize-get-help-app"; Description="App that facilitates free support for Microsoft products" }
         "Microsoft.Getstarted"            = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/microsoft-tips/9wzdncrdtbjj"; Description="Windows 10 tips app" }
         "Microsoft.MicrosoftOfficeHub"    = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/office/9wzdncrd29v9"; Description="Office UWP app suite" }
