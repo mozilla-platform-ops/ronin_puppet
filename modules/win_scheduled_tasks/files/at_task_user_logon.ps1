@@ -398,7 +398,7 @@ switch ($os_version) {
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         Disable-PerUserUwpServices
         Remove-OneDriveScheduledTasks
-        Remove-TaskWithRetries
+        Remove-EdgeScheduledTasks
     }
     "win_2022" {
         ## Disable Server Manager Dashboard
