@@ -198,20 +198,29 @@ function Test-AppXSvcDisabled {
     param()
 
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+    if ($null -eq $svc) { return $true }
 
-    if ($null -eq $svc) {
-        return $true
-    }
+    # Registry is your source-of-truth for Start=4
+    $regStart = $null
+    try {
+        $regStart = (Get-ItemProperty -Path $svcKeyPath -Name Start -ErrorAction SilentlyContinue).Start
+    } catch { }
 
-    $startType = $svc.StartType.ToString()
-    if ($svc.Status -eq 'Stopped' -and $startType -eq 'Disabled') {
+    $regDisabled = ($regStart -eq 4)
+
+    # CIM is a nice second signal (StartMode: Auto/Manual/Disabled)
+    $cimDisabled = $false
+    try {
+        $svcCim = Get-CimInstance Win32_Service -Filter "Name='$svcName'" -ErrorAction SilentlyContinue
+        if ($svcCim) { $cimDisabled = ($svcCim.StartMode -eq 'Disabled') }
+    } catch { }
+
+    if ($svc.Status -eq 'Stopped' -and ($regDisabled -or $cimDisabled)) {
         return $true
     }
 
     return $false
 }
-
-# --- Main flow ---------------------------------------------------------------
 
 Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
 
