@@ -1,21 +1,20 @@
 # Lab-only Windows 11 24H2 hardening:
-# - Remove a predefined set of AppX packages
-# - Disable AppXSvc (service + registry Start=4)
+# - Remove a predefined set of AppX packages (best-effort; never hard-fails Puppet)
+# - Disable AppXSvc (service + registry Start=4 + sc.exe)
 # - Install startup scheduled task (SYSTEM) to re-enforce disable every boot
 # - Throw if AppXSvc is not disabled (Puppet will see non-zero)
 
 function Write-Log {
     param (
         [string] $message,
+        [ValidateSet('DEBUG','INFO','WARN','ERROR')]
         [string] $severity = 'INFO',
         [string] $source   = 'BootStrap',
         [string] $logName  = 'Application'
     )
 
-    if (!([Diagnostics.EventLog]::Exists($logName)) -or
-        !([Diagnostics.EventLog]::SourceExists($source))) {
-        New-EventLog -LogName $logName -Source $source
-    }
+    $entryType = 'Information'
+    $eventId   = 1
 
     switch ($severity) {
         'DEBUG' { $entryType = 'SuccessAudit'; $eventId = 2; break }
@@ -24,16 +23,30 @@ function Write-Log {
         default { $entryType = 'Information';  $eventId = 1; break }
     }
 
-    Write-EventLog -LogName $logName -Source $source `
-                   -EntryType $entryType -Category 0 -EventID $eventId `
-                   -Message $message
+    # Best-effort event log creation (avoid terminating failures / races)
+    try {
+        if (!([Diagnostics.EventLog]::Exists($logName)) -or
+            !([Diagnostics.EventLog]::SourceExists($source))) {
+            New-EventLog -LogName $logName -Source $source -ErrorAction SilentlyContinue | Out-Null
+        }
+    } catch {
+        # ignore
+    }
+
+    try {
+        Write-EventLog -LogName $logName -Source $source `
+            -EntryType $entryType -Category 0 -EventID $eventId `
+            -Message $message -ErrorAction SilentlyContinue
+    } catch {
+        # ignore
+    }
 
     if ([Environment]::UserInteractive) {
         $fc = @{
-            'Information' = 'White'
-            'Error'       = 'Red'
-            'Warning'     = 'DarkYellow'
-            'SuccessAudit'= 'DarkGray'
+            'Information'  = 'White'
+            'Error'        = 'Red'
+            'Warning'      = 'DarkYellow'
+            'SuccessAudit' = 'DarkGray'
         }[$entryType]
         Write-Host $message -ForegroundColor $fc
     }
@@ -103,20 +116,56 @@ function Remove-PreinstalledAppxPackages {
     }
 
     foreach ($Key in $apps.Keys) {
-        $Item = $apps[$Key]
+        try {
+            Write-Log -message ("uninstall_appx_packages :: removing AppX match: {0}" -f $Key) -severity 'DEBUG'
 
-        Get-AppxProvisionedPackage -Online |
-            Where-Object { $_.PackageName -like ("*{0}*" -f $Key) } |
-            Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
-            Out-Null
+            # Provisioned packages (image-level)
+            try {
+                Get-AppxProvisionedPackage -Online -ErrorAction Stop |
+                    Where-Object { $_.PackageName -like ("*{0}*" -f $Key) } |
+                    ForEach-Object {
+                        try {
+                            Remove-AppxProvisionedPackage -Online -PackageName $_.PackageName -ErrorAction Stop | Out-Null
+                        } catch {
+                            Write-Log -message ("Remove-AppxProvisionedPackage failed for {0}: {1}" -f $_.PackageName, $_.Exception.Message) -severity 'WARN'
+                        }
+                    }
+            } catch {
+                Write-Log -message ("Get/Remove provisioned package failed for key {0}: {1}" -f $Key, $_.Exception.Message) -severity 'WARN'
+            }
 
-        Get-AppxPackage -AllUsers -Name ("*{0}*" -f $Key) |
-            Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue |
-            Out-Null
+            # Installed packages (all users)
+            try {
+                Get-AppxPackage -AllUsers -Name ("*{0}*" -f $Key) -ErrorAction SilentlyContinue |
+                    ForEach-Object {
+                        try {
+                            Remove-AppxPackage -AllUsers -Package $_.PackageFullName -ErrorAction Stop | Out-Null
+                        } catch {
+                            Write-Log -message ("Remove-AppxPackage(-AllUsers) failed for {0}: {1}" -f $_.PackageFullName, $_.Exception.Message) -severity 'WARN'
+                        }
+                    }
+            } catch {
+                Write-Log -message ("Get/Remove AppxPackage(-AllUsers) failed for key {0}: {1}" -f $Key, $_.Exception.Message) -severity 'WARN'
+            }
 
-        Get-AppxPackage -Name ("*{0}*" -f $Key) |
-            Remove-AppxPackage -ErrorAction SilentlyContinue |
-            Out-Null
+            # Installed packages (current user)
+            try {
+                Get-AppxPackage -Name ("*{0}*" -f $Key) -ErrorAction SilentlyContinue |
+                    ForEach-Object {
+                        try {
+                            Remove-AppxPackage -Package $_.PackageFullName -ErrorAction Stop | Out-Null
+                        } catch {
+                            Write-Log -message ("Remove-AppxPackage failed for {0}: {1}" -f $_.PackageFullName, $_.Exception.Message) -severity 'WARN'
+                        }
+                    }
+            } catch {
+                Write-Log -message ("Get/Remove AppxPackage failed for key {0}: {1}" -f $Key, $_.Exception.Message) -severity 'WARN'
+            }
+        } catch {
+            # Absolutely never let AppX errors terminate this script (Puppet signal should be AppXSvc-only)
+            Write-Log -message ("Remove-PreinstalledAppxPackages unexpected failure for key {0}: {1}" -f $Key, $_.Exception.ToString()) -severity 'WARN'
+            continue
+        }
     }
 }
 
@@ -131,6 +180,9 @@ function Disable-AppXSvcCore {
         }
         Set-Service -Name $svcName -StartupType Disabled -ErrorAction SilentlyContinue
     }
+
+    # Extra-hard disable: sc.exe + registry (source of truth)
+    try { sc.exe config $svcName start= disabled | Out-Null } catch { }
 
     if (Test-Path $svcKeyPath) {
         New-ItemProperty -Path $svcKeyPath -Name Start -Value 4 -PropertyType DWord -Force | Out-Null
@@ -154,7 +206,7 @@ param()
 $ErrorActionPreference = "SilentlyContinue"
 
 $svcName    = "AppXSvc"
-$svcKeyPath = "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\AppXSvc"
+$svcKeyPath = "HKLM:\SYSTEM\CurrentControlSet\Services\AppXSvc"
 
 try {
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
@@ -164,6 +216,8 @@ try {
         }
         Set-Service -Name $svcName -StartupType Disabled -ErrorAction SilentlyContinue
     }
+
+    try { sc.exe config $svcName start= disabled | Out-Null } catch { }
 
     if (Test-Path $svcKeyPath) {
         New-ItemProperty -Path $svcKeyPath -Name Start -Value 4 -PropertyType DWord -Force | Out-Null
@@ -176,7 +230,7 @@ try {
     Set-Content -Path $hardeningFile -Value $hardeningScript -Encoding UTF8 -Force
 
     $action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
-        -Argument "-NoLogo -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$hardeningFile`""
+        -Argument "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$hardeningFile`""
     $trigger = New-ScheduledTaskTrigger -AtStartup
 
     $taskName = 'Hard-Disable-AppXSvc'
@@ -200,7 +254,7 @@ function Test-AppXSvcDisabled {
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
     if ($null -eq $svc) { return $true }
 
-    # Registry is your source-of-truth for Start=4
+    # Registry is the most reliable indicator (Start=4)
     $regStart = $null
     try {
         $regStart = (Get-ItemProperty -Path $svcKeyPath -Name Start -ErrorAction SilentlyContinue).Start
@@ -208,7 +262,7 @@ function Test-AppXSvcDisabled {
 
     $regDisabled = ($regStart -eq 4)
 
-    # CIM is a nice second signal (StartMode: Auto/Manual/Disabled)
+    # CIM is a helpful second signal (StartMode: Auto/Manual/Disabled)
     $cimDisabled = $false
     try {
         $svcCim = Get-CimInstance Win32_Service -Filter "Name='$svcName'" -ErrorAction SilentlyContinue
@@ -222,24 +276,41 @@ function Test-AppXSvcDisabled {
     return $false
 }
 
-Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
+# --- Main flow ---------------------------------------------------------------
 
-Write-Log -message 'uninstall_appx_packages :: Remove-PreinstalledAppxPackages' -severity 'DEBUG'
-Remove-PreinstalledAppxPackages
+try {
+    Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
 
-Write-Log -message 'uninstall_appx_packages :: Disable-AppXSvcCore' -severity 'DEBUG'
-Disable-AppXSvcCore
+    Write-Log -message 'uninstall_appx_packages :: Remove-PreinstalledAppxPackages' -severity 'DEBUG'
+    Remove-PreinstalledAppxPackages
 
-Write-Log -message 'uninstall_appx_packages :: Ensure-AppXSvcHardeningTask' -severity 'DEBUG'
-Ensure-AppXSvcHardeningTask
+    Write-Log -message 'uninstall_appx_packages :: Disable-AppXSvcCore' -severity 'DEBUG'
+    Disable-AppXSvcCore
 
-if (-not (Test-AppXSvcDisabled)) {
-    $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
-    $status    = if ($svc) { $svc.Status }    else { 'Missing' }
-    $startType = if ($svc) { $svc.StartType } else { 'Missing' }
+    Write-Log -message 'uninstall_appx_packages :: Ensure-AppXSvcHardeningTask' -severity 'DEBUG'
+    Ensure-AppXSvcHardeningTask
 
-    Write-Log -message ("uninstall_appx_packages :: AppXSvc is NOT disabled. Status: {0}, StartType: {1}" -f $status, $startType) -severity 'ERROR'
-    throw "AppXSvc is NOT disabled. Status: $status, StartType: $startType"
+    if (-not (Test-AppXSvcDisabled)) {
+        $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+        $status = if ($svc) { $svc.Status } else { 'Missing' }
+
+        $regStart = $null
+        try { $regStart = (Get-ItemProperty -Path $svcKeyPath -Name Start -ErrorAction SilentlyContinue).Start } catch { }
+        $regStartStr = if ($null -ne $regStart) { $regStart } else { 'Missing' }
+
+        $cimStartMode = 'Unknown'
+        try {
+            $svcCim = Get-CimInstance Win32_Service -Filter "Name='$svcName'" -ErrorAction SilentlyContinue
+            if ($svcCim) { $cimStartMode = $svcCim.StartMode }
+        } catch { }
+
+        Write-Log -message ("uninstall_appx_packages :: AppXSvc is NOT disabled. Status: {0}, RegStart: {1}, CimStartMode: {2}" -f $status, $regStartStr, $cimStartMode) -severity 'ERROR'
+        throw "AppXSvc is NOT disabled. Status: $status, RegStart: $regStartStr, CimStartMode: $cimStartMode"
+    }
+
+    Write-Log -message 'uninstall_appx_packages :: complete (AppXSvc disabled)' -severity 'DEBUG'
 }
-
-Write-Log -message 'uninstall_appx_packages :: complete (AppXSvc disabled)' -severity 'DEBUG'
+catch {
+    Write-Log -message ("uninstall_appx_packages :: FATAL: {0}" -f $_.Exception.ToString()) -severity 'ERROR'
+    throw
+}
