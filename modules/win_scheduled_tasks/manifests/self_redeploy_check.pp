@@ -19,8 +19,8 @@ class win_scheduled_tasks::self_redeploy_check (
     trigger   => [{
       schedule         => 'daily',
       start_time       => '00:00',
-      #minutes_interval => 120,
-      minutes_interval => 5,
+      minutes_interval => 120,
+      #minutes_interval => 5,
       #minutes_duration => 1440, # 24 hours = repeat every 2 hours all day
     }],
     user      => 'SYSTEM',
