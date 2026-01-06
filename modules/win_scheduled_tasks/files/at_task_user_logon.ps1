@@ -168,6 +168,80 @@ function Remove-OneDriveScheduledTasks {
     }
 }
 
+function Disable-OneDriveBackupPopup {
+    [CmdletBinding()]
+    param()
+
+    Write-Log -message "Disable-OneDriveBackupPopup :: begin" -severity 'INFO'
+
+    try {
+        $wb = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsBackup'
+        New-Item -Path $wb -Force | Out-Null
+        New-ItemProperty -Path $wb -Name 'DisableMonitoring' -PropertyType DWord -Value 1 -Force | Out-Null
+        Write-Log -message "Disable-OneDriveBackupPopup :: Set WindowsBackup DisableMonitoring=1" -severity 'INFO'
+    } catch {
+        Write-Log -message ("Disable-OneDriveBackupPopup :: Failed setting DisableMonitoring: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    try {
+        $odPol = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive'
+        New-Item -Path $odPol -Force | Out-Null
+        New-ItemProperty -Path $odPol -Name 'DisableFileSyncNGSC' -PropertyType DWord -Value 1 -Force | Out-Null
+        Write-Log -message "Disable-OneDriveBackupPopup :: Set OneDrive DisableFileSyncNGSC=1" -severity 'INFO'
+    } catch {
+        Write-Log -message ("Disable-OneDriveBackupPopup :: Failed setting DisableFileSyncNGSC: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    try {
+        Get-Process -Name OneDrive -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Log -message ("Disable-OneDriveBackupPopup :: Stopping OneDrive.exe (Id={0})" -f $_.Id) -severity 'INFO'
+            Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+        }
+    } catch {
+        Write-Log -message ("Disable-OneDriveBackupPopup :: Failed stopping OneDrive process: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    function Remove-RunEntry([string]$HiveRoot) {
+        $runKey = "${HiveRoot}\Software\Microsoft\Windows\CurrentVersion\Run"
+        foreach ($name in @('OneDrive','OneDriveSetup','Microsoft OneDrive')) {
+            try {
+                & reg.exe delete $runKey /v $name /f 1>$null 2>$null
+            } catch { }
+        }
+    }
+
+    $defaultNtUser = 'C:\Users\Default\NTUSER.DAT'
+    if (Test-Path $defaultNtUser) {
+        try {
+            & reg.exe load 'HKU\DefaultUser' $defaultNtUser 1>$null 2>$null
+            Remove-RunEntry 'HKU\DefaultUser'
+            & reg.exe unload 'HKU\DefaultUser' 1>$null 2>$null
+            Write-Log -message "Disable-OneDriveBackupPopup :: Cleared OneDrive Run entries in Default user profile" -severity 'INFO'
+        } catch {
+            Write-Log -message ("Disable-OneDriveBackupPopup :: Failed editing Default user hive: {0}" -f $_.Exception.Message) -severity 'WARN'
+            try { & reg.exe unload 'HKU\DefaultUser' 1>$null 2>$null } catch { }
+        }
+    } else {
+        Write-Log -message "Disable-OneDriveBackupPopup :: Default NTUSER.DAT not found; skipping default profile edit" -severity 'DEBUG'
+    }
+
+    try {
+        $userSids = @(Get-ChildItem Registry::HKEY_USERS -ErrorAction SilentlyContinue |
+            Where-Object { $_.PSChildName -match '^S-1-5-21-' } |
+            Select-Object -ExpandProperty PSChildName)
+
+        foreach ($sid in $userSids) {
+            Remove-RunEntry ("HKU\{0}" -f $sid)
+        }
+
+        Write-Log -message ("Disable-OneDriveBackupPopup :: Cleared OneDrive Run entries in {0} loaded user hive(s)" -f $userSids.Count) -severity 'INFO'
+    } catch {
+        Write-Log -message ("Disable-OneDriveBackupPopup :: Failed clearing loaded user hives: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    Write-Log -message "Disable-OneDriveBackupPopup :: complete (recommend reboot)" -severity 'INFO'
+}
+
 function Disable-PerUserUwpServices {
     [CmdletBinding()]
     param (
@@ -398,6 +472,7 @@ switch ($os_version) {
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         Disable-PerUserUwpServices
         Remove-OneDriveScheduledTasks
+        Disable-OneDriveBackupPopup
         Remove-EdgeScheduledTasks
     }
     "win_2022" {
