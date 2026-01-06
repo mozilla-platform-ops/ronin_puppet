@@ -9,6 +9,8 @@ class win_disable_services::uninstall_appx_packages {
     content => file('win_disable_services/appxpackages/uninstall.ps1'),
   }
 
+  include win_disable_services::disable_ms_edge
+
   exec { 'disable_appx_packages':
     # Call the script file from PowerShell provider
     command   => "& '${script_path}'",
