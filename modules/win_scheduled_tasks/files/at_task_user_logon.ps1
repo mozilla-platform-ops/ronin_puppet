@@ -420,6 +420,50 @@ function Remove-EdgeScheduledTasks {
     }
 }
 
+function Disable-SyncFromCloud {
+    [CmdletBinding()]
+    param()
+
+    Write-Log -message "Disable-SyncFromCloud :: begin (disable Language settings sync)" -severity 'INFO'
+
+    # 1) Always do per-user disable (no admin required)
+    try {
+        $kUser = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync\Groups\Language'
+        New-Item -Path $kUser -Force | Out-Null
+        New-ItemProperty -Path $kUser -Name 'Enabled' -PropertyType DWord -Value 0 -Force | Out-Null
+
+        $val = (Get-ItemProperty -Path $kUser -Name Enabled -ErrorAction SilentlyContinue).Enabled
+        Write-Log -message ("Disable-SyncFromCloud :: HKCU Language sync disabled (Enabled={0})" -f $val) -severity 'INFO'
+    }
+    catch {
+        Write-Log -message ("Disable-SyncFromCloud :: HKCU write failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    # 2) If elevated, also enforce via machine policy (optional hard block)
+    try {
+        $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+                   ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+        if ($isAdmin) {
+            $kPol = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\SettingSync'
+            New-Item -Path $kPol -Force | Out-Null
+
+            # Common policy convention: 2 = disable
+            New-ItemProperty -Path $kPol -Name 'DisableLanguageSettingSync' -PropertyType DWord -Value 2 -Force | Out-Null
+
+            $pval = (Get-ItemProperty -Path $kPol -Name DisableLanguageSettingSync -ErrorAction SilentlyContinue).DisableLanguageSettingSync
+            Write-Log -message ("Disable-SyncFromCloud :: HKLM policy set DisableLanguageSettingSync={0}" -f $pval) -severity 'INFO'
+        }
+        else {
+            Write-Log -message "Disable-SyncFromCloud :: not elevated; skipping HKLM policy enforcement" -severity 'DEBUG'
+        }
+    }
+    catch {
+        Write-Log -message ("Disable-SyncFromCloud :: HKLM policy step failed: {0}" -f $_.Exception.Message) -severity 'DEBUG'
+    }
+
+    Write-Log -message "Disable-SyncFromCloud :: complete (recommend sign out/in or reboot)" -severity 'INFO'
+}
 
 # Windows release ID.
 # From time to time we need to have the different releases of the same OS version
@@ -474,6 +518,7 @@ switch ($os_version) {
         Remove-OneDriveScheduledTasks
         Disable-OneDriveBackupPopup
         Remove-EdgeScheduledTasks
+        Disable-SyncFromCloud
     }
     "win_2022" {
         ## Disable Server Manager Dashboard
