@@ -5,6 +5,12 @@
 class roles_profiles::profiles::worker {
   case $facts['os']['name'] {
     'Darwin': {
+      $generic_worker_engine = lookup('worker.generic_worker_engine')
+      $task_user_password = $generic_worker_engine ? {
+        'multiuser-static' => lookup('cltbld_user.unhashedpassword'),
+        default            => undef,
+      }
+
       class { 'worker_runner':
         taskcluster_version   => lookup('worker.taskcluster_version'),
         provider_type         => lookup('worker.provider_type'),
@@ -14,8 +20,9 @@ class roles_profiles::profiles::worker {
         worker_pool_id        => lookup('worker.worker_pool_id'),
         worker_group          => lookup('worker.worker_group'),
         worker_id             => lookup('worker.worker_id'),
-        generic_worker_engine => lookup('worker.generic_worker_engine'),
+        generic_worker_engine => $generic_worker_engine,
         idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
+        task_user_password    => $task_user_password,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc

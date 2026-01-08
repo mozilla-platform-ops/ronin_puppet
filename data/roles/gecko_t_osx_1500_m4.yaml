@@ -9,14 +9,14 @@ worker_metadata:
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
 worker:
-  taskcluster_version: 60.3.4
+  taskcluster_version: 95.0.3
   provider_type: standalone
   worker_pool_id: releng-hardware/gecko-t-osx-1500-m4
   worker_group: mdc1
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
-  generic_worker_engine: simple
+  generic_worker_engine: multiuser-static
   idle_timeout_secs: 21600 # 6 hours
 
 packages_classes:
@@ -66,6 +66,7 @@ cltbld_user:
     salt: "%{lookup('vault_secrets::cltbld_user.data.salt')}"
     iterations: "%{lookup('vault_secrets::cltbld_user.data.iterations')}"
     kcpassword: "%{lookup('vault_secrets::cltbld_user.data.kcpassword')}"
+    unhashedpassword: "%{lookup('vault_secrets::cltbld_user.data.unhashedpassword')}"
 
 generic_worker_secrets:
     taskcluster_client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
