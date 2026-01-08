@@ -44,6 +44,7 @@ class roles_profiles::profiles::disable_services {
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
         include win_disable_services::uninstall_appx_packages
         include win_disable_services::disable_optional_services
+        include win_disable_services::disable_smartscreen_shell
         if ($facts['custom_win_location'] == 'azure') {
           include win_scheduled_tasks::kill_local_clipboard
         }
