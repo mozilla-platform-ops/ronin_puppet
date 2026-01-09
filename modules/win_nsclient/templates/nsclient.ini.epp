@@ -1,0 +1,36 @@
+# If you want to fill this file with all available options run the following command:
+#   nscp settings --generate --add-defaults --load-all
+# If you want to activate a module and bring in all its options use:
+#   nscp settings --activate-module <MODULE NAME> --add-defaults
+# For details run: nscp settings --help
+
+; in flight - TODO
+[/modules]
+
+; enabled modules
+NSClientServer = enabled
+CheckSystem = enabled
+CheckDisk = enabled
+NRPEServer = enabled
+CheckExternalScripts = enabled
+
+; disabled modules
+CheckEventLog = disabled
+CheckNSCP = disabled
+CheckHelpers = disabled
+
+[/settings/NRPE/server]
+verify mode = none
+tls version = tlsv1.2+
+insecure = true
+
+[/settings/default]
+password = "{{ snmp_readonly_mdc1 }}"
+allowed hosts = 10.132.75.10
+
+[/settings/log]
+file name = nsclient.log
+;level = debug
+
+[/settings/external scripts/scripts]
+screen_res = powershell.exe -ExecutionPolicy RemoteSigned -File scripts\screen_res.ps1
