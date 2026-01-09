@@ -16,7 +16,7 @@ class roles_profiles::profiles::windows_worker_runner {
         }
         default: {
           ## revert before merge
-          $ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
+          $ext_pkg_src_loc = "${lookup('windows.taskcluster.relops_az')}/v"
           #$ext_pkg_src_loc = "${lookup('windows.taskcluster.download_url')}/v"
           #$ext_pkg_src_loc = "https://github.com/taskcluster/taskcluster/releases/download/v93.1.4/generic-worker-multiuser-windows-arm64"
           $provider = lookup('windows.taskcluster.worker_runner.provider')
