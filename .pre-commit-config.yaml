@@ -15,6 +15,7 @@ repos:
   hooks:
   - id: puppet-validate
     exclude: '^modules/\w+/plans'
+    additional_dependencies: ['openvox']
   - id: erb-validate
   - id: epp-validate
   - id: puppet-lint
