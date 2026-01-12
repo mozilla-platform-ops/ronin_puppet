@@ -29,7 +29,7 @@ class macos_disable_spotlight (
   # Explicitly disable indexing for /opt/worker/tasks
   exec { 'disable_spotlight_worker_tasks':
     command => '/bin/bash -c "/usr/bin/mdutil -i off /opt/worker/tasks 2>/dev/null || true; /bin/rm -rf /opt/worker/tasks/.Spotlight-V100 2>/dev/null || true"',
-    onlyif  => '/usr/bin/test -d /opt/worker/tasks',
+    creates => '/opt/worker/tasks/.metadata_never_index',
     require => File['/opt/worker/tasks/.metadata_never_index'],
   }
 }
