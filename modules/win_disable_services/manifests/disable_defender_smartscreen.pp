@@ -4,10 +4,7 @@
 
 class win_disable_services::disable_defender_smartscreen {
 
-  # 1) Windows shell / Explorer SmartScreen ("Check apps and files")
-  # HKLM\SOFTWARE\Policies\Microsoft\Windows\System
-  #   EnableSmartScreen (DWORD): 0=Off, 1=On
-  #   ShellSmartScreenLevel (REG_SZ): Warn/Block when enabled
+  ## Windows Shell / Explorer SmartScreen ("Check apps and files") POLICY
   registry_key { 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System':
     ensure => present,
   }
@@ -22,7 +19,19 @@ class win_disable_services::disable_defender_smartscreen {
     ensure => absent,
   }
 
-  # 2) Microsoft Edge SmartScreen
+  ## Explorer non-policy setting (per NinjaOne)
+  registry_key { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer':
+    ensure => present,
+  }
+
+  ## Values: "Off", "Warn", "RequireAdmin"
+  registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SmartScreenEnabled':
+    ensure => present,
+    type   => string,
+    data   => 'Off',
+  }
+
+  ## Microsoft Edge SmartScreen (Edge policy registry path)
   registry_key { 'HKLM\SOFTWARE\Policies\Microsoft\Edge':
     ensure => present,
   }
@@ -33,13 +42,8 @@ class win_disable_services::disable_defender_smartscreen {
     data   => '0',
   }
 
-  # 3) SmartScreen for Microsoft Store apps (web content evaluation)
-  # (Commonly controlled via EnableWebContentEvaluation)
-  registry_key { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost':
-    ensure => present,
-  }
-
-  registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost\EnableWebContentEvaluation':
+  ## disable Edge PUA reputation as well
+  registry_value { 'HKLM\SOFTWARE\Policies\Microsoft\Edge\SmartScreenPuaEnabled':
     ensure => present,
     type   => dword,
     data   => '0',
