@@ -17,14 +17,6 @@ class macos_disable_spotlight (
     logoutput => true,
   }
 
-  # Ensure /opt/worker/tasks exists and is never indexed
-  file { '/opt/worker/tasks':
-    ensure => directory,
-    owner  => 'root',
-    group  => 'wheel',
-    mode   => '0755',
-  }
-
   # Create .metadata_never_index to prevent Spotlight from indexing this directory
   file { '/opt/worker/tasks/.metadata_never_index':
     ensure  => file,
