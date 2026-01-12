@@ -8,8 +8,6 @@ groups:
       - macmini-m4-113.test.releng.mdc1.mozilla.com
       - macmini-m4-114.test.releng.mdc1.mozilla.com
       - macmini-m4-115.test.releng.mdc1.mozilla.com
-      # - macmini-m4-126.test.releng.mdc1.mozilla.com
-      # - macmini-m4-127.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1500_m4_staging
 
