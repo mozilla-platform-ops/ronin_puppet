@@ -16,7 +16,7 @@ class roles_profiles::profiles::network {
         }
       }
       # Skip disabling IPv6 for Windows 24H2 on Azure (requires IPv6)
-      if not ($facts['custom_win_location'] == 'azure' and $facts['custom_win_display_version'] == '24H2') {
+      if !($facts['custom_win_location'] == 'azure' and $facts['custom_win_display_version'] == '24H2') {
         include win_network::disable_ipv6
       }
       if $facts['os']['release']['full'] == '2012 R2' {
