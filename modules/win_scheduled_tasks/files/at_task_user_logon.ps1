@@ -471,9 +471,22 @@ function Disable-SmartScreenStoreApps {
 
     Write-Log -message "Disable-SmartScreenStoreApps :: begin (disable SmartScreen for Microsoft Store apps)" -severity 'INFO'
 
+    # Helper: normalize raw registry root strings to a PowerShell registry provider path
+    function Convert-ToRegistryProviderPath {
+        param([Parameter(Mandatory)][string]$Path)
+
+        switch -Regex ($Path) {
+            '^HKLM:\\' { return $Path }
+            '^HKCU:\\' { return $Path }
+            '^HKEY_LOCAL_MACHINE\\' { return "Registry::$Path" }
+            '^HKEY_CURRENT_USER\\'  { return "Registry::$Path" }
+            default { return $Path }
+        }
+    }
+
     # 1) Always do per-user disable (no admin required)
     try {
-        $kUser = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost'
+        $kUser = Convert-ToRegistryProviderPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost'
         New-Item -Path $kUser -Force | Out-Null
 
         # Disable SmartScreen for Microsoft Store apps
@@ -482,13 +495,13 @@ function Disable-SmartScreenStoreApps {
         # Optional: allow override in UI (PreventOverride=0 means user can change it)
         New-ItemProperty -Path $kUser -Name 'PreventOverride' -PropertyType DWord -Value 0 -Force | Out-Null
 
-        $valEnable = (Get-ItemProperty -Path $kUser -Name EnableWebContentEvaluation -ErrorAction SilentlyContinue).EnableWebContentEvaluation
-        $valOverride = (Get-ItemProperty -Path $kUser -Name PreventOverride -ErrorAction SilentlyContinue).PreventOverride
+        $valEnable   = (Get-ItemProperty -Path $kUser -Name EnableWebContentEvaluation -ErrorAction SilentlyContinue).EnableWebContentEvaluation
+        $valOverride = (Get-ItemProperty -Path $kUser -Name PreventOverride          -ErrorAction SilentlyContinue).PreventOverride
 
         Write-Log -message ("Disable-SmartScreenStoreApps :: HKCU Store app SmartScreen disabled (EnableWebContentEvaluation={0}, PreventOverride={1})" -f $valEnable, $valOverride) -severity 'INFO'
     }
     catch {
-        Write-Log -message ("Disable-SmartScreenStoreApps :: HKCU write failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+        Write-Log -message ("Disable-SmartScreenStoreApps :: HKCU step failed (path='{0}'): {1}" -f $kUser, $_.Exception.Message) -severity 'WARN'
     }
 
     # 2) If elevated, also set machine-wide (optional; affects all users)
@@ -497,9 +510,18 @@ function Disable-SmartScreenStoreApps {
                    ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
         if ($isAdmin) {
-            $kMachine = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost'
-            New-Item -Path $kMachine -Force | Out-Null
 
+            # Ensure HKLM: drive exists (rare edge-case; makes the function more robust)
+            if (-not (Get-PSDrive -Name HKLM -ErrorAction SilentlyContinue)) {
+                New-PSDrive -Name HKLM -PSProvider Registry -Root HKEY_LOCAL_MACHINE | Out-Null
+            }
+
+            $kMachine = Convert-ToRegistryProviderPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost'
+
+            # Debug breadcrumbs in case something upstream mutates the path
+            Write-Log -message ("Disable-SmartScreenStoreApps :: DEBUG kMachine='{0}'" -f $kMachine) -severity 'DEBUG'
+
+            New-Item -Path $kMachine -Force | Out-Null
             New-ItemProperty -Path $kMachine -Name 'EnableWebContentEvaluation' -PropertyType DWord -Value 0 -Force | Out-Null
 
             $mValEnable = (Get-ItemProperty -Path $kMachine -Name EnableWebContentEvaluation -ErrorAction SilentlyContinue).EnableWebContentEvaluation
@@ -510,7 +532,7 @@ function Disable-SmartScreenStoreApps {
         }
     }
     catch {
-        Write-Log -message ("Disable-SmartScreenStoreApps :: HKLM step failed: {0}" -f $_.Exception.Message) -severity 'DEBUG'
+        Write-Log -message ("Disable-SmartScreenStoreApps :: HKLM step failed (path='{0}'): {1}" -f $kMachine, $_.Exception.Message) -severity 'DEBUG'
     }
 
     Write-Log -message "Disable-SmartScreenStoreApps :: complete (recommend sign out/in or restart Store apps)" -severity 'INFO'
