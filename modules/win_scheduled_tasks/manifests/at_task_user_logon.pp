@@ -16,9 +16,7 @@ class win_scheduled_tasks::at_task_user_logon {
       arguments => "-executionpolicy bypass -File ${at_task_user_logon_ps}",
       enabled   => true,
       trigger   => [{
-          'schedule'         => 'boot',
-          'minutes_interval' => '0',
-          'minutes_duration' => '0'
+          'schedule'         => 'logon',
       }],
       user      => 'system',
     }
