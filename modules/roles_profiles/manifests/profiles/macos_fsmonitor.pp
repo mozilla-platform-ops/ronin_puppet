@@ -3,6 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::macos_fsmonitor {
+  # macos_fsmonitor requires python3
+  require packages::python3
   class { 'macos_fsmonitor':
     enabled => true,
   }
