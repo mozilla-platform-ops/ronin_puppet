@@ -465,6 +465,58 @@ function Disable-SyncFromCloud {
     Write-Log -message "Disable-SyncFromCloud :: complete (recommend sign out/in or reboot)" -severity 'INFO'
 }
 
+function Disable-SmartScreenStoreApps {
+    [CmdletBinding()]
+    param()
+
+    Write-Log -message "Disable-SmartScreenStoreApps :: begin (disable SmartScreen for Microsoft Store apps)" -severity 'INFO'
+
+    # 1) Always do per-user disable (no admin required)
+    try {
+        $kUser = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost'
+        New-Item -Path $kUser -Force | Out-Null
+
+        # Disable SmartScreen for Microsoft Store apps
+        New-ItemProperty -Path $kUser -Name 'EnableWebContentEvaluation' -PropertyType DWord -Value 0 -Force | Out-Null
+
+        # Optional: allow override in UI (PreventOverride=0 means user can change it)
+        New-ItemProperty -Path $kUser -Name 'PreventOverride' -PropertyType DWord -Value 0 -Force | Out-Null
+
+        $valEnable = (Get-ItemProperty -Path $kUser -Name EnableWebContentEvaluation -ErrorAction SilentlyContinue).EnableWebContentEvaluation
+        $valOverride = (Get-ItemProperty -Path $kUser -Name PreventOverride -ErrorAction SilentlyContinue).PreventOverride
+
+        Write-Log -message ("Disable-SmartScreenStoreApps :: HKCU Store app SmartScreen disabled (EnableWebContentEvaluation={0}, PreventOverride={1})" -f $valEnable, $valOverride) -severity 'INFO'
+    }
+    catch {
+        Write-Log -message ("Disable-SmartScreenStoreApps :: HKCU write failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    # 2) If elevated, also set machine-wide (optional; affects all users)
+    try {
+        $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+                   ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+        if ($isAdmin) {
+            $kMachine = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost'
+            New-Item -Path $kMachine -Force | Out-Null
+
+            New-ItemProperty -Path $kMachine -Name 'EnableWebContentEvaluation' -PropertyType DWord -Value 0 -Force | Out-Null
+
+            $mValEnable = (Get-ItemProperty -Path $kMachine -Name EnableWebContentEvaluation -ErrorAction SilentlyContinue).EnableWebContentEvaluation
+            Write-Log -message ("Disable-SmartScreenStoreApps :: HKLM Store app SmartScreen disabled (EnableWebContentEvaluation={0})" -f $mValEnable) -severity 'INFO'
+        }
+        else {
+            Write-Log -message "Disable-SmartScreenStoreApps :: not elevated; skipping HKLM machine-wide setting" -severity 'DEBUG'
+        }
+    }
+    catch {
+        Write-Log -message ("Disable-SmartScreenStoreApps :: HKLM step failed: {0}" -f $_.Exception.Message) -severity 'DEBUG'
+    }
+
+    Write-Log -message "Disable-SmartScreenStoreApps :: complete (recommend sign out/in or restart Store apps)" -severity 'INFO'
+}
+
+
 # Windows release ID.
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
@@ -519,6 +571,7 @@ switch ($os_version) {
         Disable-OneDriveBackupPopup
         Remove-EdgeScheduledTasks
         Disable-SyncFromCloud
+        Disable-SmartScreenStoreApps
     }
     "win_2022" {
         ## Disable Server Manager Dashboard
