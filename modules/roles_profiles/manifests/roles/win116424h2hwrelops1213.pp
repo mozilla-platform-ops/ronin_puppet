@@ -1,6 +1,6 @@
 class roles_profiles::roles::win116424h2hwrelops1213 {
   include roles_profiles::profiles::chocolatey
-  ## Install before Widnows Updates is disabled.
+  # Install before Widnows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
