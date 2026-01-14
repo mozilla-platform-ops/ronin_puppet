@@ -91,7 +91,7 @@ case "$macos_major_version" in
     safari_version=$(/usr/libexec/PlistBuddy -c "print :CFBundleShortVersionString" /Applications/Safari.app/Contents/Info.plist)
     safari_major_version="${safari_version%%.*}"
 
-    if [ "$safari_major_version" == "16" ] || [ "$safari_major_version" == "17" ]; then
+    if [ "$safari_major_version" == "16" ] || [ "$safari_major_version" == "17" ] || [ "$safari_major_version" == "18" ]; then
       semaphore_file="/Users/$current_user/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
       enable_remote_automation "$semaphore_file" "Safari" "Developer" "Allow remote automation"
     fi
