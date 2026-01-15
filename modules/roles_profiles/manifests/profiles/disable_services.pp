@@ -39,7 +39,6 @@ class roles_profiles::profiles::disable_services {
       include win_disable_services::disable_windows_update
       if $facts['custom_win_purpose'] != builder {
         include win_disable_services::disable_wsearch
-        include win_disable_services::disable_optional_services
         ## WIP for RELOPS-1946
         ## Not currently working. Leaving n place for ref.
         #include win_disable_services::disable_defender_smartscreen
@@ -51,6 +50,7 @@ class roles_profiles::profiles::disable_services {
         case $facts['custom_win_location'] {
             'datacenter': {
                 $apx_uninstall = 'hw-uninstall.ps1'
+                include win_disable_services::disable_optional_services
             }
             'azure': {
                 include win_scheduled_tasks::kill_local_clipboard
