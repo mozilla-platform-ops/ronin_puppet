@@ -43,17 +43,23 @@ class roles_profiles::profiles::disable_services {
         ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
         include win_disable_services::uninstall_appx_packages
-        include win_disable_services::disable_optional_services
         ## WIP for RELOPS-1946
-        ## Not currently working. Leaving place for ref.
+        ## Not currently working. Leaving n place for ref.
         #include win_disable_services::disable_defender_smartscreen
         #include win_disable_services::disable_sync_from_cloud
-        if ($facts['custom_win_location'] == 'azure') {
-          include win_scheduled_tasks::kill_local_clipboard
-        }
         if $facts['custom_win_release_id'] == '2004' or '2009' {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
+        }
+        case $facts['custom_win_location'] {
+            'datacenter': {
+            include win_disable_services::disable_optional_services
+            }
+            'azure': {
+                include win_scheduled_tasks::kill_local_clipboard
+            }
+            default: {
+            }
         }
       }
       # May be needed for non-hardaware
