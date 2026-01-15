@@ -42,7 +42,7 @@ class roles_profiles::profiles::disable_services {
         ## Let's Uninstall Appx Packages
         ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        include win_disable_services::uninstall_appx_packages
+        ########## include win_disable_services::uninstall_appx_packages
         ## WIP for RELOPS-1946
         ## Not currently working. Leaving n place for ref.
         #include win_disable_services::disable_defender_smartscreen
