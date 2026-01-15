@@ -66,20 +66,20 @@ OPENSSL_VERSION=$(/usr/local/bin/openssl version)
 echo "Installed OpenSSL version: $OPENSSL_VERSION"
 
 ######
-# Install Duo Unix 2.0.4
+# Install Duo Unix 2.2.3
 ######
 
-DUO_UNIX_URL="https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/14/duo_unix-2.0.4.tar.gz"
+DUO_UNIX_URL="https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/14/duo_unix-2.2.3.tar.gz"
 
 cd "$DOWNLOADS_DIR"
 
-echo "Downloading Duo Unix 2.0.4..."
+echo "Downloading Duo Unix 2.2.3..."
 sudo -u "$CURRENT_USER" curl -O "$DUO_UNIX_URL"
 
-echo "Extracting Duo Unix 2.0.4..."
-sudo -u "$CURRENT_USER" tar -xzf duo_unix-2.0.4.tar.gz
+echo "Extracting Duo Unix 2.2.3..."
+sudo -u "$CURRENT_USER" tar -xzf duo_unix-2.2.3.tar.gz
 
-cd duo_unix-2.0.4
+cd duo_unix-2.2.3
 
 echo "Configuring Duo Unix with OpenSSL and PAM..."
 sudo -u "$CURRENT_USER" ./configure --with-openssl=/usr/local --with-pam=/usr/local/lib/pam
