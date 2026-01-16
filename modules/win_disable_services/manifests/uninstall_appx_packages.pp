@@ -19,5 +19,6 @@ class win_disable_services::uninstall_appx_packages (
     logoutput => true,
     returns   => [0],
     require   => File[$script_path],
+    tries     => 1,
   }
 }
