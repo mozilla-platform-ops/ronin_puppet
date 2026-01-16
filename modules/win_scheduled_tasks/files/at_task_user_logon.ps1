@@ -592,8 +592,9 @@ switch ($os_version) {
         Remove-OneDriveScheduledTasks
         Disable-OneDriveBackupPopup
         Remove-EdgeScheduledTasks
-        Disable-SyncFromCloud
-        Disable-SmartScreenStoreApps
+        ## Not currently functioning
+        #Disable-SyncFromCloud
+        #Disable-SmartScreenStoreApps
     }
     "win_2022" {
         ## Disable Server Manager Dashboard
