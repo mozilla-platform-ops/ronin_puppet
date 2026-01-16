@@ -51,6 +51,7 @@ class roles_profiles::profiles::disable_services {
             'datacenter': {
                 $apx_uninstall = 'hw-uninstall.ps1'
                 include win_disable_services::disable_optional_services
+                include win_disable_services::disable_ms_edge
             }
             'azure': {
                 include win_scheduled_tasks::kill_local_clipboard
