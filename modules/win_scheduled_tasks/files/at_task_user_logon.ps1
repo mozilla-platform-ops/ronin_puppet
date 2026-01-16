@@ -563,6 +563,23 @@ else {
     $os_version = $null
 }
 
+$worker_location = $null
+try {
+    $image_provisioner = Get-ItemPropertyValue -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name 'image_provisioner' -ErrorAction Stop
+} catch {
+    Write-Log -message ("Unable to read HKLM:\SOFTWARE\Mozilla\ronin_puppet\image_provisioner: {0}" -f $_.Exception.Message) -severity 'ERROR'
+    exit 1
+}
+
+if ($image_provisioner -match '(?i)mdc1') {
+    $worker_location = 'MDC1 hardware'
+} elseif ($image_provisioner -match '(?i)azure') {
+    $worker_location = 'azure vm'
+} else {
+    Write-Log -message ("Location can't be determined (image_provisioner='{0}')" -f $image_provisioner) -severity 'ERROR'
+    exit 1
+}
+
 ## Wait until explorer is set in the registry and then suppress notifications for firewall
 while ($true) {
     $explorer = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction SilentlyContinue
@@ -588,13 +605,15 @@ switch ($os_version) {
     "win_11_2009" {
         Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
-        Disable-PerUserUwpServices
-        Remove-OneDriveScheduledTasks
-        Disable-OneDriveBackupPopup
-        Remove-EdgeScheduledTasks
-        ## Not currently functioning
-        #Disable-SyncFromCloud
-        #Disable-SmartScreenStoreApps
+        if ($worker_location -eq 'MDC1 hardware') {
+            Disable-PerUserUwpServices
+            Remove-OneDriveScheduledTasks
+            Disable-OneDriveBackupPopup
+            Remove-EdgeScheduledTasks
+            ## Not currently functioning
+            #Disable-SyncFromCloud
+            #Disable-SmartScreenStoreApps
+        }
     }
     "win_2022" {
         ## Disable Server Manager Dashboard
