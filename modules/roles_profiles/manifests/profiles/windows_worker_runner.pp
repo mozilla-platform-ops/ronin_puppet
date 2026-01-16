@@ -13,20 +13,14 @@ class roles_profiles::profiles::windows_worker_runner {
         'datacenter': {
           $ext_pkg_src_loc = "${lookup('windows.taskcluster.relops_az')}/"
           $provider = 'standalone'
+          $taskcluster_version    =
+            lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.hw_version'])
         }
         default: {
           $ext_pkg_src_loc = "${lookup('windows.taskcluster.download_url')}/v"
           $provider = lookup('windows.taskcluster.worker_runner.provider')
-        }
-      }
-      case $facts['custom_win_location'] {
-        'datacenter': {
-            $taskcluster_version    =
-                lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.hw_version'])
-        }
-        default: {
-            $taskcluster_version    =
-                lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.version'])
+          $taskcluster_version    =
+            lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.version'])
         }
       }
       case $facts['custom_win_os_arch'] {
