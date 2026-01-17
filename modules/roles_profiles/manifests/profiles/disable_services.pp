@@ -51,7 +51,6 @@ class roles_profiles::profiles::disable_services {
             'datacenter': {
                 $apx_uninstall = 'hw-uninstall.ps1'
                 include win_disable_services::disable_optional_services
-                #include win_disable_services::disable_ms_edge
             }
             'azure': {
                 include win_scheduled_tasks::kill_local_clipboard
@@ -65,6 +64,10 @@ class roles_profiles::profiles::disable_services {
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
         class { 'win_disable_services::uninstall_appx_packages':
             apx_uninstall => $apx_uninstall
+        }
+        ## must be ran after apx uninstall
+        if ($facts['custom_win_location'] == 'datacenter') {
+            include win_disable_services::disable_ms_edge
         }
       }
       # May be needed for non-hardaware
