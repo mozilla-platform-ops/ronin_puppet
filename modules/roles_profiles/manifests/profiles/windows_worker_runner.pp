@@ -11,20 +11,18 @@ class roles_profiles::profiles::windows_worker_runner {
 
       case $facts['custom_win_location'] {
         'datacenter': {
-          $ext_pkg_src_loc = lookup('windows.taskcluster.relops_s3')
+          $ext_pkg_src_loc = "${lookup('windows.taskcluster.relops_az')}/"
           $provider = 'standalone'
+          $taskcluster_version    =
+            lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.hw_version'])
         }
         default: {
-          #$ext_pkg_src_loc = lookup('windows.taskcluster.relops_az')
           $ext_pkg_src_loc = "${lookup('windows.taskcluster.download_url')}/v"
-          #$ext_pkg_src_loc = "https://github.com/taskcluster/taskcluster/releases/download/v93.1.4/generic-worker-multiuser-windows-arm64"
           $provider = lookup('windows.taskcluster.worker_runner.provider')
+          $taskcluster_version    =
+            lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.version'])
         }
       }
-
-      $taskcluster_version    =
-        lookup(['win-worker.variant.taskcluster.version', 'windows.taskcluster.version'])
-
       case $facts['custom_win_os_arch'] {
         'aarch64': {
           $gw_name               = lookup('windows.taskcluster.generic-worker.name.arm64')
