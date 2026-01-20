@@ -57,6 +57,7 @@ windows:
     download_url: "https://github.com/taskcluster/taskcluster/releases/download"
     version: "93.1.4"
     hw_version: "91.1.0"
+
     generic-worker:
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
