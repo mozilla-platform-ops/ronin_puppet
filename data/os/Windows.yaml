@@ -13,6 +13,8 @@ windows:
     ports:
       ssh: 22
       vnc: 5900
+    marlin:
+      ip: "10.132.75.17"
 
   # External resources
   external:
