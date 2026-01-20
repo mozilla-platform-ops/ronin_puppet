@@ -18,7 +18,7 @@ class win_nsclient::init (
     file { "${facts['custom_win_programfiles']}\\NSClient++\\scripts\\screen_res.ps1":
         content => file('win_nsclient/screen_res.ps1'),
     }
-    service { 'nxlog':
+    service { 'nsclient++':
         ensure => running,
         enable => true,
     }
