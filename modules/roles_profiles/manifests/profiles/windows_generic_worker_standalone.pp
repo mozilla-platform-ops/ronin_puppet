@@ -9,7 +9,7 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
 
             $arch         = 'win64'
 
-            $ext_pkg_src_loc     = lookup('windows.taskcluster.relops_az')
+            $ext_pkg_src_loc     = "${lookup('windows.taskcluster.relops_az')}/"
 
             $generic_worker_dir    = lookup('windows.dir.generic_worker')
             $gw_exe_path           = "${generic_worker_dir}\\generic-worker.exe"
@@ -51,14 +51,14 @@ class roles_profiles::profiles::windows_generic_worker_standalone {
                 generic_worker_dir       => $generic_worker_dir,
                 gw_config_path           => $gw_config_path,
                 gw_exe_path              => $gw_exe_path,
-                gw_exe_source            => "${ext_pkg_src_loc}/${taskcluster_version}/${gw_name}",
+                gw_exe_source            => "${ext_pkg_src_loc}${taskcluster_version}/${gw_name}",
                 gw_status                => $facts['custom_win_genericworker_service'],
                 livelog_exe              => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe",
-                livelog_exe_source       => "${ext_pkg_src_loc}/${$taskcluster_version}/${livelog_name}",
+                livelog_exe_source       => "${ext_pkg_src_loc}${taskcluster_version}/${livelog_name}",
                 task_dir                 => "${facts['custom_win_systemdrive']}\\\\",
                 taskcluster_access_token => lookup('taskcluster_access_token'),
                 taskcluster_proxy_exe    => "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\taskcluster-proxy.exe",
-                taskcluster_proxy_source => "${ext_pkg_src_loc}/${taskcluster_version}/${proxy_name}",
+                taskcluster_proxy_source => "${ext_pkg_src_loc}${taskcluster_version}/${proxy_name}",
                 taskcluster_root         => lookup('windows.taskcluster.root_url'),
                 #task_user_init_cmd      => $init,
                 worker_type              => $worker_pool_id,

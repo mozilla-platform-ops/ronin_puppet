@@ -21,6 +21,7 @@ class roles_profiles::roles::win116424h2hwrelops1213 {
 
   # Adminstration
   include roles_profiles::profiles::logging
+  include roles_profiles::profiles::mercurial
   include roles_profiles::profiles::nuc_management
   #include roles_profiles::profiles::vnc
 
@@ -28,7 +29,8 @@ class roles_profiles::roles::win116424h2hwrelops1213 {
   include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
-  include roles_profiles::profiles::windows_generic_worker_standalone
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::google_chrome
+  #include roles_profiles::profiles::windows_generic_worker_standalone
+  include roles_profiles::profiles::windows_worker_runner
 }
