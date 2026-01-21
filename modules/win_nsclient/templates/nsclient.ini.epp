@@ -25,8 +25,8 @@ tls version = tlsv1.2+
 insecure = true
 
 [/settings/default]
-password = <%= $win_nsclient::server_pw %>
-allowed hosts = <%= $win_nsclient::server %>
+password = <%= $win_nsclient::init::server_pw %>
+allowed hosts = <%= $win_nsclient::init::server %>
 
 [/settings/log]
 file name = nsclient.log
