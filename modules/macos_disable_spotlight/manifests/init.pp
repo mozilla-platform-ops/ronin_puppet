@@ -3,6 +3,7 @@
 # Disables Spotlight, media analysis daemons, and other background processes
 # to reduce performance noise on macOS CI workers.
 #
+# Claude did this
 class macos_disable_spotlight (
   Boolean $enabled = true
 ) {
