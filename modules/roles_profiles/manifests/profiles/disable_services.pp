@@ -53,11 +53,11 @@ class roles_profiles::profiles::disable_services {
                 include win_disable_services::disable_optional_services
             }
             'azure': {
+              $apx_uninstall = 'uninstall.ps1'
               class { 'win_disable_services::uninstall_appx_packages':
                 apx_uninstall => $apx_uninstall
               }            
                 include win_scheduled_tasks::kill_local_clipboard
-                $apx_uninstall = 'uninstall.ps1'
             }
             default: {
             }
