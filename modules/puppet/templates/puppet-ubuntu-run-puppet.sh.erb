@@ -288,8 +288,8 @@ fi
 if [ "$GH_PAT_AUTH" = "1" ]; then
     # check if keys are present in config file
     # TODO: add actual key checking logic here
-    GH_PAT=$($YQ_BIN .github.pat /root/vault.yaml)
-    GH_PAT_USER=$($YQ_BIN -er .github.pat_user /root/vault.yaml)
+    GH_PAT=$($YQ_BIN .github.pat /root/vault.yaml 2>/dev/null)
+    GH_PAT_USER=$($YQ_BIN .github.pat_user /root/vault.yaml 2>/dev/null)
     # if they're both non-empty, set the extraHeader config
     if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
         # base64 encode the credentials
