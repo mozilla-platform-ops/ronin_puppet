@@ -10,7 +10,7 @@ class linux_packages::yq ( Enum['present'] $pkg_ensure = 'present') {
       case $facts['os']['release']['full'] {
         '18.04', '22.04': {
           # on 18.04 and 22.04, use the python package
-          package { 'jq':
+          package { 'yq':
             ensure   => latest,
             provider => 'pip3',
             require  => Class['linux_packages::py3'],
