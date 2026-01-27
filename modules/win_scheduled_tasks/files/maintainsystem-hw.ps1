@@ -476,7 +476,8 @@ function Test-ConnectionUntilOnline {
     Write-Log -message ('{0} :: {1} did not come online within {2} seconds' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME, $totalTime) -severity 'DEBUG'
     throw "Connection timeout."
 }
-
+Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+Start-Sleep -Seconds 120
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
@@ -491,7 +492,8 @@ if ($refresh_rate -ne "60") {
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
     CompareConfigBasic
-    Start-Sleep -Seconds 2
+    #Start-Sleep -Seconds 2
+    Start-Sleep -Seconds 60
     Run-MaintainSystem
     ## We're getting user profile corruption errors, so let's check that the user is logged in using quser.exe
     for ($i = 0; $i -lt 3; $i++) {
