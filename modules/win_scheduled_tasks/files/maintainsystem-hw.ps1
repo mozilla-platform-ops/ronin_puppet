@@ -477,7 +477,10 @@ function Test-ConnectionUntilOnline {
     throw "Connection timeout."
 }
 Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-Start-Sleep -Seconds 60
+if ($env:USERNAME -notmatch 'task') {
+    Write-Log -message ('{0} :: Current user "{1}" does not contain "task"; sleeping 60s' -f $($MyInvocation.MyCommand.Name), $env:USERNAME) -severity 'DEBUG'
+    Start-Sleep -Seconds 60
+}
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
