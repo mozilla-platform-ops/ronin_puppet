@@ -9,7 +9,7 @@ function fail {
     exit 1
 }
 
-extract_username() {
+function extract_username() {
     local url="$1"
     if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
         echo "${BASH_REMATCH[1]}"
@@ -20,74 +20,6 @@ extract_username() {
         exit 1
     fi
 }
-
-PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
-PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
-PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
-
-# detect if python3 is available and set it to PYTHON_BIN
-if command -v python3 &> /dev/null; then
-    PYTHON_BIN=$(command -v python3)
-else
-    PYTHON_BIN=$(command -v python)
-fi
-
-# show header (send to stderr to avoid appearing in log output?)
-# pyfiglet font is cricket
-cat <<'EOF' >&2
-                                                         __
-  .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
-  |   _|  |  |     |______|  _  |  |  |  _  |  _  |  -__|   _|
-  |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
-                          |__|        |__|  |__|
-EOF
-
-# Override defaults with values from /etc/puppet/ronin_settings if the file exists
-if [ -f "/etc/puppet/ronin_settings" ]; then
-    # ascii art heredoc
-    cat <<'EOF' >&2
-                                     __    __
-        .-----.--.--.-----.----.----|__.--|  .-----.
-        |  _  |  |  |  -__|   _|   _|  |  _  |  -__|
-        |_____|\___/|_____|__| |__| |__|_____|_____|
-
-EOF
-    echo "Loading settings from /etc/puppet/ronin_settings..."
-    source /etc/puppet/ronin_settings
-    # show env vars of interest
-    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
-    echo "  PUPPET_REPO=$PUPPET_REPO"
-    echo "  PUPPET_MAIL=$PUPPET_MAIL"
-    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
-fi
-
-# Extract username from puppet_repo
-puppet_env=$(extract_username "${PUPPET_REPO}")
-
-WORKING_DIR="/etc/puppet/environments/${puppet_env}/code"
-ROLE_FILE='/etc/puppet_role'
-PUPPET_BIN='/opt/puppetlabs/bin/puppet'
-FACTER_BIN='/opt/puppetlabs/bin/facter'
-FQDN=$(${FACTER_BIN} networking.fqdn)
-
-export LANG=en_US.UTF-8
-
-mkdir -p "${WORKING_DIR}" || fail
-cd "${WORKING_DIR}" || fail
-
-# Make dir world writable for puppet homebrew bug workaround
-chmod 777 .
-
-# Set role or fail if file not found
-if [ -f "${ROLE_FILE}" ]; then
-    ROLE=$(<${ROLE_FILE})
-else
-    fail "Failed to find puppet role file ${ROLE_FILE}"
-fi
-
-[ -f '/root/vault.yaml' ] || fail "Secrets file not found"
-
-echo "ROLE: ${ROLE}"
 
 # Return true is valid IP and not APIPA address
 function valid_ip {
@@ -165,6 +97,8 @@ function update_puppet {
         git remote add origin "${PUPPET_REPO}" || return 1
     fi
 
+    # TODO: authenticate the remote actions
+
     # Fetch and checkout production branch
     git fetch --all --prune || return 1
     git checkout --force "origin/${PUPPET_BRANCH}" \
@@ -191,11 +125,14 @@ EOF
 
 function run_puppet {
 
+    echo "current directory is: $(pwd)"
+
     # Always bring the puppet git up-to-sync before executing puppet
     if ! update_puppet; then
         echo "Failed to update puppet"
         return 1
     fi
+    echo ""
 
     TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
@@ -205,16 +142,22 @@ function run_puppet {
 
     # debugging
     PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
-    echo "current directory is: $(pwd)"
     echo "puppet command to run is: ${PUPPET_CMD}"
 
     echo "running puppet command..."
+    echo ""
     # START: don't separate these two commands
     $PUPPET_CMD 2>&1 | tee "${TMP_LOG}"
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
-    echo "puppet command done. retval is $retval"
+    case $retval in
+        0) explanation="(success. no changes needed)" ;;
+        2) explanation="(success. changes applied)" ;;
+        *)
+            explanation="(unknown/failure)" ;;
+    esac
+    echo "puppet command done. retval is $retval ${explanation}"
     # if retval is zero, check the logs for errors
     if [ $retval -eq 0 ]; then
         # just in case, if there were any errors logged, flag it as an error run
@@ -241,6 +184,123 @@ function run_puppet {
     esac
 }
 
+
+# Main script starts here
+PUPPET_REPO="${PUPPET_REPO:-<%= @puppet_repo -%>}"
+PUPPET_BRANCH="${PUPPET_BRANCH:-<%= @puppet_branch -%>}"
+PUPPET_MAIL="${PUPPET_MAIL:-<%= @puppet_notify_email %>}"
+
+# detect if python3 is available and set it to PYTHON_BIN
+if command -v python3 &> /dev/null; then
+    PYTHON_BIN=$(command -v python3)
+else
+    PYTHON_BIN=$(command -v python)
+fi
+
+# check if yq is installed
+if command -v yq-er &> /dev/null; then
+    YQ_PRESENT=1
+    YQ_BIN=$(command -v yq-er)
+else
+    YQ_PRESENT=0
+    YQ_BIN=""
+    # echo "yq command not found"
+fi
+
+# show header (send to stderr to avoid appearing in log output?)
+# pyfiglet font is cricket
+cat <<'EOF' >&2
+                                                         __
+  .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
+  |   _|  |  |     |______|  _  |  |  |  _  |  _  |  -__|   _|
+  |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
+                          |__|        |__|  |__|
+EOF
+
+# Override defaults with values from /etc/puppet/ronin_settings if the file exists
+if [ -f "/etc/puppet/ronin_settings" ]; then
+    # ascii art heredoc
+    cat <<'EOF' >&2
+                                     __    __
+        .-----.--.--.-----.----.----|__.--|  .-----.
+        |  _  |  |  |  -__|   _|   _|  |  _  |  -__|
+        |_____|\___/|_____|__| |__| |__|_____|_____|
+
+EOF
+    echo "Loading settings from /etc/puppet/ronin_settings..."
+    source /etc/puppet/ronin_settings
+    # show env vars of interest
+    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
+    echo "  PUPPET_REPO=$PUPPET_REPO"
+    echo "  PUPPET_MAIL=$PUPPET_MAIL"
+    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
+fi
+
+# Extract username from puppet_repo
+puppet_env=$(extract_username "${PUPPET_REPO}")
+
+WORKING_DIR="/etc/puppet/environments/${puppet_env}/code"
+ROLE_FILE='/etc/puppet_role'
+PUPPET_BIN='/opt/puppetlabs/bin/puppet'
+FACTER_BIN='/opt/puppetlabs/bin/facter'
+FQDN=$(${FACTER_BIN} networking.fqdn)
+
+export LANG=en_US.UTF-8
+
+# Create working dir if it doesn't exist and cd into it
+mkdir -p "${WORKING_DIR}" || fail
+cd "${WORKING_DIR}" || fail
+
+# Make dir world writable for puppet homebrew bug workaround
+chmod 777 .
+
+# Set role or fail if file not found
+if [ -f "${ROLE_FILE}" ]; then
+    ROLE=$(<${ROLE_FILE})
+else
+    fail "Failed to find puppet role file ${ROLE_FILE}"
+fi
+
+[ -f '/root/vault.yaml' ] || fail "Secrets file not found"
+
+echo "ROLE: ${ROLE}"
+echo ""
+
+# GitHub PAT authentication setup
+#
+# GH PAT auth defaults to enabled
+GH_PAT_AUTH=1
+# if YQ_PRESENT=0, disable GH PAT auth
+if [ "$YQ_PRESENT" = "0" ]; then
+    echo "yq-er not present, disabling GH PAT auth configuration"
+    GH_PAT_AUTH=0
+fi
+# add a way of disabling GH PAT AUTH (even if yq-er is present)
+SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
+if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
+    echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
+    # disable gh pat auth
+    GH_PAT_AUTH=0
+    # for this repo, unset any existing git config for extraHeader
+    git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
+fi
+# if GH_PAT_AUTH=1, proceed with configuring GH PAT auth
+if [ "$GH_PAT_AUTH" = "1" ]; then
+    # check if keys are present in config file
+    # TODO: add actual key checking logic here
+    GH_PAT=$($YQ_BIN .github.pat /root/vault.yaml 2>/dev/null)
+    GH_PAT_USER=$($YQ_BIN .github.pat_user /root/vault.yaml 2>/dev/null)
+    # if they're both non-empty, set the extraHeader config
+    if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
+        # base64 encode the credentials
+        b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
+        # for this repo, set the git config for extraHeader
+        git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
+        echo "GitHub PAT authentication is enabled."
+    else
+        echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
+    fi
+fi
 
 # block_on_network
 
