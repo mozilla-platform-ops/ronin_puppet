@@ -169,7 +169,7 @@ switch ($os_version) {
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
         if ($location -eq "azure") {
-            (New-Object -ComObject Shell.Application).MinimizeAll()
+            explorer.exe shell:::{3080F90D-D7AD-11D9-BD98-0000947B0257} -Verb MinimizeAll
         }
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
