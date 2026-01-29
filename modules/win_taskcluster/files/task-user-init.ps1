@@ -166,18 +166,14 @@ switch ($os_version) {
         }
 
         ## set git config
-        ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        if ($location -eq "azure") {
-            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        }
+        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        if ($location -eq "azure") {
-            Disable-OneDrive
-        }
+        Disable-OneDrive
     }
     "win_10_2009" {
         ## Taken from at_task_user_logon, except this code runs as task_xxxx and not as system
@@ -197,16 +193,12 @@ switch ($os_version) {
         ## set git config
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
-        if ($location -eq "azure") {
-            explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-        }
+        explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+        Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
         ## OneDriveSetup keeps causing issues, so disable it here
         ## https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        if ($location -eq "azure") {
-            Disable-OneDrive
-        }
-
+        Disable-OneDrive
     }
     Default {}
 }
