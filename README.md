@@ -1,5 +1,6 @@
 # Ronin Puppet: the masterless puppet collection
 
+[![CircleCI Status](https://circleci.com/gh/mozilla-platform-ops/ronin_puppet.svg?style=svg)](https://app.circleci.com/pipelines/github/mozilla-platform-ops/ronin_puppet)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 ## structure
@@ -27,19 +28,6 @@ More information:
 
 ## testing
 
-### GitHub Actions
-
-The repository uses GitHub Actions to automatically run pre-commit hooks on pull requests. The workflow:
-
-- Runs only on files that were modified in the pull request (excludes `r10k_modules/`)
-- Validates Puppet manifests, ERB templates, and EPP templates
-- Runs puppet-lint with auto-fixing enabled
-- Checks shell scripts with shellcheck
-- Validates JSON and YAML files
-- Formats and validates Terraform files
-
-The pre-commit configuration is defined in `.pre-commit-config.yaml`.
-
 ### vagrant
 
 [Vagrant](https://www.vagrantup.com/) is useful for testing the full masterless bootstrapping process.
@@ -62,10 +50,11 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 [kitchen-puppet](https://github.com/neillturner/kitchen-puppet) provides infrastructure to
 automate running convergence and serverspec tests for each role.
 
-The repo contains configurations for Test Kitchen to use Vagrant and Docker.
+The repo contains configurations for Test Kitchen to use Vagant, Docker, and Mac instances.
 
 - ./bin/kitchen: Uses Vagrant and VirtualBox. Configured in .kitchen_configs/kitchen.yml.
 - ./bin/kitchen_docker: Uses Docker. Configured in .kitchen_configs/kitchen_docker.yml.
+- (no binary): Uses CircleCI Mac instances. Configured in .kitchen_configs/kitchen.macos.circleci.yml.
 
 We use Vagrant/VirutalBox and Docker for a few reasons:
 

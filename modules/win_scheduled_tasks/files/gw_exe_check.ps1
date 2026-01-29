@@ -29,7 +29,9 @@ function Set-PXE {
     process {
         $temp_dir = "$env:SystemDrive\temp\"
         New-Item -ItemType Directory -Force -Path $temp_dir -ErrorAction SilentlyContinue
+
         bcdedit /enum firmware > "$temp_dir\firmware.txt"
+
         $fwbootmgr = Select-String -Path "$temp_dir\firmware.txt" -Pattern "{fwbootmgr}"
         if (!$fwbootmgr) {
             Write-Log -message ('{0} :: Device is configured for Legacy Boot. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -39,6 +41,7 @@ function Set-PXE {
             $FullLine = ((Get-Content "$temp_dir\firmware.txt" | Select-String "IPV4|EFI Network" -Context 1 -ErrorAction Stop).Context.PreContext)[0]
             $GUID = '{' + $FullLine.Split('{')[1]
             bcdedit /set "{fwbootmgr}" bootsequence "$GUID"
+
             Write-Log -message ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Restart-Computer -Force
             Exit
@@ -53,73 +56,62 @@ function Set-PXE {
     }
 }
 
-function Register-FailureAndMaybePXE {
-    param (
-        [string] $regName
-    )
+# Main monitoring script
 
-    $regPath = "HKLM:\SOFTWARE\Mozilla\Ronin\GW_check_failures"
-    if (!(Test-Path $regPath)) {
-        New-Item -Path $regPath -Force | Out-Null
-    }
-    $currentValue = 0
-    try {
-        $currentValue = (Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop).$regName
-    } catch {
-        $currentValue = 0
-    }
-    if ($currentValue -eq 1) {
-        Write-Log -message "$regName failure occurred again. Initiating PXE boot." -severity 'ERROR'
-        Set-PXE
-        exit
+# Initial sleep for 10 minutes
+Write-Log -message "Sleeping 10 minutes before starting GW monitoring..." -severity 'DEBUG'
+Start-Sleep -Seconds (10 * 60)
+
+$regPath = "HKLM:\SOFTWARE\Mozilla\Ronin"
+$regName = "GW_failed"
+
+while ($true) {
+    Write-Log -message "Checking for 'generic-worker' process..." -severity 'DEBUG'
+
+    $process = Get-Process -Name "generic-worker" -ErrorAction SilentlyContinue
+
+    if (-not $process) {
+        Write-Log -message "Generic Worker process not found." -severity 'WARN'
+
+        if (!(Test-Path $regPath)) {
+            New-Item -Path $regPath -Force | Out-Null
+        }
+
+        $currentValue = $null
+        Try {
+            $currentValue = (Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop).$regName
+        } Catch {
+            # If the property does not exist, we'll treat it as first failure
+            $currentValue = $null
+        }
+
+        if ($currentValue -eq 1) {
+            Write-Log -message "Generic Worker still missing after previous failure. Initiating PXE boot..." -severity 'ERROR'
+            Set-PXE
+            # Set-PXE will reboot and exit
+        } else {
+            Write-Log -message "First failure detected. Setting GW_failed=1." -severity 'WARN'
+            Set-ItemProperty -Path $regPath -Name $regName -Value 1 -Force
+        }
     } else {
-        Write-Log -message "$regName failure detected. Rebooting system (1st failure)." -severity 'ERROR'
-        Set-ItemProperty -Path $regPath -Name $regName -Value 1 -Force
-        Restart-Computer -Force
-        Exit
-    }
-}
+        Write-Log -message "Generic Worker process is running." -severity 'DEBUG'
 
-$bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
-If ($bootstrap_stage -ne 'complete') {
-    Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    Exit
-}
-
-# Uptime check — allow 15-minute grace period before enforcing logic
-$lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
-$uptimeMinutes = (New-TimeSpan -Start $lastBoot -End (Get-Date)).TotalMinutes
-if ($uptimeMinutes -lt 15) {
-    Write-Log -message "System has only been up for $([math]::Round($uptimeMinutes, 1)) minutes. Skipping generic-worker check until 15-minute threshold is met." -severity 'DEBUG'
-    exit
-}
-
-# Var set by the maintain system script
-# Check gw_initiated env var
-if ($env:gw_initiated -ne 'true') {
-    Write-Log -message "Environment variable gw_initiated is not true." -severity 'WARN'
-    Register-FailureAndMaybePXE -regName 'gw_initiated_failed'
-}
-
-# Check for generic-worker process
-# Write-Log -message "Checking for 'generic-worker' process..." -severity 'DEBUG'
-$process = Get-Process -Name "generic-worker" -ErrorAction SilentlyContinue
-if (-not $process) {
-    Write-Log -message "generic-worker has not started." -severity 'WARN'
-    Register-FailureAndMaybePXE -regName 'process_failed'
-}
-
-# Success path – clear failure flags
-Write-Log -message "Generic-worker process is up and running." -severity 'DEBUG'
-$regPath = "HKLM:\SOFTWARE\Mozilla\Ronin\GW_check_failures"
-$failKeys = @('gw_initiated_failed', 'process_failed')
-foreach ($key in $failKeys) {
-    if (Test-Path $regPath) {
-        try {
-            if ((Get-ItemProperty -Path $regPath -Name $key -ErrorAction Stop).$key -eq 1) {
-                Write-Log -message "Clearing $key failure flag." -severity 'DEBUG'
-                Remove-ItemProperty -Path $regPath -Name $key -Force
+        if (Test-Path $regPath) {
+            $currentValue = $null
+            Try {
+                $currentValue = (Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop).$regName
+            } Catch {
+                $currentValue = $null
             }
-        } catch {}
+
+            if ($currentValue -eq 1) {
+                Write-Log -message "Generic Worker recovered. Removing GW_failed flag." -severity 'DEBUG'
+                Remove-ItemProperty -Path $regPath -Name $regName -Force
+            }
+        }
     }
+
+    # Sleep 5 minutes before next check
+    Write-Log -message "Sleeping 5 minutes until next check..." -severity 'DEBUG'
+    Start-Sleep -Seconds (5 * 60)
 }

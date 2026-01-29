@@ -20,17 +20,15 @@ class roles_profiles::profiles::microsoft_tools {
           ## For now don't look for it after bootstrap.
           if $facts['custom_win_bootstrap_stage'] != 'complete' {
             include win_packages::dxsdk_jun10
+            if $facts['custom_win_os_arch'] != 'aarch64' {
+              #include win_packages::win_10_sdk
+            }
+            #include win_packages::win_11_sdk
           }
           include win_packages::binscope
           # Required by rustc (tooltool artefact)
-          if $facts['custom_win_os_arch'] == 'aarch64' {
-            include win_packages::vc_redist_x86
-            include win_packages::vc_redist_x64
-          }
-          else {
-            include win_packages::vc_redist_2022_x64
-            include win_packages::vc_redist_2022_x86
-          }
+          include win_packages::vc_redist_x86
+          include win_packages::vc_redist_x64
         }
         'tester':{
           # Hardware testers don't need the windows sdk so skip installing them completely

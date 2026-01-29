@@ -55,239 +55,6 @@ function Run-MaintainSystem {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
-function Invoke-DownloadWithRetryGithub {
-    Param(
-        [Parameter(Mandatory)] [string] $Url,
-        [Alias("Destination")] [string] $Path,
-        [string] $PAT
-    )
-    if (-not $Path) {
-        $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
-        $re = "[{0}]" -f [RegEx]::Escape($invalidChars)
-        $fileName = [IO.Path]::GetFileName($Url) -replace $re
-        if ([String]::IsNullOrEmpty($fileName)) { $fileName = [System.IO.Path]::GetRandomFileName() }
-        $Path = Join-Path -Path "${env:Temp}" -ChildPath $fileName
-    }
-    Write-Host "Downloading package from $Url to $Path..."
-    $interval = 30
-    $downloadStartTime = Get-Date
-    for ($retries = 20; $retries -gt 0; $retries--) {
-        try {
-            $attemptStartTime = Get-Date
-            $Headers = @{
-                Accept                 = "application/vnd.github+json"
-                Authorization          = "Bearer $($PAT)"
-                "X-GitHub-Api-Version" = "2022-11-28"
-            }
-            $response = Invoke-WebRequest -Uri $Url -Headers $Headers -OutFile $Path
-            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
-            Write-Host "Package downloaded in $attemptSeconds seconds"
-            Write-Host "Status: $($response.statuscode)"
-            break
-        } catch {
-            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
-            Write-Warning "Package download failed in $attemptSeconds seconds"
-            Write-Host "Status: $($response.statuscode)"
-            Write-Warning $_.Exception.Message
-            if ($_.Exception.InnerException.Response.StatusCode -eq [System.Net.HttpStatusCode]::NotFound) {
-                Write-Warning "Request returned 404 Not Found. Aborting download."
-                $retries = 0
-            }
-        }
-        if ($retries -eq 0) {
-            $totalSeconds = [math]::Round(($(Get-Date) - $downloadStartTime).TotalSeconds, 2)
-            throw "Package download failed after $totalSeconds seconds"
-        }
-        Write-Warning "Waiting $interval seconds before retrying (retries left: $retries)..."
-        Start-Sleep -Seconds $interval
-    }
-    return $Path
-}
-
-function CompareConfigBasic {
-    param (
-        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
-        [string]$PAT
-    )
-
-    begin {
-        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-
-    process {
-
-        $SETPXE = $false
-        $yaml = $null
-        $yamlHash = $null
-        $IPAddress = $null
-
-        # === Retrieve IP address ===
-        $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() |
-            Where-Object { $_.Name -match "ethernet" }
-
-        try {
-            $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses |
-                Where-Object { $_.Address.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and $_.Address.IPAddressToString -ne "127.0.0.1" } |
-                Select-Object -First 1 -ExpandProperty Address).IPAddressToString
-        }
-        catch {
-            try {
-                $NetshOutput = netsh interface ip show addresses
-                $IPAddress = ($NetshOutput -match "IP Address" | ForEach-Object {
-                        if ($_ -notmatch "127.0.0.1") { $_ -replace ".*?:\s*", "" }
-                    })[0]
-            }
-            catch {
-                Write-Log -message ('{0} :: Failed to get IP address' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            }
-        }
-
-        if (-not $IPAddress) {
-            Write-Log -message ('{0} :: No IP Address could be determined.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Restart-Computer -Force
-            return
-        }
-
-        Write-Log -message ('{0} :: IP Address: {1}' -f $MyInvocation.MyCommand.Name, $IPAddress) -severity 'INFO'
-
-
-        # === Resolve DNS to get worker name ===
-        try {
-            $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
-        }
-        catch {
-            Write-Log -message ('{0} :: DNS resolution failed' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Restart-Computer -Force
-            return
-        }
-
-        Write-Log -message ('{0} :: Resolved Name: {1}' -f $MyInvocation.MyCommand.Name, $ResolvedName) -severity 'INFO'
-
-        $index = $ResolvedName.IndexOf('.')
-        if ($index -lt 0) {
-            Write-Log -message ('{0} :: Invalid hostname format.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Restart-Computer -Force
-            return
-        }
-
-        $worker_node_name = $ResolvedName.Substring(0, $index)
-        Write-Log -message ('{0} :: Host name set to: {1}' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'INFO'
-
-
-        # === Load local ronin puppet values ===
-        $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
-        $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
-
-
-        # === Load PAT for YAML download ===
-        $patFile = "D:\Secrets\pat.txt"
-        if (-not (Test-Path $patFile)) {
-            Write-Log -message ('{0} :: PAT file missing: {1}' -f $MyInvocation.MyCommand.Name, $patFile) -severity 'ERROR'
-            Set-PXE
-            Restart-Computer -Force
-            return
-        }
-
-        $PAT = Get-Content $patFile -ErrorAction Stop
-
-
-        # === Download YAML using unified retry function ===
-        $tempYamlPath = "$env:TEMP\pools.yml"
-
-        $splat = @{
-            Url  = $yaml_url
-            Path = $tempYamlPath
-            PAT  = $PAT
-        }
-
-        if (-not (Invoke-DownloadWithRetryGithub @splat)) {
-            Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Set-PXE
-            Restart-Computer -Force
-            return
-        }
-
-
-        # === Parse YAML ===
-        try {
-            $yaml = Get-Content $tempYamlPath -Raw | ConvertFrom-Yaml
-        }
-        catch {
-            Write-Log -message ('{0} :: YAML parsing failed: {1}' -f $MyInvocation.MyCommand.Name, $_) -severity 'ERROR'
-            Set-PXE
-            Restart-Computer -Force
-            return
-        }
-
-
-        # === Lookup this worker in pools.yml ===
-        $found = $false
-        foreach ($pool in $yaml.pools) {
-            if ($pool.nodes -contains $worker_node_name) {
-                $WorkerPool     = $pool.name
-                $yamlHash       = $pool.hash
-                $yamlImageName  = $pool.image
-                $yamlImageDir   = "D:\" + $yamlImageName
-                $found = $true
-                break
-            }
-        }
-
-        if (-not $found) {
-            Write-Log -message ('{0} :: Node not found in YAML. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Set-PXE
-            Restart-Computer -Force
-            return
-        }
-
-        Write-Log -message ('{0} :: === Configuration Comparison ===' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
-
-
-        # === Compare pool ===
-        if ($localPool -ne $WorkerPool) {
-            Write-Log -message ('{0} :: Worker Pool MISMATCH!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            $SETPXE = $true
-        }
-        else {
-            Write-Log -message ('{0} :: Worker Pool Match: {1}' -f $MyInvocation.MyCommand.Name, $WorkerPool) -severity 'INFO'
-        }
-
-
-        # === Compare puppet githash ===
-        if ([string]::IsNullOrWhiteSpace($yamlHash) -or $localHash -ne $yamlHash) {
-            Write-Log -message ('{0} :: Git Hash MISMATCH or missing YAML hash!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Write-Log -message ('{0} :: Local: {1}' -f $MyInvocation.MyCommand.Name, $localHash) -severity 'WARN'
-            Write-Log -message ('{0} :: YAML : {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'WARN'
-            $SETPXE = $true
-        }
-        else {
-            Write-Log -message ('{0} :: Git Hash Match: {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'INFO'
-        }
-
-
-        # === Verify local puppet image directory exists ===
-        if (!(Test-Path $yamlImageDir)) {
-            Write-Log -message ('{0} :: Image directory missing: {1}' -f $MyInvocation.MyCommand.Name, $yamlImageDir) -severity 'ERROR'
-            $SETPXE = $true
-        }
-
-
-        # === If anything mismatched, PXE reboot ===
-        if ($SETPXE) {
-            Write-Log -message ('{0} :: Configuration mismatch — initiating PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Set-PXE
-            Restart-Computer -Force
-            return
-        }
-
-        Write-Log -message ('{0} :: Configuration is correct. No reboot required.' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
-    }
-
-    end {
-        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    }
-}
-
 function Remove-OldTaskDirectories {
     param (
         [string[]] $targets = @('Z:\task_*', 'C:\Users\task_*')
@@ -325,6 +92,166 @@ function Remove-OldTaskDirectories {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Check-RoninNodeOptions {
+    param (
+        [string] $inmutable = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable,
+        [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        Write-Host $inmutable
+        if ($inmutable -eq 'true') {
+            Write-Log -message  ('{0} :: Node is set to be inmutable' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Remove-Item -path $lock -ErrorAction SilentlyContinue
+            write-host New-item -path $flagfile
+            Exit-PSSession
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+Function UpdateRonin {
+    param (
+        [string] $sourceOrg,
+        [string] $sourceRepo,
+        [string] $sourceBranch,
+        [string] $ronin_repo = "$env:systemdrive\ronin"
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Organisation').Organisation } else { 'mozilla-platform-ops' })
+        $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Repository').Repository } else { 'ronin_puppet' })
+        $sourceBranch = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet\Source' -Name 'Branch').Branch } else { 'master' })
+
+        Set-Location $ronin_repo
+        git config --global --add safe.directory "C:/ronin"
+        git pull https://github.com/$sourceOrg/$sourceRepo $sourceBranch
+        $git_exit = $LastExitCode
+        if ($git_exit -eq 0) {
+            $git_hash = (git rev-parse --verify HEAD)
+            Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name githash -type  string -value $git_hash
+            Write-Log -message  ('{0} :: Checking/pulling updates from https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
+        }
+        else {
+            # Fall back to clone if pull fails
+            Write-Log -message  ('{0} :: Git pull failed! https://github.com/{1}/{2}. Branch: {3}.' -f $($MyInvocation.MyCommand.Name), ($sourceOrg), ($sourceRepo), ($sourceRev)) -severity 'DEBUG'
+            Write-Log -message  ('{0} :: Deleting old repository and cloning repository .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Move-item -Path $ronin_repo\manifests\nodes.pp -Destination $env:TEMP\nodes.pp
+            Move-item -Path $ronin_repo\data\secrets\vault.yaml -Destination $env:TEMP\vault.yaml
+            #Remove-Item -Recurse -Force $ronin_repo
+            Start-Sleep -s 2
+            git clone --single-branch --branch $sourceRev https://github.com/$sourceOrg/$sourceRepo $ronin_repo
+            Move-item -Path $env:TEMP\nodes.pp -Destination $ronin_repo\manifests\nodes.pp
+            Move-item -Path $env:TEMP\vault.yaml -Destination $ronin_repo\data\secrets\vault.yaml
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+function Puppet-Run {
+    param (
+        [int] $exit,
+        [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
+        [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
+        [string] $run_to_success = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").runtosuccess,
+        [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\nodes.pp",
+        [string] $logdir = "$env:systemdrive\logs",
+        [string] $fail_dir = "$env:systemdrive\fail_logs",
+        [string] $log_file = "$datetime-puppetrun.log",
+        [string] $datetime = (get-date -format yyyyMMdd-HHmm),
+        [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+
+        Check-RoninNodeOptions
+        UpdateRonin
+
+        # Setting Env variabes for PuppetFile install and Puppet run
+        # The ssl variables are needed for R10k
+        Write-Log -message  ('{0} :: Setting Puppet enviroment.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        $env:path = "$env:programfiles\Puppet Labs\Puppet\puppet\bin;$env:programfiles\Puppet Labs\Puppet\bin;$env:path"
+        $env:SSL_CERT_FILE = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl\cert.pem"
+        $env:SSL_CERT_DIR = "$env:programfiles\Puppet Labs\Puppet\puppet\ssl"
+        $env:FACTER_env_windows_installdir = "$env:programfiles\Puppet Labs\Puppet"
+        $env:HOMEPATH = "\Users\Administrator"
+        $env:HOMEDRIVE = "C:"
+        $env:PL_BASEDIR = "$env:programfiles\Puppet Labs\Puppet"
+        $env:PUPPET_DIR = "$env:programfiles\Puppet Labs\Puppet"
+        $env:RUBYLIB = "$env:programfiles\Puppet Labs\Puppet\lib"
+        $env:USERNAME = "Administrator"
+        $env:USERPROFILE = "$env:systemdrive\Users\Administrator"
+
+        # This is temporary and should be removed after the cloud_windows branch is merged
+        # Hiera lookups will fail after the merge if this is not in place following the merge
+        <#
+      if((test-path $env:systemdrive\ronin\win_hiera.yaml)) {
+          $hiera = "win_hiera.yaml"
+      } else {
+          $hiera = "hiera.yaml"
+      }
+      #>
+        # this will break Win 10 1803 if this is merged into the master brnach
+        $hiera = "hiera.yaml"
+
+        # Needs to be removed from path or a wrong puppet file will be used
+        $env:path = ($env:path.Split(';') | Where-Object { $_ -ne "$env:programfiles\Puppet Labs\Puppet\puppet\bin" }) -join ';'
+        If (!(test-path $fail_dir)) {
+            New-Item -ItemType Directory -Force -Path $fail_dir
+        }
+        Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
+        Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+        puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=$hiera --logdest $logdir\$log_file
+        [int]$puppet_exit = $LastExitCode
+
+        if ($run_to_success -eq 'true') {
+            if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
+                if ($last_exit -eq 0) {
+                    Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                    Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
+                    Remove-Item $lock -ErrorAction SilentlyContinue
+                    # If the Puppet run fails send logs to papertrail
+                    # Nxlog watches $fail_dir for files names *-puppetrun.log
+                    Move-Item $logdir\$log_file -Destination $fail_dir
+                    shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+                }
+                elseif ($last_exit -ne 0) {
+                    Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
+                    Remove-Item $lock
+                    Move-Item $logdir\$log_file -Destination $fail_dir
+                    Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                    Start-Sleep 600
+                    shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
+                }
+            }
+            elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
+                Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $puppet_exit
+                Remove-Item -path $lock
+                New-item -path $flagfile
+            }
+            else {
+                Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name last_exit -type  dword -value $last_exit
+                Move-Item $logdir\$log_file -Destination $fail_dir
+                Remove-Item -path $lock
+                shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
+            }
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
 
 function StartWorkerRunner {
     param (
@@ -349,7 +276,245 @@ function StartWorkerRunner {
             exit
         }
         Start-Service -Name worker-runner
-        [Environment]::SetEnvironmentVariable('gw_initiated', 'true', 'Machine')
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+function CompareConfig {
+    param (
+        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
+        [string]$PAT
+    )
+
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+
+    process {
+
+        $yaml = $null
+
+        $SETPXE = $false
+
+        $IPAddress = $null
+        $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() | Where-Object { $_.Name -match "ethernet" }
+
+        try {
+            $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses |
+                Where-Object { $_.Address.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and $_.Address.IPAddressToString -ne "127.0.0.1" } |
+                Select-Object -First 1 -ExpandProperty Address).IPAddressToString
+
+            if (-not $IPAddress) {
+                throw "No IP address found using .NET method."
+            }
+        }
+        catch {
+            try {
+                $NetshOutput = netsh interface ip show addresses
+                $IPAddress = ($NetshOutput -match "IP Address" | ForEach-Object {
+                        if ($_ -notmatch "127.0.0.1") {
+                            $_ -replace ".*?:\s*", ""
+                        }
+                    })[0]
+            }
+            catch {
+                Write-Log -message "Failed to get IP address" -severity 'ERROR'
+            }
+        }
+
+        if ($IPAddress) {
+            Write-Log -message "IP Address: $IPAddress" -severity 'INFO'
+        }
+        else {
+            Write-Log -message "No IP Address could be determined." -severity 'ERROR'
+            return
+        }
+
+        try {
+            $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
+        }
+        catch {
+            Write-Log -message "DNS resolution failed." -severity 'ERROR'
+            return
+        }
+
+        Write-Log -message "Resolved Name: $ResolvedName" -severity 'INFO'
+
+        $index = $ResolvedName.IndexOf('.')
+        if ($index -lt 0) {
+            Write-Log -message "Invalid hostname format." -severity 'ERROR'
+            return
+        }
+
+        $worker_node_name = $ResolvedName.Substring(0, $index)
+        $domain_suffix = $ResolvedName.Substring($index + 1)
+
+        Write-Log -message "Host name set to: $worker_node_name" -severity 'INFO'
+
+        $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
+        $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
+
+        $maxRetries = 5
+        $retryDelay = 10
+        $attempt = 0
+        $success = $false
+
+        while ($attempt -lt $maxRetries -and -not $success) {
+            try {
+                $Headers = @{
+                    Accept                 = "application/vnd.github+json"
+                    Authorization          = "Bearer $($PAT)"
+                    "X-GitHub-Api-Version" = "2022-11-28"
+                }
+                $response = Invoke-WebRequest -Uri $yaml_url -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop -Headers $Headers
+                $yaml = $response.Content | ConvertFrom-Yaml
+                if ($yaml) {
+                    $success = $true
+                }
+                else {
+                    throw "YAML content is empty"
+                    Write-Log -message "YAML content is empty" -severity 'WARN'
+                }
+            }
+            catch {
+                Write-Log -message "Attempt $($attempt + 1): Failed to fetch YAML - $_" -severity 'WARN'
+                Start-Sleep -Seconds $retryDelay
+                $attempt++
+            }
+        }
+
+        if (-not $success) {
+            Write-Log -message "YAML could not be loaded after $maxRetries attempts." -severity 'ERROR'
+            return
+        }
+
+        $found = $false
+        foreach ($pool in $yaml.pools) {
+            foreach ($node in $pool.nodes) {
+                if ($node -eq $worker_node_name) {
+                    $WorkerPool = $pool.name
+                    $yamlHash = $pool.hash
+                    $yamlImageName = $pool.image
+                    $yamlImageDir = "D:\" + $yamlImageName
+                    $found = $true
+                    break
+                }
+            }
+            if ($found) { break }
+        }
+
+        if (-not $found) {
+            Write-Log -message "Node name not found in YAML!!" -severity 'ERROR'
+            exit 96
+        }
+
+        Write-Log -message "=== Configuration Comparison ===" -severity 'INFO'
+
+        if ($localPool -eq $WorkerPool) {
+            Write-Log -message "Worker Pool Match: $WorkerPool" -severity 'INFO'
+        }
+        else {
+            Write-Log -message "Worker Pool MISMATCH!" -severity 'ERROR'
+            $SETPXE = $true
+            Start-Sleep -s 1
+        }
+
+        if ($localHash -eq $yamlHash) {
+            Write-Log -message "Git Hash Match: $yamlHash" -severity 'INFO'
+        }
+        else {
+            Write-Log -message "Git Hash MISMATCH!" -severity 'ERROR'
+            Write-Log -message "Local: $localHash" -severity 'WARN'
+            Write-Log -message "YAML : $yamlHash" -severity 'WARN'
+            $SETPXE = $true
+            Start-Sleep -s 1
+        }
+
+
+        if (!(Test-Path $yamlImageDir)) {
+            Write-Log -message "Image Directory MISMATCH!" -severity 'ERROR'
+            Write-Log -message "YAML : $yamlImageDir NOT FOUND" -severity 'WARN'
+            $SETPXE = $true
+            Start-Sleep -s 1
+        }
+        if ($SETPXE) {
+            Write-Log -message "Configuration MISMATCH! Initiating self re-deploy!" -severity 'ERROR'
+            Set-PXE
+        }
+        Write-Log -message "SETPXE set to: $SETPXE" -severity 'DEBUG'
+    }
+
+
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
+
+function StartGenericWorker {
+    param (
+        [string] $GW_dir = "$env:systemdrive\generic-worker"
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        # Check for user profile issues
+        $lastBootTime = Get-WinEvent -LogName "System" -FilterXPath "<QueryList><Query Id='0' Path='System'><Select Path='System'>*[System[EventID=12]]</Select></Query></QueryList>" |
+        Select-Object -First 1 |
+        ForEach-Object { $_.TimeCreated }
+
+        $eventIDs = @(1511, 1515)
+        $events = Get-WinEvent -LogName "Application" |
+        Where-Object { $_.ID -in $eventIDs -and $_.TimeCreated -gt $lastBootTime } |
+        Sort-Object TimeCreated -Descending | Select-Object -First 1
+
+        if ($events) {
+            Write-Log -message  ('{0} :: Possible User Profile Corruption. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            Start-Sleep -Seconds 5
+            Restart-Computer -Force
+            exit
+        }
+
+        Set-Location -Path $GW_dir
+
+        & $GW_dir\generic-worker.exe run --config generic-worker.config 2>&1 | Out-File -FilePath generic-worker.log -Encoding utf8
+        $exitCode = $LASTEXITCODE
+
+        Write-Log -message ('{0} :: GW exited with code {1}' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+
+        switch ($exitCode) {
+            68 {
+
+                Write-Log -message ('{0} :: Idle timeout detected (exit code 68). Checking for latest Config.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                CompareConfig -PAT (Get-Content "D:\Secrets\pat.txt")
+
+                Write-Log -message ('{0} :: Copying current-task-user.json to next-task-user.json' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                $src = Join-Path $GW_dir 'current-task-user.json'
+                $dest = Join-Path $GW_dir 'next-task-user.json'
+                if (Test-Path $src) {
+                    Copy-Item -Path $src -Destination $dest -Force
+                    Write-Log -message ('{0} :: File copied successfully' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+                }
+                else {
+                    Write-Log -message ('{0} :: Source file not found: {1}' -f $($MyInvocation.MyCommand.Name), $src) -severity 'WARNING'
+                }
+
+                ## Restart Explorer/close out exisiting windows
+                Stop-Process -Name explorer -Force
+
+                Start-Sleep -s 2
+                StartGenericWorker
+                return
+            }
+            default {
+                Write-Log -message ('{0} :: Non-idle exit code {1}. Rebooting' -f $($MyInvocation.MyCommand.Name), $exitCode) -severity 'DEBUG'
+                Start-Sleep -Seconds 1
+                Restart-Computer -Force
+            }
+        }
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -441,6 +606,7 @@ function Set-PXE {
 
             Write-Log -message  ('{0} :: Device will PXE boot. Restarting' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             Restart-Computer -Force
+            Exit
         }
         Catch {
             Write-Log -message  ('{0} :: Unable to set next boot to PXE. Exiting!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -490,8 +656,16 @@ if ($refresh_rate -ne "60") {
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
-    CompareConfigBasic
-    Start-Sleep -Seconds 2
+
+    $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -eq "bootstrap" }
+
+    if ($tasks) {
+        $tasks | ForEach-Object {
+            Stop-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath
+            Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false
+            Write-Host "Deleted task '$($_.TaskName)' at path '$($_.TaskPath)'."
+        }
+    }
     Run-MaintainSystem
     ## We're getting user profile corruption errors, so let's check that the user is logged in using quser.exe
     for ($i = 0; $i -lt 3; $i++) {
@@ -505,6 +679,7 @@ If ($bootstrap_stage -eq 'complete') {
             break
         }
     }
+
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
 
@@ -512,8 +687,12 @@ If ($bootstrap_stage -eq 'complete') {
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
 
-    StartWorkerRunner
-    Exit-PSSession
+    $processname = "StartMenuExperienceHost"
+    if ($null -ne $process) {
+        Stop-Process -Name $processname -force
+    }
+    CompareConfig -PAT (Get-Content "D:\Secrets\pat.txt")
+    StartGenericWorker
 }
 else {
     Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'

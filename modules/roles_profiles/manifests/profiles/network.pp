@@ -15,11 +15,10 @@ class roles_profiles::profiles::network {
           network_category => $net_category,
         }
       }
-      # # Skip disabling IPv6 for Windows 24H2 x64 on Azure (requires IPv6)
-      # if !($facts['custom_win_location'] == 'azure' and $facts['custom_win_display_version'] == '24H2' and $facts['custom_win_os_arch'] == 'x64') {
-      #   include win_network::disable_ipv6
-      # }
       include win_network::disable_ipv6
+      if $facts['os']['release']['full'] == '2012 R2' {
+        include win_os_settings::tsl_1_2
+      }
       # Bug list
       # Network category
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1563287

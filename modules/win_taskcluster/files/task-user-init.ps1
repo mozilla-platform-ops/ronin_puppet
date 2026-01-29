@@ -92,21 +92,6 @@ function Disable-OneDrive {
 
 }
 
-$DhcpDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'DhcpDomain')
-$NVDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain')
-
-switch -Regex ($true) {
-    ($DhcpDomain -match "cloudapp\.net") {
-        $location = "azure"
-    }
-    ($DhcpDomain -match "microsoft") {
-        $location = "azure"
-    }
-    default {
-        $location = "datacenter"
-    }
-}
-
 # From time to time we need to have the different releases of the same OS version
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
