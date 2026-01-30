@@ -48,27 +48,32 @@ class puppet::atboot (
           # On Ubuntu 18.04 and 22.04 puppet runs by systemd and on successful result
           # notifies dependent services
           file {
+            '/etc/puppet/lib/puppet_state_functions.sh':
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0644',
+              source => "puppet:///modules/${module_name}/puppet_state_functions.sh";
             '/usr/local/bin/change_workertype.py':
               owner  => 'root',
               group  => 'root',
               mode   => '0755',
-              source => 'puppet:///modules/puppet/change_workertype.py';
+              source => "puppet:///modules/${module_name}/change_workertype.py";
             '/etc/puppet/ronin_settings.example':
               owner  => 'root',
               group  => 'root',
               mode   => '0644',
-              source => 'puppet:///modules/puppet/ronin_settings.example';
+              source => "puppet:///modules/${module_name}/ronin_settings.example";
             '/lib/systemd/system/run-puppet.service':
               owner   => 'root',
               group   => 'root',
-              source  => 'puppet:///modules/puppet/puppet_2404.service',
+              source  => "puppet:///modules/${module_name}/puppet_2404.service",
               notify  => Exec['reload systemd'],
               require => Class['linux_packages::puppet'];
             '/usr/local/bin/run-puppet.sh':
               owner   => 'root',
               group   => 'root',
               mode    => '0755',
-              content => template('puppet/puppet-ubuntu-run-puppet.sh.erb');
+              content => template("${module_name}/puppet-ubuntu-run-puppet.sh.erb");
           }
           # reload systemd daemon
           exec {
