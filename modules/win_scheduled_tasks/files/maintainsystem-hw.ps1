@@ -513,7 +513,7 @@ function Wait-ForUserInitReady {
 }
 
 Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-if ($env:USERNAME -notmatch 'task') {
+if ($env:USERNAME -notmatch '*task*') {
     Write-Log -message ('{0} :: Current user "{1}" does not contain "task"; sleeping 60s' -f $($MyInvocation.MyCommand.Name), $env:USERNAME) -severity 'DEBUG'
     Start-Sleep -Seconds 60
 }
