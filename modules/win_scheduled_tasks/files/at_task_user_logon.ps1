@@ -616,13 +616,17 @@ switch ($os_version) {
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
 
         if ($worker_location -eq 'MDC1 hardware') {
-            Disable-PerUserUwpServices
-            Remove-OneDriveScheduledTasks
-            Disable-OneDriveBackupPopup
-            Remove-EdgeScheduledTasks
-            ## Not currently functioning
-            #Disable-SyncFromCloud
-            #Disable-SmartScreenStoreApps
+            if ($env:USERNAME -match 'task') {
+                Disable-PerUserUwpServices
+                Remove-OneDriveScheduledTasks
+                Disable-OneDriveBackupPopup
+                Remove-EdgeScheduledTasks
+                ## Not currently functioning
+                #Disable-SyncFromCloud
+                #Disable-SmartScreenStoreApps
+                Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
+                taskkill /f /im StartMenuExperienceHost.exe
+            }
         }
 
         # Signal complete
