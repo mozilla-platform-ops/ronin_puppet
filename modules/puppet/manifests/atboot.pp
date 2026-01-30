@@ -44,6 +44,12 @@ class puppet::atboot (
             group  => 'root',
             mode   => '0755',
           }
+          file { '/etc/puppet/lib':
+            ensure => directory,
+            owner  => 'root',
+            group  => 'root',
+            mode   => '0755',
+          }
 
           # On Ubuntu 18.04 and 22.04 puppet runs by systemd and on successful result
           # notifies dependent services
