@@ -624,8 +624,8 @@ switch ($os_version) {
                 #Disable-SyncFromCloud
                 #Disable-SmartScreenStoreApps
                 explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
-                #Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
-                #taskkill /f /im StartMenuExperienceHost.exe
+                Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
+                taskkill /f /im StartMenuExperienceHost.exe
         }
 
         # Signal complete
