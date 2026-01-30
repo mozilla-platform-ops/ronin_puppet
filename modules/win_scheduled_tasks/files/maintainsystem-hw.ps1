@@ -476,6 +476,42 @@ function Test-ConnectionUntilOnline {
     Write-Log -message ('{0} :: {1} did not come online within {2} seconds' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME, $totalTime) -severity 'DEBUG'
     throw "Connection timeout."
 }
+function Wait-ForUserInitReady {
+    [CmdletBinding()]
+    param(
+        [int]$TimeoutSeconds = 600,
+        [int]$PollSeconds = 5
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+
+    Write-Log -message ("MOZ_GW_UI_READY :: waiting up to {0}s for user-init signal" -f $TimeoutSeconds) -severity 'INFO'
+
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $v = [Environment]::GetEnvironmentVariable('MOZ_GW_UI_READY', 'Machine')
+
+            if ($v -eq '1') {
+                Write-Log -message "MOZ_GW_UI_READY :: ready (value=1)" -severity 'INFO'
+                return $true
+            }
+
+            if ($null -eq $v) {
+                Write-Log -message "MOZ_GW_UI_READY :: not set yet" -severity 'DEBUG'
+            } else {
+                Write-Log -message ("MOZ_GW_UI_READY :: present but not ready (value={0})" -f $v) -severity 'DEBUG'
+            }
+        } catch {
+            Write-Log -message ("MOZ_GW_UI_READY :: read failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+        }
+
+        Start-Sleep -Seconds $PollSeconds
+    }
+
+    Write-Log -message ("MOZ_GW_UI_READY :: timeout after {0}s" -f $TimeoutSeconds) -severity 'WARN'
+    return $false
+}
+
 Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 if ($env:USERNAME -notmatch 'task') {
     Write-Log -message ('{0} :: Current user "{1}" does not contain "task"; sleeping 60s' -f $($MyInvocation.MyCommand.Name), $env:USERNAME) -severity 'DEBUG'
@@ -515,7 +551,21 @@ If ($bootstrap_stage -eq 'complete') {
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
+    # Wait for task-user-init (Win11 UI hardening) to complete before starting worker-runner
+    $ready = Wait-ForUserInitReady -TimeoutSeconds 1200 -PollSeconds 3
 
+    # Delete the env var either way to avoid it sticking around forever
+    try {
+        [Environment]::SetEnvironmentVariable('MOZ_GW_UI_READY', $null, 'Machine')
+        Write-Log -message "MOZ_GW_UI_READY :: cleared (machine)" -severity 'DEBUG'
+    } catch {
+        Write-Log -message ("MOZ_GW_UI_READY :: failed to clear: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    if (-not $ready) {
+        # If you prefer fail-closed (PXE) instead, change this behavior.
+        Write-Log -message "MOZ_GW_UI_READY :: proceeding despite timeout" -severity 'WARN'
+    }
     StartWorkerRunner
     Exit-PSSession
 }

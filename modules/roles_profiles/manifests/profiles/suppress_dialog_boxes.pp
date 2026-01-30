@@ -27,7 +27,6 @@ class roles_profiles::profiles::suppress_dialog_boxes {
       }
       if $facts['custom_win_os_version'] == 'win_11_2009' {
         include win_os_settings::hide_start_menu
-        include win_os_settings::disable_start_menu_windows_key
       }
       # Bug list
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1562024
