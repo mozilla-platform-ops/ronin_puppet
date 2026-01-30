@@ -33,7 +33,7 @@ class puppet::atboot (
     'Ubuntu': {
       case $facts['os']['release']['full'] {
         '18.04', '22.04', '24.04': {
-          include linux_packages::puppet
+          include linux_packages::openvox
           # yqer is required for github auth integration in run-puppet.sh
           include linux_packages::yqer
 
