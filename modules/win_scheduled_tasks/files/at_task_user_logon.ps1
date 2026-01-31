@@ -616,7 +616,9 @@ switch ($os_version) {
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
 
         if ($worker_location -eq 'MDC1 hardware') {
-            if ($env:USERNAME -notmatch 'administrator') {
+            if ($env:USERNAME -match 'administrator') {
+                exit
+            } else {
                 Disable-PerUserUwpServices
                 Remove-OneDriveScheduledTasks
                 Disable-OneDriveBackupPopup
