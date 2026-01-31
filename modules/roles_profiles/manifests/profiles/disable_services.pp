@@ -66,9 +66,6 @@ class roles_profiles::profiles::disable_services {
         ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
         ## must be ran after apx uninstall
-        class { 'win_disable_services::uninstall_appx_packages':
-          apx_uninstall => $apx_uninstall,
-        }
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
         }
