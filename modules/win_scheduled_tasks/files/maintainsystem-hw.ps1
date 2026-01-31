@@ -513,8 +513,8 @@ function Wait-ForUserInitReady {
 }
 
 Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-if ($env:USERNAME -match 'administrator') {
-    Write-Log -message ('{0} :: Current user "{1}" matches "administrator"; sleeping 60s' -f $($MyInvocation.MyCommand.Name), $env:USERNAME) -severity 'DEBUG'
+if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
+    Write-Log -message ('{0} :: No user logged in (no explorer.exe); sleeping 60s' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     Start-Sleep -Seconds 60
 }
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
