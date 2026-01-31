@@ -141,66 +141,38 @@ function CompareConfig {
         $yaml = $null
         $SETPXE = $false
         $yamlHash = $null
-        $IPAddress = $null
 
         # -------------------------------
-        # Resolve IP
+        # Hostname via local variable (no IP/DNS lookup)
         # -------------------------------
-        $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() |
-            Where-Object { $_.Name -match "ethernet" }
-
-        try {
-            $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses |
-                Where-Object { $_.Address.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and $_.Address.IPAddressToString -ne "127.0.0.1" } |
-                Select-Object -First 1 -ExpandProperty Address).IPAddressToString
-        }
-        catch {
-            try {
-                $NetshOutput = netsh interface ip show addresses
-                $IPAddress = ($NetshOutput -match "IP Address" | ForEach-Object {
-                        if ($_ -notmatch "127.0.0.1") { $_ -replace ".*?:\s*", "" }
-                    })[0]
-            }
-            catch {
-                Write-Log -message "Failed to get IP address" -severity 'ERROR'
-            }
-        }
-
-        if ($IPAddress) {
-            Write-Log -message "IP Address: $IPAddress" -severity 'INFO'
-        }
-        else {
-            Write-Log -message "No IP Address could be determined." -severity 'ERROR'
+        $worker_node_name = ($env:COMPUTERNAME).Trim().ToLower()
+        if ([string]::IsNullOrWhiteSpace($worker_node_name)) {
+            Write-Log -message ('{0} :: COMPUTERNAME is empty; cannot continue.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
+            Set-PXEPendingFlag -Clear
+            Restart-Computer -Force
             return
         }
 
-        try {
-            $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
-        }
-        catch {
-            Write-Log -message "DNS resolution failed." -severity 'ERROR'
-            return
-        }
-
-        Write-Log -message "Resolved Name: $ResolvedName" -severity 'INFO'
-
-        $index = $ResolvedName.IndexOf('.')
-        if ($index -lt 0) {
-            Write-Log -message "Invalid hostname format." -severity 'ERROR'
-            return
-        }
-
-        $worker_node_name = $ResolvedName.Substring(0, $index)
         Write-Log -message "Host name set to: $worker_node_name" -severity 'INFO'
 
+        # -------------------------------
+        # Local ronin puppet values
+        # -------------------------------
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
 
+        # -------------------------------
+        # PAT for YAML download
+        # -------------------------------
         $patFile = "D:\Secrets\pat.txt"
         if (-not (Test-Path $patFile)) {
             Write-Log -message ('{0} :: PAT file missing: {1}' -f $MyInvocation.MyCommand.Name, $patFile) -severity 'ERROR'
             Set-PXE
             Set-PXEPendingFlag -Clear
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
@@ -218,6 +190,8 @@ function CompareConfig {
             Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Set-PXE
             Set-PXEPendingFlag -Clear
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
@@ -229,29 +203,32 @@ function CompareConfig {
             Write-Log -message ('{0} :: YAML parsing failed: {1}' -f $MyInvocation.MyCommand.Name, $_) -severity 'ERROR'
             Set-PXE
             Set-PXEPendingFlag -Clear
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
 
+        # -------------------------------
+        # Lookup this worker in pools.yml
+        # -------------------------------
         $found = $false
         if ($yaml) {
             foreach ($pool in $yaml.pools) {
-                foreach ($node in $pool.nodes) {
-                    if ($node -eq $worker_node_name) {
-                        $WorkerPool = $pool.name
-                        $yamlHash = $pool.hash
-                        $yamlImageName = $pool.image
-                        $yamlImageDir = "D:\" + $yamlImageName
-                        $found = $true
-                        break
-                    }
+                $nodes = @($pool.nodes | ForEach-Object { "$_".Trim().ToLower() })
+                if ($nodes -contains $worker_node_name) {
+                    $WorkerPool    = $pool.name
+                    $yamlHash      = $pool.hash
+                    $yamlImageName = $pool.image
+                    $yamlImageDir  = "D:\" + $yamlImageName
+                    $found = $true
+                    break
                 }
-                if ($found) { break }
             }
         }
 
         if (-not $found) {
-            Write-Log -message "Node name not found in YAML!!" -severity 'ERROR'
+            Write-Log -message ('Node name "{0}" not found in YAML!!' -f $worker_node_name) -severity 'ERROR'
             # $SETPXE = $true
         }
 
@@ -309,6 +286,8 @@ function CompareConfig {
             if (-not $workerStatus) {
                 Write-Log -message "worker-status.json not found. Rebooting now!" -severity 'ERROR'
                 Set-PXEPendingFlag -Clear
+                Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+                Start-Sleep -Seconds 30
                 Restart-Computer -Force
                 return
             }
@@ -319,6 +298,8 @@ function CompareConfig {
             catch {
                 Write-Log -message "worker-status.json is unreadable. Rebooting now!" -severity 'ERROR'
                 Set-PXEPendingFlag -Clear
+                Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+                Start-Sleep -Seconds 30
                 Restart-Computer -Force
                 return
             }
@@ -326,6 +307,8 @@ function CompareConfig {
             if (($json.currentTaskIds).Count -eq 0) {
                 Write-Log -message "No active tasks. Rebooting now!" -severity 'WARN'
                 Set-PXEPendingFlag -Clear
+                Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+                Start-Sleep -Seconds 30
                 Restart-Computer -Force
                 return
             }

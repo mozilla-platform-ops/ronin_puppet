@@ -119,77 +119,35 @@ function CompareConfigBasic {
         $SETPXE = $false
         $yaml = $null
         $yamlHash = $null
-        $IPAddress = $null
 
-        # === Retrieve IP address ===
-        $Ethernet = [System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() |
-            Where-Object { $_.Name -match "ethernet" }
-
-        try {
-            $IPAddress = ($Ethernet.GetIPProperties().UnicastAddresses |
-                Where-Object { $_.Address.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork -and $_.Address.IPAddressToString -ne "127.0.0.1" } |
-                Select-Object -First 1 -ExpandProperty Address).IPAddressToString
-        }
-        catch {
-            try {
-                $NetshOutput = netsh interface ip show addresses
-                $IPAddress = ($NetshOutput -match "IP Address" | ForEach-Object {
-                        if ($_ -notmatch "127.0.0.1") { $_ -replace ".*?:\s*", "" }
-                    })[0]
-            }
-            catch {
-                Write-Log -message ('{0} :: Failed to get IP address' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            }
-        }
-
-        if (-not $IPAddress) {
-            Write-Log -message ('{0} :: No IP Address could be determined.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+        # === Use local computer name (no IP/DNS lookup) ===
+        $worker_node_name = ($env:COMPUTERNAME).Trim().ToLower()
+        if ([string]::IsNullOrWhiteSpace($worker_node_name)) {
+            Write-Log -message ('{0} :: COMPUTERNAME is empty; cannot continue.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
 
-        Write-Log -message ('{0} :: IP Address: {1}' -f $MyInvocation.MyCommand.Name, $IPAddress) -severity 'INFO'
-
-
-        # === Resolve DNS to get worker name ===
-        try {
-            $ResolvedName = (Resolve-DnsName -Name $IPAddress -Server "10.48.75.120").NameHost
-        }
-        catch {
-            Write-Log -message ('{0} :: DNS resolution failed' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Restart-Computer -Force
-            return
-        }
-
-        Write-Log -message ('{0} :: Resolved Name: {1}' -f $MyInvocation.MyCommand.Name, $ResolvedName) -severity 'INFO'
-
-        $index = $ResolvedName.IndexOf('.')
-        if ($index -lt 0) {
-            Write-Log -message ('{0} :: Invalid hostname format.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
-            Restart-Computer -Force
-            return
-        }
-
-        $worker_node_name = $ResolvedName.Substring(0, $index)
         Write-Log -message ('{0} :: Host name set to: {1}' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'INFO'
-
 
         # === Load local ronin puppet values ===
         $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
         $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
-
 
         # === Load PAT for YAML download ===
         $patFile = "D:\Secrets\pat.txt"
         if (-not (Test-Path $patFile)) {
             Write-Log -message ('{0} :: PAT file missing: {1}' -f $MyInvocation.MyCommand.Name, $patFile) -severity 'ERROR'
             Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
 
         $PAT = Get-Content $patFile -ErrorAction Stop
-
 
         # === Download YAML using unified retry function ===
         $tempYamlPath = "$env:TEMP\pools.yml"
@@ -203,10 +161,11 @@ function CompareConfigBasic {
         if (-not (Invoke-DownloadWithRetryGithub @splat)) {
             Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
-
 
         # === Parse YAML ===
         try {
@@ -215,15 +174,17 @@ function CompareConfigBasic {
         catch {
             Write-Log -message ('{0} :: YAML parsing failed: {1}' -f $MyInvocation.MyCommand.Name, $_) -severity 'ERROR'
             Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
 
-
         # === Lookup this worker in pools.yml ===
         $found = $false
         foreach ($pool in $yaml.pools) {
-            if ($pool.nodes -contains $worker_node_name) {
+            $nodes = @($pool.nodes | ForEach-Object { "$_".Trim().ToLower() })
+            if ($nodes -contains $worker_node_name) {
                 $WorkerPool     = $pool.name
                 $yamlHash       = $pool.hash
                 $yamlImageName  = $pool.image
@@ -234,14 +195,15 @@ function CompareConfigBasic {
         }
 
         if (-not $found) {
-            Write-Log -message ('{0} :: Node not found in YAML. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message ('{0} :: Node "{1}" not found in YAML. PXE rebooting.' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'ERROR'
             Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
 
         Write-Log -message ('{0} :: === Configuration Comparison ===' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
-
 
         # === Compare pool ===
         if ($localPool -ne $WorkerPool) {
@@ -251,7 +213,6 @@ function CompareConfigBasic {
         else {
             Write-Log -message ('{0} :: Worker Pool Match: {1}' -f $MyInvocation.MyCommand.Name, $WorkerPool) -severity 'INFO'
         }
-
 
         # === Compare puppet githash ===
         if ([string]::IsNullOrWhiteSpace($yamlHash) -or $localHash -ne $yamlHash) {
@@ -264,18 +225,18 @@ function CompareConfigBasic {
             Write-Log -message ('{0} :: Git Hash Match: {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'INFO'
         }
 
-
         # === Verify local puppet image directory exists ===
         if (!(Test-Path $yamlImageDir)) {
             Write-Log -message ('{0} :: Image directory missing: {1}' -f $MyInvocation.MyCommand.Name, $yamlImageDir) -severity 'ERROR'
             $SETPXE = $true
         }
 
-
         # === If anything mismatched, PXE reboot ===
         if ($SETPXE) {
             Write-Log -message ('{0} :: Configuration mismatch — initiating PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
             Restart-Computer -Force
             return
         }
