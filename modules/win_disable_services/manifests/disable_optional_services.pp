@@ -35,7 +35,7 @@ class win_disable_services::disable_optional_services {
     'TokenBroker',          # Web Account Manager
 
     # --- UWP / Microsoft Store ecosystem ---
-    'AppReadiness',         # App readiness
+#   'AppReadiness',         # App readiness - affecting audio playback
 #   'AppXSvc',              # AppX Deployment Service - won't disable
 #   'CDPSvc',               # Connected Devices Platform Service - DON'T Disable.
 #   'ClipSVC',              # Client License Service (Store licensing) - DON'T Disable.
