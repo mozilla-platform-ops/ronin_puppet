@@ -603,16 +603,41 @@ switch ($os_version) {
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
     }
     "win_11_2009" {
+
+        # Signal to bootstrap/runner that user-init has started (and should complete before tests)
+        try {
+            [Environment]::SetEnvironmentVariable('MOZ_GW_UI_READY', '0', 'Machine')
+            Write-Log -message "MOZ_GW_UI_READY :: set to 0 (user-init starting)" -severity 'DEBUG'
+        } catch {
+            Write-Log -message ("MOZ_GW_UI_READY :: failed to set 0: {0}" -f $_.Exception.Message) -severity 'WARN'
+        }
+
         Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Setting scrollbars to always show in task-user-init.ps1", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
         New-ItemProperty -Path 'HKCU:\Control Panel\Accessibility' -Name 'DynamicScrollbars' -Value 0 -Force
+
         if ($worker_location -eq 'MDC1 hardware') {
-            Disable-PerUserUwpServices
-            Remove-OneDriveScheduledTasks
-            Disable-OneDriveBackupPopup
-            Remove-EdgeScheduledTasks
-            ## Not currently functioning
-            #Disable-SyncFromCloud
-            #Disable-SmartScreenStoreApps
+            if ($env:USERNAME -match 'administrator') {
+                exit
+            } else {
+                Disable-PerUserUwpServices
+                Remove-OneDriveScheduledTasks
+                Disable-OneDriveBackupPopup
+                Remove-EdgeScheduledTasks
+                ## Not currently functioning
+                #Disable-SyncFromCloud
+                #Disable-SmartScreenStoreApps
+                explorer.exe shell::: { 3080F90D-D7AD-11D9-BD98-0000947B0257 } -Verb MinimizeAll
+                Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
+                taskkill /f /im StartMenuExperienceHost.exe
+            }
+        }
+
+        # Signal complete
+        try {
+            [Environment]::SetEnvironmentVariable('MOZ_GW_UI_READY', '1', 'Machine')
+            Write-Log -message "MOZ_GW_UI_READY :: set to 1 (user-init complete)" -severity 'INFO'
+        } catch {
+            Write-Log -message ("MOZ_GW_UI_READY :: failed to set 1: {0}" -f $_.Exception.Message) -severity 'WARN'
         }
     }
     "win_2022" {

@@ -49,10 +49,10 @@ class win_disable_services::disable_optional_services {
     'TrkWks',               # Distributed Link Tracking Client - Disabled in MaintainSytems script too
 
     # --- Third-party / vendor helpers (excluding nxlog) ---
-    'igccservice',          # Intel Graphics Command Center Service
-    'IntelAudioService',    # Intel Audio Service
-    'jhi_service',          # Intel Dynamic Application Loader Host
-    'RtkAudioUniversalService', # Realtek Audio Universal Service
+    #'igccservice',          # Intel Graphics Command Center Service
+    #'IntelAudioService',    # Intel Audio Service
+    #'jhi_service',          # Intel Dynamic Application Loader Host
+    #'RtkAudioUniversalService', # Realtek Audio Universal Service
 #   'webthreatdefsvc',      # Web Threat Defense service - DON'T Disable.
 
     # --- Others ---
