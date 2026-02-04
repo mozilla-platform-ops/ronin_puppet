@@ -55,6 +55,200 @@ function Run-MaintainSystem {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     }
 }
+function Invoke-DownloadWithRetryGithub {
+    Param(
+        [Parameter(Mandatory)] [string] $Url,
+        [Alias("Destination")] [string] $Path,
+        [string] $PAT
+    )
+    if (-not $Path) {
+        $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
+        $re = "[{0}]" -f [RegEx]::Escape($invalidChars)
+        $fileName = [IO.Path]::GetFileName($Url) -replace $re
+        if ([String]::IsNullOrEmpty($fileName)) { $fileName = [System.IO.Path]::GetRandomFileName() }
+        $Path = Join-Path -Path "${env:Temp}" -ChildPath $fileName
+    }
+    Write-Host "Downloading package from $Url to $Path..."
+    $interval = 30
+    $downloadStartTime = Get-Date
+    for ($retries = 20; $retries -gt 0; $retries--) {
+        try {
+            $attemptStartTime = Get-Date
+            $Headers = @{
+                Accept                 = "application/vnd.github+json"
+                Authorization          = "Bearer $($PAT)"
+                "X-GitHub-Api-Version" = "2022-11-28"
+            }
+            $response = Invoke-WebRequest -Uri $Url -Headers $Headers -OutFile $Path
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Host "Package downloaded in $attemptSeconds seconds"
+            Write-Host "Status: $($response.statuscode)"
+            break
+        } catch {
+            $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
+            Write-Warning "Package download failed in $attemptSeconds seconds"
+            Write-Host "Status: $($response.statuscode)"
+            Write-Warning $_.Exception.Message
+            if ($_.Exception.InnerException.Response.StatusCode -eq [System.Net.HttpStatusCode]::NotFound) {
+                Write-Warning "Request returned 404 Not Found. Aborting download."
+                $retries = 0
+            }
+        }
+        if ($retries -eq 0) {
+            $totalSeconds = [math]::Round(($(Get-Date) - $downloadStartTime).TotalSeconds, 2)
+            throw "Package download failed after $totalSeconds seconds"
+        }
+        Write-Warning "Waiting $interval seconds before retrying (retries left: $retries)..."
+        Start-Sleep -Seconds $interval
+    }
+    return $Path
+}
+
+function CompareConfigBasic {
+    param (
+        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
+        [string]$PAT
+    )
+
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+
+    process {
+
+        $SETPXE = $false
+        $yaml = $null
+        $yamlHash = $null
+
+        # === Use local computer name (no IP/DNS lookup) ===
+        $worker_node_name = ($env:COMPUTERNAME).Trim().ToLower()
+        if ([string]::IsNullOrWhiteSpace($worker_node_name)) {
+            Write-Log -message ('{0} :: COMPUTERNAME is empty; cannot continue.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
+            Restart-Computer -Force
+            return
+        }
+
+        Write-Log -message ('{0} :: Host name set to: {1}' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'INFO'
+
+        # === Load local ronin puppet values ===
+        $localHash = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).GITHASH
+        $localPool = (Get-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet).worker_pool_id
+
+        # === Load PAT for YAML download ===
+        $patFile = "D:\Secrets\pat.txt"
+        if (-not (Test-Path $patFile)) {
+            Write-Log -message ('{0} :: PAT file missing: {1}' -f $MyInvocation.MyCommand.Name, $patFile) -severity 'ERROR'
+            Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
+            Restart-Computer -Force
+            return
+        }
+
+        $PAT = Get-Content $patFile -ErrorAction Stop
+
+        # === Download YAML using unified retry function ===
+        $tempYamlPath = "$env:TEMP\pools.yml"
+
+        $splat = @{
+            Url  = $yaml_url
+            Path = $tempYamlPath
+            PAT  = $PAT
+        }
+
+        if (-not (Invoke-DownloadWithRetryGithub @splat)) {
+            Write-Log -message ('{0} :: YAML download failed after retries. PXE rebooting.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
+            Restart-Computer -Force
+            return
+        }
+
+        # === Parse YAML ===
+        try {
+            $yaml = Get-Content $tempYamlPath -Raw | ConvertFrom-Yaml
+        }
+        catch {
+            Write-Log -message ('{0} :: YAML parsing failed: {1}' -f $MyInvocation.MyCommand.Name, $_) -severity 'ERROR'
+            Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
+            Restart-Computer -Force
+            return
+        }
+
+        # === Lookup this worker in pools.yml ===
+        $found = $false
+        foreach ($pool in $yaml.pools) {
+            $nodes = @($pool.nodes | ForEach-Object { "$_".Trim().ToLower() })
+            if ($nodes -contains $worker_node_name) {
+                $WorkerPool     = $pool.name
+                $yamlHash       = $pool.hash
+                $yamlImageName  = $pool.image
+                $yamlImageDir   = "D:\" + $yamlImageName
+                $found = $true
+                break
+            }
+        }
+
+        if (-not $found) {
+            Write-Log -message ('{0} :: Node "{1}" not found in YAML. PXE rebooting.' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'ERROR'
+            Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
+            Restart-Computer -Force
+            return
+        }
+
+        Write-Log -message ('{0} :: === Configuration Comparison ===' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
+
+        # === Compare pool ===
+        if ($localPool -ne $WorkerPool) {
+            Write-Log -message ('{0} :: Worker Pool MISMATCH!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            $SETPXE = $true
+        }
+        else {
+            Write-Log -message ('{0} :: Worker Pool Match: {1}' -f $MyInvocation.MyCommand.Name, $WorkerPool) -severity 'INFO'
+        }
+
+        # === Compare puppet githash ===
+        if ([string]::IsNullOrWhiteSpace($yamlHash) -or $localHash -ne $yamlHash) {
+            Write-Log -message ('{0} :: Git Hash MISMATCH or missing YAML hash!' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Write-Log -message ('{0} :: Local: {1}' -f $MyInvocation.MyCommand.Name, $localHash) -severity 'WARN'
+            Write-Log -message ('{0} :: YAML : {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'WARN'
+            $SETPXE = $true
+        }
+        else {
+            Write-Log -message ('{0} :: Git Hash Match: {1}' -f $MyInvocation.MyCommand.Name, $yamlHash) -severity 'INFO'
+        }
+
+        # === Verify local puppet image directory exists ===
+        if (!(Test-Path $yamlImageDir)) {
+            Write-Log -message ('{0} :: Image directory missing: {1}' -f $MyInvocation.MyCommand.Name, $yamlImageDir) -severity 'ERROR'
+            $SETPXE = $true
+        }
+
+        # === If anything mismatched, PXE reboot ===
+        if ($SETPXE) {
+            Write-Log -message ('{0} :: Configuration mismatch — initiating PXE + reboot.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
+            Set-PXE
+            Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
+            Start-Sleep -Seconds 30
+            Restart-Computer -Force
+            return
+        }
+
+        Write-Log -message ('{0} :: Configuration is correct. No reboot required.' -f $MyInvocation.MyCommand.Name) -severity 'INFO'
+    }
+
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 function Remove-OldTaskDirectories {
     param (
         [string[]] $targets = @('Z:\task_*', 'C:\Users\task_*')
@@ -642,7 +836,47 @@ function Test-ConnectionUntilOnline {
     Write-Log -message ('{0} :: {1} did not come online within {2} seconds' -f $($MyInvocation.MyCommand.Name), $ENV:COMPUTERNAME, $totalTime) -severity 'DEBUG'
     throw "Connection timeout."
 }
+function Wait-ForUserInitReady {
+    [CmdletBinding()]
+    param(
+        [int]$TimeoutSeconds = 600,
+        [int]$PollSeconds = 5
+    )
 
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+
+    Write-Log -message ("MOZ_GW_UI_READY :: waiting up to {0}s for user-init signal" -f $TimeoutSeconds) -severity 'INFO'
+
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $v = [Environment]::GetEnvironmentVariable('MOZ_GW_UI_READY', 'Machine')
+
+            if ($v -eq '1') {
+                Write-Log -message "MOZ_GW_UI_READY :: ready (value=1)" -severity 'INFO'
+                return $true
+            }
+
+            if ($null -eq $v) {
+                Write-Log -message "MOZ_GW_UI_READY :: not set yet" -severity 'DEBUG'
+            } else {
+                Write-Log -message ("MOZ_GW_UI_READY :: present but not ready (value={0})" -f $v) -severity 'DEBUG'
+            }
+        } catch {
+            Write-Log -message ("MOZ_GW_UI_READY :: read failed: {0}" -f $_.Exception.Message) -severity 'WARN'
+        }
+
+        Start-Sleep -Seconds $PollSeconds
+    }
+
+    Write-Log -message ("MOZ_GW_UI_READY :: timeout after {0}s" -f $TimeoutSeconds) -severity 'WARN'
+    return $false
+}
+
+Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
+    Write-Log -message ('{0} :: No user logged in (no explorer.exe); sleeping 60s' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    Start-Sleep -Seconds 60
+}
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
@@ -686,13 +920,23 @@ If ($bootstrap_stage -eq 'complete') {
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
     Get-LatestGoogleChrome
+    # Wait for task-user-init (Win11 UI hardening) to complete before starting worker-runner
+    $ready = Wait-ForUserInitReady -TimeoutSeconds 1200 -PollSeconds 3
 
-    $processname = "StartMenuExperienceHost"
-    if ($null -ne $process) {
-        Stop-Process -Name $processname -force
+    # Delete the env var either way to avoid it sticking around forever
+    try {
+        [Environment]::SetEnvironmentVariable('MOZ_GW_UI_READY', $null, 'Machine')
+        Write-Log -message "MOZ_GW_UI_READY :: cleared (machine)" -severity 'DEBUG'
+    } catch {
+        Write-Log -message ("MOZ_GW_UI_READY :: failed to clear: {0}" -f $_.Exception.Message) -severity 'WARN'
     }
-    CompareConfig -PAT (Get-Content "D:\Secrets\pat.txt")
-    StartGenericWorker
+
+    if (-not $ready) {
+        # If you prefer fail-closed (PXE) instead, change this behavior.
+        Write-Log -message "MOZ_GW_UI_READY :: proceeding despite timeout" -severity 'WARN'
+    }
+    StartWorkerRunner
+    Exit-PSSession
 }
 else {
     Write-Log -message  ('{0} :: Bootstrap has not completed. EXITING!' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'

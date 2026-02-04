@@ -35,7 +35,7 @@ class win_disable_services::disable_optional_services {
     'TokenBroker',          # Web Account Manager
 
     # --- UWP / Microsoft Store ecosystem ---
-    'AppReadiness',         # App readiness
+#   'AppReadiness',         # App readiness - affecting audio playback
 #   'AppXSvc',              # AppX Deployment Service - won't disable
 #   'CDPSvc',               # Connected Devices Platform Service - DON'T Disable.
 #   'ClipSVC',              # Client License Service (Store licensing) - DON'T Disable.
@@ -49,10 +49,10 @@ class win_disable_services::disable_optional_services {
     'TrkWks',               # Distributed Link Tracking Client - Disabled in MaintainSytems script too
 
     # --- Third-party / vendor helpers (excluding nxlog) ---
-    'igccservice',          # Intel Graphics Command Center Service
-    'IntelAudioService',    # Intel Audio Service
-    'jhi_service',          # Intel Dynamic Application Loader Host
-    'RtkAudioUniversalService', # Realtek Audio Universal Service
+    #'igccservice',          # Intel Graphics Command Center Service
+    #'IntelAudioService',    # Intel Audio Service
+    #'jhi_service',          # Intel Dynamic Application Loader Host
+    #'RtkAudioUniversalService', # Realtek Audio Universal Service
 #   'webthreatdefsvc',      # Web Threat Defense service - DON'T Disable.
 
     # --- Others ---
