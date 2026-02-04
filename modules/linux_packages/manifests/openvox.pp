@@ -45,6 +45,7 @@ class linux_packages::openvox {
             subscribe => Exec['install_openvox_release_deb'],
           }
         }
+        # TODO: add 22.04 support (bitbar)
         '24.04': {
           # Purge puppet packages first
           $packages_to_purge = [
