@@ -39,20 +39,35 @@ class roles_profiles::profiles::disable_services {
       include win_disable_services::disable_windows_update
       if $facts['custom_win_purpose'] != builder {
         include win_disable_services::disable_wsearch
-        ## Let's Uninstall Appx Packages
-        ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
-        ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        include win_disable_services::uninstall_appx_packages
-        ## Disable Unnecessary tasks
-        ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
-        ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        include win_disable_services::disable_scheduled_tasks
-        if ($facts['custom_win_location'] == 'azure') {
-          include win_scheduled_tasks::kill_local_clipboard
-        }
+        ## WIP for RELOPS-1946
+        ## Not currently working. Leaving n place for ref.
+        #include win_disable_services::disable_defender_smartscreen
+        #include win_disable_services::disable_sync_from_cloud
         if $facts['custom_win_release_id'] == '2004' or '2009' {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
+        }
+        case $facts['custom_win_location'] {
+          'datacenter': {
+            $apx_uninstall = 'hw-uninstall.ps1'
+            include win_disable_services::disable_optional_services
+          }
+          'azure': {
+            $apx_uninstall = 'uninstall.ps1'
+            class { 'win_disable_services::uninstall_appx_packages':
+              apx_uninstall => $apx_uninstall,
+            }
+            include win_scheduled_tasks::kill_local_clipboard
+          }
+          default: {
+          }
+        }
+        ## Let's Uninstall Appx Packages
+        ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
+        ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
+        ## must be ran after apx uninstall
+        if ($facts['custom_win_location'] == 'datacenter') {
+          include win_disable_services::disable_ms_edge
         }
       }
       # May be needed for non-hardaware
