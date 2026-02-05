@@ -68,7 +68,8 @@ $SchTasksList = @(
     "VerifyWinRE",
     "Work Folders Logon Synchronization",
     "Work Folders Maintenance Work",
-    "Restore"
+    "Restore",
+    "MsCtfMonitor"
 )
 
 Foreach ($Item in $SchTasksList) {
