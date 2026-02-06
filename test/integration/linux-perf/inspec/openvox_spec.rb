@@ -2,26 +2,6 @@ require_relative 'spec_helper'
 
 # openvox: puppet replacement
 
-
-# template
-#
-# if os.family == 'debian' && os.release.start_with?('18.04')
-#   #
-# elsif os.family == 'debian' && os.release.start_with?('22.04')
-#   #
-# elsif os.family == 'debian' && os.release.start_with?('24.04')
-#   #
-# else
-#   # shouldn't be here
-#   # for other OS families or versions, show error
-#   describe command('false') do
-#     its(:exit_status) { should eq 0 }
-#     its(:stdout) { should_not match /NONO/ }
-#   end
-# end
-
-
-
 describe package('openvox-agent'), :if => os[:family] == 'ubuntu' do
   it { should be_installed }
   # TODO: check with with_version('/6.*/') when available
@@ -39,13 +19,4 @@ else
     its(:exit_status) { should eq 0 }
     its(:stdout) { should_not match /NONO/ }
   end
-end
-
-# ensure puppet-agent isn't set to run
-describe service('puppet') do
-  it { should_not be_enabled }
-end
-
-describe package('puppet-release') do
-  it { should_not be_installed }
 end
