@@ -14,10 +14,10 @@ set -e
 #     ControlPersist yes
 #
 
-# Detect which SSH user works (try root first, then relops)
+# Detect which SSH user works (try relops first, then root)
 detect_ssh_user() {
   local host="$1"
-  for user in "root" "relops"; do
+  for user in "relops" "root"; do
     if ssh -q "$user"@"$host" exit 2>/dev/null; then
       echo "$user"
       return 0
