@@ -5,7 +5,7 @@ class linux_packages::openvox {
         '18.04':  {
           # Purge puppet packages first
           $packages_to_purge = [
-            # don't remove this, openvox-agent defines it as a conflict and removes it
+            # don't remove 'puppet-agent', openvox-agent defines it as a conflict and removes it
             # - removing explicitly here breaks puppet. has to be done atomically by apt.
             # 'puppet-agent',
             'puppet-release',
@@ -19,7 +19,7 @@ class linux_packages::openvox {
             ensure => purged,
           }
 
-          # same as below, just for ubuntu 18.04
+          # fetch and install the openvox repo deb
           # TODO: deduplicate with 24.04 code
           $deb_name = 'openvox8-release-ubuntu18.04.deb'
           # use an exec and wget instead
@@ -45,11 +45,53 @@ class linux_packages::openvox {
             subscribe => Exec['install_openvox_release_deb'],
           }
         }
-        # TODO: add 22.04 support (bitbar)
+        '22.04': {
+          # Purge puppet packages first
+          $packages_to_purge = [
+            # don't remove 'puppet-agent', openvox-agent defines it as a conflict and removes it
+            # - removing explicitly here breaks puppet. has to be done atomically by apt.
+            # 'puppet-agent',
+            'puppet-release',
+            'puppet5-release',
+            'puppet6-release',
+            'puppet7-release',
+            'puppet8-release',
+          ]
+
+          package { $packages_to_purge:
+            ensure => purged,
+          }
+
+          # fetch and install the openvox repo deb
+          # NOTE: you need to update the references in the 2 'creates' lines below if you change this.
+          $deb_name = 'openvox8-release-ubuntu22.04.deb'
+          # use an exec and wget instead
+          exec { 'get_openvox_release_deb_file':
+            command => "/usr/bin/wget -O /tmp/${deb_name} https://apt.voxpupuli.org/${deb_name}",
+            creates => '/etc/apt/sources.list.d/openvox8-release.list',
+            require => Package[$packages_to_purge],
+          }
+          exec { 'install_openvox_release_deb':
+            command     => "/usr/bin/dpkg -i /tmp/${deb_name}",
+            creates     => '/etc/apt/sources.list.d/openvox8-release.list',
+            # only run this if the exec above runs (which only runs if the 'creates' file is missing)
+            subscribe   => Exec['get_openvox_release_deb_file'],
+            notify      => Exec['apt_update'],
+            refreshonly => true,
+          }
+
+          # install openvox-agent
+          package { 'install openvox agent':
+            ensure    => installed,
+            name      => 'openvox-agent',
+            require   => Exec['apt_update'],
+            subscribe => Exec['install_openvox_release_deb'],
+          }
+        }
         '24.04': {
           # Purge puppet packages first
           $packages_to_purge = [
-            # don't remove this, openvox-agent defines it as a conflict and removes it
+            # don't remove 'puppet-agent', openvox-agent defines it as a conflict and removes it
             # - removing explicitly here breaks puppet. has to be done atomically by apt.
             # 'puppet-agent',
             'puppet-release',
