@@ -8,6 +8,10 @@ mkdir -p /tmp/docker/var/cache/apt
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="${script_dir}/.."
+
+# ensure SSH key has correct permissions (git doesn't track this)
+chmod 600 "${root_dir}/test/id_ed25519" 2>/dev/null || true
+
 kitchen_config="${root_dir}/.kitchen_configs/kitchen.docker.yml"
 temp_kitchen_config="/tmp/ronin_puppet_kitchen_docker_temp_config.yml"
 
