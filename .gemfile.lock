@@ -105,6 +105,7 @@ GEM
     erubi (1.13.1)
     excon (1.3.2)
       logger
+    facter (2.5.7)
     facter (2.5.7-universal-darwin)
       CFPropertyList (~> 2.2)
     faraday (0.17.6)
@@ -118,7 +119,17 @@ GEM
     faraday_middleware (0.14.0)
       faraday (>= 0.7.4, < 1.0)
     fast_gettext (1.1.2)
+    ffi (1.17.3)
+    ffi (1.17.3-aarch64-linux-gnu)
+    ffi (1.17.3-aarch64-linux-musl)
+    ffi (1.17.3-aarch64-mingw-ucrt)
+    ffi (1.17.3-arm-linux-gnu)
+    ffi (1.17.3-arm-linux-musl)
     ffi (1.17.3-arm64-darwin)
+    ffi (1.17.3-x86-linux-gnu)
+    ffi (1.17.3-x86-linux-musl)
+    ffi (1.17.3-x86_64-linux-gnu)
+    ffi (1.17.3-x86_64-linux-musl)
     fuzzyurl (0.9.0)
     gettext (3.2.9)
       locale (>= 2.0.5)
@@ -198,7 +209,8 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.18.1)
-    jwt (2.7.1)
+    jwt (2.10.2)
+      base64
     kitchen-azurerm (1.13.5)
       azure_mgmt_network2 (>= 1.0.1, < 2.0)
       azure_mgmt_resources2 (>= 1.0.1, < 2.0)
@@ -244,7 +256,7 @@ GEM
       multi_json (~> 1.14)
     method_source (1.1.0)
     mini_mime (1.1.5)
-    minitar (0.12.1)
+    minitar (1.1.0)
     minitest (6.0.1)
       prism (~> 1.5)
     mixlib-config (3.0.27)
@@ -316,6 +328,17 @@ GEM
       date
       stringio
     public_suffix (7.0.2)
+    puppet (7.8.0)
+      concurrent-ruby (~> 1.0)
+      deep_merge (~> 1.0)
+      facter (> 2.0.1, < 5)
+      fast_gettext (~> 1.1)
+      hiera (>= 3.2.1, < 4)
+      locale (~> 2.1)
+      multi_json (~> 1.10)
+      puppet-resource_api (~> 1.5)
+      scanf (~> 1.0)
+      semantic_puppet (~> 1.0)
     puppet (7.8.0-universal-darwin)
       CFPropertyList (~> 2.2)
       concurrent-ruby (~> 1.0)
@@ -350,17 +373,15 @@ GEM
       puppet-syntax (~> 4.1, >= 4.1.1)
       rspec-github (~> 2.0)
       rspec-puppet (~> 5.0)
-    r10k (3.16.2)
+    r10k (3.8.0)
       colored2 (= 3.1.2)
-      cri (>= 2.15.10)
-      fast_gettext (>= 1.1.0, < 3.0.0)
-      gettext (>= 3.0.2, < 4.0.0)
-      gettext-setup (>= 0.24, < 2.0.0)
-      jwt (>= 2.2.3, < 2.8.0)
+      cri (>= 2.15.10, < 3.0.0)
+      fast_gettext (~> 1.1.0)
+      gettext (>= 3.0.2, < 3.3.0)
+      gettext-setup (~> 0.24)
       log4r (= 1.1.10)
-      minitar (~> 0.9)
       multi_json (~> 1.10)
-      puppet_forge (>= 2.3.0, < 4.0.0)
+      puppet_forge (~> 2.3.0)
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.3.1)
@@ -559,8 +580,17 @@ GEM
     yard (0.9.36)
 
 PLATFORMS
-  arm64-darwin-21
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  aarch64-mingw-ucrt
+  arm-linux-gnu
+  arm-linux-musl
   arm64-darwin-24
+  ruby
+  x86-linux-gnu
+  x86-linux-musl
+  x86_64-linux-gnu
+  x86_64-linux-musl
 
 DEPENDENCIES
   base64
@@ -590,4 +620,4 @@ DEPENDENCIES
   vault
 
 BUNDLED WITH
-  4.0.3
+   2.5.23
