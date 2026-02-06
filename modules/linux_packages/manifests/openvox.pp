@@ -8,13 +8,6 @@ class linux_packages::openvox {
 
       include apt
 
-      # test-kitchen / CI testing:
-      #   Disable the puppet service left behind by the omnibus installer
-      service { 'puppet':
-        ensure => stopped,
-        enable => false,
-      }
-
       # Purge puppet packages first
       # don't remove 'puppet-agent', openvox-agent defines it as a conflict and removes it
       # - removing explicitly here breaks puppet. has to be done atomically by apt.

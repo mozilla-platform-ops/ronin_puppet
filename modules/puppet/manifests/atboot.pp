@@ -95,10 +95,14 @@ class puppet::atboot (
               require  => File['/lib/systemd/system/run-puppet.service'];
           }
           # disable the deb provided service
+          # must run after openvox-agent is installed, as apt removing
+          # puppet-agent (a conflict) can re-enable the service
           service {
             'puppet':
+              ensure   => stopped,
               enable   => false,
-              provider => 'systemd';
+              provider => 'systemd',
+              require  => Class['linux_packages::openvox'];
           }
         }
         default: {
