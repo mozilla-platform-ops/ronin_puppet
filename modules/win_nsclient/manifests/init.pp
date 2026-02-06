@@ -46,14 +46,57 @@ class win_nsclient::init (
     enable  => true,
     require => Win_packages::Win_msi_pkg['NSClient++ (x64)'],
   }
-  win_firewall::open_local_port { 'nscp_12489':
-    port            => 12489,
-    reciprocal      => true,
-    fw_display_name => 'nscp_12489',
+
+  # ---------------------------------------------------------------------------
+  # Firewall: 2 ports, reciprocal => true (in+out) => 4 rules total
+  # Restrict remote to $server (remote_address)
+  # ---------------------------------------------------------------------------
+
+  windows_firewall_rule { 'nscp_12489_in':
+    ensure         => present,
+    direction      => 'inbound',
+    action         => 'allow',
+    enabled        => true,
+    protocol       => 'tcp',
+    local_port     => 12489,
+    remote_address => $server,
+    display_name   => 'nscp_12489 (in)',
+    description    => 'NSClient++ inbound 12489',
   }
-  win_firewall::open_local_port { 'nscp_5666':
-    port            => 12489,
-    reciprocal      => true,
-    fw_display_name => 'nscp_5666',
+
+  windows_firewall_rule { 'nscp_12489_out':
+    ensure         => present,
+    direction      => 'outbound',
+    action         => 'allow',
+    enabled        => true,
+    protocol       => 'tcp',
+    local_port     => 12489,
+    remote_address => $server,
+    display_name   => 'nscp_12489 (out)',
+    description    => 'NSClient++ outbound 12489',
+  }
+
+  windows_firewall_rule { 'nscp_5666_in':
+    ensure         => present,
+    direction      => 'inbound',
+    action         => 'allow',
+    enabled        => true,
+    protocol       => 'tcp',
+    local_port     => 5666,
+    remote_address => $server,
+    display_name   => 'nscp_5666 (in)',
+    description    => 'NSClient++ inbound 5666',
+  }
+
+  windows_firewall_rule { 'nscp_5666_out':
+    ensure         => present,
+    direction      => 'outbound',
+    action         => 'allow',
+    enabled        => true,
+    protocol       => 'tcp',
+    local_port     => 5666,
+    remote_address => $server,
+    display_name   => 'nscp_5666 (out)',
+    description    => 'NSClient++ outbound 5666',
   }
 }
