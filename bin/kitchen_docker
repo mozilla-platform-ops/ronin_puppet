@@ -39,7 +39,9 @@ if [[ "$(uname -m)" == "arm64" ]]; then
     # exit 0
 else
     # echo "This system is not running on arm64 architecture."
-    export KITCHEN_YAML="${kitchen_config}"
+    # Still need to create temp config for proxy processing
+    cp "${kitchen_config}" "${temp_kitchen_config}"
+    export KITCHEN_YAML="${temp_kitchen_config}"
 fi
 
 # if command is test or converge, alert that results on arm64 will be different and recommend circleci run.
