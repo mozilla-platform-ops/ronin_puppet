@@ -256,7 +256,7 @@ GEM
       multi_json (~> 1.14)
     method_source (1.1.0)
     mini_mime (1.1.5)
-    minitar (1.1.0)
+    minitar (0.12.1)
     minitest (6.0.1)
       prism (~> 1.5)
     mixlib-config (3.0.27)
@@ -606,6 +606,7 @@ DEPENDENCIES
   kitchen-vagrant
   kitchen-verifier-serverspec
   librarian-puppet
+  minitar (~> 0.9)
   mutex_m
   puppet (= 7.8.0)
   puppet-lint (>= 2.4.2)
