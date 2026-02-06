@@ -47,12 +47,12 @@ class win_nsclient::init (
     require => Win_packages::Win_msi_pkg['NSClient++ (x64)'],
   }
   win_firewall::open_local_port { 'nscp_12489':
-    port            => '12489',
+    port            => 12489,
     reciprocal      => true,
     fw_display_name => 'nscp_12489',
   }
   win_firewall::open_local_port { 'nscp_5666':
-    port            => '12489',
+    port            => 12489,
     reciprocal      => true,
     fw_display_name => 'nscp_5666',
   }
