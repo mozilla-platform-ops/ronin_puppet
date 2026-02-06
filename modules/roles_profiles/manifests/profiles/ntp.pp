@@ -31,20 +31,6 @@ class roles_profiles::profiles::ntp {
         }
       }
     }
-    'Windows': {
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=1510754
-      # For windowstime resoucre timezone and server needs to be set in the same class
-      # Resource from ncorrare-windowstime
-      if $facts['custom_win_location'] == 'datacenter' {
-        $ntpserver = lookup('windows.datacenter.ntp')
-      } else {
-        $ntpserver = lookup('windows.external.ntp')
-      }
-      class { 'windowstime':
-        servers  => { "${ntpserver}" => '0x08' },
-        timezone => 'Greenwich Standard Time',
-      }
-    }
     default: {
       fail("${facts['os']['name']} not supported")
     }
