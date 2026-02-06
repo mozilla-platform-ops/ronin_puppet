@@ -48,55 +48,59 @@ class win_nsclient::init (
   }
 
   # ---------------------------------------------------------------------------
-  # Firewall: 2 ports, reciprocal => true (in+out) => 4 rules total
-  # Restrict remote to $server (remote_address)
+  # Firewall exceptions: 2 ports x (in/out) => 4 rules total
+  # Restrict remote to $server
   # ---------------------------------------------------------------------------
 
-  windows_firewall_rule { 'nscp_12489_in':
+  windows_firewall::exception { 'nscp_12489_in':
     ensure         => present,
-    direction      => 'inbound',
+    direction      => 'in',
     action         => 'allow',
     enabled        => true,
-    protocol       => 'tcp',
+    protocol       => 'TCP',
     local_port     => 12489,
+    remote_port    => 'any',
     remote_address => $server,
-    display_name   => 'nscp_12489 (in)',
-    description    => 'NSClient++ inbound 12489',
+    display_name   => 'Allow NSClient++ 12489 in',
+    description    => 'NSClient++ inbound',
   }
 
-  windows_firewall_rule { 'nscp_12489_out':
+  windows_firewall::exception { 'nscp_12489_out':
     ensure         => present,
-    direction      => 'outbound',
+    direction      => 'out',
     action         => 'allow',
     enabled        => true,
-    protocol       => 'tcp',
+    protocol       => 'TCP',
     local_port     => 12489,
+    remote_port    => 'any',
     remote_address => $server,
-    display_name   => 'nscp_12489 (out)',
-    description    => 'NSClient++ outbound 12489',
+    display_name   => 'Allow NSClient++ 12489 out',
+    description    => 'NSClient++ outbound',
   }
 
-  windows_firewall_rule { 'nscp_5666_in':
+  windows_firewall::exception { 'nscp_5666_in':
     ensure         => present,
-    direction      => 'inbound',
+    direction      => 'in',
     action         => 'allow',
     enabled        => true,
-    protocol       => 'tcp',
+    protocol       => 'TCP',
     local_port     => 5666,
+    remote_port    => 'any',
     remote_address => $server,
-    display_name   => 'nscp_5666 (in)',
-    description    => 'NSClient++ inbound 5666',
+    display_name   => 'Allow NSClient++ 5666 in',
+    description    => 'NSClient++ inbound',
   }
 
-  windows_firewall_rule { 'nscp_5666_out':
+  windows_firewall::exception { 'nscp_5666_out':
     ensure         => present,
-    direction      => 'outbound',
+    direction      => 'out',
     action         => 'allow',
     enabled        => true,
-    protocol       => 'tcp',
+    protocol       => 'TCP',
     local_port     => 5666,
+    remote_port    => 'any',
     remote_address => $server,
-    display_name   => 'nscp_5666 (out)',
-    description    => 'NSClient++ outbound 5666',
+    display_name   => 'Allow NSClient++ 5666 out',
+    description    => 'NSClient++ outbound',
   }
 }
