@@ -19,12 +19,15 @@ class roles_profiles::profiles::nuc_management {
                 class { 'win_maintenance::pool_audit':
                     script_dir => $script_dir,
                 }
+                class { 'win_maintenance::fleetroll_mvp_collect':
+                    script_dir => $script_dir,
+                }
             } else {
                 warning("workers associated with ${facts['custom_win_location']} location are not supported")
             }
         }
         default: {
-            fail("${::operatingsystem} not supported")
+            fail("${facts['os']['name']} not supported")
         }
     }
 }
