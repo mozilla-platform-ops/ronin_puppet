@@ -8,7 +8,7 @@ class win_maintenance::fleetroll_mvp_collect (
 
     require win_maintenance::maintenance_script_dir
 
-    file { "${script_dir}\\force_pxe_install.ps1":
+    file { "${script_dir}\\fleetroll_mvp_collect.ps1":
         content => file('win_maintenance/fleetroll_mvp_collect.ps1'),
     }
 }
