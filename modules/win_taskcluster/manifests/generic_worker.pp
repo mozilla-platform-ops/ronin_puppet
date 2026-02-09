@@ -4,8 +4,6 @@
 
 class win_taskcluster::generic_worker (
   String $generic_worker_dir,
-  String $desired_gw_version,
-  String $current_gw_version,
   String $gw_exe_source,
   String $gw_exe_path,
   String $init_file

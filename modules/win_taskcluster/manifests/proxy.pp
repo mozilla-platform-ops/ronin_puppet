@@ -4,8 +4,6 @@
 
 class win_taskcluster::proxy (
     String $generic_worker_dir,
-    String $desired_proxy_version,
-    String $current_proxy_version,
     String $proxy_exe_source
 ) {
 

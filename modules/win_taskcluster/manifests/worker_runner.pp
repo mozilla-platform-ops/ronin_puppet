@@ -4,8 +4,6 @@
 
 class win_taskcluster::worker_runner (
   String $worker_runner_dir,
-  String $desired_runner_version,
-  String $current_runner_version,
   String $runner_exe_source,
   String $provider,
   String $runner_exe_path,
