@@ -1,4 +1,3 @@
-# C:\management_scripts\Write-RoninPuppetManifest.ps1
 [CmdletBinding()]
 param(
     # Where to write the JSON manifest
@@ -43,14 +42,24 @@ function Get-RegValue([string]$path, [string]$name) {
 function Try-RunGit([string]$repoPath, [string]$args) {
     try {
         if (-not (Test-Path -LiteralPath $repoPath)) { return $null }
-        $p = Start-Process -FilePath "git" -ArgumentList @("-C", $repoPath) + ($args -split " ") `
-            -NoNewWindow -PassThru -Wait -RedirectStandardOutput "$env:TEMP\git_out.txt" -RedirectStandardError "$env:TEMP\git_err.txt"
+
+        $outFile = Join-Path $env:TEMP "git_out.txt"
+        $errFile = Join-Path $env:TEMP "git_err.txt"
+
+        $argList = @("-C", $repoPath) + ($args -split " ")
+
+        $p = Start-Process -FilePath "git" -ArgumentList $argList `
+            -NoNewWindow -PassThru -Wait `
+            -RedirectStandardOutput $outFile `
+            -RedirectStandardError $errFile
+
         if ($p.ExitCode -ne 0) { return $null }
-        return (Get-Content -LiteralPath "$env:TEMP\git_out.txt" -Raw).Trim()
+
+        return (Get-Content -LiteralPath $outFile -Raw).Trim()
     } catch {
         return $null
     } finally {
-        Remove-Item -LiteralPath "$env:TEMP\git_out.txt","$env:TEMP\git_err.txt" -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath (Join-Path $env:TEMP "git_out.txt"),(Join-Path $env:TEMP "git_err.txt") -ErrorAction SilentlyContinue
     }
 }
 
@@ -73,38 +82,46 @@ if (-not (Test-Path -LiteralPath $outDir)) {
 $regPath = "HKLM:\SOFTWARE\Mozilla\ronin_puppet"
 
 # Registry values
-$role          = NAIfBlank (Get-RegValue $regPath "role")
-$org           = NAIfBlank (Get-RegValue $regPath "Organisation")
-$repo          = NAIfBlank (Get-RegValue $regPath "Repository")
-$branchReg     = NAIfBlank (Get-RegValue $regPath "Branch")
-$gitHashReg    = NAIfBlank (Get-RegValue $regPath "GITHASH")
-$lastRunExit   = Get-RegValue $regPath "last_run_exit"
+$role        = NAIfBlank (Get-RegValue $regPath "role")
+$org         = NAIfBlank (Get-RegValue $regPath "Organisation")
+$repo        = NAIfBlank (Get-RegValue $regPath "Repository")
+$branchReg   = NAIfBlank (Get-RegValue $regPath "Branch")
+$gitHashReg  = NAIfBlank (Get-RegValue $regPath "GITHASH")
+$lastRunExit = Get-RegValue $regPath "last_run_exit"
 
 # ExitCode: param > registry > NA
 if ($null -eq $ExitCode) {
     if ($null -ne $lastRunExit) {
-        # last_run_exit is typically a DWORD
         $ExitCode = [int]$lastRunExit
     }
 }
 
 # Git info from C:\ronin
-$gitSha   = Try-RunGit $RepoPath "rev-parse HEAD"
-$gitDirty = Try-RunGit $RepoPath "status --porcelain"
-$gitBr    = Try-RunGit $RepoPath "rev-parse --abbrev-ref HEAD"
-$gitRemote= Try-RunGit $RepoPath "remote get-url origin"
+$gitSha    = Try-RunGit $RepoPath "rev-parse HEAD"
+$gitDirty  = Try-RunGit $RepoPath "status --porcelain"
+$gitBr     = Try-RunGit $RepoPath "rev-parse --abbrev-ref HEAD"
+$gitRemote = Try-RunGit $RepoPath "remote get-url origin"
 
+# Determine git_sha (git > registry > NA)
 if ([string]::IsNullOrWhiteSpace($gitSha)) {
-    # Fallback to registry hash if git isn't available / repo missing
-    $gitSha = ($gitHashReg -ne "NA") ? $gitHashReg : "NA"
+    if ($gitHashReg -ne "NA") {
+        $gitSha = $gitHashReg
+    } else {
+        $gitSha = "NA"
+    }
 }
 
-$gitDirtyBool = "NA"
+# Determine git_dirty (boolean when known, else "NA")
+$gitDirtyOut = "NA"
 if ($null -ne $gitDirty) {
-    $gitDirtyBool = -not [string]::IsNullOrWhiteSpace($gitDirty)
+    if ([string]::IsNullOrWhiteSpace($gitDirty)) {
+        $gitDirtyOut = $false
+    } else {
+        $gitDirtyOut = $true
+    }
 }
 
-# Branch: git > registry > NA
+# Determine git_branch (git > registry > NA)
 $gitBranch = "NA"
 if (-not [string]::IsNullOrWhiteSpace($gitBr)) {
     $gitBranch = $gitBr
@@ -112,33 +129,42 @@ if (-not [string]::IsNullOrWhiteSpace($gitBr)) {
     $gitBranch = $branchReg
 }
 
-# Repo URL: git remote > constructed from Organisation/Repository > NA
-$gitRepo = "NA"
+# Determine git_repo (remote > constructed from Organisation/Repository > NA)
+$gitRepoOut = "NA"
 if (-not [string]::IsNullOrWhiteSpace($gitRemote)) {
-    $gitRepo = $gitRemote
+    $gitRepoOut = $gitRemote
 } elseif (($org -ne "NA") -and ($repo -ne "NA")) {
-    # if Repository already looks like a URL, keep it; otherwise construct GitHub URL
     if ($repo -match '^https?://') {
-        $gitRepo = $repo
+        $gitRepoOut = $repo
     } else {
-        $gitRepo = "https://github.com/$org/$repo.git"
+        $gitRepoOut = "https://github.com/$org/$repo.git"
     }
 }
 
-# Success: param > computed from numeric exit code > "NA"
+# Determine success (param > computed from numeric exit code > "NA")
 $successOut = "NA"
 if ($null -ne $Success) {
     $successOut = [bool]$Success
 } elseif ($null -ne $ExitCode) {
-    $successOut = ([int]$ExitCode -eq 0)
+    if ([int]$ExitCode -eq 0) {
+        $successOut = $true
+    } else {
+        $successOut = $false
+    }
+}
+
+# Determine exit_code output (numeric when known, else "NA")
+$exitCodeOut = "NA"
+if ($null -ne $ExitCode) {
+    $exitCodeOut = [int]$ExitCode
 }
 
 # vault/override sha
 $vaultPathOut    = NAIfBlank $VaultPath
 $overridePathOut = NAIfBlank $OverridePath
 
-$vaultSha    = Get-FileSha256 $vaultPathOut
-$overrideSha = Get-FileSha256 $overridePathOut
+$vaultShaOut    = Get-FileSha256 $vaultPathOut
+$overrideShaOut = Get-FileSha256 $overridePathOut
 
 # Timestamp UTC ISO-8601 Z
 $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -149,16 +175,16 @@ $manifest = [ordered]@{
     ts             = $ts
     duration_s     = $DurationSeconds
     success        = $successOut
-    exit_code      = ($null -ne $ExitCode) ? [int]$ExitCode : "NA"
+    exit_code      = $exitCodeOut
     role           = $role
-    git_repo       = $gitRepo
+    git_repo       = $gitRepoOut
     git_branch     = $gitBranch
     git_sha        = NAIfBlank $gitSha
-    git_dirty      = $gitDirtyBool
+    git_dirty      = $gitDirtyOut
     vault_path     = $vaultPathOut
-    vault_sha      = $vaultSha
+    vault_sha      = $vaultShaOut
     override_path  = $overridePathOut
-    override_sha   = $overrideSha
+    override_sha   = $overrideShaOut
 }
 
 # Write pretty JSON
