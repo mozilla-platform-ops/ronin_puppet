@@ -12,13 +12,6 @@ class win_taskcluster::generic_worker (
 ) {
   $ed25519private = "${generic_worker_dir}\\ed25519-private.key"
 
-  if ($current_gw_version != $desired_gw_version) {
-    exec { 'purge_old_nonservice_gw_exe':
-      command  => "Remove-Item -path ${gw_exe_path}",
-      unless   => "Test-Path ${gw_exe_path}",
-      provider => powershell,
-    }
-  }
   file { $generic_worker_dir:
     ensure => directory,
   }
