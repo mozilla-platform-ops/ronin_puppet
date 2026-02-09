@@ -35,7 +35,7 @@ class win_mozilla_build::modifications {
       windows_env { "PATH=${mozbld}\\mozmake": }
 
       exec { 'setmsys2path':
-        command  => file('win_mozilla_build/set_path.ps1.'),
+        command  => file('win_mozilla_build/set_path.ps1'),
         provider => powershell,
       }
     }
