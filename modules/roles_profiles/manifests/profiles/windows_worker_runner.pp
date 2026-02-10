@@ -145,8 +145,8 @@ class roles_profiles::profiles::windows_worker_runner {
       }
       class { 'win_taskcluster::worker_runner':
         # Runner EXE
-        worker_runner_dir => $worker_runner_dir,
-        runner_exe_source => "${ext_pkg_src_loc}${desired_rnr_version}/${runner_name}",
+        worker_runner_dir      => $worker_runner_dir,
+        runner_exe_source      => "${ext_pkg_src_loc}${desired_rnr_version}/${runner_name}",
         runner_exe_path        => "${worker_runner_dir}\\start-worker.exe",
         runner_yml             => "${worker_runner_dir}\\runner.yml",
         # Runner service install
