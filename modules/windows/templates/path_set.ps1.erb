@@ -1,9 +1,0 @@
-$curpath = [Environment]::GetEnvironmentVariable("PATH", "<%= @target %>");
-<% if @ensure == 'present' -%>
-$newpath = "${curpath};<%= @directory %>";
-<% else -%>
-$newpath = @();
-foreach($path in $curpath.Split(';')){ if ($path -ne "<%= @directory %>"){ $newpath = $newpath + $path } };
-$newpath = [String]::Join(';', $newpath)
-<% end -%>
-[Environment]::SetEnvironmentVariable("PATH", $newpath, "<%= @target %>");
