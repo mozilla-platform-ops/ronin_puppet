@@ -8,9 +8,18 @@ describe package('openvox-agent'), :if => os[:family] == 'ubuntu' do
   # - available with inspec (https://docs.chef.io/inspec/resources/package/#version-1)
 end
 
+# openvox-agent conflicts with puppet-agent, ensure it's not installed
+describe package('puppet-agent'), :if => os[:family] == 'ubuntu' do
+  it { should_not be_installed }
+end
+
 if os.family == 'debian' && (os.release.start_with?('18.04') or os.release.start_with?('22.04') or os.release.start_with?('24.04'))
   describe package('openvox8-release'), :if => os[:family] == 'ubuntu' do
     it { should be_installed }
+  end
+
+  describe file('/etc/apt/sources.list.d/openvox8-release.list'), :if => os[:family] == 'ubuntu' do
+    it { should exist }
   end
 else
   # shouldn't be here

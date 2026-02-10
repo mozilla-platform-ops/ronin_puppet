@@ -6,6 +6,7 @@ require_relative 'spec_helper'
 # ensure puppet-agent isn't set to run
 describe service('puppet') do
   it { should_not be_enabled }
+  it { should_not be_running }
 end
 
 describe package('puppet-release') do
