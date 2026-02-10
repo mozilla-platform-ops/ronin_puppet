@@ -9,10 +9,11 @@ class win_packages::drivers::nvidia_grid (
 ) {
   $driver_exe   = "${facts['custom_win_temp_dir']}\\${driver_name}.exe"
 
+  file { $driver_exe:
+    source => "${srcloc}/${driver_name}.exe",
+  }
+
   if $facts['custom_win_gpu'] == 'yes' {
-    file { $driver_exe:
-      source => "${srcloc}/${driver_name}.exe",
-    }
     package { $display_name :
       ensure          => 'present',
       source          => $driver_exe,
