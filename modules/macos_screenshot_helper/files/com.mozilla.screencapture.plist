@@ -9,10 +9,8 @@
   <array>
     <string>/Users/cltbld/bin/capture-on-demand.sh</string>
   </array>
-  <key>WatchPaths</key>
-  <array>
-    <string>/Users/cltbld/.trigger_screenshot</string>
-  </array>
+  <key>StartInterval</key>
+  <integer>1</integer>
   <key>RunAtLoad</key>
   <true/>
 </dict>

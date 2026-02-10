@@ -1,16 +1,10 @@
 #!/bin/bash
-
 TRIGGER_FILE="/Users/cltbld/.trigger_screenshot"
 
-# Read the output path from the trigger file if it exists and is not empty
-if [ -s "${TRIGGER_FILE}" ]; then
-    OUTPUT_PATH=$(cat "${TRIGGER_FILE}")
-else
-    # Fallback to default location
-    OUTPUT_DIR="/Users/cltbld/Desktop"
-    FILENAME="screenshot-$(date +%Y%m%d-%H%M%S).png"
-    OUTPUT_PATH="${OUTPUT_DIR}/${FILENAME}"
-fi
+# Exit immediately if trigger file doesn't exist or is empty
+[ -s "${TRIGGER_FILE}" ] || exit 0
+
+OUTPUT_PATH=$(cat "${TRIGGER_FILE}")
 
 # Ensure output directory exists
 mkdir -p "$(dirname "${OUTPUT_PATH}")"
