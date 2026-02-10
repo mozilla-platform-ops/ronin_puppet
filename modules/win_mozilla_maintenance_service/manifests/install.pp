@@ -22,5 +22,6 @@ class win_mozilla_maintenance_service::install {
     unless   => file('win_mozilla_maintenance_service/aclvalidate.ps1'),
     provider => powershell,
     timeout  => 300,
+    require  => Win_packages::Win_exe_pkg['mozilla_maintenance_service'],
   }
 }
