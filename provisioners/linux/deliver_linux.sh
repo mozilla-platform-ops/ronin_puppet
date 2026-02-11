@@ -14,10 +14,20 @@ set -e
 #     ControlPersist yes
 #
 
-# 18.04
-REMOTE_SSH_USER="root"
-# 24.04
-REMOTE_SSH_USER="relops"
+# Detect which SSH user works (try relops first, then root)
+detect_ssh_user() {
+  local host="$1"
+  for user in "relops" "root"; do
+    if ssh -q "$user"@"$host" exit 2>/dev/null; then
+      echo "$user"
+      return 0
+    fi
+  done
+  echo ""
+  return 1
+}
+
+REMOTE_SSH_USER=""
 
 # local files
 BOOTSTRAP_FILE="bootstrap_linux.sh"
@@ -66,6 +76,15 @@ fi
 ssh-keygen -R "${THE_HOST}" || true
 # readd to avoid prompts
 ssh-keyscan -H "${THE_HOST}" >> ~/.ssh/known_hosts
+
+# detect which SSH user works
+echo "Detecting SSH user for ${THE_HOST}..."
+REMOTE_SSH_USER=$(detect_ssh_user "${THE_HOST}")
+if [ -z "$REMOTE_SSH_USER" ]; then
+  echo "ERROR: Could not connect to host using root or relops users"
+  exit 1
+fi
+echo "Using SSH user: $REMOTE_SSH_USER"
 
 # ensure we're not bootstrapping a host that's already been done
 # shellcheck disable=SC2029
