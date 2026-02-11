@@ -37,14 +37,14 @@ class macos_screenshot_helper (
     }
 
     exec { 'load or restart screenshot agent':
-      command => "/bin/bash -c 'if /bin/launchctl print gui/${cltbld_uid}/com.mozilla.screencapture 2>/dev/null; then \
+      command     => "/bin/bash -c 'if /bin/launchctl print gui/${cltbld_uid}/com.mozilla.screencapture 2>/dev/null; then \
                     /bin/launchctl kickstart -k gui/${cltbld_uid}/com.mozilla.screencapture; \
                   else \
-                    /bin/launchctl bootstrap gui/${cltbld_uid} \"${launchagent_path}\"; \
-                  fi'",
-      unless  => "/bin/launchctl print gui/${cltbld_uid}/com.mozilla.screencapture 2>/dev/null | /usr/bin/grep -q 'PID'",
-      path    => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
-      require => File[$launchagent_path],
+                    /bin/launchctl bootstrap gui/${cltbld_uid} \"${launchagent_path}\" 2>/dev/null; \
+                  fi; exit 0'",
+      path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+      refreshonly => true,
+      subscribe   => File[$launchagent_path],
     }
   }
 }
