@@ -137,8 +137,10 @@ run_puppet() {
     TMP_LOG=$(mktemp /tmp/puppet-outputXXXXXX)
     [ -f "$TMP_LOG" ] || fail "Failed to create temp Puppet log file."
 
+    SECONDS=0
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "$TMP_LOG"
     retval=$?
+    PUPPET_RUN_DURATION=$SECONDS
 
     if grep -q "unable to open database \"/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$TMP_LOG"; then
         echo "Detected TCC.db issue. A reboot is required."
@@ -157,6 +159,21 @@ run_puppet() {
 
     rm "$TMP_LOG"
 
+    # ==============================================================================
+    # PUPPET RUN METADATA: Write state metadata
+    # ==============================================================================
+    # Write metadata about this puppet run to /etc/puppet/last_run_metadata.json
+    # This provides ground truth for monitoring and tracking applied configuration.
+    # The function is designed to never fail the puppet run.
+    # Note: macOS-specific paths for override and vault files
+    if type write_puppet_state >/dev/null 2>&1; then
+        write_puppet_state "$LOCAL_PUPPET_REPO" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
+            "/opt/puppet_environments/ronin_settings" "/var/root/vault.yaml"
+    else
+        echo "WARNING: write_puppet_state function not available, skipping state file write" >&2
+    fi
+    # ==============================================================================
+
     case $retval in
         0|2) return 0;;
         *) return 1;;
@@ -172,6 +189,22 @@ LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
 
 echo "Using Puppet Repo: $GIT_REPO_URL"
 echo "Using Branch: $GIT_BRANCH"
+
+# ==============================================================================
+# PUPPET RUN METADATA: Source state writing function library
+# ==============================================================================
+# This script writes puppet run metadata to /etc/puppet/last_run_metadata.json
+# after each puppet run, enabling ground-truth tracking of applied configuration.
+# The metadata includes git SHA, success status, duration, and file checksums.
+#
+# See: docs/puppet-state-tracking.md for details
+if [ -f "/etc/puppet/lib/puppet_state_functions.sh" ]; then
+    # shellcheck disable=SC1091
+    source "/etc/puppet/lib/puppet_state_functions.sh"
+else
+    echo "WARNING: Could not load state writing function from /etc/puppet/lib/puppet_state_functions.sh" >&2
+fi
+# ==============================================================================
 
 # Ensure Puppet Role is Set
 if [ -f "$PUPPET_ROLE_FILE" ]; then
