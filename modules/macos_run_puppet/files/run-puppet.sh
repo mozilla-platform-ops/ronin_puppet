@@ -168,7 +168,7 @@ run_puppet() {
     # Note: macOS-specific paths for override and vault files
     if type write_puppet_state >/dev/null 2>&1; then
         write_puppet_state "$LOCAL_PUPPET_REPO" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
-            "/opt/puppet_environments/ronin_settings" "/var/root/vault.yaml"
+            "/opt/puppet_environments/ronin_settings" "/var/root/vault.yaml" "/opt/puppet_environments/last_run_metadata.json"
     else
         echo "WARNING: write_puppet_state function not available, skipping state file write" >&2
     fi
