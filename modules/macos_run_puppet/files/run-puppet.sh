@@ -198,11 +198,11 @@ echo "Using Branch: $GIT_BRANCH"
 # The metadata includes git SHA, success status, duration, and file checksums.
 #
 # See: docs/puppet-state-tracking.md for details
-if [ -f "/etc/puppet/lib/puppet_state_functions.sh" ]; then
+if [ -f "/opt/puppet_environments/lib/puppet_state_functions.sh" ]; then
     # shellcheck disable=SC1091
-    source "/etc/puppet/lib/puppet_state_functions.sh"
+    source "/opt/puppet_environments/lib/puppet_state_functions.sh"
 else
-    echo "WARNING: Could not load state writing function from /etc/puppet/lib/puppet_state_functions.sh" >&2
+    echo "WARNING: Could not load state writing function from /opt/puppet_environments/lib/puppet_state_functions.sh" >&2
 fi
 # ==============================================================================
 
