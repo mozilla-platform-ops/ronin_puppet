@@ -187,52 +187,42 @@ scriptworker_users:
       ed_key_filename: "ed25519_privkey"
 
 scriptworker_config:
+    _: &defaults
+        sign_chain_of_trust: true
+        verify_chain_of_trust: true
+        verify_cot_signature: true
+        scriptworker_scripts_revision: "af70b5eb732514d63326eda837bb9ef48743a1f3"
+
     ff-prod:
+        <<: *defaults
         ff_taskcluster_scope_prefix: 'project:releng:signing:'
-        sign_chain_of_trust: true
-        verify_chain_of_trust: true
-        verify_cot_signature: true
         worker_type: 'gecko-signing-mac14m2'
-        scriptworker_scripts_revision: "a59039c86ad1bd435f765d7865a347481f8d7f52"
     tb-prod:
+        <<: *defaults
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
-        sign_chain_of_trust: true
-        verify_chain_of_trust: true
-        verify_cot_signature: true
         worker_type: 'comm-signing-mac14m2'
-        scriptworker_scripts_revision: "a59039c86ad1bd435f765d7865a347481f8d7f52"
     vpn-prod:
+        <<: *defaults
         vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
-        sign_chain_of_trust: true
-        verify_chain_of_trust: true
-        verify_cot_signature: true
         worker_type: 'mozillavpn-signing-mac14m2'
-        scriptworker_scripts_revision: "a59039c86ad1bd435f765d7865a347481f8d7f52"
     adhoc-prod:
+        <<: *defaults
         adhoc_taskcluster_scope_prefix: 'project:adhoc:releng:signing:'
-        sign_chain_of_trust: true
-        verify_chain_of_trust: true
-        verify_cot_signature: true
         worker_type: 'adhoc-signing-mac14m2'
-        scriptworker_scripts_revision: "a59039c86ad1bd435f765d7865a347481f8d7f52"
     enterprise-prod:
+        <<: *defaults
         enterprise_taskcluster_scope_prefix: 'project:enterprise:releng:signing:'
-        sign_chain_of_trust: true
-        verify_chain_of_trust: true
-        verify_cot_signature: true
         worker_type: 'enterprise-signing-mac14m2'
-        scriptworker_scripts_revision: "a59039c86ad1bd435f765d7865a347481f8d7f52"
     dep:
+        <<: *defaults
         ff_taskcluster_scope_prefix: 'project:releng:signing:'
         enterprise_taskcluster_scope_prefix: 'project:enterprise:releng:signing:'
         tb_taskcluster_scope_prefix: 'project:comm:thunderbird:releng:signing:'
         vpn_taskcluster_scope_prefix: 'project:mozillavpn:releng:signing:'
         adhoc_taskcluster_scope_prefix: 'project:adhoc:releng:signing:'
         sign_chain_of_trust: false
-        verify_chain_of_trust: true
         verify_cot_signature: false
         worker_type: 'signing-mac14m2'
-        scriptworker_scripts_revision: "a59039c86ad1bd435f765d7865a347481f8d7f52"
 
 signingworker_roles:
     ff-prod:
