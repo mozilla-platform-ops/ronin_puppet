@@ -28,5 +28,7 @@ Try {
 }
 Catch {
     Write-Host "Unable to set permissions on $folder"
+    Write-Host "Error: $($_.Exception.Message)"
+    Write-Host "Full Error: $($_ | Out-String)"
     exit 1
 }

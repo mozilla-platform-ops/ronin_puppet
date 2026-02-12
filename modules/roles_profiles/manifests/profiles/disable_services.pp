@@ -43,7 +43,7 @@ class roles_profiles::profiles::disable_services {
         ## Not currently working. Leaving n place for ref.
         #include win_disable_services::disable_defender_smartscreen
         #include win_disable_services::disable_sync_from_cloud
-        if $facts['custom_win_release_id'] == '2004' or '2009' {
+        if $facts['custom_win_release_id'] in ['2004', '2009'] {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
         }

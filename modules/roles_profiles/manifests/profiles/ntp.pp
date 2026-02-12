@@ -31,6 +31,7 @@ class roles_profiles::profiles::ntp {
         default: {
           exec { 'timezone':
             command  => "Set-TimeZone -Name 'Coordinated Universal Time'",
+            unless   => "if ((Get-TimeZone).Id -eq 'UTC') { exit 0 } else { exit 1 }",
             provider => powershell,
           }
         }

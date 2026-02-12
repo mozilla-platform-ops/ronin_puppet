@@ -4,8 +4,6 @@
 
 class win_taskcluster::worker_runner (
   String $worker_runner_dir,
-  String $desired_runner_version,
-  String $current_runner_version,
   String $runner_exe_source,
   String $provider,
   String $runner_exe_path,
@@ -44,13 +42,6 @@ class win_taskcluster::worker_runner (
   $nssm_set = "${nssm_exe} set worker-runner"
   $powershell = "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe"
 
-  if ($current_runner_version != $desired_runner_version) {
-    exec { 'purge_old_gw_exe':
-      command  => "remove-Item -path ${runner_exe_path}",
-      unless   => "Test-Path ${runner_exe_path}",
-      provider => powershell,
-    }
-  }
   file { $worker_runner_dir:
     ensure => directory,
   }
