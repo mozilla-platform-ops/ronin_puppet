@@ -8,6 +8,12 @@ class macos_run_puppet (
   if $enabled {
     # place shell functions file that has metadata genration code
     # - linux uses /etc/puppet/lib, use /opt/puppet_environments/lib/ instead on macOS
+    file { '/opt/puppet_environments':
+      ensure => directory,
+      owner  => 'root',
+      group  => 'wheel',
+      mode   => '0755',
+    }
     file { '/opt/puppet_environments/lib':
       ensure  => directory,
       owner   => 'root',
