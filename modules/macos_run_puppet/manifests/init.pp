@@ -9,10 +9,11 @@ class macos_run_puppet (
     # place shell functions file that has metadata genration code
     # - linux uses /etc/puppet/lib, use /opt/puppet_environments/lib/ instead on macOS
     file { '/opt/puppet_environments/lib':
-      ensure => directory,
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
+      ensure  => directory,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0755',
+      require => File['/opt/puppet_environments'],
     }
 
     file { '/opt/puppet_environments/lib/puppet_state_functions.sh':
