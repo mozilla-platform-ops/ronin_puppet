@@ -301,8 +301,8 @@ try {
     Write-Log -message 'uninstall_appx_packages :: Remove-PreinstalledAppxPackages' -severity 'DEBUG'
     Remove-PreinstalledAppxPackages
 
-    #Write-Log -message 'uninstall_appx_packages :: Disable-AppXSvcCore' -severity 'DEBUG'
-    #Disable-AppXSvcCore
+    Write-Log -message 'uninstall_appx_packages :: Disable-AppXSvcCore' -severity 'DEBUG'
+    Disable-AppXSvcCore
 
     Write-Log -message 'uninstall_appx_packages :: Ensure-AppXSvcHardeningTask' -severity 'DEBUG'
     Ensure-AppXSvcHardeningTask
