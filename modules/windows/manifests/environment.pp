@@ -21,14 +21,11 @@
 #  'Machine' (the default) or 'User'.
 #
 define windows::environment(
-  $value    = undef,
-  $ensure   = 'present',
-  $variable = $name,
-  $target   = 'Machine',
+  $value                    = undef,
+  $ensure                   = 'present',
+  $variable                 = $name,
+  Enum['Machine', 'User'] $target = 'Machine',
 ) {
-
-  # Ensure only valid target parameter.
-  validate_legacy(String, validate_re, $target, '^(Machine|User)$', 'Invalid target parameter')
 
   case $ensure {
     'present': {
