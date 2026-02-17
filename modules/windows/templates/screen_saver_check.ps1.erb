@@ -1,0 +1,18 @@
+<% if @domain -%>
+$user = New-Object System.Security.Principal.NTAccount("<%= @domain %>", "<%= @user %>");
+<% else -%>
+$user = New-Object System.Security.Principal.NTAccount("<%= @user %>");
+<% end -%>
+$sid = ($user.Translate([System.Security.Principal.SecurityIdentifier])).Value;
+$regpath = "Registry::HKEY_USERS\${sid}\Control Panel\Desktop";
+$regkey = Get-Item -Path $regpath;
+foreach($property in "ScreenSaveActive","SCRNSAVE.EXE","ScreenSaverIsSecure","ScreenSaveTimeOut") {
+    if ( ! ($regkey.Property -contains $property)) { exit 1; }
+}
+if ( (Get-ItemProperty -Path $regpath -Name "ScreenSaveActive").ScreenSaveActive -ne <%= @active_value %>) { exit 1; }
+<% if @active_value == 1 -%>
+if ( (Get-ItemProperty -Path $regpath -Name "SCRNSAVE.EXE")."SCRNSAVE.EXE" -ne "<%= @exe %>") { exit 1; }
+<% end -%>
+if ( (Get-ItemProperty -Path $regpath -Name "ScreenSaverIsSecure").ScreenSaverIsSecure -ne <%= @secure_value %>) { exit 1; }
+if ( (Get-ItemProperty -Path $regpath -Name "ScreenSaveTimeout").ScreenSaveTimeout -ne <%= @timeout_seconds %>) { exit 1; }
+exit 0;
