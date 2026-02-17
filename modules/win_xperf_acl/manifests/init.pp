@@ -3,6 +3,7 @@ class win_xperf_acl (
   String $xperf_path = 'C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/xperf.exe',
 ) {
 
+  require win_packages::performance_tool_kit
   # Create the local group
   group { $group_name:
     ensure => present,
