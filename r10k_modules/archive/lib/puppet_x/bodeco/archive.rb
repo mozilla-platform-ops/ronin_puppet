@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'digest'
 require 'puppet/util/execution'
 require 'shellwords'
@@ -8,7 +10,7 @@ module PuppetX
       def initialize(file)
         @file = file
         @file_path =  if Facter.value(:osfamily) == 'windows'
-                        '"' + file + '"'
+                        "\"#{file}\""
                       else
                         Shellwords.shellescape file
                       end
@@ -59,7 +61,7 @@ module PuppetX
       private
 
       def win_7zip
-        if ENV['path'].include?('7-Zip')
+        if ENV['path'].include?('7-Zip') || system('where 7z.exe')
           '7z.exe'
         elsif File.directory?('C:\\Program Files\\7-Zip')
           'C:\\Program Files\\7-Zip\\7z.exe'
@@ -77,7 +79,7 @@ module PuppetX
               Add-Type -AssemblyName System.IO.Compression.FileSystem -erroraction "silentlycontinue"
               $zipFile = [System.IO.Compression.ZipFile]::openread(#{@file_path})
               foreach ($zipFileEntry in $zipFile.Entries) {
-                  $pwd = (Get-Item -Path ".\" -Verbose).FullName
+                  $pwd = (Get-Item -Path "." -Verbose).FullName
                   $outputFile = [io.path]::combine($pwd, $zipFileEntry.FullName)
                   $dir = ([io.fileinfo]$outputFile).DirectoryName
 
@@ -96,7 +98,7 @@ module PuppetX
 
           "powershell -command #{ps.gsub(%r{"}, '\\"').gsub(%r{\n}, '; ')}"
         else
-          raise Exception, '7z.exe not available'
+          raise StandardError, '7z.exe not available'
         end
       end
 

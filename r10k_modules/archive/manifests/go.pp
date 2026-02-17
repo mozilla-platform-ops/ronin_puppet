@@ -15,9 +15,8 @@ define archive::go (
   Optional[String]          $extract_path = undef,
   Optional[String]          $creates      = undef,
   Optional[Boolean]         $cleanup      = undef,
-  Optional[Stdlib::Compat::Absolute_path] $archive_path = undef,
+  Optional[Stdlib::Absolutepath] $archive_path = undef,
 ) {
-
   include archive::params
 
   if $archive_path {
@@ -26,7 +25,7 @@ define archive::go (
     $file_path = $path
   }
 
-  if $file_path !~ Stdlib::Compat::Absolute_path {
+  if $file_path !~ Stdlib::Absolutepath {
     fail("archive::go[${name}]: \$name or \$archive_path must be an absolute path!") # lint:ignore:trailing_comma
   }
 
@@ -40,7 +39,7 @@ define archive::go (
     extract       => $extract,
     extract_path  => $extract_path,
     source        => $file_url,
-    checksum      => go_md5($username, $password, $name, $md5_url),
+    checksum      => archive::go_md5($username, $password, $name, $md5_url),
     checksum_type => 'md5',
     creates       => $creates,
     cleanup       => $cleanup,
