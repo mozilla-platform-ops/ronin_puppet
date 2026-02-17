@@ -8,22 +8,19 @@ class win_xperf_acl (
     ensure => present,
   }
 
-  # Make the run idempotent and readable: fail early if xperf isn't there.
-  # (If you prefer "skip if missing", we can change this to a conditional.)
+  # Ensure xperf exists (fail early if it doesn't)
   file { $xperf_path:
     ensure => file,
   }
 
   # Grant execute rights to the group on xperf.exe
-  #
-  # puppetlabs-acl is available in this repo/branch. :contentReference[oaicite:1]{index=1}
   acl { $xperf_path:
     purge       => false,
     permissions => [
       {
-        identity => $group_name,
-        rights   => ['read', 'execute'],
-        type     => 'allow',
+        identity  => $group_name,
+        rights    => ['read', 'execute'],
+        perm_type => 'allow',
       },
     ],
     require     => [
