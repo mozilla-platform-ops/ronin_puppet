@@ -7,7 +7,7 @@
 # - grant SeSystemProfilePrivilege ("Profile system performance") via shipped PS1
 
 class xperf_profiling (
-  String $group_name = 'Mozilla XPerf Users',
+  String $group_name = 'Mozilla_XPerf_Users',
   String $xperf_path = 'C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/xperf.exe',
 ) {
 
