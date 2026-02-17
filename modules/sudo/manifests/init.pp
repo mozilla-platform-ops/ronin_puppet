@@ -3,39 +3,40 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class sudo {
+  include shared
 
-    include shared
+  # Get systems default root user and group
+  $root_user = $shared::file_defaults['owner']
+  $root_group = $shared::file_defaults['group']
 
-    # Get systems default root user and group
-    $root_user = $::shared::file_defaults['owner']
-    $root_group = $::shared::file_defaults['group']
+  concat { '/etc/sudoers':
+    owner => $root_user,
+    group => $root_group,
+    mode  => '0440',
+  }
 
-    concat { '/etc/sudoers':
-        owner => $root_user,
-        group => $root_group,
-        mode  => '0440',
+  case $facts['os']['name'] {
+    'Darwin': {
+      concat::fragment { '00-base':
+        target  => '/etc/sudoers',
+        content => template("${module_name}/darwin-sudoers-base.erb");
+      }
     }
-
-    case $::operatingsystem {
-        'Darwin': {
-            concat::fragment { '00-base':
-                target  => '/etc/sudoers',
-                content => template("${module_name}/darwin-sudoers-base.erb");
-            }
-        }
-        'Ubuntu': {
-            concat::fragment { '00-base':
-                target  => '/etc/sudoers',
-                content => template("${module_name}/ubuntu-sudoers-base.erb");
-            }
-        }
-        default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
-        }
+    'Ubuntu': {
+      concat::fragment { '00-base':
+        target  => '/etc/sudoers',
+        content => template("${module_name}/ubuntu-sudoers-base.erb");
+      }
     }
-
-    file { '/etc/sudoers.d':
-        ensure => absent,
-        force  => true,
+    default: {
+      fail("${module_name} not supported under ${facts['os']['name']}")
     }
+  }
+
+  file { '/etc/sudoers.d':
+    ensure  => absent,
+    force   => true,
+    # Ensure /etc/sudoers.d is removed after /etc/sudoers is managed
+    require => Concat['/etc/sudoers'],
+  }
 }

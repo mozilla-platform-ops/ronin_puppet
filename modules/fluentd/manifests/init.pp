@@ -3,76 +3,74 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class fluentd (
-    String $worker_type,
-    String $stackdriver_project  = '',
-    String $stackdriver_keyid    = '',
-    String $stackdriver_key      = '',
-    String $stackdriver_clientid = '',
-    String $syslog_host          = lookup('papertrail.host', {'default_value' => ''}),
-    Integer $syslog_port         = lookup('papertrail.port', {'default_value' => 514}),
-    String $mac_log_level        = '17',
-    Boolean $tail_worker_logs    = false,
-    String $worker_stdout        = '/var/opt/generic-worker/service.stdout.log',
-    String $worker_stderr        = '/var/opt/generic-worker/service.stderr.log',
+  String $worker_type,
+  String $stackdriver_project  = '',
+  String $stackdriver_keyid    = '',
+  String $stackdriver_key      = '',
+  String $stackdriver_clientid = '',
+  String $syslog_host          = lookup('papertrail.host', { 'default_value' => '' }),
+  Integer $syslog_port         = lookup('papertrail.port', { 'default_value' => 514 }),
+  String $mac_log_level        = '17',
+  Boolean $tail_worker_logs    = false,
+  String $worker_stdout        = '/var/opt/generic-worker/service.stdout.log',
+  String $worker_stderr        = '/var/opt/generic-worker/service.stderr.log',
 ) {
+  include shared
 
-    include shared
+  case $facts['os']['name'] {
+    'Darwin': {
+      require packages::td_agent  # use treasure data's build
 
-    case $facts['os']['name'] {
-        'Darwin': {
-            require packages::td_agent  # use treasure data's build
+      # the agent config assumes these plugins are available:
+      include packages::fluent_plugin_remote_syslog
+      include packages::fluent_plugin_papertrail
 
-            # the agent config assumes these plugins are available:
-            include packages::fluent_plugin_remote_syslog
-            include packages::fluent_plugin_papertrail
+      if $stackdriver_clientid != '' {
+        include packages::fluent_plugin_google_cloud
 
-            if $stackdriver_clientid != '' {
-                include packages::fluent_plugin_google_cloud
+        file {
+          default: * => $shared::file_defaults;
 
-                file {
-                    default: * => $::shared::file_defaults;
+          '/etc/google':
+            ensure => 'directory';
 
-                    '/etc/google':
-                        ensure => 'directory';
+          '/etc/google/auth':
+            ensure => 'directory';
 
-                    '/etc/google/auth':
-                        ensure => 'directory';
-
-                    '/etc/google/auth/application_default_credentials.json':
-                        ensure  => present,
-                        content => template('fluentd/application_default_credentials.json.erb'),
-                        mode    => '0600';
-                }
-            }
-
-            file {
-                default: * => $::shared::file_defaults;
-
-                '/Library/LaunchDaemons/td-agent.plist':
-                    ensure  => present,
-                    content => template('fluentd/td-agent.plist.erb'),
-                    mode    => '0644';
-
-                '/etc/td-agent/td-agent.conf':
-                    ensure  => present,
-                    content => template('fluentd/fluentd.conf.erb'),
-                    notify  => Service['td-agent'],
-                    mode    => '0644';
-
-                '/var/log/td-agent':
-                    ensure => directory,
-                    mode   => '0755';
-            }
-
-            service { 'td-agent':
-                ensure    => running,
-                enable    => true,
-                subscribe => File['/Library/LaunchDaemons/td-agent.plist'],
-            }
-
+          '/etc/google/auth/application_default_credentials.json':
+            ensure  => file,
+            content => template('fluentd/application_default_credentials.json.erb'),
+            mode    => '0600';
         }
-        default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
-        }
+      }
+
+      file {
+        default: * => $shared::file_defaults;
+
+        '/Library/LaunchDaemons/td-agent.plist':
+          ensure  => file,
+          content => template('fluentd/td-agent.plist.erb'),
+          mode    => '0644';
+
+        '/etc/td-agent/td-agent.conf':
+          ensure  => file,
+          content => template('fluentd/fluentd.conf.erb'),
+          notify  => Service['td-agent'],
+          mode    => '0644';
+
+        '/var/log/td-agent':
+          ensure => directory,
+          mode   => '0755';
+      }
+
+      service { 'td-agent':
+        ensure    => running,
+        enable    => true,
+        subscribe => File['/Library/LaunchDaemons/td-agent.plist'],
+      }
     }
+    default: {
+      fail("${module_name} not supported under ${facts['os']['name']}")
+    }
+  }
 }

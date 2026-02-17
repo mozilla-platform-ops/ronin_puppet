@@ -1,0 +1,1 @@
+../../linux-perf/inspec/sudo_spec.rb

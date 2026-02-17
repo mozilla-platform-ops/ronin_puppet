@@ -82,7 +82,7 @@ function email_report {
     SENDER="root@${FQDN}"
     RECEIVER="${PUPPET_MAIL}"
 
-    python <<EOF
+    python3 <<EOF
 import smtplib
 
 msg = """From: ${SENDER}
@@ -94,7 +94,7 @@ ${ERR_MSG}
 
 smtpObj = smtplib.SMTP("${RELAY_HOST}")
 smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
-print "Successfully sent email"
+print("Successfully sent email")
 EOF
 }
 

@@ -1,0 +1,1 @@
+../../linux-perf/inspec/locale_spec.rb

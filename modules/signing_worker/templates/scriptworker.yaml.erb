@@ -20,7 +20,7 @@ cot_job_type: signing
 cot_product: "<%= @cot_product %>"
 # Calls to Github API are limited to 60 an hour. Using an API token allows to raise the limit to
 # 5000 per hour. https://developer.github.com/v3/#rate-limiting
-github_oauth_token: "<%= @github_oauth_token %>"
+github_oauth_token: "<%= @github_oauth_token || '' %>"
 
 work_dir: "<%= @scriptworker_base %>/work"
 artifact_dir: "<%= @scriptworker_base %>/artifacts"

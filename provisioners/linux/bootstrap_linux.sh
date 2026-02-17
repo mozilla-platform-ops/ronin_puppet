@@ -10,22 +10,21 @@
 # Prerequisites:
 #  * wget
 
+# usage during development:
+#  PUPPET_REPO="https://github.com/aerickson/ronin_puppet.git" \
+#  PUPPET_BRANCH="aerickson-071825-2404_pt2" \
+#  ./bootstrap_linux.sh
+
 set -e
-# set -x
+set -x
 
-# install puppet 7
-wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/puppet.deb
-dpkg -i /tmp/puppet.deb
-apt-get update
-apt-get remove -y puppet
-apt-get install -y puppet-agent ntp
 
-# get clock synced. if clock is way off, run-puppet.sh will never finish
-# it's git clone because the SSL cert will appear invalid.
-/etc/init.d/ntp stop
-echo "server ntp.build.mozilla.org iburst" > /etc/ntp.conf  # place barebones config
-ntpd -q -g  # runs once and force allows huge skews
-/etc/init.d/ntp start
+#
+# variables/constants
+#
+
+export DEBIAN_FRONTEND=noninteractive
+export APT_ARGS='-o Dpkg::Options::=--force-confold'
 
 # Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
 export LANG=en_US.UTF-8
@@ -36,122 +35,52 @@ PUPPET_BRANCH=${PUPPET_BRANCH:-"master"}
 # URL of puppet repo to download
 PUPPET_REPO_BUNDLE="${PUPPET_REPO%.git}/archive/${PUPPET_BRANCH}.tar.gz"
 
-# If something fails hard, either exit for interactive or hang for non-interactive
-function fail {
-    # TODO: emit an critical error event so provisioner knows this node needs to be handled
-    echo "${@}"
-    # If this is a non-interactive session, hang indefinitely instead of exiting
-    if [ "$NONINTERACTIVE" = true ]; then
-        echo "Hanging..."
-        while true; do sleep 3600; done
-    fi
-    exit 1
-}
-
 # Reset in case getopts has been used previously in the shell.
 OPTIND=1
 
-# Parse options. Use of -l flags the script as non-interactive
-while getopts ":h?l:" opt; do
-    case "$opt" in
-        h|\?)
-            echo "Usage: ./bootstrap_linux.sh -h               - Show help"
-            echo "       ./bootstrap_linux.sh -l /path/logfile - Log output to file"
-            echo "       ./bootstrap_linux.sh                  - Interactive mode"
-            exit 0
-            ;;
-        l)
-            LOG_PATH=$OPTARG
-            NONINTERACTIVE=true
-            # touch log file to see if we have write access and fail otherwise
-            touch "$LOG_PATH" || fail "Can't write log to ${LOG_PATH}"
-            exec >"$LOG_PATH" 2>&1
-            ;;
-        :)
-            echo "Option -$OPTARG requires an argument" >&2
-            exit 1
-            ;;
-    esac
-done
 
-# Determine OSTYPE so we can set OS specific paths and alter logic if need be
-case "${OSTYPE}" in
-  darwin*)  OS='darwin' ;;
-  linux*)   OS='linux' ;;
-  *)        fail "OS either not detected or not supported!" ;;
-esac
-
-# Linux and Darwin share some common paths
-if [ $OS == "linux" ] || [ $OS == "darwin" ]; then
-    ROLE_FILE='/etc/puppet_role'
-    if command -v puppet; then
-        PUPPET_BIN=$(command -v puppet)
-        FACTER_BIN=$(command -v facter)
-    else
-        PUPPET_BIN='/opt/puppetlabs/bin/puppet'
-        FACTER_BIN='/opt/puppetlabs/bin/facter'
-    fi
-fi
-
-# This file should be set by the provisioner and is an error to not have a role
-# It indicates the role this node is to play
-# We may completely change the logic in determine a nodes role such as using an ENC
-# but for now, this works
-if [ -f "${ROLE_FILE}" ]; then
-    ROLE=$(<${ROLE_FILE})
-else
-    fail "Failed to find puppet role file ${ROLE_FILE}"
-fi
-
-# Check that we have the minimum requirements to run puppet
-# Since this is a bootstrap script we may actaully install minimum requirements here in the future
-if [ ! -x "${PUPPET_BIN}" ]; then
-    fail "${PUPPET_BIN} is missing or not executable"
-fi
-
-if [ ! -x "${FACTER_BIN}" ]; then
-    fail "${FACTER_BIN} is missing or not executable"
-fi
-
-# Remove the system git config, since it can't expand ~ when r10k runs git
-# https://stackoverflow.com/questions/36908041/git-could-not-expand-include-path-gitcinclude-fatal-bad-config-file-line
-rm -rf /usr/local/git/etc/gitconfig
-
-# If this is running on MacOs 10.14 Mojave, we need to monkey patch the directroyservice resource provider
-# otherwise user creation fails.
-# https://tickets.puppetlabs.com/browse/PUP-9502
-# https://tickets.puppetlabs.com/browse/PUP-9449
-if [ $OS == "darwin" ] && [ "$(facter os.macosx.version.major)" == "10.14" ]; then
-    echo "Monkey patching directoryservice.rb: https://tickets.puppetlabs.com/browse/PUP-9502, https://tickets.puppetlabs.com/browse/PUP-9449"
-    sed -i '.bak' 's/-merge/-create/g' '/opt/puppetlabs/puppet/lib/ruby/vendor_ruby/puppet/provider/user/directoryservice.rb'
-fi
-
-# Create a temp dir for executing puppet
-TMP_PUPPET_DIR=$(mktemp -d /tmp/puppet_working.XXXXXX)
-[ -d "${TMP_PUPPET_DIR}" ] || fail "Failed to mktemp puppet working dir"
+#
+# functions
+#
 
 # Download puppet repository and extract
 function get_puppet_repo {
-    TMP_DL_DIR=$(mktemp -d -t puppet_download.XXXXXXX)
-    [ -d "${TMP_DL_DIR}" ] || fail "Failed to mktemp download dir"
+    # if PUPPET_BRANCH is master, grab the tarball, otherwise clone
+    if [ "$PUPPET_BRANCH" = "master" ]; then
+        echo "Puppet branch is master, downloading tarball"
 
-    # Download the puppet repo tarball directly from github
-    # We don't use git because some oses don't have git installed by default
-    # In the future, we may publish master branch to s3 or some other highly available service since
-    # Github has rate limits on downloads.
-    while true; do
-        echo "Downloading puppet repo: ${PUPPET_REPO_BUNDLE}"
-        if HTTP_RES_CODE=$(curl -sL "$PUPPET_REPO_BUNDLE" -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ "$HTTP_RES_CODE" = "200" ]]; then
-            break
-        else
-            echo "Failed to download puppet repo.  Sleep for 30 seconds before trying again"
-            sleep 30
-        fi
-    done
-    # Extract the puppet repo tarball
-    tar -zxf "${TMP_DL_DIR}/puppet.tar.gz" --strip 1 -C "${TMP_PUPPET_DIR}" || fail "Failed to extract puppet tar.gz"
-    # Clean up the download dir
-    rm -rf "${TMP_DL_DIR}"
+        TMP_DL_DIR=$(mktemp -d -t puppet_download.XXXXXXX)
+        [ -d "${TMP_DL_DIR}" ] || fail "Failed to mktemp download dir"
+
+        # Download the puppet repo tarball directly from github
+        # We don't use git because some oses don't have git installed by default
+        # In the future, we may publish master branch to s3 or some other highly available service since
+        # Github has rate limits on downloads.
+        while true; do
+            echo "Downloading puppet repo: ${PUPPET_REPO_BUNDLE}"
+            if HTTP_RES_CODE=$(curl -sL "$PUPPET_REPO_BUNDLE" -o "${TMP_DL_DIR}/puppet.tar.gz" -w "%{http_code}") && [[ "$HTTP_RES_CODE" = "200" ]]; then
+                break
+            else
+                echo "Failed to download puppet repo.  Sleep for 30 seconds before trying again"
+                sleep 30
+            fi
+        done
+        # Extract the puppet repo tarball
+        tar -zxf "${TMP_DL_DIR}/puppet.tar.gz" --strip 1 -C "${TMP_PUPPET_DIR}" || fail "Failed to extract puppet tar.gz"
+        # Clean up the download dir
+        rm -rf "${TMP_DL_DIR}"
+    else
+        echo "Puppet branch is $PUPPET_BRANCH, cloning repository"
+
+        # Clone the puppet repo
+        git clone --depth 1 --branch "$PUPPET_BRANCH" "$PUPPET_REPO" "$TMP_PUPPET_DIR" || fail "Failed to clone puppet repo"
+        echo "Puppet repo cloned successfully. Git info:"
+        cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
+        branch=$(git rev-parse --abbrev-ref HEAD) || fail "Failed to get branch"
+        commit=$(git rev-parse --short HEAD) || fail "Failed to get commit"
+        echo "Branch: ${branch} Commit: ${commit}"
+        cd - >/dev/null || exit 1
+    fi
 
     # Change to puppet dir
     cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
@@ -165,7 +94,7 @@ function get_puppet_repo {
     FQDN=$(${FACTER_BIN} networking.fqdn)
 
     # Create a node definition for this host and write it to the manifests where puppet will pick it up
-    cat <<EOF > manifests/nodes/nodes.pp
+    cat <<EOF >manifests/nodes/nodes.pp
 node '${FQDN}' {
     include ::roles_profiles::roles::${ROLE}
 }
@@ -191,17 +120,162 @@ function run_puppet {
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     retval=$?
     # just in case, if there were any errors logged, flag it as an error run
-    if grep -q "^Error:" "${TMP_LOG}"
-    then
+    if grep -q "^Error:" "${TMP_LOG}"; then
         retval=1
     fi
 
     rm "${TMP_LOG}"
     case $retval in
-        0|2) return 0;;
-        *) return 1;;
+    0 | 2) return 0 ;;
+    *) return 1 ;;
     esac
 }
+
+# If something fails hard, either exit for interactive or hang for non-interactive
+function fail {
+    # TODO: emit an critical error event so provisioner knows this node needs to be handled
+    echo "${@}"
+    # If this is a non-interactive session, hang indefinitely instead of exiting
+    if [ "$NONINTERACTIVE" = true ]; then
+        echo "Hanging..."
+        while true; do sleep 3600; done
+    fi
+    exit 1
+}
+
+#
+# main
+#
+
+# Parse options. Use of -l flags the script as non-interactive
+while getopts ":h?l:" opt; do
+    case "$opt" in
+    h | \?)
+        echo "Usage: ./bootstrap_linux.sh -h               - Show help"
+        echo "       ./bootstrap_linux.sh -l /path/logfile - Log output to file"
+        echo "       ./bootstrap_linux.sh                  - Interactive mode"
+        exit 0
+        ;;
+    l)
+        LOG_PATH=$OPTARG
+        NONINTERACTIVE=true
+        # touch log file to see if we have write access and fail otherwise
+        touch "$LOG_PATH" || fail "Can't write log to ${LOG_PATH}"
+        exec >"$LOG_PATH" 2>&1
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument" >&2
+        exit 1
+        ;;
+    esac
+done
+
+# if we're not on linux, exit with warning
+if [ "$(uname -s)" != "Linux" ]; then
+    echo "This script is intended to run on Linux hosts only."
+    exit 1
+fi
+
+# check for /root/vault.yaml
+if [ ! -f /root/vault.yaml ]; then
+    echo "Missing /root/vault.yaml, this file is required for the bootstrap script to run."
+    exit 1
+fi
+
+# if on ubuntu 22.04, install puppet 8, else install puppet 7
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+else
+    echo "This script requires /etc/os-release to determine the OS version."
+    exit 1
+fi
+
+# if on ubuntu 24.04, install puppet 8, else install puppet 7
+if [ "$VERSION_ID" = "24.04" ]; then
+    echo "Installing Puppet 8..."
+    wget https://apt.puppetlabs.com/puppet8-release-noble.deb -O /tmp/puppet.deb
+    # install puppet release deb for the version we've selected
+    dpkg -i /tmp/puppet.deb
+    # update apt and install puppet-agent and ntp
+    apt-get update
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent
+    # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
+    # place our config and restart the service
+    mkdir -p /etc/systemd/timesyncd.conf.d
+    echo -e "[Time]\nNTP=ntp.build.mozilla.org" >/etc/systemd/timesyncd.conf.d/mozilla.conf
+    systemctl restart systemd-timesyncd
+elif [ "$VERSION_ID" = "18.04" ]; then
+    echo "Installing Puppet 7..."
+    wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/puppet.deb
+    # install puppet release deb for the version we've selected
+    dpkg -i /tmp/puppet.deb
+    # update apt and install puppet-agent and ntp
+    apt-get update
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent ntp
+
+    # get clock synced. if clock is way off, run-puppet.sh will never finish
+    # it's git clone because the SSL cert will appear invalid.
+    /etc/init.d/ntp stop
+    echo "server ntp.build.mozilla.org iburst" >/etc/ntp.conf # place barebones config
+    ntpd -q -g                                                # runs once and force allows huge skews
+    /etc/init.d/ntp start
+else
+    echo "Unsupported Ubuntu version: $VERSION_ID. This script only supports Ubuntu 18.04 and 24.04."
+    exit 1
+fi
+
+# Determine OSTYPE so we can set OS specific paths and alter logic if need be
+case "${OSTYPE}" in
+    darwin*) OS='darwin' ;;
+    linux*)  OS='linux' ;;
+    *)       fail "OS either not detected or not supported!" ;;
+esac
+
+# Linux and Darwin share some common paths
+if [ $OS == "linux" ] || [ $OS == "darwin" ]; then
+    ROLE_FILE='/etc/puppet_role'
+    if command -v puppet; then
+        PUPPET_BIN=$(command -v puppet)
+        FACTER_BIN=$(command -v facter)
+    else
+        PUPPET_BIN='/opt/puppetlabs/bin/puppet'
+        FACTER_BIN='/opt/puppetlabs/bin/facter'
+    fi
+fi
+
+# This file should be set by the provisioner and is an error to not have a role
+# It indicates the role this node is to play
+# We may completely change the logic in determine a nodes role such as using an ENC
+# but for now, this works
+if [ -f "${ROLE_FILE}" ]; then
+    ROLE=$(<"${ROLE_FILE}")
+else
+    fail "Failed to find puppet role file ${ROLE_FILE}"
+fi
+
+# Check that we have the minimum requirements to run puppet
+# Since this is a bootstrap script we may actaully install minimum requirements here in the future
+if [ ! -x "${PUPPET_BIN}" ]; then
+    fail "${PUPPET_BIN} is missing or not executable"
+fi
+
+if [ ! -x "${FACTER_BIN}" ]; then
+    fail "${FACTER_BIN} is missing or not executable"
+fi
+
+# Remove the system git config, since it can't expand ~ when r10k runs git
+# https://stackoverflow.com/questions/36908041/git-could-not-expand-include-path-gitcinclude-fatal-bad-config-file-line
+rm -rf /usr/local/git/etc/gitconfig
+
+# Create a temp dir for executing puppet
+TMP_PUPPET_DIR=$(mktemp -d /tmp/puppet_working.XXXXXX)
+[ -d "${TMP_PUPPET_DIR}" ] || fail "Failed to mktemp puppet working dir"
 
 # Call the run_puppet function in a endless loop
 while ! run_puppet; do
@@ -209,26 +283,18 @@ while ! run_puppet; do
     sleep 600
 done
 
-# Once puppet has completed its initial run we can remove the bootstrap init files
-# If it is intended for the host to run puppet after it first puppet
-# provisioning, puppet will have already set that up
-case "$OS" in
-    darwin)
-        rm -rf /Library/LaunchDaemons/org.mozilla.bootstrap_linux.plist*
-        ;;
-esac
-
 # Remove the temp working puppet dir
 rm -rf "$TMP_PUPPET_DIR"
 
 # record the installation date (note that this won't appear anywhere on Darwin)
-echo "System Installed: $(date)" >> /etc/issue
+echo "System Installed: $(date)" >>/etc/issue
 
 echo "Success. Rebooting..."
 
 # Success! Let's reboot
 /sbin/reboot --force &>/dev/null &
 
+set +x
 echo "   _____                                __"
 echo "  / ___/__  _______________  __________/ /"
 echo "  \__ \/ / / / ___/ ___/ _ \/ ___/ ___/ /"

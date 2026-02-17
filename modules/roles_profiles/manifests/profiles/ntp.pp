@@ -12,8 +12,23 @@ class roles_profiles::profiles::ntp {
     }
     'Ubuntu': {
       $ntp_server = lookup('ntp_server', String)
-      class { 'ntp':
-        servers => [$ntp_server],
+      case $facts['os']['release']['full'] {
+        /^18\.04/,
+        /^19\./,
+        /^20\./,
+        /^21\./,
+        /^22\.04/: {
+          package { 'ntp':
+            ensure => latest,
+          }
+        }
+        /^24\.04/: {
+          # uses timedatectl and timesyncd
+          require 'linux_ntp'
+        }
+        default: {
+          fail("Unsupported Ubuntu version for NTP: ${facts['os']['release']['full']}")
+        }
       }
     }
     'Windows': {
@@ -38,7 +53,7 @@ class roles_profiles::profiles::ntp {
       }
     }
     default: {
-      fail("${$facts['os']['name']} not supported")
+      fail("${facts['os']['name']} not supported")
     }
   }
 }

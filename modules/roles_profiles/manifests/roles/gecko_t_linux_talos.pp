@@ -19,5 +19,4 @@ class roles_profiles::roles::gecko_t_linux_talos {
 
     # talos stuff
     include ::roles_profiles::profiles::gecko_t_linux_talos_generic_worker
-
 }

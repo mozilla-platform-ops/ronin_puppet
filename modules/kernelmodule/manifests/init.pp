@@ -3,15 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # This module installs and enables Linux kernel modules
-define kernelmodule($module=$title, $module_args='', $packages=null) {
-  case $::operatingsystem {
+define kernelmodule ($module=$title, $module_args='', $packages=null) {
+  case $facts['os']['name'] {
     'Ubuntu': {
-      exec {
-        "modprobe-${module}":
-          command     => "modprobe ${module} ${module_args}",
-          unless      => "lsmod | grep -qw ^${module}",
-          refreshonly => true,
-          path        => '/sbin:/bin:/usr/bin';
+      if ($packages != null) {
+        package {
+          $packages:
+            ensure => latest,
+            # subscription above handles notification now
+            # notify => Exec["modprobe-${module}"];
+        }
       }
 
       exec {
@@ -19,20 +20,23 @@ define kernelmodule($module=$title, $module_args='', $packages=null) {
           command => "echo ${module} >> /etc/modules",
           unless  => "grep -qw ^${module} /etc/modules",
           path    => '/sbin:/bin:/usr/bin',
-          notify  => Exec["modprobe-${module}"];
+          # subscription above handles notification now
+          # notify  => Exec["modprobe-${module}"];
       }
 
-      if ($packages != null) {
-        package {
-          $packages:
-            ensure => latest,
-            notify => Exec["modprobe-${module}"];
+      if $facts['running_in_test_kitchen'] != 'true' {
+        exec {
+          "modprobe-${module}":
+            command => "modprobe ${module} ${module_args}",
+            unless  => "lsmod | grep -qw ^${module}",
+            # refreshonly => true,
+            path    => '/sbin:/bin:/usr/bin',
+            # subscribe   => [Package[$packages]];
         }
       }
-
     }
     default: {
-      fail("${::operatingsystem} is not supported")
+      fail("${facts['os']['name']} is not supported")
     }
   }
 }
