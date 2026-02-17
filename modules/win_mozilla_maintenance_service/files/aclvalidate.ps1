@@ -24,3 +24,7 @@ foreach ($access in $everyone) {
         exit 1
     }
 }
+
+# No "Everyone" ACE found
+Write-host "No Everyone permission found on $folder"
+exit 1
