@@ -7,12 +7,13 @@ class roles_profiles::profiles::virtual_drivers {
     'Windows': {
       $flags    = '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
       $vac_dir  = lookup('windows.dir.vac')
-      $version  = lookup('win-worker.vac.version')
+      $version  = lookup('windows.vac.version')
       $work_dir = "${vac_dir}\\vac${version}"
+      $srcloc = lookup('windows.ext_pkg_src')
 
       class { 'win_packages::vac':
         flags    => $flags,
-        srcloc   => lookup('windows.s3.ext_pkg_src'),
+        srcloc   => $srcloc,
         vac_dir  => $vac_dir,
         version  => $version,
         work_dir => $work_dir,
@@ -21,7 +22,7 @@ class roles_profiles::profiles::virtual_drivers {
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1656286
     }
     default: {
-      fail("${facts['os']['name']} not supported")
+      fail("${$facts['os']['name']} not supported")
     }
   }
 }

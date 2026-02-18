@@ -1,0 +1,41 @@
+{
+  "accessToken": "<%= $win_generic_worker::generic_worker::taskcluster_access_token %>",
+  "cachesDir": "<%= $win_generic_worker::generic_worker::cache_dir %>",
+  "cleanUpTaskDirs": true,
+  "clientId": "<%= $win_generic_worker::generic_worker::client_id %>",
+  "disableReboots": true,
+  "disableOOMProtection": true,
+  "downloadsDir": "<%= $win_generic_worker::generic_worker::downloads_dir %>",
+  "ed25519SigningKeyLocation": "<%= $win_generic_worker::generic_worker::ed25519signingkey %>",
+  "idleTimeoutSecs": <%= $win_generic_worker::generic_worker::idle_timeout %>,
+  "livelogExecutable": "<%= $win_generic_worker::generic_worker::livelog_exe %>",
+  "numberOfTasksToRun": 0,
+  "provisionerId": "releng-hardware",
+  "publicIP": "<%= $facts[networking][ip] %>",
+  "requiredDiskSpaceMegabytes": 10240,
+  "rootURL": "<%= $win_generic_worker::generic_worker::taskcluster_root %>",
+  "runAfterUserCreation": "<%= $win_generic_worker::generic_worker::init_path %>",
+  "sentryProject": "generic-worker",
+  "shutdownMachineOnIdle": false,
+  "shutdownMachineOnInternalError": false,
+  "taskclusterProxyExecutable": "<%= $win_generic_worker::generic_worker::taskcluster_proxy_exe %>",
+  "taskclusterProxyPort": 8080,
+  "tasksDir": "<%= $win_generic_worker::generic_worker::task_dir %>",
+  "wstAudience": "<%= $win_generic_worker::generic_worker::wstaudience %>",
+  "wstServerURL": "<%= $win_generic_worker::generic_worker::wstserverurl %>",
+  "workerGroup": "<%= $facts[custom_win_mozspace] %>",
+  "workerId": "<%= $facts['networking']['hostname'] %>",
+  "workerLocation": "datacenter",
+  "workerType": "<%= $win_generic_worker::generic_worker::worker_type %>",
+  "workerTypeMetadata": {
+    "config": {
+      "deploymentId": "<%= $facts[custom_win_deployment_id] %>"
+    },
+    "generic-worker": {
+      "go-arch": "amd64",
+      "go-os": "windows",
+      "release": "",
+      "version": ""
+    }
+  }
+}

@@ -31,6 +31,27 @@ class roles_profiles::profiles::ntp {
         }
       }
     }
+    'Windows': {
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1510754
+      # For windowstime resoucre timezone and server needs to be set in the same class
+      # Resource from ncorrare-windowstime
+      case $facts['custom_win_location'] {
+        'datacenter': {
+          $ntpserver = lookup('windows.datacenter.ntp')
+          class { 'windowstime':
+            servers  => { "${ntpserver}" => '0x08' },
+            timezone => 'Greenwich Standard Time',
+          }
+        }
+        default: {
+          exec { 'timezone':
+            command  => "Set-TimeZone -Name 'Coordinated Universal Time'",
+            unless   => "if ((Get-TimeZone).Id -eq 'UTC') { exit 0 } else { exit 1 }",
+            provider => powershell,
+          }
+        }
+      }
+    }
     default: {
       fail("${facts['os']['name']} not supported")
     }

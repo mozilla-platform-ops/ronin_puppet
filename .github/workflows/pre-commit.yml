@@ -1,0 +1,48 @@
+name: Pre-commit
+
+on:
+  pull_request:
+    branches: [ windows, master ]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+      with:
+        python-version: '3.11'
+
+    - name: Install pre-commit
+      run: pip install pre-commit
+
+    - name: Cache pre-commit environments
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@c3a1bb2c992d77180ae65be6ae6c166cf40f857c # v45.0.3
+      with:
+        files_ignore: |
+          r10k_modules/**
+
+    - name: Run pre-commit on changed files
+      if: steps.changed-files.outputs.any_changed == 'true'
+      run: |
+        # Run pre-commit on only the changed files
+        echo "Running pre-commit on changed files:"
+        echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n'
+        pre-commit run --files ${{ steps.changed-files.outputs.all_changed_files }}
+
+    - name: Skip pre-commit if no relevant files changed
+      if: steps.changed-files.outputs.any_changed == 'false'
+      run: |
+        echo "No relevant files changed (excluding r10k_modules/), skipping pre-commit"

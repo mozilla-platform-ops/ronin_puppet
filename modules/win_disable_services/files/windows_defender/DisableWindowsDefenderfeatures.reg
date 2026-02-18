@@ -1,0 +1,36 @@
+Windows Registry Editor Version 5.00
+
+; Disable Windows Defender features.
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows Defender]
+"DisableAntiSpyware"=dword:00000001
+"DisableRoutinelyTakingAction"=dword:00000001
+"ProductStatus"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows Defender\Real-Time Protection]
+"DisableAntiSpywareRealtimeProtection"=dword:00000001
+"DisableRealtimeMonitoring"=dword:00000001
+
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows Defender\Scan]
+"AutomaticallyCleanAfterScan"=dword:00000000
+"ScheduleDay"=dword:00000008
+
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows Defender\UX Configuration]
+"AllowNonAdminFunctionality"=dword:00000000
+"DisablePrivacyMode"=dword:00000001
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Windows Defender]
+"DisableAntiSpyware"=dword:00000001
+"DisableRoutinelyTakingAction"=dword:00000001
+"ProductStatus"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Windows Defender\Real-Time Protection]
+"DisableAntiSpywareRealtimeProtection"=dword:00000001
+"DisableRealtimeMonitoring"=dword:00000001
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Windows Defender\Scan]
+"AutomaticallyCleanAfterScan"=dword:00000000
+"ScheduleDay"=dword:00000008
+
+[HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Windows Defender\UX Configuration]
+"AllowNonAdminFunctionality"=dword:00000000
+"DisablePrivacyMode"=dword:00000001

@@ -5,6 +5,6 @@
 class roles_profiles::profiles::pipconf {
 
     class { 'macos_pipconf':
-                enabled    => true,
+                enabled => true,
             }
 }
