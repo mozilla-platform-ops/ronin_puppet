@@ -17,23 +17,18 @@ function Write-Log {
         default { $entryType = 'Information';  $eventId = 1; break }
     }
 
-    # Best-effort event log creation (avoid terminating failures / races)
     try {
         if (!([Diagnostics.EventLog]::Exists($logName)) -or
             !([Diagnostics.EventLog]::SourceExists($source))) {
             New-EventLog -LogName $logName -Source $source -ErrorAction SilentlyContinue | Out-Null
         }
-    } catch {
-        # ignore
-    }
+    } catch { }
 
     try {
         Write-EventLog -LogName $logName -Source $source `
             -EntryType $entryType -Category 0 -EventID $eventId `
             -Message $message -ErrorAction SilentlyContinue
-    } catch {
-        # ignore
-    }
+    } catch { }
 
     if ([Environment]::UserInteractive) {
         $fc = @{
@@ -50,12 +45,11 @@ function Add-ProfileSystemPerformanceRight {
     [CmdletBinding()]
     param()
 
-    $Group = 'Mozilla_XPerf_users'
+    $Group = 'BUILTIN\Users'
     $Right = 'SeSystemProfilePrivilege'  # "Profile system performance"
 
     Write-Log -message ("rights :: begin :: add '{0}' to {1}" -f $Group, $Right) -severity 'DEBUG'
 
-    # Resolve group SID (local or domain, if resolvable)
     $sid = $null
     try {
         $sid = (New-Object System.Security.Principal.NTAccount($Group)).
@@ -63,7 +57,6 @@ function Add-ProfileSystemPerformanceRight {
         Write-Log -message ("rights :: resolved SID for '{0}' = {1}" -f $Group, $sid) -severity 'DEBUG'
     } catch {
         Write-Log -message ("rights :: FAILED to resolve SID for '{0}': {1}" -f $Group, $_.Exception.Message) -severity 'ERROR'
-        Write-Log -message ("rights :: hint: if it's a domain group, try hardcoding 'MOZILLA\{0}' (or correct domain prefix)" -f $Group) -severity 'WARN'
         throw
     }
 
@@ -93,7 +86,7 @@ function Add-ProfileSystemPerformanceRight {
             $content += "`r`n[Privilege Rights]`r`n"
         }
 
-        $pattern = ('^({0}\s*=\s*)(.*)$' -f [regex]::Escape($Right))
+        $pattern = ('^(SeSystemProfilePrivilege\s*=\s*)(.*)$')
         $lines   = $content -split "`r?`n"
 
         $found = $false
@@ -106,7 +99,7 @@ function Add-ProfileSystemPerformanceRight {
                 $list = @()
                 if ($existing) { $list = $existing -split '\s*,\s*' }
 
-                $entry = "*$sid"  # secedit wants SIDs prefixed with '*'
+                $entry = "*$sid"
                 if ($list -contains $entry) {
                     Write-Log -message ("rights :: already present: {0} contains {1}" -f $Right, $entry) -severity 'INFO'
                 } else {
@@ -124,7 +117,6 @@ function Add-ProfileSystemPerformanceRight {
             $lines += ("{0} = *{1}" -f $Right, $sid)
         }
 
-        # IMPORTANT: Unicode for secedit .inf
         Set-Content -Path $inf -Value ($lines -join "`r`n") -Encoding Unicode -Force
         Write-Log -message ("rights :: wrote updated policy to {0}" -f $inf) -severity 'DEBUG'
     } catch {
@@ -135,7 +127,7 @@ function Add-ProfileSystemPerformanceRight {
     try {
         Write-Log -message "rights :: applying policy (secedit /configure /areas USER_RIGHTS)" -severity 'DEBUG'
         $out = & secedit /configure /db $sdb /cfg $inf /areas USER_RIGHTS 2>&1
-        $global:LASTEXITCODE = 0  # don't leak secedit exit code into caller if you're using this in Puppet flows
+        $global:LASTEXITCODE = 0
         Write-Log -message ("rights :: secedit output: {0}" -f (($out | Out-String).Trim())) -severity 'DEBUG'
 
         Write-Log -message "rights :: refreshing policy (gpupdate /force)" -severity 'DEBUG'
@@ -147,12 +139,10 @@ function Add-ProfileSystemPerformanceRight {
         Write-Log -message ("rights :: apply FAILED: {0}" -f $_.Exception.ToString()) -severity 'ERROR'
         throw
     } finally {
-        # best-effort cleanup
         try { Remove-Item -Path $tmp -Recurse -Force -ErrorAction SilentlyContinue | Out-Null } catch { }
     }
 }
 
-# --- Main flow ---------------------------------------------------------------
 try {
     Write-Log -message "rights :: start" -severity 'DEBUG'
     Add-ProfileSystemPerformanceRight
