@@ -40,7 +40,7 @@ class xperf_profiling (
   }
 
   exec { 'xperf_profiling_grant_profile_system_performance':
-    command   => "& '${script_path}' -GroupName '${group_name}'",
+    command   => "& '${script_path}'",
     provider  => powershell,
     timeout   => 300,
     logoutput => true,
