@@ -15,6 +15,12 @@ class linux_snmpd {
             # include vs require? still need to do ordering...
             include linux_packages::snmpd
 
+            service { 'snmpd':
+              ensure  => running,
+              enable  => true,
+              require => Class['linux_packages::snmpd'];
+            }
+
             # deliver our config (require linux_packages::snmpd)
             #   /etc/snmp/snmpd.conf
             file {
@@ -25,7 +31,7 @@ class linux_snmpd {
                 content => template('linux_snmpd/snmpd.conf.erb'),
                 mode    => '0644',
                 notify  => Service['snmpd'],
-                require => Class['linux_packages::snmpd'];
+                require => Service['snmpd'];
             }
           }
           else {
