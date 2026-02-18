@@ -30,8 +30,7 @@ class linux_snmpd {
                 ensure  => file,
                 content => template('linux_snmpd/snmpd.conf.erb'),
                 mode    => '0644',
-                notify  => Service['snmpd'],
-                require => Service['snmpd'];
+                notify  => Service['snmpd'];
             }
           }
           else {
