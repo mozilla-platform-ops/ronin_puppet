@@ -2,7 +2,7 @@ name: Pre-commit
 
 on:
   pull_request:
-    branches: [ windows ]
+    branches: [ windows, master ]
 
 jobs:
   pre-commit:
