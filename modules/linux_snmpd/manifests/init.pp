@@ -13,7 +13,7 @@ class linux_snmpd {
           # only do this block if secret is set
           if $snmpd_ro_secret and $snmpd_ro_secret != '' {
             # include vs require? still need to do ordering...
-            require linux_packages::snmpd
+            include linux_packages::snmpd
 
             # deliver our config (require linux_packages::snmpd)
             #   /etc/snmp/snmpd.conf
