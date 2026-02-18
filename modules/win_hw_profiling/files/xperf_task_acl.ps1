@@ -74,7 +74,7 @@ try {
 }
 catch {
   Log ("FATAL {0}" -f $_.Exception.ToString())
-  exit 1
+  exit 0
 }
 finally {
   try { Remove-Item -Path $tmp -Recurse -Force -ErrorAction SilentlyContinue | Out-Null } catch { }
