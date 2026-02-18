@@ -1,3 +1,5 @@
+## Keep incase this can be used in the future
+
 function Write-Log {
     param (
         [string] $message,
