@@ -42,7 +42,7 @@ class roles_profiles::profiles::microsoft_tools {
               include win_packages::win_10_sdk
             }
           }
-          include xperf_profiling
+          include win_hw_profiling
         }
         default: {
           fail("${$facts['custom_win_purpose']} not supported")
