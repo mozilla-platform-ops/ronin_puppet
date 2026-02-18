@@ -1,0 +1,9 @@
+agentAddress udp:161
+
+sysLocation    "MDC1"
+sysContact     "relops@mozilla.com"
+
+# create 'all' view and include all of .1
+view   all         included   .1
+# set a SNMPv1/v2c read-only community (default source) and tie to 'all' view
+rocommunity <%= @snmpd_ro_secret %> default -V all
