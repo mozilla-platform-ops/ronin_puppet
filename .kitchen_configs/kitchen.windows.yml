@@ -25,6 +25,7 @@ lifecycle:
     - remote: |
         [System.Environment]::SetEnvironmentVariable('PUPPET_ROLE', '<%= ENV['PUPPET_ROLE'] %>', 'Machine')
         [System.Environment]::SetEnvironmentVariable('RONIN_REF', '<%= ENV['RONIN_REF'] %>', 'Machine')
+        [System.Environment]::SetEnvironmentVariable('WORKER_POOL_ID', '<%= ENV['WORKER_POOL_ID'] %>', 'Machine')
 
 platforms:
   - name: win11-64-25h2
