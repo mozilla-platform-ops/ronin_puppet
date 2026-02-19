@@ -52,6 +52,7 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
           PUPPET_ROLE: win116425h2azure
+          WORKER_POOL_ID: win11-64-25h2-alpha
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: bundle exec kitchen test windows-win11-64-25h2 -l debug
 
@@ -62,5 +63,6 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
           PUPPET_ROLE: win116425h2azure
+          WORKER_POOL_ID: win11-64-25h2-alpha
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: bundle exec kitchen destroy windows-win11-64-25h2 -l debug

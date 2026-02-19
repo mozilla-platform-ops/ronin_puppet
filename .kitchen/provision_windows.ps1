@@ -36,6 +36,40 @@ if (Test-Path C:\ronin_puppet) { Remove-Item C:\ronin_puppet -Recurse -Force }
 Move-Item $repoDir.FullName C:\ronin_puppet
 Set-Location C:\ronin_puppet
 
+# Seed registry values that worker-images bootstrap normally sets before Puppet.
+$mozillaKey = 'HKLM:\SOFTWARE\Mozilla'
+$roninKey = "$mozillaKey\ronin_puppet"
+$sourceKey = "$roninKey\source"
+
+$workerPoolId = if ($env:WORKER_POOL_ID) { $env:WORKER_POOL_ID } elseif ($env:PUPPET_ROLE) { $env:PUPPET_ROLE } else { 'kitchen-test' }
+$imageProvisioner = if ($env:IMAGE_PROVISIONER) { $env:IMAGE_PROVISIONER } else { 'azure' }
+$sourceOrg = if ($env:SRC_ORGANISATION) { $env:SRC_ORGANISATION } else { 'mozilla-platform-ops' }
+$sourceRepo = if ($env:SRC_REPOSITORY) { $env:SRC_REPOSITORY } else { 'ronin_puppet' }
+$sourceBranch = if ($env:SRC_BRANCH) { $env:SRC_BRANCH } elseif ($env:GITHUB_HEAD_REF) { $env:GITHUB_HEAD_REF } elseif ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { 'test-kitchen' }
+$bootstrapStage = if ($env:BOOTSTRAP_STAGE) { $env:BOOTSTRAP_STAGE } else { 'setup' }
+$deploymentHash = if ($env:RONIN_REF) { $env:RONIN_REF } else { 'kitchen' }
+
+if (-not (Test-Path $mozillaKey)) {
+    New-Item -Path 'HKLM:\SOFTWARE' -Name 'Mozilla' -Force | Out-Null
+}
+if (-not (Test-Path $roninKey)) {
+    New-Item -Path $mozillaKey -Name 'ronin_puppet' -Force | Out-Null
+}
+New-Item -Path $roninKey -Name 'source' -Force | Out-Null
+
+New-ItemProperty -Path $roninKey -Name 'image_provisioner' -Value $imageProvisioner -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $roninKey -Name 'worker_pool_id' -Value $workerPoolId -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $roninKey -Name 'role' -Value $env:PUPPET_ROLE -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $roninKey -Name 'inmutable' -Value 'false' -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $roninKey -Name 'last_run_exit' -Value 0 -PropertyType DWord -Force | Out-Null
+New-ItemProperty -Path $roninKey -Name 'bootstrap_stage' -Value $bootstrapStage -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $roninKey -Name 'GITHASH' -Value $deploymentHash -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $sourceKey -Name 'Organisation' -Value $sourceOrg -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $sourceKey -Name 'Repository' -Value $sourceRepo -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $sourceKey -Name 'Branch' -Value $sourceBranch -PropertyType String -Force | Out-Null
+
+Write-Host "Seeded $roninKey (worker_pool_id=$workerPoolId, role=$env:PUPPET_ROLE, bootstrap_stage=$bootstrapStage)."
+
 # Set Facter variables
 $env:FACTER_custom_win_role = $env:PUPPET_ROLE
 $env:FACTER_running_in_test_kitchen = 'true'
