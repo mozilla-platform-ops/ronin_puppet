@@ -80,6 +80,17 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '1',
       }
+      # Delivery Optimization (P2P update caching) — stop and disable alongside WU
+      service { 'DoSvc':
+        ensure => 'stopped',
+        enable => false,
+      }
+      # Connected User Experiences and Telemetry — disable for all Windows workers
+      # (already handled for datacenter via disable_optional_services, this covers Azure)
+      service { 'DiagTrack':
+        ensure => 'stopped',
+        enable => false,
+      }
     }
     default: {
       fail("${module_name} does not support ${$facts['custom_win_os_version']}")
