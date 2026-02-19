@@ -92,7 +92,8 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsNotepad"        = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/windows-notepad/9msmlrh6lzf3"; Description="Notepad (Store)" }
         "Microsoft.WindowsStore"          = @{ VDIState="Unchanged"; URL="https://blogs.windows.com/windowsexperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/"; Description="Microsoft Store" }
         "Microsoft.WindowsSoundRecorder"  = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/windows-voice-recorder/9wzdncrfhwkn"; Description="Voice Recorder" }
-        "Microsoft.WindowsTerminal"       = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701"; Description="Windows Terminal" }
+        ## Don't remove
+        #"Microsoft.WindowsTerminal"       = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701"; Description="Windows Terminal" }
         "Microsoft.Winget.Platform.Source"= @{ VDIState="Unchanged"; URL="https://learn.microsoft.com/en-us/windows/package-manager/winget/"; Description="Winget source" }
         "Microsoft.Xbox.TCUI"             = @{ VDIState="Unchanged"; URL="https://docs.microsoft.com/en-us/gaming/xbox-live/features/general/tcui/live-tcui-overview"; Description="Xbox TCUI" }
         "Microsoft.XboxIdentityProvider"  = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/xbox-identity-provider/9wzdncrd1hkw"; Description="Xbox Identity Provider" }
