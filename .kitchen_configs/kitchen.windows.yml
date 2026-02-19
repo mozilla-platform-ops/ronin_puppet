@@ -14,6 +14,9 @@ verifier:
 
 transport:
   name: winrm
+  username: kitchenadmin
+  password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+  winrm_transport: :plaintext
   env_variables:
     PUPPET_ROLE: <%= ENV['PUPPET_ROLE'] %>
     RONIN_REF: <%= ENV['RONIN_REF'] %>
@@ -27,6 +30,8 @@ platforms:
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen
       use_ephemeral_osdisk: true
+      username: kitchenadmin
+      password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
@@ -37,8 +42,6 @@ platforms:
         winrm set winrm/config '@{MaxTimeoutms="1800000"}'
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
-    transport:
-      name: winrm
 
 suites:
   - name: windows
