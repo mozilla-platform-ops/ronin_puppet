@@ -11,18 +11,12 @@ on:
       - '.github/workflows/kitchen-windows.yml'
 
 jobs:
-  test:
-    name: ${{ matrix.role }}
+  win116425h2azure:
+    name: win116425h2azure
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - role: win116425h2azure
-            kitchen_target: windows-win11-64-25h2
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -57,9 +51,9 @@ jobs:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
-          PUPPET_ROLE: ${{ matrix.role }}
+          PUPPET_ROLE: win116425h2azure
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: bundle exec kitchen test ${{ matrix.kitchen_target }} -l debug
+        run: bundle exec kitchen test windows-win11-64-25h2 -l debug
 
       - name: Kitchen destroy
         if: always()
@@ -67,6 +61,6 @@ jobs:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
-          PUPPET_ROLE: ${{ matrix.role }}
+          PUPPET_ROLE: win116425h2azure
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: bundle exec kitchen destroy ${{ matrix.kitchen_target }} -l debug
+        run: bundle exec kitchen destroy windows-win11-64-25h2 -l debug
