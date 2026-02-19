@@ -17,9 +17,12 @@ transport:
   username: kitchenadmin
   password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
   winrm_transport: :plaintext
-  env_variables:
-    PUPPET_ROLE: <%= ENV['PUPPET_ROLE'] %>
-    RONIN_REF: <%= ENV['RONIN_REF'] %>
+
+lifecycle:
+  pre_converge:
+    - remote: |
+        [System.Environment]::SetEnvironmentVariable('PUPPET_ROLE', '<%= ENV['PUPPET_ROLE'] %>', 'Machine')
+        [System.Environment]::SetEnvironmentVariable('RONIN_REF', '<%= ENV['RONIN_REF'] %>', 'Machine')
 
 platforms:
   - name: win11-64-25h2
