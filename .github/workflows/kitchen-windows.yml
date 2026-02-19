@@ -2,15 +2,6 @@ name: Kitchen Windows
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
-    paths:
-      - 'modules/roles_profiles/**'
-      - 'data/roles/win*.yaml'
-      - 'data/os/Windows/**'
-      - '.kitchen_configs/kitchen.windows.yml'
-      - '.github/workflows/kitchen-windows.yml'
   pull_request:
     paths:
       - 'modules/roles_profiles/**'
