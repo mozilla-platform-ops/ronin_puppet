@@ -69,7 +69,10 @@ $SchTasksList = @(
     "Work Folders Logon Synchronization",
     "Work Folders Maintenance Work",
     "Restore",
-    "MsCtfMonitor"
+    "MsCtfMonitor",
+    # Windows 11 25H2 - Recall / WindowsAI tasks run on first boot
+    "InitialConfiguration",
+    "PolicyConfiguration"
 )
 
 Foreach ($Item in $SchTasksList) {
