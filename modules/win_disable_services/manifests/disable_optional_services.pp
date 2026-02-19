@@ -14,7 +14,7 @@ class win_disable_services::disable_optional_services {
     'BthAvctpSvc',          # AVCTP Service (Bluetooth audio)
 
     # --- Telemetry / diagnostics ---
-    'DiagTrack',            # Connected User Experiences and Telemetry
+    # DiagTrack is disabled via disable_windows_update (applies to all workers)
     'DPS',                  # Diagnostic Policy Service - Disabled in MaintainSytems script too
     'DusmSvc',              # Data Usage
     'WdiServiceHost',       # Diagnostic System Host
