@@ -5,7 +5,7 @@ driver:
 
 provisioner:
   name: shell
-  script: .kitchen_configs/scripts/provision_windows.ps1
+  script: .kitchen/provision_windows.ps1
 
 verifier:
   name: serverspec
