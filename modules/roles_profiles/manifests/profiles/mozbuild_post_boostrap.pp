@@ -6,15 +6,14 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
   $mozbld = "C:\\mozilla-build"
   case $facts['custom_win_location'] {
     'azure': {
-      if $facts['custom_win_os_arch'] != 'aarch64' {
-        $cache_drive = 'd:'
-      }
-      else {
-        $cache_drive = 'c:'
+      if $facts['custom_win_d_drive'] == 'exists' {
+        $cache_drive = 'D:'
+      } else {
+        $cache_drive = 'C:'
       }
     }
     'datacenter': {
-      $cache_drive = 'c:'
+      $cache_drive = 'C:'
     }
     default: {
       fail('custom_win_location not supported')
@@ -26,17 +25,7 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
     ensure => directory,
   }
 
-  acl { "${cache_drive}\\hg-shared":
-    target      => "${cache_drive}\\hg-shared",
-    permissions => {
-      identity                   => 'everyone',
-      rights                     => ['full'],
-      perm_type                  => 'allow',
-      child_types                => 'all',
-      affects                    => 'all',
-      inherit_parent_permissions => true,
-    },
-  }
+  # ACL permissions are managed by win_filesystem::grant_cache_access.
 
   case lookup('win-worker.function') {
     'builder': {
