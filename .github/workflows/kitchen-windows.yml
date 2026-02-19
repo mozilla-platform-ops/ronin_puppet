@@ -3,6 +3,8 @@ name: Kitchen Windows
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
     paths:
       - 'modules/roles_profiles/**'
       - 'data/roles/win*.yaml'
