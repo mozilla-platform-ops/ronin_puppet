@@ -1,4 +1,64 @@
+param(
+    [switch]$AsSystem
+)
+
 $ErrorActionPreference = 'Stop'
+
+function Invoke-AsSystem {
+    $taskName = 'KitchenProvisionAsSystem'
+    $scriptPath = 'C:\Windows\Temp\kitchen-provision-system.ps1'
+    $wrapperPath = 'C:\Windows\Temp\kitchen-provision-system.cmd'
+    $logPath = 'C:\Windows\Temp\kitchen-provision-system.log'
+    $exitPath = 'C:\Windows\Temp\kitchen-provision-system.exitcode'
+
+    Copy-Item -Path $PSCommandPath -Destination $scriptPath -Force
+
+    @(
+        '@echo off',
+        "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ""$scriptPath"" -AsSystem > ""$logPath"" 2>&1",
+        "echo %ERRORLEVEL% > ""$exitPath""",
+        'exit /b %ERRORLEVEL%'
+    ) | Set-Content -Path $wrapperPath -Encoding ASCII -Force
+
+    Remove-Item $logPath, $exitPath -ErrorAction SilentlyContinue
+    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
+
+    $action = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument "/c `"$wrapperPath`""
+    $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 1)
+
+    Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal -Settings $settings -Force | Out-Null
+    Start-ScheduledTask -TaskName $taskName
+
+    $deadline = (Get-Date).AddMinutes(50)
+    while (-not (Test-Path $exitPath)) {
+        if ((Get-Date) -gt $deadline) {
+            throw 'Timed out waiting for SYSTEM provision task to finish.'
+        }
+        Start-Sleep -Seconds 5
+    }
+
+    if (Test-Path $logPath) {
+        Get-Content -Path $logPath -ErrorAction SilentlyContinue | Write-Host
+    }
+
+    $exitCode = 1
+    $exitRaw = Get-Content -Path $exitPath -ErrorAction SilentlyContinue | Select-Object -Last 1
+    if ($exitRaw -match '^\d+$') {
+        $exitCode = [int]$exitRaw
+    }
+
+    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
+    Remove-Item $scriptPath, $wrapperPath, $exitPath -ErrorAction SilentlyContinue
+
+    exit $exitCode
+}
+
+$currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+if (-not $AsSystem -and $currentIdentity -ne 'NT AUTHORITY\SYSTEM') {
+    Write-Host "Current identity is $currentIdentity; relaunching provisioner as SYSTEM..."
+    Invoke-AsSystem
+}
 
 # Install OpenVox agent
 Write-Host "Downloading OpenVox agent..."
