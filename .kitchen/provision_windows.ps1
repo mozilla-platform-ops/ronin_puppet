@@ -42,10 +42,22 @@ function Invoke-AsSystem {
         Get-Content -Path $logPath -ErrorAction SilentlyContinue | Write-Host
     }
 
-    $exitCode = 1
-    $exitRaw = Get-Content -Path $exitPath -ErrorAction SilentlyContinue | Select-Object -Last 1
-    if ($exitRaw -match '^\d+$') {
-        $exitCode = [int]$exitRaw
+    $exitCode = $null
+    $parseDeadline = (Get-Date).AddSeconds(30)
+    while ($null -eq $exitCode -and (Get-Date) -lt $parseDeadline) {
+        $exitRaw = Get-Content -Path $exitPath -Raw -ErrorAction SilentlyContinue
+        if ($null -ne $exitRaw) {
+            $exitRaw = $exitRaw.Trim()
+            if ($exitRaw -match '^\d+$') {
+                $exitCode = [int]$exitRaw
+                break
+            }
+        }
+        Start-Sleep -Seconds 1
+    }
+
+    if ($null -eq $exitCode) {
+        throw "Unable to parse SYSTEM provision task exit code from $exitPath."
     }
 
     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
