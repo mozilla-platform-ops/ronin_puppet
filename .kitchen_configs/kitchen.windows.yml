@@ -17,6 +17,8 @@ transport:
   username: kitchenadmin
   password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
   winrm_transport: :plaintext
+  operation_timeout: 1800
+  receive_timeout: 1810
 
 lifecycle:
   pre_converge:

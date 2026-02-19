@@ -53,8 +53,7 @@ Write-Host "Running puppet apply for role $env:PUPPET_ROLE..."
     '--no-usecacheonfailure' `
     '--detailed-exitcodes' `
     '--no-splay' `
-    '--show_diff' `
-    '--debug'
+    '--show_diff'
 
 $exitCode = $LASTEXITCODE
 
