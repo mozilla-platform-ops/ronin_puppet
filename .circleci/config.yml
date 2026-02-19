@@ -156,6 +156,10 @@ commands:
           - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-
           - v4-system-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version-cache" }}-
       - run:
+          name: Install required bundler version
+          command: |
+            gem install bundler:2.5.23
+      - run:
           name: Bundle install
           command: |
             rm -rf .bundle vendor
@@ -298,6 +302,7 @@ jobs:
             export GEM_HOME="$HOME/.gem/ruby/$RUBY_MINOR"
             export GEM_PATH="$HOME/.gem/ruby/$RUBY_MINOR:$(ruby -e "puts Gem.default_dir")"
             export PATH="$HOME/.gem/ruby/$RUBY_MINOR/bin:$PATH"
+            gem install bundler:2.5.23
             bundle config set --local gemfile .gemfile
             bundle install
             kitchen converge << parameters.suite >>
