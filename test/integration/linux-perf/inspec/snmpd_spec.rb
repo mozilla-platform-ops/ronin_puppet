@@ -1,7 +1,11 @@
 # ensure package is installed
 describe package('snmpd') do
     it { should be_installed }
+end
+
+describe service('snmpd') do
     it { should be_running }
+    it { should be_enabled }
 end
 
 # check our templating worked
