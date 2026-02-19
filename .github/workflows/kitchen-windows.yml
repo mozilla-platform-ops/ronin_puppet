@@ -34,10 +34,10 @@ jobs:
             kitchen_target: windows-win11-64-25h2
     steps:
       - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Azure login
-        uses: azure/login@eec3c95657c1536435858eda1f3ff5437fee8474
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -50,7 +50,7 @@ jobs:
           bundler-cache: false
 
       - name: Cache gems
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
         with:
           path: ~/.gem
           key: v1-gems-${{ runner.os }}-${{ hashFiles('.gemfile.lock') }}

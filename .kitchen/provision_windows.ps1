@@ -41,6 +41,7 @@ $env:FACTER_custom_win_role = $env:PUPPET_ROLE
 $env:FACTER_running_in_test_kitchen = 'true'
 
 # Run puppet apply
+# r10k_modules is committed to the repo, so no separate `r10k puppetfile install` is needed.
 Write-Host "Running puppet apply for role $env:PUPPET_ROLE..."
 & "$puppetBin\puppet" apply `
     -e "include roles_profiles::roles::$env:PUPPET_ROLE" `
