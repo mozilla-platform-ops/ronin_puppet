@@ -33,6 +33,7 @@ platforms:
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen
       use_ephemeral_osdisk: true
+      deployment_timeout_in_minutes: 30
       username: kitchenadmin
       password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
       vm_tags:
