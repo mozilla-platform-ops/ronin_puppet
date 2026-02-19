@@ -17,6 +17,9 @@ function Write-Log {
         default { $entryType = 'Information';  $eventId = 1; break }
     }
 
+    # Always emit to stdout so Puppet logoutput captures it.
+    try { Write-Output $message } catch { }
+
     # Best-effort event log creation (avoid terminating failures / races)
     try {
         if (!([Diagnostics.EventLog]::Exists($logName)) -or
@@ -62,8 +65,6 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.549981C3F5F10"         = @{ VDIState="Unchanged"; URL="https://apps.microsoft.com/detail/cortana/9NFFX4SZZ23L?hl=en-us&gl=US"; Description="Cortana (could not update)" }
         "Microsoft.BingNews"              = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/microsoft-news/9wzdncrfhvfw"; Description="Microsoft News app" }
         "Microsoft.BingWeather"           = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/msn-weather/9wzdncrfj3q2"; Description="MSN Weather app" }
-        ## Doesn't actually gets removed
-        ## Comment out for now
         #"Microsoft.DesktopAppInstaller"   = @{ VDIState="Unchanged"; URL="https://apps.microsoft.com/detail/9NBLGGH4NNS1"; Description="Microsoft App Installer for Windows 10 makes sideloading Windows apps easy" }
         "Microsoft.GetHelp"               = @{ VDIState="Unchanged"; URL="https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/customize-get-help-app"; Description="App that facilitates free support for Microsoft products" }
         "Microsoft.Getstarted"            = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/microsoft-tips/9wzdncrdtbjj"; Description="Windows 10 tips app" }
@@ -92,7 +93,6 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsNotepad"        = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/windows-notepad/9msmlrh6lzf3"; Description="Notepad (Store)" }
         "Microsoft.WindowsStore"          = @{ VDIState="Unchanged"; URL="https://blogs.windows.com/windowsexperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/"; Description="Microsoft Store" }
         "Microsoft.WindowsSoundRecorder"  = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/windows-voice-recorder/9wzdncrfhwkn"; Description="Voice Recorder" }
-        ## Don't remove
         #"Microsoft.WindowsTerminal"       = @{ VDIState="Unchanged"; URL="https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701"; Description="Windows Terminal" }
         "Microsoft.Winget.Platform.Source"= @{ VDIState="Unchanged"; URL="https://learn.microsoft.com/en-us/windows/package-manager/winget/"; Description="Winget source" }
         "Microsoft.Xbox.TCUI"             = @{ VDIState="Unchanged"; URL="https://docs.microsoft.com/en-us/gaming/xbox-live/features/general/tcui/live-tcui-overview"; Description="Xbox TCUI" }
@@ -250,15 +250,30 @@ try {
     $taskName = 'Hard-Disable-AppXSvc'
     $taskPath = '\Hardening\'
 
-    Unregister-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Confirm:$false -ErrorAction SilentlyContinue
+    # Ensure Task Scheduler service is running (best-effort)
+    try { Start-Service -Name Schedule -ErrorAction SilentlyContinue } catch { }
 
-    Register-ScheduledTask -TaskName $taskName `
-        -TaskPath $taskPath `
-        -Action $action `
-        -Trigger $trigger `
-        -RunLevel Highest `
-        -User 'SYSTEM' `
-        -Force | Out-Null
+    # Register task with retries (Task Scheduler can be flaky early-boot)
+    $max = 5
+    for ($i=1; $i -le $max; $i++) {
+        try {
+            Unregister-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Confirm:$false -ErrorAction SilentlyContinue
+
+            Register-ScheduledTask -TaskName $taskName `
+                -TaskPath $taskPath `
+                -Action $action `
+                -Trigger $trigger `
+                -RunLevel Highest `
+                -User 'SYSTEM' `
+                -Force | Out-Null
+
+            break
+        } catch {
+            Write-Log -message ("Ensure-AppXSvcHardeningTask :: Register-ScheduledTask failed ({0}/{1}): {2}" -f $i,$max,$_.Exception.Message) -severity 'WARN'
+            Start-Sleep -Seconds 3
+            if ($i -eq $max) { throw }
+        }
+    }
 }
 
 function Test-AppXSvcDisabled {
@@ -308,6 +323,19 @@ try {
     Write-Log -message 'uninstall_appx_packages :: Ensure-AppXSvcHardeningTask' -severity 'DEBUG'
     Ensure-AppXSvcHardeningTask
 
+    # Re-apply after task registration (SCM / other components can flip it back briefly)
+    Write-Log -message 'uninstall_appx_packages :: Disable-AppXSvcCore (post-task)' -severity 'DEBUG'
+    Disable-AppXSvcCore
+
+    # Verify with retries (service disable can race)
+    $max = 10
+    for ($i = 1; $i -le $max; $i++) {
+        if (Test-AppXSvcDisabled) { break }
+        Write-Log -message ("uninstall_appx_packages :: waiting for AppXSvc to disable ({0}/{1})" -f $i, $max) -severity 'DEBUG'
+        Start-Sleep -Seconds 2
+        Disable-AppXSvcCore
+    }
+
     if (-not (Test-AppXSvcDisabled)) {
         $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
         $status = if ($svc) { $svc.Status } else { 'Missing' }
@@ -330,6 +358,8 @@ try {
     exit 0
 }
 catch {
-    Write-Log -message ("uninstall_appx_packages :: FATAL: {0}" -f $_.Exception.ToString()) -severity 'ERROR'
+    $msg = "uninstall_appx_packages :: FATAL: $($_.Exception.ToString())"
+    try { Write-Output $msg } catch { }
+    Write-Log -message $msg -severity 'ERROR'
     exit 1
 }
