@@ -1,9 +1,6 @@
 # Ignore files produced by vagrant
 *.log
 .vagrant/*
-.kitchen/
-!.kitchen/add_proxy_entries.py
-!.kitchen/provision_windows.ps1
 
 # ignore local r10k files
 .r10k/
