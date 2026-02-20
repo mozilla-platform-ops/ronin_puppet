@@ -1,0 +1,68 @@
+name: Kitchen Windows
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'modules/roles_profiles/**'
+      - 'data/roles/win*.yaml'
+      - 'data/os/Windows/**'
+      - '.kitchen_configs/kitchen.windows.yml'
+      - '.github/workflows/kitchen-windows.yml'
+
+jobs:
+  win116425h2azure:
+    name: win116425h2azure
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Azure login
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Cache gems
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ~/.gem
+          key: v1-gems-${{ runner.os }}-${{ hashFiles('.gemfile.lock') }}
+
+      - name: Bundle install
+        run: |
+          bundle config set --local gemfile .gemfile
+          bundle install
+
+      - name: Kitchen test
+        timeout-minutes: 60
+        env:
+          KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
+          PUPPET_ROLE: win116425h2azure
+          WORKER_POOL_ID: win11-64-25h2-alpha
+          RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: bundle exec kitchen test windows-win11-64-25h2 -l debug
+
+      - name: Kitchen destroy
+        if: always()
+        env:
+          KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
+          PUPPET_ROLE: win116425h2azure
+          WORKER_POOL_ID: win11-64-25h2-alpha
+          RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: bundle exec kitchen destroy windows-win11-64-25h2 -l debug
