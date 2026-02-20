@@ -203,6 +203,10 @@ if [ "$VERSION_ID" = "24.04" ]; then
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
     # shellcheck disable=SC2090
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent
+
+    # get clock synced. if clock is way off, run-puppet.sh will never finish
+    #   it's git clone because the SSL cert will appear invalid.
+    #
     # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
     # place our config and restart the service
     mkdir -p /etc/systemd/timesyncd.conf.d
@@ -222,7 +226,7 @@ elif [ "$VERSION_ID" = "18.04" ]; then
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent ntp
 
     # get clock synced. if clock is way off, run-puppet.sh will never finish
-    # it's git clone because the SSL cert will appear invalid.
+    #   it's git clone because the SSL cert will appear invalid.
     /etc/init.d/ntp stop
     echo "server ntp.build.mozilla.org iburst" >/etc/ntp.conf # place barebones config
     ntpd -q -g                                                # runs once and force allows huge skews
