@@ -10,6 +10,7 @@ class roles_profiles::roles::gecko_3_t_osx_1014 {
   include roles_profiles::profiles::gecko_3_t_osx_1014_generic_worker
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::hardware
+  include roles_profiles::profiles::macos_disable_firewall
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp

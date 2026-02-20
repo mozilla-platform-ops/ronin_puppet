@@ -6,6 +6,7 @@ class roles_profiles::roles::applicationservices_1_b_osx_1015 {
   include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::hardware
+  include roles_profiles::profiles::macos_disable_firewall
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_run_puppet
   include roles_profiles::profiles::macos_xcode_tools
