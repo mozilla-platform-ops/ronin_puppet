@@ -10,6 +10,10 @@ on:
       - '.kitchen_configs/kitchen.windows.yml'
       - '.github/workflows/kitchen-windows.yml'
 
+concurrency:
+  group: kitchen-windows
+  cancel-in-progress: false
+
 jobs:
   win116425h2azure:
     name: win116425h2azure
