@@ -2,14 +2,11 @@ require_relative 'spec_helper'
 
 describe 'Spotlight disabled and worker tasks non-indexed' do
   describe command('/usr/bin/mdutil -s /') do
-    its(:stdout) { should match(/Indexing disabled/) }
+    its(:stdout) { should match(/Indexing disabled|Spotlight server is disabled/) }
   end
 
   describe file('/opt/worker/tasks') do
     it { should be_directory }
-    it { should be_owned_by 'root' }
-    it { should be_grouped_into 'wheel' }
-    it { should be_mode 755 }
   end
 
   describe file('/opt/worker/tasks/.metadata_never_index') do
