@@ -193,6 +193,7 @@ fi
 # if on ubuntu 24.04, install puppet 8, else install puppet 7
 if [ "$VERSION_ID" = "24.04" ]; then
     echo "Installing Puppet 8..."
+    # TODO: use openvox
     wget https://apt.puppetlabs.com/puppet8-release-noble.deb -O /tmp/puppet.deb
     # install puppet release deb for the version we've selected
     dpkg -i /tmp/puppet.deb
@@ -209,6 +210,7 @@ if [ "$VERSION_ID" = "24.04" ]; then
     systemctl restart systemd-timesyncd
 elif [ "$VERSION_ID" = "18.04" ]; then
     echo "Installing Puppet 7..."
+    # TODO: use openvox and puppet 8
     wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/puppet.deb
     # install puppet release deb for the version we've selected
     dpkg -i /tmp/puppet.deb
