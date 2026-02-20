@@ -8,7 +8,7 @@ class linux_snmpd {
       case $facts['os']['release']['full'] {
         '18.04', '22.04', '24.04': {
           # load in secrets from vault/hiera
-          $snmpd_ro_secret = lookup('snmpd.ro_community')
+          $snmpd_ro_secret = lookup('snmpd.ro_community', { default_value => undef })
 
           # only do this block if secret is set
           if $snmpd_ro_secret and $snmpd_ro_secret != '' {
