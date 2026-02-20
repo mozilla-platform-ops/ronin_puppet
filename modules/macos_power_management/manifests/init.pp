@@ -31,5 +31,6 @@ class macos_power_management {
   exec { 'pmset_SleepDisabled':
     command => '/usr/bin/pmset -a SleepDisabled 1',
     unless  => '/usr/bin/pmset -g | /usr/bin/grep -w SleepDisabled | /usr/bin/grep -w 1',
+    returns => [0, 1],
   }
 }
