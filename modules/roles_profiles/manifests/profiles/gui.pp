@@ -9,7 +9,7 @@ class roles_profiles::profiles::gui {
         ensure => 'absent',
       }
       include macos_utils::show_full_name
-      include macos_utils::disable_scroll_bars
+      include macos_utils::always_show_scroll_bars
     }
     'Ubuntu':{
       # this is for x11, see gui_wayland.pp for wayland
