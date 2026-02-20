@@ -5,8 +5,7 @@
 class roles_profiles::profiles::screensaver {
   case $facts['os']['name'] {
     'Darwin': {
-      # This disables the screensaver
-      include macos_mobileconfig_profiles::setdefaultscreensaver
+      include macos_disable_screensaver
     }
     default: {
       fail("${facts['os']['name']} not supported")
