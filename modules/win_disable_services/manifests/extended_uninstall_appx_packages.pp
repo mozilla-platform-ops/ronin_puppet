@@ -1,13 +1,13 @@
-class win_disable_services::extended_uninstall_appx_packages (
-  $apx_uninstall,
-) {
+class win_disable_services::extended_uninstall_appx_packages {
+
   $ronin_base       = $facts['custom_win_roninprogramdata']
   $appx_script_path = "${ronin_base}\\win_uninstall_appx_packages.ps1"
   $svc_script_path  = "${ronin_base}\\win_disable_appxsvc.ps1"
 
+  # Hardcoded module file names (no params)
   file { $appx_script_path:
     ensure  => file,
-    content => file("win_disable_services/appxpackages/${apx_uninstall}"),
+    content => file('win_disable_services/appxpackages/win_uninstall_appx_packages.ps1'),
   }
 
   file { $svc_script_path:
