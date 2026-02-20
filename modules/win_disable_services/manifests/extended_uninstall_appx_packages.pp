@@ -1,10 +1,10 @@
+# win_disable_services/manifests/extended_uninstall_appx_packages.pp
 class win_disable_services::extended_uninstall_appx_packages {
 
   $ronin_base       = $facts['custom_win_roninprogramdata']
   $appx_script_path = "${ronin_base}\\win_uninstall_appx_packages.ps1"
   $svc_script_path  = "${ronin_base}\\win_disable_appxsvc.ps1"
 
-  # Hardcoded module file names (no params)
   file { $appx_script_path:
     ensure  => file,
     content => file('win_disable_services/appxpackages/win_uninstall_appx_packages.ps1'),
@@ -16,7 +16,8 @@ class win_disable_services::extended_uninstall_appx_packages {
   }
 
   exec { 'remove_extended_appx_packages':
-    command   => "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"${appx_script_path}\"",
+    command   => "& '${appx_script_path}'",
+    provider  => powershell,
     timeout   => 1200,
     logoutput => true,
     returns   => [0],
@@ -26,7 +27,8 @@ class win_disable_services::extended_uninstall_appx_packages {
   }
 
   exec { 'disable_appxsvc':
-    command   => "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"${svc_script_path}\"",
+    command   => "& '${svc_script_path}'",
+    provider  => powershell,
     timeout   => 300,
     logoutput => true,
     returns   => [0],
