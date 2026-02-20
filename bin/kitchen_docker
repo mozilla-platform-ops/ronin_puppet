@@ -8,6 +8,10 @@ mkdir -p /tmp/docker/var/cache/apt
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="${script_dir}/.."
+
+# ensure SSH key has correct permissions (git doesn't track this)
+chmod 600 "${root_dir}/test/id_ed25519" 2>/dev/null || true
+
 kitchen_config="${root_dir}/.kitchen_configs/kitchen.docker.yml"
 temp_kitchen_config="/tmp/ronin_puppet_kitchen_docker_temp_config.yml"
 
@@ -35,7 +39,9 @@ if [[ "$(uname -m)" == "arm64" ]]; then
     # exit 0
 else
     # echo "This system is not running on arm64 architecture."
-    export KITCHEN_YAML="${kitchen_config}"
+    # Still need to create temp config for proxy processing
+    cp "${kitchen_config}" "${temp_kitchen_config}"
+    export KITCHEN_YAML="${temp_kitchen_config}"
 fi
 
 # if command is test or converge, alert that results on arm64 will be different and recommend circleci run.
