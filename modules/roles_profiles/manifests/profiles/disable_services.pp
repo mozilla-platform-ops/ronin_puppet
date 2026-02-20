@@ -54,9 +54,9 @@ class roles_profiles::profiles::disable_services {
           }
           'azure': {
             $apx_uninstall = 'uninstall.ps1'
-            #class { 'win_disable_services::uninstall_appx_packages':
-            #  apx_uninstall => $apx_uninstall,
-            #}
+            class { 'win_disable_services::uninstall_appx_packages':
+              apx_uninstall => $apx_uninstall,
+            }
             include win_scheduled_tasks::kill_local_clipboard
             ## Disable Unnecessary tasks
             ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
@@ -70,11 +70,9 @@ class roles_profiles::profiles::disable_services {
         ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
         ## must be ran after apx uninstall
-        class { 'win_disable_services::uninstall_appx_packages':
-          apx_uninstall => $apx_uninstall,
-        }
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
+          include win_disable_services::extended_uninstall_appx_packages
         }
       }
       # May be needed for non-hardaware
