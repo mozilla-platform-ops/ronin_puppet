@@ -5,7 +5,7 @@
 class roles_profiles::profiles::software_updates {
   case $facts['os']['name'] {
     'Darwin': {
-      include macos_mobileconfig_profiles::disable_software_updates
+      include macos_disable_software_updates
     }
     default: {
       fail("${facts['os']['name']} not supported")
