@@ -23,6 +23,7 @@ class roles_profiles::roles::gecko_t_osx_1400_r8_staging {
   include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::safaridriver
+  include roles_profiles::profiles::screensaver
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::talos
   include roles_profiles::profiles::timezone
