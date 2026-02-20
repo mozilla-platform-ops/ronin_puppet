@@ -6,7 +6,8 @@ $servicesToDisable = @(
     'wuauserv',
     'usosvc',
     'uhssvc',
-    'WaaSMedicSvc'
+    'WaaSMedicSvc',
+    'DoSvc'
 ) | Get-Service -ErrorAction SilentlyContinue
 
 ## Disable each service. Stop if they're still running

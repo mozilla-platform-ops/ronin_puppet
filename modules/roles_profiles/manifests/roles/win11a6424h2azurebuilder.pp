@@ -7,6 +7,7 @@ class roles_profiles::roles::win11a6424h2azurebuilder {
     ## Include only what is needed in the catalog post bootstrap
     ## Saves minutes on workers first boot
     'complete': {
+      include roles_profiles::profiles::azure_vm_file_system
       include roles_profiles::profiles::error_reporting
       include roles_profiles::profiles::files_system_managment
       include roles_profiles::profiles::logging
@@ -15,6 +16,7 @@ class roles_profiles::roles::win11a6424h2azurebuilder {
       include roles_profiles::profiles::ntp
     }
     default: {
+      include roles_profiles::profiles::azure_vm_file_system
       # Needs to be applied before other Win Update is disabled
       include roles_profiles::profiles::microsoft_tools
 

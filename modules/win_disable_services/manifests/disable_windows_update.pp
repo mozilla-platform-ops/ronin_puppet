@@ -60,6 +60,12 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '4',
       }
+      # On newer Windows builds (e.g. 25H2), SCM operations on DoSvc may be denied.
+      # Use registry startup-type disable to avoid failing the Puppet run.
+      registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\DoSvc\Start':
+        type => dword,
+        data => '4',
+      }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
         type => dword,
         data => '0',
@@ -79,11 +85,6 @@ class win_disable_services::disable_windows_update {
       registry_value { "${win_update_key}\\DisableWindowsUpdateAccess":
         type => dword,
         data => '1',
-      }
-      # Delivery Optimization (P2P update caching) — stop and disable alongside WU
-      service { 'DoSvc':
-        ensure => 'stopped',
-        enable => false,
       }
       # Connected User Experiences and Telemetry — disable for all Windows workers
       # (already handled for datacenter via disable_optional_services, this covers Azure)
