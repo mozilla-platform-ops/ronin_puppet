@@ -190,15 +190,30 @@ else
     exit 1
 fi
 
-# PKG_TO_INSTALL="puppet-agent"
-PKG_TO_INSTALL="openvox-agent"
 TEMP_DEB_NAME="bootstrap_temp.deb"
+# noble, bionic, etc (CODENAME in /etc/lsb-release) on ubuntu
+# VERSION_CODENAME=$(lsb_release -cs 2>/dev/null)
+# 18.04, 24.04, etc
+VERSION_ID=$(lsb_release -rs 2>/dev/null)
 
-# if on ubuntu 24.04, install puppet 8, else install puppet 7
+# puppet vars
+#
+# PKG_TO_INSTALL="puppet-agent"
+# INSTALL_URL_BASE="https://apt.puppetlabs.com"
+# INSTALL_URL_DEB="puppet8-release-noble.deb"
+# INSTALL_URL_DEB="puppet7-release-bionic.deb"
+
+# openvox vars
+#
+PKG_TO_INSTALL="openvox-agent"
+INSTALL_URL_BASE="https://apt.voxpupuli.org"
+INSTALL_URL_DEB="openvox8-release-ubuntu${VERSION_ID}.deb"
+
+# we install openvox 8 on both, but NTP setup differs
 if [ "$VERSION_ID" = "24.04" ]; then
-    echo "Installing Puppet 8..."
-    # TODO: use openvox
-    wget https://apt.puppetlabs.com/puppet8-release-noble.deb -O /tmp/${TEMP_DEB_NAME}
+    echo "Installing Openvox 8..."
+
+    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O /tmp/${TEMP_DEB_NAME}
     # install puppet release deb for the version we've selected
     dpkg -i /tmp/${TEMP_DEB_NAME}
     # update apt and install puppet-agent and ntp
@@ -217,9 +232,10 @@ if [ "$VERSION_ID" = "24.04" ]; then
     echo -e "[Time]\nNTP=ntp.build.mozilla.org" >/etc/systemd/timesyncd.conf.d/mozilla.conf
     systemctl restart systemd-timesyncd
 elif [ "$VERSION_ID" = "18.04" ]; then
-    echo "Installing Puppet 7..."
+    echo "Installing Openvox 8..."
+
     # TODO: use openvox and puppet 8
-    wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/${TEMP_DEB_NAME}
+    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O /tmp/${TEMP_DEB_NAME}
     # install puppet release deb for the version we've selected
     dpkg -i /tmp/${TEMP_DEB_NAME}
     # update apt and install puppet-agent and ntp
