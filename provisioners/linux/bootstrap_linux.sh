@@ -182,7 +182,7 @@ if [ ! -f /root/vault.yaml ]; then
     exit 1
 fi
 
-# if on ubuntu 22.04, install puppet 8, else install puppet 7
+# determine ubuntu version so we can set NTP method appropriately
 if [ -f /etc/os-release ]; then
     . /etc/os-release
 else
@@ -191,10 +191,8 @@ else
 fi
 
 TEMP_DEB_NAME="bootstrap_temp.deb"
-# noble, bionic, etc (CODENAME in /etc/lsb-release) on ubuntu
-# VERSION_CODENAME=$(lsb_release -cs 2>/dev/null)
-# 18.04, 24.04, etc
-VERSION_ID=$(lsb_release -rs 2>/dev/null)
+# noble, bionic, etc (VERSION_CODENAME) and 18.04, 24.04, etc (VERSION_ID)
+# are sourced from /etc/os-release above
 
 # puppet vars
 #
@@ -221,7 +219,7 @@ if [ "$VERSION_ID" = "24.04" ]; then
     # shellcheck disable=SC2090
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
     # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y ${PKG_TO_INSTALL}
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y "${PKG_TO_INSTALL}"
 
     # get clock synced. if clock is way off, run-puppet.sh will never finish
     #   it's git clone because the SSL cert will appear invalid.
@@ -234,7 +232,6 @@ if [ "$VERSION_ID" = "24.04" ]; then
 elif [ "$VERSION_ID" = "18.04" ]; then
     echo "Installing Openvox 8..."
 
-    # TODO: use openvox and puppet 8
     wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O /tmp/${TEMP_DEB_NAME}
     # install puppet release deb for the version we've selected
     dpkg -i /tmp/${TEMP_DEB_NAME}
@@ -243,7 +240,7 @@ elif [ "$VERSION_ID" = "18.04" ]; then
     # shellcheck disable=SC2090
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
     # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y ${PKG_TO_INSTALL} ntp
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y "${PKG_TO_INSTALL}" ntp
 
     # get clock synced. if clock is way off, run-puppet.sh will never finish
     #   it's git clone because the SSL cert will appear invalid.
