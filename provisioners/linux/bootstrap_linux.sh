@@ -190,19 +190,23 @@ else
     exit 1
 fi
 
+# PKG_TO_INSTALL="puppet-agent"
+PKG_TO_INSTALL="openvox-agent"
+TEMP_DEB_NAME="bootstrap_temp.deb"
+
 # if on ubuntu 24.04, install puppet 8, else install puppet 7
 if [ "$VERSION_ID" = "24.04" ]; then
     echo "Installing Puppet 8..."
     # TODO: use openvox
-    wget https://apt.puppetlabs.com/puppet8-release-noble.deb -O /tmp/puppet.deb
+    wget https://apt.puppetlabs.com/puppet8-release-noble.deb -O /tmp/${TEMP_DEB_NAME}
     # install puppet release deb for the version we've selected
-    dpkg -i /tmp/puppet.deb
+    dpkg -i /tmp/${TEMP_DEB_NAME}
     # update apt and install puppet-agent and ntp
     apt-get update
     # shellcheck disable=SC2090
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
     # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y ${PKG_TO_INSTALL}
 
     # get clock synced. if clock is way off, run-puppet.sh will never finish
     #   it's git clone because the SSL cert will appear invalid.
@@ -215,15 +219,15 @@ if [ "$VERSION_ID" = "24.04" ]; then
 elif [ "$VERSION_ID" = "18.04" ]; then
     echo "Installing Puppet 7..."
     # TODO: use openvox and puppet 8
-    wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/puppet.deb
+    wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/${TEMP_DEB_NAME}
     # install puppet release deb for the version we've selected
-    dpkg -i /tmp/puppet.deb
+    dpkg -i /tmp/${TEMP_DEB_NAME}
     # update apt and install puppet-agent and ntp
     apt-get update
     # shellcheck disable=SC2090
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
     # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent ntp
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y ${PKG_TO_INSTALL} ntp
 
     # get clock synced. if clock is way off, run-puppet.sh will never finish
     #   it's git clone because the SSL cert will appear invalid.
