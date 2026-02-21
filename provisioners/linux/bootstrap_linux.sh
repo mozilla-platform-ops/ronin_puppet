@@ -221,14 +221,16 @@ if [ "$VERSION_ID" = "24.04" ]; then
     # shellcheck disable=SC2090
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y "${PKG_TO_INSTALL}"
 
-    # get clock synced. if clock is way off, run-puppet.sh will never finish
-    #   it's git clone because the SSL cert will appear invalid.
-    #
-    # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
-    # place our config and restart the service
-    mkdir -p /etc/systemd/timesyncd.conf.d
-    echo -e "[Time]\nNTP=ntp.build.mozilla.org" >/etc/systemd/timesyncd.conf.d/mozilla.conf
-    systemctl restart systemd-timesyncd
+    if [ "${SKIP_NTP:-false}" != "true" ]; then
+        # get clock synced. if clock is way off, run-puppet.sh will never finish
+        #   it's git clone because the SSL cert will appear invalid.
+        #
+        # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
+        # place our config and restart the service
+        mkdir -p /etc/systemd/timesyncd.conf.d
+        echo -e "[Time]\nNTP=ntp.build.mozilla.org" >/etc/systemd/timesyncd.conf.d/mozilla.conf
+        systemctl restart systemd-timesyncd
+    fi
 elif [ "$VERSION_ID" = "18.04" ]; then
     echo "Installing Openvox 8..."
 
@@ -242,12 +244,14 @@ elif [ "$VERSION_ID" = "18.04" ]; then
     # shellcheck disable=SC2090
     DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y "${PKG_TO_INSTALL}" ntp
 
-    # get clock synced. if clock is way off, run-puppet.sh will never finish
-    #   it's git clone because the SSL cert will appear invalid.
-    /etc/init.d/ntp stop
-    echo "server ntp.build.mozilla.org iburst" >/etc/ntp.conf # place barebones config
-    ntpd -q -g                                                # runs once and force allows huge skews
-    /etc/init.d/ntp start
+    if [ "${SKIP_NTP:-false}" != "true" ]; then
+        # get clock synced. if clock is way off, run-puppet.sh will never finish
+        #   it's git clone because the SSL cert will appear invalid.
+        /etc/init.d/ntp stop
+        echo "server ntp.build.mozilla.org iburst" >/etc/ntp.conf # place barebones config
+        ntpd -q -g                                                 # runs once and force allows huge skews
+        /etc/init.d/ntp start
+    fi
 else
     echo "Unsupported Ubuntu version: $VERSION_ID. This script only supports Ubuntu 18.04 and 24.04."
     exit 1
