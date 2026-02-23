@@ -1,0 +1,3 @@
+gpg --import <%= $win_shared::gpg_files::gpg_key %>
+
+gpg --batch --yes --output <%= $win_shared::gpg_files::destination %>  --decrypt <%= $win_shared::gpg_files::src_file %>

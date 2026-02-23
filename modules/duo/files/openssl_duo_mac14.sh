@@ -5,26 +5,18 @@ set -euo pipefail
 
 sudo xcodebuild -license accept
 
-# Determine the currently logged-in user (excluding root)
-CURRENT_USER=$(stat -f%Su /dev/console)
+echo "Installing Duo as root"
 
-if [[ "$CURRENT_USER" == "root" || -z "$CURRENT_USER" ]]; then
-    echo "No non-root user is currently logged in. Exiting."
-    exit 1
-fi
-
-echo "Detected logged-in user: $CURRENT_USER"
-
-DOWNLOADS_DIR="/tmp"
+DOWNLOADS_DIR="/tmp/duo"
 
 # Ensure the Downloads directory exists
 if [[ ! -d "$DOWNLOADS_DIR" ]]; then
-    echo "Creating Downloads directory for $CURRENT_USER"
+    echo "Creating Downloads directory"
     mkdir -p "$DOWNLOADS_DIR"
-    chown "$CURRENT_USER" "$DOWNLOADS_DIR"
+    sudo chown root:wheel "$DOWNLOADS_DIR"
 fi
 
-# Change to the user's Downloads directory
+# Change to the Downloads directory
 cd "$DOWNLOADS_DIR"
 
 ######
@@ -34,22 +26,17 @@ cd "$DOWNLOADS_DIR"
 OPENSSL_URL="https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/14/openssl-3.4.0.tar.gz"
 
 echo "Downloading OpenSSL 3.4.0..."
-sudo -u "$CURRENT_USER" curl -O "$OPENSSL_URL"
+sudo curl -O "$OPENSSL_URL"
 
 echo "Extracting OpenSSL 3.4.0..."
-sudo -u "$CURRENT_USER" tar -xzf openssl-3.4.0.tar.gz
+sudo tar -xzf openssl-3.4.0.tar.gz
 
 cd openssl-3.4.0
 
-# Set compiler environment variables for ARM64
-export CC="clang"
-export CFLAGS="-arch arm64"
-export LDFLAGS="-arch arm64"
-
 # Configure, make, and install OpenSSL
 echo "Building OpenSSL..."
-sudo -u "$CURRENT_USER" ./Configure darwin64-arm64-cc
-sudo -u "$CURRENT_USER" make -j"$(sysctl -n hw.ncpu)"
+sudo CC="clang" CFLAGS="-arch arm64" LDFLAGS="-arch arm64" ./Configure darwin64-arm64-cc
+sudo make -j"$(sysctl -n hw.ncpu)"
 
 echo "Installing OpenSSL..."
 sudo make install
@@ -74,18 +61,18 @@ DUO_UNIX_URL="https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos
 cd "$DOWNLOADS_DIR"
 
 echo "Downloading Duo Unix 2.2.3..."
-sudo -u "$CURRENT_USER" curl -O "$DUO_UNIX_URL"
+sudo curl -O "$DUO_UNIX_URL"
 
 echo "Extracting Duo Unix 2.2.3..."
-sudo -u "$CURRENT_USER" tar -xzf duo_unix-2.2.3.tar.gz
+sudo tar -xzf duo_unix-2.2.3.tar.gz
 
 cd duo_unix-2.2.3
 
 echo "Configuring Duo Unix with OpenSSL and PAM..."
-sudo -u "$CURRENT_USER" ./configure --with-openssl=/usr/local --with-pam=/usr/local/lib/pam
+sudo ./configure --with-openssl=/usr/local --with-pam=/usr/local/lib/pam
 
 echo "Building Duo Unix..."
-sudo -u "$CURRENT_USER" make
+sudo make
 
 echo "Installing Duo Unix..."
 sudo make install

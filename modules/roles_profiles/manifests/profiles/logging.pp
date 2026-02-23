@@ -18,6 +18,32 @@ class roles_profiles::profiles::logging (
   $stackdriver_clientid = lookup("stackdriver.${stackdriver_project}.clientid", { 'default_value' => '' })
 
   case $facts['os']['name'] {
+    'Windows': {
+      $log_aggregator  = lookup('windows.external.papertrail')
+
+      if ($facts['custom_win_location'] == 'datacenter') or ($facts['custom_win_location'] == 'azure') {
+        if ($facts['custom_win_bootstrap_stage'] != 'complete') {
+          $log_level = 'verbose'
+        } else {
+          $log_level = lookup('win-worker.log.level')
+        }
+        if ($log_level != 'debug') and ($log_level != 'restricted') and ($log_level != 'verbose') {
+          fail("Log level ${log_level} is not supported")
+        }
+        $conf_file  = "${facts['custom_win_location']}_${log_level}_nxlog.conf"
+      } else {
+        $conf_file = 'non_datacenter_nxlog.conf'
+      }
+      class { 'win_nxlog':
+        nxlog_dir      => "${facts['custom_win_programfilesx86']}\\nxlog",
+        location       => $facts['custom_win_location'],
+        node_name      => $facts['networking']['fqdn'],
+        log_aggregator => $log_aggregator,
+        conf_file      => $conf_file,
+      }
+      # Bug List
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
+    }
     'Darwin': {
       class { 'fluentd':
         worker_type          => $worker_type,

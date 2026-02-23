@@ -1,7 +1,6 @@
 # Ignore files produced by vagrant
 *.log
 .vagrant/*
-.kitchen/
 
 # ignore local r10k files
 .r10k/

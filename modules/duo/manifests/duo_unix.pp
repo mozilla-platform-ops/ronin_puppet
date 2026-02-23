@@ -33,7 +33,7 @@ class duo::duo_unix (
 
         # Use package-based requirement
         $duo_require = Class['packages::duo_unix']
-    } elsif versioncmp($mac_version, '21') >= 0 or versioncmp($mac_version, '24') >= 0 {
+    } elsif versioncmp($mac_version, '21') {
         # macOS 14+
         notify { "Detected macOS ${mac_version}, treating as 14+":
             message => 'Installing Duo Unix with macOS 14+ script.',
@@ -48,10 +48,12 @@ class duo::duo_unix (
         }
 
         exec { 'install_duo_unix_mac14':
-            command     => '/usr/local/bin/openssl_duo_mac14.sh',
-            path        => ['/usr/local/bin', '/usr/bin', '/bin'],
-            refreshonly => true,
-            subscribe   => File['/usr/local/bin/openssl_duo_mac14.sh'],
+            command   => '/usr/local/bin/openssl_duo_mac14.sh',
+            path      => ['/usr/local/bin', '/usr/bin', '/bin'],
+            # Run if version doesn't match
+            unless    => 'strings /usr/local/lib/pam/pam_duo.so | grep -q "pam_duo/2.2.3"',
+            # If install file changes - bypass the version check and run it anyways.
+            subscribe => File['/usr/local/bin/openssl_duo_mac14.sh'],
         }
 
         # Fake a class dependency so require doesn't break

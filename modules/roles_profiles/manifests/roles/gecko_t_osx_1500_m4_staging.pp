@@ -7,6 +7,8 @@ class roles_profiles::roles::gecko_t_osx_1500_m4_staging {
   include roles_profiles::profiles::cltbld_user
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_directory_cleaner
+  include roles_profiles::profiles::macos_disable_firewall
+  include roles_profiles::profiles::macos_disable_spotlight
   include roles_profiles::profiles::macos_gw_checker
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_run_puppet

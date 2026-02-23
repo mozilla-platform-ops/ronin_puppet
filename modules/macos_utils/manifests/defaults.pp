@@ -11,9 +11,17 @@ define macos_utils::defaults (
 ) {
 
     $defaults_cmd = '/usr/bin/defaults'
+    $write_value = $val_type ? {
+        'bool'  => $value ? {
+            '0'     => 'false',
+            '1'     => 'true',
+            default => $value,
+        },
+        default => $value,
+    }
     if ($domain != undef) and ($key != undef) and ($value != undef) {
         exec { "osx_defaults write ${domain} ${key}=>${value}" :
-            command => "${defaults_cmd} write ${domain} ${key} -${val_type} ${value}",
+            command => "${defaults_cmd} write ${domain} ${key} -${val_type} ${write_value}",
             unless  => "/bin/test x`${defaults_cmd} read ${domain} ${key}` = x'${value}'",
             user    => $user,
         }

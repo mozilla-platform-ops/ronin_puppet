@@ -11,6 +11,9 @@ class roles_profiles::profiles::hardware {
         acceptance_hash => $apple_firmware_acceptance,
       }
     }
+    'Windows': {
+      #include win_os_settings::disable_monitor2
+    }
     default: {
       fail("${facts['os']['name']} not supported")
     }
