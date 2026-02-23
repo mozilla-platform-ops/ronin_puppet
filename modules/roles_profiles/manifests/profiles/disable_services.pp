@@ -43,7 +43,7 @@ class roles_profiles::profiles::disable_services {
         ## Not currently working. Leaving n place for ref.
         #include win_disable_services::disable_defender_smartscreen
         #include win_disable_services::disable_sync_from_cloud
-        if $facts['custom_win_release_id'] == '2004' or '2009' {
+        if $facts['custom_win_release_id'] in ['2004', '2009'] {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
         }
@@ -58,6 +58,10 @@ class roles_profiles::profiles::disable_services {
               apx_uninstall => $apx_uninstall,
             }
             include win_scheduled_tasks::kill_local_clipboard
+            ## Disable Unnecessary tasks
+            ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
+            ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
+            include win_disable_services::disable_scheduled_tasks
           }
           default: {
           }
@@ -68,6 +72,7 @@ class roles_profiles::profiles::disable_services {
         ## must be ran after apx uninstall
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
+          include win_disable_services::extended_uninstall_appx_packages
         }
       }
       # May be needed for non-hardaware
