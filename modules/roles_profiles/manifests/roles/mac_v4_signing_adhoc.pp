@@ -17,6 +17,7 @@ class roles_profiles::roles::mac_v4_signing_adhoc {
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::remove_bootstrap_user
   include roles_profiles::profiles::signing_users
+  include roles_profiles::profiles::screensaver
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::timezone
   include roles_profiles::profiles::users

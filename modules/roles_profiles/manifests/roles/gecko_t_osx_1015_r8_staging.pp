@@ -21,6 +21,7 @@ class roles_profiles::roles::gecko_t_osx_1015_r8_staging {
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::safaridriver
   include roles_profiles::profiles::safariupdate
+  include roles_profiles::profiles::screensaver
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::timezone
   include roles_profiles::profiles::users
