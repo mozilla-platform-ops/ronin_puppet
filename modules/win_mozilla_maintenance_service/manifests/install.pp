@@ -19,8 +19,9 @@ class win_mozilla_maintenance_service::install {
   ## Puppet functions fails to apply without a reboot, hence the powershell exec step below
   exec { 'mozilla_maintenance_acl':
     command  => file('win_mozilla_maintenance_service/acl.ps1'),
-    onlyif   => file('win_mozilla_maintenance_service/aclvalidate.ps1'),
+    unless   => file('win_mozilla_maintenance_service/aclvalidate.ps1'),
     provider => powershell,
     timeout  => 300,
+    require  => Win_packages::Win_exe_pkg['mozilla_maintenance_service'],
   }
 }

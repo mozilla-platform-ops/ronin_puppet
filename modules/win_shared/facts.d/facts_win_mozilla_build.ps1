@@ -24,8 +24,8 @@ if (Test-Path $mozbld_file) {
 # Mercurial
 # Needed in roles_profiles::profiles::mozilla_build
 if (Test-Path $hg_file) {
-	$hg_object = Get-WMIObject Win32_Product | Where-Object {$_.Name -Like  'Mercurial*'}
-	$hg_ver = $hg_object.version
+	$hg_object = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like 'Mercurial*' }
+	$hg_ver = $hg_object.DisplayVersion
 } else {
     $hg_ver = 0.0
 }
@@ -57,5 +57,4 @@ if (Test-Path $python3_file) {
 write-host "custom_win_py3_pip_version=$py3_pip_version"
 write-host "custom_win_mozbld_vesion=$mozbld_ver"
 write-host "custom_win_hg_version=$hg_ver"
-write-host "custom_win_py3_pip_version=$py3_pip_version"
 write-host "custom_win_py3_zstandard_version=$zstandard_version"

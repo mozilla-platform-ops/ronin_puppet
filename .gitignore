@@ -11,8 +11,8 @@
 *.swo
 
 # secrets
-vault.yaml
-vault.yml
+vault.yaml*
+vault.yml*
 
 # editors
 .vscode/
@@ -54,3 +54,10 @@ vendor/
 
 # Crash log files
 crash.log
+
+# generated docs
+doc/
+.yardoc/
+
+# node stuff
+node_modules

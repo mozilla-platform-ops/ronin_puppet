@@ -4,16 +4,6 @@
 
 class pf {
 
-    # The default /etc/pf.conf differs between major osx version
-    case $facts['os']['macosx']['version']['major'] {
-        '10.14': {
-            $osx_ver = 'mojave'
-        }
-        default: {
-            fail("OSX ${::macosx_productversion_major} is not supported")
-        }
-    }
-
     # Default ethernet interface
     $iface    = 'en0'
     $pf_dir   = '/etc/pf.mozilla.anchors'
@@ -59,7 +49,7 @@ class pf {
             owner  => 'root',
             group  => 'wheel',
             notify => Exec['update_pf'],
-            source => "puppet:///modules/pf/pf.conf.${osx_ver}";
+            source => "puppet:///modules/pf/pf.conf";
 
         '/Library/LaunchDaemons/org.mozilla.pf.plist':
             ensure => present,

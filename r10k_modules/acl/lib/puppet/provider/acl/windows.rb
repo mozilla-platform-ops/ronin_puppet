@@ -7,8 +7,8 @@ Puppet::Type.type(:acl).provide :windows do
   @doc = 'Windows specific provider for acl type.'
 
   # confine :feature => :microsoft_windows
-  confine operatingsystem: :windows
-  defaultfor operatingsystem: :windows
+  confine 'os.name': :windows
+  defaultfor 'os.name': :windows
 
   require "#{Pathname.new(__FILE__).dirname}/../../../puppet/type/acl/ace"
   require "#{Pathname.new(__FILE__).dirname}/../../../puppet/provider/acl/windows/base"
@@ -58,7 +58,7 @@ Puppet::Type.type(:acl).provide :windows do
     case @resource[:target_type]
     when :file
       # Target may not be set, this is called prior to initialize
-      if Puppet::Util::Windows::File.symlink?(@resource[:target] || @resource[:name])
+      if Puppet::Util::Windows::File.respond_to?(:symlink?) && Puppet::Util::Windows::File.symlink?(@resource[:target] || @resource[:name])
         raise Puppet::ResourceError, "Puppet cannot manage ACLs of symbolic links (symlinks) on Windows. Resource target '#{@resource[:target] || @resource[:name]}' is a symlink."
       end
     end

@@ -3,25 +3,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class puppet::disable_atboot {
+  case $facts['os']['name'] {
+    'Darwin': {
+      file {
+        '/Library/LaunchDaemons/com.mozilla.atboot_puppet.plist':
+          ensure => absent;
 
-    case $::operatingsystem {
-        'Darwin': {
-            file {
-                '/Library/LaunchDaemons/com.mozilla.atboot_puppet.plist':
-                    ensure => absent;
+        # default puppet service configuration
+        '/Library/LaunchDaemons/com.puppetlabs.puppet.plist':
+          ensure => absent;
 
-                # default puppet service configuration
-                '/Library/LaunchDaemons/com.puppetlabs.puppet.plist':
-                    ensure => absent;
-
-                # pxp-agent is disabled, but let's remove the plist also
-                '/Library/LaunchDaemons/com.puppetlabs.pxp-agent.plist':
-                    ensure => absent;
-            }
-        }
-        default: {
-            fail("${module_name} does not support ${::operatingsystem}")
-        }
+        # pxp-agent is disabled, but let's remove the plist also
+        '/Library/LaunchDaemons/com.puppetlabs.pxp-agent.plist':
+          ensure => absent;
+      }
     }
-
+    default: {
+      fail("${module_name} does not support ${facts['os']['name']}")
+    }
+  }
 }

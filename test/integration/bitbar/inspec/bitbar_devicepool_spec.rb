@@ -8,20 +8,6 @@ describe 'users' do
     end
   end
 
-  describe user('jwatkins') do
-    it { should exist }
-    %w(jwatkins wheel).each do |group|
-      its('groups') { should include group }
-    end
-  end
-
-  describe user('dhouse') do
-    it { should exist }
-    %w(dhouse wheel).each do |group|
-      its('groups') { should include group }
-    end
-  end
-
   describe user('bitbar') do
     it { should exist }
   end
@@ -41,12 +27,17 @@ describe 'service' do
   end
 end
 
-describe command('python --version') do
-  its(:exit_status) { should eq 0 }
+# 2204 doesn't have python(2)
+if os.family == 'debian' && os.release == '18.04'
+  describe command('python --version') do
+    its(:exit_status) { should eq 0 }
+  end
+  # TODO: else with echo stating we're not testing for this?
 end
 
-describe command('/home/bitbar/mozilla-bitbar-devicepool/venv/bin/python --version') do
+describe command('/home/bitbar/mozilla-bitbar-devicepool/.venv/bin/python --version') do
   its(:exit_status) { should eq 0 }
+  its(:stdout) { should match /Python 3/ }
 end
 
 # last_started_alert stuff
@@ -58,4 +49,10 @@ end
 describe command('/home/bitbar/android-tools/devicepool_last_started_alert/venv/bin/python --version') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match /Python 3/ }
+end
+
+# telegraf
+
+describe package('telegraf') do
+  it { should be_installed }
 end

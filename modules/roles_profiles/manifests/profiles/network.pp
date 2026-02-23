@@ -29,7 +29,7 @@ class roles_profiles::profiles::network {
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1671022
     }
     default: {
-      fail("${$facts['os']['name']} not supported")
+      fail("${facts['os']['name']} not supported")
     }
   }
 }

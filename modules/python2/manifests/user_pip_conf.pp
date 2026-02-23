@@ -3,32 +3,31 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 define python2::user_pip_conf (
-    String $user,
-    String $group,
-    Array $user_python_repositories = [ 'https://pypi.pub.build.mozilla.org/pub/', ],
+  String $user,
+  String $group,
+  Array $user_python_repositories = ['https://pypi.pub.build.mozilla.org/pub/',],
 ) {
+  case $facts['os']['name'] {
+    'Darwin':
+      {
+        file {
+          "/Users/${user}/Library/Application Support/pip/":
+          ensure  => 'directory',
+          owner   => $user,
+          group   => $group,
+          mode    => '0755',
+          require => File["/Users/${user}/Library/Application Support"];
 
-    case $::operatingsystem {
-        'Darwin':
-        {
-            file {
-                "/Users/${user}/Library/Application Support/pip/":
-                    ensure  => 'directory',
-                    owner   => $user,
-                    group   => $group,
-                    mode    => '0755',
-                    require => File["/Users/${user}/Library/Application Support"];
-
-                "/Users/${user}/Library/Application Support/pip/pip.conf":
-                    ensure  => 'file',
-                    content => template('python2/user-pip-conf.erb'),
-                    owner   => $user,
-                    group   => $group,
-                    mode    => '0644';
-            }
-        }
-        default: {
-            fail('This OS is not supported for user_pip_conf')
-        }
+        "/Users/${user}/Library/Application Support/pip/pip.conf":
+          ensure  => 'file',
+          content => template('python2/user-pip-conf.erb'),
+          owner   => $user,
+          group   => $group,
+          mode    => '0644';
+      }
     }
+    default: {
+      fail('This OS is not supported for user_pip_conf')
+    }
+  }
 }

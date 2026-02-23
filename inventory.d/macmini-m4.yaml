@@ -1,0 +1,147 @@
+---
+name: macmini-m4
+groups:
+  - name: gecko-t-osx-1500-m4-staging
+    targets:
+      - macmini-m4-111.test.releng.mdc1.mozilla.com
+      - macmini-m4-112.test.releng.mdc1.mozilla.com
+      - macmini-m4-113.test.releng.mdc1.mozilla.com
+      - macmini-m4-114.test.releng.mdc1.mozilla.com
+      - macmini-m4-115.test.releng.mdc1.mozilla.com
+      - macmini-m4-126.test.releng.mdc1.mozilla.com
+      - macmini-m4-127.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1500_m4_staging
+
+  - name: gecko-t-osx-1500-m4
+    targets:
+      - macmini-m4-60.test.releng.mdc1.mozilla.com
+      - macmini-m4-61.test.releng.mdc1.mozilla.com
+      - macmini-m4-62.test.releng.mdc1.mozilla.com
+      - macmini-m4-63.test.releng.mdc1.mozilla.com
+      - macmini-m4-64.test.releng.mdc1.mozilla.com
+      - macmini-m4-65.test.releng.mdc1.mozilla.com
+      - macmini-m4-66.test.releng.mdc1.mozilla.com
+      - macmini-m4-67.test.releng.mdc1.mozilla.com
+      - macmini-m4-68.test.releng.mdc1.mozilla.com
+      - macmini-m4-69.test.releng.mdc1.mozilla.com
+      - macmini-m4-70.test.releng.mdc1.mozilla.com
+      - macmini-m4-71.test.releng.mdc1.mozilla.com
+      - macmini-m4-72.test.releng.mdc1.mozilla.com
+      - macmini-m4-73.test.releng.mdc1.mozilla.com
+      - macmini-m4-74.test.releng.mdc1.mozilla.com
+      - macmini-m4-75.test.releng.mdc1.mozilla.com
+      - macmini-m4-76.test.releng.mdc1.mozilla.com
+      - macmini-m4-77.test.releng.mdc1.mozilla.com
+      - macmini-m4-78.test.releng.mdc1.mozilla.com
+      - macmini-m4-79.test.releng.mdc1.mozilla.com
+      - macmini-m4-80.test.releng.mdc1.mozilla.com
+      - macmini-m4-81.test.releng.mdc1.mozilla.com
+      - macmini-m4-82.test.releng.mdc1.mozilla.com
+      - macmini-m4-83.test.releng.mdc1.mozilla.com
+      - macmini-m4-84.test.releng.mdc1.mozilla.com
+      - macmini-m4-85.test.releng.mdc1.mozilla.com
+      - macmini-m4-86.test.releng.mdc1.mozilla.com
+      - macmini-m4-87.test.releng.mdc1.mozilla.com
+      - macmini-m4-88.test.releng.mdc1.mozilla.com
+      - macmini-m4-89.test.releng.mdc1.mozilla.com
+      - macmini-m4-90.test.releng.mdc1.mozilla.com
+      - macmini-m4-91.test.releng.mdc1.mozilla.com
+      - macmini-m4-92.test.releng.mdc1.mozilla.com
+      - macmini-m4-93.test.releng.mdc1.mozilla.com
+      - macmini-m4-94.test.releng.mdc1.mozilla.com
+      - macmini-m4-95.test.releng.mdc1.mozilla.com
+      - macmini-m4-96.test.releng.mdc1.mozilla.com
+      - macmini-m4-97.test.releng.mdc1.mozilla.com
+      - macmini-m4-98.test.releng.mdc1.mozilla.com
+      - macmini-m4-99.test.releng.mdc1.mozilla.com
+      - macmini-m4-100.test.releng.mdc1.mozilla.com
+      - macmini-m4-101.test.releng.mdc1.mozilla.com
+      - macmini-m4-102.test.releng.mdc1.mozilla.com
+      - macmini-m4-103.test.releng.mdc1.mozilla.com
+      - macmini-m4-104.test.releng.mdc1.mozilla.com
+      - macmini-m4-105.test.releng.mdc1.mozilla.com
+      - macmini-m4-106.test.releng.mdc1.mozilla.com
+      - macmini-m4-107.test.releng.mdc1.mozilla.com
+      - macmini-m4-108.test.releng.mdc1.mozilla.com
+      - macmini-m4-109.test.releng.mdc1.mozilla.com
+      - macmini-m4-110.test.releng.mdc1.mozilla.com
+      - macmini-m4-150.test.releng.mdc1.mozilla.com
+      - macmini-m4-151.test.releng.mdc1.mozilla.com
+      - macmini-m4-152.test.releng.mdc1.mozilla.com
+      - macmini-m4-153.test.releng.mdc1.mozilla.com
+      - macmini-m4-154.test.releng.mdc1.mozilla.com
+      - macmini-m4-155.test.releng.mdc1.mozilla.com
+      - macmini-m4-156.test.releng.mdc1.mozilla.com
+      - macmini-m4-157.test.releng.mdc1.mozilla.com
+      - macmini-m4-158.test.releng.mdc1.mozilla.com
+      - macmini-m4-159.test.releng.mdc1.mozilla.com
+      - macmini-m4-160.test.releng.mdc1.mozilla.com
+      - macmini-m4-161.test.releng.mdc1.mozilla.com
+      - macmini-m4-162.test.releng.mdc1.mozilla.com
+      - macmini-m4-163.test.releng.mdc1.mozilla.com
+      - macmini-m4-164.test.releng.mdc1.mozilla.com
+      - macmini-m4-165.test.releng.mdc1.mozilla.com
+      - macmini-m4-166.test.releng.mdc1.mozilla.com
+      - macmini-m4-167.test.releng.mdc1.mozilla.com
+      - macmini-m4-168.test.releng.mdc1.mozilla.com
+      - macmini-m4-169.test.releng.mdc1.mozilla.com
+      - macmini-m4-170.test.releng.mdc1.mozilla.com
+      - macmini-m4-197.test.releng.mdc1.mozilla.com
+      - macmini-m4-198.test.releng.mdc1.mozilla.com
+      - macmini-m4-199.test.releng.mdc1.mozilla.com
+      - macmini-m4-200.test.releng.mdc1.mozilla.com
+      - macmini-m4-201.test.releng.mdc1.mozilla.com
+      - macmini-m4-202.test.releng.mdc1.mozilla.com
+      - macmini-m4-203.test.releng.mdc1.mozilla.com
+      - macmini-m4-204.test.releng.mdc1.mozilla.com
+      - macmini-m4-205.test.releng.mdc1.mozilla.com
+      - macmini-m4-206.test.releng.mdc1.mozilla.com
+      - macmini-m4-207.test.releng.mdc1.mozilla.com
+      - macmini-m4-208.test.releng.mdc1.mozilla.com
+      - macmini-m4-209.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1500_m4
+
+  - name: gecko-t-osx-1500-m4-ipv6
+    targets:
+      - macmini-m4-174.test.releng.mdc1.mozilla.com
+      - macmini-m4-175.test.releng.mdc1.mozilla.com
+      - macmini-m4-176.test.releng.mdc1.mozilla.com
+      - macmini-m4-177.test.releng.mdc1.mozilla.com
+      - macmini-m4-178.test.releng.mdc1.mozilla.com
+      - macmini-m4-179.test.releng.mdc1.mozilla.com
+      - macmini-m4-180.test.releng.mdc1.mozilla.com
+      - macmini-m4-181.test.releng.mdc1.mozilla.com
+      - macmini-m4-182.test.releng.mdc1.mozilla.com
+      - macmini-m4-183.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_1500_m4_ipv6
+
+  - name: gecko-1-b-osx-arm64
+    targets:
+      - macmini-m4-121.test.releng.mdc1.mozilla.com
+      - macmini-m4-122.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_1_b_osx_arm64
+
+  - name: gecko-3-b-osx-arm64
+    targets:
+      - macmini-m4-120.test.releng.mdc1.mozilla.com
+      - macmini-m4-123.test.releng.mdc1.mozilla.com
+      - macmini-m4-124.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_3_b_osx_arm64
+
+  - name: enterprise-1-b-osx-arm64
+    targets:
+      - macmini-m4-171.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: enterprise_1_b_osx_arm64
+
+  - name: enterprise-3-b-osx-arm64
+    targets:
+      - macmini-m4-172.test.releng.mdc1.mozilla.com
+      - macmini-m4-173.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: enterprise_3_b_osx_arm64

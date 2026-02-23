@@ -10,7 +10,4 @@ if [ -e <%= @scriptworker_base %>/.enabled ]; then
 else
     touch <%= @scriptworker_base %>/.enabled
     /bin/bash "<%= @launchctl_wrapper %>"
-    if [ -d <%= @scriptworker_base %>/poller ] ; then
-        /bin/bash "<%= @poller_launchctl_wrapper %>"
-    fi
 fi

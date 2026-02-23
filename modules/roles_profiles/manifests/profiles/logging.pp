@@ -60,7 +60,7 @@ class roles_profiles::profiles::logging (
       }
     }
     default: {
-      fail("${$facts['os']['name']} not supported")
+      fail("${facts['os']['name']} not supported")
     }
   }
 }

@@ -1,0 +1,10 @@
+# if you place this file at `/opt/puppet_environments/ronin_settings`
+# the `run-puppet.sh` script will use the values here.
+
+# puppet overrides
+PUPPET_REPO='https://github.com/rcurranmoz/ronin_puppet.git'
+PUPPET_BRANCH='local_puppet_work'
+PUPPET_MAIL='rcurran@mozilla.com'
+
+# taskcluster overrides
+# WORKER_TYPE_OVERRIDE='gecko-t-osx-1400-r8-staging'

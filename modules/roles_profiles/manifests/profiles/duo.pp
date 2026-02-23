@@ -3,19 +3,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::duo {
-
-    case $::operatingsystem {
-        'Darwin': {
-            class { 'duo::duo_unix':
-                enabled  => true,
-                ikey     => lookup('duo.ikey'),
-                skey     => lookup('duo.skey'),
-                host     => lookup('duo.host'),
-                pushinfo => 'yes',
-            }
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+  case $facts['os']['name'] {
+    'Darwin': {
+      class { 'duo::duo_unix':
+        enabled  => true,
+        ikey     => lookup('duo.ikey'),
+        skey     => lookup('duo.skey'),
+        host     => lookup('duo.host'),
+        pushinfo => 'yes',
+      }
     }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }

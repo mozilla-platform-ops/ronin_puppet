@@ -4,8 +4,6 @@
 
 class win_taskcluster::proxy (
     String $generic_worker_dir,
-    String $desired_proxy_version,
-    String $current_proxy_version,
     String $proxy_exe_source
 ) {
 
@@ -13,13 +11,6 @@ class win_taskcluster::proxy (
 
     $proxy_exe_path = "${generic_worker_dir}\\taskcluster-proxy.exe"
 
-    if ($current_proxy_version != $desired_proxy_version) {
-        exec { 'purge_old_proxy_exe':
-            command  => "Remove-Item -path ${proxy_exe_path}",
-            unless   => "Test-Path ${proxy_exe_path}",
-            provider => powershell,
-        }
-    }
     file { $proxy_exe_path:
         source => $proxy_exe_source,
     }
