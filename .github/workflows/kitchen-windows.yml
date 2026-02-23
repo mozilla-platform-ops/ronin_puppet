@@ -22,10 +22,10 @@ jobs:
             worker_pool_id: win11-64-25h2-alpha
             kitchen_instance: windows-win11-64-25h2
           - role: win11a6425h2azurebuilder
-            worker_pool_id: win11-aarch64-25h2-alpha
+            worker_pool_id: win11-a64-25h2-builder
             kitchen_instance: windows-win11-aarch64-25h2
           - role: win11a6425h2azuretester
-            worker_pool_id: win11-aarch64-25h2-alpha
+            worker_pool_id: win11-a64-25h2-tester
             kitchen_instance: windows-win11-aarch64-25h2
     permissions:
       id-token: write
