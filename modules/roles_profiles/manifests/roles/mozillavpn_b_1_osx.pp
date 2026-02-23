@@ -13,6 +13,7 @@ class roles_profiles::roles::mozillavpn_b_1_osx {
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::relops_users
+  include roles_profiles::profiles::software_updates
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::timezone
   include roles_profiles::profiles::users
