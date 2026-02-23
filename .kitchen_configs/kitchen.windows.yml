@@ -33,7 +33,7 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_F8s_v2'
-      image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-ent:latest
+      image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-avd:latest
       azure_resource_group_name: ronin-puppet-test-kitchen
       use_ephemeral_osdisk: true
       deployment_timeout_in_minutes: 30
@@ -55,7 +55,7 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_F8s_v2'
-      image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-ent:latest
+      image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-avd:latest
       azure_resource_group_name: ronin-puppet-test-kitchen
       use_ephemeral_osdisk: true
       deployment_timeout_in_minutes: 30
