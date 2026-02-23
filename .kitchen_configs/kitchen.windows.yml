@@ -28,6 +28,28 @@ lifecycle:
         [System.Environment]::SetEnvironmentVariable('WORKER_POOL_ID', '<%= ENV['WORKER_POOL_ID'] %>', 'Machine')
 
 platforms:
+  - name: win11-64-24h2
+    driver:
+      name: azurerm
+      location: 'East US 2'
+      machine_size: 'Standard_F8s_v2'
+      image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-ent:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen
+      use_ephemeral_osdisk: true
+      deployment_timeout_in_minutes: 30
+      username: kitchenadmin
+      password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
   - name: win11-64-25h2
     driver:
       name: azurerm
@@ -103,6 +125,7 @@ suites:
       default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
+      - win11-64-24h2
       - win11-64-25h2
       - win11-a64-25h2-builder
       - win11-a64-25h2-tester

@@ -18,9 +18,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - role: win116425h2azure
-            worker_pool_id: win11-64-25h2-alpha
-            kitchen_instance: windows-win11-64-25h2
+          - role: win116424h2azure
+            worker_pool_id: win11-64-24h2-alpha
+            kitchen_instance: windows-win11-64-24h2
           - role: win11a6425h2azurebuilder
             worker_pool_id: win11-a64-25h2-builder
             kitchen_instance: windows-win11-a64-25h2-builder
