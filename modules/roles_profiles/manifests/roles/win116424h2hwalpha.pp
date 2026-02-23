@@ -25,7 +25,6 @@ class roles_profiles::roles::win116424h2hwalpha {
   include roles_profiles::profiles::mercurial
   include roles_profiles::profiles::nuc_management
   #include roles_profiles::profiles::vnc
-  include roles_profiles::profiles::hardware_observability
 
   # Worker
   include roles_profiles::profiles::git
