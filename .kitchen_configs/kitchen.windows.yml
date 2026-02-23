@@ -104,3 +104,5 @@ suites:
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - win11-64-25h2
+      - win11-a64-25h2-builder
+      - win11-a64-25h2-tester
