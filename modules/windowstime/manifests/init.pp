@@ -70,7 +70,14 @@ class windowstime (
   }
 
   if $timezone {
-    validate_legacy(String, 'validate_re', $timezone, $timezones, 'The specified string is not a valid Timezone')
+    # Native validation (no stdlib validate_legacy / validate_re).
+    # If timezones is provided (and non-empty), require timezone be one of them.
+    if $timezones and $timezones != [] {
+      unless $timezone in $timezones {
+        fail('The specified string is not a valid Timezone')
+      }
+    }
+
     if $timezone != $facts['timezone'] {
       $system32dir = $facts['os']['windows']['system32']
       exec { "${system32dir}\\tzutil.exe /s \"${timezone}\"":
