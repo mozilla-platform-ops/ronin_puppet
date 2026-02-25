@@ -12,10 +12,4 @@ class macos_utils::always_show_scroll_bars {
     val_type => 'string',
   }
 
-  macos_utils::defaults { 'no_save_to_cloud':
-    domain   => $domain,
-    key      => 'NSDocumentSaveNewDocumentsToCloud',
-    value    => '0',
-    val_type => 'bool',
-  }
 }
