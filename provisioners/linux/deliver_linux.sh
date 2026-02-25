@@ -17,14 +17,14 @@ set -e
 # Detect which SSH user works (try relops first, then root)
 detect_ssh_user() {
   local host="$1"
-  for user in "relops" "root"; do
-    if ssh -q "$user"@"$host" exit 2>/dev/null; then
+  for user in "relops" "root" ; do
+    if ssh -o ConnectTimeout=5 -o BatchMode=yes -q "$user"@"$host" exit 2>/dev/null; then
       echo "$user"
       return 0
     fi
   done
   echo ""
-  return 1
+  return 0
 }
 
 REMOTE_SSH_USER=""

@@ -1,3 +1,5 @@
+$ErrorActionPreference = 'Continue'
+
 $apps = @{
     "Bing Search" = @{
         VDIState    = "Unchanged"
@@ -304,17 +306,21 @@ foreach ($Key in $apps.Keys) {
     $Item = $apps[$Key]
 
     Write-Host "Removing Provisioned Package $Key"
-    Get-AppxProvisionedPackage -Online |
+    Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
         Where-Object { $_.PackageName -like ("*{0}*" -f $Key) } |
         Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
         Out-Null
 
     Write-Host "Attempting to remove [All Users] $Key - $($Item.Description)"
-    Get-AppxPackage -AllUsers -Name ("*{0}*" -f $Key) |
+    Get-AppxPackage -AllUsers -Name ("*{0}*" -f $Key) -ErrorAction SilentlyContinue |
         Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
 
     Write-Host "Attempting to remove $Key - $($Item.Description)"
-    Get-AppxPackage -Name ("*{0}*" -f $Key) |
+    Get-AppxPackage -Name ("*{0}*" -f $Key) -ErrorAction SilentlyContinue |
         Remove-AppxPackage -ErrorAction SilentlyContinue |
         Out-Null
 }
+
+# This cleanup is intentionally best-effort; avoid surfacing expected AppX noise as Puppet failure.
+$global:LASTEXITCODE = 0
+exit 0

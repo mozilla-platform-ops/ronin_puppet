@@ -7,6 +7,7 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include macos_utils::always_show_scroll_bars
   include roles_profiles::profiles::cltbld_user
   include roles_profiles::profiles::macos_bin_signer
+  include roles_profiles::profiles::macos_disable_firewall
   include roles_profiles::profiles::macos_tcc_perms
   include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::motd

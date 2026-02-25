@@ -11,9 +11,26 @@ on:
       - '.github/workflows/kitchen-windows.yml'
 
 jobs:
-  win116425h2azure:
-    name: win116425h2azure
+  windows:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    name: ${{ matrix.role }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: win116425h2azure
+            worker_pool_id: win11-64-25h2-alpha
+            kitchen_instance: windows-win11-64-25h2
+          - role: win116424h2azure
+            worker_pool_id: win11-64-24h2-alpha
+            kitchen_instance: windows-win11-64-24h2
+          - role: win11a6425h2azurebuilder
+            worker_pool_id: win11-a64-25h2-builder
+            kitchen_instance: windows-win11-a64-25h2-builder
+          - role: win11a6425h2azuretester
+            worker_pool_id: win11-a64-25h2-tester
+            kitchen_instance: windows-win11-a64-25h2-tester
     permissions:
       id-token: write
       contents: read
@@ -51,10 +68,10 @@ jobs:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
-          PUPPET_ROLE: win116425h2azure
-          WORKER_POOL_ID: win11-64-25h2-alpha
+          PUPPET_ROLE: ${{ matrix.role }}
+          WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: bundle exec kitchen test windows-win11-64-25h2 -l debug
+        run: bundle exec kitchen test ${{ matrix.kitchen_instance }} -l debug
 
       - name: Kitchen destroy
         if: always()
@@ -62,7 +79,7 @@ jobs:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
-          PUPPET_ROLE: win116425h2azure
-          WORKER_POOL_ID: win11-64-25h2-alpha
+          PUPPET_ROLE: ${{ matrix.role }}
+          WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: bundle exec kitchen destroy windows-win11-64-25h2 -l debug
+        run: bundle exec kitchen destroy ${{ matrix.kitchen_instance }} -l debug

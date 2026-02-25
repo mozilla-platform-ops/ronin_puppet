@@ -9,6 +9,7 @@ class roles_profiles::roles::win116424h2hwperfdebug {
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
   include roles_profiles::profiles::firewall
+  include roles_profiles::profiles::hardware_observability
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::power_management
