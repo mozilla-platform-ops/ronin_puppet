@@ -5,6 +5,7 @@
 class roles_profiles::roles::gecko_t_osx_1400_r8 {
   include macos_utils::disable_bluetooth_setup
   include macos_utils::always_show_scroll_bars
+  include macos_utils::suppress_keyboard_assistant
   include roles_profiles::profiles::cltbld_user
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_directory_cleaner
