@@ -9,6 +9,7 @@ class roles_profiles::roles::win116424h2hwrelops1213 {
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
   include roles_profiles::profiles::firewall
+  include roles_profiles::profiles::hardware_observability
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::power_management
@@ -23,6 +24,7 @@ class roles_profiles::roles::win116424h2hwrelops1213 {
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::mercurial
   include roles_profiles::profiles::nuc_management
+  include roles_profiles::profiles::hardware_observability
   #include roles_profiles::profiles::vnc
 
   # Worker
