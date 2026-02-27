@@ -182,7 +182,7 @@ if [ ! -f /root/vault.yaml ]; then
     exit 1
 fi
 
-# if on ubuntu 22.04, install puppet 8, else install puppet 7
+# determine ubuntu version so we can set NTP method appropriately
 if [ -f /etc/os-release ]; then
     . /etc/os-release
 else
@@ -190,41 +190,68 @@ else
     exit 1
 fi
 
-# if on ubuntu 24.04, install puppet 8, else install puppet 7
-if [ "$VERSION_ID" = "24.04" ]; then
-    echo "Installing Puppet 8..."
-    wget https://apt.puppetlabs.com/puppet8-release-noble.deb -O /tmp/puppet.deb
-    # install puppet release deb for the version we've selected
-    dpkg -i /tmp/puppet.deb
-    # update apt and install puppet-agent and ntp
-    apt-get update
-    # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
-    # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent
-    # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
-    # place our config and restart the service
-    mkdir -p /etc/systemd/timesyncd.conf.d
-    echo -e "[Time]\nNTP=ntp.build.mozilla.org" >/etc/systemd/timesyncd.conf.d/mozilla.conf
-    systemctl restart systemd-timesyncd
-elif [ "$VERSION_ID" = "18.04" ]; then
-    echo "Installing Puppet 7..."
-    wget https://apt.puppetlabs.com/puppet7-release-bionic.deb -O /tmp/puppet.deb
-    # install puppet release deb for the version we've selected
-    dpkg -i /tmp/puppet.deb
-    # update apt and install puppet-agent and ntp
-    apt-get update
-    # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
-    # shellcheck disable=SC2090
-    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y puppet-agent ntp
+TEMP_DEB_NAME="bootstrap_temp.deb"
+# noble, bionic, etc (VERSION_CODENAME) and 18.04, 24.04, etc (VERSION_ID)
+# are sourced from /etc/os-release above
 
-    # get clock synced. if clock is way off, run-puppet.sh will never finish
-    # it's git clone because the SSL cert will appear invalid.
-    /etc/init.d/ntp stop
-    echo "server ntp.build.mozilla.org iburst" >/etc/ntp.conf # place barebones config
-    ntpd -q -g                                                # runs once and force allows huge skews
-    /etc/init.d/ntp start
+# puppet vars
+#
+# PKG_TO_INSTALL="puppet-agent"
+# INSTALL_URL_BASE="https://apt.puppetlabs.com"
+# INSTALL_URL_DEB="puppet8-release-noble.deb"
+# INSTALL_URL_DEB="puppet7-release-bionic.deb"
+
+# openvox vars
+#
+PKG_TO_INSTALL="openvox-agent"
+INSTALL_URL_BASE="https://apt.voxpupuli.org"
+INSTALL_URL_DEB="openvox8-release-ubuntu${VERSION_ID}.deb"
+
+# we install openvox 8 on both, but NTP setup differs
+if [ "$VERSION_ID" = "24.04" ]; then
+    echo "Installing Openvox 8..."
+
+    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O /tmp/${TEMP_DEB_NAME}
+    # install puppet release deb for the version we've selected
+    dpkg -i /tmp/${TEMP_DEB_NAME}
+    # update apt and install puppet-agent and ntp
+    apt-get update
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y "${PKG_TO_INSTALL}"
+
+    if [ "${SKIP_NTP:-false}" != "true" ]; then
+        # get clock synced. if clock is way off, run-puppet.sh will never finish
+        #   it's git clone because the SSL cert will appear invalid.
+        #
+        # 24.04 uses timesyncd (on by default), see `systemctl status systemd-timesyncd`
+        # place our config and restart the service
+        mkdir -p /etc/systemd/timesyncd.conf.d
+        echo -e "[Time]\nNTP=ntp.build.mozilla.org" >/etc/systemd/timesyncd.conf.d/mozilla.conf
+        systemctl restart systemd-timesyncd
+    fi
+elif [ "$VERSION_ID" = "18.04" ]; then
+    echo "Installing Openvox 8..."
+
+    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O /tmp/${TEMP_DEB_NAME}
+    # install puppet release deb for the version we've selected
+    dpkg -i /tmp/${TEMP_DEB_NAME}
+    # update apt and install puppet-agent and ntp
+    apt-get update
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' remove -y puppet
+    # shellcheck disable=SC2090
+    DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confnew' install -y "${PKG_TO_INSTALL}" ntp
+
+    if [ "${SKIP_NTP:-false}" != "true" ]; then
+        # get clock synced. if clock is way off, run-puppet.sh will never finish
+        #   it's git clone because the SSL cert will appear invalid.
+        /etc/init.d/ntp stop
+        echo "server ntp.build.mozilla.org iburst" >/etc/ntp.conf # place barebones config
+        ntpd -q -g                                                 # runs once and force allows huge skews
+        /etc/init.d/ntp start
+    fi
 else
     echo "Unsupported Ubuntu version: $VERSION_ID. This script only supports Ubuntu 18.04 and 24.04."
     exit 1
