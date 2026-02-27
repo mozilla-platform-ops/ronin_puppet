@@ -28,8 +28,8 @@ provisioner:
   custom_facts: {'running_in_test_kitchen': true}
 
 verifier:
-  name: serverspec
-  default_pattern: true
+  name: inspec
+  # default_pattern: true
   remote_exec: false
   color: <%= !ENV.include?('CI') %>
 
@@ -201,10 +201,11 @@ suites:
       custom_facts:
         puppet_role: <%= ENV['PUPPET_ROLE'] %>
     verifier:
-      patterns:
-      - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
-      default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+      name: inspec
+      # patterns:
+      # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
+      # default_pattern: false
+      # extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - localhost
     attributes:
@@ -219,10 +220,11 @@ suites:
         - secrets/vault.yaml:
             <<: *secrets
     verifier:
-      patterns:
-      - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
-      default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+      name: inspec
+      # patterns:
+      # - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
+      # default_pattern: false
+      # extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - localhost
   - name: windows
