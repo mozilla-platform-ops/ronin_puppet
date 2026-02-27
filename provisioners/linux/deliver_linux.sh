@@ -15,10 +15,10 @@ set -e
 #
 
 # Detect which SSH user works (try relops first, then root)
-# Retries for up to ~2 minutes to handle hosts where auth isn't ready immediately
+# Retries for up to ~10 minutes to handle hosts where auth isn't ready immediately
 detect_ssh_user() {
   local host="$1"
-  local max_attempts=12
+  local max_attempts=60
   for attempt in $(seq 1 "$max_attempts"); do
     for user in "relops" "root"; do
       if ssh -o ConnectTimeout=5 -o BatchMode=yes -q "$user"@"$host" exit 2>/dev/null; then
@@ -27,7 +27,7 @@ detect_ssh_user() {
       fi
     done
     if [ "$attempt" -lt "$max_attempts" ]; then
-      echo "  SSH auth not ready yet, retrying in 10s (attempt ${attempt}/${max_attempts})..." >&2
+      printf '.' >&2
       sleep 10
     fi
   done
@@ -84,13 +84,13 @@ fi
 ssh-keygen -R "${THE_HOST}" || true
 # readd to avoid prompts; retry until SSH daemon is ready
 echo "Waiting for SSH on ${THE_HOST}..."
-for i in $(seq 1 30); do
+for _i in $(seq 1 60); do
   result=$(ssh-keyscan -H "${THE_HOST}" 2>/dev/null)
   if [ -n "$result" ]; then
     echo "$result" >> ~/.ssh/known_hosts
     break
   fi
-  echo "  attempt ${i}/30, retrying in 10s..."
+  printf '.'
   sleep 10
 done
 
