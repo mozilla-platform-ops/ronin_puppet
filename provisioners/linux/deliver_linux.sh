@@ -32,7 +32,7 @@ detect_ssh_user() {
     fi
   done
   echo ""
-  return 1
+  return 0
 }
 
 REMOTE_SSH_USER=""

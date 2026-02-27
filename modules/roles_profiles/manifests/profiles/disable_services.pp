@@ -72,6 +72,7 @@ class roles_profiles::profiles::disable_services {
         ## must be ran after apx uninstall
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
+          include win_disable_services::extended_uninstall_appx_packages
         }
       }
       # May be needed for non-hardaware
