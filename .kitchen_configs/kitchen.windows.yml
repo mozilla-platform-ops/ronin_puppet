@@ -34,7 +34,11 @@ platforms:
       location: 'East US 2'
       machine_size: 'Standard_F8s_v2'
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-avd:latest
-      azure_resource_group_name: ronin-puppet-test-kitchen
+      # Each platform has a unique resource group name to prevent collisions when
+      # CI jobs run in parallel. kitchen-azurerm appends a timestamp to this name,
+      # so two jobs sharing the same base name that start within the same second
+      # will land in the same resource group and conflict on the public IP resource.
+      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-24h2
       use_ephemeral_osdisk: true
       deployment_timeout_in_minutes: 30
       username: kitchenadmin
@@ -56,7 +60,7 @@ platforms:
       location: 'East US 2'
       machine_size: 'Standard_F8s_v2'
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-avd:latest
-      azure_resource_group_name: ronin-puppet-test-kitchen
+      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2
       use_ephemeral_osdisk: true
       deployment_timeout_in_minutes: 30
       username: kitchenadmin
@@ -78,7 +82,7 @@ platforms:
       location: 'East US 2'
       machine_size: 'Standard_E8pds_v5'
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
-      azure_resource_group_name: ronin-puppet-test-kitchen
+      azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-builder
       use_ephemeral_osdisk: true
       deployment_timeout_in_minutes: 30
       username: kitchenadmin
@@ -100,7 +104,7 @@ platforms:
       location: 'East US 2'
       machine_size: 'Standard_E8pds_v5'
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
-      azure_resource_group_name: ronin-puppet-test-kitchen
+      azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-tester
       use_ephemeral_osdisk: true
       deployment_timeout_in_minutes: 30
       username: kitchenadmin

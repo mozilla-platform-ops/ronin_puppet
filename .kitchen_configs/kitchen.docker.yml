@@ -37,6 +37,8 @@ provisioner:
   hiera_deep_merge: true
   hiera_writer_files:
     - secrets/vault.yaml:
+        snmpd:
+          ro_community: aaaa
         telegraf:
           user: telegraf
           password: telegraf4fun
