@@ -3,7 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_os_settings::error_reporting {
-  $error_report_key = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows\\Error\\Reporting"
+  # Bug 2002658: key path was Windows\Error\Reporting (three subkeys) instead
+  # of "Windows Error Reporting" (single key with space). The wrong path meant
+  # DontShowUI was never applied to the real WER key.
+  $error_report_key = 'HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting'
 
   $dump_drive = $facts['custom_win_systemdrive']
   $dump_dir = "${dump_drive}\\error-dumps"
