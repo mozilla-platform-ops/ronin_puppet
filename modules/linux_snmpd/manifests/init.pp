@@ -53,4 +53,10 @@ class linux_snmpd {
       }
     }
   }
+  else {
+    service { 'snmpd':
+      ensure => stopped,
+      enable => false,
+    }
+  }
 }
