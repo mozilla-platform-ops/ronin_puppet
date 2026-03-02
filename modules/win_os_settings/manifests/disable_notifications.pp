@@ -35,9 +35,8 @@ class win_os_settings::disable_notifications {
 
   # Remove SecurityHealthSystray from startup. It triggers "device at risk"
   # toasts when WscDataProtection COM errors fire (Event 10016).
-  registry::value { 'SecurityHealth':
+  registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\SecurityHealth':
     ensure => absent,
-    key    => 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
   }
 }
 
