@@ -49,7 +49,7 @@ class roles_profiles::profiles::disable_services {
         }
         case $facts['custom_win_location'] {
           'datacenter': {
-            if $facts['custom_win_worker_pool_id'] !~ /ref/ {
+            if !('ref' in $facts['custom_win_worker_pool_id']) {
               $apx_uninstall = 'hw-uninstall.ps1'
               include win_disable_services::disable_optional_services
             }
