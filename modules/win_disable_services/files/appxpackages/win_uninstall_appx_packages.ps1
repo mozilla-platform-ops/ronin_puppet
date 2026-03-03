@@ -70,92 +70,6 @@ function Stop-TranscriptSafe {
     try { Stop-Transcript | Out-Null } catch { }
 }
 
-function Test-HEVCCodecPresent {
-    [CmdletBinding()]
-    param()
-
-    # Installed packages (any users)
-    try {
-        $installed = Get-AppxPackage -AllUsers -ErrorAction SilentlyContinue |
-            Where-Object {
-                $_.Name -like "*HEVC*" -or $_.PackageFamilyName -like "*HEVC*"
-            }
-        if ($installed) { return $true }
-    } catch { }
-
-    # Provisioned packages (image-level)
-    try {
-        $prov = Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
-            Where-Object {
-                $_.DisplayName -like "*HEVC*" -or $_.PackageName -like "*HEVC*"
-            }
-        if ($prov) { return $true }
-    } catch { }
-
-    return $false
-}
-
-function Ensure-HEVCCodec {
-    [CmdletBinding()]
-    param(
-        [int]$TimeoutSeconds = 600
-    )
-
-    Write-Log -message "Ensure-HEVCCodec :: checking HEVC codec extension presence" -severity "DEBUG"
-
-    if (Test-HEVCCodecPresent) {
-        Write-Log -message "Ensure-HEVCCodec :: HEVC appears present (installed/provisioned)" -severity "INFO"
-        return $true
-    }
-
-    Write-Log -message "Ensure-HEVCCodec :: HEVC not detected; attempting install BEFORE Store/AppXSvc changes" -severity "WARN"
-
-    # Be kind to the Store/AppX stack before attempting install
-    Wait-AppxIdle -TimeoutSeconds 600 -SleepSeconds 15 | Out-Null
-
-    # We prefer "from Device Manufacturer" (often free) first, then the standard HEVC package.
-    # winget IDs:
-    #   9N4WGH0Z6VHQ = HEVC Video Extensions from Device Manufacturer
-    #   9NMZLZ57R3T7 = HEVC Video Extensions
-    $candidates = @("9N4WGH0Z6VHQ", "9NMZLZ57R3T7")
-
-    # Ensure winget is present
-    $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
-    if (-not $winget) {
-        Write-Log -message "Ensure-HEVCCodec :: winget.exe not found; cannot install from Microsoft Store. (Consider keeping DesktopAppInstaller or provisioning HEVC offline.)" -severity "ERROR"
-        return $false
-    }
-
-    foreach ($id in $candidates) {
-        Write-Log -message "Ensure-HEVCCodec :: attempting winget install: $id" -severity "INFO"
-
-        $ok = Invoke-WithTimeout -TimeoutSeconds $TimeoutSeconds -ScriptBlock ([scriptblock]::Create(@"
-`$ErrorActionPreference = 'Continue'
-try {
-    # -h = hidden (no UI), best-effort for CI
-    & winget.exe install $id --source msstore --accept-package-agreements --accept-source-agreements -h
-} catch { }
-"@))
-
-        # Give AppX a moment to settle then re-check
-        Wait-AppxIdle -TimeoutSeconds 600 -SleepSeconds 15 | Out-Null
-
-        if (Test-HEVCCodecPresent) {
-            Write-Log -message "Ensure-HEVCCodec :: HEVC detected after install attempt ($id)" -severity "INFO"
-            return $true
-        }
-
-        if (-not $ok) {
-            Write-Log -message "Ensure-HEVCCodec :: winget attempt timed out for $id" -severity "WARN"
-        } else {
-            Write-Log -message "Ensure-HEVCCodec :: install attempt finished but HEVC still not detected for $id" -severity "WARN"
-        }
-    }
-
-    Write-Log -message "Ensure-HEVCCodec :: failed to install HEVC via winget/msstore; proceeding (but HEVC mochitests may fail)" -severity "ERROR"
-    return $false
-}
-
 # Wait for likely-update activity to calm down (lightweight; does NOT depend on services being stopped)
 function Wait-AppxIdle {
     [CmdletBinding()]
@@ -320,9 +234,6 @@ try {
 }
 
 # --- Main ---------------------------------------------------------------
-## Ensure HEVC is aviable before we start uninstalling AppX packages
-## https://bugzilla.mozilla.org/show_bug.cgi?id=2013985
-Ensure-HEVCCodec
 try {
     Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
 
