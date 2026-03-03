@@ -358,7 +358,32 @@ function Test-AppXSvcDisabled {
     if ($svc.Status -eq 'Stopped' -and ($regDisabled -or $cimDisabled)) { return $true }
     return $false
 }
+# ---------------------------------------------------------------------------
+# Skip AppX uninstall for ref pools
+# ---------------------------------------------------------------------------
+try {
+    $rpKey = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
+    $wpId  = (Get-ItemProperty -Path $rpKey -Name 'worker_pool_id' -ErrorAction Stop).worker_pool_id
 
+    $skipNeedles = @(
+        'win11-64-24h2-hw-ref-alpha',
+        'win11-64-24h2-hw-ref'
+    )
+
+    foreach ($needle in $skipNeedles) {
+        if ($wpId -like "*$needle*") {
+            Write-Log -message "uninstall_appx_packages :: SKIP: worker_pool_id='$wpId' matched '$needle' (ref pool). Exiting 0." -severity 'INFO'
+            Stop-TranscriptSafe
+            exit 0
+        }
+    }
+
+    Write-Log -message "uninstall_appx_packages :: worker_pool_id='$wpId' did not match ref pools; continuing." -severity 'DEBUG'
+}
+catch {
+    # If you *never* want this to block the run, log and continue.
+    Write-Log -message "uninstall_appx_packages :: WARN: could not read worker_pool_id from registry ($($_.Exception.Message)); continuing." -severity 'WARN'
+}
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
