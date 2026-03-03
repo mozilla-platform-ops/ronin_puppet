@@ -49,7 +49,7 @@ if (-not $xperf) {
 
 WriteUserLog $log 'INFO'  ("start :: profile={0} etl={1}" -f $profile, $etl)
 
-$out = & $xperf -on PROC_THREAD+LOADER+PROFILE+CSWITCH -f $etl -BufferSize 1024 2>&1
+$out = & $xperf -on PROC_THREAD+LOADER+PROFILE+CSWITCH -stackwalk PROFILE+CSWITCH -f $etl -BufferSize 1024 2>&1
 $rc  = $LASTEXITCODE
 if ($out) { WriteUserLog $log 'DEBUG' (("xperf :: " + (($out | Out-String).Trim()))) }
 
