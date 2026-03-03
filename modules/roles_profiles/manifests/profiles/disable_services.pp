@@ -49,8 +49,6 @@ class roles_profiles::profiles::disable_services {
         }
         case $facts['custom_win_location'] {
           'datacenter': {
-            $ref_pools = ['win11-64-24h2-hw-ref-alpha', 'win11-64-24h2-hw-ref']
-            $apx_uninstall = 'hw-uninstall.ps1'
             include win_disable_services::disable_optional_services
           }
           'azure': {
@@ -73,7 +71,10 @@ class roles_profiles::profiles::disable_services {
         ## must be ran after apx uninstall
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
-          include win_disable_services::extended_uninstall_appx_packages
+          if $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref-alpha' and
+            $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref' {
+            include win_disable_services::extended_uninstall_appx_packages
+            }
         }
       }
       # May be needed for non-hardaware
