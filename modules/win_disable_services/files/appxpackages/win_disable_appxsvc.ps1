@@ -1,6 +1,8 @@
 # win_disable_appxsvc.ps1
 # AppXSvc management ONLY (disable + scheduled task hardening + verification)
 
+exit 0
+
 $Script:Version = "win_disable_appxsvc.ps1 2026-02-20 svc-only v1"
 Write-Output "disable_appxsvc :: starting ($Script:Version)"
 
