@@ -38,6 +38,21 @@ class win_os_settings::disable_notifications {
   registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\SecurityHealth':
     ensure => absent,
   }
+
+  # Bug 2002658: Allow test-created windows to take foreground focus immediately.
+  # The default ForegroundLockTimeout (200 000 ms) prevents applications from
+  # setting themselves as the foreground window, causing BrowserTestUtils
+  # waitForNewWindow to never receive focus/activate events.
+  registry::value { 'ForegroundLockTimeout':
+    key  => 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System',
+    type => dword,
+    data => '0',
+  }
+  registry::value { 'ForegroundFlashCount':
+    key  => 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System',
+    type => dword,
+    data => '0',
+  }
 }
 
 # Bug list
