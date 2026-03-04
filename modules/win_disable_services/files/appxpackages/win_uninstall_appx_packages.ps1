@@ -166,7 +166,7 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.WindowsFeedbackHub"    = @{ }
         "Microsoft.WindowsMaps"           = @{ }
         "Microsoft.WindowsNotepad"        = @{ }
-        "Microsoft.WindowsStore"          = @{ }
+        #"Microsoft.WindowsStore"          = @{ }
         "Microsoft.WindowsSoundRecorder"  = @{ }
         "Microsoft.Winget.Platform.Source"= @{ }
         "Microsoft.Xbox.TCUI"             = @{ }
