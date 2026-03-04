@@ -184,12 +184,6 @@ run_puppet() {
 ### 3. Main Execution Logic
 ### ---------------------------------------------
 
-# Ensure we are running as root
-if [ "$(id -u)" -ne 0 ]; then
-    echo "ERROR: This script must be run as root (current user: $(id -un))." >&2
-    exit 1
-fi
-
 GIT_USERNAME=$(extract_username_from_url "$GIT_REPO_URL")
 LOCAL_PUPPET_REPO="/opt/puppet_environments/${GIT_USERNAME}/ronin_puppet"
 
