@@ -26,14 +26,16 @@ class win_disable_services::extended_uninstall_appx_packages {
     try_sleep => 30,
   }
 
-  exec { 'disable_appxsvc':
-    command   => "& '${svc_script_path}'",
-    provider  => powershell,
-    timeout   => 300,
-    logoutput => true,
-    returns   => [0],
-    require   => [File[$svc_script_path], Exec['remove_extended_appx_packages']],
-    tries     => 2,
-    try_sleep => 15,
-  }
+## Don't disable. Affects task user access to codecs
+## Ref: https://bugzilla.mozilla.org/show_bug.cgi?id=2013985
+#  exec { 'disable_appxsvc':
+#    command   => "& '${svc_script_path}'",
+#    provider  => powershell,
+#    timeout   => 300,
+#    logoutput => true,
+#    returns   => [0],
+#    require   => [File[$svc_script_path], Exec['remove_extended_appx_packages']],
+#    tries     => 2,
+#    try_sleep => 15,
+#  }
 }
