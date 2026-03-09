@@ -1,22 +1,30 @@
 # Installs a Taskcluster binary directly from a GitHub release asset
 #
-# Example:
+# Examples:
 # packages::macos_taskcluster_binary { 'start-worker':
-#   version          => '90.0.5',
+#   version          => '97.0.1',
 #   arch             => 'arm64',
 #   file_destination => '/usr/local/bin/start-worker',
-#   sha256           => 'fab0f581c7c5b8a6c0c38806f31e9fa9316ed71be28659320bfd17344a7ca39c',
+# }
+#
+# packages::macos_taskcluster_binary { 'generic-worker-simple':
+#   version          => '97.0.1',
+#   arch             => 'arm64',
+#   file_destination => '/usr/local/bin/generic-worker-simple',
+#   asset_name       => 'generic-worker-insecure',
 # }
 
 define packages::macos_taskcluster_binary (
   String $version,
   String $arch,
   String $file_destination,
-  Optional[String] $sha256 = undef,
-  String $repo             = 'taskcluster/taskcluster',
+  Optional[String] $asset_name = undef,
+  Optional[String] $sha256     = undef,
+  String $repo                 = 'taskcluster/taskcluster',
 ) {
   $base = "https://github.com/${repo}/releases/download/v${version}"
-  $asset = "${title}-darwin-${arch}"
+  $_asset_name = $asset_name ? { undef => $title, default => $asset_name }
+  $asset = "${_asset_name}-darwin-${arch}"
   $url = "${base}/${asset}"
 
   $tmpfile = "/tmp/${asset}-${version}"
