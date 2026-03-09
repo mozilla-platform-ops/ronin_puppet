@@ -19,7 +19,7 @@ define packages::macos_taskcluster_binary (
   $asset = "${title}-darwin-${arch}"
   $url = "${base}/${asset}"
 
-  $tmpfile = "/tmp/${asset}"
+  $tmpfile = "/tmp/${asset}-${version}"
 
   exec { "download-${asset}":
     command => "/usr/bin/curl -L -o ${tmpfile} ${url}",
@@ -29,9 +29,9 @@ define packages::macos_taskcluster_binary (
 
   if $sha256 {
     exec { "verify-sha-${asset}":
-      command     => "/usr/bin/shasum -a 256 ${tmpfile} | /usr/bin/grep -q ${sha256}",
-      refreshonly => true,
-      subscribe   => Exec["download-${asset}"],
+      command => "/usr/bin/shasum -a 256 ${tmpfile} | /usr/bin/grep -q ${sha256}",
+      unless  => "/usr/bin/shasum -a 256 ${tmpfile} | /usr/bin/grep -q ${sha256}",
+      require => Exec["download-${asset}"],
     }
   }
 
