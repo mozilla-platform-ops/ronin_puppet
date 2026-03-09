@@ -1,8 +1,8 @@
 require_relative 'spec_helper'
 
-describe 'Spotlight disabled and worker tasks non-indexed' do
+describe 'Spotlight re-enabled and worker tasks indexable' do
   describe command('/usr/bin/mdutil -s /') do
-    its(:stdout) { should match(/Indexing disabled|Spotlight server is disabled/) }
+    its(:stdout) { should match(/Indexing enabled/) }
   end
 
   describe file('/opt/worker/tasks') do
@@ -10,21 +10,10 @@ describe 'Spotlight disabled and worker tasks non-indexed' do
   end
 
   describe file('/opt/worker/tasks/.metadata_never_index') do
-    it { should be_file }
-    it { should be_owned_by 'root' }
-    it { should be_grouped_into 'wheel' }
-    it { should be_mode 644 }
-  end
-
-  describe file('/opt/worker/tasks/.Spotlight-V100') do
     it { should_not exist }
   end
 end
 
 describe file('/usr/local/bin/kill_background_processes.sh') do
-  it { should exist }
-  it { should be_file }
-  it { should be_owned_by 'root' }
-  it { should be_grouped_into 'wheel' }
-  it { should be_mode 755 }
+  it { should_not exist }
 end
