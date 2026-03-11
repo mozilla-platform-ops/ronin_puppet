@@ -34,3 +34,4 @@ file name = nsclient.log
 
 [/settings/external scripts/scripts]
 screen_res = powershell.exe -ExecutionPolicy RemoteSigned -File scripts\screen_res.ps1
+worker_bootstrap_stage = powershell.exe -ExecutionPolicy RemoteSigned -File scripts\worker_bootstrap_stage.ps1
