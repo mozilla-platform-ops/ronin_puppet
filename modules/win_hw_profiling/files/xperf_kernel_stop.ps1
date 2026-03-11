@@ -38,18 +38,29 @@ if (-not $profile) { $profile = 'C:\ProgramData\xperf' }
 $outDir = Join-Path $profile 'xperf'
 if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir -Force | Out-Null }
 
-$log = Join-Path $outDir 'xperf_kernel_stop.log'
+$log         = Join-Path $outDir 'xperf_kernel_stop.log'
+$combinedEtl = Join-Path $outDir 'combined.etl'
 
 $xperf = Find-Xperf
 if (-not $xperf) {
-  WriteUserLog $log 'ERROR' 'xperf.exe not found'
+  WriteUserLog $log 'ERROR' "xperf.exe not found"
   exit 2
 }
 
-WriteUserLog $log 'INFO'  ("stop :: profile={0}" -f $profile)
+WriteUserLog $log 'INFO' ("stop :: outDir={0}" -f $outDir)
+WriteUserLog $log 'INFO' ("stop :: combinedEtl={0}" -f $combinedEtl)
 
-$out = & $xperf -stop 2>&1
+$args = @(
+  '-stop', 'NT Kernel Logger',
+  '-stop', 'usersession',
+  '-d',    $combinedEtl
+)
+
+WriteUserLog $log 'INFO' ("stop :: invoking xperf: {0} {1}" -f $xperf, ($args -join ' '))
+
+$out = & $xperf @args 2>&1
 $rc  = $LASTEXITCODE
+
 if ($out) { WriteUserLog $log 'DEBUG' (("xperf :: " + (($out | Out-String).Trim()))) }
 
 if ($rc -ne 0) {
