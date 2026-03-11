@@ -72,7 +72,10 @@ $SchTasksList = @(
     "MsCtfMonitor",
     # Windows 11 25H2 - Recall / WindowsAI tasks run on first boot
     "InitialConfiguration",
-    "PolicyConfiguration"
+    "PolicyConfiguration",
+    # Bug 2002658: toast tasks that steal focus from test windows
+    "RecoverabilityToastTask",
+    "WhesvcToast"
 )
 
 Foreach ($Item in $SchTasksList) {
