@@ -2,6 +2,7 @@ $ErrorActionPreference = 'Continue'
 
 function Get-InteractiveUserProfilePath {
   try {
+    # Current interactive console user (domain-safe)
     $user = (Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction SilentlyContinue).UserName
     if (-not $user) { return $null }
 
@@ -32,25 +33,48 @@ function WriteUserLog($log, $sev, $msg) {
   try { Add-Content -Path $log -Value "$ts [$sev] $msg" -Encoding UTF8 -ErrorAction SilentlyContinue } catch { }
 }
 
+# Resolve output directory (interactive user profile preferred)
 $profile = Get-InteractiveUserProfilePath
 if (-not $profile) { $profile = 'C:\ProgramData\xperf' }
 
 $outDir = Join-Path $profile 'xperf'
 if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir -Force | Out-Null }
 
-$log = Join-Path $outDir 'xperf_kernel_start.log'
-$etl = Join-Path $outDir 'kernel_session.etl'
+$log       = Join-Path $outDir 'xperf_kernel_start.log'
+$kernelEtl = Join-Path $outDir 'kernel_session.etl'
+$userEtl   = Join-Path $outDir 'user_session.etl'
 
 $xperf = Find-Xperf
 if (-not $xperf) {
-  WriteUserLog $log 'ERROR' 'xperf.exe not found'
+  WriteUserLog $log 'ERROR' "xperf.exe not found"
   exit 2
 }
 
-WriteUserLog $log 'INFO'  ("start :: profile={0} etl={1}" -f $profile, $etl)
+WriteUserLog $log 'INFO'  ("start :: outDir={0}" -f $outDir)
+WriteUserLog $log 'INFO'  ("start :: kernelEtl={0}" -f $kernelEtl)
+WriteUserLog $log 'INFO'  ("start :: userEtl={0}" -f $userEtl)
 
-$out = & $xperf -on PROC_THREAD+LOADER+PROFILE+CSWITCH -stackwalk PROFILE+CSWITCH -f $etl -BufferSize 1024 2>&1
+# Your requested command, expressed as an args array for safe quoting:
+# xperf -start "NT Kernel Logger" -on PROC_THREAD+LOADER+PROFILE+CSWITCH -stackwalk PROFILE+CSWITCH -f kernel_session.etl -BufferSize 1024 `
+#       -start "usersession" -on Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power -f user_session.etl -BufferSize 1024
+$args = @(
+  '-start',     'NT Kernel Logger',
+  '-on',        'PROC_THREAD+LOADER+PROFILE+CSWITCH',
+  '-stackwalk', 'PROFILE+CSWITCH',
+  '-f',         $kernelEtl,
+  '-BufferSize','1024',
+
+  '-start',     'usersession',
+  '-on',        'Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power',
+  '-f',         $userEtl,
+  '-BufferSize','1024'
+)
+
+WriteUserLog $log 'INFO' ("start :: invoking xperf: {0} {1}" -f $xperf, ($args -join ' '))
+
+$out = & $xperf @args 2>&1
 $rc  = $LASTEXITCODE
+
 if ($out) { WriteUserLog $log 'DEBUG' (("xperf :: " + (($out | Out-String).Trim()))) }
 
 if ($rc -ne 0) {
