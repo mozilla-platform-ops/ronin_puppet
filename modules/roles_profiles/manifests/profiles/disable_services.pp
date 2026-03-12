@@ -41,7 +41,8 @@ class roles_profiles::profiles::disable_services {
         include win_disable_services::disable_wsearch
         ## WIP for RELOPS-1946
         ## Not currently working. Leaving n place for ref.
-        #include win_disable_services::disable_sync_from_cloud
+        ## Disabled for testing. REVERT BEFORE MERGE
+        # include win_disable_services::disable_sync_from_cloud
         if $facts['custom_win_release_id'] in ['2004', '2009'] {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
@@ -70,7 +71,7 @@ class roles_profiles::profiles::disable_services {
         ## must be ran after apx uninstall
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
-          include win_disable_services::disable_defender_smartscreen
+          #include win_disable_services::disable_defender_smartscreen
           include win_disable_services::extended_uninstall_appx_packages
           ## Can't disable appxsvc on ref hardware as it will affect the task
           ## user's ability to use codecs

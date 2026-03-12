@@ -50,6 +50,7 @@ if (-not $xperf) {
 WriteUserLog $log 'INFO' ("stop :: outDir={0}" -f $outDir)
 WriteUserLog $log 'INFO' ("stop :: combinedEtl={0}" -f $combinedEtl)
 
+# xperf -stop "NT Kernel Logger" -stop "usersession" -d "<resolved>\xperf\combined.etl"
 $args = @(
   '-stop', 'NT Kernel Logger',
   '-stop', 'usersession',
@@ -61,7 +62,7 @@ WriteUserLog $log 'INFO' ("stop :: invoking xperf: {0} {1}" -f $xperf, ($args -j
 $out = & $xperf @args 2>&1
 $rc  = $LASTEXITCODE
 
-if ($out) { WriteUserLog $log 'DEBUG' (("xperf :: " + (($out | Out-String).Trim()))) }
+if ($out) { WriteUserLog $log 'DEBUG' ("xperf :: " + (($out | Out-String).Trim())) }
 
 if ($rc -ne 0) {
   WriteUserLog $log 'ERROR' ("stop :: FAILED rc={0}" -f $rc)

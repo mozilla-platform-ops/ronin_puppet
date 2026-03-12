@@ -50,13 +50,12 @@ if (-not $xperf) {
   exit 2
 }
 
-WriteUserLog $log 'INFO'  ("start :: outDir={0}" -f $outDir)
-WriteUserLog $log 'INFO'  ("start :: kernelEtl={0}" -f $kernelEtl)
-WriteUserLog $log 'INFO'  ("start :: userEtl={0}" -f $userEtl)
+WriteUserLog $log 'INFO' ("start :: outDir={0}" -f $outDir)
+WriteUserLog $log 'INFO' ("start :: kernelEtl={0}" -f $kernelEtl)
+WriteUserLog $log 'INFO' ("start :: userEtl={0}" -f $userEtl)
 
-# Your requested command, expressed as an args array for safe quoting:
 # xperf -start "NT Kernel Logger" -on PROC_THREAD+LOADER+PROFILE+CSWITCH -stackwalk PROFILE+CSWITCH -f kernel_session.etl -BufferSize 1024 `
-#       -start "usersession" -on Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power -f user_session.etl -BufferSize 1024
+#       -start "usersession" -on Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power+Microsoft-Antimalware-Engine -f user_session.etl -BufferSize 1024
 $args = @(
   '-start',     'NT Kernel Logger',
   '-on',        'PROC_THREAD+LOADER+PROFILE+CSWITCH',
@@ -65,7 +64,7 @@ $args = @(
   '-BufferSize','1024',
 
   '-start',     'usersession',
-  '-on',        'Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power',
+  '-on',        'Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power+Microsoft-Antimalware-Engine',
   '-f',         $userEtl,
   '-BufferSize','1024'
 )
@@ -75,7 +74,7 @@ WriteUserLog $log 'INFO' ("start :: invoking xperf: {0} {1}" -f $xperf, ($args -
 $out = & $xperf @args 2>&1
 $rc  = $LASTEXITCODE
 
-if ($out) { WriteUserLog $log 'DEBUG' (("xperf :: " + (($out | Out-String).Trim()))) }
+if ($out) { WriteUserLog $log 'DEBUG' ("xperf :: " + (($out | Out-String).Trim())) }
 
 if ($rc -ne 0) {
   WriteUserLog $log 'ERROR' ("start :: FAILED rc={0}" -f $rc)
