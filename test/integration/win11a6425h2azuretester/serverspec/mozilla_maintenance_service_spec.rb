@@ -31,7 +31,7 @@ registry_checks = {
     'name' => 'Mozilla Fake SPC'
   },
   "HKLM:\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2" => {
-    'issuer' => 'Digicert SHA2 Assured ID Code Signing CA',
+    'issuer' => 'DigiCert SHA2 Assured ID Code Signing CA',
     'name' => 'Mozilla Corporation'
   }
 }

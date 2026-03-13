@@ -1,6 +1,12 @@
 require_relative 'spec_helper'
 
-describe powershell_command("(Get-Command 'git.exe' -ErrorAction Stop).Source") do
+git_exe = 'C:\\Program Files\\Git\\bin\\git.exe'
+
+describe file(git_exe) do
+  it { should exist }
+end
+
+describe powershell_command("& '#{git_exe}' --version") do
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match(/git\.exe/i) }
+  its(:stdout) { should match(/^git version /i) }
 end

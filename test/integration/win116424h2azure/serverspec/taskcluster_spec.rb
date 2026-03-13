@@ -22,7 +22,11 @@ end
     it { should exist }
   end
 
-  describe powershell_command("& '#{path}' --short-version") do
+  describe powershell_command(<<~POWERSHELL) do
+    $version = & '#{path}' --short-version 2>$null
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $version
+  POWERSHELL
     its(:exit_status) { should eq 0 }
     its(:stdout) { should match(/^#{Regexp.escape(expected_taskcluster_version)}\s*$/) }
   end
