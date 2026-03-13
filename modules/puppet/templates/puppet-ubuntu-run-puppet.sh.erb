@@ -176,8 +176,6 @@ function update_puppet {
         configure_git_pat_auth
     fi
 
-    # TODO: authenticate the remote actions
-
     # Proactively remove empty/corrupted object files before fetching.
     # git fetch can return exit code 0 even when unpack-objects fails due to
     # corruption, so checking exit code alone is not reliable.
@@ -186,7 +184,6 @@ function update_puppet {
         echo "Found $empty_count empty object file(s) before fetch; removing..."
         find .git/objects -type f -empty -delete
     fi
-
     # Fetch and checkout production branch
     echo -e "Syncing ronin-puppet client (environment: ${puppet_env})..."
     echo -e "  dir: ${WORKING_DIR}"
