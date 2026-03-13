@@ -1,0 +1,39 @@
+---
+roles:
+  win116424h2azure:
+    tests:
+      - win11_sdk_tests.ps1
+      - azure_vm_agent.tests.ps1
+      - git.tests.ps1
+      - mercurial.tests.ps1
+      - sevenzip.tests.ps1
+      - mozilla_build.tests.ps1
+      - mozilla_maintenance_service.tests.ps1
+      - windows_worker_runner.tests.ps1
+  win116425h2azure:
+    tests:
+      - win11_sdk_tests.ps1
+      - azure_vm_agent.tests.ps1
+      - git.tests.ps1
+      - mercurial.tests.ps1
+      - sevenzip.tests.ps1
+      - mozilla_build.tests.ps1
+      - mozilla_maintenance_service.tests.ps1
+      - windows_worker_runner.tests.ps1
+  win11a6425h2azurebuilder:
+    tests:
+      - azure_vm_agent.tests.ps1
+      - git.tests.ps1
+      - mercurial.tests.ps1
+      - sevenzip.tests.ps1
+      - mozilla_build.tests.ps1
+      - windows_worker_runner.tests.ps1
+  win11a6425h2azuretester:
+    tests:
+      - azure_vm_agent.tests.ps1
+      - git.tests.ps1
+      - mercurial.tests.ps1
+      - sevenzip.tests.ps1
+      - mozilla_build.tests.ps1
+      - mozilla_maintenance_service.tests.ps1
+      - windows_worker_runner.tests.ps1

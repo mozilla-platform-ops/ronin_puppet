@@ -49,6 +49,10 @@ test-kitchen in called via `./bin/kitchen_docker` (the binary tells test-kitchen
 
 [InSpec](https://github.com/inspec/inspec) tests live in `tests/integration/SUITE/inspec/*_spec.rb`.
 
+Windows Kitchen uses `.kitchen_configs/kitchen.windows.yml` and keeps the `serverspec` verifier as the outer Kitchen integration. The Windows verifier can now trigger guest-side Pester 5 tests from `test/integration/windows/pester/`.
+
+Those Pester files are not uploaded separately the way `worker-images` does it during Packer builds. Instead, the Windows Kitchen provision step checks out `ronin_puppet` onto the VM at `C:\ronin_puppet`, and the verifier runs the Pester harness from that checkout. This works well in CI because `RONIN_REF` points at a committed ref. It does not pick up unpushed local test changes unless a separate sync step is added.
+
 ##### test-kitchen history
 
 In the past we used `./bin/kitchen` (which used Vagrant and VirtualBox, and was configured in .kitchen_configs/kitchen.yml). `.kitchen_configs/kitchen.circleci.yml` was used for CircleCI (but it now uses the Docker config).
