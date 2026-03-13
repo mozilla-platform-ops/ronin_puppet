@@ -79,8 +79,23 @@ function Test-ConnectionUntilOnline {
   param (
     [string]$Hostname = "www.google.com",
     [int]$Interval = 5,
-    [int]$TotalTime = 120
+    [int]$TotalTime = 120,
+    [string]$WorkerPoolId
   )
+
+  if ($PSBoundParameters.ContainsKey('WorkerPoolId')) {
+    if ([string]::IsNullOrWhiteSpace($WorkerPoolId)) {
+      Write-Log -message ('{0} :: worker-pool-id tag is missing. Skipping network wait.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+      return
+    }
+
+    if ($WorkerPoolId -notmatch 'headless') {
+      return
+    }
+
+    Write-Log -message ('{0} :: verifying network connectivity for {1} before starting worker-runner' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'INFO'
+  }
+
   $elapsedTime = 0
   while ($elapsedTime -lt $TotalTime) {
     if (Test-Connection -ComputerName $Hostname -Count 1 -Quiet) {
@@ -93,24 +108,6 @@ function Test-ConnectionUntilOnline {
   }
   Write-Log -message ('{0} :: {1} did not come online within {2} seconds' -f $($MyInvocation.MyCommand.Name), $env:COMPUTERNAME, $TotalTime) -severity 'DEBUG'
   throw "Connection timeout."
-}
-
-function Wait-ForHeadlessWin2022Network {
-  param (
-    [string]$WorkerPoolId
-  )
-
-  if ([string]::IsNullOrWhiteSpace($WorkerPoolId)) {
-    Write-Log -message ('{0} :: worker-pool-id tag is missing. Skipping network wait.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    return
-  }
-
-  if ($WorkerPoolId -notmatch '(^|/)b-win2022-headless$') {
-    return
-  }
-
-  Write-Log -message ('{0} :: verifying network connectivity for {1} before starting worker-runner' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'INFO'
-  Test-ConnectionUntilOnline
 }
 
 function Run-MaintainSystem {
@@ -589,7 +586,7 @@ If ($hand_off_ready -eq 'yes') {
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   ## Set the VM the name that taskcluster gave it, if it's not already set
   Set-AzVMName
-  Wait-ForHeadlessWin2022Network -WorkerPoolId $worker_pool_id
+  Test-ConnectionUntilOnline -WorkerPoolId $worker_pool_id
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
