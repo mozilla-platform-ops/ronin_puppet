@@ -66,116 +66,6 @@ function Invoke-AsSystem {
     exit $exitCode
 }
 
-function Invoke-DebugProbe {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Description,
-
-        [Parameter(Mandatory = $true)]
-        [scriptblock]$ScriptBlock
-    )
-
-    Write-Host "DEBUG [$Description] begin"
-    try {
-        $output = & $ScriptBlock 2>&1 | Out-String -Width 4096
-        if ($output.Trim()) {
-            $output.TrimEnd().Split([Environment]::NewLine) | ForEach-Object {
-                if ($_) {
-                    Write-Host $_
-                }
-            }
-        }
-        else {
-            Write-Host '(no output)'
-        }
-    }
-    catch {
-        Write-Host "DEBUG [$Description] failed: $($_.Exception.Message)"
-    }
-    Write-Host "DEBUG [$Description] end"
-}
-
-function Write-GitDebugState {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Phase
-    )
-
-    $programFilesX86 = ${env:ProgramFiles(x86)}
-
-    Write-Host "DEBUG [$Phase] ProgramFiles=$env:ProgramFiles"
-    Write-Host "DEBUG [$Phase] ProgramW6432=$env:ProgramW6432"
-    Write-Host "DEBUG [$Phase] ProgramFiles(x86)=$programFilesX86"
-    Write-Host "DEBUG [$Phase] PATH=$env:PATH"
-
-    Invoke-DebugProbe -Description "$Phase facter custom_win_git_version" -ScriptBlock {
-        & "$puppetBin\facter.bat" custom_win_git_version
-    }
-
-    Invoke-DebugProbe -Description "$Phase facter --debug custom_win_git_version" -ScriptBlock {
-        & "$puppetBin\facter.bat" --debug custom_win_git_version
-    }
-
-    Invoke-DebugProbe -Description "$Phase external fact facts_win_other_apps.ps1" -ScriptBlock {
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'C:\ronin_puppet\modules\win_shared\facts.d\facts_win_other_apps.ps1'
-    }
-
-    Invoke-DebugProbe -Description "$Phase Git path checks" -ScriptBlock {
-        [pscustomobject]@{
-            program_files_git      = Test-Path "$env:ProgramFiles\Git\bin\git.exe"
-            program_w6432_git      = if ($env:ProgramW6432) { Test-Path "$env:ProgramW6432\Git\bin\git.exe" } else { $null }
-            program_files_x86_git  = if ($programFilesX86) { Test-Path "$programFilesX86\Git\bin\git.exe" } else { $null }
-        } | Format-List
-    }
-
-    Invoke-DebugProbe -Description "$Phase Get-Command git.exe" -ScriptBlock {
-        Get-Command git.exe -All -ErrorAction SilentlyContinue | Select-Object Source, Version | Format-List
-    }
-
-    Invoke-DebugProbe -Description "$Phase Git file version details" -ScriptBlock {
-        $gitCandidates = @(
-            "$env:ProgramFiles\Git\bin\git.exe",
-            $(if ($env:ProgramW6432) { "$env:ProgramW6432\Git\bin\git.exe" }),
-            $(if ($programFilesX86) { "$programFilesX86\Git\bin\git.exe" })
-        ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
-
-        if (-not $gitCandidates) {
-            Write-Host 'No Git executable paths found.'
-            return
-        }
-
-        $gitCandidates | ForEach-Object {
-            Get-Item $_ | Select-Object FullName, @{ Name = 'ProductVersion'; Expression = { $_.VersionInfo.ProductVersion } }
-        } | Format-List
-    }
-
-    Invoke-DebugProbe -Description "$Phase Chocolatey local packages matching git" -ScriptBlock {
-        $choco = Get-Command choco.exe -ErrorAction SilentlyContinue
-        if (-not $choco) {
-            Write-Host 'choco.exe not found on PATH.'
-            return
-        }
-
-        & $choco.Source list --local-only git
-    }
-
-    Invoke-DebugProbe -Description "$Phase uninstall registry entries matching Git" -ScriptBlock {
-        $gitEntries = Get-ItemProperty `
-            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', `
-            'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' `
-            -ErrorAction SilentlyContinue |
-            Where-Object { $PSItem.DisplayName -match 'Git' } |
-            Select-Object DisplayName, DisplayVersion, Publisher, InstallLocation
-
-        if (-not $gitEntries) {
-            Write-Host 'No uninstall registry entries matching Git.'
-            return
-        }
-
-        $gitEntries | Format-List
-    }
-}
-
 $currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 if (-not $AsSystem -and $currentIdentity -ne 'NT AUTHORITY\SYSTEM') {
     Write-Host "Current identity is $currentIdentity; relaunching provisioner as SYSTEM..."
@@ -256,8 +146,6 @@ Write-Host "Seeded $roninKey (worker_pool_id=$workerPoolId, role=$env:PUPPET_ROL
 $env:FACTER_custom_win_role = $env:PUPPET_ROLE
 $env:FACTER_running_in_test_kitchen = 'true'
 
-Write-GitDebugState -Phase 'pre-apply'
-
 # Run puppet apply
 # r10k_modules is committed to the repo, so no separate `r10k puppetfile install` is needed.
 Write-Host "Running puppet apply for role $env:PUPPET_ROLE..."
@@ -274,8 +162,6 @@ Write-Host "Running puppet apply for role $env:PUPPET_ROLE..."
     '--show_diff'
 
 $exitCode = $LASTEXITCODE
-
-Write-GitDebugState -Phase 'post-apply'
 
 # Handle exit codes the same way as Start-AzRoninPuppet.ps1
 # 0 or 2 = success, 1/4/6 = failure
