@@ -4,36 +4,6 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-function Install-KitchenTestModules {
-    Write-Host "Installing PowerShell test modules for Kitchen verification..."
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-    Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
-
-    if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne 'Trusted') {
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-    }
-
-    foreach ($modulePath in @(
-        'C:\Program Files (x86)\WindowsPowerShell\Modules\Pester',
-        'C:\Program Files\WindowsPowerShell\Modules\Pester'
-    )) {
-        if (-not (Test-Path $modulePath)) {
-            continue
-        }
-
-        takeown /F $modulePath /A /R | Out-Null
-        icacls $modulePath /reset | Out-Null
-        icacls $modulePath /grant "*S-1-5-32-544:F" /inheritance:d /T | Out-Null
-        Remove-Item -Path $modulePath -Recurse -Force -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
-    }
-
-    Install-Module -Name Pester -MinimumVersion '5.0.0' -Force -SkipPublisherCheck -AllowClobber
-    Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber
-
-    Write-Host "PowerShell test modules installed."
-}
-
 function Invoke-AsSystem {
     $taskName = 'KitchenProvisionAsSystem'
     $scriptPath = 'C:\Windows\Temp\kitchen-provision-system.ps1'
@@ -111,8 +81,6 @@ Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath -UseBasicParsing
 Write-Host "Installing OpenVox agent..."
 Start-Process msiexec -ArgumentList "/i `"$msiPath`" /qn /norestart" -Wait -NoNewWindow
 Write-Host "OpenVox agent installed."
-
-Install-KitchenTestModules
 
 # Set up environment matching Start-AzRoninPuppet.ps1
 $puppetBin = "$env:ProgramFiles\Puppet Labs\Puppet\bin"

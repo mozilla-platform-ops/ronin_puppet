@@ -7,7 +7,6 @@ on:
       - 'modules/roles_profiles/**'
       - 'data/roles/win*.yaml'
       - 'data/os/Windows/**'
-      - 'test/integration/windows/**'
       - 'test/integration/win*/serverspec/**'
       - '.kitchen/provision_windows.ps1'
       - '.kitchen_configs/kitchen.windows.yml'

@@ -125,7 +125,6 @@ suites:
   - name: windows
     verifier:
       patterns:
-        - test/integration/windows/serverspec/*_spec.rb
         - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       default_pattern: false
       extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
