@@ -337,6 +337,8 @@ if [ "$GH_PAT_AUTH" = "1" ]; then
         echo "GitHub PAT authentication is enabled."
     else
         echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
+        # unset header if present (just this repo) (exit code 5 if not found)
+        git config --unset-all http.https://github.com/.extraHeader 2>/dev/null || echo "No existing GitHub PAT auth header to unset"
     fi
 fi
 
