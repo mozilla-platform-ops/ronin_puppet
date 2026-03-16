@@ -7,6 +7,7 @@ gem 'kitchen-inspec', '>= 2.6.1'
 gem 'rubocop'
 
 gem 'kitchen-verifier-serverspec'
+gem 'kitchen-pester'
 # gem 'kitchen-docker', git: 'https://github.com/test-kitchen/kitchen-docker.git', branch: 'main'
 gem 'kitchen-docker', git: 'https://github.com/test-kitchen/kitchen-docker.git', ref: '511e4ad'  # Last working commit before gemspec bug
 # gem 'kitchen-docker'
