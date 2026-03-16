@@ -31,6 +31,7 @@ jobs:
       PUPPET_ROLE: ${{ matrix.role }}
       VAULT_ADDR: http://127.0.0.1:8202
       VAULT_TOKEN: root
+      PIP_BREAK_SYSTEM_PACKAGES: '1'
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -61,16 +62,6 @@ jobs:
       - name: Install Rosetta 2
         if: runner.arch == 'ARM64'
         run: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
-
-      - name: Allow pip system-wide installs (PEP 668)
-        run: |
-          # GHA macOS runners have Homebrew Python with PEP 668 protection.
-          # Puppet modules use pip3 to install packages system-wide, which
-          # fails without this. CircleCI runners didn't have this restriction.
-          # Remove the marker AND set pip.conf to cover all pip invocations.
-          sudo find /opt/homebrew/lib /usr/local/lib -name EXTERNALLY-MANAGED -delete 2>/dev/null || true
-          sudo mkdir -p /Library/Application\ Support/pip
-          printf '[global]\nbreak-system-packages = true\n' | sudo tee /Library/Application\ Support/pip/pip.conf
 
       - name: Install Puppet agent
         run: ./.github/scripts/install_puppet_mac.sh
