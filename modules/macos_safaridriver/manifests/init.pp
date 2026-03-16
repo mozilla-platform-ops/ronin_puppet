@@ -60,11 +60,11 @@ class macos_safaridriver (
             command => '/usr/local/bin/install_safari_softwareupdates.py',
           }
 
-          $safari_automation_check = '/usr/bin/defaults read /Library/Preferences/com.apple.Safari AllowRemoteAutomation 2>/dev/null | /usr/bin/grep -q 1'
+          $safaridriver_semaphore = '/var/tmp/semaphore/safaridriver-enabled'
 
           exec { 'enable safari driver':
-            command => '/usr/bin/safaridriver --enable',
-            unless  => $safari_automation_check,
+            command => "/usr/bin/safaridriver --enable && /bin/mkdir -p /var/tmp/semaphore && /usr/bin/touch ${safaridriver_semaphore}",
+            unless  => "/bin/test -f ${safaridriver_semaphore}",
           }
 
           # non-admin users need to be in _webdeveloper group for safaridriver to work
