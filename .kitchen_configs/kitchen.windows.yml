@@ -12,6 +12,9 @@ verifier:
   test_folder: test/integration/<%= ENV['PUPPET_ROLE'] %>/pester
   skip_pester_install: false
   remove_builtin_pester: true
+  bootstrap:
+    repository_url: 'https://www.powershellgallery.com/api/v2'
+    galleryname: 'PSGallery'
   pester_install:
     SkipPublisherCheck: true
     Force: true
