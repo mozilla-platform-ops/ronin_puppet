@@ -34,11 +34,11 @@ class macos_safaridriver (
           # TCC.db doesn't exist yet in ci, so skip running the script
           if $facts['running_in_test_kitchen'] != 'true' {
             exec { 'execute perms script':
-              command => $perm_script,
-              require => File[$perm_script],
-              user    => 'root',
+              command     => $perm_script,
+              subscribe   => File[$perm_script],
+              refreshonly => true,
+              user        => 'root',
               # logoutput => true,
-              # TODO: only run if needed, use semaphore?
             }
           }
 
@@ -60,9 +60,11 @@ class macos_safaridriver (
             command => '/usr/local/bin/install_safari_softwareupdates.py',
           }
 
+          $safari_automation_check = '/usr/bin/defaults read com.apple.Safari AllowRemoteAutomation 2>/dev/null | /usr/bin/grep -q 1'
+
           exec { 'enable safari driver':
             command => '/usr/bin/safaridriver --enable',
-            # TODO: only run if needed, currently no good test... use semaphore?
+            unless  => $safari_automation_check,
           }
 
           # non-admin users need to be in _webdeveloper group for safaridriver to work
