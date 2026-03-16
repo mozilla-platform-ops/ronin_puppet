@@ -51,6 +51,9 @@ jobs:
 
       - name: Bundle install
         run: |
+          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
+          export GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
+          export PATH="${GEM_HOME}/bin:${PATH}"
           gem install bundler:2.5.23
           bundle install
 
@@ -82,10 +85,24 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: bundle exec env -u RUBYOPT -u BUNDLE_GEMFILE -u BUNDLE_PATH -u BUNDLE_BIN_PATH -u BUNDLE_APP_CONFIG -u GEM_HOME -u GEM_PATH kitchen converge ${{ matrix.suite }}
+        run: |
+          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
+          GEM_DEFAULT_DIR=$(ruby -e "puts Gem.default_dir")
+          export GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
+          export GEM_PATH="${GEM_HOME}:${GEM_DEFAULT_DIR}"
+          export PATH="${GEM_HOME}/bin:${PATH}"
+          unset RUBYOPT BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_APP_CONFIG
+          kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        run: bundle exec env -u RUBYOPT -u BUNDLE_GEMFILE -u BUNDLE_PATH -u BUNDLE_BIN_PATH -u BUNDLE_APP_CONFIG -u GEM_HOME -u GEM_PATH kitchen verify ${{ matrix.suite }}
+        run: |
+          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
+          GEM_DEFAULT_DIR=$(ruby -e "puts Gem.default_dir")
+          export GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
+          export GEM_PATH="${GEM_HOME}:${GEM_DEFAULT_DIR}"
+          export PATH="${GEM_HOME}/bin:${PATH}"
+          unset RUBYOPT BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_APP_CONFIG
+          bundle exec kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
