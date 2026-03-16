@@ -82,14 +82,10 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: |
-          unset BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_GEMFILE RUBYOPT RUBYLIB
-          bundle exec kitchen converge ${{ matrix.suite }}
+        run: kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        run: |
-          unset BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_GEMFILE RUBYOPT RUBYLIB
-          bundle exec kitchen verify ${{ matrix.suite }}
+        run: kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
