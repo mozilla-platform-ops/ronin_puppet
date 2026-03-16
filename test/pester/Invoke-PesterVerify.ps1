@@ -68,11 +68,25 @@ function Merge-HashTables {
 
 $CombinedHiera = Merge-HashTables -Base $WindowsHiera -Overlay $RoleHiera
 
-# Discover all test files
-$tests = Get-ChildItem -Path $testDir -Filter '*.tests.ps1'
-if (-not $tests) {
-    Write-Error "No .tests.ps1 files found in $testDir"
+# Load per-role test list
+$configPath = "$testDir\configs\$Role.yaml"
+if (-not (Test-Path $configPath)) {
+    Write-Error "No test config found for role '$Role': $configPath"
     exit 1
+}
+$config = ConvertFrom-Yaml (Get-Content -Path $configPath -Raw)
+if (-not $config.tests) {
+    Write-Error "No tests listed in $configPath"
+    exit 1
+}
+
+$tests = foreach ($t in $config.tests) {
+    $path = Join-Path $testDir $t
+    if (-not (Test-Path $path)) {
+        Write-Error "Test file not found: $path"
+        exit 1
+    }
+    Get-Item $path
 }
 
 Write-Host "Running $($tests.Count) Pester test files for role '$Role'..."
