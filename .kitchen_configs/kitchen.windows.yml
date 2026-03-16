@@ -8,9 +8,11 @@ provisioner:
   script: .kitchen/provision_windows.ps1
 
 verifier:
-  name: serverspec
-  remote_exec: false
-  color: <%= !ENV.include?('CI') %>
+  name: shell
+  command: >-
+    powershell.exe -NoProfile -ExecutionPolicy Bypass
+    -File C:\ronin_puppet\test\pester\Invoke-PesterVerify.ps1
+    -Role '<%= ENV['PUPPET_ROLE'] %>'
 
 transport:
   name: winrm
@@ -123,11 +125,6 @@ platforms:
 
 suites:
   - name: windows
-    verifier:
-      patterns:
-        - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
-      default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
     includes:
       - win11-64-24h2
       - win11-64-25h2
