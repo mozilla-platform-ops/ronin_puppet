@@ -32,12 +32,48 @@ def deep_fetch(hash, *keys)
 end
 
 def expected_hiera_value(*keys)
-  deep_fetch(VARIANT_DATA, *keys) || deep_fetch(WINDOWS_DATA, *keys)
+  deep_fetch(VARIANT_DATA, *keys) || deep_fetch(ROLE_HIERA, *keys) || deep_fetch(WINDOWS_DATA, *keys)
 end
 
 def powershell_command(script)
   encoded = Base64.strict_encode64(script.encode('UTF-16LE'))
   command("powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand #{encoded}")
+end
+
+def registry_value_command(path, property)
+  powershell_command(<<~POWERSHELL)
+    $value = Get-ItemPropertyValue -Path '#{path}' -Name '#{property}' -ErrorAction Stop
+    $value
+  POWERSHELL
+end
+
+def registry_key_exists_command(path)
+  powershell_command(<<~POWERSHELL)
+    if (Test-Path '#{path}') {
+      'present'
+    }
+    else {
+      exit 1
+    }
+  POWERSHELL
+end
+
+def service_property_command(name, property)
+  powershell_command(<<~POWERSHELL)
+    $service = Get-CimInstance Win32_Service -Filter "Name='#{name}'" -ErrorAction Stop
+    $service.#{property}
+  POWERSHELL
+end
+
+def scheduled_task_command(name, script)
+  powershell_command(<<~POWERSHELL)
+    $task = Get-ScheduledTask -TaskName '#{name}' -ErrorAction Stop | Select-Object -First 1
+    #{script}
+  POWERSHELL
+end
+
+def machine_env_command(name)
+  powershell_command("[Environment]::GetEnvironmentVariable('#{name}', 'Machine')")
 end
 
 def software_property_command(display_name_filter, property)
