@@ -43,6 +43,15 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: false
 
+      - name: Configure gem environment
+        run: |
+          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
+          GEM_DEFAULT_DIR=$(ruby -e "puts Gem.default_dir")
+          GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
+          echo "GEM_HOME=${GEM_HOME}" >> "$GITHUB_ENV"
+          echo "GEM_PATH=${GEM_HOME}:${GEM_DEFAULT_DIR}" >> "$GITHUB_ENV"
+          echo "${GEM_HOME}/bin" >> "$GITHUB_PATH"
+
       - name: Cache gems
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
@@ -51,9 +60,6 @@ jobs:
 
       - name: Bundle install
         run: |
-          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
-          export GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
-          export PATH="${GEM_HOME}/bin:${PATH}"
           gem install bundler:2.5.23
           bundle install
 
@@ -86,22 +92,11 @@ jobs:
       - name: Kitchen converge
         timeout-minutes: 30
         run: |
-          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
-          GEM_DEFAULT_DIR=$(ruby -e "puts Gem.default_dir")
-          export GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
-          export GEM_PATH="${GEM_HOME}:${GEM_DEFAULT_DIR}"
-          export PATH="${GEM_HOME}/bin:${PATH}"
           unset RUBYOPT BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_APP_CONFIG
           kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
         run: |
-          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
-          GEM_DEFAULT_DIR=$(ruby -e "puts Gem.default_dir")
-          export GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
-          export GEM_PATH="${GEM_HOME}:${GEM_DEFAULT_DIR}"
-          export PATH="${GEM_HOME}/bin:${PATH}"
-          unset RUBYOPT BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_APP_CONFIG
           bundle exec kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
