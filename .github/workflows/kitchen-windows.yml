@@ -28,7 +28,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      checks: write
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -66,22 +65,6 @@ jobs:
           WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: bundle exec kitchen test ${{ matrix.kitchen_instance }} -l debug
-
-      - name: Publish test results
-        if: always()
-        uses: dorny/test-reporter@3d76b34a4535afbd0600d347b09a6ee5deb3ed7f
-        with:
-          name: Tests (${{ matrix.role }})
-          path: test-results/rspec.xml
-          reporter: java-junit
-          fail-on-empty: 'false'
-
-      - name: Upload test artifacts
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: test-results-${{ matrix.role }}
-          path: test-results/rspec.xml
 
       - name: Kitchen destroy
         if: always()
