@@ -48,16 +48,12 @@ platforms:
         provisioner: test-kitchen-azurerm
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
-        Enable-PSRemoting -Force -SkipNetworkProfileCheck
-        Set-Item WSMan:\localhost\Shell\MaxMemoryPerShellMB -Value 512
-        Set-Item WSMan:\localhost\MaxTimeoutms -Value 1800000
-        Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Negotiate -Value $false
-        Set-Item WSMan:\localhost\Shell\MaxShellsPerUser -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxProcessesPerShell -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxConcurrentUsers -Value 100
-        Restart-Service WinRM
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
   - name: win11-64-25h2
     driver:
       name: azurerm
@@ -74,16 +70,12 @@ platforms:
         provisioner: test-kitchen-azurerm
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
-        Enable-PSRemoting -Force -SkipNetworkProfileCheck
-        Set-Item WSMan:\localhost\Shell\MaxMemoryPerShellMB -Value 512
-        Set-Item WSMan:\localhost\MaxTimeoutms -Value 1800000
-        Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Negotiate -Value $false
-        Set-Item WSMan:\localhost\Shell\MaxShellsPerUser -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxProcessesPerShell -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxConcurrentUsers -Value 100
-        Restart-Service WinRM
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
   - name: win11-a64-25h2-builder
     driver:
       name: azurerm
@@ -100,16 +92,12 @@ platforms:
         provisioner: test-kitchen-azurerm
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
-        Enable-PSRemoting -Force -SkipNetworkProfileCheck
-        Set-Item WSMan:\localhost\Shell\MaxMemoryPerShellMB -Value 512
-        Set-Item WSMan:\localhost\MaxTimeoutms -Value 1800000
-        Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Negotiate -Value $false
-        Set-Item WSMan:\localhost\Shell\MaxShellsPerUser -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxProcessesPerShell -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxConcurrentUsers -Value 100
-        Restart-Service WinRM
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
   - name: win11-a64-25h2-tester
     driver:
       name: azurerm
@@ -126,16 +114,12 @@ platforms:
         provisioner: test-kitchen-azurerm
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
-        Enable-PSRemoting -Force -SkipNetworkProfileCheck
-        Set-Item WSMan:\localhost\Shell\MaxMemoryPerShellMB -Value 512
-        Set-Item WSMan:\localhost\MaxTimeoutms -Value 1800000
-        Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
-        Set-Item WSMan:\localhost\Service\Auth\Negotiate -Value $false
-        Set-Item WSMan:\localhost\Shell\MaxShellsPerUser -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxProcessesPerShell -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxConcurrentUsers -Value 100
-        Restart-Service WinRM
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
   - name: win2022-64-2009
     driver:
       name: azurerm
@@ -158,11 +142,6 @@ platforms:
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
         winrm set winrm/config/service/auth '@{Negotiate="false"}'
-        New-NetFirewallRule -DisplayName 'WinRM HTTP' -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow -ErrorAction SilentlyContinue
-        Set-Item WSMan:\localhost\Shell\MaxShellsPerUser -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxProcessesPerShell -Value 100
-        Set-Item WSMan:\localhost\Shell\MaxConcurrentUsers -Value 100
-        Restart-Service WinRM
 
 suites:
   - name: windows
