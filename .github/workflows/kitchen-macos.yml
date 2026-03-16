@@ -65,6 +65,7 @@ jobs:
           # Create kitchen binstub in GEM_HOME/bin so bare 'kitchen' works
           # without 'bundle exec' (which leaks RUBYOPT into puppet's Ruby)
           bundle config set --local bin "${GEM_HOME}/bin"
+          bundle binstubs bundler --force
           bundle binstubs test-kitchen --force
 
       - name: Debug gem environment
