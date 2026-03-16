@@ -127,7 +127,7 @@ suites:
       patterns:
         - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+      extra_flags: --format RspecJunitFormatter -o <%= File.join(Dir.pwd, 'test-results', 'rspec.xml') %>
     includes:
       - win11-64-24h2
       - win11-64-25h2
