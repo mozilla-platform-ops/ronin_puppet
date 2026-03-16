@@ -67,6 +67,8 @@ jobs:
           # GHA macOS runners have Homebrew Python with PEP 668 protection.
           # Puppet modules use pip3 to install packages system-wide, which
           # fails without this. CircleCI runners didn't have this restriction.
+          # Remove the marker AND set pip.conf to cover all pip invocations.
+          sudo find /opt/homebrew/lib /usr/local/lib -name EXTERNALLY-MANAGED -delete 2>/dev/null || true
           sudo mkdir -p /Library/Application\ Support/pip
           printf '[global]\nbreak-system-packages = true\n' | sudo tee /Library/Application\ Support/pip/pip.conf
 
