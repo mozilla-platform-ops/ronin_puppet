@@ -18,10 +18,10 @@ jobs:
       matrix:
         include:
           - role: gecko_t_osx_1400_r8
-            runner: macos-15
+            runner: macos-14
             suite: default-localhost
           - role: gecko_t_osx_1500_m4
-            runner: macos-26
+            runner: macos-15
             suite: default-localhost
           - role: gecko_t_osx_1015_r8
             runner: macos-15-intel
@@ -82,10 +82,14 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: bundle exec kitchen converge ${{ matrix.suite }}
+        run: |
+          unset BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_GEMFILE RUBYOPT RUBYLIB
+          bundle exec kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        run: bundle exec kitchen verify ${{ matrix.suite }}
+        run: |
+          unset BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_GEMFILE RUBYOPT RUBYLIB
+          bundle exec kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
