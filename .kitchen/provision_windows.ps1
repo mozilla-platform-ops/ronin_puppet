@@ -96,6 +96,16 @@ $env:HOMEDRIVE = "C:"
 $env:USERNAME = "Administrator"
 $env:USERPROFILE = "C:\Users\Administrator"
 
+# Ensure the Administrator temp directory exists. When running as SYSTEM the
+# profile folder may not have been fully created yet, and Facter/Chocolatey
+# will fail with "No such file or directory" when they try to stat it.
+$adminTemp = "C:\Users\Administrator\AppData\Local\Temp"
+if (-not (Test-Path $adminTemp)) {
+    New-Item -Path $adminTemp -ItemType Directory -Force | Out-Null
+}
+$env:TEMP = $adminTemp
+$env:TMP = $adminTemp
+
 # Download ronin_puppet at the current commit SHA
 Write-Host "Downloading ronin_puppet at ref $env:RONIN_REF..."
 $zipUrl = "https://github.com/mozilla-platform-ops/ronin_puppet/archive/$env:RONIN_REF.zip"
