@@ -25,6 +25,9 @@ jobs:
           - role: win11a6425h2azuretester
             worker_pool_id: win11-a64-25h2-tester
             kitchen_instance: windows-win11-a64-25h2-tester
+          - role: win2022642009azure
+            worker_pool_id: b-win2022
+            kitchen_instance: windows-win2022-64-2009
     permissions:
       id-token: write
       contents: read
