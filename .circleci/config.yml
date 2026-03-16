@@ -1,0 +1,16 @@
+version: 2.1
+
+# CI has moved to GitHub Actions. This stub prevents CircleCI from
+# failing with "no configuration found" until the integration is removed.
+
+jobs:
+  noop:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run: echo "CI has moved to GitHub Actions"
+
+workflows:
+  ci_test:
+    jobs:
+      - noop
