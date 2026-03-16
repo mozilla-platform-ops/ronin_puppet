@@ -36,7 +36,7 @@ end
 
 {
   'NtfsDisable8dot3NameCreation' => '1',
-  'NtfsDisableLastAccessUpdate' => '1'
+  'NtfsDisableLastAccessUpdate' => '2147483649'
 }.each do |name, expected|
   describe registry_value_command(file_system_key, name) do
     its(:exit_status) { should eq 0 }
