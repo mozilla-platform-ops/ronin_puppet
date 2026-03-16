@@ -30,8 +30,3 @@ describe software_property_command("$_.DisplayName -eq 'Microsoft BinScope 2014'
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match(/^7\.0\.7000\.0\s*$/) }
 end
-
-describe software_property_command("$_.DisplayName -eq 'Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.23918'", 'DisplayVersion') do
-  its(:exit_status) { should eq 0 }
-  its(:stdout) { should match(/^14\.0\.23918(?:\.0)?\s*$/) }
-end

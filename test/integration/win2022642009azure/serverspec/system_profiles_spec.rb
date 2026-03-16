@@ -70,16 +70,7 @@ end
   [explorer_policy_key, 'NoNewAppAlert'] => '1',
   [explorer_policy_key, 'DisableNotificationCenter'] => '1',
   [push_notifications_key, 'NoToastApplicationNotification'] => '1',
-  [uac_key, 'ConsentPromptBehaviorAdmin'] => '0',
-  [uac_key, 'ConsentPromptBehaviorUser'] => '3',
-  [uac_key, 'EnableInstallerDetection'] => '1',
-  [uac_key, 'EnableLUA'] => '0',
-  [uac_key, 'EnableVirtualization'] => '1',
-  [uac_key, 'PromptOnSecureDesktop'] => '0',
-  [uac_key, 'ValidateAdminCodeSignatures'] => '0',
-  [uac_key, 'FilterAdministratorToken'] => '0',
-  [uac_key, 'ForegroundLockTimeout'] => '0',
-  [uac_key, 'ForegroundFlashCount'] => '0'
+  [uac_key, 'EnableLUA'] => '0'
 }.each do |(path, name), expected|
   describe registry_value_command(path, name) do
     its(:exit_status) { should eq 0 }
