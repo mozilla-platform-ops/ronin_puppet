@@ -82,10 +82,10 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: kitchen converge ${{ matrix.suite }}
+        run: env -u RUBYOPT bundle exec kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        run: kitchen verify ${{ matrix.suite }}
+        run: env -u RUBYOPT bundle exec kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
