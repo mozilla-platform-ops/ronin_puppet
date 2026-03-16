@@ -37,16 +37,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@dffb23f65a78bba8db45d387d5ea1bbd6be3ef18 # v1.221.0
-        with:
-          ruby-version: '3.2'
-          bundler-cache: false
-
       - name: Configure gem environment
         run: |
-          RUBY_MINOR=$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")
-          GEM_DEFAULT_DIR=$(ruby -e "puts Gem.default_dir")
+          RUBY_MINOR="$(ruby -e "puts RUBY_VERSION.split('.')[0..1].join('.') + '.0'")"
+          GEM_DEFAULT_DIR="$(ruby -e "puts Gem.default_dir")"
           GEM_HOME="${HOME}/.gem/ruby/${RUBY_MINOR}"
           echo "GEM_HOME=${GEM_HOME}" >> "$GITHUB_ENV"
           echo "GEM_PATH=${GEM_HOME}:${GEM_DEFAULT_DIR}" >> "$GITHUB_ENV"
@@ -61,27 +55,21 @@ jobs:
       - name: Install gems
         run: |
           gem install bundler:2.5.23
+          bundle config set --local gemfile Gemfile
           bundle install
-          # Create kitchen binstub in GEM_HOME/bin so bare 'kitchen' works
-          # without 'bundle exec' (which leaks RUBYOPT into puppet's Ruby)
-          bundle config set --local bin "${GEM_HOME}/bin"
-          bundle binstubs bundler --force
-          bundle binstubs test-kitchen --force
 
       - name: Debug gem environment
         run: |
-          echo "=== which ruby ==="
+          echo "=== ruby ==="
           which ruby && ruby --version
           echo "=== GEM_HOME ==="
           echo "$GEM_HOME"
-          echo "=== gem env ==="
-          gem env | head -20
           echo "=== which kitchen ==="
           which kitchen || echo "kitchen not on PATH"
           echo "=== ls GEM_HOME/bin ==="
-          ls -la "${GEM_HOME}/bin/" 2>/dev/null || echo "GEM_HOME/bin does not exist"
-          echo "=== PATH ==="
-          echo "$PATH" | tr ':' '\n'
+          ls "${GEM_HOME}/bin/" 2>/dev/null || echo "GEM_HOME/bin does not exist"
+          echo "=== PATH (first 5) ==="
+          echo "$PATH" | tr ':' '\n' | head -5
 
       - name: Install Rosetta 2
         if: runner.arch == 'ARM64'
@@ -111,10 +99,10 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: ruby .github/scripts/run-kitchen.rb converge ${{ matrix.suite }}
+        run: kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        run: ruby .github/scripts/run-kitchen.rb verify ${{ matrix.suite }}
+        run: kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
