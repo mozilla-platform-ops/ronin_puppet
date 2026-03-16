@@ -142,6 +142,28 @@ platforms:
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
         winrm set winrm/config/service/auth '@{Negotiate="false"}'
+  - name: win10-64-2009
+    driver:
+      name: azurerm
+      location: 'East US 2'
+      machine_size: 'Standard_F8s_v2'
+      image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009
+      use_ephemeral_osdisk: true
+      deployment_timeout_in_minutes: 30
+      username: kitchenadmin
+      password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
 
 suites:
   - name: windows
@@ -156,3 +178,4 @@ suites:
       - win11-a64-25h2-builder
       - win11-a64-25h2-tester
       - win2022-64-2009
+      - win10-64-2009

@@ -28,6 +28,9 @@ jobs:
           - role: win2022642009azure
             worker_pool_id: b-win2022
             kitchen_instance: windows-win2022-64-2009
+          - role: win10642009azure
+            worker_pool_id: win10-64-2009
+            kitchen_instance: windows-win10-64-2009
     permissions:
       id-token: write
       contents: read
