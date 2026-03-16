@@ -10,15 +10,8 @@ provisioner:
 verifier:
   name: pester
   test_folder: test/integration/<%= ENV['PUPPET_ROLE'] %>/pester
-  skip_pester_install: false
-  remove_builtin_pester: true
-  bootstrap:
-    repository_url: 'https://www.powershellgallery.com/api/v2'
-    galleryname: 'PSGallery'
-  pester_install:
-    SkipPublisherCheck: true
-    Force: true
-    ErrorAction: Stop
+  skip_pester_install: true
+  remove_builtin_pester: false
 
 transport:
   name: winrm
@@ -34,6 +27,25 @@ lifecycle:
         [System.Environment]::SetEnvironmentVariable('PUPPET_ROLE', '<%= ENV['PUPPET_ROLE'] %>', 'Machine')
         [System.Environment]::SetEnvironmentVariable('RONIN_REF', '<%= ENV['RONIN_REF'] %>', 'Machine')
         [System.Environment]::SetEnvironmentVariable('WORKER_POOL_ID', '<%= ENV['WORKER_POOL_ID'] %>', 'Machine')
+  pre_verify:
+    - remote: |
+        $ErrorActionPreference = 'Stop'
+        # Remove built-in Pester v3 if present
+        $builtIn = Get-Module Pester -ListAvailable | Where-Object { $_.Version -lt '5.0' }
+        foreach ($m in $builtIn) {
+            $p = Split-Path $m.Path
+            Remove-Item $p -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        # Install Pester v5 via NuGet (no PowerShellGet needed)
+        $url = 'https://www.nuget.org/api/v2/package/Pester'
+        $zip = "$env:TEMP\Pester.nupkg.zip"
+        $dest = "$env:ProgramFiles\WindowsPowerShell\Modules\Pester"
+        Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
+        if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
+        Expand-Archive -Path $zip -DestinationPath $dest -Force
+        Remove-Item $zip -Force
+        Import-Module Pester -MinimumVersion 5.0
+        Write-Host "Pester $((Get-Module Pester).Version) installed."
 
 platforms:
   - name: win11-64-24h2
