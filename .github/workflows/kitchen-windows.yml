@@ -50,11 +50,10 @@ jobs:
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
         with:
           path: ~/.gem
-          key: v1-gems-${{ runner.os }}-${{ hashFiles('.gemfile.lock') }}
+          key: v1-gems-${{ runner.os }}-${{ hashFiles('Gemfile.lock') }}
 
       - name: Bundle install
         run: |
-          bundle config set --local gemfile .gemfile
           bundle install
 
       - name: Kitchen test
