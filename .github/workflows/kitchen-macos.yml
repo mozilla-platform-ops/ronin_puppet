@@ -82,20 +82,10 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        shell: bash
-        run: |
-          GEM_BIN=$(ruby -e "puts Gem.bindir")
-          export PATH="${GEM_BIN}:${PATH}"
-          unset RUBYOPT BUNDLE_BIN_PATH BUNDLE_GEMFILE
-          kitchen converge ${{ matrix.suite }}
+        run: bundle exec env -u RUBYOPT kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        shell: bash
-        run: |
-          GEM_BIN=$(ruby -e "puts Gem.bindir")
-          export PATH="${GEM_BIN}:${PATH}"
-          unset RUBYOPT BUNDLE_BIN_PATH BUNDLE_GEMFILE
-          kitchen verify ${{ matrix.suite }}
+        run: bundle exec env -u RUBYOPT kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
