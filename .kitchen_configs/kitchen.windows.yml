@@ -143,7 +143,7 @@ platforms:
       machine_size: 'Standard_D32ads_v5'
       image_urn: MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition-core:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win2022-64-2009
-      use_ephemeral_osdisk: true
+      use_ephemeral_osdisk: false
       deployment_timeout_in_minutes: 30
       username: kitchenadmin
       password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
