@@ -1,0 +1,95 @@
+name: Kitchen macOS
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    name: ${{ matrix.role }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: gecko_t_osx_1015_r8
+            runner: macos-14
+            suite: default-localhost
+          - role: gecko_t_osx_1400_r8
+            runner: macos-14
+            suite: default-localhost
+          - role: gecko_t_osx_1500_m4
+            runner: macos-15
+            suite: default-localhost
+    env:
+      KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
+      PUPPET_ROLE: ${{ matrix.role }}
+      VAULT_ADDR: http://127.0.0.1:8202
+      VAULT_TOKEN: root
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@dffb23f65a78bba8db45d387d5ea1bbd6be3ef18 # v1.221.0
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Cache gems
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.gem
+          key: v1-gems-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Gemfile.lock') }}
+
+      - name: Bundle install
+        run: |
+          gem install bundler:2.5.23
+          bundle install
+
+      - name: Install Rosetta 2
+        run: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+
+      - name: Install Puppet agent
+        run: ./.circleci/install_puppet_mac.sh
+
+      - name: Install Vault
+        run: brew install vault
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+
+      - name: Start Vault dev server
+        run: |
+          vault server -dev -dev-root-token-id="root" -dev-listen-address=127.0.0.1:8202 &
+          sleep 2
+          vault status
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+
+      - name: Seed Vault with test data
+        run: |
+          terraform -chdir=test/integration/${{ matrix.role }}/terraform/ init -input=false -backend=false
+          terraform -chdir=test/integration/${{ matrix.role }}/terraform/ apply -var="role=${{ matrix.role }}" -input=false -auto-approve
+
+      - name: Kitchen converge
+        timeout-minutes: 30
+        run: bundle exec kitchen converge ${{ matrix.suite }}
+
+      - name: Kitchen verify
+        run: bundle exec kitchen verify ${{ matrix.suite }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rspec-${{ matrix.role }}
+          path: rspec/
+          if-no-files-found: ignore
