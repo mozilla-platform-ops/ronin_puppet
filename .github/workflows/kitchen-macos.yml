@@ -58,10 +58,29 @@ jobs:
           path: ~/.gem
           key: v1-gems-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Gemfile.lock') }}
 
-      - name: Bundle install
+      - name: Install gems
         run: |
           gem install bundler:2.5.23
           bundle install
+          # Create kitchen binstub in GEM_HOME/bin so bare 'kitchen' works
+          # without 'bundle exec' (which leaks RUBYOPT into puppet's Ruby)
+          bundle config set --local bin "${GEM_HOME}/bin"
+          bundle binstubs test-kitchen --force
+
+      - name: Debug gem environment
+        run: |
+          echo "=== which ruby ==="
+          which ruby && ruby --version
+          echo "=== GEM_HOME ==="
+          echo "$GEM_HOME"
+          echo "=== gem env ==="
+          gem env | head -20
+          echo "=== which kitchen ==="
+          which kitchen || echo "kitchen not on PATH"
+          echo "=== ls GEM_HOME/bin ==="
+          ls -la "${GEM_HOME}/bin/" 2>/dev/null || echo "GEM_HOME/bin does not exist"
+          echo "=== PATH ==="
+          echo "$PATH" | tr ':' '\n'
 
       - name: Install Rosetta 2
         if: runner.arch == 'ARM64'
@@ -97,7 +116,8 @@ jobs:
 
       - name: Kitchen verify
         run: |
-          bundle exec kitchen verify ${{ matrix.suite }}
+          unset RUBYOPT BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_APP_CONFIG
+          kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
