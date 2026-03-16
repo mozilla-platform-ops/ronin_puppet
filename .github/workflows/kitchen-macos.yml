@@ -82,10 +82,10 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: bundle exec env -u RUBYOPT kitchen converge ${{ matrix.suite }}
+        run: bundle exec env -u RUBYOPT -u BUNDLE_GEMFILE -u BUNDLE_PATH -u BUNDLE_BIN_PATH -u BUNDLE_APP_CONFIG -u GEM_HOME -u GEM_PATH kitchen converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        run: bundle exec env -u RUBYOPT kitchen verify ${{ matrix.suite }}
+        run: bundle exec env -u RUBYOPT -u BUNDLE_GEMFILE -u BUNDLE_PATH -u BUNDLE_BIN_PATH -u BUNDLE_APP_CONFIG -u GEM_HOME -u GEM_PATH kitchen verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
