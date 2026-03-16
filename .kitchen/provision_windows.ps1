@@ -145,7 +145,8 @@ Write-Host "Seeded $roninKey (worker_pool_id=$workerPoolId, role=$env:PUPPET_ROL
 # Pre-install Chocolatey with retry logic so the Puppet chocolatey module's
 # exec resource (which has a creates guard on choco.exe) skips its own
 # download from the flaky community feed.
-$chocoExe = "$env:ProgramData\chocolatey\bin\choco.exe"
+$chocoInstallDir = "$env:ProgramData\chocolatey"
+$chocoExe = "$chocoInstallDir\bin\choco.exe"
 if (-not (Test-Path $chocoExe)) {
     $maxAttempts = 3
     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
@@ -163,6 +164,15 @@ if (-not (Test-Path $chocoExe)) {
             Start-Sleep -Seconds (10 * $attempt)
         }
     }
+}
+
+# Ensure ChocolateyInstall is set at machine level and in the current process
+# so Puppet's chocolateyversion fact can find choco.exe regardless of whether
+# we are running as SYSTEM or Administrator.
+[System.Environment]::SetEnvironmentVariable('ChocolateyInstall', $chocoInstallDir, 'Machine')
+$env:ChocolateyInstall = $chocoInstallDir
+if ($env:PATH -notlike "*$chocoInstallDir\bin*") {
+    $env:PATH = "$chocoInstallDir\bin;$env:PATH"
 }
 
 # Set Facter variables
