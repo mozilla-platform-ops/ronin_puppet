@@ -60,7 +60,7 @@ class macos_safaridriver (
             command => '/usr/local/bin/install_safari_softwareupdates.py',
           }
 
-          $safari_automation_check = '/usr/bin/defaults read com.apple.Safari AllowRemoteAutomation 2>/dev/null | /usr/bin/grep -q 1'
+          $safari_automation_check = '/usr/bin/defaults read /Library/Preferences/com.apple.Safari AllowRemoteAutomation 2>/dev/null | /usr/bin/grep -q 1'
 
           exec { 'enable safari driver':
             command => '/usr/bin/safaridriver --enable',
