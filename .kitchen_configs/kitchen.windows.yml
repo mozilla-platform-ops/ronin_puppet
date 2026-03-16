@@ -46,7 +46,8 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
-      winrm_powershell_script: <%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')) %>
+      winrm_powershell_script: |-
+<%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')).gsub(/^/, '        ').rstrip %>
   - name: win11-64-25h2
     driver:
       name: azurerm
@@ -61,7 +62,8 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
-      winrm_powershell_script: <%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')) %>
+      winrm_powershell_script: |-
+<%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')).gsub(/^/, '        ').rstrip %>
   - name: win11-a64-25h2-builder
     driver:
       name: azurerm
@@ -76,7 +78,8 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
-      winrm_powershell_script: <%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')) %>
+      winrm_powershell_script: |-
+<%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')).gsub(/^/, '        ').rstrip %>
   - name: win11-a64-25h2-tester
     driver:
       name: azurerm
@@ -91,7 +94,8 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
-      winrm_powershell_script: <%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')) %>
+      winrm_powershell_script: |-
+<%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')).gsub(/^/, '        ').rstrip %>
   - name: win2022-64-2009
     driver:
       name: azurerm
@@ -106,7 +110,8 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
-      winrm_powershell_script: <%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')) %>
+      winrm_powershell_script: |-
+<%= File.read(File.join(Dir.pwd, 'ci', 'setup_winrm.ps1')).gsub(/^/, '        ').rstrip %>
 
 suites:
   - name: windows
