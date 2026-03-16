@@ -9,7 +9,7 @@ provisioner:
   name: puppet_apply
   # Strip bundler/gem env vars from sudo so puppet's embedded Ruby
   # doesn't try to load our bundler setup (fails with GemNotFound)
-  sudo_command: 'sudo -E env -u BUNDLE_GEMFILE -u GEM_HOME -u GEM_PATH -u RUBYOPT -u BUNDLE_PATH -u BUNDLE_BIN_PATH -u BUNDLE_APP_CONFIG'
+  sudo_command: 'sudo -E env -u BUNDLE_GEMFILE -u GEM_HOME -u GEM_PATH -u RUBYOPT -u BUNDLE_PATH -u BUNDLE_BIN_PATH -u BUNDLE_APP_CONFIG HOME=/var/root'
   modules_path: "modules:r10k_modules"
   hiera_data_path: data
   hiera_data_remote_path: /tmp/kitchen/data
