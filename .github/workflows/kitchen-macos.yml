@@ -58,22 +58,17 @@ jobs:
           bundle config unset path
           bundle install
 
-      - name: Debug gem environment
-        run: |
-          echo "=== ruby ==="
-          which ruby && ruby --version
-          echo "=== GEM_HOME ==="
-          echo "$GEM_HOME"
-          echo "=== which kitchen ==="
-          which kitchen || echo "kitchen not on PATH"
-          echo "=== ls GEM_HOME/bin ==="
-          ls "${GEM_HOME}/bin/" 2>/dev/null || echo "GEM_HOME/bin does not exist"
-          echo "=== PATH (first 5) ==="
-          echo "$PATH" | tr ':' '\n' | head -5
-
       - name: Install Rosetta 2
         if: runner.arch == 'ARM64'
         run: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+
+      - name: Allow pip system-wide installs (PEP 668)
+        run: |
+          # GHA macOS runners have Homebrew Python with PEP 668 protection.
+          # Puppet modules use pip3 to install packages system-wide, which
+          # fails without this. CircleCI runners didn't have this restriction.
+          sudo mkdir -p /Library/Application\ Support/pip
+          printf '[global]\nbreak-system-packages = true\n' | sudo tee /Library/Application\ Support/pip/pip.conf
 
       - name: Install Puppet agent
         run: ./.github/scripts/install_puppet_mac.sh
