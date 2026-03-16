@@ -55,7 +55,7 @@ jobs:
       - name: Install gems
         run: |
           gem install bundler:2.5.23
-          bundle config set --local path system
+          bundle config unset path
           bundle install
 
       - name: Debug gem environment
