@@ -111,14 +111,10 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: |
-          unset RUBYOPT BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_APP_CONFIG
-          kitchen converge ${{ matrix.suite }}
+        run: ruby .github/scripts/run-kitchen.rb converge ${{ matrix.suite }}
 
       - name: Kitchen verify
-        run: |
-          unset RUBYOPT BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN_PATH BUNDLE_APP_CONFIG
-          kitchen verify ${{ matrix.suite }}
+        run: ruby .github/scripts/run-kitchen.rb verify ${{ matrix.suite }}
 
       - name: Upload test results
         if: always()
