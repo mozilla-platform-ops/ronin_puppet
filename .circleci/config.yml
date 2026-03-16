@@ -152,7 +152,7 @@ commands:
             cat /tmp/ruby-version-cache
       - restore_cache:
           keys:
-          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum ".gemfile.lock" }}
+          - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum "Gemfile.lock" }}
           - v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-
           - v4-system-gem-cache-{{ arch }}-{{ checksum "/tmp/ruby-version-cache" }}-
       - run:
@@ -164,7 +164,7 @@ commands:
           command: |
             rm -rf .bundle vendor
             bundle config unset path || true
-            bundle config set --local gemfile .gemfile
+            bundle config set --local gemfile Gemfile
             bundle install
       - run:
           name: Save Ruby version for cache key
@@ -176,13 +176,13 @@ commands:
             - ~/.gem/ruby/3.1.0
             - ~/.gem/ruby/3.2.0
             - ~/.rbenv/versions/*/lib/ruby/gems/*/bundler/gems
-          key: v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum ".gemfile.lock" }}
+          key: v4-system-gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "/tmp/ruby-version-cache" }}-{{ checksum "Gemfile.lock" }}
   export_env_vars:
     steps:
       - run:
           name: Setup Additional Environment Variables
           command: |
-            echo "export BUNDLE_GEMFILE=.gemfile" >> $BASH_ENV
+            echo "export BUNDLE_GEMFILE=Gemfile" >> $BASH_ENV
   setup_vault:
     parameters:
       role:
@@ -303,7 +303,7 @@ jobs:
             export GEM_PATH="$HOME/.gem/ruby/$RUBY_MINOR:$(ruby -e "puts Gem.default_dir")"
             export PATH="$HOME/.gem/ruby/$RUBY_MINOR/bin:$PATH"
             gem install bundler:2.5.23
-            bundle config set --local gemfile .gemfile
+            bundle config set --local gemfile Gemfile
             bundle install
             kitchen converge << parameters.suite >>
       - run:
