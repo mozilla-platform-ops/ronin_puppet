@@ -59,10 +59,18 @@ if ROLE_NAME == 'win11a6425h2azurebuilder'
     its(:stdout) { should match(/^7\.0\.7000\.0\s*$/) }
   end
 
-  %w[x86 x64].each do |arch|
-    describe software_property_command("$_.DisplayName -match '^Microsoft Visual C\\+\\+ 2015.*\\(#{arch}\\)'", 'DisplayVersion') do
-      its(:exit_status) { should eq 0 }
-      its(:stdout) { should match(/^14\.0\.23918(?:\.\d+)?\s*$/) }
-    end
+  describe software_property_command("$_.DisplayName -eq 'Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.23918'", 'DisplayVersion') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^14\.0\.23918(?:\.0)?\s*$/) }
+  end
+
+  describe software_property_command("$_.DisplayName -eq 'Microsoft Visual C++ 2022 Arm64 Runtime - 14.42.34438'", 'DisplayVersion') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^14\.42\.34438(?:\.0)?\s*$/) }
+  end
+
+  describe software_property_command("$_.DisplayName -eq 'Microsoft Visual C++ 2022 Redistributable (Arm64) - 14.42.34438'", 'DisplayVersion') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^14\.42\.34438(?:\.0)?\s*$/) }
   end
 end
