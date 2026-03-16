@@ -41,7 +41,7 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd
+        uses: ruby/setup-ruby@dffb23f65a78bba8db45d387d5ea1bbd6be3ef18
         with:
           ruby-version: '3.2'
           bundler-cache: false
