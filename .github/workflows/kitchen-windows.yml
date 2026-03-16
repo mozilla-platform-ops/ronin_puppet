@@ -3,15 +3,6 @@ name: Kitchen Windows
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - 'modules/roles_profiles/**'
-      - 'data/roles/win*.yaml'
-      - 'data/os/Windows/**'
-      - 'test/integration/win*/serverspec/**'
-      - 'test/integration/win*/pester/**'
-      - '.kitchen/provision_windows.ps1'
-      - '.kitchen_configs/kitchen.windows.yml'
-      - '.github/workflows/kitchen-windows.yml'
 
 jobs:
   windows:
