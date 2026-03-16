@@ -8,11 +8,14 @@ provisioner:
   script: .kitchen/provision_windows.ps1
 
 verifier:
-  name: shell
-  command: >-
-    powershell.exe -NoProfile -ExecutionPolicy Bypass
-    -File C:\ronin_puppet\test\pester\Invoke-PesterVerify.ps1
-    -Role '<%= ENV['PUPPET_ROLE'] %>'
+  name: pester
+  test_folder: test/integration/<%= ENV['PUPPET_ROLE'] %>/pester
+  skip_pester_install: false
+  remove_builtin_pester: true
+  pester_install:
+    SkipPublisherCheck: true
+    Force: true
+    ErrorAction: Stop
 
 transport:
   name: winrm
