@@ -28,6 +28,7 @@ class macos_reenable_spotlight {
   exec { 'reenable_spotlight_worker_tasks':
     command   => '/usr/bin/mdutil -i on /opt/worker/tasks 2>/dev/null || true',
     path      => ['/bin', '/usr/bin', '/usr/sbin', '/sbin'],
+    unless    => '! test -d /opt/worker/tasks || mdutil -s /opt/worker/tasks 2>/dev/null | grep -q "Indexing enabled"',
     logoutput => true,
     require   => [
       File['/opt/worker/tasks/.metadata_never_index'],
