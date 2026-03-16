@@ -11,20 +11,20 @@ permissions:
 jobs:
   macos:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    name: ${{ matrix.role }}
+    name: ${{ matrix.role }} (${{ matrix.runner }})
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - role: gecko_t_osx_1015_r8
-            runner: macos-14
-            suite: default-localhost
           - role: gecko_t_osx_1400_r8
-            runner: macos-14
+            runner: macos-15
             suite: default-localhost
           - role: gecko_t_osx_1500_m4
-            runner: macos-15
+            runner: macos-26
+            suite: default-localhost
+          - role: gecko_t_osx_1015_r8
+            runner: macos-15-intel
             suite: default-localhost
     env:
       KITCHEN_YAML: .kitchen_configs/kitchen.circleci.yml
@@ -55,10 +55,11 @@ jobs:
           bundle install
 
       - name: Install Rosetta 2
+        if: runner.arch == 'ARM64'
         run: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
 
       - name: Install Puppet agent
-        run: ./.circleci/install_puppet_mac.sh
+        run: ./.github/scripts/install_puppet_mac.sh
 
       - name: Install Vault
         run: brew install vault
@@ -90,6 +91,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: rspec-${{ matrix.role }}
+          name: rspec-${{ matrix.role }}-${{ matrix.runner }}
           path: rspec/
           if-no-files-found: ignore
