@@ -3,12 +3,6 @@ name: Kitchen Windows
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - 'modules/roles_profiles/**'
-      - 'data/roles/win*.yaml'
-      - 'data/os/Windows/**'
-      - '.kitchen_configs/kitchen.windows.yml'
-      - '.github/workflows/kitchen-windows.yml'
 
 jobs:
   windows:
@@ -31,6 +25,12 @@ jobs:
           - role: win11a6425h2azuretester
             worker_pool_id: win11-a64-25h2-tester
             kitchen_instance: windows-win11-a64-25h2-tester
+          - role: win2022642009azure
+            worker_pool_id: b-win2022
+            kitchen_instance: windows-win2022-64-2009
+          - role: win10642009azure
+            worker_pool_id: win10-64-2009
+            kitchen_instance: windows-win10-64-2009
     permissions:
       id-token: write
       contents: read
