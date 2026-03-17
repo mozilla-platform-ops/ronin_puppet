@@ -39,5 +39,8 @@ thermal = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\
 thermal_hp = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\check_thermal_hp.ps1
 worker_pool_id = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\worker_pool_id.ps1
 
-[/settings/external scripts/alias]
-cpu_1m = check_cpu time=1m
+[/settings/external scripts/alias/cpu_5s]
+command = check_cpu time=5s "warning=none" "critical=none" "top-syntax=%(list)" "detail-syntax=%(load)%" "perf-config=extra(load)"
+
+[/settings/external scripts/alias/cpu_1m]
+command = check_cpu time=1m "warning=none" "critical=none" "top-syntax=%(list)" "detail-syntax=%(load)%" "perf-config=extra(load)"
