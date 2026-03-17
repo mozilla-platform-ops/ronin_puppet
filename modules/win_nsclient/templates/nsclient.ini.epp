@@ -41,6 +41,3 @@ worker_pool_id = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File s
 
 [/settings/external scripts/alias/cpu_5s]
 command = check_cpu time=5s "warning=none" "critical=none" "top-syntax=%(list)" "detail-syntax=%(load)%" "perf-config=extra(load)"
-
-[/settings/external scripts/alias/cpu_1m]
-command = check_cpu time=1m "warning=none" "critical=none" "top-syntax=%(list)" "detail-syntax=%(load)%" "perf-config=extra(load)"
