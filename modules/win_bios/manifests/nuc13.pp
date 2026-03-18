@@ -40,7 +40,7 @@ class win_bios::nuc13 (
     }
 
     exec { 'nuc13_bios_apply':
-        command     => "${script_dir}\\iSetupCfgWin64.exe /o /s ${bios_cfg}",
+        command     => "${script_dir}\\iSetupCfgWin64.exe /i /s ${bios_cfg}",
         cwd         => $script_dir,
         refreshonly => true,
         require     => [
