@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'puppet', '7.8.0', :require => false
 gem 'puppet-lint', '>= 2.4.2'
 gem 'test-kitchen', '>= 3.3.2'
-gem 'kitchen-inspec', '>= 2.6.1'
+gem 'kitchen-inspec', '>= 3.1.0'
 gem 'rubocop'
 
 gem 'kitchen-verifier-serverspec'

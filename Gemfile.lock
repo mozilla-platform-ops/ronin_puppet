@@ -586,6 +586,8 @@ PLATFORMS
   aarch64-mingw-ucrt
   arm-linux-gnu
   arm-linux-musl
+  arm64-darwin-22
+  arm64-darwin-23
   arm64-darwin-24
   ruby
   x86-linux-gnu
