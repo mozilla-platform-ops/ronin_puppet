@@ -1,0 +1,38 @@
+name: r10k
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  r10k-install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@dffb23f65a78bba8db45d387d5ea1bbd6be3ef18 # v1.221.0
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Cache gems
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.gem
+          key: v1-gems-${{ runner.os }}-${{ hashFiles('Gemfile.lock') }}
+
+      - name: Bundle install
+        run: |
+          gem install bundler:2.5.23
+          bundle install
+
+      - name: r10k puppetfile install
+        run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
