@@ -17,7 +17,7 @@ class packages::git (
 
   exec { 'install_git_pkg':
     command => "installer -pkg ${tmp_pkg} -target /",
-    path    => ['/usr/sbin', '/usr/bin'],
+    path    => ['/usr/sbin', '/usr/bin', '/bin'],
     unless  => "test -x /usr/local/git/bin/git && /usr/local/git/bin/git --version 2>/dev/null | grep -qF '${version}'",
     require => Exec['download_git_pkg'],
   }
