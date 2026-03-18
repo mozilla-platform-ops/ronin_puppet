@@ -111,3 +111,8 @@ windows:
     vm_agent:
       version: '2.7.41491.1057_2205251057.fre'
       display_name: "Windows Azure VM Agent - 2.7.41491.1057"
+  bios:
+    NUC13:
+      bios_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/BIOS_exports'
+      isetup_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/ISetup_08-05-2025'
+      date: '03-18-2026'
