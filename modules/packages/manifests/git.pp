@@ -5,20 +5,31 @@
 class packages::git (
   String $version = '2.47.1',
 ) {
-  $pkg_file = "git-${version}-intel-universal-mavericks.pkg"
-  $tmp_pkg  = "/tmp/${pkg_file}"
-  $url      = "https://github.com/git-osx-installer/git-osx-installer/releases/download/git-${version}/${pkg_file}"
+  $tarball = "git-${version}.tar.gz"
+  $src_dir = "/tmp/git-${version}"
+  $tmp_tar = "/tmp/${tarball}"
+  $url     = "https://mirrors.edge.kernel.org/pub/software/scm/git/${tarball}"
 
-  exec { 'download_git_pkg':
-    command => "curl -L -o ${tmp_pkg} '${url}'",
+  exec { 'download_git_src':
+    command => "curl -fL -o ${tmp_tar} ${url}",
     path    => ['/usr/bin', '/bin'],
-    unless  => "test -x /usr/local/git/bin/git && /usr/local/git/bin/git --version 2>/dev/null | grep -qF '${version}'",
+    unless  => "/usr/local/bin/git --version 2>/dev/null | grep -qF 'git version ${version}'",
+    timeout => 120,
   }
 
-  exec { 'install_git_pkg':
-    command => "installer -pkg ${tmp_pkg} -target /",
-    path    => ['/usr/sbin', '/usr/bin', '/bin'],
-    unless  => "test -x /usr/local/git/bin/git && /usr/local/git/bin/git --version 2>/dev/null | grep -qF '${version}'",
-    require => Exec['download_git_pkg'],
+  exec { 'extract_git_src':
+    command => "tar -xzf ${tmp_tar} -C /tmp",
+    path    => ['/usr/bin', '/bin'],
+    unless  => "/usr/local/bin/git --version 2>/dev/null | grep -qF 'git version ${version}'",
+    require => Exec['download_git_src'],
+  }
+
+  exec { 'build_and_install_git':
+    command => './configure --prefix=/usr/local --without-tcltk && make -j4 all && make install',
+    cwd     => $src_dir,
+    path    => ['/usr/bin', '/usr/local/bin', '/bin', '/usr/sbin', '/sbin'],
+    unless  => "/usr/local/bin/git --version 2>/dev/null | grep -qF 'git version ${version}'",
+    require => Exec['extract_git_src'],
+    timeout => 600,
   }
 }
