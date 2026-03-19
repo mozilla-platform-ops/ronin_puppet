@@ -1,7 +1,7 @@
 # Ronin Puppet: the masterless puppet collection
 
 [![Kitchen Linux](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-linux.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-linux.yml)  [![Kitchen macOS](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-macos.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-macos.yml)  [![Kitchen Windows](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-windows.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-windows.yml)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)  [![r10k](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/r10k.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/r10k.yml)
+[![pre-commit](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/pre-commit.yml)  [![r10k](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/r10k.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/r10k.yml)
 
 ## structure
 
