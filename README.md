@@ -1,7 +1,6 @@
 # Ronin Puppet: the masterless puppet collection
 
-[![CircleCI Status](https://circleci.com/gh/mozilla-platform-ops/ronin_puppet.svg?style=svg)](https://app.circleci.com/pipelines/github/mozilla-platform-ops/ronin_puppet)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![pre-commit](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/pre-commit.yml)  [![r10k](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/r10k.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/r10k.yml)  [![Kitchen Linux](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-linux.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-linux.yml)  [![Kitchen macOS](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-macos.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-macos.yml)  [![Kitchen Windows](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-windows.yml/badge.svg)](https://github.com/mozilla-platform-ops/ronin_puppet/actions/workflows/kitchen-windows.yml)
 
 ## structure
 
