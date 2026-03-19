@@ -130,6 +130,7 @@ GEM
     ffi (1.17.3-x86-linux-musl)
     ffi (1.17.3-x86_64-linux-gnu)
     ffi (1.17.3-x86_64-linux-musl)
+    fiddle (1.1.8)
     fuzzyurl (0.9.0)
     gettext (3.2.9)
       locale (>= 2.0.5)
@@ -236,10 +237,10 @@ GEM
       net-ssh (>= 3)
       test-kitchen (>= 1.4)
     language_server-protocol (3.17.0.5)
-    librarian-puppet (3.0.1)
-      librarianp (>= 0.6.3)
-      puppet_forge (~> 2.1)
-      rsync
+    librarian-puppet (7.0.0)
+      librarianp (~> 1.1)
+      puppet_forge (>= 2, < 7)
+      rsync (~> 1.0)
     librarianp (1.2.0)
       thor (~> 1.0)
     license-acceptance (2.1.13)
@@ -249,7 +250,8 @@ GEM
       tty-prompt (~> 0.20)
     lint_roller (1.1.0)
     little-plugger (1.1.4)
-    locale (2.1.4)
+    locale (2.1.5)
+      fiddle
     log4r (1.1.10)
     logger (1.7.0)
     logging (2.4.0)
@@ -603,7 +605,7 @@ DEPENDENCIES
   erb
   kitchen-azurerm
   kitchen-docker!
-  kitchen-inspec (>= 2.6.1)
+  kitchen-inspec (>= 3.1.0)
   kitchen-puppet
   kitchen-sync
   kitchen-vagrant
