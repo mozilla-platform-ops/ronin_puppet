@@ -366,6 +366,17 @@ class linux_gui (
             provider => 'shell',
           }
 
+          # eno1d1 is a second port on the same NIC as eno1. It may have a live
+          # cable but no DHCP scope, causing NetworkManager-wait-online to time
+          # out on boot. Mark it unmanaged so NM ignores it.
+          file { '/etc/NetworkManager/conf.d/unmanaged-devices.conf':
+            ensure  => file,
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0644',
+            content => "[keyfile]\nunmanaged-devices=interface-name:eno1d1\n",
+          }
+
           # ensure ~/.config/systemd/user/ exists
           file { [
               "${builder_home}/.config/systemd",
