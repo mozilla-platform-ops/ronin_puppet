@@ -3,13 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class macos_utils::enable_dev_tools_security {
-
-    if $::operatingsystem == 'Darwin' {
-        exec { 'DevToolsSecurity':
-            command => '/usr/sbin/DevToolsSecurity -enable',
-            onlyif  => '/bin/bash -c \'[[ "$(/usr/sbin/DevToolsSecurity -status)" =~ "disabled" ]]\'',
-        }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+  if $facts['os']['name'] == 'Darwin' {
+    exec { 'DevToolsSecurity':
+      command => '/usr/sbin/DevToolsSecurity -enable',
+      onlyif  => '/bin/bash -c \'[[ "$(/usr/sbin/DevToolsSecurity -status)" =~ "disabled" ]]\'',
     }
+  } else {
+    fail("${module_name} does not support ${facts['os']['name']}")
+  }
 }

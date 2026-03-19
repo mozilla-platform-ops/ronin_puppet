@@ -7,7 +7,6 @@ class roles_profiles::profiles::cltbld_user {
     'Darwin': {
       $account_username = 'cltbld'
       $password     = lookup('cltbld_user.password')
-      # lookup('cltbld_user.unhashedpassword') does not work for some reason. Hard coding for now
       $password_unhashed    = 'cltbld'
       $salt         = lookup('cltbld_user.salt')
       $iterations   = lookup('cltbld_user.iterations')
@@ -36,11 +35,11 @@ class roles_profiles::profiles::cltbld_user {
             ensure => directory,
           }
         }
-        '20','21','22', '23': {
+        '20','21','22', '23', '24': {
           exec { 'create_macos_user':
-            # UID needs to be > 501 for LaunchAgents to function
             command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password_hash}'",
-            unless  => '/usr/bin/dscl . -read /Users/cltbld',
+            unless  => "/usr/bin/dscl . -read /Users/${account_username}",
+            path    => ['/usr/bin', '/usr/sbin'],
           }
           class { 'macos_utils::autologin_user':
             user       => $account_username,
@@ -93,7 +92,10 @@ class roles_profiles::profiles::cltbld_user {
         # require => User['cltbld'],
       }
 
-      $sudo_commands = ['/sbin/reboot']
+      $sudo_commands = [
+        '/sbin/reboot',
+        '/usr/local/bin/run-puppet.sh',
+      ]
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',
@@ -111,7 +113,7 @@ class roles_profiles::profiles::cltbld_user {
       $homedir      = '/home/cltbld'
 
       group { 'cltbld':
-        name      => 'cltbld',
+        name => 'cltbld',
       }
 
       # Create the cltbld user

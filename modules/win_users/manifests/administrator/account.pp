@@ -3,15 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_users::administrator::account (
-    String $admin_password
+  String $admin_password
 ) {
-
-    if $::operatingsystem == 'Windows' {
-        user { 'administrator':
-            ensure   => present,
-            password => $admin_password,
-        }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+  if $facts['os']['name'] == 'Windows' {
+    user { 'administrator':
+      ensure   => present,
+      password => $admin_password,
     }
+  } else {
+    fail("${module_name} does not support ${facts['os']['name']}")
+  }
 }

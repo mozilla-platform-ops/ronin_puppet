@@ -3,19 +3,20 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_maintenance_service (
-    String $source_location
+  String $source_location
 ) {
+  $source_exe      = "${source_location}/maintenanceservice.exe"
+  $maintenance_key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4'
 
-    $source_exe      = "${source_location}/maintenanceservice.exe"
-    $maintenance_key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4'
-
-    if $::operatingsystem == 'Windows' {
-        include win_mozilla_maintenance_service::install
-        include win_mozilla_maintenance_service::grant_registry_access
-        include win_mozilla_maintenance_service::grant_programdata_access
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+  case $facts['os']['name'] {
+    'Windows': {
+      include win_mozilla_maintenance_service::install
+      include win_mozilla_maintenance_service::grant_registry_access
     }
+    default: {
+      fail("${$facts['os']['name']} not supported")
+    }
+  }
 }
 
 # Bug list

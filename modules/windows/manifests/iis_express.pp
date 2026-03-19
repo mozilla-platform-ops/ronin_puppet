@@ -4,7 +4,7 @@
 #
 class windows::iis_express(
   $base_url = 'http://download.microsoft.com/download/1/6/3/163BBBDE-5523-416D-A293-EA0492020E4A/',
-  $basename = "iisexpress_8_0_RTM_${::architecture}_en-US.msi",
+  $basename = "iisexpress_8_0_RTM_${facts['os']['architecture']}_en-US.msi",
   $package  = 'IIS 8.0 Express',
   $source   = undef,
   $path     = 'C:\Program Files\IIS Express\iisexpress.exe',

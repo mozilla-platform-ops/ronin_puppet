@@ -20,6 +20,14 @@ class packages::safari_preview {
         type                => 'pkg',
       }
     }
+    # 23 == OS X 14
+    '24':  {
+      packages::macos_package_from_s3 { 'SafariTechnologyPreview15.pkg':
+        private             => false,
+        os_version_specific => false,
+        type                => 'pkg',
+      }
+    }
     default: {
       # Handle default case here if needed
     }

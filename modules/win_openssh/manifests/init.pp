@@ -8,12 +8,12 @@ class win_openssh (
     String $pwrshl_run_script
 ){
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         include win_openssh::install
         include win_openssh::configuration
         include win_openssh::service
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }
 

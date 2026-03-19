@@ -1,10 +1,14 @@
 class macos_directory_cleaner (
   Boolean $enabled = true,
 ) {
+  require packages::python3  # try to fix ordering in kitchen
+  require roles_profiles::profiles::pipconf  # Ensures pipconf runs first
+
   # Install the directory_cleaner package using pip3
   exec { 'install_directory_cleaner':
     command => '/Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 install directory_cleaner==0.2.0',
     unless  => '/Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 show directory_cleaner | grep "Version: 0.2.0"',
+    require => Class['roles_profiles::profiles::pipconf'],  # Ensure pipconf runs first
   }
 
   # Create necessary directories if they do not exist

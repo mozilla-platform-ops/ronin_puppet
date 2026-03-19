@@ -3,26 +3,24 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 define macos_utils::logrotate (
-    String $path,
-    String $mode                      = '600', # File mode of log file
-    String $count                     = '2',   # How many files to retain
-    String $size                      = '*',   # How big until rotation (Size in KB)
-    String $when                      = '$D0', # When to rotate (eg. every 24h)
-    String $flags                     = 'J',   # Flags (eg. J == bzip compression)
-    String $pid_file                  = '',
-    Enum['present', 'absent'] $ensure = 'present',
+  String $path,
+  String $mode                      = '600', # File mode of log file
+  String $count                     = '2',   # How many files to retain
+  String $size                      = '*',   # How big until rotation (Size in KB)
+  String $when                      = '$D0', # When to rotate (eg. every 24h)
+  String $flags                     = 'J',   # Flags (eg. J == bzip compression)
+  String $pid_file                  = '',
+  Enum['present', 'absent'] $ensure = 'present',
 ) {
-
-    case $::operatingsystem {
-        'Darwin': {
-            file { "/etc/newsyslog.d/${title}.conf":
-                ensure  => $ensure,
-                content => template('macos_utils/newsyslog.conf.erb');
-            }
-        }
-        default: {
-            fail("${module_name} not supported under ${::operatingsystem}")
-        }
+  case $facts['os']['name'] {
+    'Darwin': {
+      file { "/etc/newsyslog.d/${title}.conf":
+        ensure  => $ensure,
+        content => template('macos_utils/newsyslog.conf.erb');
+      }
     }
-
+    default: {
+      fail("${module_name} not supported under ${facts['os']['name']}")
+    }
+  }
 }

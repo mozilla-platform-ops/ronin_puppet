@@ -10,7 +10,7 @@ class macos_safaridriver (
   case $facts['os']['name'] {
     'Darwin': {
       case $facts['os']['release']['major'] {
-        '19','20','21','22','23': {
+        '19','20','21','22','23','24': {
           $perm_script = '/usr/local/bin/add_tcc_perms.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
@@ -31,22 +31,28 @@ class macos_safaridriver (
             mode    => '0755',
           }
 
-          exec { 'execute perms script':
-            command => $perm_script,
-            require => File[$perm_script],
-            user    => 'root',
-            # logoutput => true,
-            # TODO: only run if needed, use semaphore?
+          # TCC.db doesn't exist yet in ci, so skip running the script
+          if $facts['running_in_test_kitchen'] != 'true' {
+            exec { 'execute perms script':
+              command     => $perm_script,
+              subscribe   => File[$perm_script],
+              refreshonly => true,
+              user        => 'root',
+              # logoutput => true,
+            }
           }
 
-          # needs to run as cltbld via launchctl or won't work
-          exec { 'execute enable remote automation script':
-            command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
-            require => File[$enable_script],
-            cwd     => "/Users/${user_running_safari}",
-            # semaphore and semaphore dir are created in script
-            unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
-            # logoutput => true,
+          # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
+          if $facts['running_in_test_kitchen'] != 'true' {
+            # needs to run as cltbld via launchctl or won't work
+            exec { 'execute enable remote automation script':
+              command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
+              require => File[$enable_script],
+              cwd     => "/Users/${user_running_safari}",
+              # semaphore and semaphore dir are created in script
+              unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
+              # logoutput => true,
+            }
           }
 
           sudo::custom { 'allow_safari_updates':
@@ -54,9 +60,11 @@ class macos_safaridriver (
             command => '/usr/local/bin/install_safari_softwareupdates.py',
           }
 
+          $safaridriver_semaphore = '/var/tmp/semaphore/safaridriver-enabled'
+
           exec { 'enable safari driver':
-            command => '/usr/bin/safaridriver --enable',
-            # TODO: only run if needed, currently no good test... use semaphore?
+            command => "/usr/bin/safaridriver --enable && /bin/mkdir -p /var/tmp/semaphore && /usr/bin/touch ${safaridriver_semaphore}",
+            unless  => "/bin/test -f ${safaridriver_semaphore}",
           }
 
           # non-admin users need to be in _webdeveloper group for safaridriver to work

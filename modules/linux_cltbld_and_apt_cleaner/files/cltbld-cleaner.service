@@ -1,0 +1,30 @@
+# place at /etc/systemd/system/cltbld-cleaner.service
+#
+# sudo systemctl daemon-reload
+# sudo systemctl enable cltbld-cleaner.service
+# sudo systemctl start cltbld-cleaner.service
+#
+# monitor with:
+#   journalctl -u cltbld-cleaner -f -n 200
+
+# ugh, name already a misnomer... cleans up apt also.
+
+[Unit]
+Description=Clean the cltbld directory at startup (only if disk >70% full)
+Before=run-puppet.service
+
+[Service]
+Type=oneshot
+User=root
+StandardOutput=journal
+StandardError=journal
+# Allow up to 30m runtime
+TimeoutStartSec=1800
+# Give 60s for graceful shutdown after SIGTERM
+TimeoutStopSec=60
+# Send SIGTERM first
+KillSignal=SIGTERM
+ExecStart=/usr/sbin/cltbld-and-apt-cleaner.sh
+
+[Install]
+WantedBy=multi-user.target

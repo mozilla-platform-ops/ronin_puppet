@@ -1,33 +1,25 @@
+# frozen_string_literal: true
+
 require 'puppet/provider/exec'
-require File.join(File.dirname(__FILE__), '../../../puppet_x/puppetlabs/powershell/compatible_powershell_version')
-require File.join(File.dirname(__FILE__), '../../../puppet_x/puppetlabs/powershell/powershell_manager')
 
-Puppet::Type.type(:exec).provide :powershell, :parent => Puppet::Provider::Exec do
-  commands :powershell => 
-    if File.exists?("#{ENV['SYSTEMROOT']}\\sysnative\\WindowsPowershell\\v1.0\\powershell.exe")
-      "#{ENV['SYSTEMROOT']}\\sysnative\\WindowsPowershell\\v1.0\\powershell.exe"
-    elsif File.exists?("#{ENV['SYSTEMROOT']}\\system32\\WindowsPowershell\\v1.0\\powershell.exe")
-      "#{ENV['SYSTEMROOT']}\\system32\\WindowsPowershell\\v1.0\\powershell.exe"
-    elsif !Puppet::Util::Platform.windows?
-      'pwsh'
-    else
-      'powershell.exe'
-    end
+Puppet::Type.type(:exec).provide :powershell, parent: Puppet::Provider::Exec do
+  confine operatingsystem: :windows
+  confine feature: :pwshlib
 
-  desc <<-EOT
+  desc <<-DESC
     Executes Powershell commands. One of the `onlyif`, `unless`, or `creates`
     parameters should be specified to ensure the command is idempotent.
 
     Example:
         # Rename the Guest account
         exec { 'rename-guest':
-          command   => '$(Get-WMIObject Win32_UserAccount -Filter "Name=\'guest\'").Rename("new-guest")',
-          unless    => 'if (Get-WmiObject Win32_UserAccount -Filter "Name=\'guest\'") { exit 1 }',
+          command   => '$(Get-WMIObject Win32_UserAccount -Filter "Name='guest'").Rename("new-guest")',
+          unless    => 'if (Get-WmiObject Win32_UserAccount -Filter "Name='guest'") { exit 1 }',
           provider  => powershell,
         }
-  EOT
+  DESC
 
-  POWERSHELL_MODULE_UPGRADE_MSG = <<-UPGRADE
+  POWERSHELL_MODULE_UPGRADE_MSG ||= <<-UPGRADE
   Currently, the PowerShell module has reduced v1 functionality on this agent
   due to one or more of the following conditions:
 
@@ -51,88 +43,67 @@ Puppet::Type.type(:exec).provide :powershell, :parent => Puppet::Provider::Exec 
   UPGRADE
 
   def self.upgrade_message
-    Puppet.warning POWERSHELL_MODULE_UPGRADE_MSG if !@upgrade_warning_issued
+    Puppet.warning POWERSHELL_MODULE_UPGRADE_MSG unless @upgrade_warning_issued
     @upgrade_warning_issued = true
   end
 
-  def self.powershell_args
-    ps_args = ['-NoProfile', '-NonInteractive', '-NoLogo', '-ExecutionPolicy', 'Bypass']
-    ps_args << '-Command' if !PuppetX::PowerShell::PowerShellManager.supported?
-
-    ps_args
-  end
-
-  def ps_manager
+  def ps_manager(pipe_timeout)
     debug_output = Puppet::Util::Log.level == :debug
-    manager_args = "#{command(:powershell)} #{self.class.powershell_args().join(' ')}"
-    PuppetX::PowerShell::PowerShellManager.instance(manager_args, debug_output)
+    Pwsh::Manager.instance(Pwsh::Manager.powershell_path, Pwsh::Manager.powershell_args, debug: debug_output,
+                                                                                         pipe_timeout: pipe_timeout)
   end
 
   def run(command, check = false)
-    if Puppet::Util::Platform.windows?
-      if !PuppetX::PowerShell::PowerShellManager.supported?
-        self.class.upgrade_message
-        write_script(command) do |native_path|
-          # Ideally, we could keep a handle open on the temp file in this
-          # process (to prevent TOCTOU attacks), and execute powershell
-          # with -File <path>. But powershell complains that it can't open
-          # the file for exclusive access. If we close the handle, then an
-          # attacker could modify the file before we invoke powershell. So
-          # we redirect powershell's stdin to read from the file. Current
-          # versions of Windows use per-user temp directories with strong
-          # permissions, but I'd rather not make (poor) assumptions.
-          return super("cmd.exe /c \"\"#{native_path(command(:powershell))}\" #{legacy_args} -Command - < \"#{native_path}\"\"", check)
-        end
-      else
-        working_dir = resource[:cwd]
-        if (!working_dir.nil?)
-          self.fail "Working directory '#{working_dir}' does not exist" unless File.directory?(working_dir)
-        end
-        timeout_ms = resource[:timeout].nil? ? nil : resource[:timeout] * 1000
-        environment_variables = resource[:environment].nil? ? [] : resource[:environment]
+    return execute_resource(command, resource) if Pwsh::Manager.windows_powershell_supported?
 
-        result = ps_manager.execute(command,timeout_ms,working_dir, environment_variables)
-
-        stdout      = result[:stdout]
-        native_out  = result[:native_stdout]
-        stderr      = result[:stderr]
-        exit_code   = result[:exitcode]
-
-        unless stderr.nil?
-          stderr.each { |e| Puppet.debug "STDERR: #{e.chop}" unless e.empty? }
-        end
-
-        Puppet.debug "STDERR: #{result[:errormessage]}" unless result[:errormessage].nil?
-
-        output = Puppet::Util::Execution::ProcessOutput.new(stdout.to_s + native_out.to_s, exit_code)
-
-        return output, output
-      end
-    else
-      write_script(command) do |native_path|
-        # Ideally, we could keep a handle open on the temp file in this
-        # process (to prevent TOCTOU attacks), and execute powershell
-        # with -File <path>. But powershell complains that it can't open
-        # the file for exclusive access. If we close the handle, then an
-        # attacker could modify the file before we invoke powershell. So
-        # we redirect powershell's stdin to read from the file.
-        return super("sh -c \"#{native_path(command(:powershell))} #{posix_args} -Command - < #{native_path}\"", check)
-      end
+    self.class.upgrade_message
+    write_script(command) do |native_path|
+      # Ideally, we could keep a handle open on the temp file in this
+      # process (to prevent TOCTOU attacks), and execute powershell
+      # with -File <path>. But powershell complains that it can't open
+      # the file for exclusive access. If we close the handle, then an
+      # attacker could modify the file before we invoke powershell. So
+      # we redirect powershell's stdin to read from the file. Current
+      # versions of Windows use per-user temp directories with strong
+      # permissions, but I'd rather not make (poor) assumptions.
+      return super("cmd.exe /c \"\"#{native_path(Pwsh::Manager.powershell_path)}\" #{legacy_args} -Command - < \"#{native_path}\"\"", check)
     end
   end
 
-  def checkexe(command)
+  def execute_resource(powershell_code, resource)
+    working_dir = resource[:cwd]
+    raise "Working directory '#{working_dir}' does not exist" if !working_dir.nil? && !File.directory?(working_dir)
+
+    timeout_ms = resource[:timeout].nil? ? nil : resource[:timeout] * 1000
+    environment_variables = resource[:environment].nil? ? [] : resource[:environment]
+
+    result = ps_manager(resource[:timeout]).execute(powershell_code, timeout_ms, working_dir, environment_variables)
+    stdout     = result[:stdout]
+    native_out = result[:native_stdout]
+    stderr     = result[:stderr]
+    exit_code  = result[:exitcode]
+
+    stderr&.each { |e| Puppet.debug "STDERR: #{e.chop}" unless e.empty? }
+
+    Puppet.debug "STDERR: #{result[:errormessage]}" unless result[:errormessage].nil?
+
+    output = Puppet::Util::Execution::ProcessOutput.new(stdout.to_s + native_out.to_s, exit_code)
+
+    [output, output]
   end
 
-  def validatecmd(command)
+  def checkexe(command); end
+
+  def validatecmd(_command)
     true
   end
 
   private
-  def write_script(content, &block)
+
+  def write_script(content)
     Tempfile.open(['puppet-powershell', '.ps1']) do |file|
       file.puts(content)
-      file.puts()
+      file.puts
       file.flush
       yield native_path(file.path)
     end
@@ -148,11 +119,5 @@ Puppet::Type.type(:exec).provide :powershell, :parent => Puppet::Provider::Exec 
 
   def legacy_args
     '-NoProfile -NonInteractive -NoLogo -ExecutionPolicy Bypass'
-  end
-
-  def posix_args
-    # Note - using -ExecutionPolicy causes PowerShell to abort
-    # https://github.com/PowerShell/PowerShell/issues/2742
-    '-NoProfile -NonInteractive -NoLogo'
   end
 end

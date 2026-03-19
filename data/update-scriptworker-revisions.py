@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 """
-Updates common.yaml scriptworker{,-scripts} revisions with latest master/main commit hashes
+Updates common.yaml scriptworker-scripts revisions with latest master/main commit hashes
 """
 
 import asyncio
 import aiohttp
-from os import path
-import subprocess
+from os import path, replace
+import re
 
 DIRECTIVES = [
-    {
-        "common_key": "scriptworker_revision",
-        "repo": "mozilla-releng/scriptworker",
-        "branch": "main",
-    },
     {
         "common_key": "scriptworker_scripts_revision",
         "repo": "mozilla-releng/scriptworker-scripts",
@@ -51,20 +46,23 @@ async def main():
             if d["repo"] in r:
                 d["sha"] = r[d["repo"]]
 
-    for directive in DIRECTIVES:
-        cmd = [
-            "sed",
-            "-i",  # in-place
-            "",
-            "-E",  # extended
-            f"s/(.*{directive['common_key']}\: ).*/\\1\"{directive['sha']}\"/g",
-            common_yaml,
-        ]
-        print(f"Running command: {cmd}")
-        subprocess.run(cmd)
+    # Read the file
+    with open(common_yaml, "r") as f:
+        content = f.read()
 
-    print("Ready to run ./modules/signing_worker/files/update-requirements.sh")
+    # Apply replacements
+    for directive in DIRECTIVES:
+        pattern = f"(.*{directive['common_key']}: ).*"
+        replacement = rf'\1"{directive["sha"]}"'
+        content = re.sub(pattern, replacement, content)
+        print(f"Replaced {directive['common_key']} with {directive['sha']}")
+
+    # Write the file atomically (to tmp first, then override whole file)
+    tmp_common_yaml = f"{common_yaml}.tmp"
+    with open(tmp_common_yaml, "w") as f:
+        f.write(content)
+    replace(tmp_common_yaml, common_yaml)
 
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.run(main())

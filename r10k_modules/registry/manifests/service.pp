@@ -1,5 +1,5 @@
-# Define: registry::service
-#
+# @summary Defined resource type that manages service entries
+# @note
 #   This defined resource type manages service entries in the Microsoft service
 #   control framework by managing the appropriate registry keys and values.
 #
@@ -7,52 +7,46 @@
 #
 #   [1] http://support.microsoft.com/kb/137890
 #
-# Parameters:
+# @param ensure 
+#   Ensures the presence or absence of a registry key. Valid values: 'present', 'absent', 'UNSET'.
 #
-#   ensure: [ present, absent ]
+# @param display_name
+#   The Display Name of the service.  Defaults to the title of the resource.
 #
-#   display_name: The Display Name of the service.  Defaults to the title of
-#   the resource.
+# @param description
+#   A description of the service. String value set to 'UNSET' by default.
 #
-#   description: A description of the service
+# @param command
+#   The command to execute. Set to 'UNSET' by default.
 #
-#   command: The command to execute
-#
-#   start: The starting mode of the service.  (Note, the native service
+# @param start
+#   The starting mode of the service.  (Note, the native service
 #   resource can also be used to manage this setting.)
-#   [ automatic, manual, disabled ]
+#   Valid values: 'automatic', 'manual', 'disabled'
 #
-# Actions:
 #
-#   Manages the values in the key HKLM\System\CurrentControlSet\Services\$name\
+# Manages the values in the key HKLM\System\CurrentControlSet\Services\$name\
 #
-# Requires:
-#
-#   Module puppetlabs-registry
-#
-# Sample Usage:
-#
+# @example Sample Usage:
 #   registry::service { puppet:
 #     ensure       => present,
 #     display_name => 'Puppet Agent',
 #     description  => 'Periodically fetches and applies
-#                   configurations from a Puppet master server.',
+#                      configurations from a Puppet Server.',
 #     command      => 'C:\PuppetLabs\Puppet\service\daemon.bat',
 #   }
 #
-define registry::service(
-  $ensure       = 'UNSET',
-  $display_name = 'UNSET',
-  $description  = 'UNSET',
-  $command      = 'UNSET',
-  $start        = 'UNSET'
+define registry::service (
+  Enum['present', 'absent', 'UNSET'] $ensure              = 'UNSET',
+  String[1] $display_name                                 = 'UNSET',
+  String[1] $description                                  = 'UNSET',
+  String[1] $command                                      = 'UNSET',
+  Enum['automatic', 'manual', 'disabled', 'UNSET'] $start = 'UNSET'
 ) {
-
   $ensure_real = $ensure ? {
     'UNSET'  => present,
-    undef   => present,
-    present => present,
-    absent  => absent,
+    'present' => present,
+    'absent'  => absent,
   }
 
   $display_name_real = $display_name ? {
@@ -73,9 +67,9 @@ define registry::service(
 
   # Map descriptive names to flags.
   $start_real = $start ? {
-    automatic => 2,
-    manual    => 3,
-    disabled  => 4,
+    'automatic' => 2,
+    'manual'    => 3,
+    'disabled'  => 4,
   }
 
   # Variable to hold the base key path.

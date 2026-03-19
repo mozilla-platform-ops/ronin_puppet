@@ -10,6 +10,6 @@ class win_taskcluster::livelog (
     require win_taskcluster::generic_worker
 
     file { "${generic_worker_dir}\\livelog.exe":
-        source  => $livelog_exe_source,
+        source => $livelog_exe_source,
     }
 }

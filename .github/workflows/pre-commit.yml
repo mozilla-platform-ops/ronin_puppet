@@ -1,0 +1,61 @@
+name: Pre-commit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    - name: Set up Python
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: '3.11'
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+
+    - name: Install pre-commit
+      run: pip install pre-commit
+
+    - name: Cache pre-commit environments
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323 # v47.0.5
+      with:
+        files_ignore: |
+          r10k_modules/**
+
+    - name: Run pre-commit on changed files
+      if: steps.changed-files.outputs.any_changed == 'true'
+      env:
+        CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+      shell: bash
+      run: |
+        echo "Running pre-commit on changed files:"
+        echo "${CHANGED_FILES}" | tr ' ' '\n'
+        # shellcheck disable=SC2086
+        pre-commit run --files ${CHANGED_FILES}
+
+    - name: Skip pre-commit if no relevant files changed
+      if: steps.changed-files.outputs.any_changed == 'false'
+      run: |
+        echo "No relevant files changed (excluding r10k_modules/), skipping pre-commit"

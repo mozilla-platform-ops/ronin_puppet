@@ -24,8 +24,8 @@ if (Test-Path $mozbld_file) {
 # Mercurial
 # Needed in roles_profiles::profiles::mozilla_build
 if (Test-Path $hg_file) {
-	$hg_object = Get-WMIObject Win32_Product | Where-Object {$_.Name -Like  'Mercurial*'}
-	$hg_ver = $hg_object.version
+	$hg_object = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like 'Mercurial*' }
+	$hg_ver = $hg_object.DisplayVersion
 } else {
     $hg_ver = 0.0
 }
@@ -33,7 +33,11 @@ if (Test-Path $hg_file) {
 # Python 3 Pip
 if (Test-Path $python3_file) {
     $pip_version = (C:\mozilla-build\python3\python3.exe -m pip --version)
-    $py3_pip_version = [regex]::Matches($pip_version, "(\d+\.\d+\.\d+)").value
+    if (-not [string]::IsNullOrEmpty($pip_version)) {
+        $py3_pip_version = [regex]::Matches($pip_version, "(\d+\.\d+\.\d+)").value
+    } else {
+        $py3_pip_version = 0.0.0
+    }
 } else {
     $py3_pip_version = 0.0.0
 }
@@ -41,7 +45,11 @@ if (Test-Path $python3_file) {
 # Pyhton 3 zstandard
 if (Test-Path $python3_file) {
     $zstandard_info = (C:\mozilla-build\python3\python3.exe -m pip show zstandard)
-    $zstandard_version = [regex]::Matches($zstandard_info, "(\d+\.\d+\.\d+)").value
+    if (-not [string]::IsNullOrEmpty($zstandard_info)) {
+        $zstandard_version = [regex]::Matches($zstandard_info, "(\d+\.\d+\.\d+)").value
+        } else {
+            $zstandard_version = 0.0.0
+        }
 } else {
     $zstandard_version = 0.0.0
 }
@@ -49,5 +57,4 @@ if (Test-Path $python3_file) {
 write-host "custom_win_py3_pip_version=$py3_pip_version"
 write-host "custom_win_mozbld_vesion=$mozbld_ver"
 write-host "custom_win_hg_version=$hg_ver"
-write-host "custom_win_py3_pip_version=$py3_pip_version"
 write-host "custom_win_py3_zstandard_version=$zstandard_version"

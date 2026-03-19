@@ -1,0 +1,82 @@
+{
+  "name": "puppetlabs-pwshlib",
+  "version": "0.10.3",
+  "author": "puppetlabs",
+  "summary": "Provide library code for interoperating with PowerShell.",
+  "license": "MIT",
+  "source": "https://github.com/puppetlabs/ruby-pwsh",
+  "project_page": "https://github.com/puppetlabs/ruby-pwsh/blob/main/pwshlib.md",
+  "issues_url": "https://github.com/puppetlabs/ruby-pwsh/issues",
+  "dependencies": [
+
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Windows",
+      "operatingsystemrelease": [
+        "2008",
+        "2008 R2",
+        "2012",
+        "2012 R2",
+        "2016",
+        "2019",
+        "7",
+        "8",
+        "10"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7",
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    {
+      "operatingsystem": "Fedora",
+      "operatingsystemrelease": [
+        "30",
+        "31"
+      ]
+    },
+    {
+      "operatingsystem": "OSX ",
+      "operatingsystemrelease": [
+        "10.14",
+        "10.15"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7",
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "16.04",
+        "18.04",
+        "20.04"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 6.0.0 < 8.0.0"
+    }
+  ],
+  "pdk-version": "1.13.0",
+  "template-url": "pdk-default#1.13.0",
+  "template-ref": "1.13.0-0-g66e1443"
+}

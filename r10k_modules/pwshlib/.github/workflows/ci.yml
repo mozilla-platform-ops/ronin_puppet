@@ -1,0 +1,97 @@
+name: "ci"
+
+on:
+  pull_request:
+    branches:
+      - "main"
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  spec:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+        ruby:
+          - 2.5
+          - 2.7
+
+    steps:
+      - name: "checkout"
+        uses: "actions/checkout@v3"
+
+      - name: "setup ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: "bundle environment"
+        run: |
+          echo ::group::bundler environment
+          bundle env
+          echo ::endgroup::
+
+      - name: "rubocop"
+        run: |
+          bundle exec rubocop
+
+      - name: "spec"
+        run: |
+          bundle exec rake spec
+
+  acceptance:
+    needs: "spec"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "windows-latest"
+          - "windows-2019"
+        puppet:
+          - 6
+          - 7
+        include:
+          - puppet: 6
+            ruby: 2.5
+          - puppet: 7
+            ruby: 2.7
+    env:
+      PUPPET_GEM_VERSION: ${{ matrix.puppet }}
+
+    steps:
+      - name: "checkout"
+        uses: "actions/checkout@v3"
+
+      - name: "setup ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: "bundle environment"
+        run: |
+          echo ::group::bundler environment
+          bundle env
+          echo ::endgroup::
+
+      - name: "setup winrm"
+        shell: "powershell"
+        run: |
+          Get-ChildItem WSMan:\localhost\Listener\ -OutVariable Listeners | Format-List * -Force
+          $HTTPListener = $Listeners | Where-Object -FilterScript { $_.Keys.Contains('Transport=HTTP') }
+          If ($HTTPListener.Count -eq 0) {
+            winrm create winrm/config/Listener?Address=*+Transport=HTTP
+            winrm e winrm/config/listener
+          }
+
+      - name: "acceptance"
+        shell: "powershell"
+        run: |
+          bundle exec rake dsc:acceptance:spec_prep
+          bundle exec rake dsc:acceptance:spec

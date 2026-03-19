@@ -3,15 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class macos_utils::show_full_name {
-
-    if $::operatingsystem == 'Darwin' {
-        macos_utils::defaults { 'show_full_name':
-            domain   => '/Library/Preferences/com.apple.loginwindow',
-            key      => 'SHOWFULLNAME',
-            value    => '1',
-            val_type => 'int'
-        }
-    } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+  if $facts['os']['name'] == 'Darwin' {
+    macos_utils::defaults { 'show_full_name':
+      domain   => '/Library/Preferences/com.apple.loginwindow',
+      key      => 'SHOWFULLNAME',
+      value    => '1',
+      val_type => 'int',
     }
+  } else {
+    fail("${module_name} does not support ${facts['os']['name']}")
+  }
 }

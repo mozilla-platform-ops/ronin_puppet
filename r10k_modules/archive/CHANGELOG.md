@@ -4,6 +4,186 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v7.1.0](https://github.com/voxpupuli/puppet-archive/tree/v7.1.0) (2023-10-30)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v7.0.0...v7.1.0)
+
+**Implemented enhancements:**
+
+- Add Rocky & AlmaLinux support [\#510](https://github.com/voxpupuli/puppet-archive/pull/510) ([bastelfreak](https://github.com/bastelfreak))
+- Add Debian 12 support [\#509](https://github.com/voxpupuli/puppet-archive/pull/509) ([bastelfreak](https://github.com/bastelfreak))
+- Add OracleLinux 9 support [\#508](https://github.com/voxpupuli/puppet-archive/pull/508) ([bastelfreak](https://github.com/bastelfreak))
+- Add Puppet 8 support [\#502](https://github.com/voxpupuli/puppet-archive/pull/502) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v7.0.0](https://github.com/voxpupuli/puppet-archive/tree/v7.0.0) (2023-06-05)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.1.2...v7.0.0)
+
+**Breaking changes:**
+
+- Drop Puppet 6 support [\#495](https://github.com/voxpupuli/puppet-archive/pull/495) ([bastelfreak](https://github.com/bastelfreak))
+
+**Implemented enhancements:**
+
+- Use require\_relative to load libraries [\#494](https://github.com/voxpupuli/puppet-archive/pull/494) ([ekohl](https://github.com/ekohl))
+
+**Merged pull requests:**
+
+- puppetlabs/stdlib: Allow 9.x [\#499](https://github.com/voxpupuli/puppet-archive/pull/499) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v6.1.2](https://github.com/voxpupuli/puppet-archive/tree/v6.1.2) (2023-04-13)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.1.1...v6.1.2)
+
+**Fixed bugs:**
+
+- Fix catalog compilation failure when net/ftp is not available [\#491](https://github.com/voxpupuli/puppet-archive/pull/491) ([smortex](https://github.com/smortex))
+- ruby provider: ensure cleanup happens [\#474](https://github.com/voxpupuli/puppet-archive/pull/474) ([pillarsdotnet](https://github.com/pillarsdotnet))
+
+**Closed issues:**
+
+- Missing gem with ruby 3.1 [\#488](https://github.com/voxpupuli/puppet-archive/issues/488)
+- Cannot clean up unless 'creates' is specified. [\#328](https://github.com/voxpupuli/puppet-archive/issues/328)
+
+**Merged pull requests:**
+
+- README: add missing backtick [\#487](https://github.com/voxpupuli/puppet-archive/pull/487) ([kenyon](https://github.com/kenyon))
+
+## [v6.1.1](https://github.com/voxpupuli/puppet-archive/tree/v6.1.1) (2023-01-16)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.1.0...v6.1.1)
+
+**Fixed bugs:**
+
+- curl provider: array of multiple headers does not work [\#481](https://github.com/voxpupuli/puppet-archive/issues/481)
+- Bug fix when passing multiple headers [\#482](https://github.com/voxpupuli/puppet-archive/pull/482) ([sprankle](https://github.com/sprankle))
+
+## [v6.1.0](https://github.com/voxpupuli/puppet-archive/tree/v6.1.0) (2022-11-29)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.0.2...v6.1.0)
+
+**Implemented enhancements:**
+
+- feature: Artifactory authentication support [\#265](https://github.com/voxpupuli/puppet-archive/issues/265)
+- add array of headers as optional parameter [\#475](https://github.com/voxpupuli/puppet-archive/pull/475) ([prolixalias](https://github.com/prolixalias))
+- Mark CentOS 9 and RHEL 9 as supported operating systems [\#473](https://github.com/voxpupuli/puppet-archive/pull/473) ([kajinamit](https://github.com/kajinamit))
+- Update CA certificate bundle to 2021-10-26 [\#468](https://github.com/voxpupuli/puppet-archive/pull/468) ([l-avila](https://github.com/l-avila))
+- modulesync 5.3 & update EoL URI syntax + a lot of rubocop rework [\#463](https://github.com/voxpupuli/puppet-archive/pull/463) ([bastelfreak](https://github.com/bastelfreak))
+
+**Merged pull requests:**
+
+- Improve/fix examples in README [\#470](https://github.com/voxpupuli/puppet-archive/pull/470) ([pillarsdotnet](https://github.com/pillarsdotnet))
+
+## [v6.0.2](https://github.com/voxpupuli/puppet-archive/tree/v6.0.2) (2021-11-23)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.0.1...v6.0.2)
+
+**Merged pull requests:**
+
+- puppet-lint: fix top\_scope\_facts warnings [\#462](https://github.com/voxpupuli/puppet-archive/pull/462) ([bastelfreak](https://github.com/bastelfreak))
+
+## [v6.0.1](https://github.com/voxpupuli/puppet-archive/tree/v6.0.1) (2021-08-26)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v6.0.0...v6.0.1)
+
+**Fixed bugs:**
+
+- Fix `archive::download::digest_type` data type \(reverts 6.0.0 breaking change\) [\#460](https://github.com/voxpupuli/puppet-archive/pull/460) ([alexjfisher](https://github.com/alexjfisher))
+
+## [v6.0.0](https://github.com/voxpupuli/puppet-archive/tree/v6.0.0) (2021-08-25)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v5.0.0...v6.0.0)
+
+**Breaking changes:**
+
+- Drop Virtuozzo 6 [\#455](https://github.com/voxpupuli/puppet-archive/pull/455) ([genebean](https://github.com/genebean))
+- Drop EoL AIX versions [\#454](https://github.com/voxpupuli/puppet-archive/pull/454) ([genebean](https://github.com/genebean))
+- Drop EoL Windows versions [\#453](https://github.com/voxpupuli/puppet-archive/pull/453) ([genebean](https://github.com/genebean))
+- Drop Debian 9 [\#452](https://github.com/voxpupuli/puppet-archive/pull/452) ([genebean](https://github.com/genebean))
+- Drop Ubuntu 16.04 [\#451](https://github.com/voxpupuli/puppet-archive/pull/451) ([genebean](https://github.com/genebean))
+- Set optional param to undef to fix failing test \(REVERTED IN 6.0.1\) [\#449](https://github.com/voxpupuli/puppet-archive/pull/449) ([yachub](https://github.com/yachub))
+
+**Implemented enhancements:**
+
+- Add support for Debian 11 [\#458](https://github.com/voxpupuli/puppet-archive/pull/458) ([smortex](https://github.com/smortex))
+- Add ubuntu 20.04 [\#456](https://github.com/voxpupuli/puppet-archive/pull/456) ([genebean](https://github.com/genebean))
+- Update CA certificate bundle to 2021-05-25 [\#444](https://github.com/voxpupuli/puppet-archive/pull/444) ([l-avila](https://github.com/l-avila))
+
+**Fixed bugs:**
+
+- Fix Could not set 'present' on ensure: wrong number of arguments \(given 1, expected 0\) [\#443](https://github.com/voxpupuli/puppet-archive/pull/443) ([jeffmccune](https://github.com/jeffmccune))
+- Write downloaded files as binary [\#442](https://github.com/voxpupuli/puppet-archive/pull/442) ([benohara](https://github.com/benohara))
+
+**Merged pull requests:**
+
+- Allow stdlib 8.0.0 [\#457](https://github.com/voxpupuli/puppet-archive/pull/457) ([smortex](https://github.com/smortex))
+
+## [v5.0.0](https://github.com/voxpupuli/puppet-archive/tree/v5.0.0) (2021-04-16)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.6.0...v5.0.0)
+
+**Breaking changes:**
+
+- metadata.json: drop Puppet 5, add Puppet 7 support [\#436](https://github.com/voxpupuli/puppet-archive/pull/436) ([kenyon](https://github.com/kenyon))
+- Drop support for CentOS/RHEL 6 and variants [\#431](https://github.com/voxpupuli/puppet-archive/pull/431) ([alexjfisher](https://github.com/alexjfisher))
+
+**Implemented enhancements:**
+
+- Enable Debian 9/10 support [\#439](https://github.com/voxpupuli/puppet-archive/pull/439) ([bastelfreak](https://github.com/bastelfreak))
+- Support stdlib 7.x [\#437](https://github.com/voxpupuli/puppet-archive/pull/437) ([treydock](https://github.com/treydock))
+- Add `archives` parameter to make use with an ENC or hiera easier [\#423](https://github.com/voxpupuli/puppet-archive/pull/423) ([jcpunk](https://github.com/jcpunk))
+- Add initial support for gsutil and pulling from Google Storage buckets [\#421](https://github.com/voxpupuli/puppet-archive/pull/421) ([j0sh3rs](https://github.com/j0sh3rs))
+
+**Fixed bugs:**
+
+- Fix downloading when passwords contain spaces [\#430](https://github.com/voxpupuli/puppet-archive/pull/430) ([alexjfisher](https://github.com/alexjfisher))
+- Windows: find 7zip binary [\#428](https://github.com/voxpupuli/puppet-archive/pull/428) ([joerg16](https://github.com/joerg16))
+
+**Merged pull requests:**
+
+- Produce a better error for the puppet downloader when file not found [\#434](https://github.com/voxpupuli/puppet-archive/pull/434) ([hajee](https://github.com/hajee))
+- Pass over credentials in archive::artifactory [\#433](https://github.com/voxpupuli/puppet-archive/pull/433) ([jramosf](https://github.com/jramosf))
+- Clean up temporary files when checksums don't match [\#412](https://github.com/voxpupuli/puppet-archive/pull/412) ([benridley](https://github.com/benridley))
+
+## [v4.6.0](https://github.com/voxpupuli/puppet-archive/tree/v4.6.0) (2020-08-21)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.5.0...v4.6.0)
+
+**Implemented enhancements:**
+
+- Add `temp_dir` parameter to `archive::nexus` [\#415](https://github.com/voxpupuli/puppet-archive/pull/415) ([alexcit](https://github.com/alexcit))
+- Use curl netrc file instead of `--user` [\#399](https://github.com/voxpupuli/puppet-archive/pull/399) ([alexjfisher](https://github.com/alexjfisher))
+
+**Closed issues:**
+
+- Feature request: make password sensitive and hide on fail [\#397](https://github.com/voxpupuli/puppet-archive/issues/397)
+
+**Merged pull requests:**
+
+- README.md: correct spelling typo [\#414](https://github.com/voxpupuli/puppet-archive/pull/414) ([kenyon](https://github.com/kenyon))
+- Fix several markdown lint issues [\#408](https://github.com/voxpupuli/puppet-archive/pull/408) ([dhoppe](https://github.com/dhoppe))
+
+## [v4.5.0](https://github.com/voxpupuli/puppet-archive/tree/v4.5.0) (2020-04-02)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.4.0...v4.5.0)
+
+**Implemented enhancements:**
+
+- Add VZ 6/7 to metadata.json [\#402](https://github.com/voxpupuli/puppet-archive/pull/402) ([bastelfreak](https://github.com/bastelfreak))
+
+**Closed issues:**
+
+- Could not autoload puppet/parser/functions/artifactory\_sha1: no such file to load -- puppet\_x/bodeco/util [\#320](https://github.com/voxpupuli/puppet-archive/issues/320)
+
+**Merged pull requests:**
+
+- Convert `archive` class docs to puppet-strings and small README improvements [\#394](https://github.com/voxpupuli/puppet-archive/pull/394) ([alexjfisher](https://github.com/alexjfisher))
+- Convert `go_md5` function to modern API [\#392](https://github.com/voxpupuli/puppet-archive/pull/392) ([alexjfisher](https://github.com/alexjfisher))
+- Use `relative_require` in artifactory functions [\#391](https://github.com/voxpupuli/puppet-archive/pull/391) ([alexjfisher](https://github.com/alexjfisher))
+- Convert `assemble_nexus_url` to modern API [\#390](https://github.com/voxpupuli/puppet-archive/pull/390) ([alexjfisher](https://github.com/alexjfisher))
+- Remove duplicate CONTRIBUTING.md file [\#389](https://github.com/voxpupuli/puppet-archive/pull/389) ([dhoppe](https://github.com/dhoppe))
+- Add Darwin \(mac os x\) compatibility [\#387](https://github.com/voxpupuli/puppet-archive/pull/387) ([bjoernhaeuser](https://github.com/bjoernhaeuser))
+
 ## [v4.4.0](https://github.com/voxpupuli/puppet-archive/tree/v4.4.0) (2019-11-04)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-archive/compare/v4.3.0...v4.4.0)

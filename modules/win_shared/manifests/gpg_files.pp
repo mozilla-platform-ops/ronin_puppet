@@ -13,7 +13,7 @@ class win_shared::gpg_files (
     $gpg_key    = "${facts['custom_win_systemdrive']}\\GPG\\${facts['custom_win_gw_workertype']}.gpg"
 
     file { $src_file:
-        source   => "${srcloc}/${file_name}",
+        source => "${srcloc}/${file_name}",
     }
     exec { "${file_name}_decrypt":
         command  => epp('win_shared/gpg_decrypt.ps1.epp'),

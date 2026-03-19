@@ -9,6 +9,7 @@
 $release_key = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion')
 $release_id = $release_key.ReleaseId
 $win_os_build = [System.Environment]::OSVersion.Version.build
+$display_version = $release_key.DisplayVersion
 
 # OS caption
 # Used to determine which KMS license for cloud workers
@@ -48,6 +49,9 @@ if ($firewall_status -like "*off*") {
 	$firewall_status = "running"
 }
 
+# Dispaly adapter
+$display_adapt = (((Get-WmiObject Win32_VideoController).Caption).Replace(" ", ""))
+
 # Base image ID
 #$role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
 $role = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").role
@@ -61,12 +65,48 @@ if ($worker_pool_id -like "*gpu*") {
     $gpu = 'no'
 }
 
+if ($os_caption -like "*windows_10*") {
+	$os_version = (-join( "win_10_", $release_id))
+	$purpose = "tester"
+} elseif ($os_caption -like "*windows_11*") {
+	$os_version = (-join( "win_11_", $release_id))
+	$purpose = "tester"
+} elseif ($os_caption -like "*2012*") {
+	$os_version = "win_2012"
+	$purpose = 'builder'
+} elseif ($os_caption -like "*2022*") {
+	$os_version = (-join( "win_2022_", $release_id))
+	$purpose = 'builder'
+} else {
+	$os_version = $null
+}
+
+if (Test-Path -Path "D:\") {
+    $DDriveExists = $true
+} else {
+    $DDriveExists = $false
+}
+
+$os_arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+if ($os_arch -like "*ARM*") {
+	$custom_win_os_arch = "aarch64"
+}
+else {
+	$custom_win_os_arch = "x64"
+}
+
+write-host "custom_win_display_version=$display_version"
 write-host "custom_win_release_id=$release_id"
 write-host "custom_win_os_caption=$os_caption"
+write-host "custom_win_os_version=$os_version"
 write-host "custom_win_kms_activated=$kms_status"
 write-host "custom_win_admin_sid=$win_admin_sid"
 Write-host "custom_win_net_category=$NetworkCategory"
 Write-host "custom_win_firewall_status=$firewall_status"
+Write-host "custom_win_display_adpater=$display_adapt"
 Write-host "custom_win_role=$role"
 write-host "custom_win_worker_pool_id=$worker_pool_id"
 write-host "custom_win_gpu=$gpu"
+write-host "custom_win_purpose=$purpose"
+write-host "custom_win_Ddrive_present=$DDriveExists"
+write-host "custom_win_os_arch=$custom_win_os_arch"

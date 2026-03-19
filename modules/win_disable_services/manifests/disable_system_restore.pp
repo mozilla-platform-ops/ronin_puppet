@@ -4,7 +4,7 @@
 
 class win_disable_services::disable_system_restore {
 
-    if $::operatingsystem == 'Windows' {
+    if $facts['os']['name'] == 'Windows' {
         registry_key { 'HKLM\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore':
             ensure => present,
         }
@@ -14,6 +14,6 @@ class win_disable_services::disable_system_restore {
             data   => '1',
         }
     } else {
-        fail("${module_name} does not support ${::operatingsystem}")
+        fail("${module_name} does not support ${facts['os']['name']}")
     }
 }

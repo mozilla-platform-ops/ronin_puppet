@@ -27,7 +27,7 @@
 <%     if options['plugin_type'] -%>
 [[inputs.<%= options['plugin_type'] %>]]
 <%     else -%>
-<%       if input == 'temp' and scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+<%       if input == 'temp' and @facts['os']['name'] == 'Darwin' -%>
 # MacOS temp: (as sysctl and pmset thermal checks)
 [[inputs.exec]]
   commands = [

@@ -3,21 +3,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::windows_datacenter_administrator {
+  case $facts['os']['name'] {
+    'Windows': {
+      $admin_password = lookup('win_adminpw')
 
-    case $::operatingsystem {
-        'Windows': {
-
-            $admin_password = lookup('win_adminpw')
-
-            class { 'win_users::administrator::account':
-                admin_password => $admin_password,
-            }
-
-        }
-        # Bug List
-        # https://bugzilla.mozilla.org/show_bug.cgi?id=1545481
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+      class { 'win_users::administrator::account':
+        admin_password => $admin_password,
+      }
     }
+    # Bug List
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1545481
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }

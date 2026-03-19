@@ -2,13 +2,6 @@ work_dir: "<%= @scriptworker_base %>/work"
 artifact_dir: "<%= @scriptworker_base %>/artifacts"
 taskcluster_scope_prefix: "<%= @tc_scope_prefix %>"
 verbose: true
-<% if @notary_users.empty? -%>
-local_notarization_accounts: []
-<% else -%>
-local_notarization_accounts:
-<% @notary_users.each do |nuser| -%>
-    - <%= nuser %>
-<% end -%><% end -%>
 default_keychains:
     - "/Users/<%= @user %>/Library/Keychains/login.keychain-db"
     - "/Library/Keychains/System.keychain"
@@ -28,16 +21,15 @@ mac_config:
         base_bundle_id: "<%= role_data['base_bundle_id'] %>"
 <% elsif @cot_product == "mozillavpn" -%>
         base_bundle_id: "<%= role_data['vpn_base_bundle_id'] %>"
-<% else -%>
+<% elsif @cot_product == "thunderbird" -%>
         base_bundle_id: "<%= role_data['tb_base_bundle_id'] %>"
+<% elsif @cot_product == "adhoc" -%>
+        base_bundle_id: com.mozilla.app
 <% end -%>
         identity: "<%= role_data['identity'] %>"
         keychain_password: "<%= role_data['keychain_password'] %>"
         pkg_cert_id: "<%= role_data['pkg_cert_id'] %>"
-        apple_notarization_account: "<%= role_data['notarization_account'] %>"
-        apple_notarization_password: "<%= role_data['notarization_password'] %>"
         apple_asc_provider: "<%= role_data['apple_asc_provider'] %>"
-        notarization_poll_timeout: <%= role_data['notarization_poll_timeout'] %>
         widevine_url: "<%= role_data['widevine_url'] %>"
         widevine_user: "<%= role_data['widevine_user'] %>"
         widevine_pass: "<%= role_data['widevine_pass'] %>"
@@ -48,4 +40,24 @@ mac_config:
         langpack_url: "<%= role_data['langpack_url'] %>"
         langpack_user: "<%= role_data['langpack_user'] %>"
         langpack_pass: "<%= role_data['langpack_pass'] %>"
+        stage_widevine_url: "<%= role_data['stage_widevine_url'] %>"
+        stage_widevine_user: "<%= role_data['stage_widevine_user'] %>"
+        stage_widevine_pass: "<%= role_data['stage_widevine_pass'] %>"
+        stage_widevine_cert: "<%= @widevine_cert_path %>"
+        stage_omnija_url: "<%= role_data['stage_omnija_url'] %>"
+        stage_omnija_user: "<%= role_data['stage_omnija_user'] %>"
+        stage_omnija_pass: "<%= role_data['stage_omnija_pass'] %>"
+        stage_langpack_url: "<%= role_data['stage_langpack_url'] %>"
+        stage_langpack_user: "<%= role_data['stage_langpack_user'] %>"
+        stage_langpack_pass: "<%= role_data['stage_langpack_pass'] %>"
+        gcp_prod_widevine_url: "<%= role_data['gcp_prod_widevine_url'] %>"
+        gcp_prod_widevine_user: "<%= role_data['gcp_prod_widevine_user'] %>"
+        gcp_prod_widevine_pass: "<%= role_data['gcp_prod_widevine_pass'] %>"
+        gcp_prod_widevine_cert: "<%= @widevine_cert_path %>"
+        gcp_prod_omnija_url: "<%= role_data['gcp_prod_omnija_url'] %>"
+        gcp_prod_omnija_user: "<%= role_data['gcp_prod_omnija_user'] %>"
+        gcp_prod_omnija_pass: "<%= role_data['gcp_prod_omnija_pass'] %>"
+        gcp_prod_langpack_url: "<%= role_data['gcp_prod_langpack_url'] %>"
+        gcp_prod_langpack_user: "<%= role_data['gcp_prod_langpack_user'] %>"
+        gcp_prod_langpack_pass: "<%= role_data['gcp_prod_langpack_pass'] %>"
 <% end -%>

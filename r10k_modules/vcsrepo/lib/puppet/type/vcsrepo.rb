@@ -67,6 +67,15 @@ Puppet::Type.newtype(:vcsrepo) do
   feature :hooks_allowed,
           'The provider supports managing hooks for the repository operations.'
 
+  feature :umask,
+          'The provider supports setting umask for repo operations'
+
+  feature :http_proxy,
+          'The provider supports retrieving repos via HTTP/HTTPS over an HTTP/HTTPS proxy'
+
+  feature :tmpdir,
+          'The provider supports setting the temp directory used for wrapper scripts.'
+
   ensurable do
     desc 'Ensure the version control repository.'
     attr_accessor :latest
@@ -79,6 +88,7 @@ Puppet::Type.newtype(:vcsrepo) do
         return true unless [:absent, :purged, :held].include?(is)
       when :latest
         return true if is == :latest
+
         false
       when :bare
         is == :bare
@@ -118,19 +128,13 @@ Puppet::Type.newtype(:vcsrepo) do
     end
 
     newvalue :absent do
-      if provider.exists?
-        provider.destroy
-      end
+      provider.destroy if provider.exists?
     end
 
     newvalue :latest, required_features: [:reference_tracking] do
       if provider.exists? && !@resource.value(:force)
-        if provider.class.feature?(:bare_repositories) && provider.bare_exists?
-          provider.convert_bare_to_working_copy
-        end
-        if provider.respond_to?(:update_references)
-          provider.update_references
-        end
+        provider.convert_bare_to_working_copy if provider.class.feature?(:bare_repositories) && provider.bare_exists?
+        provider.update_references if provider.respond_to?(:update_references)
         reference = if provider.respond_to?(:latest?)
                       provider.latest || provider.revision
                     else
@@ -147,6 +151,7 @@ Puppet::Type.newtype(:vcsrepo) do
     def retrieve
       prov = @resource.provider
       raise Puppet::Error, 'Could not find provider' unless prov
+
       if prov.working_copy_exists?
         (@should.include?(:latest) && prov.latest?) ? :latest : :present
       elsif prov.class.feature?(:bare_repositories) && prov.bare_exists?
@@ -166,9 +171,7 @@ Puppet::Type.newtype(:vcsrepo) do
     isnamevar
     validate do |value|
       path = Pathname.new(value)
-      unless path.absolute?
-        raise ArgumentError, "Path must be absolute: #{path}"
-      end
+      raise ArgumentError, "Path must be absolute: #{path}" unless path.absolute?
     end
   end
 
@@ -179,6 +182,7 @@ Puppet::Type.newtype(:vcsrepo) do
       # unwrap @should
       should = @should[0]
       return true if is == should
+
       begin
         if should[-1] == '/'
           return true if is == should[0..-2]
@@ -228,6 +232,7 @@ Puppet::Type.newtype(:vcsrepo) do
     end
     validate do |path|
       raise Puppet::Error, "Include path '#{path}' starts with a '/'; remove it" if path[0..0] == '/'
+
       super(path)
     end
   end
@@ -240,9 +245,7 @@ Puppet::Type.newtype(:vcsrepo) do
   newparam :compression, required_features: [:gzip_compression] do
     desc 'Compression level'
     validate do |amount|
-      unless Integer(amount).between?(0, 6)
-        raise ArgumentError, "Unsupported compression level: #{amount} (expected 0-6)"
-      end
+      raise ArgumentError, "Unsupported compression level: #{amount} (expected 0-6)" unless Integer(amount).between?(0, 6)
     end
   end
 
@@ -318,6 +321,38 @@ Puppet::Type.newtype(:vcsrepo) do
   newproperty :skip_hooks, required_features: [:hooks_allowed] do
     desc 'Explicitly skip any global hooks for this repository.'
     newvalues(:true, :false)
+  end
+
+  newparam :umask, required_features: [:umask] do
+    desc 'Sets the umask to be used for all repo operations'
+
+    # originally from puppet's built-in lib/puppet/type/exec.rb
+    # ...then modified to satisfy rubocop.
+    munge do |value|
+      raise Puppet::Error, _('The umask specification is invalid: %{value}') % { value: value.inspect } unless value.match?(%r{^0?[0-7]{1,4}$})
+
+      value.to_i(8)
+    end
+  end
+
+  newparam :http_proxy, required_features: [:http_proxy] do
+    desc 'Sets the HTTP/HTTPS proxy for remote repo access'
+    regex = %r{^https?://\S+$}
+    validate do |value|
+      if value.is_a?(Hash)
+        value.each do |k, v|
+          raise ArgumentError, "HTTP Proxy for #{k} must be an HTTP/HTTPS URL: #{v}" unless v.match?(regex)
+        end
+      else
+        raise ArgumentError, "HTTP Proxy must be an HTTP/HTTPS URL: #{value}" unless value.match?(regex)
+      end
+      # Validation passed.
+      super(value)
+    end
+  end
+
+  newparam :tmpdir, required_features: [:tmpdir] do
+    desc 'The temp directory used for wrapper scripts.'
   end
 
   autorequire(:package) do

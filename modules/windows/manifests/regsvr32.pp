@@ -22,7 +22,7 @@ define windows::regsvr32(
   $clsid,
   $ensure = 'present',
   $dll    = $name,
-  $wow64  = $::architecture == 'x64',
+  $wow64  = $facts['os']['architecture'] == 'x64',
 ) {
   include windows
 

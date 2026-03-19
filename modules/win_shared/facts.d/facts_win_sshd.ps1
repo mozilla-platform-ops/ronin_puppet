@@ -11,4 +11,4 @@ if ($result -eq $null) {
 	$sshd_present = 'installed'
 }
 
-Write-host "custom_win_sshd=$sshd_present".
+Write-host "custom_win_sshd=$sshd_present"

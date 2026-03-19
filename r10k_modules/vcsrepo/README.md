@@ -19,7 +19,8 @@
         * [Providers](#providers)
         * [Features](#features)
 5. [Limitations - OS compatibility, etc.](#limitations)
-6. [Development - Guide for contributing to the module](#development)
+6. [License](#license)
+7. [Development - Guide for contributing to the module](#development)
 
 <a id="overview"></a>
 ## Overview
@@ -38,6 +39,7 @@ The vcsrepo module provides a single type with providers to support the followin
 * [Perforce](#perforce)
 * [Subversion](#subversion)
 
+**Note**: This module does not have the functionality to purge or delete local changes on agent run.
 **Note:** `git` is the only vcs provider officially [supported by Puppet Inc.](https://forge.puppet.com/supported)
 **Note:** Release v4.0.1 has been removed from the Puppet Forge and was officially re-released as version v5.0.0 as it contained a breaking change.
 Details available [here](https://puppetlabs.github.io/iac/team/status/developer/2021/06/04/status-update.html)
@@ -173,6 +175,8 @@ vcsrepo { '/path/to/repo':
 ~~~
 
 To keep the repository at the latest revision, set `ensure` to 'latest'.
+**Note**: `keep_local_changes` works by stashing local changes, switching the repo to the assigned revision and, finally, unstashing the local changes.
+It only comes into effect if the revision parameter is different from the local repo. This parameter DOES NOT delete/purge local changes by default on every run.
 
 **WARNING:** This overwrites any local changes to the repository.
 
@@ -207,30 +211,61 @@ vcsrepo { '/path/to/repo':
 }
 ~~~
 
-To clone a HTTP repo through a proxy
+To use a specific umask, set `umask` to the desired value (expressed as a string of octal numbers); note that changes to umask do not retroactively affect repo files created earlier under a different umask. This is currently only implemented for the `git` provider. If unspecified, this will use the umask of the puppet process itself.
 
-The vcsrepo resource doesn't support a proxy configuration. However, you can configure it directly via git.
-Create the following `~/.gitconfig` file:
-
-~~~
-[http]
-  proxy = http://proxy.internal:8181
-~~~
-
-Git will now automatically use this proxy for all repositories that are cloned via http/https:
+Example to set shared group access:
 
 ~~~ puppet
 vcsrepo { '/path/to/repo':
   ensure   => present,
   provider => git,
-  source   => 'https://example.com/repo.git',
+  source   => 'git://example.com/repo.git',
   revision => '0c466b8a5a45f6cd7de82c08df2fb4ce1e920a31',
-  user     => 'someUser',
+  umask    => '0002'
 }
 ~~~
 
-You can find more information about the proxy configuration [here](https://gist.github.com/evantoli/f8c23a37eb3558ab8765).
-It's also possible to configure it on a per-repository level.
+#### Use HTTP or HTTPS proxies
+
+To use an HTTP or HTTPS proxy, set `http_proxy` to the proxy URL. This is currently only implemented for the `git` provider.
+
+`git` uses libcurl, so proxying of HTTPS repo URLs uses the CONNECT method, which works with either an HTTP or HTTPS proxy (since libcurl 7.52.0).
+
+Example to use an HTTPS proxy:
+
+~~~ puppet
+vcsrepo { '/path/to/repo':
+  ensure     => present,
+  provider   => git,
+  source     => 'https://example.com/repo.git',
+  http_proxy => 'https://proxy.example.com',
+  revision   => '0c466b8a5a45f6cd7de82c08df2fb4ce1e920a31',
+}
+~~~
+
+Proxies can also be specified as a hash, keyed by remote, in which case vcsrepo will use the specified proxy for each remote that is used as a source (see the `source` parameter). For any source that does not have an `http_proxy` defined, no proxy will be used.
+
+Example to use per-remote HTTPS proxies use a proxy for github but not for other remotes:
+
+~~~ puppet
+vcsrepo { '/path/to/repo':
+  ensure     => present,
+  provider   => git,
+  source     => {
+    origin => 'https://example.com/repo.git',
+    github => 'https://github.com/example/repo.git',
+  },
+  http_proxy => {
+    github => 'https://proxy2.example.com',
+  },
+  revision   => '0c466b8a5a45f6cd7de82c08df2fb4ce1e920a31',
+}
+~~~
+
+Specification of proxies this way affects remote operations performed by vcsrepo, but does _not_ persist the proxy settings within either the per-user git configuration or the per-repo git configuration. This means that manual operations like `git fetch` and  `git pull` within vcsrepo-managed working copies will not use proxies. If you need such operations to use proxies, then you can instead configure git on a per-user or per-repository basis. Example instructions for configuring git for a user are here:
+https://gist.github.com/evantoli/f8c23a37eb3558ab8765
+
+For per-repository configuration, use `--local` instead of `--global` for `git config` commands (or edit the `.git/config` file within each repo working copy).
 
 #### Use multiple remotes with a repository
 
@@ -513,6 +548,18 @@ vcsrepo { '/path/to/repo':
   source              => 'http://hg.example.com/myrepo',
   basic_auth_username => 'hgusername',
   basic_auth_password => 'hgpassword',
+}
+~~~
+
+**NOTE:** The sensitive `basic_auth_password` can be deferred using the [Deferred](https://www.puppet.com/docs/puppet/7/template_with_deferred_values.html) function on Puppet Master and enable to execute on agent.
+
+~~~ puppet
+vcsrepo { '/path/to/repo':
+  ensure              => latest,
+  provider            => hg,
+  source              => 'http://hg.example.com/myrepo',
+  basic_auth_username => 'hgusername',
+  basic_auth_password => Deferred('sprintf', ['hgpassword']),
 }
 ~~~
 
@@ -829,6 +876,13 @@ For example, setting the `owner` parameter on a resource would cause Puppet runs
 
 Impacted users are now advised to use the new `safe_directory` parameter on Git resources.
 Explicitily setting the value to `true` will add the current path specified on the resource to the `safe.directory` git configuration for the current user (global scope) allowing the Puppet run to continue without error.
+
+Safe directory configuration will be stored within the system wide configuration file `/etc/gitconfig`.
+
+<a id="license"></a>
+## License
+
+This codebase is licensed under the Apache2.0 licensing, however due to the nature of the codebase the open source dependencies may also use a combination of [AGPL](https://opensource.org/license/agpl-v3/), [BSD-2](https://opensource.org/license/bsd-2-clause/), [BSD-3](https://opensource.org/license/bsd-3-clause/), [GPL2.0](https://opensource.org/license/gpl-2-0/), [LGPL](https://opensource.org/license/lgpl-3-0/), [MIT](https://opensource.org/license/mit/) and [MPL](https://opensource.org/license/mpl-2-0/) Licensing.
 
 <a id="development"></a> 
 ## Development

@@ -3,29 +3,29 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Set up locale settings
-class locale() {
-    case $::operatingsystem {
-        'Ubuntu': {
-            include linux_packages::locales
+class locale () {
+  case $facts['os']['name'] {
+    'Ubuntu': {
+      include linux_packages::locales
 
-            file {
-                '/etc/default/locale':
-                    source => 'puppet:///modules/locale/locale.ubuntu',
-                    notify => [Exec['generate-locales'], Exec['reconfigure-locales']];
-            }
-            exec {
-                'generate-locales':
-                    command     => '/usr/sbin/locale-gen en_US.UTF-8',
-                    refreshonly => true;
-            }
-            exec {
-                'reconfigure-locales':
-                    command     => '/usr/sbin/dpkg-reconfigure --frontend=noninteractive locales',
-                    refreshonly => true;
-            }
-        }
-        default: {
-            notice("Don't know how to set up locale on ${::operatingsystem}.")
-        }
+      file {
+        '/etc/default/locale':
+          source => 'puppet:///modules/locale/locale.ubuntu',
+          notify => [Exec['generate-locales'], Exec['reconfigure-locales']];
+      }
+      exec {
+        'generate-locales':
+          command     => '/usr/sbin/locale-gen en_US.UTF-8',
+          refreshonly => true;
+      }
+      exec {
+        'reconfigure-locales':
+          command     => '/usr/sbin/dpkg-reconfigure --frontend=noninteractive locales',
+          refreshonly => true;
+      }
     }
+    default: {
+      notice("Don't know how to set up locale on ${facts['os']['name']}.")
+    }
+  }
 }
