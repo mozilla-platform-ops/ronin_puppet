@@ -168,6 +168,7 @@ scriptworker_users:
         - mac_single_file
       dmg_prefix: "prod"
       cot_product: "adhoc"
+      widevine_filename: "widevine_prod.crt"
       keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
   enterprise-prod:

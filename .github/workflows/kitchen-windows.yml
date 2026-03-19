@@ -2,13 +2,10 @@ name: Kitchen Windows
 
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
   pull_request:
-    paths:
-      - 'modules/roles_profiles/**'
-      - 'data/roles/win*.yaml'
-      - 'data/os/Windows/**'
-      - '.kitchen_configs/kitchen.windows.yml'
-      - '.github/workflows/kitchen-windows.yml'
+    branches: [master]
 
 jobs:
   windows:
@@ -31,6 +28,12 @@ jobs:
           - role: win11a6425h2azuretester
             worker_pool_id: win11-a64-25h2-tester
             kitchen_instance: windows-win11-a64-25h2-tester
+          - role: win2022642009azure
+            worker_pool_id: b-win2022
+            kitchen_instance: windows-win2022-64-2009
+          - role: win10642009azure
+            worker_pool_id: win10-64-2009
+            kitchen_instance: windows-win10-64-2009
     permissions:
       id-token: write
       contents: read
@@ -46,7 +49,7 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd
+        uses: ruby/setup-ruby@dffb23f65a78bba8db45d387d5ea1bbd6be3ef18
         with:
           ruby-version: '3.2'
           bundler-cache: false
@@ -55,19 +58,25 @@ jobs:
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
         with:
           path: ~/.gem
-          key: v1-gems-${{ runner.os }}-${{ hashFiles('.gemfile.lock') }}
+          key: v1-gems-${{ runner.os }}-${{ hashFiles('Gemfile.lock') }}
 
       - name: Bundle install
         run: |
-          bundle config set --local gemfile .gemfile
           bundle install
+
+      - name: Generate ephemeral Windows admin password
+        shell: bash
+        run: |
+          password="Tk$(openssl rand -hex 24)!a9"
+          echo "::add-mask::$password"
+          echo "KITCHEN_ADMIN_PASSWORD=$password" >> "$GITHUB_ENV"
 
       - name: Kitchen test
         timeout-minutes: 60
         env:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
+          KITCHEN_ADMIN_PASSWORD: ${{ env.KITCHEN_ADMIN_PASSWORD }}
           PUPPET_ROLE: ${{ matrix.role }}
           WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -78,7 +87,7 @@ jobs:
         env:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
+          KITCHEN_ADMIN_PASSWORD: ${{ env.KITCHEN_ADMIN_PASSWORD }}
           PUPPET_ROLE: ${{ matrix.role }}
           WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}

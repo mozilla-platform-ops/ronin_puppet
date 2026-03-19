@@ -120,6 +120,50 @@ platforms:
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
         winrm set winrm/config/service/auth '@{Negotiate="false"}'
+  - name: win2022-64-2009
+    driver:
+      name: azurerm
+      location: 'East US 2'
+      machine_size: 'Standard_D32ads_v5'
+      image_urn: MicrosoftWindowsServer:WindowsServer:2022-datacenter-core-g2:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen-win2022-64-2009
+      use_ephemeral_osdisk: false
+      deployment_timeout_in_minutes: 30
+      username: kitchenadmin
+      password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
+  - name: win10-64-2009
+    driver:
+      name: azurerm
+      location: 'East US 2'
+      machine_size: 'Standard_F8s_v2'
+      image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009
+      use_ephemeral_osdisk: true
+      deployment_timeout_in_minutes: 30
+      username: kitchenadmin
+      password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
 
 suites:
   - name: windows
@@ -127,9 +171,11 @@ suites:
       patterns:
         - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
       default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o rspec/rspec.xml
+      extra_flags: --format RspecJunitFormatter -o <%= File.join(Dir.pwd, 'test-results', 'rspec.xml') %>
     includes:
       - win11-64-24h2
       - win11-64-25h2
       - win11-a64-25h2-builder
       - win11-a64-25h2-tester
+      - win2022-64-2009
+      - win10-64-2009

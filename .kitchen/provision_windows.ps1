@@ -96,6 +96,16 @@ $env:HOMEDRIVE = "C:"
 $env:USERNAME = "Administrator"
 $env:USERPROFILE = "C:\Users\Administrator"
 
+# Ensure the Administrator temp directory exists. When running as SYSTEM the
+# profile folder may not have been fully created yet, and Facter/Chocolatey
+# will fail with "No such file or directory" when they try to stat it.
+$adminTemp = "C:\Users\Administrator\AppData\Local\Temp"
+if (-not (Test-Path $adminTemp)) {
+    New-Item -Path $adminTemp -ItemType Directory -Force | Out-Null
+}
+$env:TEMP = $adminTemp
+$env:TMP = $adminTemp
+
 # Download ronin_puppet at the current commit SHA
 Write-Host "Downloading ronin_puppet at ref $env:RONIN_REF..."
 $zipUrl = "https://github.com/mozilla-platform-ops/ronin_puppet/archive/$env:RONIN_REF.zip"
@@ -141,6 +151,39 @@ New-ItemProperty -Path $sourceKey -Name 'Repository' -Value $sourceRepo -Propert
 New-ItemProperty -Path $sourceKey -Name 'Branch' -Value $sourceBranch -PropertyType String -Force | Out-Null
 
 Write-Host "Seeded $roninKey (worker_pool_id=$workerPoolId, role=$env:PUPPET_ROLE, bootstrap_stage=$bootstrapStage)."
+
+# Pre-install Chocolatey with retry logic so the Puppet chocolatey module's
+# exec resource (which has a creates guard on choco.exe) skips its own
+# download from the flaky community feed.
+$chocoInstallDir = "$env:ProgramData\chocolatey"
+$chocoExe = "$chocoInstallDir\bin\choco.exe"
+if (-not (Test-Path $chocoExe)) {
+    $maxAttempts = 3
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        try {
+            Write-Host "Installing Chocolatey (attempt $attempt of $maxAttempts)..."
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+            Write-Host "Chocolatey installed."
+            break
+        } catch {
+            Write-Host "Chocolatey install attempt $attempt failed: $_"
+            if ($attempt -eq $maxAttempts) {
+                throw "Chocolatey installation failed after $maxAttempts attempts."
+            }
+            Start-Sleep -Seconds (10 * $attempt)
+        }
+    }
+}
+
+# Ensure ChocolateyInstall is set at machine level and in the current process
+# so Puppet's chocolateyversion fact can find choco.exe regardless of whether
+# we are running as SYSTEM or Administrator.
+[System.Environment]::SetEnvironmentVariable('ChocolateyInstall', $chocoInstallDir, 'Machine')
+$env:ChocolateyInstall = $chocoInstallDir
+if ($env:PATH -notlike "*$chocoInstallDir\bin*") {
+    $env:PATH = "$chocoInstallDir\bin;$env:PATH"
+}
 
 # Set Facter variables
 $env:FACTER_custom_win_role = $env:PUPPET_ROLE
