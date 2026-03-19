@@ -41,7 +41,9 @@ from mercurial import (
 # Causes worker to purge caches on process exit and for task to retry.
 EXIT_PURGE_CACHE = 72
 
-testedwith = b"4.5 4.6 4.7 4.8 4.9 5.0 5.1 5.2 5.3 5.4 5.5 5.6 5.7 5.8 5.9"
+testedwith = (
+    b"4.5 4.6 4.7 4.8 4.9 5.0 5.1 5.2 5.3 5.4 5.5 5.6 5.7 5.8 5.9 6.0 6.1 6.2 6.3 6.4"
+)
 minimumhgversion = b"4.5"
 
 cmdtable = {}
@@ -61,12 +63,8 @@ def getsparse():
 
 
 def peerlookup(remote, v):
-    # TRACKING hg46 4.6 added commandexecutor API.
-    if util.safehasattr(remote, "commandexecutor"):
-        with remote.commandexecutor() as e:
-            return e.callcommand(b"lookup", {b"key": v}).result()
-    else:
-        return remote.lookup(v)
+    with remote.commandexecutor() as e:
+        return e.callcommand(b"lookup", {b"key": v}).result()
 
 
 @command(
@@ -81,7 +79,7 @@ def peerlookup(remote, v):
             b"",
             b"networkattempts",
             3,
-            b"Maximum number of attempts for network " b"operations",
+            b"Maximum number of attempts for network operations",
         ),
         (b"", b"sparseprofile", b"", b"Sparse checkout profile to use (path in repo)"),
         (
@@ -152,7 +150,7 @@ def robustcheckout(
             or not re.match(b"^[a-f0-9]+$", revision)
         ):
             raise error.Abort(
-                b"--revision must be a SHA-1 fragment 12-40 " b"characters long"
+                b"--revision must be a SHA-1 fragment 12-40 characters long"
             )
 
     sharebase = sharebase or ui.config(b"share", b"pool")
@@ -173,7 +171,7 @@ def robustcheckout(
             extensions.find(b"sparse")
         except KeyError:
             raise error.Abort(
-                b"sparse extension must be enabled to use " b"--sparseprofile"
+                b"sparse extension must be enabled to use --sparseprofile"
             )
 
     ui.warn(b"(using Mercurial %s)\n" % util.version())
@@ -181,6 +179,8 @@ def robustcheckout(
     # worker.backgroundclose only makes things faster if running anti-virus,
     # which our automation doesn't. Disable it.
     ui.setconfig(b"worker", b"backgroundclose", False)
+    # Don't wait forever if the connection hangs
+    ui.setconfig(b"http", b"timeout", 600)
 
     # By default the progress bar starts after 3s and updates every 0.1s. We
     # change this so it shows and updates every 1.0s.
@@ -380,14 +380,14 @@ def _docheckout(
     # enabled sparse, we would lock them out.
     if destvfs.exists() and sparse_profile and not destvfs.exists(b".hg/sparse"):
         raise error.Abort(
-            b"cannot enable sparse profile on existing " b"non-sparse checkout",
+            b"cannot enable sparse profile on existing non-sparse checkout",
             hint=b"use a separate working directory to use sparse",
         )
 
     # And the other direction for symmetry.
     if not sparse_profile and destvfs.exists(b".hg/sparse"):
         raise error.Abort(
-            b"cannot use non-sparse checkout on existing sparse " b"checkout",
+            b"cannot use non-sparse checkout on existing sparse checkout",
             hint=b"use a separate working directory to use sparse",
         )
 
@@ -407,7 +407,7 @@ def _docheckout(
             ui.warn(b"(shared store does not exist; deleting destination)\n")
             with timeit("removed_missing_shared_store", "remove-wdir"):
                 destvfs.rmtree(forcibly=True)
-        elif not re.search(b"[a-f0-9]{40}/\.hg$", storepath.replace(b"\\", b"/")):
+        elif not re.search(b"[a-f0-9]{40}/\\.hg$", storepath.replace(b"\\", b"/")):
             ui.warn(
                 b"(shared store does not belong to pooled storage; "
                 b"deleting destination to improve efficiency)\n"
@@ -429,7 +429,7 @@ def _docheckout(
             ui.warn(b"(abandoned transaction found; trying to recover)\n")
             repo = hg.repository(ui, dest)
             if not repo.recover():
-                ui.warn(b"(could not recover repo state; " b"deleting shared store)\n")
+                ui.warn(b"(could not recover repo state; deleting shared store)\n")
                 with timeit("remove_unrecovered_shared_store", "remove-store"):
                     deletesharedstore()
 
@@ -444,7 +444,7 @@ def _docheckout(
     def handlenetworkfailure():
         if networkattempts[0] >= networkattemptlimit:
             raise error.Abort(
-                b"reached maximum number of network attempts; " b"giving up\n"
+                b"reached maximum number of network attempts; giving up\n"
             )
 
         ui.warn(
@@ -498,6 +498,10 @@ def _docheckout(
             ui.warn(b"ssl error: %s\n" % pycompat.bytestr(str(e)))
             handlenetworkfailure()
             return True
+        elif isinstance(e, urllibcompat.urlerr.httperror) and e.code >= 500:
+            ui.warn(b"http error: %s\n" % pycompat.bytestr(str(e.reason)))
+            handlenetworkfailure()
+            return True
         elif isinstance(e, urllibcompat.urlerr.urlerror):
             if isinstance(e.reason, socket.error):
                 ui.warn(b"socket error: %s\n" % pycompat.bytestr(str(e.reason)))
@@ -511,6 +515,10 @@ def _docheckout(
                         pycompat.bytestr(str(e.reason)),
                     )
                 )
+        elif isinstance(e, socket.timeout):
+            ui.warn(b"socket timeout\n")
+            handlenetworkfailure()
+            return True
         else:
             ui.warn(
                 b"unhandled exception during network operation; type: %s; "
@@ -530,8 +538,13 @@ def _docheckout(
         clonepeer = hg.peer(ui, {}, cloneurl)
         rootnode = peerlookup(clonepeer, b"0")
     except error.RepoLookupError:
-        raise error.Abort(b"unable to resolve root revision from clone " b"source")
-    except (error.Abort, ssl.SSLError, urllibcompat.urlerr.urlerror) as e:
+        raise error.Abort(b"unable to resolve root revision from clone source")
+    except (
+        error.Abort,
+        ssl.SSLError,
+        urllibcompat.urlerr.urlerror,
+        socket.timeout,
+    ) as e:
         if handlepullerror(e):
             return callself()
         raise
@@ -570,6 +583,11 @@ def _docheckout(
 
     if storevfs.exists(b".hg/requires"):
         requires = set(storevfs.read(b".hg/requires").splitlines())
+        # "share-safe" (enabled by default as of hg 6.1) moved most
+        # requirements to a new file, so we need to look there as well to avoid
+        # deleting and re-cloning each time
+        if b"share-safe" in requires:
+            requires |= set(storevfs.read(b".hg/store/requires").splitlines())
         # FUTURE when we require generaldelta, this is where we can check
         # for that.
         required = {b"dotencode", b"fncache"}
@@ -619,7 +637,12 @@ def _docheckout(
                     shareopts=shareopts,
                     stream=True,
                 )
-        except (error.Abort, ssl.SSLError, urllibcompat.urlerr.urlerror) as e:
+        except (
+            error.Abort,
+            ssl.SSLError,
+            urllibcompat.urlerr.urlerror,
+            socket.timeout,
+        ) as e:
             if handlepullerror(e):
                 return callself()
             raise
@@ -660,7 +683,7 @@ def _docheckout(
             if not ctx.hex().startswith(revision):
                 raise error.Abort(
                     b"--revision argument is ambiguous",
-                    hint=b"must be the first 12+ characters of a " b"SHA-1 fragment",
+                    hint=b"must be the first 12+ characters of a SHA-1 fragment",
                 )
 
             checkoutrevision = ctx.hex()
@@ -687,7 +710,12 @@ def _docheckout(
                     pullop = exchange.pull(repo, remote, heads=pullrevs)
                     if not pullop.rheads:
                         raise error.Abort(b"unable to pull requested revision")
-        except (error.Abort, ssl.SSLError, urllibcompat.urlerr.urlerror) as e:
+        except (
+            error.Abort,
+            ssl.SSLError,
+            urllibcompat.urlerr.urlerror,
+            socket.timeout,
+        ) as e:
             if handlepullerror(e):
                 return callself()
             raise
@@ -723,14 +751,7 @@ def _docheckout(
         try:
             old_sparse_fn = getattr(repo.dirstate, "_sparsematchfn", None)
             if old_sparse_fn is not None:
-                # TRACKING hg50
-                # Arguments passed to `matchmod.always` were unused and have been removed
-                if util.versiontuple(n=2) >= (5, 0):
-                    repo.dirstate._sparsematchfn = lambda: matchmod.always()
-                else:
-                    repo.dirstate._sparsematchfn = lambda: matchmod.always(
-                        repo.root, ""
-                    )
+                repo.dirstate._sparsematchfn = lambda: matchmod.always()
 
             with timeit("purge", "purge"):
                 if purge(
@@ -767,13 +788,9 @@ def _docheckout(
                 b"%s" % (sparse_profile, checkoutrevision)
             )
 
-        # TRACKING hg48 - parseconfig takes `action` param
-        if util.versiontuple(n=2) >= (4, 8):
-            old_config = sparsemod.parseconfig(
-                repo.ui, repo.vfs.tryread(b"sparse"), b"sparse"
-            )
-        else:
-            old_config = sparsemod.parseconfig(repo.ui, repo.vfs.tryread(b"sparse"))
+        old_config = sparsemod.parseconfig(
+            repo.ui, repo.vfs.tryread(b"sparse"), b"sparse"
+        )
 
         old_includes, old_excludes, old_profiles = old_config
 
@@ -795,10 +812,15 @@ def _docheckout(
             # one to change the sparse profile and another to update to the new
             # revision. This is not desired. But there's not a good API in
             # Mercurial to do this as one operation.
-            with (
-                repo.wlock(),
-                repo.dirstate.parentchange(),
-                timeit("sparse_update_config", "sparse-update-config"),
+            # TRACKING hg64 - Mercurial 6.4 and later require call to
+            # dirstate.changing_parents(repo)
+            def parentchange(repo):
+                if util.safehasattr(repo.dirstate, "changing_parents"):
+                    return repo.dirstate.changing_parents(repo)
+                return repo.dirstate.parentchange()
+
+            with repo.wlock(), parentchange(repo), timeit(
+                "sparse_update_config", "sparse-update-config"
             ):
                 # pylint --py3k: W1636
                 fcounts = list(

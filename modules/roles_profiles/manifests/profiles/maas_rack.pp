@@ -3,13 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::maas_rack {
-
-    case $::operatingsystem {
-        'Ubuntu':{
-            include maas::rack
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+  case $facts['os']['name'] {
+    'Ubuntu':{
+      include maas::rack
     }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }

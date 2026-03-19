@@ -1,0 +1,10 @@
+# if you place this file at `/etc/puppet/ronin_settings`
+# the `run-puppet.sh` script will use the values here.
+
+# puppet overrides
+PUPPET_REPO='https://github.com/aerickson/ronin_puppet.git'
+PUPPET_BRANCH='moonshot_linux_py311_and_tc_update_plus_1804_hg_upgrade'
+PUPPET_MAIL='aerickson@gmail.com'
+
+# taskcluster overrides
+# WORKER_TYPE_OVERRIDE='gecko-t-linux-talos-1804-staging'

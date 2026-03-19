@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require File.join(File.dirname(__FILE__), '..', 'vcsrepo')
 
 Puppet::Type.type(:vcsrepo).provide(:hg, parent: Puppet::Provider::Vcsrepo) do
@@ -9,21 +11,22 @@ Puppet::Type.type(:vcsrepo).provide(:hg, parent: Puppet::Provider::Vcsrepo) do
 
   def create
     check_force
-    if !@resource.value(:source)
-      create_repository(@resource.value(:path))
-    else
+    if @resource.value(:source)
       clone_repository(@resource.value(:revision))
+    else
+      create_repository(@resource.value(:path))
     end
     update_owner
   end
 
   def working_copy_exists?
     return false unless File.directory?(@resource.value(:path))
+
     begin
       hg_wrapper('status', @resource.value(:path))
-      return true
+      true
     rescue Puppet::ExecutionFailure
-      return false
+      false
     end
   end
 
@@ -43,12 +46,10 @@ Puppet::Type.type(:vcsrepo).provide(:hg, parent: Puppet::Provider::Vcsrepo) do
 
   def latest
     at_path do
-      begin
-        hg_wrapper('incoming', '--branch', '.', '--newest-first', '--limit', '1', remote: true)[%r{^changeset:\s+(?:-?\d+):(\S+)}m, 1]
-      rescue Puppet::ExecutionFailure
-        # If there are no new changesets, return the current nodeid
-        revision
-      end
+      hg_wrapper('incoming', '--branch', '.', '--newest-first', '--limit', '1', remote: true)[%r{^changeset:\s+(?:-?\d+):(\S+)}m, 1]
+    rescue Puppet::ExecutionFailure
+      # If there are no new changesets, return the current nodeid
+      revision
     end
   end
 
@@ -106,9 +107,7 @@ Puppet::Type.type(:vcsrepo).provide(:hg, parent: Puppet::Provider::Vcsrepo) do
 
   def clone_repository(revision)
     args = ['clone']
-    if revision
-      args.push('-u', revision)
-    end
+    args.push('-u', revision) if revision
     args.push(@resource.value(:source),
               @resource.value(:path))
     args.push(remote: true)
@@ -119,17 +118,19 @@ Puppet::Type.type(:vcsrepo).provide(:hg, parent: Puppet::Provider::Vcsrepo) do
     set_ownership if @resource.value(:owner) || @resource.value(:group)
   end
 
+  def sensitive?
+    (@resource.parameters.key?(:basic_auth_password) && @resource.parameters[:basic_auth_password].sensitive) ? true : false # Check if there is a sensitive parameter
+  end
+
   def hg_wrapper(*args)
     options = { remote: false }
-    if !args.empty? && args[-1].is_a?(Hash)
-      options.merge!(args.pop)
-    end
+    options.merge!(args.pop) if !args.empty? && args[-1].is_a?(Hash)
 
     if @resource.value(:basic_auth_username) && @resource.value(:basic_auth_password)
       args += [
         '--config', "auth.x.prefix=#{@resource.value(:source)}",
         '--config', "auth.x.username=#{@resource.value(:basic_auth_username)}",
-        '--config', "auth.x.password=#{@resource.value(:basic_auth_password)}",
+        '--config', "auth.x.password=#{sensitive? ? @resource.value(:basic_auth_password).unwrap : @resource.value(:basic_auth_password)}",
         '--config', 'auth.x.schemes=http https'
       ]
     end
@@ -137,11 +138,13 @@ Puppet::Type.type(:vcsrepo).provide(:hg, parent: Puppet::Provider::Vcsrepo) do
     if options[:remote] && @resource.value(:identity)
       args += ['--ssh', "ssh -oStrictHostKeyChecking=no -oPasswordAuthentication=no -oKbdInteractiveAuthentication=no -oChallengeResponseAuthentication=no -i #{@resource.value(:identity)}"]
     end
+
+    args.map! { |a| (a =~ %r{\s}) ? "'#{a}'" : a } # Adds quotes to arguments with whitespaces.
+
     if @resource.value(:user) && @resource.value(:user) != Facter['id'].value
-      args.map! { |a| (a =~ %r{\s}) ? "'#{a}'" : a } # Adds quotes to arguments with whitespaces.
-      Puppet::Util::Execution.execute("hg #{args.join(' ')}", uid: @resource.value(:user), failonfail: true, combine: true)
+      Puppet::Util::Execution.execute("hg #{args.join(' ')}", uid: @resource.value(:user), failonfail: true, combine: true, sensitive: sensitive?)
     else
-      hg(*args)
+      Puppet::Util::Execution.execute("hg #{args.join(' ')}", sensitive: sensitive?)
     end
   end
 end

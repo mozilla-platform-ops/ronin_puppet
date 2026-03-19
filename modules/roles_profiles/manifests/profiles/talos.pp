@@ -3,16 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::talos {
-    require roles_profiles::profiles::cltbld_user
+  require roles_profiles::profiles::cltbld_user
 
-    case $::operatingsystem {
-        'Darwin': {
-            class { 'talos':
-                user => 'cltbld',
-            }
-        }
-        default: {
-            fail("${::operatingsystem} not supported")
-        }
+  case $facts['os']['name'] {
+    'Darwin': {
+      class { 'talos':
+        user => 'cltbld',
+      }
     }
+    default: {
+      fail("${facts['os']['name']} not supported")
+    }
+  }
 }

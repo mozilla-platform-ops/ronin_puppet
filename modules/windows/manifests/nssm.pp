@@ -29,7 +29,7 @@ class windows::nssm(
   $root = "${destination}\\nssm-${version}"
 
   # Setting the path depending on the system architecture.
-  if $::architecture == 'x64' {
+  if $facts['os']['architecture'] == 'x64' {
     $path = "${root}\\win64"
   } else {
     $path = "${root}\\win32"

@@ -1,0 +1,20 @@
+---
+
+win-worker:
+  function: "tester"
+
+  # Mozilla profile
+  mozilla_profile:
+    source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
+    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
+
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "restricted"
+
+  ## Use to overwrite values in the Windows yaml file.
+  ## Replace windows. with win-worker.variant.
+  variant:
+    hg:
+      version: '6.2.1'

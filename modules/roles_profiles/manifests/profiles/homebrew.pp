@@ -3,20 +3,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::homebrew (
-    Boolean $purge = false
+  Boolean $purge = false
 ) {
-    if $purge {
-        include ::macos_utils::uninstall_homebrew
-    } else {
-        require packages::xcode_cmd_line_tools
-        require packages::coreutils
-        #require roles_profiles::profiles::cltbld_user
+  require macos_xcode_tools
+  if $purge {
+    include macos_utils::uninstall_homebrew
+  } else {
+    require 'macos_xcode_tools'
+    require packages::coreutils
+    #require roles_profiles::profiles::cltbld_user
 
-        class { 'homebrew':
-            user      => 'cltbld',
-            group     => 'staff',
-            multiuser => true,
-            require   => Class['packages::xcode_cmd_line_tools'],
-        }
+    class { 'homebrew':
+      user      => 'cltbld',
+      group     => 'staff',
+      multiuser => true,
+      require   => Class['macos_xcode_tools'],
     }
+  }
 }

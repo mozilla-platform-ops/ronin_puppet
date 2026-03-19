@@ -1,0 +1,1 @@
+../../linux-perf/inspec/ntp_spec.rb

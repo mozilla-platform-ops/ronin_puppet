@@ -1,4 +1,8 @@
+# frozen_string_literal: true
+
 require File.join(File.dirname(__FILE__), '..', 'vcsrepo')
+
+SKIP_DIRS = ['.', '..', '.svn'].freeze
 
 Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
   desc 'Supports Subversion repositories'
@@ -12,24 +16,25 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
 
   def create
     check_force
-    if !@resource.value(:source)
-      if @resource.value(:includes)
-        raise Puppet::Error, 'Specifying include paths on a nonexistent repo.'
-      end
-      create_repository(@resource.value(:path))
-    else
+    if @resource.value(:source)
       if @resource.value(:basic_auth_username) && !@resource.value(:basic_auth_password)
         raise("You must specify the HTTP basic authentication password for user '#{@resource.value(:basic_auth_username)}'")
       end
 
-      if !@resource.value(:basic_auth_username) && @resource.value(:basic_auth_password)
-        raise('You must specify the HTTP basic authentication username')
+      raise('You must specify the HTTP basic authentication username') if !@resource.value(:basic_auth_username) && @resource.value(:basic_auth_password)
+
+      if @resource.value(:basic_auth_username) && @resource.value(:basic_auth_password) && %r{[\u007B-\u00BF\u02B0-\u037F\u2000-\u2BFF]}.match?(@resource.value(:basic_auth_password).to_s)
+        raise('The password can not contain non-ASCII characters')
       end
 
       checkout_repository(@resource.value(:source),
                           @resource.value(:path),
                           @resource.value(:revision),
                           @resource.value(:depth))
+    else
+      raise Puppet::Error, 'Specifying include paths on a nonexistent repo.' if @resource.value(:includes)
+
+      create_repository(@resource.value(:path))
     end
     if @resource.value(:includes)
       validate_version
@@ -40,19 +45,22 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
 
   def working_copy_exists?
     return false unless File.directory?(@resource.value(:path))
+
     if @resource.value(:source)
       begin
-        svn('info', @resource.value(:path))
-        return true
-      rescue Puppet::ExecutionFailure
-        return false
+        svn_wrapper('info', @resource.value(:path))
+        true
+      rescue Puppet::ExecutionFailure => e
+        raise Puppet::Error, e.message if e.message.include?('This client is too old')
+
+        false
       end
     else
       begin
         svnlook('uuid', @resource.value(:path))
-        return true
+        true
       rescue Puppet::ExecutionFailure
-        return false
+        false
       end
     end
   end
@@ -79,13 +87,9 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
       args.push('--no-auth-cache')
     end
 
-    if @resource.value(:configuration)
-      args.push('--config-dir', @resource.value(:configuration))
-    end
+    args.push('--config-dir', @resource.value(:configuration)) if @resource.value(:configuration)
 
-    if @resource.value(:trust_server_cert) != :false
-      args.push('--trust-server-cert')
-    end
+    args.push('--trust-server-cert') if @resource.value(:trust_server_cert) != :false
 
     args
   end
@@ -93,31 +97,25 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
   def latest
     args = buildargs.push('info', '-r', 'HEAD')
     at_path do
-      svn(*args)[%r{^Revision:\s+(\d+)}m, 1]
+      svn_wrapper(*args)[%r{^Revision:\s+(\d+)}m, 1]
     end
   end
 
   def source
     args = buildargs.push('info')
     at_path do
-      svn(*args)[%r{^URL:\s+(\S+)}m, 1]
+      svn_wrapper(*args)[%r{^URL:\s+(\S+)}m, 1]
     end
   end
 
   def source=(desired)
     args = buildargs.push('switch')
-    if @resource.value(:force)
-      args.push('--force')
-    end
-    if @resource.value(:revision)
-      args.push('-r', @resource.value(:revision))
-    end
-    if @resource.value(:conflict)
-      args.push('--accept', @resource.value(:conflict))
-    end
+    args.push('--force') if @resource.value(:force)
+    args.push('-r', @resource.value(:revision)) if @resource.value(:revision)
+    args.push('--accept', @resource.value(:conflict)) if @resource.value(:conflict)
     args.push(desired)
     at_path do
-      svn(*args)
+      svn_wrapper(*args)
     end
     update_owner
   end
@@ -125,7 +123,7 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
   def revision
     args = buildargs.push('info')
     at_path do
-      svn(*args)[%r{^Revision:\s+(\d+)}m, 1]
+      svn_wrapper(*args)[%r{^Revision:\s+(\d+)}m, 1]
     end
   end
 
@@ -136,21 +134,18 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
              buildargs.push('update', '-r', desired)
            end
 
-    if @resource.value(:force)
-      args.push('--force')
-    end
-    if @resource.value(:conflict)
-      args.push('--accept', @resource.value(:conflict))
-    end
+    args.push('--force') if @resource.value(:force)
+    args.push('--accept', @resource.value(:conflict)) if @resource.value(:conflict)
 
     at_path do
-      svn(*args)
+      svn_wrapper(*args)
     end
     update_owner
   end
 
   def includes
     return nil if Gem::Version.new(return_svn_client_version) < Gem::Version.new('1.6.0')
+
     get_includes('.')
   end
 
@@ -166,19 +161,27 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
 
   private
 
+  def svn_wrapper(*args)
+    Puppet::Util::Execution.execute("svn #{args.join(' ')}", sensitive: sensitive?)
+  end
+
+  def sensitive?
+    (@resource.parameters.key?(:basic_auth_password) && @resource.parameters[:basic_auth_password].sensitive) ? true : false # Check if there is a sensitive parameter
+  end
+
   def get_includes(directory)
     at_path do
       args = buildargs.push('info', directory)
-      if svn(*args)[%r{^Depth:\s+(\w+)}m, 1] != 'empty'
-        return directory[2..-1].gsub(File::SEPARATOR, '/')
-      end
+      return directory[2..].gsub(File::SEPARATOR, '/') if svn_wrapper(*args)[%r{^Depth:\s+(\w+)}m, 1] != 'empty'
+
       Dir.entries(directory).map { |entry|
-        next if ['.', '..', '.svn'].include?(entry)
+        next if SKIP_DIRS.include?(entry)
+
         entry = File.join(directory, entry)
         if File.directory?(entry)
           get_includes(entry)
         elsif File.file?(entry)
-          entry[2..-1].gsub(File::SEPARATOR, '/')
+          entry[2..].gsub(File::SEPARATOR, '/')
         end
       }.flatten.compact!
     end
@@ -198,32 +201,29 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
         # fire off a warning telling the user the path can't be excluded.
         Puppet.debug "Vcsrepo[#{@resource.name}]: Need to handle #{path} removal specially"
         File.delete(path)
-        if Dir.entries(File.dirname(path)).sort != ['.', '..', '.svn']
-          Puppet.warning "Unable to exclude #{path} from Vcsrepo[#{@resource.name}]; update to subversion >= 1.7"
-        end
+        Puppet.warning "Unable to exclude #{path} from Vcsrepo[#{@resource.name}]; update to subversion >= 1.7" if Dir.entries(File.dirname(path)).sort != SKIP_DIRS
 
       else
         Puppet.debug "Vcsrepo[#{@resource.name}]: Can remove #{path} directly using svn"
         args = buildargs.push('update', '--set-depth', 'exclude', path)
-        svn(*args)
+        svn_wrapper(*args)
       end
 
       # Keep walking up the parent directories of this include until we find
       # a non-empty folder, excluding as we go.
       while (path = path.rpartition(File::SEPARATOR)[0]) != ''
         entries = Dir.entries(path).sort
-        break if entries != ['.', '..'] && entries != ['.', '..', '.svn']
+        break if entries != ['.', '..'] && entries != SKIP_DIRS
+
         args = buildargs.push('update', '--set-depth', 'exclude', path)
-        svn(*args)
+        svn_wrapper(*args)
       end
     end
   end
 
   def checkout_repository(source, path, revision, depth)
     args = buildargs.push('checkout')
-    if revision
-      args.push('-r', revision)
-    end
+    args.push('-r', revision) if revision
     if @resource.value(:includes)
       # Make root checked out at empty depth to provide sparse directories
       args.push('--depth', 'empty')
@@ -231,14 +231,12 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
       args.push('--depth', depth)
     end
     args.push(source, path)
-    svn(*args)
+    svn_wrapper(*args)
   end
 
   def create_repository(path)
     args = ['create']
-    if @resource.value(:fstype)
-      args.push('--fs-type', @resource.value(:fstype))
-    end
+    args.push('--fs-type', @resource.value(:fstype)) if @resource.value(:fstype)
     args << path
     svnadmin(*args)
   end
@@ -251,23 +249,17 @@ Puppet::Type.type(:vcsrepo).provide(:svn, parent: Puppet::Provider::Vcsrepo) do
     at_path do
       args = buildargs.push('update')
       args.push('--depth', 'empty')
-      if @resource.value(:revision)
-        args.push('-r', @resource.value(:revision))
-      end
+      args.push('-r', @resource.value(:revision)) if @resource.value(:revision)
       parents = paths.map { |path| File.dirname(path) }
       parents = make_include_paths(parents)
       args.push(*parents)
-      svn(*args)
+      svn_wrapper(*args)
 
       args = buildargs.push('update')
-      if @resource.value(:revision)
-        args.push('-r', @resource.value(:revision))
-      end
-      if @resource.value(:depth)
-        args.push('--depth', @resource.value(:depth))
-      end
+      args.push('-r', @resource.value(:revision)) if @resource.value(:revision)
+      args.push('--depth', @resource.value(:depth)) if @resource.value(:depth)
       args.push(*paths)
-      svn(*args)
+      svn_wrapper(*args)
     end
   end
 

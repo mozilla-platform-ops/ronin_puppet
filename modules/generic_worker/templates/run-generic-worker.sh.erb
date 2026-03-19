@@ -16,14 +16,14 @@ date > $last_premature_end
 # to numberOfTasksToRun, the worker won't exit and machine won't reboot.
 rm -f tasks-resolved-count.txt
 
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+<% if @facts['os']['name'] == 'Darwin' -%>
 exec 1> >(tee /var/log/genericworker/stdout.log >&1)
 exec 2> >(tee /var/log/genericworker/stderr.log >&2)
 <% end %>
 
 # First run the generic-worker, passing through any arguments handed to this
 # wrapper script...
-<% if scope.lookupvar('::operatingsystem') == 'Darwin' -%>
+<% if @facts['os']['name'] == 'Darwin' -%>
 /usr/local/bin/generic-worker "$@"
 <% else %>
 /usr/local/bin/generic-worker "$@" 2>&1 | logger -t generic-worker -s
@@ -32,7 +32,7 @@ exec 2> >(tee /var/log/genericworker/stderr.log >&2)
 exitstatus="${PIPESTATUS[0]}"
 
 # Remove semaphore file to ensure generic worker does not start before puppet
-rm -f "/var/tmp/semaphore/run-buildbot"
+#rm -f "/var/tmp/semaphore/run-buildbot"
 
 # If generic-worker considers that the host environment is in an invalid/corrupted
 # state (for example, it cannot write to disk), it will return the exit code 69.

@@ -1,0 +1,1 @@
+../../linux-perf/inspec/spec_helper.rb

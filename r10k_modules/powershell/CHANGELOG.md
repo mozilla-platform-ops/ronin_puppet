@@ -1,10 +1,122 @@
-# Changelog
+# Change log
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+## [v6.0.0](https://github.com/puppetlabs/puppetlabs-powershell/tree/v6.0.0) (2023-04-24)
 
-## [Unreleased]
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v5.2.1...v6.0.0)
+
+### Changed
+
+- \(CONT-793\) - Add Puppet 8/Drop Puppet 6 [\#400](https://github.com/puppetlabs/puppetlabs-powershell/pull/400) ([jordanbreen28](https://github.com/jordanbreen28))
+
+## [v5.2.1](https://github.com/puppetlabs/puppetlabs-powershell/tree/v5.2.1) (2023-04-21)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v5.2.0...v5.2.1)
+
+### Fixed
+
+- pdksync - \(CONT-130\) - Dropping Support for Debian 9 [\#384](https://github.com/puppetlabs/puppetlabs-powershell/pull/384) ([jordanbreen28](https://github.com/jordanbreen28))
+
+## [v5.2.0](https://github.com/puppetlabs/puppetlabs-powershell/tree/v5.2.0) (2022-10-03)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v5.1.0...v5.2.0)
+
+### Added
+
+- pdksync - \(GH-cat-11\) Certify Support for Ubuntu 22.04 [\#381](https://github.com/puppetlabs/puppetlabs-powershell/pull/381) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \(MAINT\) Dropped support for Windows\(7,8,2008 + 2008 R2\(Server\), Fedora\(27+28\) and OSX OS's\(10.12-.14\) [\#382](https://github.com/puppetlabs/puppetlabs-powershell/pull/382) ([jordanbreen28](https://github.com/jordanbreen28))
+
+## [v5.1.0](https://github.com/puppetlabs/puppetlabs-powershell/tree/v5.1.0) (2022-06-13)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v5.0.0...v5.1.0)
+
+### Added
+
+- pdksync - \(GH-cat-12\) Add Support for Redhat 9 [\#379](https://github.com/puppetlabs/puppetlabs-powershell/pull/379) ([david22swan](https://github.com/david22swan))
+- pdksync - \(FM-8922\) - Add Support for Windows 2022 [\#370](https://github.com/puppetlabs/puppetlabs-powershell/pull/370) ([david22swan](https://github.com/david22swan))
+- \(IAC-1734\) - Certify Debian 11 [\#368](https://github.com/puppetlabs/puppetlabs-powershell/pull/368) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1753\) - Add Support for AlmaLinux 8 [\#364](https://github.com/puppetlabs/puppetlabs-powershell/pull/364) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1751\) - Add Support for Rocky 8 [\#363](https://github.com/puppetlabs/puppetlabs-powershell/pull/363) ([david22swan](https://github.com/david22swan))
+- \(IAC-900\) - Certify Ubuntu 20.04 [\#359](https://github.com/puppetlabs/puppetlabs-powershell/pull/359) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- pdksync - \(GH-iac-334\) Remove Support for Ubuntu 14.04/16.04 [\#372](https://github.com/puppetlabs/puppetlabs-powershell/pull/372) ([david22swan](https://github.com/david22swan))
+- pdksync - \(IAC-1598\) - Remove Support for Debian 8 [\#361](https://github.com/puppetlabs/puppetlabs-powershell/pull/361) ([david22swan](https://github.com/david22swan))
+
+## [v5.0.0](https://github.com/puppetlabs/puppetlabs-powershell/tree/v5.0.0) (2021-02-27)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v4.1.0...v5.0.0)
+
+### Changed
+
+- pdksync - Remove Puppet 5 from testing and bump minimal version to 6.0.0 [\#330](https://github.com/puppetlabs/puppetlabs-powershell/pull/330) ([carabasdaniel](https://github.com/carabasdaniel))
+
+## [v4.1.0](https://github.com/puppetlabs/puppetlabs-powershell/tree/v4.1.0) (2020-12-07)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v4.0.0...v4.1.0)
+
+### Added
+
+- Add support for Puppet 7 [\#322](https://github.com/puppetlabs/puppetlabs-powershell/pull/322) ([daianamezdrea](https://github.com/daianamezdrea))
+- \(MODULES-10722\) Inherit pipe\_timeout from timeout [\#321](https://github.com/puppetlabs/puppetlabs-powershell/pull/321) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+## [v4.0.0](https://github.com/puppetlabs/puppetlabs-powershell/tree/v4.0.0) (2020-07-09)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v3.0.1...v4.0.0)
+
+### Changed
+
+- Correct supported Puppet lower bound to 5.5.0 [\#282](https://github.com/puppetlabs/puppetlabs-powershell/pull/282) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+### Fixed
+
+- \(MODULES-10539\) Remove commands idiom from PowerShell provider [\#287](https://github.com/puppetlabs/puppetlabs-powershell/pull/287) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+## [v3.0.1](https://github.com/puppetlabs/puppetlabs-powershell/tree/v3.0.1) (2020-01-15)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/v3.0.0...v3.0.1)
+
+### Added
+
+- \(IAC-835\) Support added for Debian 10 and CentOS/RHEL 8 [\#306](https://github.com/puppetlabs/puppetlabs-powershell/pull/306) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \(MODULES-10389\) - Safeguard powershell provider loading [\#277](https://github.com/puppetlabs/puppetlabs-powershell/pull/277) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+## [v3.0.0](https://github.com/puppetlabs/puppetlabs-powershell/tree/v3.0.0) (2020-01-06)
+
+[Full Changelog](https://github.com/puppetlabs/puppetlabs-powershell/compare/2.3.0...v3.0.0)
+
+### Changed
+
+- \(FM-8475\) Replace library code [\#264](https://github.com/puppetlabs/puppetlabs-powershell/pull/264) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+### Fixed
+
+- \(MODULES-9473\) Fix Issues Link [\#259](https://github.com/puppetlabs/puppetlabs-powershell/pull/259) ([RandomNoun7](https://github.com/RandomNoun7))
+- \(MODULES-9084\) Increase pipe timeout to 180s [\#257](https://github.com/puppetlabs/puppetlabs-powershell/pull/257) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+## 2.3.0
+
+### Added
+
+- Metadata for supporting Windows Server 2019 ([FM-7693](https://tickets.puppetlabs.com/browse/FM-7693))
+- Added a 'pwsh' provider for PowerShell Core ([MODULES-8355](https://tickets.puppetlabs.com/browse/MODULES-8355), [MODULES-8356](https://tickets.puppetlabs.com/browse/MODULES-8356), [MODULES-8357](https://tickets.puppetlabs.com/browse/MODULES-8357), [MODULES-8358](https://tickets.puppetlabs.com/browse/MODULES-8358), [MODULES-8359](https://tickets.puppetlabs.com/browse/MODULES-8359))
+- Updated metadata for PowerShell Core support (CentOS, Debian, Fedora, OSX and RedHat) ([MODULES-8356](https://tickets.puppetlabs.com/browse/MODULES-8356))
+
+### Changed
+
+- Only initialise constant when not defined ([MODULES-7067](https://tickets.puppetlabs.com/browse/MODULES-7067))
+
+### Fixed
+
+- Improved pipe reading in the PowerShell Manager ([MODULES-8748](https://tickets.puppetlabs.com/browse/MODULES-8748))
 
 ## [2.2.0] - 2018-10-29
 
@@ -168,3 +280,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Fixed
 
 - Fixed issue with metadata and PE version requirement
+
+[Unreleased]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.3.0...main
+[2.3.0]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.2.0...2.3.0
+[2.2.0]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.1.5...2.2.0
+[2.1.5]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.1.4...2.1.5
+[2.1.4]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.1.3...2.1.4
+[2.1.3]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.1.2...2.1.3
+[2.1.2]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.1.1...2.1.2
+[2.1.1]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.1.0...2.1.1
+[2.1.0]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.0.3...2.1.0
+[2.0.3]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.0.2...2.0.3
+[2.0.2]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.0.1...2.0.2
+[2.0.1]: https://github.com/puppetlabs/puppetlabs-powershell/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/puppetlabs/puppetlabs-powershell/compare/1.0.6...2.0.0
+[1.0.6]: https://github.com/puppetlabs/puppetlabs-powershell/compare/1.0.5...1.0.6
+[1.0.5]: https://github.com/puppetlabs/puppetlabs-powershell/compare/1.0.4...1.0.5
+[1.0.4]: https://github.com/puppetlabs/puppetlabs-powershell/compare/1.0.3...1.0.4
+[1.0.3]: https://github.com/puppetlabs/puppetlabs-powershell/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/puppetlabs/puppetlabs-powershell/compare/1.0.1...1.0.2
+[1.0.1]: https://github.com/puppetlabs/puppetlabs-powershell/compare/1.0.0...1.0.1
+
+
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*

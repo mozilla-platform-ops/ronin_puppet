@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require File.join(File.dirname(__FILE__), '..', 'vcsrepo')
 
 Puppet::Type.type(:vcsrepo).provide(:bzr, parent: Puppet::Provider::Vcsrepo) do
@@ -8,20 +10,21 @@ Puppet::Type.type(:vcsrepo).provide(:bzr, parent: Puppet::Provider::Vcsrepo) do
 
   def create
     check_force
-    if !@resource.value(:source)
-      create_repository(@resource.value(:path))
-    else
+    if @resource.value(:source)
       clone_repository(@resource.value(:revision))
+    else
+      create_repository(@resource.value(:path))
     end
   end
 
   def working_copy_exists?
     return false unless File.directory?(@resource.value(:path))
+
     begin
       bzr('status', @resource.value(:path))
-      return true
+      true
     rescue Puppet::ExecutionFailure
-      return false
+      false
     end
   end
 
@@ -53,11 +56,9 @@ Puppet::Type.type(:vcsrepo).provide(:bzr, parent: Puppet::Provider::Vcsrepo) do
 
   def revision=(desired)
     at_path do
-      begin
-        bzr('update', '-r', desired)
-      rescue Puppet::ExecutionFailure
-        bzr('update', '-r', desired, ':parent')
-      end
+      bzr('update', '-r', desired)
+    rescue Puppet::ExecutionFailure
+      bzr('update', '-r', desired, ':parent')
     end
     update_owner
   end
@@ -93,9 +94,7 @@ Puppet::Type.type(:vcsrepo).provide(:bzr, parent: Puppet::Provider::Vcsrepo) do
 
   def clone_repository(revision)
     args = ['branch']
-    if revision
-      args.push('-r', revision)
-    end
+    args.push('-r', revision) if revision
     args.push(@resource.value(:source),
               @resource.value(:path))
     bzr(*args)

@@ -1,0 +1,1 @@
+../../linux-perf/inspec/ubuntu_desktop_spec.rb

@@ -4,32 +4,57 @@
 
 class linux_mercurial {
   include shared
-  include linux_packages::mercurial
+
+  # install via pip on <2204, via package on 2404+
+  case $facts['os']['name'] {
+    'Ubuntu': {
+      case $facts['os']['release']['full'] {
+        '18.04', '22.04': {
+          # install mercurial (not via package)
+          class { 'linux_packages::mercurial' :
+            pkg_ensure => 'absent',
+          }
+        }
+        '24.04': {
+          # install mercurial via package
+          class { 'linux_packages::mercurial' :
+            pkg_ensure => 'present',
+          }
+        }
+        default: {
+          fail("Ubuntu ${facts['os']['release']['full']} is not supported")
+        }
+      }
+    }
+    default: {
+      fail("Cannot install on ${facts['os']['name']}")
+    }
+  }
 
   $hgext_dir       = '/usr/local/lib/hgext'
   $hgrc            = '/etc/mercurial/hgrc.d/mozilla.rc'
-  $hgrc_parentdirs = ['/etc/mercurial']
+  $hgrc_parentdirs = ['/etc/mercurial', '/etc/mercurial/hgrc.d/']
 
   # setup ext dir
   file {
-      default: * => $::shared::file_defaults;
+    default: * => $shared::file_defaults;
 
-      $hgext_dir:
-          ensure => directory,
-          mode   => '0755';
+    $hgext_dir:
+      ensure => directory,
+      mode   => '0755';
 
-      $hgrc_parentdirs:
-          ensure => directory,
-          mode   => '0755';
+    $hgrc_parentdirs:
+      ensure => directory,
+      mode   => '0755';
 
-      $hgrc:
-          ensure => file,
-          source => 'puppet:///modules/linux_mercurial/hgrc',
-          mode   => '0644';
+    $hgrc:
+      ensure => file,
+      source => 'puppet:///modules/linux_mercurial/hgrc',
+      mode   => '0644';
   }
 
   # robust checkout
   file { "${hgext_dir}/robustcheckout.py":
-      source => 'puppet:///modules/linux_mercurial/robustcheckout.py',
+    source => 'puppet:///modules/linux_mercurial/robustcheckout.py',
   }
 }

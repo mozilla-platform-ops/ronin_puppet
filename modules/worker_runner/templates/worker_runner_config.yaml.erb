@@ -11,7 +11,7 @@ provider:
     host: "<%= @worker_group %>"
 worker:
   implementation: generic-worker
-  path: /usr/local/bin/generic-worker-<%= @generic_worker_engine %>
+  path: /usr/local/bin/generic-worker-<%= @generic_worker_engine.sub(/-static$/, '') %>
   configPath: <%= @data_dir %>/generic-worker.conf.yaml
 workerConfig:
   cachesDir: "<%= @data_dir %>/cache"
@@ -21,9 +21,9 @@ workerConfig:
   ed25519SigningKeyLocation: "<%= @ed25519_signing_key %>"
   idleTimeoutSecs: <%= @idle_timeout_secs %>
   livelogExecutable: "/usr/local/bin/livelog"
-  numberOfTasksToRun: 0
+  numberOfTasksToRun: 1
   publicIP: "<%= @facts['networking']['ip'] %>"
-  requiredDiskSpaceMegabytes: 10240
+  requiredDiskSpaceMegabytes: 20480
   sentryProject: "generic-worker"
   shutdownMachineOnIdle: false
   shutdownMachineOnInternalError: false
