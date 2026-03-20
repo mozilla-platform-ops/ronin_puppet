@@ -115,4 +115,4 @@ windows:
     NUC13:
       bios_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/BIOS_exports'
       isetup_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/ISetup_08-05-2025'
-      date: '03-19-2026'
+      date: '03-20-2026'
