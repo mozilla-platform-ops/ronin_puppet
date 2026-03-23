@@ -83,7 +83,6 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_E8pds_v5'
-      spot_instance: true
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-builder
       use_ephemeral_osdisk: true
@@ -106,7 +105,6 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_E8pds_v5'
-      spot_instance: true
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-tester
       use_ephemeral_osdisk: true
