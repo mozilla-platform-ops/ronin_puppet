@@ -43,7 +43,9 @@ class roles_profiles::profiles::microsoft_tools {
             }
           }
           # VC++ Redist needed on enterprise images (not pre-installed like AVD)
-          include win_packages::vc_redist_2022_x64
+          if $facts['custom_win_location'] == 'azure' {
+            include win_packages::vc_redist_2022_x64
+          }
           include win_hw_profiling::xperf_kernel_trace
         }
         default: {
