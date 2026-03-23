@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/mozilla-platform-ops/kitchen-azurerm.git
-  revision: 0113645679f92c0ad9e1390d07ca3ce9a98d6ca2
+  revision: 1fac203b729492512d6f380719d6c13c0bbae57d
   branch: main
   specs:
     kitchen-azurerm (1.13.6)
