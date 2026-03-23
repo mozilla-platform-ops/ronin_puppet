@@ -81,8 +81,14 @@ function Invoke-BiosApply {
 
         Write-Log -message ('{0} :: iSetupCfg output: {1}' -f $($MyInvocation.MyCommand.Name), ($output -join ' ')) -severity 'DEBUG'
 
-        if (($nativeExit -ne 0) -or ($output | Select-String -SimpleMatch $badText)) {
-            Write-Log -message ('{0} :: iSetupCfg failed. Native exit code: {1}' -f $($MyInvocation.MyCommand.Name), $nativeExit) -severity 'ERROR'
+        if ($output | Select-String -SimpleMatch $badText) {
+            Write-Log -message ('{0} :: FAILED to apply BIOS settings' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+            Write-Log -message ('{0} :: iSetupCfg password needs to be set to bypass in BIOS' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+            exit 1
+        }
+
+        if ($nativeExit -ne 0) {
+            Write-Log -message ('{0} :: FAILED to apply BIOS settings' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
             exit 1
         }
 
