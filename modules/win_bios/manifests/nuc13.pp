@@ -47,7 +47,8 @@ class win_bios::nuc13 (
     # which is readily available online and useless without admin access to the OS.
     # See: https://www.systanddeploy.com/2023/10/managing-bios-settings-on-intel-nuc.html
     exec { 'nuc13_bios_apply':
-        command     => "powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File ${script_dir}\\apply_bios_nuc13.ps1 -BiosCfg ${bios_cfg}",
+        command     => "& '${script_dir}\\apply_bios_nuc13.ps1' -BiosCfg '${bios_cfg}'",
+        provider    => powershell,
         cwd         => $script_dir,
         refreshonly => true,
         require     => [
