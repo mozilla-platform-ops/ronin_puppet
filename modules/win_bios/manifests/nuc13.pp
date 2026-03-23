@@ -39,16 +39,21 @@ class win_bios::nuc13 (
         extract => false,
     }
 
+    file { "${script_dir}\\apply_bios_nuc13.ps1":
+        content => file('win_bios/apply_bios_nuc13.ps1'),
+    }
+
     # Apply BIOS settings from config file. /cpwd uses the default value 'admin',
     # which is readily available online and useless without admin access to the OS.
     # See: https://www.systanddeploy.com/2023/10/managing-bios-settings-on-intel-nuc.html
     exec { 'nuc13_bios_apply':
-        command     => "${script_dir}\\iSetupCfgWin64.exe /i /cpwd admin /s ${bios_cfg}",
+        command     => "powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File ${script_dir}\\apply_bios_nuc13.ps1 -BiosCfg ${bios_cfg}",
         cwd         => $script_dir,
         refreshonly => true,
         require     => [
             Archive['amigendrv64.sys'],
             Archive['iSetupCfgWin64.exe'],
+            File["${script_dir}\\apply_bios_nuc13.ps1"],
         ],
     }
 }
