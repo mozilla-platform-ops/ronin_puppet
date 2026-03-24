@@ -27,7 +27,7 @@ class packages::git (
   }
 
   exec { 'build_and_install_git':
-    command => './configure --prefix=/usr/local --without-tcltk && make -j4 all && make install',
+    command => "/bin/sh -c '${src_dir}/configure --prefix=/usr/local --without-tcltk && make -j4 all && make install'",
     cwd     => $src_dir,
     path    => ['/usr/bin', '/usr/local/bin', '/bin', '/usr/sbin', '/sbin'],
     unless  => $git_version_check,
