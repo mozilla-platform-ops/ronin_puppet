@@ -13,7 +13,7 @@ class roles_profiles::roles::win116425h2azure {
       ## https://bugzilla.mozilla.org/show_bug.cgi?id=1305485
       include roles_profiles::profiles::files_system_managment
       ## gpu drivers are needed for gpu images
-      include roles_profiles::profiles::gpu_drivers
+      include roles_profiles::profiles::gpu_drivers_a10
       ## Change log level from verbose to whatever hiera lookup is
       include roles_profiles::profiles::logging
       ## We need to configure the cache drive and hg-shared in this profile
@@ -46,7 +46,7 @@ class roles_profiles::roles::win116425h2azure {
       include roles_profiles::profiles::app_privacy
       include roles_profiles::profiles::azure_vm_agent
       include roles_profiles::profiles::virtual_drivers
-      include roles_profiles::profiles::gpu_drivers
+      include roles_profiles::profiles::gpu_drivers_a10
 
       # Skip OOBE
       include roles_profiles::profiles::oobe

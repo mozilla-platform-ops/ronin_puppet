@@ -4,6 +4,7 @@
 
 class roles_profiles::roles::enterprise_1_b_osx_arm64 {
   include macos_utils::disable_bluetooth_setup
+  include roles_profiles::profiles::macos_disable_firewall
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_run_puppet
   include roles_profiles::profiles::macos_xcode_tools

@@ -4,9 +4,12 @@
 
 class roles_profiles::roles::gecko_t_osx_1500_m4_ipv6 {
   include macos_utils::disable_bluetooth_setup
+  include macos_utils::always_show_scroll_bars
+  include macos_utils::suppress_keyboard_assistant
   include roles_profiles::profiles::cltbld_user
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_directory_cleaner
+  include roles_profiles::profiles::macos_disable_firewall
   include roles_profiles::profiles::macos_gw_checker
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_run_puppet

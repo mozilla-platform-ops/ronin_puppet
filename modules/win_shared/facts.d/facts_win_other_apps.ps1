@@ -8,7 +8,7 @@ if ($git) {
 	$git_ver = "{0}.{1}.{2}" -f $git_check.Version.Major,$git_check.Version.Minor,$git_check.Version.Build
 }
 else {
-	$git_ver = 0.0.0
+	$git_ver = '0.0.0'
 }
 
 write-host "custom_win_git_version=$git_ver"

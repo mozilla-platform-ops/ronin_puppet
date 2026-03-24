@@ -2,18 +2,38 @@ name: Kitchen Windows
 
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
   pull_request:
-    paths:
-      - 'modules/roles_profiles/**'
-      - 'data/roles/win*.yaml'
-      - 'data/os/Windows/**'
-      - '.kitchen_configs/kitchen.windows.yml'
-      - '.github/workflows/kitchen-windows.yml'
+    branches: [master]
 
 jobs:
-  win116425h2azure:
-    name: win116425h2azure
+  windows:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    name: ${{ matrix.role }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: win116425h2azure
+            worker_pool_id: win11-64-25h2-alpha
+            kitchen_instance: windows-win11-64-25h2
+          - role: win116424h2azure
+            worker_pool_id: win11-64-24h2-alpha
+            kitchen_instance: windows-win11-64-24h2
+          - role: win11a6425h2azurebuilder
+            worker_pool_id: win11-a64-25h2-builder
+            kitchen_instance: windows-win11-a64-25h2-builder
+          - role: win11a6425h2azuretester
+            worker_pool_id: win11-a64-25h2-tester
+            kitchen_instance: windows-win11-a64-25h2-tester
+          - role: win2022642009azure
+            worker_pool_id: b-win2022
+            kitchen_instance: windows-win2022-64-2009
+          - role: win10642009azure
+            worker_pool_id: win10-64-2009
+            kitchen_instance: windows-win10-64-2009
     permissions:
       id-token: write
       contents: read
@@ -22,47 +42,53 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Azure login
-        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd
+        uses: ruby/setup-ruby@319994f95fa847cf3fb3cd3dbe89f6dcde9f178f
         with:
           ruby-version: '3.2'
           bundler-cache: false
 
       - name: Cache gems
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
           path: ~/.gem
-          key: v1-gems-${{ runner.os }}-${{ hashFiles('.gemfile.lock') }}
+          key: v1-gems-${{ runner.os }}-${{ hashFiles('Gemfile.lock') }}
 
       - name: Bundle install
         run: |
-          bundle config set --local gemfile .gemfile
           bundle install
+
+      - name: Generate ephemeral Windows admin password
+        shell: bash
+        run: |
+          password="Tk$(openssl rand -hex 24)!a9"
+          echo "::add-mask::$password"
+          echo "KITCHEN_ADMIN_PASSWORD=$password" >> "$GITHUB_ENV"
 
       - name: Kitchen test
         timeout-minutes: 60
         env:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
-          PUPPET_ROLE: win116425h2azure
-          WORKER_POOL_ID: win11-64-25h2-alpha
+          KITCHEN_ADMIN_PASSWORD: ${{ env.KITCHEN_ADMIN_PASSWORD }}
+          PUPPET_ROLE: ${{ matrix.role }}
+          WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: bundle exec kitchen test windows-win11-64-25h2 -l debug
+        run: bundle exec kitchen test ${{ matrix.kitchen_instance }} -l debug
 
       - name: Kitchen destroy
         if: always()
         env:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          KITCHEN_ADMIN_PASSWORD: ${{ secrets.KITCHEN_ADMIN_PASSWORD }}
-          PUPPET_ROLE: win116425h2azure
-          WORKER_POOL_ID: win11-64-25h2-alpha
+          KITCHEN_ADMIN_PASSWORD: ${{ env.KITCHEN_ADMIN_PASSWORD }}
+          PUPPET_ROLE: ${{ matrix.role }}
+          WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: bundle exec kitchen destroy windows-win11-64-25h2 -l debug
+        run: bundle exec kitchen destroy ${{ matrix.kitchen_instance }} -l debug
