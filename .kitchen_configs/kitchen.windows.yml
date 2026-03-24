@@ -33,6 +33,7 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_F8s_v2'
+      spot_instance: true
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-avd:latest
       # Each platform has a unique resource group name to prevent collisions when
       # CI jobs run in parallel. kitchen-azurerm appends a timestamp to this name,
@@ -59,7 +60,8 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_F8s_v2'
-      image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-avd:latest
+      spot_instance: true
+      image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2
       use_ephemeral_osdisk: true
       deployment_timeout_in_minutes: 30
@@ -125,6 +127,7 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_D32ads_v5'
+      spot_instance: true
       image_urn: MicrosoftWindowsServer:WindowsServer:2022-datacenter-core-g2:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win2022-64-2009
       use_ephemeral_osdisk: false
@@ -147,6 +150,7 @@ platforms:
       name: azurerm
       location: 'East US 2'
       machine_size: 'Standard_F8s_v2'
+      spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009
       use_ephemeral_osdisk: true
