@@ -92,7 +92,8 @@ function Invoke-BiosApply {
             exit 1
         }
 
-        if (-not ($output | Select-String -SimpleMatch 'Script file imported successfully')) {
+        if (-not ($output | Select-String -SimpleMatch 'Script file imported successfully') -and
+            -not ($output | Select-String -SimpleMatch 'System configuration not modified')) {
             Write-Log -message ('{0} :: FAILED to apply BIOS settings' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
             exit 1
         }
