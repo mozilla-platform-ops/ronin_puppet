@@ -25,6 +25,9 @@ class roles_profiles::profiles::linux_base {
       # fix for ubuntu packaging bug
       require linux_packages::testresources
 
+      # should be requires above, but fight that battle another day
+      include linux_snmpd
+
       # TODO:
       # - add auditd
       # - add sending of logs to log aggregator/relay

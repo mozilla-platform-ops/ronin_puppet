@@ -168,6 +168,7 @@ scriptworker_users:
         - mac_single_file
       dmg_prefix: "prod"
       cot_product: "adhoc"
+      widevine_filename: "widevine_prod.crt"
       keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
   enterprise-prod:
@@ -191,7 +192,7 @@ scriptworker_config:
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
-        scriptworker_scripts_revision: "af70b5eb732514d63326eda837bb9ef48743a1f3"
+        scriptworker_scripts_revision: "b0e8e8d8f951695e0378d0760e5334906ff97db5"
 
     ff-prod:
         <<: *defaults

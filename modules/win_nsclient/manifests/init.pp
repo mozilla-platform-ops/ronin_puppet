@@ -41,6 +41,24 @@ class win_nsclient::init (
     notify  => Service['nscp'],
   }
 
+  file { "${scripts_dir}\\worker_bootstrap_stage.ps1":
+    content => file('win_nsclient/worker_bootstrap_stage.ps1'),
+    require => File[$scripts_dir],
+    notify  => Service['nscp'],
+  }
+
+  file { "${scripts_dir}\\check_thermal.ps1":
+    content => file('win_nsclient/check_thermal.ps1'),
+    require => File[$scripts_dir],
+    notify  => Service['nscp'],
+  }
+
+  file { "${scripts_dir}\\worker_pool_id.ps1":
+    content => file('win_nsclient/worker_pool_id.ps1'),
+    require => File[$scripts_dir],
+    notify  => Service['nscp'],
+  }
+
   service { 'nscp':
     ensure  => running,
     enable  => true,
