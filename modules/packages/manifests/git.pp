@@ -10,17 +10,19 @@ class packages::git (
   $tmp_tar = "/tmp/${tarball}"
   $url     = "https://mirrors.edge.kernel.org/pub/software/scm/git/${tarball}"
 
+  $git_version_check = "/bin/sh -c '/usr/local/bin/git --version 2>/dev/null | grep -qF \"git version ${version}\"'"
+
   exec { 'download_git_src':
     command => "curl -fL -o ${tmp_tar} ${url}",
     path    => ['/usr/bin', '/bin'],
-    unless  => "/usr/local/bin/git --version 2>/dev/null | grep -qF 'git version ${version}'",
+    unless  => $git_version_check,
     timeout => 120,
   }
 
   exec { 'extract_git_src':
     command => "tar -xzf ${tmp_tar} -C /tmp",
     path    => ['/usr/bin', '/bin'],
-    unless  => "/usr/local/bin/git --version 2>/dev/null | grep -qF 'git version ${version}'",
+    unless  => $git_version_check,
     require => Exec['download_git_src'],
   }
 
@@ -28,7 +30,7 @@ class packages::git (
     command => './configure --prefix=/usr/local --without-tcltk && make -j4 all && make install',
     cwd     => $src_dir,
     path    => ['/usr/bin', '/usr/local/bin', '/bin', '/usr/sbin', '/sbin'],
-    unless  => "/usr/local/bin/git --version 2>/dev/null | grep -qF 'git version ${version}'",
+    unless  => $git_version_check,
     require => Exec['extract_git_src'],
     timeout => 600,
   }
