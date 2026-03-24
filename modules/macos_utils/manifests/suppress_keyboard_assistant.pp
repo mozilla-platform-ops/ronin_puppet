@@ -13,9 +13,9 @@ class macos_utils::suppress_keyboard_assistant {
   }
 
   exec { 'create_suppress_keyboard_launchagents_dir':
-    command => "/bin/mkdir -p ${launchagent_dir} && /usr/sbin/chown cltbld:staff ${launchagent_dir}",
+    command => "/bin/mkdir -p ${launchagent_dir}",
     creates => $launchagent_dir,
-    path    => ['/bin', '/usr/sbin'],
+    path    => ['/bin'],
   }
 
   file { $launchagent_path:
