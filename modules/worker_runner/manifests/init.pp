@@ -103,10 +103,15 @@ class worker_runner (
 
             # Taskcluster binaries to install
             # Key: installed filename, Value: GitHub release asset name (undef = same as key)
+            # Note: generic-worker-simple was renamed to generic-worker-insecure in v62.0.0
+            $gw_simple_asset = versioncmp($taskcluster_version, '62.0.0') >= 0 ? {
+                true  => 'generic-worker-insecure',
+                false => undef,
+            }
             $taskcluster_binaries = {
                 'start-worker'             => undef,
                 'generic-worker-multiuser' => undef,
-                'generic-worker-simple'    => 'generic-worker-insecure',
+                'generic-worker-simple'    => $gw_simple_asset,
                 'livelog'                  => undef,
                 'taskcluster-proxy'        => undef,
             }
