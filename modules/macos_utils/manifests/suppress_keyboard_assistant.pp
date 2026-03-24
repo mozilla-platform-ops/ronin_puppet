@@ -11,13 +11,6 @@ class macos_utils::suppress_keyboard_assistant {
     $cltbld_uid = '555'
   }
 
-  file { '/Users/cltbld/Library/LaunchAgents':
-    ensure => directory,
-    owner  => 'cltbld',
-    group  => 'staff',
-    mode   => '0755',
-  }
-
   file { $launchagent_path:
     ensure  => file,
     owner   => 'cltbld',
