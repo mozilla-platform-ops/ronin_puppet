@@ -14,11 +14,10 @@ class macos_people_remover (
           mode    => '0755',
         }
 
-        $none_present = 'for u in dhouse jwatkins mgoossens rthijssen andrej michelle; do [ -d /Users/$u ] && exit 1; done; exit 0'
-
         exec { 'execute people remover script':
           command => $remover_script,
-          unless  => $none_present,
+          path    => ['/bin', '/usr/bin'],
+          unless  => 'sh -c \'for u in dhouse jwatkins mgoossens rthijssen andrej michelle; do [ -d /Users/$u ] && exit 1; done; exit 0\'',
           require => File[$remover_script],
           user    => 'root',
         }
