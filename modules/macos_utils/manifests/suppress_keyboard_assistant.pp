@@ -4,11 +4,18 @@
 
 class macos_utils::suppress_keyboard_assistant {
   $launchagent_path = '/Users/cltbld/Library/LaunchAgents/com.mozilla.suppress-keyboard-assistant.plist'
+  $launchagent_dir  = '/Users/cltbld/Library/LaunchAgents'
 
   if Integer($facts['os']['release']['major']) <= 20 {
     $cltbld_uid = '36'
   } else {
     $cltbld_uid = '555'
+  }
+
+  exec { 'create_suppress_keyboard_launchagents_dir':
+    command => "/bin/mkdir -p ${launchagent_dir} && /usr/sbin/chown cltbld:staff ${launchagent_dir}",
+    creates => $launchagent_dir,
+    path    => ['/bin', '/usr/sbin'],
   }
 
   file { $launchagent_path:
@@ -17,7 +24,7 @@ class macos_utils::suppress_keyboard_assistant {
     group   => 'staff',
     mode    => '0644',
     source  => 'puppet:///modules/macos_utils/com.mozilla.suppress-keyboard-assistant.plist',
-    require => File['/Users/cltbld/Library/LaunchAgents'],
+    require => Exec['create_suppress_keyboard_launchagents_dir'],
   }
 
   exec { 'load or restart suppress keyboard assistant agent':
