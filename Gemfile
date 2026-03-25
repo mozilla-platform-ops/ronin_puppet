@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'puppet', '7.12.1', :require => false
+gem 'puppet', '8.10.0', :require => false
 gem 'puppet-lint', '>= 2.4.2'
 gem 'test-kitchen', '>= 3.3.2'
 gem 'kitchen-inspec', '>= 3.1.0'
