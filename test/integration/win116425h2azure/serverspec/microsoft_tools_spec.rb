@@ -39,6 +39,13 @@ if WORKER_FUNCTION == 'tester'
   end
 end
 
+%w[x86 x64].each do |arch|
+  describe software_property_command("$_.DisplayName -match '^Microsoft Visual C\\+\\+ 2015-2022 Redistributable \\(#{arch}\\)'", 'DisplayVersion') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^14\.\d+\.\d+(?:\.\d+)?\s*$/) }
+  end
+end
+
 if ROLE_NAME == 'win11a6425h2azurebuilder'
   describe powershell_command("(Get-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -ErrorAction Stop).State") do
     its(:exit_status) { should eq 0 }
