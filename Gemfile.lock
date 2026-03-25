@@ -595,6 +595,9 @@ PLATFORMS
 DEPENDENCIES
   base64
   bigdecimal
+  chef-winrm (~> 2.5.0)
+  chef-winrm-elevated (~> 1.2.5)
+  chef-winrm-fs (~> 1.4.2)
   csv
   debouncer
   erb
@@ -608,6 +611,7 @@ DEPENDENCIES
   librarian-puppet
   minitar (~> 0.9)
   mutex_m
+  net-ssh (>= 7.3, < 8)
   puppet (= 7.8.0)
   puppet-lint (>= 2.4.2)
   puppet-strings (~> 4.1)
@@ -618,6 +622,9 @@ DEPENDENCIES
   rubocop
   serverspec
   test-kitchen (>= 3.3.2)
+  train (~> 3.16.1)
+  train-core (= 3.16.1)
+  train-winrm (~> 0.4.3)
   vault
 
 BUNDLED WITH
