@@ -72,7 +72,7 @@ jobs:
           echo "KITCHEN_ADMIN_PASSWORD=$password" >> "$GITHUB_ENV"
 
       - name: Kitchen test
-        timeout-minutes: 60
+        timeout-minutes: 120
         env:
           KITCHEN_YAML: .kitchen_configs/kitchen.windows.yml
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
@@ -80,7 +80,21 @@ jobs:
           PUPPET_ROLE: ${{ matrix.role }}
           WORKER_POOL_ID: ${{ matrix.worker_pool_id }}
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: bundle exec kitchen test ${{ matrix.kitchen_instance }} -l debug
+        run: |
+          max_attempts=3
+          for attempt in $(seq 1 $max_attempts); do
+            echo "=== Attempt $attempt of $max_attempts ==="
+            if bundle exec kitchen test ${{ matrix.kitchen_instance }} -l debug; then
+              exit 0
+            fi
+            echo "::warning::Attempt $attempt failed (likely spot VM eviction)"
+            if [ "$attempt" -lt "$max_attempts" ]; then
+              echo "Destroying failed instance before retry..."
+              bundle exec kitchen destroy ${{ matrix.kitchen_instance }} -l debug || true
+            fi
+          done
+          echo "::error::All $max_attempts attempts failed"
+          exit 1
 
       - name: Kitchen destroy
         if: always()
