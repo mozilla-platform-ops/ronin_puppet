@@ -31,6 +31,8 @@ class macos_safaridriver (
             mode    => '0755',
           }
 
+          $semaphore_file = "/Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
+
           # TCC.db doesn't exist yet in ci, so skip running the script
           if $facts['running_in_test_kitchen'] != 'true' {
             exec { 'execute perms script':
@@ -44,14 +46,48 @@ class macos_safaridriver (
 
           # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
           if $facts['running_in_test_kitchen'] != 'true' {
-            # needs to run as cltbld via launchctl or won't work
-            exec { 'execute enable remote automation script':
-              command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
-              require => File[$enable_script],
-              cwd     => "/Users/${user_running_safari}",
-              # semaphore and semaphore dir are created in script
-              unless  => "/bin/test -f /Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run",
-              # logoutput => true,
+            if $facts['os']['release']['major'] in ['23', '24'] {
+              # macOS 14/15: SIP is enabled on new hardware (e.g. M4 Mac Mini).
+              # Running osascript via 'launchctl asuser sudo -u' does not grant full
+              # GUI session access for accessibility, and the system TCC database is
+              # read-only even to root. Instead, bootstrap a LaunchAgent that runs
+              # osascript directly into cltbld's GUI session. The applescript handles
+              # its own semaphore so it is idempotent.
+              $applescript = '/usr/local/bin/safari-enable-remote-automation.applescript'
+              $launchagent_plist = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari.enableautomation.plist"
+
+              file { $applescript:
+                content => file('macos_safaridriver/safari-enable-remote-automation.applescript'),
+                mode    => '0755',
+              }
+
+              file { $launchagent_plist:
+                ensure  => file,
+                owner   => $user_running_safari,
+                group   => 'staff',
+                mode    => '0644',
+                content => file('macos_safaridriver/com.mozilla.safari.enableautomation.plist'),
+                require => File[$applescript],
+              }
+
+              exec { 'execute enable remote automation script':
+                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${launchagent_plist}; fi; count=0; while [ \$count -lt 60 ] && ! /bin/test -f ${semaphore_file}; do sleep 2; count=\$((count+2)); done; /bin/test -f ${semaphore_file}'",
+                require => [File[$applescript], File[$launchagent_plist], Exec['execute perms script']],
+                cwd     => "/Users/${user_running_safari}",
+                unless  => "/bin/test -f ${semaphore_file}",
+                timeout => 180,
+                # logoutput => true,
+              }
+            } else {
+              # macOS 10.15-13: typically deployed with SIP disabled; run directly
+              # via launchctl asuser to get cltbld's session context.
+              exec { 'execute enable remote automation script':
+                command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",
+                require => File[$enable_script],
+                cwd     => "/Users/${user_running_safari}",
+                unless  => "/bin/test -f ${semaphore_file}",
+                # logoutput => true,
+              }
             }
           }
 

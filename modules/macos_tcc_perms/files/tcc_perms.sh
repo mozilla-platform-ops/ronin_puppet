@@ -45,16 +45,18 @@ queries_11_12_13=(
     "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/sbin/sshd',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1705002869);"
 )
 
+# macOS 14/15 user DB entries.
+# System-level entries (ScreenCapture, SystemPolicyAllFiles) are handled by the
+# org.mozilla.ci-tcc-pppc MDM configuration profile deployed via SimpleMDM.
+# The system TCC database is SIP-protected on macOS 14/15 and cannot be written
+# by root directly; sqlite3 writes to it silently fail or abort the script.
+#
+# NOTE: start-worker ScreenCapture is included here as a user-DB fallback because
+# start-worker is ad-hoc signed and cannot be included in the PPPC profile.
+# The correct long-term fix is to sign start-worker with a Developer ID certificate.
 queries_14_user=(
-        "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
-        "REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,X'fade0c00000000280000000100000008000000147f41aa3c67a93ccd54d2e21d25ba664a2db38497',NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);"
-    )
-
-queries_14_system=(
-    "REPLACE INTO access VALUES('kTCCServiceScreenCapture','/bin/bash',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e62617368000000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',0);"
-    "REPLACE INTO access VALUES('kTCCServiceScreenCapture','com.apple.Terminal',0,2,4,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'UNUSED',NULL,0,1712861890,NULL,NULL,'UNUSED',0);"
-    "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355061,NULL,NULL,'UNUSED',1710355061);"
-    "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/sbin/sshd',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e73736864000000000003',NULL,0,'UNUSED',NULL,0,1712862105,NULL,NULL,'UNUSED',0);"
+    "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
+    "REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,X'fade0c00000000280000000100000008000000147f41aa3c67a93ccd54d2e21d25ba664a2db38497',NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);"
     "REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/start-worker',1,2,4,1,X'fade0c00000000280000000100000008000000147f41aa3c67a93ccd54d2e21d25ba664a2db38497',NULL,0,'UNUSED',NULL,0,1733939636,NULL,NULL,'UNUSED',0);"
 )
 
@@ -71,9 +73,7 @@ elif [[ "$macos_major_version" -eq 11 || "$macos_major_version" -eq 12 || "$maco
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
 elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 ]]; then
-    for query in "${queries_14_system[@]}"; do
-        execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
-    done
+    # System-level entries are handled by the org.mozilla.ci-tcc-pppc MDM profile.
     for query in "${queries_14_user[@]}"; do
         execute_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
