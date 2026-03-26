@@ -25,37 +25,32 @@ enable_remote_automation() {
     echo "$0: running..."
   fi
 
-  if csrutil status | grep -q 'disabled'; then
-    osascript -e "
-      tell application \"System Events\"
-        tell application \"$safari_app\" to activate
-        delay 15
-        tell process \"$safari_app\"
-          set frontmost to true
+  osascript -e "
+    tell application \"System Events\"
+      tell application \"$safari_app\" to activate
+      delay 15
+      tell process \"$safari_app\"
+        set frontmost to true
+        delay 5
+        click menu item \"Settings…\" of menu 1 of menu bar item \"$safari_app\" of menu bar 1
+        delay 5
+        click button \"Advanced\" of toolbar 1 of window 1
+        delay 5
+        tell checkbox \"Show features for web developers\" of group 1 of group 1 of window 1
+          if value is 0 then click it
           delay 5
-          click menu item \"Settings…\" of menu 1 of menu bar item \"$safari_app\" of menu bar 1
+        end tell
+        delay 5
+        click button \"$develop_menu_text\" of toolbar 1 of window 1
+        delay 5
+        tell checkbox \"$allow_remote_automation_text\" of group 1 of group 1 of window 1
+          if value is 0 then click it
           delay 5
-          click button \"Advanced\" of toolbar 1 of window 1
-          delay 5
-          tell checkbox \"Show features for web developers\" of group 1 of group 1 of window 1
-            if value is 0 then click it
-            delay 5
-          end tell
-          delay 5
-          click button \"$develop_menu_text\" of toolbar 1 of window 1
-          delay 5
-          tell checkbox \"$allow_remote_automation_text\" of group 1 of group 1 of window 1
-            if value is 0 then click it
-            delay 5
-          end tell
         end tell
       end tell
+    end tell
 
-      tell application \"$safari_app\" to quit"
-  else
-    echo "Unable to add permissions! System Integrity Protection is enabled."
-    exit 1
-  fi
+    tell application \"$safari_app\" to quit"
 
   echo "$semaphore_version" > "$semaphore_file"
 }

@@ -72,27 +72,18 @@ if [[ "$os_version" == "11."* || "$os_version" == "12."* || "$os_version" == "13
 fi
 
 # macOS 14 and 15
+# System-level TCC entries (Accessibility for Terminal/sshd-keygen-wrapper,
+# AppleEvents for Terminal/sshd-keygen-wrapper, SystemPolicyAllFiles) are now
+# handled by the org.mozilla.ci-tcc-pppc MDM profile deployed via SimpleMDM.
+# The system TCC database is SIP-protected on macOS 14/15 and cannot be written
+# by root directly; attempting to do so aborts this script via set -e.
 if [[ "$os_version" == "14."* || "$os_version" == "15."* ]]; then
-    # kTCCServiceSystemPolicyAllFiles, in system TCC DB
-    query="REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355061,NULL,NULL,'UNUSED',1710355061);"
-    run_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
-
-    # Other queries for macOS 14
-    queries=(
-        "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.Terminal',0,2,4,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'UNUSED',NULL,0,1710355518,NULL,NULL,'UNUSED',1710355518);"
-        "REPLACE INTO access VALUES('kTCCServiceAccessibility','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355823,NULL,NULL,'UNUSED',1710355823);"
-        "REPLACE INTO access VALUES('kTCCServiceLiverpool','com.apple.textinput.KeyboardServices',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1710355067,NULL,NULL,'UNUSED',1710355067);"
-        "REPLACE INTO access VALUES('kTCCServiceSystemPolicyDesktopFolder','com.apple.Terminal',0,2,2,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,NULL,'UNUSED',NULL,0,1710355245,NULL,NULL,'UNUSED',0);"
-        "REPLACE INTO access VALUES('kTCCServiceUbiquity','com.apple.Safari',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1710355252,NULL,NULL,'UNUSED',1710355252);"
-        "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,2,3,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1710355505,NULL,NULL,'UNUSED',1710355505);"
-        "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1710355814,NULL,NULL,'UNUSED',1710355814);"
-    )
-    for query in "${queries[@]}"; do
-        run_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
-    done
-
     user_queries=(
         "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
+        # osascript TCC entries - required for GUI automation via LaunchAgent on SIP-enabled systems
+        "REPLACE INTO access VALUES('kTCCServiceAccessibility','/usr/bin/osascript',1,2,3,1,X'fade0c000000003000000001000000060000000200000013636f6d2e6170706c652e6f73617363726970740000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',1712861877);"
+        "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/bin/osascript',1,2,3,1,X'fade0c000000003000000001000000060000000200000013636f6d2e6170706c652e6f73617363726970740000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1712861877,NULL,NULL,'UNUSED',1712861877);"
+        "REPLACE INTO access VALUES('kTCCServicePostEvent','/usr/bin/osascript',1,2,3,1,X'fade0c000000003000000001000000060000000200000013636f6d2e6170706c652e6f73617363726970740000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',1712861877);"
     )
     for query in "${user_queries[@]}"; do
         run_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
