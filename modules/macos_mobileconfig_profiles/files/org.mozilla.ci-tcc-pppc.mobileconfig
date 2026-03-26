@@ -24,8 +24,6 @@
       are ad-hoc signed (no TeamIdentifier). PPPC profiles cannot reference
       ad-hoc signed binaries reliably. These binaries should be signed with a
       Developer ID certificate so they can be added here.
-    - kTCCServicePostEvent, kTCCServiceLiverpool, kTCCServiceUbiquity — not
-      supported as PPPC payload keys.
     - User-level TCC entries (osascript accessibility/AppleEvents for the
       LaunchAgent safari automation) — those are written via sqlite3 by Puppet
       to cltbld's user TCC database, which remains writable.
@@ -64,8 +62,6 @@
                         <string>identifier "com.apple.sshd-keygen-wrapper" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                     <dict>
                         <key>Identifier</key>
@@ -76,8 +72,6 @@
                         <string>identifier "com.apple.sshd" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                 </array>
 
@@ -93,8 +87,6 @@
                         <string>identifier "com.apple.bash" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                     <dict>
                         <key>Identifier</key>
@@ -105,8 +97,6 @@
                         <string>identifier "com.apple.Terminal" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                     <dict>
                         <key>Identifier</key>
@@ -117,8 +107,6 @@
                         <string>identifier "com.apple.screensharing.agent" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                 </array>
 
@@ -134,8 +122,6 @@
                         <string>identifier "com.apple.osascript" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                     <dict>
                         <key>Identifier</key>
@@ -146,8 +132,6 @@
                         <string>identifier "com.apple.Terminal" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                     <dict>
                         <key>Identifier</key>
@@ -158,8 +142,6 @@
                         <string>identifier "com.apple.sshd-keygen-wrapper" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                 </array>
 
@@ -197,23 +179,6 @@
                         <string>identifier "com.apple.systemevents" and anchor apple</string>
                         <key>Authorization</key>
                         <string>Allow</string>
-                    </dict>
-                </array>
-
-                <!-- Desktop Folder: Terminal needs access during CI setup tasks -->
-                <key>SystemPolicyDesktopFolder</key>
-                <array>
-                    <dict>
-                        <key>Identifier</key>
-                        <string>com.apple.Terminal</string>
-                        <key>IdentifierType</key>
-                        <string>bundleID</string>
-                        <key>CodeRequirement</key>
-                        <string>identifier "com.apple.Terminal" and anchor apple</string>
-                        <key>Authorization</key>
-                        <string>Allow</string>
-                        <key>StaticCode</key>
-                        <false/>
                     </dict>
                 </array>
 
