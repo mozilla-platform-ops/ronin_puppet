@@ -143,9 +143,13 @@ run_puppet() {
     PUPPET_RUN_DURATION=$SECONDS
 
     if grep -q "unable to open database \"/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$TMP_LOG"; then
-        echo "Detected TCC.db issue. A reboot is required."
-        sudo shutdown -r now
-        exit 0
+        if [ ! -f "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" ]; then
+            echo "Detected TCC.db issue (file missing). A reboot is required."
+            sudo shutdown -r now
+            exit 0
+        else
+            echo "TCC.db exists but was temporarily inaccessible — puppet will retry without rebooting."
+        fi
     fi
 
     if grep -q "^Error:" "$TMP_LOG"; then
