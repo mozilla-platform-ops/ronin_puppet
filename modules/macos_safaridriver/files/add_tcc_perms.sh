@@ -88,4 +88,6 @@ if [[ "$os_version" == "14."* || "$os_version" == "15."* ]]; then
     for query in "${user_queries[@]}"; do
         run_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
+    mkdir -p /var/tmp/semaphore
+    touch /var/tmp/semaphore/safari-tcc-perms-applied
 fi

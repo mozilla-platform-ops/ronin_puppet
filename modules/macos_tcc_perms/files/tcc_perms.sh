@@ -83,3 +83,5 @@ else
 fi
 
 echo "Permissions updated successfully."
+mkdir -p /var/tmp/semaphore
+touch /var/tmp/semaphore/tcc-perms-applied

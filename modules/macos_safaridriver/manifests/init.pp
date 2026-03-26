@@ -33,14 +33,15 @@ class macos_safaridriver (
 
           $semaphore_file = "/Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
 
-          # Run perms script whenever the osascript AppleEvents TCC entry is missing.
-          # Previously this was refreshonly, but that meant it never re-ran after
-          # a failed first attempt (e.g. TCC DB didn't exist on first puppet run).
+          # Run perms script unless the semaphore exists. The semaphore is written
+          # by add_tcc_perms.sh on success. We avoid querying TCC.db here because
+          # on macOS 14/15 with SIP, sqlite3 gets authorization denied when run
+          # from the worker-runner LaunchAgent context (no Full Disk Access).
           if $facts['running_in_test_kitchen'] != 'true' {
             exec { 'execute perms script':
               command => $perm_script,
               user    => 'root',
-              unless  => '/usr/bin/sqlite3 "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "SELECT count(*) FROM access WHERE client=\'/usr/bin/osascript\' AND service=\'kTCCServiceAppleEvents\';" 2>/dev/null | /usr/bin/grep -q "^[1-9]"',
+              unless  => '/bin/test -f /var/tmp/semaphore/safari-tcc-perms-applied',
               require => File[$perm_script],
               # logoutput => true,
             }
@@ -56,27 +57,21 @@ class macos_safaridriver (
               # osascript directly into cltbld's GUI session. The applescript handles
               # its own semaphore so it is idempotent.
               $applescript = '/usr/local/bin/safari-enable-remote-automation.applescript'
-              # Store plist outside ~/Library/LaunchAgents/ so launchd does NOT
-              # auto-load it on login. Only puppet bootstraps it, and only after
-              # TCC entries are written. This avoids a race where launchd loads
-              # the agent before the user TCC DB entries exist.
-              $launchagent_plist = '/usr/local/lib/com.mozilla.safari.enableautomation.plist'
-              $launchagent_plist_old = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari.enableautomation.plist"
+              # macOS 14/15 requires the plist to be in ~/Library/LaunchAgents/ for
+              # launchctl bootstrap to succeed. The auto-load race (agent loading before
+              # TCC entries exist) is mitigated by requiring Exec['execute perms script']
+              # before this file is deployed, and by the applescript's semaphore check.
+              $launchagent_plist = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari.enableautomation.plist"
 
               file { $applescript:
                 content => file('macos_safaridriver/safari-enable-remote-automation.applescript'),
                 mode    => '0755',
               }
 
-              # Remove any previously deployed plist from LaunchAgents to prevent auto-load
-              file { $launchagent_plist_old:
-                ensure => absent,
-              }
-
               file { $launchagent_plist:
                 ensure  => file,
-                owner   => 'root',
-                group   => 'wheel',
+                owner   => $user_running_safari,
+                group   => 'staff',
                 mode    => '0644',
                 content => file('macos_safaridriver/com.mozilla.safari.enableautomation.plist'),
                 require => [File[$applescript], Exec['execute perms script']],
