@@ -33,13 +33,15 @@ class macos_safaridriver (
 
           $semaphore_file = "/Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
 
-          # TCC.db doesn't exist yet in ci, so skip running the script
+          # Run perms script whenever the osascript AppleEvents TCC entry is missing.
+          # Previously this was refreshonly, but that meant it never re-ran after
+          # a failed first attempt (e.g. TCC DB didn't exist on first puppet run).
           if $facts['running_in_test_kitchen'] != 'true' {
             exec { 'execute perms script':
-              command     => $perm_script,
-              subscribe   => File[$perm_script],
-              refreshonly => true,
-              user        => 'root',
+              command => $perm_script,
+              user    => 'root',
+              unless  => '/usr/bin/sqlite3 "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "SELECT count(*) FROM access WHERE client=\'/usr/bin/osascript\' AND service=\'kTCCServiceAppleEvents\';" 2>/dev/null | /usr/bin/grep -q "^[1-9]"',
+              require => File[$perm_script],
               # logoutput => true,
             }
           }
