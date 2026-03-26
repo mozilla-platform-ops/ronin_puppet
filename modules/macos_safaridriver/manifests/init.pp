@@ -54,20 +54,30 @@ class macos_safaridriver (
               # osascript directly into cltbld's GUI session. The applescript handles
               # its own semaphore so it is idempotent.
               $applescript = '/usr/local/bin/safari-enable-remote-automation.applescript'
-              $launchagent_plist = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari.enableautomation.plist"
+              # Store plist outside ~/Library/LaunchAgents/ so launchd does NOT
+              # auto-load it on login. Only puppet bootstraps it, and only after
+              # TCC entries are written. This avoids a race where launchd loads
+              # the agent before the user TCC DB entries exist.
+              $launchagent_plist = '/usr/local/lib/com.mozilla.safari.enableautomation.plist'
+              $launchagent_plist_old = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari.enableautomation.plist"
 
               file { $applescript:
                 content => file('macos_safaridriver/safari-enable-remote-automation.applescript'),
                 mode    => '0755',
               }
 
+              # Remove any previously deployed plist from LaunchAgents to prevent auto-load
+              file { $launchagent_plist_old:
+                ensure => absent,
+              }
+
               file { $launchagent_plist:
                 ensure  => file,
-                owner   => $user_running_safari,
-                group   => 'staff',
+                owner   => 'root',
+                group   => 'wheel',
                 mode    => '0644',
                 content => file('macos_safaridriver/com.mozilla.safari.enableautomation.plist'),
-                require => File[$applescript],
+                require => [File[$applescript], Exec['execute perms script']],
               }
 
               exec { 'execute enable remote automation script':
