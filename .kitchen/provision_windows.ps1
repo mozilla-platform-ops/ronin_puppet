@@ -11,6 +11,46 @@ function Invoke-AsSystem {
     $logPath = 'C:\Windows\Temp\kitchen-provision-system.log'
     $exitPath = 'C:\Windows\Temp\kitchen-provision-system.exitcode'
 
+    function Write-NewLogContent {
+        param(
+            [string]$Path,
+            [ref]$Offset
+        )
+
+        if (-not (Test-Path $Path)) {
+            return
+        }
+
+        $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+        try {
+            if ($stream.Length -lt $Offset.Value) {
+                $Offset.Value = 0
+            }
+
+            if ($stream.Length -eq $Offset.Value) {
+                return
+            }
+
+            $stream.Seek($Offset.Value, [System.IO.SeekOrigin]::Begin) | Out-Null
+            $reader = New-Object System.IO.StreamReader($stream)
+            try {
+                $content = $reader.ReadToEnd()
+                if ($content) {
+                    $content.TrimEnd("`r", "`n").Split(@("`r`n", "`n"), [System.StringSplitOptions]::None) | ForEach-Object {
+                        if ($_) {
+                            Write-Host $_
+                        }
+                    }
+                }
+            } finally {
+                $Offset.Value = $stream.Position
+                $reader.Dispose()
+            }
+        } finally {
+            $stream.Dispose()
+        }
+    }
+
     Copy-Item -Path $PSCommandPath -Destination $scriptPath -Force
 
     @(
@@ -31,16 +71,29 @@ function Invoke-AsSystem {
     Start-ScheduledTask -TaskName $taskName
 
     $deadline = (Get-Date).AddMinutes(50)
+    $logOffset = 0L
+    $lastHeartbeat = Get-Date
     while (-not (Test-Path $exitPath)) {
         if ((Get-Date) -gt $deadline) {
             throw 'Timed out waiting for SYSTEM provision task to finish.'
         }
+
+        Write-NewLogContent -Path $logPath -Offset ([ref]$logOffset)
+
+        $now = Get-Date
+        if (($now - $lastHeartbeat).TotalSeconds -ge 30) {
+            $taskState = (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue).State
+            if (-not $taskState) {
+                $taskState = 'Unknown'
+            }
+            Write-Host "SYSTEM provision task still running (state=$taskState, elapsed=$([int](($now - ($deadline.AddMinutes(-50))).TotalSeconds))s)..."
+            $lastHeartbeat = $now
+        }
+
         Start-Sleep -Seconds 5
     }
 
-    if (Test-Path $logPath) {
-        Get-Content -Path $logPath -ErrorAction SilentlyContinue | Write-Host
-    }
+    Write-NewLogContent -Path $logPath -Offset ([ref]$logOffset)
 
     $exitCode = $null
     $parseDeadline = (Get-Date).AddSeconds(30)
@@ -96,6 +149,16 @@ $env:HOMEDRIVE = "C:"
 $env:USERNAME = "Administrator"
 $env:USERPROFILE = "C:\Users\Administrator"
 
+# Ensure the Administrator temp directory exists. When running as SYSTEM the
+# profile folder may not have been fully created yet, and Facter/Chocolatey
+# will fail with "No such file or directory" when they try to stat it.
+$adminTemp = "C:\Users\Administrator\AppData\Local\Temp"
+if (-not (Test-Path $adminTemp)) {
+    New-Item -Path $adminTemp -ItemType Directory -Force | Out-Null
+}
+$env:TEMP = $adminTemp
+$env:TMP = $adminTemp
+
 # Download ronin_puppet at the current commit SHA
 Write-Host "Downloading ronin_puppet at ref $env:RONIN_REF..."
 $zipUrl = "https://github.com/mozilla-platform-ops/ronin_puppet/archive/$env:RONIN_REF.zip"
@@ -141,6 +204,39 @@ New-ItemProperty -Path $sourceKey -Name 'Repository' -Value $sourceRepo -Propert
 New-ItemProperty -Path $sourceKey -Name 'Branch' -Value $sourceBranch -PropertyType String -Force | Out-Null
 
 Write-Host "Seeded $roninKey (worker_pool_id=$workerPoolId, role=$env:PUPPET_ROLE, bootstrap_stage=$bootstrapStage)."
+
+# Pre-install Chocolatey with retry logic so the Puppet chocolatey module's
+# exec resource (which has a creates guard on choco.exe) skips its own
+# download from the flaky community feed.
+$chocoInstallDir = "$env:ProgramData\chocolatey"
+$chocoExe = "$chocoInstallDir\bin\choco.exe"
+if (-not (Test-Path $chocoExe)) {
+    $maxAttempts = 3
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        try {
+            Write-Host "Installing Chocolatey (attempt $attempt of $maxAttempts)..."
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+            Write-Host "Chocolatey installed."
+            break
+        } catch {
+            Write-Host "Chocolatey install attempt $attempt failed: $_"
+            if ($attempt -eq $maxAttempts) {
+                throw "Chocolatey installation failed after $maxAttempts attempts."
+            }
+            Start-Sleep -Seconds (10 * $attempt)
+        }
+    }
+}
+
+# Ensure ChocolateyInstall is set at machine level and in the current process
+# so Puppet's chocolateyversion fact can find choco.exe regardless of whether
+# we are running as SYSTEM or Administrator.
+[System.Environment]::SetEnvironmentVariable('ChocolateyInstall', $chocoInstallDir, 'Machine')
+$env:ChocolateyInstall = $chocoInstallDir
+if ($env:PATH -notlike "*$chocoInstallDir\bin*") {
+    $env:PATH = "$chocoInstallDir\bin;$env:PATH"
+}
 
 # Set Facter variables
 $env:FACTER_custom_win_role = $env:PUPPET_ROLE
