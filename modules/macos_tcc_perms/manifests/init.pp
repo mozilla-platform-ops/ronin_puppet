@@ -17,9 +17,10 @@ class macos_tcc_perms (
         # in CI, this tcc.db file doesn't exist yet, so skip running the script
         if $facts['running_in_test_kitchen'] != 'true' {
           exec { 'execute tcc perms script':
-            command => $tcc_script,
-            require => File[$tcc_script],
-            user    => 'root',
+            command     => $tcc_script,
+            subscribe   => File[$tcc_script],
+            refreshonly => true,
+            user        => 'root',
           }
         }
       }
