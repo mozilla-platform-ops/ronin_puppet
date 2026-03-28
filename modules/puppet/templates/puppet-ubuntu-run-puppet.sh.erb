@@ -106,17 +106,82 @@ function notify_telegraf {
     out=$(curl --fail --silent --show-error "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
 }
 
+function configure_git_pat_auth {
+    # GH PAT auth defaults to enabled
+    GH_PAT_AUTH=1
+    # if YQ_PRESENT=0, disable GH PAT auth
+    if [ "$YQ_PRESENT" = "0" ]; then
+        echo "yq-er not present, disabling GH PAT auth configuration"
+        GH_PAT_AUTH=0
+    fi
+    # add a way of disabling GH PAT AUTH (even if yq-er is present)
+    SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
+    if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
+        echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
+        # disable gh pat auth
+        GH_PAT_AUTH=0
+        # for this repo, unset any existing git config for extraHeader
+        git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
+    fi
+    # if GH_PAT_AUTH=1, proceed with configuring GH PAT auth
+    if [ "$GH_PAT_AUTH" = "1" ]; then
+        # check if keys are present in config file
+        # TODO: add actual key checking logic here
+        GH_PAT=$($YQ_BIN .github.pat /root/vault.yaml 2>/dev/null)
+        GH_PAT_USER=$($YQ_BIN .github.pat_user /root/vault.yaml 2>/dev/null)
+        # if they're both non-empty, set the extraHeader config
+        if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
+            # base64 encode the credentials
+            b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
+            # for this repo, set the git config for extraHeader
+            git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
+            echo "GitHub PAT authentication is enabled."
+        else
+            echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
+            # unset header if present (just this repo) (exit code 5 if not found)
+            git config --unset-all http.https://github.com/.extraHeader 2>/dev/null || echo "No existing GitHub PAT auth header to unset"
+        fi
+    fi
+}
+
+function reinit_working_dir {
+    echo "Re-initializing git repo from scratch..."
+    # Remove contents but stay in the directory (shell cwd)
+    rm -rf "${WORKING_DIR:?}"/* "${WORKING_DIR}"/.[!.]*
+    git init || return 1
+    git remote add origin "${PUPPET_REPO}" || return 1
+    configure_git_pat_auth
+}
+
 function update_puppet {
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
         git init || return 1
         git remote add origin "${PUPPET_REPO}" || return 1
+        configure_git_pat_auth
     fi
 
     # TODO: authenticate the remote actions
 
     # Fetch and checkout production branch
-    git fetch --all --prune || return 1
+    if ! git fetch --all --prune; then
+        echo "git fetch failed; checking for corrupted object files..."
+        empty_count=$(find .git/objects -type f -empty 2>/dev/null | wc -l)
+        if [ "$empty_count" -gt 0 ]; then
+            echo "Found $empty_count empty object file(s), removing..."
+            find .git/objects -type f -empty -delete
+            # Retry after minimal repair
+            if ! git fetch --all --prune; then
+                echo "git fetch still failing after removing empty objects; re-cloning..."
+                reinit_working_dir || return 1
+                git fetch --all --prune || return 1
+            fi
+        else
+            echo "No empty object files found; re-cloning..."
+            reinit_working_dir || return 1
+            git fetch --all --prune || return 1
+        fi
+    fi
     git checkout --force "origin/${PUPPET_BRANCH}" \
       || (
       git remote rm upstream
@@ -305,40 +370,7 @@ echo "ROLE: ${ROLE}"
 echo ""
 
 # GitHub PAT authentication setup
-#
-# GH PAT auth defaults to enabled
-GH_PAT_AUTH=1
-# if YQ_PRESENT=0, disable GH PAT auth
-if [ "$YQ_PRESENT" = "0" ]; then
-    echo "yq-er not present, disabling GH PAT auth configuration"
-    GH_PAT_AUTH=0
-fi
-# add a way of disabling GH PAT AUTH (even if yq-er is present)
-SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
-if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
-    echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
-    # disable gh pat auth
-    GH_PAT_AUTH=0
-    # for this repo, unset any existing git config for extraHeader
-    git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
-fi
-# if GH_PAT_AUTH=1, proceed with configuring GH PAT auth
-if [ "$GH_PAT_AUTH" = "1" ]; then
-    # check if keys are present in config file
-    # TODO: add actual key checking logic here
-    GH_PAT=$($YQ_BIN .github.pat /root/vault.yaml 2>/dev/null)
-    GH_PAT_USER=$($YQ_BIN .github.pat_user /root/vault.yaml 2>/dev/null)
-    # if they're both non-empty, set the extraHeader config
-    if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
-        # base64 encode the credentials
-        b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
-        # for this repo, set the git config for extraHeader
-        git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
-        echo "GitHub PAT authentication is enabled."
-    else
-        echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
-    fi
-fi
+configure_git_pat_auth
 
 # block_on_network
 
