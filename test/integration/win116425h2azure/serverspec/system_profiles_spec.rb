@@ -139,4 +139,26 @@ if x64_tester
       its(:stdout) { should match(/^1\s*$/) }
     end
   end
+
+  # Bug 2026458: First-logon animation and OOBE suppression for AVD SKU images
+  {
+    [uac_key, 'EnableFirstLogonAnimation'] => '0',
+    ['HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon', 'EnableFirstLogonAnimation'] => '0',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\OOBE', 'DisablePrivacyExperience'] => '1',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent', 'DisableWindowsConsumerFeatures'] => '1',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent', 'DisableSoftLanding'] => '1',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent', 'DisableCloudOptimizedContent'] => '1'
+  }.each do |(path, name), expected|
+    describe registry_value_command(path, name) do
+      its(:exit_status) { should eq 0 }
+      its(:stdout) { should match(/^#{expected}\s*$/) }
+    end
+  end
+
+  # Bug 2026458: VIDEOIDLE ACSettingIndex prevents GUID_SESSION_DISPLAY_STATUS PowerMonitorOff
+  video_idle_key = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\7516b95f-f776-4464-8c53-06167f40cc99\\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
+  describe registry_value_command(video_idle_key, 'ACSettingIndex') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^0\s*$/) }
+  end
 end

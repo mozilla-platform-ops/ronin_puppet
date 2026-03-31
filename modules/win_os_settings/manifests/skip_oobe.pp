@@ -55,4 +55,50 @@ class win_os_settings::skip_oobe {
     type   => 'dword',
     data   => 1,
   }
+
+  # Bug 2026458: Suppress first-logon animation and "Get Started" / privacy
+  # experience windows that pop open on AVD SKU images. These windows occlude
+  # Firefox test windows, causing the compositor to pause and reftests to
+  # time out waiting for MozAfterPaint.
+
+  # Disable the first-logon animation overlay
+  $system_policies_key = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"
+  registry_value { "${system_policies_key}\\EnableFirstLogonAnimation":
+    ensure => present,
+    type   => 'dword',
+    data   => 0,
+  }
+
+  $winlogon_key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon"
+  registry_value { "${winlogon_key}\\EnableFirstLogonAnimation":
+    ensure => present,
+    type   => 'dword',
+    data   => 0,
+  }
+
+  # Disable the privacy experience dialog on first login
+  $oobe_policies_key = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\OOBE"
+  registry_value { "${oobe_policies_key}\\DisablePrivacyExperience":
+    ensure => present,
+    type   => 'dword',
+    data   => 1,
+  }
+
+  # Suppress Content Delivery Manager "Get Started" and "Welcome" suggestions
+  $cdm_key = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent"
+  registry_value { "${cdm_key}\\DisableWindowsConsumerFeatures":
+    ensure => present,
+    type   => 'dword',
+    data   => 1,
+  }
+  registry_value { "${cdm_key}\\DisableSoftLanding":
+    ensure => present,
+    type   => 'dword',
+    data   => 1,
+  }
+  registry_value { "${cdm_key}\\DisableCloudOptimizedContent":
+    ensure => present,
+    type   => 'dword',
+    data   => 1,
+  }
 }
