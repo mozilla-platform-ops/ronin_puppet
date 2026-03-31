@@ -77,28 +77,38 @@ class win_os_settings::skip_oobe {
   }
 
   # Disable the privacy experience dialog on first login
-  $oobe_policies_key = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\OOBE"
-  registry_value { "${oobe_policies_key}\\DisablePrivacyExperience":
+  $oobe_policies_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\OOBE'
+  registry_key { $oobe_policies_key:
     ensure => present,
-    type   => 'dword',
-    data   => 1,
+  }
+  registry_value { "${oobe_policies_key}\\DisablePrivacyExperience":
+    ensure  => present,
+    type    => 'dword',
+    data    => 1,
+    require => Registry_key[$oobe_policies_key],
   }
 
   # Suppress Content Delivery Manager "Get Started" and "Welcome" suggestions
-  $cdm_key = "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent"
-  registry_value { "${cdm_key}\\DisableWindowsConsumerFeatures":
+  $cdm_key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+  registry_key { $cdm_key:
     ensure => present,
-    type   => 'dword',
-    data   => 1,
+  }
+  registry_value { "${cdm_key}\\DisableWindowsConsumerFeatures":
+    ensure  => present,
+    type    => 'dword',
+    data    => 1,
+    require => Registry_key[$cdm_key],
   }
   registry_value { "${cdm_key}\\DisableSoftLanding":
-    ensure => present,
-    type   => 'dword',
-    data   => 1,
+    ensure  => present,
+    type    => 'dword',
+    data    => 1,
+    require => Registry_key[$cdm_key],
   }
   registry_value { "${cdm_key}\\DisableCloudOptimizedContent":
-    ensure => present,
-    type   => 'dword',
-    data   => 1,
+    ensure  => present,
+    type    => 'dword',
+    data    => 1,
+    require => Registry_key[$cdm_key],
   }
 }
