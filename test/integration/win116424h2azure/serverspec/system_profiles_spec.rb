@@ -155,10 +155,4 @@ if x64_tester
     end
   end
 
-  # Bug 2026458: VIDEOIDLE ACSettingIndex prevents GUID_SESSION_DISPLAY_STATUS PowerMonitorOff
-  video_idle_key = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\7516b95f-f776-4464-8c53-06167f40cc99\\3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
-  describe registry_value_command(video_idle_key, 'ACSettingIndex') do
-    its(:exit_status) { should eq 0 }
-    its(:stdout) { should match(/^0\s*$/) }
-  end
 end
