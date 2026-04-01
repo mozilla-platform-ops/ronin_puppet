@@ -39,6 +39,7 @@ thermal = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\
 thermal_hp = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\check_thermal_hp.ps1
 worker_pool_id = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\worker_pool_id.ps1
 cpu_freq = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\cpu_freq.ps1
+cpu_perf = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\cpu_perf.ps1
 
 [/settings/external scripts/alias/cpu_5s]
 alias = cpu_5s
