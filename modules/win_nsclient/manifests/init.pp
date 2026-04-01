@@ -25,6 +25,12 @@ class win_nsclient::init (
     require => File[$nscp_dir],
   }
 
+  file { "${scripts_dir}\\cpu_freq.ps1":
+    content => file('win_nsclient/cpu_freq.ps1'),
+    require => File[$scripts_dir],
+    notify  => Service['nscp'],
+  }
+
   file { "${nscp_dir}\\nsclient.ini":
     content   => epp('win_nsclient/nsclient.ini.epp', {
       'server'    => $server,
