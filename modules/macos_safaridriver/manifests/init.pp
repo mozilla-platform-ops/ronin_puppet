@@ -78,7 +78,7 @@ class macos_safaridriver (
               }
 
               exec { 'execute enable remote automation script':
-                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${launchagent_plist}; fi; count=0; while [ \$count -lt 60 ] && ! /bin/test -f ${semaphore_file}; do sleep 2; count=\$((count+2)); done; /bin/test -f ${semaphore_file}'",
+                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${launchagent_plist}; fi; count=0; while [ \$count -lt 120 ] && ! /bin/bash -c \"test -f ${semaphore_file} && grep -q 1 ${semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${semaphore_file}'",
                 require => [File[$applescript], File[$launchagent_plist], Exec['execute perms script']],
                 cwd     => "/Users/${user_running_safari}",
                 unless  => "/bin/bash -c 'test -f ${semaphore_file} && grep -q 1 ${semaphore_file}'",
