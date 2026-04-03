@@ -30,7 +30,7 @@ packages_classes:
   - scres
   - telegraf
   - tooltool
-  - virt_audio_s3
+  # - virt_audio_s3  # TODO: re-enable once BlackHole install is fixed on macOS 15
   - virtualenv
   - wget
   - zstandard
