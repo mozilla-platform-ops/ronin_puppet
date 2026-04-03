@@ -19,6 +19,7 @@ class roles_profiles::roles::gecko_t_osx_1015_r8_staging {
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::packages_installed
   include roles_profiles::profiles::pipconf
+  include roles_profiles::profiles::power_management
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::safaridriver
   include roles_profiles::profiles::safariupdate
