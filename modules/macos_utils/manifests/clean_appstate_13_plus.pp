@@ -14,13 +14,21 @@ define macos_utils::clean_appstate_13_plus (
       mode    => '0500', # remove write permission
       require => Exec['create_macos_user'];
   }
+  file { "/Users/${user}/Library/Preferences":
+    ensure  => directory,
+    owner   => $user,
+    group   => $group,
+    mode    => '0700',
+    require => Exec['create_macos_user'],
+  }
+
   file {
     "/Users/${user}/Library/Preferences/.GlobalPreferences.plist":
       ensure  => file,
       owner   => $user,
       group   => $group,
       mode    => '0600',
-      require => Exec['create_macos_user'];
+      require => File["/Users/${user}/Library/Preferences"];
   }
 
   tidy {
@@ -37,7 +45,7 @@ define macos_utils::clean_appstate_13_plus (
     group   => $group,
     mode    => '0700',
     content => '',
-    #require => File["/Users/${account_username}/Library/Preferences/ByHost"];
+    require => File["/Users/${user}/Library/Preferences"],
   }
 
   file { "/Users/${user}/Library/Preferences/ByHost/com.apple.loginwindow.${::facts[system_profiler][hardware_uuid]}.plist":
