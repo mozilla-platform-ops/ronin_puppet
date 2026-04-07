@@ -130,6 +130,9 @@ groups:
       - macmini-m4-120.test.releng.mdc1.mozilla.com
       - macmini-m4-123.test.releng.mdc1.mozilla.com
       - macmini-m4-124.test.releng.mdc1.mozilla.com
+      - macmini-m4-193.test.releng.mdc1.mozilla.com
+      - macmini-m4-195.test.releng.mdc1.mozilla.com
+      - macmini-m4-196.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_3_b_osx_arm64
 
