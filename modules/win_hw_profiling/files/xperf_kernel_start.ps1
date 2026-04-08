@@ -65,7 +65,7 @@ $args = @(
   '-BufferSize','1024',
 
   '-start',     'usersession',
-  '-on',        'Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power',
+  '-on',        'Microsoft-Windows-Kernel-Power+Microsoft-Windows-Kernel-Processor-Power+Microsoft-JScript:0x3+c923f508-96e4-5515-e32c-7539d1b10504:0x6+d2d578d9-2936-45b6-a09f-30e32715f42d:0x10000',
   '-f',         $userEtl,
   '-BufferSize','1024'
 )
