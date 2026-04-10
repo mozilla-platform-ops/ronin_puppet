@@ -11,6 +11,46 @@ function Invoke-AsSystem {
     $logPath = 'C:\Windows\Temp\kitchen-provision-system.log'
     $exitPath = 'C:\Windows\Temp\kitchen-provision-system.exitcode'
 
+    function Write-NewLogContent {
+        param(
+            [string]$Path,
+            [ref]$Offset
+        )
+
+        if (-not (Test-Path $Path)) {
+            return
+        }
+
+        $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+        try {
+            if ($stream.Length -lt $Offset.Value) {
+                $Offset.Value = 0
+            }
+
+            if ($stream.Length -eq $Offset.Value) {
+                return
+            }
+
+            $stream.Seek($Offset.Value, [System.IO.SeekOrigin]::Begin) | Out-Null
+            $reader = New-Object System.IO.StreamReader($stream)
+            try {
+                $content = $reader.ReadToEnd()
+                if ($content) {
+                    $content.TrimEnd("`r", "`n").Split(@("`r`n", "`n"), [System.StringSplitOptions]::None) | ForEach-Object {
+                        if ($_) {
+                            Write-Host $_
+                        }
+                    }
+                }
+            } finally {
+                $Offset.Value = $stream.Position
+                $reader.Dispose()
+            }
+        } finally {
+            $stream.Dispose()
+        }
+    }
+
     Copy-Item -Path $PSCommandPath -Destination $scriptPath -Force
 
     @(
@@ -31,16 +71,29 @@ function Invoke-AsSystem {
     Start-ScheduledTask -TaskName $taskName
 
     $deadline = (Get-Date).AddMinutes(50)
+    $logOffset = 0L
+    $lastHeartbeat = Get-Date
     while (-not (Test-Path $exitPath)) {
         if ((Get-Date) -gt $deadline) {
             throw 'Timed out waiting for SYSTEM provision task to finish.'
         }
+
+        Write-NewLogContent -Path $logPath -Offset ([ref]$logOffset)
+
+        $now = Get-Date
+        if (($now - $lastHeartbeat).TotalSeconds -ge 30) {
+            $taskState = (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue).State
+            if (-not $taskState) {
+                $taskState = 'Unknown'
+            }
+            Write-Host "SYSTEM provision task still running (state=$taskState, elapsed=$([int](($now - ($deadline.AddMinutes(-50))).TotalSeconds))s)..."
+            $lastHeartbeat = $now
+        }
+
         Start-Sleep -Seconds 5
     }
 
-    if (Test-Path $logPath) {
-        Get-Content -Path $logPath -ErrorAction SilentlyContinue | Write-Host
-    }
+    Write-NewLogContent -Path $logPath -Offset ([ref]$logOffset)
 
     $exitCode = $null
     $parseDeadline = (Get-Date).AddSeconds(30)
