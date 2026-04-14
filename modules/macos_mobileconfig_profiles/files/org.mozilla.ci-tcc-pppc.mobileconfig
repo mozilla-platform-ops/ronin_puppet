@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>PayloadDescription</key>
+			<string>Grants TCC system-level permissions to CI worker binaries. Replaces system TCC database sqlite3 writes that fail on SIP-enabled macOS 14/15.</string>
+			<key>PayloadDisplayName</key>
+			<string>Mozilla CI TCC Permissions</string>
+			<key>PayloadEnabled</key>
+			<true/>
+			<key>PayloadIdentifier</key>
+			<string>org.mozilla.ci-tcc-pppc.payload</string>
+			<key>PayloadOrganization</key>
+			<string>Mozilla</string>
+			<key>PayloadType</key>
+			<string>com.apple.TCC.configuration-profile-policy</string>
+			<key>PayloadUUID</key>
+			<string>C4D5E6F7-A8B9-4C0D-8E1F-2A3B4C5D6E7F</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>Services</key>
+			<dict>
+				<key>SystemPolicyAllFiles</key>
+				<array>
+					<dict>
+						<key>Identifier</key>
+						<string>/usr/libexec/sshd-keygen-wrapper</string>
+						<key>IdentifierType</key>
+						<string>path</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.sshd-keygen-wrapper" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+					<dict>
+						<key>Identifier</key>
+						<string>/usr/sbin/sshd</string>
+						<key>IdentifierType</key>
+						<string>path</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.sshd" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+				</array>
+				<key>Accessibility</key>
+				<array>
+					<dict>
+						<key>Identifier</key>
+						<string>/usr/bin/osascript</string>
+						<key>IdentifierType</key>
+						<string>path</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.osascript" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+					<dict>
+						<key>Identifier</key>
+						<string>com.apple.Terminal</string>
+						<key>IdentifierType</key>
+						<string>bundleID</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.Terminal" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+					<dict>
+						<key>Identifier</key>
+						<string>/usr/libexec/sshd-keygen-wrapper</string>
+						<key>IdentifierType</key>
+						<string>path</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.sshd-keygen-wrapper" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+				</array>
+				<key>AppleEvents</key>
+				<array>
+					<dict>
+						<key>Identifier</key>
+						<string>com.apple.Terminal</string>
+						<key>IdentifierType</key>
+						<string>bundleID</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.Terminal" and anchor apple</string>
+						<key>AEReceiverIdentifier</key>
+						<string>com.apple.systemevents</string>
+						<key>AEReceiverIdentifierType</key>
+						<string>bundleID</string>
+						<key>AEReceiverCodeRequirement</key>
+						<string>identifier "com.apple.systemevents" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+					<dict>
+						<key>Identifier</key>
+						<string>/usr/libexec/sshd-keygen-wrapper</string>
+						<key>IdentifierType</key>
+						<string>path</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.sshd-keygen-wrapper" and anchor apple</string>
+						<key>AEReceiverIdentifier</key>
+						<string>com.apple.systemevents</string>
+						<key>AEReceiverIdentifierType</key>
+						<string>bundleID</string>
+						<key>AEReceiverCodeRequirement</key>
+						<string>identifier "com.apple.systemevents" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Privacy Preferences Policy Control for Mozilla CI workers (macOS 14/15, SIP enabled). Deployed via SimpleMDM.</string>
+	<key>PayloadDisplayName</key>
+	<string>Mozilla CI TCC Permissions</string>
+	<key>PayloadIdentifier</key>
+	<string>org.mozilla.ci-tcc-pppc</string>
+	<key>PayloadOrganization</key>
+	<string>Mozilla</string>
+	<key>PayloadRemovalDisallowed</key>
+	<false/>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>A1B2C3D4-E5F6-4789-ABCD-EF0123456789</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>
