@@ -36,4 +36,9 @@ file name = nsclient.log
 screen_res = powershell.exe -ExecutionPolicy RemoteSigned -File scripts\screen_res.ps1
 worker_bootstrap_stage = powershell.exe -ExecutionPolicy RemoteSigned -File scripts\worker_bootstrap_stage.ps1
 thermal = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\check_thermal.ps1
+thermal_hp = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\check_thermal_hp.ps1
 worker_pool_id = powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File scripts\worker_pool_id.ps1
+
+[/settings/external scripts/alias/cpu_5s]
+alias = cpu_5s
+command = check_cpu time=5s
