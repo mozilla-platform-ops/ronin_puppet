@@ -28,6 +28,8 @@ pre-commit run shellcheck --all-files
 
 puppet-lint runs with `--fix --fail-on-warnings --no-documentation-check --no-slash_comments --no-unquoted_resource_title --no-140chars-check`.
 
+Pre-commit also validates ERB/EPP templates, runs shellcheck, terraform-fmt, and a custom `templated_script_checker.py` hook.
+
 ### Test Kitchen (Docker)
 ```bash
 # Converge a specific suite (Linux)
@@ -47,6 +49,8 @@ puppet-lint runs with `--fix --fail-on-warnings --no-documentation-check --no-sl
 ```
 
 Docker kitchen suites tested in CI: `linux-perf-ubuntu-1804`, `linux-perf-ubuntu-2404`, `linux-netperf-ubuntu-1804`, `bitbar-ubuntu-2204`.
+
+`bin/kitchen_docker` is a wrapper around `bundle exec kitchen` that handles arm64 detection, optional HTTP proxy injection (localhost:8123), and APT cache bind mounts. It requires `yq` and creates a Python venv for YAML manipulation.
 
 ### Test Kitchen (macOS / Windows)
 macOS and Windows use separate kitchen configs (`.kitchen_configs/kitchen.circleci.yml` and `.kitchen_configs/kitchen.windows.yml`). These run in CI via GitHub Actions but are not typically run locally.
@@ -71,17 +75,25 @@ Role → includes Profiles → instantiates Modules → reads Hiera data
 
 ### Hiera Data Hierarchy
 
-Defined in `hiera.yaml` (Linux/macOS) and `win_hiera.yaml` (Windows):
-
+**Linux/macOS** (`hiera.yaml`) — role classification via `puppet_role` fact:
 ```
 data/
-  secrets/vault.yaml          # Vault-generated secrets
+  secrets/vault.yaml          # Vault-generated secrets (highest priority)
   roles/<puppet_role>.yaml    # Per-role overrides (worker versions, packages, pool IDs)
-  os/<os_family>.yaml         # Per-OS defaults (Windows.yaml, Darwin.yaml, Debian.yaml)
+  os/<os_family>.yaml         # Per-OS defaults (Darwin.yaml, Debian.yaml)
   common.yaml                 # Global defaults (NTP, users, SSH keys, signing config)
 ```
 
-Role classification comes from the `puppet_role` fact (Linux/macOS) or `custom_win_role` fact (Windows).
+**Windows** (`win_hiera.yaml`) — role classification via `custom_win_gw_workertype` fact:
+```
+data/
+  os/Windows/worker/<custom_win_gw_workertype>.yaml  # Per-worker-type overrides (highest priority)
+  os/Windows.yaml             # Windows-wide defaults
+  secrets/vault.yaml          # Vault-generated secrets
+  common.yaml                 # Global defaults
+```
+
+Note: Windows hierarchy differs — worker-type data takes priority over secrets, and there is no `roles/` level.
 
 ### External Modules
 
@@ -93,9 +105,9 @@ Role classification comes from the `puppet_role` fact (Linux/macOS) or `custom_w
 
 ### Testing
 
-- **InSpec tests**: `test/integration/<suite>/inspec/` — used for Linux suites
-- **Serverspec tests**: `test/integration/<suite>/serverspec/` — used for macOS/Windows suites
-- **Terraform fixtures**: Some test suites (e.g., `mac_v3_signing_dep`) include Terraform configs for provisioning test infrastructure
+- **InSpec tests**: `test/integration/<suite>/inspec/` — Linux suites (linux-perf, linux-netperf, bitbar)
+- **Serverspec tests**: `test/integration/<suite>/serverspec/` — macOS and Windows suites
+- **Terraform fixtures**: Some macOS test suites (e.g., `mac_v3_signing_dep`, `gecko_t_osx_*`) include Terraform configs for provisioning test infrastructure
 
 ### CI Workflows (`.github/workflows/`)
 
@@ -104,8 +116,10 @@ Role classification comes from the `puppet_role` fact (Linux/macOS) or `custom_w
 | `pre-commit.yml` | Push/PR to master | Runs all pre-commit hooks |
 | `r10k.yml` | Push/PR to master | Validates Puppetfile dependencies |
 | `kitchen-linux.yml` | Push/PR to master | Docker-based Kitchen converge+verify for Linux suites |
-| `kitchen-macos.yml` | Push/PR to master | Kitchen tests for macOS roles |
+| `kitchen-macos.yml` | Push/PR to master | Kitchen tests for macOS roles on native runners |
 | `kitchen-windows.yml` | Push/PR to master | Azure-based Kitchen tests for Windows roles |
+
+All workflows skip draft PRs and use SHA-pinned actions.
 
 ### Provisioners
 
