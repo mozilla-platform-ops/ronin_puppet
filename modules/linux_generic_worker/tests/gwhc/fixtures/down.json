@@ -1,0 +1,14 @@
+{
+  "overall": "fail",
+  "host": "fixture-down",
+  "ts": "2026-04-20T00:00:00+00:00",
+  "warnings": [],
+  "checks": [
+    {"name": "clock_skew", "status": "pass", "detail": "skew 0.3s", "data": {}},
+    {"name": "disk_free", "status": "pass", "detail": "/: 42.0GB", "data": {}},
+    {"name": "puppet", "status": "fail", "detail": "last run failed (exit_code=1)", "data": {"success": false, "exit_code": 1}},
+    {"name": "worker_runner_reporting", "status": "pass", "detail": "running (pid 999), logs recent (journal)", "data": {}},
+    {"name": "generic_worker_process", "status": "pass", "detail": "running (pid 1234) — idle", "data": {"pids": [1234], "task_state": "idle"}},
+    {"name": "task_dir_size", "status": "pass", "detail": "0.1GB used", "data": {}}
+  ]
+}

@@ -409,14 +409,64 @@ def overall(results):
     return FAIL if any(r["status"] == FAIL for r in results) else PASS
 
 
+def _by_name(results, name):
+    for r in results:
+        if r["name"] == name:
+            return r
+    return None
+
+
+def summarize(results):
+    puppet = _by_name(results, "puppet") or {}
+    gwp    = _by_name(results, "generic_worker_process") or {}
+    wrr    = _by_name(results, "worker_runner_reporting") or {}
+    pdata  = puppet.get("data", {})
+    gdata  = gwp.get("data", {})
+
+    if puppet.get("status") == FAIL:
+        return "DOWN", puppet.get("detail", "puppet check failed")
+
+    if pdata.get("done_sentinel") == "missing":
+        if not gdata.get("pids"):
+            return "PROVISIONING", "puppet running, g-w waiting to start"
+        return "PROVISIONING", "puppet running, g-w up"
+
+    if gwp.get("status") == FAIL:
+        return "DEGRADED", f"g-w {gwp.get('detail', 'down')}, puppet ok"
+    if wrr.get("status") == FAIL:
+        return "DEGRADED", "start-worker missing, g-w ok"
+
+    if gdata.get("task_state") == "task running":
+        n = gdata.get("child_procs", "?")
+        load1 = (gdata.get("load_avg") or {}).get("1m", "?")
+        return "WORKING", f"g-w running task ({n} children, load {load1})"
+
+    ts = gdata.get("task_state", "unknown")
+    if ts == "idle":
+        return "IDLE", "g-w waiting for tasks"
+    return "IDLE", f"g-w up (task state: {ts})"
+
+
+_STATE_COLOR = {
+    "PROVISIONING": yellow,
+    "WORKING":      green,
+    "IDLE":         green,
+    "DEGRADED":     yellow,
+    "DOWN":         red,
+}
+
+
 def _format_detail(detail):
     return re.sub(r"(role=)(\S+)", lambda m: m.group(1) + bold(m.group(2)), detail)
 
 
 def print_json(results, warnings):
     check_warns = [f"{r['name']}: {r['detail']}" for r in results if r["status"] == WARN]
+    state, summary = summarize(results)
     out = {
         "overall": overall(results),
+        "state": state,
+        "summary": summary,
         "host": socket.gethostname(),
         "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "warnings": warnings + check_warns,
@@ -433,6 +483,9 @@ def print_human(results, warnings):
         s = r["status"]
         marker = green("[PASS]") if s == PASS else yellow("[WARN]") if s == WARN else red("[FAIL]")
         print(f"{marker}  {r['name'].ljust(w)}  {_format_detail(r['detail'])}")
+    state, qualifier = summarize(results)
+    color = _STATE_COLOR.get(state, lambda s: s)
+    print(f"\nState: {bold(color(state))}  ({qualifier})")
     print()
     ov = overall(results)
     msg = "Overall: PASS" if ov == PASS else "Overall: FAIL"
@@ -452,13 +505,23 @@ def main():
         epilog="Exit 0 if all checks pass or warn. Exit 1 if any check fails.",
     )
     parser.add_argument("--json", action="store_true", help="emit JSON report to stdout")
+    parser.add_argument(
+        "--replay", metavar="PATH",
+        help="read a prior --json snapshot (or '-' for stdin) and re-render without running checks",
+    )
     args = parser.parse_args()
 
     warnings = []
-    if os.geteuid() != 0:
-        warnings.append("not running as root — journalctl checks will return 'unknown' (run with sudo)")
-
-    results = run_checks()
+    if args.replay:
+        src = sys.stdin if args.replay == "-" else open(args.replay)
+        with src as f:
+            snapshot = json.load(f)
+        results = snapshot["checks"]
+        warnings = snapshot.get("warnings", [])
+    else:
+        if os.geteuid() != 0:
+            warnings.append("not running as root — journalctl checks will return 'unknown' (run with sudo)")
+        results = run_checks()
     if args.json:
         print_json(results, warnings)
     else:
