@@ -153,11 +153,31 @@ def check_disk_free():
 def check_generic_worker_process():
     pids = find_procs_by_name("generic-worker")
     data = {"pids": pids}
-    if len(pids) == 1:
-        return PASS, f"running (pid {pids[0]})", data
     if len(pids) == 0:
         return FAIL, "not running", data
-    return FAIL, f"{len(pids)} processes found (expected 1): pids {pids}", data
+    if len(pids) > 1:
+        return FAIL, f"{len(pids)} processes found (expected 1): pids {pids}", data
+
+    task_state = _gw_task_state()
+    data["task_state"] = task_state
+    return PASS, f"running (pid {pids[0]}) — {task_state}", data
+
+
+def _gw_task_state():
+    try:
+        r = subprocess.run(
+            ["journalctl", "-t", "generic-worker", "-n", "10", "--no-pager"],
+            capture_output=True, text=True, timeout=5,
+        )
+        lines = r.stdout.strip().splitlines()
+        for line in reversed(lines):
+            if "No task claimed" in line:
+                return "idle"
+            if "Executing command" in line or "Starting task feature" in line:
+                return "task running"
+    except Exception:
+        pass
+    return "unknown"
 
 
 def check_worker_runner_reporting():
