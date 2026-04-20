@@ -284,6 +284,33 @@ def check_puppet():
 
 # ── report ────────────────────────────────────────────────────────────────────
 
+REMEDIATIONS = {
+    "disk_free": (
+        "sudo /usr/sbin/cltbld-and-apt-cleaner.sh  "
+        "(cleans .mozbuild, caches, apt; reboots if >70% full)\n"
+        "  manual targets: /home/cltbld/.mozbuild  /home/cltbld/caches  "
+        "/home/cltbld/tasks  /var/log"
+    ),
+    "task_dir_size": (
+        "task dir is large; may fill disk soon\n"
+        "  manual: sudo rm -rf /home/cltbld/tasks/*"
+    ),
+    "generic_worker_process": (
+        "check logs: /var/log/genericworker/  "
+        "or: journalctl -t generic-worker -n 50"
+    ),
+    "worker_runner_reporting": (
+        "check: /var/log/genericworker/  "
+        "or: journalctl -t generic-worker -n 50"
+    ),
+    "clock_skew": (
+        "fix: sudo ntpd -q -g  (forces clock sync, allows large skew)"
+    ),
+    "puppet": (
+        "check: sudo cat /etc/puppet/last_run_metadata.json"
+    ),
+}
+
 CHECKS = [
     ("clock_skew",              check_clock_skew),
     ("disk_free",               check_disk_free),
@@ -322,6 +349,9 @@ def print_human(results):
     if ov == FAIL:
         first_fail = next(r for r in results if r["status"] == FAIL)
         print(f"\n  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
+        hint = REMEDIATIONS.get(first_fail["name"])
+        if hint:
+            print(f"  → try: {hint}")
 
 
 def print_json(results):
