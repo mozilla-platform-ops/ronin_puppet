@@ -8,6 +8,7 @@ import datetime
 import email.utils
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -408,22 +409,8 @@ def overall(results):
     return FAIL if any(r["status"] == FAIL for r in results) else PASS
 
 
-def print_human(results):
-    w = max(len(r["name"]) for r in results)
-    for r in results:
-        s = r["status"]
-        marker = green("[PASS]") if s == PASS else yellow("[WARN]") if s == WARN else red("[FAIL]")
-        print(f"{marker}  {r['name'].ljust(w)}  {r['detail']}")
-    print()
-    ov = overall(results)
-    msg = "Overall: PASS" if ov == PASS else "Overall: FAIL"
-    print(bold(green(msg)) if ov == PASS else bold(red(msg)))
-    if ov == FAIL:
-        first_fail = next(r for r in results if r["status"] == FAIL)
-        print(f"\n  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
-        hint = REMEDIATIONS.get(first_fail["name"])
-        if hint:
-            print(f"  → try: {hint}")
+def _format_detail(detail):
+    return re.sub(r"(role=)(\S+)", lambda m: m.group(1) + bold(m.group(2)), detail)
 
 
 def print_json(results, warnings):
@@ -445,7 +432,7 @@ def print_human(results, warnings):
     for r in results:
         s = r["status"]
         marker = green("[PASS]") if s == PASS else yellow("[WARN]") if s == WARN else red("[FAIL]")
-        print(f"{marker}  {r['name'].ljust(w)}  {r['detail']}")
+        print(f"{marker}  {r['name'].ljust(w)}  {_format_detail(r['detail'])}")
     print()
     ov = overall(results)
     msg = "Overall: PASS" if ov == PASS else "Overall: FAIL"
