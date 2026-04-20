@@ -204,7 +204,7 @@ def _gw_task_state():
     try:
         r = subprocess.run(
             ["journalctl", "-t", "generic-worker", "-n", "50", "--no-pager"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True, text=True, timeout=10,
         )
         lines = r.stdout.strip().splitlines()
         for line in reversed(lines):
@@ -212,9 +212,11 @@ def _gw_task_state():
                 return "idle"
             if "Executing command" in line or "Starting task feature" in line:
                 return "task running"
-    except Exception:
-        pass
-    return "unknown"
+        if not lines:
+            return "unknown (no journal output)"
+    except Exception as e:
+        return f"unknown (journalctl error: {e})"
+    return "unknown (no matching log pattern)"
 
 
 def check_worker_runner_reporting():
