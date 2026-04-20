@@ -1,0 +1,352 @@
+#!/usr/bin/env python3
+# Read-only health check for Linux Taskcluster generic-worker hosts.
+# Usage: gwhc [--json]
+# Exit 0 if all checks pass/warn, 1 if any fail.
+
+import argparse
+import datetime
+import email.utils
+import json
+import os
+import socket
+import subprocess
+import sys
+import urllib.request
+
+# ── constants ─────────────────────────────────────────────────────────────────
+
+PUPPET_METADATA = "/etc/puppet/last_run_metadata.json"
+PUPPET_DONE_SENTINEL = "/tmp/puppet_run_done"
+PUPPET_MAX_AGE_HOURS = 24
+
+TASK_DIR = "/home/cltbld/tasks"
+TASK_DIR_WARN_GB = 20
+TASK_DIR_FAIL_GB = 40
+
+GW_LOG_DIR = "/var/log/genericworker"
+GW_LOG_STALE_MINUTES = 15
+
+CLOCK_REFERENCE_URL = "https://taskcluster.net"
+CLOCK_WARN_SECONDS = 60
+CLOCK_FAIL_SECONDS = 300
+
+DISK_MOUNTS = ["/", "/var", "/home"]
+DISK_FAIL_FREE_GB = 5
+DISK_FAIL_FREE_PCT = 10
+
+PASS = "pass"
+WARN = "warn"
+FAIL = "fail"
+
+# ── display ───────────────────────────────────────────────────────────────────
+
+_use_color = sys.stdout.isatty()
+
+
+def _c(text, code):
+    return f"\033[{code}m{text}\033[0m" if _use_color else text
+
+
+def green(t):
+    return _c(t, "32")
+
+
+def yellow(t):
+    return _c(t, "33")
+
+
+def red(t):
+    return _c(t, "31")
+
+
+def bold(t):
+    return _c(t, "1")
+
+
+# ── process detection (stdlib /proc, no psutil) ───────────────────────────────
+
+def find_procs_by_name(name):
+    """Return list of pids whose comm or argv[0] basename matches name."""
+    pids = []
+    try:
+        for entry in os.scandir("/proc"):
+            if not entry.name.isdigit():
+                continue
+            pid = int(entry.name)
+            try:
+                with open(f"/proc/{pid}/comm") as f:
+                    if f.read().strip() == name:
+                        pids.append(pid)
+                        continue
+            except OSError:
+                continue
+            try:
+                with open(f"/proc/{pid}/cmdline", "rb") as f:
+                    argv0 = f.read().split(b"\x00")[0]
+                if os.path.basename(argv0.decode("utf-8", "replace")) == name:
+                    pids.append(pid)
+            except OSError:
+                pass
+    except OSError:
+        pass
+    return pids
+
+
+# ── checks ────────────────────────────────────────────────────────────────────
+
+def check_clock_skew():
+    try:
+        req = urllib.request.Request(CLOCK_REFERENCE_URL, method="HEAD")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            date_hdr = resp.headers.get("Date")
+        if not date_hdr:
+            return WARN, "no Date header in response", {}
+        remote = email.utils.parsedate_to_datetime(date_hdr)
+        local = datetime.datetime.now(datetime.timezone.utc)
+        skew = abs((local - remote).total_seconds())
+        data = {"skew_seconds": round(skew, 1), "reference": CLOCK_REFERENCE_URL}
+        if skew > CLOCK_FAIL_SECONDS:
+            return FAIL, f"clock skew {skew:.0f}s (>{CLOCK_FAIL_SECONDS}s)", data
+        if skew > CLOCK_WARN_SECONDS:
+            return WARN, f"clock skew {skew:.0f}s (>{CLOCK_WARN_SECONDS}s)", data
+        return PASS, f"skew {skew:.1f}s", data
+    except Exception as e:
+        return WARN, f"could not reach {CLOCK_REFERENCE_URL}: {e}", {}
+
+
+def check_disk_free():
+    results = {}
+    failures = []
+    seen_devs = set()
+    for mount in DISK_MOUNTS:
+        if not os.path.exists(mount):
+            continue
+        try:
+            dev = os.stat(mount).st_dev
+            if dev in seen_devs:
+                continue
+            seen_devs.add(dev)
+            st = os.statvfs(mount)
+            total = st.f_frsize * st.f_blocks
+            if total == 0:
+                continue  # pseudo/automount filesystem
+            free = st.f_frsize * st.f_bavail
+            pct = free / total * 100
+            free_gb = free / 1024 ** 3
+            results[mount] = {
+                "free_gb": round(free_gb, 1),
+                "free_pct": round(pct, 1),
+                "total_gb": round(total / 1024 ** 3, 1),
+            }
+            if free_gb < DISK_FAIL_FREE_GB or pct < DISK_FAIL_FREE_PCT:
+                failures.append(f"{mount}: {free_gb:.1f}GB ({pct:.0f}% free)")
+        except OSError as e:
+            results[mount] = {"error": str(e)}
+    if failures:
+        return FAIL, "low disk: " + "; ".join(failures), results
+    summary = ", ".join(
+        f"{m}: {v['free_gb']}GB" for m, v in results.items() if "free_gb" in v
+    )
+    return PASS, summary, results
+
+
+def check_generic_worker_process():
+    pids = find_procs_by_name("generic-worker")
+    data = {"pids": pids}
+    if len(pids) == 1:
+        return PASS, f"running (pid {pids[0]})", data
+    if len(pids) == 0:
+        return FAIL, "not running", data
+    return FAIL, f"{len(pids)} processes found (expected 1): pids {pids}", data
+
+
+def check_worker_runner_reporting():
+    # TODO: add --check-tc-api flag to query queue.taskcluster.net for
+    # lastDateActive using workerPoolId + workerId from /etc/start-worker.yml.
+    pids = find_procs_by_name("start-worker")
+    data = {"start_worker_pids": pids, "log_dir": GW_LOG_DIR}
+
+    log_fresh = False
+    log_age_min = None
+
+    if os.path.isdir(GW_LOG_DIR):
+        try:
+            files = [e for e in os.scandir(GW_LOG_DIR) if e.is_file()]
+            if files:
+                newest = max(files, key=lambda e: e.stat().st_mtime)
+                age_s = datetime.datetime.now().timestamp() - newest.stat().st_mtime
+                log_age_min = round(age_s / 60, 1)
+                data["log_file"] = newest.path
+                data["log_age_minutes"] = log_age_min
+                log_fresh = log_age_min <= GW_LOG_STALE_MINUTES
+        except OSError:
+            pass
+    else:
+        # fall back to journalctl when svlogd log dir doesn't exist
+        try:
+            r = subprocess.run(
+                [
+                    "journalctl", "-t", "generic-worker",
+                    "--since", f"{GW_LOG_STALE_MINUTES} minutes ago",
+                    "-n", "1", "--no-pager",
+                ],
+                capture_output=True, text=True, timeout=5,
+            )
+            log_fresh = bool(r.stdout.strip())
+            data["journal_recent"] = log_fresh
+        except Exception as e:
+            data["journal_error"] = str(e)
+
+    if not pids:
+        return FAIL, "start-worker process not found", data
+    if not log_fresh:
+        age_str = f"{log_age_min}min" if log_age_min is not None else "unknown"
+        return WARN, f"process alive (pid {pids[0]}) but logs {age_str} old", data
+    return PASS, f"running (pid {pids[0]}), logs {log_age_min}min old", data
+
+
+def _shallow_dir_size(path):
+    """Sum sizes of files one level deep inside path (task subdirs)."""
+    total = 0
+    try:
+        with os.scandir(path) as top:
+            for entry in top:
+                try:
+                    if entry.is_dir(follow_symlinks=False):
+                        try:
+                            with os.scandir(entry.path) as sub:
+                                for f in sub:
+                                    try:
+                                        total += f.stat(follow_symlinks=False).st_size
+                                    except OSError:
+                                        pass
+                        except OSError:
+                            pass
+                    else:
+                        total += entry.stat(follow_symlinks=False).st_size
+                except OSError:
+                    pass
+    except OSError:
+        pass
+    return total
+
+
+def check_task_dir_size():
+    if not os.path.isdir(TASK_DIR):
+        return PASS, f"{TASK_DIR} absent (clean)", {}
+    used_gb = _shallow_dir_size(TASK_DIR) / 1024 ** 3
+    data = {"task_dir": TASK_DIR, "used_gb": round(used_gb, 2)}
+    if used_gb > TASK_DIR_FAIL_GB:
+        return FAIL, f"{used_gb:.1f}GB used (>{TASK_DIR_FAIL_GB}GB)", data
+    if used_gb > TASK_DIR_WARN_GB:
+        return WARN, f"{used_gb:.1f}GB used (>{TASK_DIR_WARN_GB}GB)", data
+    return PASS, f"{used_gb:.1f}GB used", data
+
+
+def check_puppet():
+    data = {"metadata_path": PUPPET_METADATA}
+    if not os.path.exists(PUPPET_METADATA):
+        return FAIL, f"{PUPPET_METADATA} not found", data
+    try:
+        with open(PUPPET_METADATA) as f:
+            meta = json.load(f)
+    except Exception as e:
+        return FAIL, f"could not parse metadata: {e}", data
+
+    for field in ("ts", "success", "exit_code", "duration_s", "git_sha", "role"):
+        if field in meta:
+            data[field] = meta[field]
+
+    if not meta.get("success", False):
+        return FAIL, f"last run failed (exit_code={meta.get('exit_code', '?')})", data
+
+    ts_str = meta.get("ts")
+    if not ts_str:
+        return WARN, "success=true but no timestamp", data
+
+    try:
+        ts = datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+        age_h = (datetime.datetime.now(datetime.timezone.utc) - ts).total_seconds() / 3600
+        data["age_hours"] = round(age_h, 1)
+        if age_h > PUPPET_MAX_AGE_HOURS:
+            return FAIL, f"last run {age_h:.1f}h ago (>{PUPPET_MAX_AGE_HOURS}h)", data
+    except Exception as e:
+        return WARN, f"could not parse timestamp '{ts_str}': {e}", data
+
+    if not os.path.exists(PUPPET_DONE_SENTINEL):
+        data["done_sentinel"] = "missing"
+        return WARN, f"success=true but {PUPPET_DONE_SENTINEL} missing", data
+
+    data["done_sentinel"] = "present"
+    role = meta.get("role", "?")
+    return PASS, f"passed {age_h:.1f}h ago (role={role})", data
+
+
+# ── report ────────────────────────────────────────────────────────────────────
+
+CHECKS = [
+    ("clock_skew",              check_clock_skew),
+    ("disk_free",               check_disk_free),
+    ("generic_worker_process",  check_generic_worker_process),
+    ("worker_runner_reporting", check_worker_runner_reporting),
+    ("task_dir_size",           check_task_dir_size),
+    ("puppet",                  check_puppet),
+]
+
+
+def run_checks():
+    results = []
+    for name, fn in CHECKS:
+        try:
+            status, detail, data = fn()
+        except Exception as e:
+            status, detail, data = FAIL, f"check raised exception: {e}", {}
+        results.append({"name": name, "status": status, "detail": detail, "data": data})
+    return results
+
+
+def overall(results):
+    return FAIL if any(r["status"] == FAIL for r in results) else PASS
+
+
+def print_human(results):
+    w = max(len(r["name"]) for r in results)
+    for r in results:
+        s = r["status"]
+        marker = green("[PASS]") if s == PASS else yellow("[WARN]") if s == WARN else red("[FAIL]")
+        print(f"{marker}  {r['name'].ljust(w)}  {r['detail']}")
+    print()
+    ov = overall(results)
+    msg = "Overall: PASS" if ov == PASS else "Overall: FAIL"
+    print(bold(green(msg)) if ov == PASS else bold(red(msg)))
+
+
+def print_json(results):
+    out = {
+        "overall": overall(results),
+        "host": socket.gethostname(),
+        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "checks": results,
+    }
+    print(json.dumps(out, indent=2))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Read-only health check for Linux Taskcluster generic-worker hosts.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Exit 0 if all checks pass or warn. Exit 1 if any check fails.",
+    )
+    parser.add_argument("--json", action="store_true", help="emit JSON report to stdout")
+    args = parser.parse_args()
+
+    results = run_checks()
+    if args.json:
+        print_json(results)
+    else:
+        print_human(results)
+    sys.exit(0 if overall(results) == PASS else 1)
+
+
+if __name__ == "__main__":
+    main()
