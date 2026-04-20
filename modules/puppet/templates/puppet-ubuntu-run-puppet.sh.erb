@@ -369,6 +369,53 @@ fi
 echo "ROLE: ${ROLE}"
 echo ""
 
+function show_previous_run_status {
+    local metadata_file="/etc/puppet/last_run_metadata.json"
+    echo "Previous run:"
+    if [ ! -f "$metadata_file" ]; then
+        echo "  (no metadata file found — first run or file missing)"
+        return
+    fi
+    $PYTHON_BIN - "$metadata_file" <<'PYEOF'
+import json, sys
+from datetime import datetime, timezone
+
+try:
+    with open(sys.argv[1]) as f:
+        m = json.load(f)
+    success   = m.get("success", False)
+    exit_code = m.get("exit_code", "?")
+    duration  = m.get("duration_s", "?")
+    ts        = m.get("ts", "")
+    git_sha   = (m.get("git_sha") or "?")[:8]
+
+    age_str = ts
+    if ts:
+        try:
+            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            age_s = (datetime.now(timezone.utc) - dt).total_seconds()
+            if age_s < 3600:
+                age_str = f"{int(age_s / 60)}m ago"
+            elif age_s < 86400:
+                age_str = f"{age_s / 3600:.1f}h ago"
+            else:
+                age_str = f"{age_s / 86400:.1f}d ago"
+        except Exception:
+            pass
+
+    status_str = "PASSED" if success else f"FAILED (exit {exit_code})"
+    print(f"  status:   {status_str}")
+    print(f"  when:     {age_str}  ({ts})")
+    print(f"  duration: {duration}s")
+    print(f"  git sha:  {git_sha}")
+except Exception as e:
+    print(f"  (could not parse metadata: {e})")
+PYEOF
+}
+
+show_previous_run_status
+echo ""
+
 # GitHub PAT authentication setup
 configure_git_pat_auth
 
