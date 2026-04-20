@@ -163,24 +163,20 @@ function update_puppet {
 
     # TODO: authenticate the remote actions
 
+    # Proactively remove empty/corrupted object files before fetching.
+    # git fetch can return exit code 0 even when unpack-objects fails due to
+    # corruption, so checking exit code alone is not reliable.
+    empty_count=$(find .git/objects -type f -empty 2>/dev/null | wc -l)
+    if [ "$empty_count" -gt 0 ]; then
+        echo "Found $empty_count empty object file(s) before fetch; removing..."
+        find .git/objects -type f -empty -delete
+    fi
+
     # Fetch and checkout production branch
     if ! git fetch --all --prune; then
-        echo "git fetch failed; checking for corrupted object files..."
-        empty_count=$(find .git/objects -type f -empty 2>/dev/null | wc -l)
-        if [ "$empty_count" -gt 0 ]; then
-            echo "Found $empty_count empty object file(s), removing..."
-            find .git/objects -type f -empty -delete
-            # Retry after minimal repair
-            if ! git fetch --all --prune; then
-                echo "git fetch still failing after removing empty objects; re-cloning..."
-                reinit_working_dir || return 1
-                git fetch --all --prune || return 1
-            fi
-        else
-            echo "No empty object files found; re-cloning..."
-            reinit_working_dir || return 1
-            git fetch --all --prune || return 1
-        fi
+        echo "git fetch failed; re-cloning..."
+        reinit_working_dir || return 1
+        git fetch --all --prune || return 1
     fi
     git checkout --force "origin/${PUPPET_BRANCH}" \
       || (
