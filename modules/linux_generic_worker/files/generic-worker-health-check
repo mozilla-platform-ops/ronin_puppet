@@ -163,8 +163,39 @@ def check_generic_worker_process():
     task_state = _gw_task_state()
     data["task_state"] = task_state
     if task_state == "task running":
-        return WARN, f"running (pid {pids[0]}) — task in progress, do not reboot", data
+        nchildren = _proc_descendants(pids[0])
+        data["child_procs"] = nchildren
+        return WARN, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs), do not reboot", data
     return PASS, f"running (pid {pids[0]}) — {task_state}", data
+
+
+def _proc_descendants(root_pid):
+    """Return count of all descendant processes of root_pid via /proc PPid."""
+    children = {}
+    try:
+        for entry in os.scandir("/proc"):
+            if not entry.name.isdigit():
+                continue
+            try:
+                with open(f"/proc/{entry.name}/status") as f:
+                    for line in f:
+                        if line.startswith("PPid:"):
+                            ppid = int(line.split()[1])
+                            children.setdefault(ppid, []).append(int(entry.name))
+                            break
+            except OSError:
+                pass
+    except OSError:
+        pass
+
+    count = 0
+    queue = [root_pid]
+    while queue:
+        pid = queue.pop()
+        kids = children.get(pid, [])
+        count += len(kids)
+        queue.extend(kids)
+    return count
 
 
 def _gw_task_state():
