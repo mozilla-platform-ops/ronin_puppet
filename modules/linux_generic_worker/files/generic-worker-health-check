@@ -154,6 +154,8 @@ def check_generic_worker_process():
     pids = find_procs_by_name("generic-worker")
     data = {"pids": pids}
     if len(pids) == 0:
+        if not os.path.exists(PUPPET_DONE_SENTINEL):
+            return WARN, "not running — puppet run still in progress (waiting for sentinel)", data
         return FAIL, "not running", data
     if len(pids) > 1:
         return FAIL, f"{len(pids)} processes found (expected 1): pids {pids}", data
