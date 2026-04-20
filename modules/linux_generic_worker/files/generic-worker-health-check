@@ -351,10 +351,10 @@ REMEDIATIONS = {
 CHECKS = [
     ("clock_skew",              check_clock_skew),
     ("disk_free",               check_disk_free),
+    ("puppet",                  check_puppet),
     ("generic_worker_process",  check_generic_worker_process),
     ("worker_runner_reporting", check_worker_runner_reporting),
     ("task_dir_size",           check_task_dir_size),
-    ("puppet",                  check_puppet),
 ]
 
 
@@ -409,6 +409,9 @@ def main():
     )
     parser.add_argument("--json", action="store_true", help="emit JSON report to stdout")
     args = parser.parse_args()
+
+    if os.geteuid() != 0:
+        print(yellow("WARNING: not running as root — journalctl checks will return 'unknown' (run with sudo)"), file=sys.stderr)
 
     results = run_checks()
     if args.json:
