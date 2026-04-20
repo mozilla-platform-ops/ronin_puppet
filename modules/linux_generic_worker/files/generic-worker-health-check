@@ -425,11 +425,12 @@ def print_human(results):
 
 
 def print_json(results, warnings):
+    check_warns = [f"{r['name']}: {r['detail']}" for r in results if r["status"] == WARN]
     out = {
         "overall": overall(results),
         "host": socket.gethostname(),
         "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        "warnings": warnings,
+        "warnings": warnings + check_warns,
         "checks": results,
     }
     print(json.dumps(out, indent=2))
