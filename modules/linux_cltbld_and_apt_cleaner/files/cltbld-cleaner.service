@@ -18,11 +18,9 @@ Type=oneshot
 User=root
 StandardOutput=journal
 StandardError=journal
-# Allow up to 30m runtime
+# apt-get can be slow; allow up to 30m
 TimeoutStartSec=1800
-# Give 60s for graceful shutdown after SIGTERM
-TimeoutStopSec=60
-# Send SIGTERM first
+# SIGTERM lets apt exit cleanly and release lock files if timeout is hit
 KillSignal=SIGTERM
 ExecStart=/usr/sbin/cltbld-and-apt-cleaner.sh
 
