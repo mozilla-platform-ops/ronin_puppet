@@ -165,7 +165,9 @@ def check_generic_worker_process():
     if task_state == "task running":
         nchildren = _proc_descendants(pids[0])
         data["child_procs"] = nchildren
-        return WARN, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs), do not reboot", data
+        load1, load5, load15 = os.getloadavg()
+        data["load_avg"] = {"1m": round(load1, 2), "5m": round(load5, 2), "15m": round(load15, 2)}
+        return WARN, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f}), do not reboot", data
     return PASS, f"running (pid {pids[0]}) — {task_state}", data
 
 
