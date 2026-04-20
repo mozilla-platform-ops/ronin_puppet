@@ -319,6 +319,9 @@ def print_human(results):
     ov = overall(results)
     msg = "Overall: PASS" if ov == PASS else "Overall: FAIL"
     print(bold(green(msg)) if ov == PASS else bold(red(msg)))
+    if ov == FAIL:
+        first_fail = next(r for r in results if r["status"] == FAIL)
+        print(f"\n  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
 
 
 def print_json(results):
