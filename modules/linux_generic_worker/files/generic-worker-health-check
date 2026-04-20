@@ -189,10 +189,12 @@ def check_worker_runner_reporting():
     log_fresh = False
     log_age_min = None
 
+    _use_journal = True
     if os.path.isdir(GW_LOG_DIR):
         try:
             files = [e for e in os.scandir(GW_LOG_DIR) if e.is_file()]
             if files:
+                _use_journal = False
                 newest = max(files, key=lambda e: e.stat().st_mtime)
                 age_s = datetime.datetime.now().timestamp() - newest.stat().st_mtime
                 log_age_min = round(age_s / 60, 1)
@@ -201,8 +203,9 @@ def check_worker_runner_reporting():
                 log_fresh = log_age_min <= GW_LOG_STALE_MINUTES
         except OSError:
             pass
-    else:
-        # fall back to journalctl when svlogd log dir doesn't exist
+
+    if _use_journal:
+        # fall back to journalctl when svlogd log dir is absent or empty
         try:
             r = subprocess.run(
                 [
