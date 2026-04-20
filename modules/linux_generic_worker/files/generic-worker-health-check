@@ -170,7 +170,7 @@ def check_generic_worker_process():
 def _gw_task_state():
     try:
         r = subprocess.run(
-            ["journalctl", "-t", "generic-worker", "-n", "10", "--no-pager"],
+            ["journalctl", "-t", "generic-worker", "-n", "50", "--no-pager"],
             capture_output=True, text=True, timeout=5,
         )
         lines = r.stdout.strip().splitlines()
@@ -229,7 +229,9 @@ def check_worker_runner_reporting():
     if not log_fresh:
         age_str = f"{log_age_min}min" if log_age_min is not None else "unknown"
         return WARN, f"process alive (pid {pids[0]}) but logs {age_str} old", data
-    return PASS, f"running (pid {pids[0]}), logs {log_age_min}min old", data
+    if log_age_min is not None:
+        return PASS, f"running (pid {pids[0]}), logs {log_age_min}min old", data
+    return PASS, f"running (pid {pids[0]}), logs recent (journal)", data
 
 
 def _shallow_dir_size(path):
