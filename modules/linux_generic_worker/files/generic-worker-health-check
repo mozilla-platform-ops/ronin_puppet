@@ -160,6 +160,8 @@ def check_generic_worker_process():
 
     task_state = _gw_task_state()
     data["task_state"] = task_state
+    if task_state == "task running":
+        return WARN, f"running (pid {pids[0]}) — task in progress, do not reboot", data
     return PASS, f"running (pid {pids[0]}) — {task_state}", data
 
 
