@@ -284,13 +284,21 @@ def check_puppet():
 
 # ── report ────────────────────────────────────────────────────────────────────
 
+_CLEANER = "/usr/sbin/cltbld-and-apt-cleaner.sh"
+_CLEANER_HINT = (
+    f"sudo {_CLEANER}  (cleans .mozbuild, caches, apt; reboots if >70% full)\n"
+    "  manual targets: /home/cltbld/.mozbuild  /home/cltbld/caches  "
+    "/home/cltbld/tasks  /var/log"
+)
+_MANUAL_HINT = (
+    "cleaner not installed yet (puppet hasn't run); clean manually:\n"
+    "  sudo rm -rf /home/cltbld/.mozbuild /home/cltbld/caches "
+    "/home/cltbld/file-caches.json /home/cltbld/directory-caches.json\n"
+    "  sudo apt-get autoremove -y && sudo apt-get clean"
+)
+
 REMEDIATIONS = {
-    "disk_free": (
-        "sudo /usr/sbin/cltbld-and-apt-cleaner.sh  "
-        "(cleans .mozbuild, caches, apt; reboots if >70% full)\n"
-        "  manual targets: /home/cltbld/.mozbuild  /home/cltbld/caches  "
-        "/home/cltbld/tasks  /var/log"
-    ),
+    "disk_free": _CLEANER_HINT if os.path.exists(_CLEANER) else _MANUAL_HINT,
     "task_dir_size": (
         "task dir is large; may fill disk soon\n"
         "  manual: sudo rm -rf /home/cltbld/tasks/*"
