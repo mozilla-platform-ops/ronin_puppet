@@ -352,8 +352,8 @@ CHECKS = [
     ("clock_skew",              check_clock_skew),
     ("disk_free",               check_disk_free),
     ("puppet",                  check_puppet),
-    ("generic_worker_process",  check_generic_worker_process),
     ("worker_runner_reporting", check_worker_runner_reporting),
+    ("generic_worker_process",  check_generic_worker_process),
     ("task_dir_size",           check_task_dir_size),
 ]
 
@@ -391,14 +391,35 @@ def print_human(results):
             print(f"  → try: {hint}")
 
 
-def print_json(results):
+def print_json(results, warnings):
     out = {
         "overall": overall(results),
         "host": socket.gethostname(),
         "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "warnings": warnings,
         "checks": results,
     }
     print(json.dumps(out, indent=2))
+
+
+def print_human(results, warnings):
+    for w in warnings:
+        print(yellow(f"WARNING: {w}"), file=sys.stderr)
+    w = max(len(r["name"]) for r in results)
+    for r in results:
+        s = r["status"]
+        marker = green("[PASS]") if s == PASS else yellow("[WARN]") if s == WARN else red("[FAIL]")
+        print(f"{marker}  {r['name'].ljust(w)}  {r['detail']}")
+    print()
+    ov = overall(results)
+    msg = "Overall: PASS" if ov == PASS else "Overall: FAIL"
+    print(bold(green(msg)) if ov == PASS else bold(red(msg)))
+    if ov == FAIL:
+        first_fail = next(r for r in results if r["status"] == FAIL)
+        print(f"\n  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
+        hint = REMEDIATIONS.get(first_fail["name"])
+        if hint:
+            print(f"  → try: {hint}")
 
 
 def main():
@@ -410,14 +431,15 @@ def main():
     parser.add_argument("--json", action="store_true", help="emit JSON report to stdout")
     args = parser.parse_args()
 
+    warnings = []
     if os.geteuid() != 0:
-        print(yellow("WARNING: not running as root — journalctl checks will return 'unknown' (run with sudo)"), file=sys.stderr)
+        warnings.append("not running as root — journalctl checks will return 'unknown' (run with sudo)")
 
     results = run_checks()
     if args.json:
-        print_json(results)
+        print_json(results, warnings)
     else:
-        print_human(results)
+        print_human(results, warnings)
     sys.exit(0 if overall(results) == PASS else 1)
 
 
