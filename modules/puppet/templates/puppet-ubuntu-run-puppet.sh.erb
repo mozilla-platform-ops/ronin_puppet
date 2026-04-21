@@ -230,15 +230,14 @@ function run_puppet {
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
     case $retval in
-        0) explanation="(success. no changes needed)" ;;
-        2) explanation="(success. changes applied)" ;;
-        *)
-            explanation="(unknown/failure)" ;;
+        0) explanation="no changes needed" ;;
+        2) explanation="changes applied" ;;
+        *) explanation="retval $retval" ;;
     esac
     if [ $retval -eq 0 ] || [ $retval -eq 2 ]; then
-        echo -e "${_GREEN}puppet command done. retval is $retval ${explanation}${_RESET}"
+        echo -e "${_GREEN}[PASS] puppet apply — ${explanation}${_RESET}"
     else
-        echo -e "${_RED}puppet command done. retval is $retval ${explanation}${_RESET}"
+        echo -e "${_RED}[FAIL] puppet apply — ${explanation}${_RESET}"
     fi
     # if retval is zero, check the logs for errors
     if [ $retval -eq 0 ]; then
