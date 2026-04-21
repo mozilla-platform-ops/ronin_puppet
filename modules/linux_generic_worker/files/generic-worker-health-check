@@ -331,7 +331,8 @@ def check_task_dir_size():
     if not os.path.isdir(TASK_DIR):
         return PASS, f"{TASK_DIR} absent (clean)", {}
     used_gb = _shallow_dir_size(TASK_DIR) / 1024 ** 3
-    data = {"task_dir": TASK_DIR, "used_gb": round(used_gb, 2)}
+    used_gb_r = round(used_gb, 2)
+    data = {"task_dir": TASK_DIR, "used_gb": int(used_gb_r) if used_gb_r == int(used_gb_r) else used_gb_r}
     if used_gb > TASK_DIR_FAIL_GB:
         return FAIL, f"{used_gb:.1f}GB used (>{TASK_DIR_FAIL_GB}GB)", data
     if used_gb > TASK_DIR_WARN_GB:
@@ -369,14 +370,15 @@ def check_puppet():
     data = {"metadata_path": PUPPET_METADATA}
 
     active, sub, svc_cmd = _puppet_service_state()
-    data["service_state"] = f"{active}/{sub}"
+    data["service_active_state"] = active
+    data["service_sub_state"] = sub
     data["cmds"] = [svc_cmd]
 
     if active == "activating":
         return WARN, f"run in progress (service={active}/{sub})", data
 
     boot_ts = _boot_time()
-    data["boot_ts"] = boot_ts.isoformat() if boot_ts else None
+    data["boot_ts"] = boot_ts.strftime("%Y-%m-%dT%H:%M:%SZ") if boot_ts else None
 
     if not os.path.exists(PUPPET_METADATA):
         return FAIL, f"{PUPPET_METADATA} not found", data
@@ -414,17 +416,18 @@ def check_puppet():
 
     try:
         age_h = (datetime.datetime.now(datetime.timezone.utc) - meta_ts).total_seconds() / 3600
-        data["age_hours"] = round(age_h, 1)
+        age_h_r = round(age_h, 1)
+        data["age_hours"] = int(age_h_r) if age_h_r == int(age_h_r) else age_h_r
         if age_h > PUPPET_MAX_AGE_HOURS:
             return FAIL, f"last run {age_h:.1f}h ago (>{PUPPET_MAX_AGE_HOURS}h)", data
     except Exception as e:
         return WARN, f"could not parse timestamp '{ts_str}': {e}", data
 
     if not os.path.exists(PUPPET_DONE_SENTINEL):
-        data["done_sentinel"] = "missing"
+        data["done_sentinel"] = False
         return WARN, f"success=true but {PUPPET_DONE_SENTINEL} missing", data
 
-    data["done_sentinel"] = "present"
+    data["done_sentinel"] = True
     role = meta.get("role", "?")
     return PASS, f"passed {age_h:.1f}h ago (role={role})", data
 
@@ -516,8 +519,8 @@ def summarize(results):
         return "DOWN", puppet.get("detail", "puppet check failed")
 
     puppet_in_progress = (
-        pdata.get("done_sentinel") == "missing"
-        or pdata.get("service_state", "").startswith("activating")
+        pdata.get("done_sentinel") is False
+        or pdata.get("service_active_state") == "activating"
         or "retrying" in puppet.get("detail", "")
         or "not yet run this boot" in puppet.get("detail", "")
     )
@@ -567,7 +570,7 @@ def print_json(results, warnings, verbose=False):
         "state": state,
         "state_description": state_description,
         "host": socket.gethostname(),
-        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "ts": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "warnings": warnings + check_warns,
         "checks": checks,
     }
