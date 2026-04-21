@@ -185,7 +185,7 @@ function update_puppet {
       git remote add origin "${PUPPET_REPO}"
       git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
-    echo -e "${_BOLD}HEAD is now at $(git log -1 --oneline)${_RESET}"
+    echo -e "${_CYAN}HEAD is now at $(git log -1 --oneline)${_RESET}"
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
@@ -286,9 +286,9 @@ function run_puppet {
 
 # Color helpers — only when stdout is a TTY (suppresses codes in journal/pipes)
 if [ -t 1 ]; then
-    _BOLD="\033[1m"; _GREEN="\033[32m"; _RED="\033[31m"; _RESET="\033[0m"
+    _BOLD="\033[1m"; _GREEN="\033[32m"; _RED="\033[31m"; _CYAN="\033[36m"; _RESET="\033[0m"
 else
-    _BOLD=""; _GREEN=""; _RED=""; _RESET=""
+    _BOLD=""; _GREEN=""; _RED=""; _CYAN=""; _RESET=""
 fi
 
 # Ensure we are running as root
@@ -341,10 +341,10 @@ EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
     # show env vars of interest
-    echo -e "  PUPPET_BRANCH=${_BOLD}$PUPPET_BRANCH${_RESET}"
-    echo -e "  PUPPET_REPO=${_BOLD}$PUPPET_REPO${_RESET}"
-    echo -e "  PUPPET_MAIL=${_BOLD}$PUPPET_MAIL${_RESET}"
-    echo -e "  WORKER_TYPE_OVERRIDE=${_BOLD}$WORKER_TYPE_OVERRIDE${_RESET}"
+    echo -e "  PUPPET_BRANCH=${_CYAN}$PUPPET_BRANCH${_RESET}"
+    echo -e "  PUPPET_REPO=${_CYAN}$PUPPET_REPO${_RESET}"
+    echo -e "  PUPPET_MAIL=${_CYAN}$PUPPET_MAIL${_RESET}"
+    echo -e "  WORKER_TYPE_OVERRIDE=${_CYAN}$WORKER_TYPE_OVERRIDE${_RESET}"
 fi
 
 # Extract username from puppet_repo
@@ -374,7 +374,7 @@ fi
 
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
-echo -e "ROLE: ${_BOLD}${ROLE}${_RESET}"
+echo -e "ROLE: ${_CYAN}${ROLE}${_RESET}"
 echo ""
 
 function show_previous_run_status {
