@@ -374,7 +374,7 @@ def check_puppet():
 # ── report ────────────────────────────────────────────────────────────────────
 
 _CLEANER_HINT = (
-    f"sudo {_CLEANER}  (cleans .mozbuild, caches, apt; reboots if >70% full)\n"
+    f"sudo {_CLEANER}  (cleans .mozbuild, caches, apt; runs if >70% full)\n"
     "  manual targets: /home/cltbld/.mozbuild  /home/cltbld/caches  "
     "/home/cltbld/tasks  /var/log"
 )
@@ -519,7 +519,7 @@ def print_human(results, warnings):
             disk_r = _by_name(results, "disk_free") or {}
             cpid = (disk_r.get("data") or {}).get("cleaner_pid")
             pid_str = f" (pid {cpid})" if cpid else ""
-            print(f"  → cleanup in progress{pid_str} — wait for it to finish (host may reboot)")
+            print(f"  → cleanup in progress{pid_str} — wait for it to finish")
         else:
             first_fail = next(r for r in results if r["status"] == FAIL)
             print(f"  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
