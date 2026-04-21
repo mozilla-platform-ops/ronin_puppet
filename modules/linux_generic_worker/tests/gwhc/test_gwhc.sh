@@ -11,8 +11,8 @@ expect() {
     out=$(python3 "$SCRIPT" --replay "$FIX/$fixture" 2>&1)
     local got_exit=$?
     set -e
-    if ! grep -q "State:.*${want_state}" <<< "$out"; then
-        echo "FAIL: $fixture — expected State: ${want_state}"
+    if ! grep -q "^${want_state} " <<< "$out"; then
+        echo "FAIL: $fixture — expected ${want_state} at start of output"
         echo "$out"
         exit 1
     fi
@@ -33,7 +33,7 @@ expect down.json         DOWN         1
 # round-trip: replay a fixture through --json, then replay that output
 python3 "$SCRIPT" --replay "$FIX/idle.json" --json \
     | python3 "$SCRIPT" --replay - \
-    | grep -q "State:.*IDLE"
+    | grep -q "^IDLE "
 echo "PASS: round-trip idle.json --json | --replay -"
 
 echo

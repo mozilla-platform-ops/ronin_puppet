@@ -6,9 +6,9 @@
   "checks": [
     {"name": "clock_skew", "status": "pass", "detail": "skew 0.3s", "data": {}},
     {"name": "disk_free", "status": "pass", "detail": "/: 42.0GB", "data": {}},
+    {"name": "task_dir_size", "status": "pass", "detail": "0.1GB used", "data": {}},
     {"name": "puppet", "status": "pass", "detail": "passed 1.2h ago (role=gw-linux)", "data": {"success": true, "age_hours": 1.2, "done_sentinel": "present", "role": "gw-linux"}},
     {"name": "worker_runner_reporting", "status": "pass", "detail": "running (pid 999), logs recent (journal)", "data": {}},
-    {"name": "generic_worker_process", "status": "fail", "detail": "not running", "data": {"pids": []}},
-    {"name": "task_dir_size", "status": "pass", "detail": "0.1GB used", "data": {}}
+    {"name": "generic_worker_process", "status": "fail", "detail": "not running", "data": {"pids": []}}
   ]
 }
