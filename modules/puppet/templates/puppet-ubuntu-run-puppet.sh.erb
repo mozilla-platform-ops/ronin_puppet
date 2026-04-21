@@ -187,10 +187,12 @@ function update_puppet {
     ) || return 1
     _orig=$(git rev-parse ORIG_HEAD 2>/dev/null)
     _head=$(git rev-parse HEAD 2>/dev/null)
+    echo -e "${_DIM}  was: $(git log -1 --oneline "${_orig:-HEAD}")${_RESET}"
     if [[ -n "$_orig" && "$_orig" != "$_head" ]]; then
-      echo -e "${_DIM}  was: $(git log -1 --oneline ORIG_HEAD)${_RESET}"
+      echo -e "${_CYAN}  now: $(git log -1 --oneline)${_RESET}"
+    else
+      echo -e "${_CYAN}  now: (same, up to date)${_RESET}"
     fi
-    echo -e "${_CYAN}  now: $(git log -1 --oneline)${_RESET}"
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
