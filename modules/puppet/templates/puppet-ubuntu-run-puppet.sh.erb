@@ -238,14 +238,12 @@ function run_puppet {
     PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
 
-    # debugging
     PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
-    echo "puppet command to run is: ${PUPPET_CMD}"
-
-    echo "running puppet command..."
+    echo "Applying puppet..."
+    echo "  cmd: ${PUPPET_CMD}"
     echo ""
     # START: don't separate these two commands
-    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}"
+    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}" | sed 's/^/  /'
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
@@ -254,10 +252,11 @@ function run_puppet {
         2) explanation="changes applied" ;;
         *) explanation="retval $retval" ;;
     esac
+    echo ""
     if [ $retval -eq 0 ] || [ $retval -eq 2 ]; then
-        echo -e "${_GREEN}[PASS] puppet apply — ${explanation}${_RESET}"
+        echo -e "${_GREEN}  [PASS] puppet apply — ${explanation} (${PUPPET_RUN_DURATION}s)${_RESET}"
     else
-        echo -e "${_RED}[FAIL] puppet apply — ${explanation}${_RESET}"
+        echo -e "${_RED}  [FAIL] puppet apply — ${explanation} (${PUPPET_RUN_DURATION}s)${_RESET}"
     fi
     # if retval is zero, check the logs for errors
     if [ $retval -eq 0 ]; then
@@ -278,10 +277,16 @@ function run_puppet {
     # This provides ground truth for monitoring and tracking applied configuration.
     # The function is designed to never fail the puppet run.
     if type write_puppet_state >/dev/null 2>&1; then
-        write_puppet_state "$WORKING_DIR" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
-            "/etc/puppet/ronin_settings" "/root/vault.yaml"
+        _state_out=$(write_puppet_state "$WORKING_DIR" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
+            "/etc/puppet/ronin_settings" "/root/vault.yaml" 2>&1)
+        _state_file=$(echo "$_state_out" | sed -n 's/^Puppet state written to //p')
+        if [[ -n "$_state_file" ]]; then
+            echo -e "${_DIM}  state: ${_state_file}${_RESET}"
+        else
+            echo "$_state_out" | sed 's/^/  /'
+        fi
     else
-        echo "WARNING: write_puppet_state function not available, skipping state file write" >&2
+        echo "  WARNING: write_puppet_state function not available, skipping state file write" >&2
     fi
     # ==============================================================================
 
