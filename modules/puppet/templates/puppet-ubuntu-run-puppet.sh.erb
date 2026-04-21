@@ -235,9 +235,9 @@ function run_puppet {
             explanation="(unknown/failure)" ;;
     esac
     if [ $retval -eq 0 ] || [ $retval -eq 2 ]; then
-        echo -e "\033[32mpuppet command done. retval is $retval ${explanation}\033[0m"
+        echo -e "${_GREEN}puppet command done. retval is $retval ${explanation}${_RESET}"
     else
-        echo -e "\033[31mpuppet command done. retval is $retval ${explanation}\033[0m"
+        echo -e "${_RED}puppet command done. retval is $retval ${explanation}${_RESET}"
     fi
     # if retval is zero, check the logs for errors
     if [ $retval -eq 0 ]; then
@@ -282,6 +282,13 @@ function run_puppet {
 
 
 # Main script starts here
+
+# Color helpers — only when stdout is a TTY (suppresses codes in journal/pipes)
+if [ -t 1 ]; then
+    _BOLD="\033[1m"; _GREEN="\033[32m"; _RED="\033[31m"; _RESET="\033[0m"
+else
+    _BOLD=""; _GREEN=""; _RED=""; _RESET=""
+fi
 
 # Ensure we are running as root
 if [ "$(id -u)" -ne 0 ]; then
@@ -333,10 +340,10 @@ EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
     # show env vars of interest
-    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
-    echo "  PUPPET_REPO=$PUPPET_REPO"
-    echo "  PUPPET_MAIL=$PUPPET_MAIL"
-    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
+    echo -e "  PUPPET_BRANCH=${_BOLD}$PUPPET_BRANCH${_RESET}"
+    echo -e "  PUPPET_REPO=${_BOLD}$PUPPET_REPO${_RESET}"
+    echo -e "  PUPPET_MAIL=${_BOLD}$PUPPET_MAIL${_RESET}"
+    echo -e "  WORKER_TYPE_OVERRIDE=${_BOLD}$WORKER_TYPE_OVERRIDE${_RESET}"
 fi
 
 # Extract username from puppet_repo
@@ -366,7 +373,7 @@ fi
 
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
-echo "ROLE: ${ROLE}"
+echo -e "ROLE: ${_BOLD}${ROLE}${_RESET}"
 echo ""
 
 function show_previous_run_status {
@@ -403,7 +410,11 @@ try:
         except Exception:
             pass
 
-    status_str = "PASSED" if success else f"FAILED (exit {exit_code})"
+    if sys.stdout.isatty():
+        GREEN, RED, RESET = "\033[32m", "\033[31m", "\033[0m"
+    else:
+        GREEN = RED = RESET = ""
+    status_str = f"{GREEN}PASSED{RESET}" if success else f"{RED}FAILED (exit {exit_code}){RESET}"
     print(f"  status:   {status_str}")
     print(f"  when:     {age_str}  ({ts})")
     print(f"  duration: {duration}s")
@@ -423,7 +434,7 @@ configure_git_pat_auth
 
 # Call the run_puppet function in a endless loop
 while ! run_puppet; do
-    echo "Puppet run failed; re-trying after 10m"
+    echo -e "${_RED}Puppet run failed; re-trying after 10m${_RESET}"
     sleep 600
 done
 
