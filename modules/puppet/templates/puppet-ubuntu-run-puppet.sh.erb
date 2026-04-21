@@ -186,7 +186,7 @@ function update_puppet {
     _fetch_out=$(git fetch --all --prune 2>&1)
     _fetch_exit=$?
     if [[ -n "$_fetch_out" ]]; then
-        echo "$_fetch_out" | sed 's/^/  /'
+        echo "$_fetch_out" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
     else
         echo -e "  ${_DIM}(no output)${_RESET}"
     fi
@@ -195,7 +195,7 @@ function update_puppet {
         reinit_working_dir || return 1
         _fetch_out=$(git fetch --all --prune 2>&1)
         _fetch_exit=$?
-        [[ -n "$_fetch_out" ]] && echo "$_fetch_out" | sed 's/^/  /'
+        [[ -n "$_fetch_out" ]] && echo "$_fetch_out" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
         [[ $_fetch_exit -eq 0 ]] || return 1
     fi
     git checkout --quiet --force "origin/${PUPPET_BRANCH}" \
@@ -249,7 +249,7 @@ function run_puppet {
     echo "  cmd: ${PUPPET_CMD}"
     echo ""
     # START: don't separate these two commands
-    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}" | sed 's/^/  /'
+    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
