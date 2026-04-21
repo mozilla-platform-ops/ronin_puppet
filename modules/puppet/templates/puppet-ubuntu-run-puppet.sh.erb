@@ -178,13 +178,14 @@ function update_puppet {
         reinit_working_dir || return 1
         git fetch --all --prune || return 1
     fi
-    git checkout --force "origin/${PUPPET_BRANCH}" \
+    git checkout --quiet --force "origin/${PUPPET_BRANCH}" \
       || (
       git remote rm upstream
       git remote rename origin upstream
       git remote add origin "${PUPPET_REPO}"
-      git checkout --force "origin/${PUPPET_BRANCH}"
+      git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
+    echo -e "${_BOLD}HEAD is now at $(git log -1 --oneline)${_RESET}"
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
