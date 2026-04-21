@@ -173,11 +173,16 @@ function update_puppet {
     fi
 
     # Fetch and checkout production branch
+    echo -e "Syncing ronin-puppet client (environment: ${puppet_env})..."
+    echo -e "${_DIM}  dir: ${WORKING_DIR}${_RESET}"
+    echo ""
     _head_before=$(git rev-parse --verify HEAD 2>/dev/null || true)
-    if ! git fetch --all --prune; then
+    git fetch --all --prune 2>&1 | sed 's/^/  /'
+    if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
         echo "git fetch failed; re-cloning..."
         reinit_working_dir || return 1
-        git fetch --all --prune || return 1
+        git fetch --all --prune 2>&1 | sed 's/^/  /'
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || return 1
     fi
     git checkout --quiet --force "origin/${PUPPET_BRANCH}" \
       || (
@@ -187,8 +192,7 @@ function update_puppet {
       git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
     _head_after=$(git rev-parse --verify HEAD 2>/dev/null || true)
-    echo -e "syncing puppet repo..."
-    echo -e "${_DIM}  dir:  $(pwd)${_RESET}"
+    echo ""
     if [[ -n "$_head_before" && -n "$_head_after" && "$_head_before" != "$_head_after" ]]; then
       echo -e "${_DIM}  prev: $(git log -1 --oneline "$_head_before")${_RESET}"
       echo -e "${_CYAN}  HEAD: $(git log -1 --oneline "$_head_after")${_RESET}"
