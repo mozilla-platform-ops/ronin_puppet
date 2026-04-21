@@ -173,6 +173,7 @@ function update_puppet {
     fi
 
     # Fetch and checkout production branch
+    _head_before=$(git rev-parse --verify HEAD 2>/dev/null || true)
     if ! git fetch --all --prune; then
         echo "git fetch failed; re-cloning..."
         reinit_working_dir || return 1
@@ -185,13 +186,12 @@ function update_puppet {
       git remote add origin "${PUPPET_REPO}"
       git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
-    _orig=$(git rev-parse --verify ORIG_HEAD 2>/dev/null || true)
-    _head=$(git rev-parse HEAD 2>/dev/null)
-    if [[ -n "$_orig" && "$_orig" != "$_head" ]]; then
-      echo -e "${_DIM}  was: $(git log -1 --oneline "$_orig")${_RESET}"
-      echo -e "${_CYAN}  now: $(git log -1 --oneline "$_head")${_RESET}"
+    _head_after=$(git rev-parse --verify HEAD 2>/dev/null || true)
+    if [[ -n "$_head_before" && -n "$_head_after" && "$_head_before" != "$_head_after" ]]; then
+      echo -e "${_DIM}  was: $(git log -1 --oneline "$_head_before")${_RESET}"
+      echo -e "${_CYAN}  now: $(git log -1 --oneline "$_head_after")${_RESET}"
     else
-      echo -e "${_DIM}  was: $(git log -1 --oneline "$_head")${_RESET}"
+      echo -e "${_DIM}  was: $(git log -1 --oneline "$_head_after")${_RESET}"
       echo -e "${_CYAN}  now: (same, up to date)${_RESET}"
     fi
 
