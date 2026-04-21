@@ -135,7 +135,7 @@ def check_clock_skew():
 
 
 def check_disk_free():
-    results = {}
+    mounts = {}
     failures = []
     seen_devs = set()
     for mount in DISK_MOUNTS:
@@ -153,7 +153,7 @@ def check_disk_free():
             free = st.f_frsize * st.f_bavail
             pct = free / total * 100
             free_gb = free / 1024 ** 3
-            results[mount] = {
+            mounts[mount] = {
                 "free_gb": round(free_gb, 1),
                 "free_pct": round(pct, 1),
                 "total_gb": round(total / 1024 ** 3, 1),
@@ -161,23 +161,25 @@ def check_disk_free():
             if free_gb < DISK_FAIL_FREE_GB or pct < DISK_FAIL_FREE_PCT:
                 failures.append(f"{mount}: {free_gb:.1f}GB ({pct:.0f}% free)")
         except OSError as e:
-            results[mount] = {"error": str(e)}
+            mounts[mount] = {"error": str(e)}
+
     cpid = _cleaner_running()
+    data = dict(mounts)
     if cpid:
-        results["cleaner_running"] = True
-        results["cleaner_pid"] = cpid
+        data["cleaner_running"] = True
+        data["cleaner_pid"] = cpid
+
+    summary = ", ".join(
+        f"{m}: {v['free_gb']}GB" for m, v in mounts.items() if "free_gb" in v
+    )
 
     if failures:
         if cpid:
-            return WARN, "low disk: " + "; ".join(failures) + " — cleanup running", results
-        return FAIL, "low disk: " + "; ".join(failures), results
-
-    summary = ", ".join(
-        f"{m}: {v['free_gb']}GB" for m, v in results.items() if "free_gb" in v
-    )
+            return WARN, "low disk: " + "; ".join(failures) + " — cleanup running", data
+        return FAIL, "low disk: " + "; ".join(failures), data
     if cpid:
-        return WARN, f"{summary} — cleanup running (pid {cpid})", results
-    return PASS, summary, results
+        return WARN, f"{summary} — cleanup running (pid {cpid})", data
+    return PASS, summary, data
 
 
 def check_generic_worker_process():
