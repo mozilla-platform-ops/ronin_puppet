@@ -26,6 +26,7 @@ expect() {
 expect idle.json         IDLE         0
 expect working.json      WORKING      0
 expect provisioning.json PROVISIONING 0
+expect recovering.json   RECOVERING   1
 expect degraded.json     DEGRADED     1
 expect down.json         DOWN         1
 

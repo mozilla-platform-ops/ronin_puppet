@@ -35,6 +35,8 @@ DISK_MOUNTS = ["/", "/var", "/home"]
 DISK_FAIL_FREE_GB = 5
 DISK_FAIL_FREE_PCT = 10
 
+_CLEANER = "/usr/sbin/cltbld-and-apt-cleaner.sh"
+
 PASS = "pass"
 WARN = "warn"
 FAIL = "fail"
@@ -93,6 +95,23 @@ def find_procs_by_name(name):
     return pids
 
 
+def _cleaner_running():
+    """Return pid of running cltbld-and-apt-cleaner.sh, or None."""
+    try:
+        for entry in os.scandir("/proc"):
+            if not entry.name.isdigit():
+                continue
+            try:
+                with open(f"/proc/{entry.name}/cmdline", "rb") as f:
+                    if _CLEANER.encode() in f.read():
+                        return int(entry.name)
+            except OSError:
+                pass
+    except OSError:
+        pass
+    return None
+
+
 # ── checks ────────────────────────────────────────────────────────────────────
 
 def check_clock_skew():
@@ -144,6 +163,11 @@ def check_disk_free():
         except OSError as e:
             results[mount] = {"error": str(e)}
     if failures:
+        cpid = _cleaner_running()
+        if cpid:
+            results["cleaner_running"] = True
+            results["cleaner_pid"] = cpid
+            return WARN, "low disk: " + "; ".join(failures) + " — cleanup running", results
         return FAIL, "low disk: " + "; ".join(failures), results
     summary = ", ".join(
         f"{m}: {v['free_gb']}GB" for m, v in results.items() if "free_gb" in v
@@ -349,7 +373,6 @@ def check_puppet():
 
 # ── report ────────────────────────────────────────────────────────────────────
 
-_CLEANER = "/usr/sbin/cltbld-and-apt-cleaner.sh"
 _CLEANER_HINT = (
     f"sudo {_CLEANER}  (cleans .mozbuild, caches, apt; reboots if >70% full)\n"
     "  manual targets: /home/cltbld/.mozbuild  /home/cltbld/caches  "
@@ -423,6 +446,12 @@ def summarize(results):
     pdata  = puppet.get("data", {})
     gdata  = gwp.get("data", {})
 
+    disk = _by_name(results, "disk_free") or {}
+    if (disk.get("data") or {}).get("cleaner_running"):
+        cpid = (disk.get("data") or {}).get("cleaner_pid")
+        pid_str = f" (pid {cpid})" if cpid else ""
+        return "RECOVERING", f"disk cleanup running{pid_str}, wait for completion"
+
     if puppet.get("status") == FAIL:
         return "DOWN", puppet.get("detail", "puppet check failed")
 
@@ -448,6 +477,7 @@ def summarize(results):
 
 
 _STATE_COLOR = {
+    "RECOVERING":   yellow,
     "PROVISIONING": yellow,
     "WORKING":      green,
     "IDLE":         green,
@@ -491,11 +521,17 @@ def print_human(results, warnings):
     msg = "Overall: PASS" if ov == PASS else "Overall: FAIL"
     print(bold(green(msg)) if ov == PASS else bold(red(msg)))
     if ov == FAIL:
-        first_fail = next(r for r in results if r["status"] == FAIL)
-        print(f"\n  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
-        hint = REMEDIATIONS.get(first_fail["name"])
-        if hint:
-            print(f"  → try: {hint}")
+        if state == "RECOVERING":
+            disk_r = _by_name(results, "disk_free") or {}
+            cpid = (disk_r.get("data") or {}).get("cleaner_pid")
+            pid_str = f" (pid {cpid})" if cpid else ""
+            print(f"\n  → cleanup in progress{pid_str} — wait for it to finish (host may reboot)")
+        else:
+            first_fail = next(r for r in results if r["status"] == FAIL)
+            print(f"\n  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
+            hint = REMEDIATIONS.get(first_fail["name"])
+            if hint:
+                print(f"  → try: {hint}")
 
 
 def main():

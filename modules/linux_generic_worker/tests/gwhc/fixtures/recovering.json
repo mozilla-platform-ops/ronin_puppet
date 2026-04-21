@@ -1,0 +1,14 @@
+{
+  "overall": "fail",
+  "host": "fixture-recovering",
+  "ts": "2026-04-20T00:00:00+00:00",
+  "warnings": [],
+  "checks": [
+    {"name": "clock_skew", "status": "pass", "detail": "skew 0.7s", "data": {}},
+    {"name": "disk_free", "status": "warn", "detail": "low disk: /: 6.7GB (7% free) — cleanup running", "data": {"/": {"free_gb": 6.7, "free_pct": 7.0, "total_gb": 80.0}, "cleaner_running": true, "cleaner_pid": 1011}},
+    {"name": "puppet", "status": "fail", "detail": "last run failed (exit_code=6)", "data": {"success": false, "exit_code": 6}},
+    {"name": "worker_runner_reporting", "status": "fail", "detail": "start-worker process not found", "data": {}},
+    {"name": "generic_worker_process", "status": "warn", "detail": "not running — puppet run still in progress (waiting for sentinel)", "data": {"pids": []}},
+    {"name": "task_dir_size", "status": "pass", "detail": "0.0GB used", "data": {}}
+  ]
+}
