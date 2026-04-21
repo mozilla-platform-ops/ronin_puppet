@@ -7,7 +7,12 @@ class roles_profiles::profiles::azure_vm_agent {
     'Windows': {
       $agent_version = lookup('windows.azure.vm_agent.version')
       $package       = lookup('windows.azure.vm_agent.display_name')
-      $msi           = "WindowsAzureVmAgent.${agent_version}.msi"
+
+      $arch = $facts['custom_win_os_arch'] ? {
+        'aarch64' => 'arm64',
+        default   => 'amd64',
+      }
+      $msi = "WindowsAzureVmAgent.${arch}_${agent_version}.msi"
 
       class { 'win_packages::azure_vm_agent':
         package => $package,
