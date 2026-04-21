@@ -286,9 +286,9 @@ function run_puppet {
 
 # Color helpers — only when stdout is a TTY (suppresses codes in journal/pipes)
 if [ -t 1 ]; then
-    _BOLD="\033[1m"; _GREEN="\033[32m"; _RED="\033[31m"; _CYAN="\033[36m"; _RESET="\033[0m"
+    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _CYAN="\033[36m"; _RESET="\033[0m"
 else
-    _BOLD=""; _GREEN=""; _RED=""; _CYAN=""; _RESET=""
+    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _CYAN=""; _RESET=""
 fi
 
 # Ensure we are running as root
@@ -341,10 +341,10 @@ EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
     # show env vars of interest
-    echo -e "  PUPPET_BRANCH=${_CYAN}$PUPPET_BRANCH${_RESET}"
-    echo -e "  PUPPET_REPO=${_CYAN}$PUPPET_REPO${_RESET}"
-    echo -e "  PUPPET_MAIL=${_CYAN}$PUPPET_MAIL${_RESET}"
-    echo -e "  WORKER_TYPE_OVERRIDE=${_CYAN}$WORKER_TYPE_OVERRIDE${_RESET}"
+    echo -e "  PUPPET_BRANCH=${_DIM}$PUPPET_BRANCH${_RESET}"
+    echo -e "  PUPPET_REPO=${_DIM}$PUPPET_REPO${_RESET}"
+    echo -e "  PUPPET_MAIL=${_DIM}$PUPPET_MAIL${_RESET}"
+    echo -e "  WORKER_TYPE_OVERRIDE=${_DIM}$WORKER_TYPE_OVERRIDE${_RESET}"
 fi
 
 # Extract username from puppet_repo
