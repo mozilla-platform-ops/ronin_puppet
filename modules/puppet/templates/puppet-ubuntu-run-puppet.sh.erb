@@ -246,7 +246,7 @@ function run_puppet {
 
     PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
     echo "Applying puppet..."
-    echo "  cmd: ${PUPPET_CMD}"
+    echo "  ${PUPPET_CMD}"
     echo ""
     # START: don't separate these two commands
     $PUPPET_CMD 2>&1 | tee "${TMP_LOG}" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
