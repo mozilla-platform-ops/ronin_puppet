@@ -618,8 +618,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Exit 0 if all checks pass or warn. Exit 1 if any check fails.",
     )
-    parser.add_argument("--json", action="store_true", help="emit JSON report to stdout")
-    parser.add_argument("--verbose", action="store_true", help="show commands used by each check")
+    parser.add_argument("-j", "--json", action="store_true", help="emit JSON report to stdout")
+    parser.add_argument("-v", "--verbose", action="store_true", help="show commands used by each check")
 
     testing = parser.add_argument_group("testing arguments")
     testing.add_argument(
