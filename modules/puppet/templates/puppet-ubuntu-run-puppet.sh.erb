@@ -187,13 +187,14 @@ function update_puppet {
       git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
     _head_after=$(git rev-parse --verify HEAD 2>/dev/null || true)
-    echo -e "  puppet repo: $(pwd)"
+    echo -e "syncing puppet repo..."
+    echo -e "${_DIM}  dir:  $(pwd)${_RESET}"
     if [[ -n "$_head_before" && -n "$_head_after" && "$_head_before" != "$_head_after" ]]; then
-      echo -e "${_DIM}    prev: $(git log -1 --oneline "$_head_before")${_RESET}"
-      echo -e "${_CYAN}    HEAD: $(git log -1 --oneline "$_head_after")${_RESET}"
+      echo -e "${_DIM}  prev: $(git log -1 --oneline "$_head_before")${_RESET}"
+      echo -e "${_CYAN}  HEAD: $(git log -1 --oneline "$_head_after")${_RESET}"
     else
-      echo -e "${_DIM}    prev: $(git log -1 --oneline "$_head_after")${_RESET}"
-      echo -e "${_CYAN}    HEAD: (same, up to date)${_RESET}"
+      echo -e "${_DIM}  prev: $(git log -1 --oneline "$_head_after")${_RESET}"
+      echo -e "${_CYAN}  HEAD: (same, up to date)${_RESET}"
     fi
 
     # Copy secrets
