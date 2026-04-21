@@ -245,7 +245,7 @@ function run_puppet {
     SECONDS=0
 
     PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
-    echo "Applying puppet..."
+    echo "Running puppet apply..."
     echo "  cmd: ${PUPPET_CMD}"
     echo ""
     # START: don't separate these two commands
@@ -287,7 +287,7 @@ function run_puppet {
             "/etc/puppet/ronin_settings" "/root/vault.yaml" 2>&1)
         _state_file=$(echo "$_state_out" | sed -n 's/^Puppet state written to //p')
         if [[ -n "$_state_file" ]]; then
-            echo -e "${_DIM}  state: ${_state_file}${_RESET}"
+            echo "  state: ${_state_file}"
         else
             echo "$_state_out" | sed 's/^/  /'
         fi
@@ -414,6 +414,7 @@ fi
 
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
+echo ""
 echo -e "ROLE: ${_CYAN}${ROLE}${_RESET}"
 echo ""
 
