@@ -395,7 +395,7 @@ def check_puppet():
     # Metadata predates this boot — puppet hasn't run yet this boot
     if boot_ts and meta_ts and meta_ts < boot_ts:
         data["metadata_from_previous_boot"] = True
-        return WARN, f"not yet run this boot (service={active}/{sub}, last run was pre-boot)", data
+        return WARN, f"not yet started this boot (queued, service={active}/{sub})", data
 
     if not meta.get("success", False):
         exit_code = meta.get('exit_code', '?')
@@ -579,6 +579,8 @@ def print_human(results, warnings):
             cpid = (disk_r.get("data") or {}).get("cleaner_pid")
             pid_str = f" (pid {cpid})" if cpid else ""
             print(f"  → cleanup in progress{pid_str} — wait for it to finish")
+        elif state == "PROVISIONING":
+            print(f"  → puppet has not finished yet — worker will start once it completes")
         else:
             first_fail = next(r for r in results if r["status"] == FAIL)
             print(f"  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
