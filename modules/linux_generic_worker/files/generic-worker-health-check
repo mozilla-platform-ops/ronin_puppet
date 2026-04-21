@@ -508,7 +508,13 @@ def summarize(results):
     if puppet.get("status") == FAIL:
         return "DOWN", puppet.get("detail", "puppet check failed")
 
-    if pdata.get("done_sentinel") == "missing":
+    puppet_in_progress = (
+        pdata.get("done_sentinel") == "missing"
+        or pdata.get("service_state", "").startswith("activating")
+        or "retrying" in puppet.get("detail", "")
+        or "not yet run this boot" in puppet.get("detail", "")
+    )
+    if puppet_in_progress:
         if not gdata.get("pids"):
             return "PROVISIONING", "puppet running, g-w waiting to start"
         return "PROVISIONING", "puppet running, g-w up"
