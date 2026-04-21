@@ -97,6 +97,12 @@ except smtplib.SMTPException as e:
 EOF
 }
 
+# TODO: remove notify_telegraf and all telegraf-related code.
+# Telegraf metrics were posted to https://telegraf.relops.mozops.net/write?db=relops
+# using InfluxDB line protocol. ERB vars involved: @telegraf_user, @telegraf_password,
+# @meta_data (loop generating key=value tags). All notify_telegraf call sites are
+# already commented out (search for "notify_telegraf"). Once removed, @telegraf_user,
+# @telegraf_password, and @meta_data can be dropped from the puppet::atboot class too.
 function notify_telegraf {
     TELEGRAF_TABLE=$1
     TELEGRAF_VALUE=$2
