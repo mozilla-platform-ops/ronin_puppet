@@ -398,7 +398,10 @@ def check_puppet():
         return WARN, f"not yet run this boot (service={active}/{sub}, last run was pre-boot)", data
 
     if not meta.get("success", False):
-        return FAIL, f"last run failed (exit_code={meta.get('exit_code', '?')}, service={active}/{sub})", data
+        exit_code = meta.get('exit_code', '?')
+        if active == "active":
+            return WARN, f"last run failed (exit_code={exit_code}) — service still running, likely retrying", data
+        return FAIL, f"last run failed (exit_code={exit_code}, service={active}/{sub})", data
 
     if not ts_str:
         return WARN, "success=true but no timestamp", data
