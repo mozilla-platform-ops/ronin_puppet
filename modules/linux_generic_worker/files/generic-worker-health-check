@@ -162,16 +162,21 @@ def check_disk_free():
                 failures.append(f"{mount}: {free_gb:.1f}GB ({pct:.0f}% free)")
         except OSError as e:
             results[mount] = {"error": str(e)}
+    cpid = _cleaner_running()
+    if cpid:
+        results["cleaner_running"] = True
+        results["cleaner_pid"] = cpid
+
     if failures:
-        cpid = _cleaner_running()
         if cpid:
-            results["cleaner_running"] = True
-            results["cleaner_pid"] = cpid
             return WARN, "low disk: " + "; ".join(failures) + " — cleanup running", results
         return FAIL, "low disk: " + "; ".join(failures), results
+
     summary = ", ".join(
         f"{m}: {v['free_gb']}GB" for m, v in results.items() if "free_gb" in v
     )
+    if cpid:
+        return WARN, f"{summary} — cleanup running (pid {cpid})", results
     return PASS, summary, results
 
 
@@ -584,11 +589,9 @@ def print_human(results, warnings):
         else:
             first_fail = next(r for r in results if r["status"] == FAIL)
             print(f"  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
-            hint = REMEDIATIONS.get(first_fail["name"])
-            if hint:
-                print(f"  → try: {hint}")
 
     w = max(len(r["name"]) for r in results)
+    indent = " " * (2 + 1 + 2 + w + 2)  # marker + spacing + name col + spacing
     for r in results:
         s = r["status"]
         if s == PASS:
@@ -598,6 +601,11 @@ def print_human(results, warnings):
         else:
             marker = red("✗")
         print(f"  {marker}  {r['name'].ljust(w)}  {_format_detail(r['detail'])}")
+        if s == FAIL:
+            hint = REMEDIATIONS.get(r["name"])
+            if hint:
+                for line in hint.splitlines():
+                    print(f"{indent}{yellow('→')} {line}")
 
 
 def main():
