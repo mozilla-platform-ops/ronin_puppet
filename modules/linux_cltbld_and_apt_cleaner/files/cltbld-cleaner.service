@@ -10,7 +10,7 @@
 # ugh, name already a misnomer... cleans up apt also.
 
 [Unit]
-Description=Clean the cltbld directory at startup (only if disk >70% full)
+Description=Clean the cltbld directory and apt caches at startup
 Before=run-puppet.service
 
 [Service]
