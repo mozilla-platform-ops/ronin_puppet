@@ -341,10 +341,10 @@ EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
     # show env vars of interest
-    echo -e "  branch:   ${_DIM}$PUPPET_BRANCH${_RESET}"
-    echo -e "  repo:     ${_DIM}$PUPPET_REPO${_RESET}"
-    echo -e "  mail:     ${_DIM}$PUPPET_MAIL${_RESET}"
-    echo -e "  override: ${_DIM}$WORKER_TYPE_OVERRIDE${_RESET}"
+    echo -e "  PUPPET_BRANCH:         ${_DIM}$PUPPET_BRANCH${_RESET}"
+    echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
+    echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}$WORKER_TYPE_OVERRIDE${_RESET}"
 fi
 
 # Extract username from puppet_repo
