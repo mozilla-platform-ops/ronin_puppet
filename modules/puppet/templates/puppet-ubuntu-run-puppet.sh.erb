@@ -234,7 +234,11 @@ function run_puppet {
         *)
             explanation="(unknown/failure)" ;;
     esac
-    echo "puppet command done. retval is $retval ${explanation}"
+    if [ $retval -eq 0 ] || [ $retval -eq 2 ]; then
+        echo -e "\033[32mpuppet command done. retval is $retval ${explanation}\033[0m"
+    else
+        echo -e "\033[31mpuppet command done. retval is $retval ${explanation}\033[0m"
+    fi
     # if retval is zero, check the logs for errors
     if [ $retval -eq 0 ]; then
         # just in case, if there were any errors logged, flag it as an error run
