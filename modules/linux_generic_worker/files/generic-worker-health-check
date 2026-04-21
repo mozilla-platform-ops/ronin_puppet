@@ -492,11 +492,11 @@ def _format_detail(detail):
 
 def print_json(results, warnings):
     check_warns = [f"{r['name']}: {r['detail']}" for r in results if r["status"] == WARN]
-    state, summary = summarize(results)
+    state, state_description = summarize(results)
     out = {
-        "overall": overall(results),
+        "ok": overall(results) == PASS,
         "state": state,
-        "summary": summary,
+        "state_description": state_description,
         "host": socket.gethostname(),
         "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "warnings": warnings + check_warns,
