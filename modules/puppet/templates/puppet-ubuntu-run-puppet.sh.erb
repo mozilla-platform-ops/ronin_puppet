@@ -320,6 +320,7 @@ fi
 
 # show header (send to stderr to avoid appearing in log output?)
 # pyfiglet font is cricket
+[ -t 2 ] && printf '\033[2m' >&2
 cat <<'EOF' >&2
                                                          __
   .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
@@ -327,6 +328,7 @@ cat <<'EOF' >&2
   |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
                           |__|        |__|  |__|
 EOF
+[ -t 2 ] && printf '\033[0m' >&2
 
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
