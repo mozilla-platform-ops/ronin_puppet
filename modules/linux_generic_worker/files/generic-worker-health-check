@@ -332,8 +332,46 @@ def check_task_dir_size():
     return PASS, f"{used_gb:.1f}GB used", data
 
 
+def _boot_time():
+    """Return system boot time as a UTC-aware datetime, or None."""
+    try:
+        with open("/proc/stat") as f:
+            for line in f:
+                if line.startswith("btime "):
+                    return datetime.datetime.fromtimestamp(
+                        int(line.split()[1]), tz=datetime.timezone.utc
+                    )
+    except OSError:
+        pass
+    return None
+
+
+def _puppet_service_state():
+    """Return (ActiveState, SubState) strings from systemctl, or ('unknown', 'unknown')."""
+    try:
+        r = subprocess.run(
+            ["systemctl", "show", "run-puppet",
+             "--property=ActiveState,SubState", "--no-pager"],
+            capture_output=True, text=True, timeout=5,
+        )
+        props = dict(line.split("=", 1) for line in r.stdout.strip().splitlines() if "=" in line)
+        return props.get("ActiveState", "unknown"), props.get("SubState", "unknown")
+    except Exception:
+        return "unknown", "unknown"
+
+
 def check_puppet():
     data = {"metadata_path": PUPPET_METADATA}
+
+    active, sub = _puppet_service_state()
+    data["service_state"] = f"{active}/{sub}"
+
+    if active == "activating":
+        return WARN, f"run in progress (service={active}/{sub})", data
+
+    boot_ts = _boot_time()
+    data["boot_ts"] = boot_ts.isoformat() if boot_ts else None
+
     if not os.path.exists(PUPPET_METADATA):
         return FAIL, f"{PUPPET_METADATA} not found", data
     try:
@@ -346,16 +384,27 @@ def check_puppet():
         if field in meta:
             data[field] = meta[field]
 
-    if not meta.get("success", False):
-        return FAIL, f"last run failed (exit_code={meta.get('exit_code', '?')})", data
-
     ts_str = meta.get("ts")
+    meta_ts = None
+    if ts_str:
+        try:
+            meta_ts = datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+        except Exception:
+            pass
+
+    # Metadata predates this boot — puppet hasn't run yet this boot
+    if boot_ts and meta_ts and meta_ts < boot_ts:
+        data["metadata_from_previous_boot"] = True
+        return WARN, f"not yet run this boot (service={active}/{sub}, last run was pre-boot)", data
+
+    if not meta.get("success", False):
+        return FAIL, f"last run failed (exit_code={meta.get('exit_code', '?')}, service={active}/{sub})", data
+
     if not ts_str:
         return WARN, "success=true but no timestamp", data
 
     try:
-        ts = datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
-        age_h = (datetime.datetime.now(datetime.timezone.utc) - ts).total_seconds() / 3600
+        age_h = (datetime.datetime.now(datetime.timezone.utc) - meta_ts).total_seconds() / 3600
         data["age_hours"] = round(age_h, 1)
         if age_h > PUPPET_MAX_AGE_HOURS:
             return FAIL, f"last run {age_h:.1f}h ago (>{PUPPET_MAX_AGE_HOURS}h)", data
@@ -403,7 +452,8 @@ REMEDIATIONS = {
         "fix: sudo ntpd -q -g  (forces clock sync, allows large skew)"
     ),
     "puppet": (
-        "check: sudo cat /etc/puppet/last_run_metadata.json"
+        "logs: journalctl -u run-puppet -n 100 --no-pager\n"
+        "  metadata: sudo cat /etc/puppet/last_run_metadata.json"
     ),
 }
 
