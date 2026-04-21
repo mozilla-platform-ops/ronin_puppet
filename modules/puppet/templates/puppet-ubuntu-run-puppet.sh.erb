@@ -185,12 +185,13 @@ function update_puppet {
       git remote add origin "${PUPPET_REPO}"
       git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
-    _orig=$(git rev-parse ORIG_HEAD 2>/dev/null)
+    _orig=$(git rev-parse ORIG_HEAD 2>/dev/null || true)
     _head=$(git rev-parse HEAD 2>/dev/null)
-    echo -e "${_DIM}  was: $(git log -1 --oneline "${_orig:-HEAD}")${_RESET}"
     if [[ -n "$_orig" && "$_orig" != "$_head" ]]; then
-      echo -e "${_CYAN}  now: $(git log -1 --oneline)${_RESET}"
+      echo -e "${_DIM}  was: $(git log -1 --oneline "$_orig")${_RESET}"
+      echo -e "${_CYAN}  now: $(git log -1 --oneline "$_head")${_RESET}"
     else
+      echo -e "${_DIM}  was: $(git log -1 --oneline "$_head")${_RESET}"
       echo -e "${_CYAN}  now: (same, up to date)${_RESET}"
     fi
 
