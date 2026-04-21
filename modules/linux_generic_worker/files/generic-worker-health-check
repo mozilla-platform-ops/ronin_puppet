@@ -115,23 +115,24 @@ def _cleaner_running():
 # ── checks ────────────────────────────────────────────────────────────────────
 
 def check_clock_skew():
+    cmds = [f"HEAD {CLOCK_REFERENCE_URL}"]
     try:
         req = urllib.request.Request(CLOCK_REFERENCE_URL, method="HEAD")
         with urllib.request.urlopen(req, timeout=5) as resp:
             date_hdr = resp.headers.get("Date")
         if not date_hdr:
-            return WARN, "no Date header in response", {}
+            return WARN, "no Date header in response", {"cmds": cmds}
         remote = email.utils.parsedate_to_datetime(date_hdr)
         local = datetime.datetime.now(datetime.timezone.utc)
         skew = abs((local - remote).total_seconds())
-        data = {"skew_seconds": round(skew, 1), "reference": CLOCK_REFERENCE_URL}
+        data = {"skew_seconds": round(skew, 1), "reference": CLOCK_REFERENCE_URL, "cmds": cmds}
         if skew > CLOCK_FAIL_SECONDS:
             return FAIL, f"clock skew {skew:.0f}s (>{CLOCK_FAIL_SECONDS}s)", data
         if skew > CLOCK_WARN_SECONDS:
             return WARN, f"clock skew {skew:.0f}s (>{CLOCK_WARN_SECONDS}s)", data
         return PASS, f"skew {skew:.1f}s", data
     except Exception as e:
-        return WARN, f"could not reach {CLOCK_REFERENCE_URL}: {e}", {}
+        return WARN, f"could not reach {CLOCK_REFERENCE_URL}: {e}", {"cmds": cmds}
 
 
 def check_disk_free():
@@ -192,8 +193,9 @@ def check_generic_worker_process():
     if len(pids) > 1:
         return FAIL, f"{len(pids)} processes found (expected 1): pids {pids}", data
 
-    task_state = _gw_task_state()
+    task_state, task_cmd = _gw_task_state()
     data["task_state"] = task_state
+    data["cmds"] = [task_cmd]
     if task_state == "task running":
         nchildren = _proc_descendants(pids[0])
         data["child_procs"] = nchildren
@@ -233,22 +235,21 @@ def _proc_descendants(root_pid):
 
 
 def _gw_task_state():
+    cmd = ["journalctl", "-t", "generic-worker", "-n", "50", "--no-pager"]
+    cmd_str = " ".join(cmd)
     try:
-        r = subprocess.run(
-            ["journalctl", "-t", "generic-worker", "-n", "50", "--no-pager"],
-            capture_output=True, text=True, timeout=10,
-        )
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
         lines = r.stdout.strip().splitlines()
         for line in reversed(lines):
             if "No task claimed" in line:
-                return "idle"
+                return "idle", cmd_str
             if "Executing command" in line or "Starting task feature" in line:
-                return "task running"
+                return "task running", cmd_str
         if not lines:
-            return "unknown (no journal output)"
+            return "unknown (no journal output)", cmd_str
     except Exception as e:
-        return f"unknown (journalctl error: {e})"
-    return "unknown (no matching log pattern)"
+        return f"unknown (journalctl error: {e})", cmd_str
+    return "unknown (no matching log pattern)", cmd_str
 
 
 def check_worker_runner_reporting():
@@ -277,15 +278,10 @@ def check_worker_runner_reporting():
 
     if _use_journal:
         # fall back to journalctl when svlogd log dir is absent or empty
+        jcmd = ["journalctl", "-t", "generic-worker", "--since", f"{GW_LOG_STALE_MINUTES} minutes ago", "-n", "1", "--no-pager"]
+        data["cmds"] = [" ".join(jcmd)]
         try:
-            r = subprocess.run(
-                [
-                    "journalctl", "-t", "generic-worker",
-                    "--since", f"{GW_LOG_STALE_MINUTES} minutes ago",
-                    "-n", "1", "--no-pager",
-                ],
-                capture_output=True, text=True, timeout=5,
-            )
+            r = subprocess.run(jcmd, capture_output=True, text=True, timeout=5)
             log_fresh = bool(r.stdout.strip())
             data["journal_recent"] = log_fresh
         except Exception as e:
@@ -354,24 +350,23 @@ def _boot_time():
 
 
 def _puppet_service_state():
-    """Return (ActiveState, SubState) strings from systemctl, or ('unknown', 'unknown')."""
+    """Return (ActiveState, SubState, cmd_str) from systemctl, or ('unknown', 'unknown', cmd_str)."""
+    cmd = ["systemctl", "show", "run-puppet", "--property=ActiveState,SubState", "--no-pager"]
+    cmd_str = " ".join(cmd)
     try:
-        r = subprocess.run(
-            ["systemctl", "show", "run-puppet",
-             "--property=ActiveState,SubState", "--no-pager"],
-            capture_output=True, text=True, timeout=5,
-        )
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
         props = dict(line.split("=", 1) for line in r.stdout.strip().splitlines() if "=" in line)
-        return props.get("ActiveState", "unknown"), props.get("SubState", "unknown")
+        return props.get("ActiveState", "unknown"), props.get("SubState", "unknown"), cmd_str
     except Exception:
-        return "unknown", "unknown"
+        return "unknown", "unknown", cmd_str
 
 
 def check_puppet():
     data = {"metadata_path": PUPPET_METADATA}
 
-    active, sub = _puppet_service_state()
+    active, sub, svc_cmd = _puppet_service_state()
     data["service_state"] = f"{active}/{sub}"
+    data["cmds"] = [svc_cmd]
 
     if active == "activating":
         return WARN, f"run in progress (service={active}/{sub})", data
@@ -484,7 +479,8 @@ def run_checks():
             status, detail, data = fn()
         except Exception as e:
             status, detail, data = FAIL, f"check raised exception: {e}", {}
-        results.append({"name": name, "status": status, "detail": detail, "data": data})
+        cmds = data.pop("cmds", [])
+        results.append({"name": name, "status": status, "detail": detail, "data": data, "commands_used": cmds})
     return results
 
 
@@ -556,9 +552,12 @@ def _format_detail(detail):
     return re.sub(r"(role=)(\S+)", lambda m: m.group(1) + bold(m.group(2)), detail)
 
 
-def print_json(results, warnings):
+def print_json(results, warnings, verbose=False):
     check_warns = [f"{r['name']}: {r['detail']}" for r in results if r["status"] == WARN]
     state, state_description = summarize(results)
+    checks = results if verbose else [
+        {k: v for k, v in r.items() if k != "commands_used"} for r in results
+    ]
     out = {
         "ok": overall(results) == PASS,
         "state": state,
@@ -566,12 +565,12 @@ def print_json(results, warnings):
         "host": socket.gethostname(),
         "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "warnings": warnings + check_warns,
-        "checks": results,
+        "checks": checks,
     }
     print(json.dumps(out, indent=2))
 
 
-def print_human(results, warnings):
+def print_human(results, warnings, verbose=False):
     for w in warnings:
         print(yellow(f"WARNING: {w}"), file=sys.stderr)
 
@@ -608,6 +607,9 @@ def print_human(results, warnings):
             if hint:
                 for line in hint.splitlines():
                     print(f"{indent}{yellow('→')} {line}")
+        if verbose:
+            for cmd in r.get("commands_used") or []:
+                print(f"{indent}$ {cmd}")
 
 
 def main():
@@ -617,7 +619,10 @@ def main():
         epilog="Exit 0 if all checks pass or warn. Exit 1 if any check fails.",
     )
     parser.add_argument("--json", action="store_true", help="emit JSON report to stdout")
-    parser.add_argument(
+    parser.add_argument("--verbose", action="store_true", help="show commands used by each check")
+
+    testing = parser.add_argument_group("testing arguments")
+    testing.add_argument(
         "--replay", metavar="PATH",
         help="read a prior --json snapshot (or '-' for stdin) and re-render without running checks",
     )
@@ -635,9 +640,9 @@ def main():
             warnings.append("not running as root — journalctl checks will return 'unknown' (run with sudo)")
         results = run_checks()
     if args.json:
-        print_json(results, warnings)
+        print_json(results, warnings, verbose=args.verbose)
     else:
-        print_human(results, warnings)
+        print_human(results, warnings, verbose=args.verbose)
     sys.exit(0 if overall(results) == PASS else 1)
 
 
