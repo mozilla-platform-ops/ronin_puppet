@@ -189,7 +189,7 @@ def check_disk_free():
 
 def check_generic_worker_process():
     pids = find_procs_by_name("generic-worker")
-    data = {"pids": pids}
+    data = {"generic_worker_pids": pids}
     if len(pids) == 0:
         if not os.path.exists(PUPPET_DONE_SENTINEL):
             return WARN, "not running — puppet run still in progress (waiting for sentinel)", data
@@ -525,7 +525,7 @@ def summarize(results):
         or "not yet run this boot" in puppet.get("detail", "")
     )
     if puppet_in_progress:
-        if not gdata.get("pids"):
+        if not gdata.get("generic_worker_pids"):
             return "PROVISIONING", "puppet running, g-w waiting to start"
         return "PROVISIONING", "puppet running, g-w up"
 

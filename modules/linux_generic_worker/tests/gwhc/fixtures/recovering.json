@@ -9,6 +9,6 @@
     {"name": "task_dir_size", "status": "pass", "detail": "0.0GB used", "data": {}},
     {"name": "puppet", "status": "fail", "detail": "last run failed (exit_code=6)", "data": {"success": false, "exit_code": 6}},
     {"name": "worker_runner_reporting", "status": "fail", "detail": "start-worker process not found", "data": {}},
-    {"name": "generic_worker_process", "status": "warn", "detail": "not running — puppet run still in progress (waiting for sentinel)", "data": {"pids": []}}
+    {"name": "generic_worker_process", "status": "warn", "detail": "not running — puppet run still in progress (waiting for sentinel)", "data": {"generic_worker_pids": []}}
   ]
 }

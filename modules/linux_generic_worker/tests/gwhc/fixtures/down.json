@@ -9,6 +9,6 @@
     {"name": "task_dir_size", "status": "pass", "detail": "0.1GB used", "data": {}},
     {"name": "puppet", "status": "fail", "detail": "last run failed (exit_code=1)", "data": {"success": false, "exit_code": 1}},
     {"name": "worker_runner_reporting", "status": "pass", "detail": "running (pid 999), logs recent (journal)", "data": {}},
-    {"name": "generic_worker_process", "status": "pass", "detail": "running (pid 1234) — idle", "data": {"pids": [1234], "task_state": "idle"}}
+    {"name": "generic_worker_process", "status": "pass", "detail": "running (pid 1234) — idle", "data": {"generic_worker_pids": [1234], "task_state": "idle"}}
   ]
 }
