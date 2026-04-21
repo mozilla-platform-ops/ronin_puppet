@@ -182,7 +182,7 @@ function update_puppet {
     if [[ -n "$_fetch_out" ]]; then
         echo "$_fetch_out" | sed 's/^/  /'
     else
-        echo "  ${_DIM}(no output)${_RESET}"
+        echo -e "  ${_DIM}(no output)${_RESET}"
     fi
     if [[ $_fetch_exit -ne 0 ]]; then
         echo "git fetch failed; re-cloning..."
