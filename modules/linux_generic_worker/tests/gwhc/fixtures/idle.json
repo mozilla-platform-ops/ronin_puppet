@@ -8,7 +8,7 @@
     {"name": "disk_free", "status": "pass", "detail": "/: 42.0GB, /var: 18.5GB, /home: 120.3GB", "data": {"/": {"free_gb": 42.0, "free_pct": 52.0, "total_gb": 80.0}, "/var": {"free_gb": 18.5, "free_pct": 62.0, "total_gb": 30.0}, "/home": {"free_gb": 120.3, "free_pct": 80.2, "total_gb": 150.0}}},
     {"name": "task_dir_size", "status": "pass", "detail": "0.1GB used", "data": {"task_dir": "/home/cltbld/tasks", "used_gb": 0.1}},
     {"name": "puppet", "status": "pass", "detail": "passed 0.5h ago (role=gw-linux)", "data": {"success": true, "age_hours": 0.5, "done_sentinel": true, "role": "gw-linux", "ts": "2026-04-20T00:00:00+00:00"}},
-    {"name": "worker_runner_reporting", "status": "pass", "detail": "running (pid 999), logs recent (journal)", "data": {"start_worker_pids": [999], "log_dir": "/var/log/genericworker", "journal_recent": true}},
+    {"name": "worker_runner_process", "status": "pass", "detail": "running (pid 999), logs recent (journal)", "data": {"start_worker_pids": [999], "log_dir": "/var/log/genericworker", "journal_recent": true}},
     {"name": "generic_worker_process", "status": "pass", "detail": "running (pid 1234) — idle", "data": {"generic_worker_pids": [1234], "task_state": "idle"}}
   ]
 }

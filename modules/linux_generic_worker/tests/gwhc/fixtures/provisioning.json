@@ -11,7 +11,7 @@
     {"name": "disk_free", "status": "pass", "detail": "/: 42.0GB", "data": {}},
     {"name": "task_dir_size", "status": "pass", "detail": "0.0GB used", "data": {}},
     {"name": "puppet", "status": "warn", "detail": "success=true but /tmp/puppet_run_done missing", "data": {"success": true, "age_hours": 0.1, "done_sentinel": false, "role": "gw-linux"}},
-    {"name": "worker_runner_reporting", "status": "pass", "detail": "running (pid 999), logs recent (journal)", "data": {}},
+    {"name": "worker_runner_process", "status": "pass", "detail": "running (pid 999), logs recent (journal)", "data": {}},
     {"name": "generic_worker_process", "status": "warn", "detail": "not running — puppet run still in progress (waiting for sentinel)", "data": {"generic_worker_pids": []}}
   ]
 }

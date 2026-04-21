@@ -256,7 +256,7 @@ def _gw_task_state():
     return "unknown (no matching log pattern)", cmd_str
 
 
-def check_worker_runner_reporting():
+def check_worker_runner_process():
     # TODO: add --check-tc-api flag to query queue.taskcluster.net for
     # lastDateActive using workerPoolId + workerId from /etc/start-worker.yml.
     pids = find_procs_by_name("start-worker")
@@ -456,7 +456,7 @@ REMEDIATIONS = {
         "check logs: /var/log/genericworker/  "
         "or: journalctl -t generic-worker -n 50"
     ),
-    "worker_runner_reporting": (
+    "worker_runner_process": (
         "check: /var/log/genericworker/  "
         "or: journalctl -t generic-worker -n 50"
     ),
@@ -474,7 +474,7 @@ CHECKS = [
     ("disk_free",               check_disk_free),
     ("task_dir_size",           check_task_dir_size),
     ("puppet",                  check_puppet),
-    ("worker_runner_reporting", check_worker_runner_reporting),
+    ("worker_runner_process", check_worker_runner_process),
     ("generic_worker_process",  check_generic_worker_process),
 ]
 
@@ -505,7 +505,7 @@ def _by_name(results, name):
 def summarize(results):
     puppet = _by_name(results, "puppet") or {}
     gwp    = _by_name(results, "generic_worker_process") or {}
-    wrr    = _by_name(results, "worker_runner_reporting") or {}
+    wrr    = _by_name(results, "worker_runner_process") or {}
     pdata  = puppet.get("data", {})
     gdata  = gwp.get("data", {})
 
