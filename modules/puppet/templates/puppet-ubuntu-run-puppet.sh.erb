@@ -185,7 +185,8 @@ function update_puppet {
       git remote add origin "${PUPPET_REPO}"
       git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
-    echo -e "${_CYAN}HEAD is now at $(git log -1 --oneline)${_RESET}"
+    echo -e "${_DIM}  was: $(git log -1 --oneline ORIG_HEAD 2>/dev/null || echo 'unknown')${_RESET}"
+    echo -e "${_CYAN}  now: $(git log -1 --oneline)${_RESET}"
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
