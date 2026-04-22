@@ -93,8 +93,8 @@ jobs:
         run: |
           curl -s -X POST \
             -u "${SIMPLEMDM_API_KEY}:" \
-            -d "script_id=${{ steps.script.outputs.script_id }}" \
-            -d "group_ids=${{ steps.parse.outputs.group_id }}" \
+            -F "script_id=${{ steps.script.outputs.script_id }}" \
+            -F "group_ids=${{ steps.parse.outputs.group_id }}" \
             https://a.simplemdm.com/api/v1/script_jobs
 
       - name: Post completion comment
