@@ -107,7 +107,7 @@ jobs:
           if [ "$POOL" = "1400" ]; then
             TRY_CMD="./mach try fuzzy --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1400-r8-staging --tag os_integration -q 'test-macosx1400'"
           else
-            TRY_CMD="# 1500 try command TBD — fill in when pool is ready"
+            TRY_CMD="./mach try fuzzy --all-tasks --worker-override t-osx-1500-m4=releng-hardware/gecko-t-osx-1500-m4-staging -q 'test-macosx1500'"
           fi
 
           printf 'Puppet triggered on `gecko-t-osx-%s-staging` with branch `%s`. Allow ~5 min for puppet to complete, then from your gecko checkout:\n\n```\n%s\n```' \
