@@ -105,7 +105,7 @@ jobs:
           BRANCH="${{ steps.pr.outputs.branch }}"
 
           if [ "$POOL" = "1400" ]; then
-            TRY_CMD="./mach try fuzzy --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1400-r8-staging --tag os_integration -q 'test-macosx1015'"
+            TRY_CMD="./mach try fuzzy --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1400-r8-staging --tag os_integration -q 'test-macosx1400'"
           else
             TRY_CMD="# 1500 try command TBD — fill in when pool is ready"
           fi
