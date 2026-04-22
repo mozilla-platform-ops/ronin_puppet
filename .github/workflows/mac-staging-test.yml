@@ -1,0 +1,116 @@
+name: Mac Staging Test
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  mac-staging-test:
+    if: |
+      github.event.issue.pull_request != null &&
+      (startsWith(github.event.comment.body, '/try-mac 1400') ||
+       startsWith(github.event.comment.body, '/try-mac 1500'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify commenter has repo write access
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${{ github.event.comment.user.login }}/permission" \
+            --jq '.permission' 2>/dev/null || echo "none")
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "maintain" && "$PERMISSION" != "write" ]]; then
+            echo "User ${{ github.event.comment.user.login }} does not have write access. Aborting."
+            exit 1
+          fi
+
+      - name: Parse pool from comment
+        id: parse
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          if [[ "$COMMENT" == "/try-mac 1400"* ]]; then
+            echo "pool=1400" >> "$GITHUB_OUTPUT"
+            echo "group_id=2017904" >> "$GITHUB_OUTPUT"
+          elif [[ "$COMMENT" == "/try-mac 1500"* ]]; then
+            echo "pool=1500" >> "$GITHUB_OUTPUT"
+            echo "group_id=2017910" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Get PR branch and repo
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_DATA=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}")
+          echo "branch=$(echo "$PR_DATA" | jq -r '.head.ref')" >> "$GITHUB_OUTPUT"
+          echo "repo=$(echo "$PR_DATA" | jq -r '.head.repo.clone_url')" >> "$GITHUB_OUTPUT"
+
+      - name: Post starting comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="Setting mac${{ steps.parse.outputs.pool }} staging override to \`${{ steps.pr.outputs.branch }}\` and triggering puppet..."
+
+      - name: Build and upload puppet override script
+        id: script
+        env:
+          SIMPLEMDM_API_KEY: ${{ secrets.SIMPLEMDM_API_KEY }}
+          PUPPET_REPO: ${{ steps.pr.outputs.repo }}
+          PUPPET_BRANCH: ${{ steps.pr.outputs.branch }}
+        run: |
+          {
+            echo '#!/bin/bash'
+            echo 'set -e'
+            echo 'mkdir -p /opt/puppet_environments'
+            echo '{'
+            echo "  echo \"PUPPET_REPO='${PUPPET_REPO}'\""
+            echo "  echo \"PUPPET_BRANCH='${PUPPET_BRANCH}'\""
+            echo "  echo \"PUPPET_MAIL='rcurran@mozilla.com'\""
+            echo '} > /opt/puppet_environments/ronin_settings'
+            echo 'nohup /usr/local/bin/run-puppet.sh > /tmp/puppet-staging-run.log 2>&1 &'
+            echo "echo \"Puppet triggered with branch ${PUPPET_BRANCH}, PID \$!\""
+          } > /tmp/puppet_override.sh
+
+          RESPONSE=$(curl -s -X POST \
+            -u "${SIMPLEMDM_API_KEY}:" \
+            -F "name=puppet-override-${PUPPET_BRANCH}" \
+            -F "file=@/tmp/puppet_override.sh" \
+            https://a.simplemdm.com/api/v1/scripts)
+
+          SCRIPT_ID=$(echo "$RESPONSE" | jq -r '.data.id')
+          echo "script_id=${SCRIPT_ID}" >> "$GITHUB_OUTPUT"
+          echo "Uploaded script ID: ${SCRIPT_ID}"
+
+      - name: Run script on device group
+        env:
+          SIMPLEMDM_API_KEY: ${{ secrets.SIMPLEMDM_API_KEY }}
+        run: |
+          curl -s -X POST \
+            -u "${SIMPLEMDM_API_KEY}:" \
+            -d "script_id=${{ steps.script.outputs.script_id }}" \
+            -d "group_ids=${{ steps.parse.outputs.group_id }}" \
+            https://a.simplemdm.com/api/v1/script_jobs
+
+      - name: Post completion comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          POOL="${{ steps.parse.outputs.pool }}"
+          BRANCH="${{ steps.pr.outputs.branch }}"
+
+          if [ "$POOL" = "1400" ]; then
+            TRY_CMD="./mach try fuzzy --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1400-r8-staging --tag os_integration -q 'test-macosx1015'"
+          else
+            TRY_CMD="# 1500 try command TBD — fill in when pool is ready"
+          fi
+
+          printf 'Puppet triggered on `gecko-t-osx-%s-staging` with branch `%s`. Allow ~5 min for puppet to complete, then from your gecko checkout:\n\n```\n%s\n```' \
+            "$POOL" "$BRANCH" "$TRY_CMD" | \
+            jq -Rs '{"body": .}' | \
+            gh api "repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments" --input -
