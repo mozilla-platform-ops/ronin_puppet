@@ -35,10 +35,10 @@ jobs:
           COMMENT="${{ github.event.comment.body }}"
           if [[ "$COMMENT" == "/try-mac 1400"* ]]; then
             echo "pool=1400" >> "$GITHUB_OUTPUT"
-            echo "group_id=2017904" >> "$GITHUB_OUTPUT"
+            echo "group_id=132158" >> "$GITHUB_OUTPUT"
           elif [[ "$COMMENT" == "/try-mac 1500"* ]]; then
             echo "pool=1500" >> "$GITHUB_OUTPUT"
-            echo "group_id=2017910" >> "$GITHUB_OUTPUT"
+            echo "group_id=151249" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Get PR branch and repo
@@ -77,13 +77,13 @@ jobs:
             echo "echo \"Puppet triggered with branch ${PUPPET_BRANCH}, PID \$!\""
           } > /tmp/puppet_override.sh
 
-          RESPONSE=$(curl -s -X POST \
+          RESPONSE=$(curl -sf -X POST \
             -u "${SIMPLEMDM_API_KEY}:" \
             -F "name=puppet-override-${PUPPET_BRANCH}" \
             -F "file=@/tmp/puppet_override.sh" \
             https://a.simplemdm.com/api/v1/scripts)
 
-          SCRIPT_ID=$(echo "$RESPONSE" | jq -r '.data.id')
+          SCRIPT_ID=$(echo "$RESPONSE" | grep -o '"id":[0-9]*' | head -1 | grep -o '[0-9]*')
           echo "script_id=${SCRIPT_ID}" >> "$GITHUB_OUTPUT"
           echo "Uploaded script ID: ${SCRIPT_ID}"
 
@@ -91,7 +91,7 @@ jobs:
         env:
           SIMPLEMDM_API_KEY: ${{ secrets.SIMPLEMDM_API_KEY }}
         run: |
-          curl -s -X POST \
+          curl -sf -X POST \
             -u "${SIMPLEMDM_API_KEY}:" \
             -F "script_id=${{ steps.script.outputs.script_id }}" \
             -F "group_ids=${{ steps.parse.outputs.group_id }}" \
