@@ -15,10 +15,11 @@ class packages::mercurial (
     mode    => '0644',
   }
 
-  # Remove /usr/local/bin/hg if it exists
+  # Remove /usr/local/bin/hg if it is a regular file (i.e. the old binary,
+  # not the symlink managed by the File resource below)
   exec { 'remove_old_hg':
     command => 'rm -f /usr/local/bin/hg',
-    onlyif  => 'test -f /usr/local/bin/hg',
+    onlyif  => 'test -f /usr/local/bin/hg && ! test -L /usr/local/bin/hg',
     path    => ['/bin', '/usr/bin'],
   }
 
