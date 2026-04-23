@@ -42,4 +42,4 @@ gem 'mutex_m'
 gem 'bigdecimal'
 gem 'csv'
 # ruby 3.3+ requires explicit minitar for r10k/puppet_forge
-gem 'minitar', '~> 0.9'
+gem 'minitar', '~> 1.1'

@@ -98,10 +98,11 @@ GEM
       logging (>= 1.6.1, < 3.0)
       rubyzip (~> 2.0)
     coderay (1.1.3)
-    colored2 (3.1.2)
+    colored (1.2)
     concurrent-ruby (1.3.6)
     connection_pool (2.5.5)
-    cri (2.15.12)
+    cri (2.4.1)
+      colored (>= 1.2)
     csv (3.3.5)
     date (3.5.1)
     debouncer (0.2.2)
@@ -141,16 +142,6 @@ GEM
     forwardable (1.4.0)
     fuzzyurl (0.9.0)
     getoptlong (0.2.1)
-    gettext (3.5.2)
-      erubi
-      locale (>= 2.0.5)
-      prime
-      racc
-      text (>= 1.3.0)
-    gettext-setup (1.1.1)
-      fast_gettext (>= 2.1, < 5.0)
-      gettext (~> 3.4)
-      locale
     google-apis-admin_directory_v1 (0.46.0)
       google-apis-core (>= 0.11.0, < 2.a)
     google-apis-cloudkms_v1 (0.41.0)
@@ -222,6 +213,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.19.2)
+    json_pure (2.8.1)
     jwt (2.7.1)
     kitchen-inspec (3.1.0)
       hashie (>= 3.4, < 6.0)
@@ -263,7 +255,7 @@ GEM
       multi_json (~> 1.14)
     method_source (1.1.0)
     mini_mime (1.1.5)
-    minitar (0.12.1)
+    minitar (1.1.0)
     minitest (5.27.0)
     mixlib-config (3.0.27)
       tomlrb
@@ -381,17 +373,12 @@ GEM
       puppet-syntax (~> 4.1, >= 4.1.1)
       rspec-github (~> 2.0)
       rspec-puppet (~> 5.0)
-    r10k (3.16.2)
-      colored2 (= 3.1.2)
-      cri (>= 2.15.10)
-      fast_gettext (>= 1.1.0, < 3.0.0)
-      gettext (>= 3.0.2, < 4.0.0)
-      gettext-setup (>= 0.24, < 2.0.0)
-      jwt (>= 2.2.3, < 2.8.0)
-      log4r (= 1.1.10)
-      minitar (~> 0.9)
-      multi_json (~> 1.10)
-      puppet_forge (>= 2.3.0, < 4.0.0)
+    r10k (1.1.4)
+      colored (>= 1.2)
+      cri (~> 2.4.0)
+      json_pure
+      log4r (>= 1.1.10)
+      systemu (~> 2.5.2)
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.3.1)
@@ -484,6 +471,7 @@ GEM
     strings-ansi (0.2.0)
     syslog (0.4.0)
       logger
+    systemu (2.5.2)
     test-kitchen (3.9.1)
       bcrypt_pbkdf (~> 1.0)
       chef-utils (>= 16.4.35)
@@ -502,7 +490,6 @@ GEM
       winrm (~> 2.0)
       winrm-elevated (~> 1.0)
       winrm-fs (~> 1.1)
-    text (1.3.1)
     thor (1.5.0)
     timeliness (0.3.10)
     tomlrb (1.3.0)
@@ -622,7 +609,7 @@ DEPENDENCIES
   kitchen-vagrant
   kitchen-verifier-serverspec
   librarian-puppet
-  minitar (~> 0.9)
+  minitar (~> 1.1)
   mutex_m
   net-ssh (>= 7.3, < 8)
   puppet (= 8.10.0)
