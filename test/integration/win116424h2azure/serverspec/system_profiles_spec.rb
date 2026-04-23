@@ -139,4 +139,20 @@ if x64_tester
       its(:stdout) { should match(/^1\s*$/) }
     end
   end
+
+  # Bug 2026458: First-logon animation and OOBE suppression for AVD SKU images
+  {
+    [uac_key, 'EnableFirstLogonAnimation'] => '0',
+    ['HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon', 'EnableFirstLogonAnimation'] => '0',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\OOBE', 'DisablePrivacyExperience'] => '1',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent', 'DisableWindowsConsumerFeatures'] => '1',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent', 'DisableSoftLanding'] => '1',
+    ['HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent', 'DisableCloudOptimizedContent'] => '1'
+  }.each do |(path, name), expected|
+    describe registry_value_command(path, name) do
+      its(:exit_status) { should eq 0 }
+      its(:stdout) { should match(/^#{expected}\s*$/) }
+    end
+  end
+
 end

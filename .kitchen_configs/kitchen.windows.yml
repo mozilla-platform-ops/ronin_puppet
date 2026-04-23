@@ -47,6 +47,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -70,6 +71,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -92,6 +94,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -114,6 +117,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -137,6 +141,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -160,6 +165,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
