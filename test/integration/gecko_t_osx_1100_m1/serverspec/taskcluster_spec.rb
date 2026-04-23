@@ -1,1 +1,0 @@
-../../gecko_t_osx_1015_r8/serverspec/taskcluster_spec.rb
