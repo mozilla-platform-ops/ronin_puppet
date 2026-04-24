@@ -69,21 +69,16 @@ class linux_generic_worker (
       require => Class['packages::linux_generic_worker'];
   }
 
-  # According to bug 1501936, https://bugzilla.mozilla.org/show_bug.cgi?id=1501936,Linux machines stuck at reboot process.
-  # Looking over the internet, I found this bug: https://lists.ubuntu.com/archives/foundations-bugs/2016-April/280724.html
-  # They suspet systemd generate this behavior. I reproduced this by genereting a reboot cron job
-  # and run it every 10 minutes.
-  # After around 24 hours the worker stuck at reboot process. I tryed to update systemd to the last version,
-  # but without success. To fix this, I plan to add --force option to reboot command,
-  # to shutdown without contacting the system manager.
-  # According reboot man page:
-  # -f, --force - Force immediate halt, power-off, or reboot. When specified once,
-  # this results in an immediate but clean shutdown by the system manager. When specified twice,
-  # this results in an immediate shutdown without contacting the system manager.
-  # See the description of --force in systemctl(1) for more details.
+  # --force was added in 2020 (bug 1501936) to bypass a systemd hang on Ubuntu 18.04.
+  # On 24.04 workers, --force bypasses systemd's orderly shutdown and appears to cause
+  # silent hangs during driver teardown (mlx4_en/NVMe) on kernel 6.8.0+.
+  # Using conditional to test without --force on 24.04 while leaving 18.04 unchanged.
   #
-  # used in run-generic-woker file below
-  $reboot_command = '/usr/bin/sudo /sbin/reboot --force'
+  # used in run-generic-worker file below
+  $reboot_command = $facts['os']['release']['full'] ? {
+    '24.04'  => '/usr/bin/sudo /sbin/reboot',
+    default  => '/usr/bin/sudo /sbin/reboot --force',
+  }
 
   file {
     default:
