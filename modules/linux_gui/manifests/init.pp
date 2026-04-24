@@ -366,17 +366,6 @@ class linux_gui (
             provider => 'shell',
           }
 
-          # eno1d1 is a second port on the same NIC as eno1. It may have a live
-          # cable but no DHCP scope, causing NetworkManager-wait-online to time
-          # out on boot. Mark it unmanaged so NM ignores it.
-          file { '/etc/NetworkManager/conf.d/unmanaged-devices.conf':
-            ensure  => file,
-            owner   => 'root',
-            group   => 'root',
-            mode    => '0644',
-            content => "[keyfile]\nunmanaged-devices=interface-name:eno1d1\n",
-          }
-
           # ensure ~/.config/systemd/user/ exists
           file { [
               "${builder_home}/.config/systemd",
@@ -418,6 +407,26 @@ class linux_gui (
         default: {
           fail ("Cannot install on Ubuntu version ${facts['os']['release']['full']}")
         }
+      }
+
+      # eno1d1 is a second port on the same NIC as eno1 on HP Moonshot
+      # cartridges. It has a live cable but no DHCP scope, causing
+      # NetworkManager-wait-online to block on boot and, on 18.04, causing
+      # systemd-resolved to wedge when NM's retry loop corrupts DNS routing.
+      # Applies to all Ubuntu versions since the hardware property is OS-independent.
+      file { '/etc/NetworkManager/conf.d/unmanaged-devices.conf':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => "[keyfile]\nunmanaged-devices=interface-name:eno1d1\n",
+      }
+      exec { 'reload NetworkManager for unmanaged-devices':
+        command     => 'systemctl reload NetworkManager.service',
+        user        => 'root',
+        path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+        subscribe   => File['/etc/NetworkManager/conf.d/unmanaged-devices.conf'],
+        refreshonly => true,
       }
     }
     default: {
