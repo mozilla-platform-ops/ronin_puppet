@@ -1,0 +1,59 @@
+<%- | String  $registry_host,
+      Integer $registry_port,
+      String  $oci_image,
+      String  $oci_tag,
+      String  $vm_name_prefix,
+      Integer $worker_count,
+      String  $insecure_flag,
+      String  $bin_path,
+      String  $user,
+| -%>
+#!/bin/bash
+# Manual VM update script: stops workers, pulls fresh image, reclones, restarts.
+set -euo pipefail
+
+REGISTRY="<%= $registry_host %>:<%= $registry_port %>"
+IMAGE="<%= $oci_image %>:<%= $oci_tag %>"
+WORKER_COUNT=<%= $worker_count %>
+BIN_PATH="<%= $bin_path %>"
+VM_NAME_PREFIX="<%= $vm_name_prefix %>"
+INSECURE_FLAG="<%= $insecure_flag %>"
+USER="<%= $user %>"
+PLIST_DIR="/Users/${USER}/Library/LaunchAgents"
+
+echo "Stopping Tart worker LaunchAgents..."
+for i in $(seq 1 ${WORKER_COUNT}); do
+  launchctl unload "${PLIST_DIR}/com.mozilla.tartworker-${i}.plist" 2>/dev/null || true
+done
+
+echo "Waiting 30s for VMs to shut down gracefully..."
+sleep 30
+
+echo "Force-stopping any remaining VMs..."
+for i in $(seq 1 ${WORKER_COUNT}); do
+  VM_NAME="${VM_NAME_PREFIX}-${i}"
+  "${BIN_PATH}" stop "${VM_NAME}" 2>/dev/null || true
+done
+
+echo "Deleting old VMs..."
+for i in $(seq 1 ${WORKER_COUNT}); do
+  VM_NAME="${VM_NAME_PREFIX}-${i}"
+  "${BIN_PATH}" delete "${VM_NAME}" 2>/dev/null || true
+done
+
+echo "Pulling latest image..."
+"${BIN_PATH}" pull ${INSECURE_FLAG} "${REGISTRY}/${IMAGE}"
+
+echo "Cloning fresh VMs..."
+for i in $(seq 1 ${WORKER_COUNT}); do
+  VM_NAME="${VM_NAME_PREFIX}-${i}"
+  "${BIN_PATH}" clone "${REGISTRY}/${IMAGE}" "${VM_NAME}"
+  "${BIN_PATH}" set "${VM_NAME}" --random-mac --random-serial
+done
+
+echo "Reloading LaunchAgents..."
+for i in $(seq 1 ${WORKER_COUNT}); do
+  launchctl load "${PLIST_DIR}/com.mozilla.tartworker-${i}.plist"
+done
+
+echo "Update complete. VMs are restarting."
