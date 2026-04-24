@@ -37,6 +37,7 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
       require linux_talos
 
       require linux_directory_cleaner
+      require linux_cltbld_and_apt_cleaner
 
       class { 'puppet::atboot':
         telegraf_user     => lookup('telegraf.user'),

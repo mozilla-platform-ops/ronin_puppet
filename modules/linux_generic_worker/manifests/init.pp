@@ -125,6 +125,19 @@ class linux_generic_worker (
       ensure => directory,
       mode   => '0777';
 
+    '/usr/local/bin/generic-worker-health-check':
+      ensure => file,
+      source => "puppet:///modules/${module_name}/generic-worker-health-check",
+      owner  => root,
+      group  => root,
+      mode   => '0755';
+
+    '/usr/local/bin/gwhc':
+      ensure => link,
+      target => '/usr/local/bin/generic-worker-health-check',
+      owner  => root,
+      group  => root;
+
     # workaround for https://bugs.launchpad.net/ubuntu/+source/gnome-settings-daemon/+bug/1764417
     # - happens occasionally. causes autostart scripts to not run.
     '/etc/systemd/system/graphical.target':
