@@ -97,6 +97,12 @@ except smtplib.SMTPException as e:
 EOF
 }
 
+# TODO: remove notify_telegraf and all telegraf-related code.
+# Telegraf metrics were posted to https://telegraf.relops.mozops.net/write?db=relops
+# using InfluxDB line protocol. ERB vars involved: @telegraf_user, @telegraf_password,
+# @meta_data (loop generating key=value tags). All notify_telegraf call sites are
+# already commented out (search for "notify_telegraf"). Once removed, @telegraf_user,
+# @telegraf_password, and @meta_data can be dropped from the puppet::atboot class too.
 function notify_telegraf {
     TELEGRAF_TABLE=$1
     TELEGRAF_VALUE=$2
@@ -106,22 +112,108 @@ function notify_telegraf {
     out=$(curl --fail --silent --show-error "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
 }
 
+function configure_git_pat_auth {
+    # GH PAT auth defaults to enabled
+    GH_PAT_AUTH=1
+    # if YQ_PRESENT=0, disable GH PAT auth
+    if [ "$YQ_PRESENT" = "0" ]; then
+        echo "yq-er not present, disabling GH PAT auth configuration"
+        GH_PAT_AUTH=0
+    fi
+    # add a way of disabling GH PAT AUTH (even if yq-er is present)
+    SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
+    if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
+        echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
+        # disable gh pat auth
+        GH_PAT_AUTH=0
+        # for this repo, unset any existing git config for extraHeader
+        git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
+    fi
+    # if GH_PAT_AUTH=1, proceed with configuring GH PAT auth
+    if [ "$GH_PAT_AUTH" = "1" ]; then
+        # check if keys are present in config file
+        # TODO: add actual key checking logic here
+        GH_PAT=$($YQ_BIN .github.pat /root/vault.yaml 2>/dev/null)
+        GH_PAT_USER=$($YQ_BIN .github.pat_user /root/vault.yaml 2>/dev/null)
+        # if they're both non-empty, set the extraHeader config
+        if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
+            # base64 encode the credentials
+            b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
+            # for this repo, set the git config for extraHeader
+            git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
+            echo "GitHub PAT authentication is enabled."
+        else
+            echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
+            # unset header if present (just this repo) (exit code 5 if not found)
+            git config --unset-all http.https://github.com/.extraHeader 2>/dev/null || echo "No existing GitHub PAT auth header to unset"
+        fi
+    fi
+}
+
+function reinit_working_dir {
+    echo "Re-initializing git repo from scratch..."
+    # Remove contents but stay in the directory (shell cwd)
+    rm -rf "${WORKING_DIR:?}"/* "${WORKING_DIR}"/.[!.]*
+    git init || return 1
+    git remote add origin "${PUPPET_REPO}" || return 1
+    configure_git_pat_auth
+}
+
 function update_puppet {
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
         git init || return 1
         git remote add origin "${PUPPET_REPO}" || return 1
+        configure_git_pat_auth
+    fi
+
+    # TODO: authenticate the remote actions
+
+    # Proactively remove empty/corrupted object files before fetching.
+    # git fetch can return exit code 0 even when unpack-objects fails due to
+    # corruption, so checking exit code alone is not reliable.
+    empty_count=$(find .git/objects -type f -empty 2>/dev/null | wc -l)
+    if [ "$empty_count" -gt 0 ]; then
+        echo "Found $empty_count empty object file(s) before fetch; removing..."
+        find .git/objects -type f -empty -delete
     fi
 
     # Fetch and checkout production branch
-    git fetch --all --prune || return 1
-    git checkout --force "origin/${PUPPET_BRANCH}" \
+    echo -e "Syncing ronin-puppet client (environment: ${puppet_env})..."
+    echo -e "  dir: ${WORKING_DIR}"
+    echo ""
+    _head_before=$(git rev-parse --verify HEAD 2>/dev/null || true)
+    _fetch_out=$(git fetch --all --prune 2>&1)
+    _fetch_exit=$?
+    if [[ -n "$_fetch_out" ]]; then
+        echo "$_fetch_out" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
+    else
+        echo -e "  ${_DIM}(no output)${_RESET}"
+    fi
+    if [[ $_fetch_exit -ne 0 ]]; then
+        echo "git fetch failed; re-cloning..."
+        reinit_working_dir || return 1
+        _fetch_out=$(git fetch --all --prune 2>&1)
+        _fetch_exit=$?
+        [[ -n "$_fetch_out" ]] && echo "$_fetch_out" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
+        [[ $_fetch_exit -eq 0 ]] || return 1
+    fi
+    git checkout --quiet --force "origin/${PUPPET_BRANCH}" \
       || (
       git remote rm upstream
       git remote rename origin upstream
       git remote add origin "${PUPPET_REPO}"
-      git checkout --force "origin/${PUPPET_BRANCH}"
+      git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
+    _head_after=$(git rev-parse --verify HEAD 2>/dev/null || true)
+    echo ""
+    if [[ -n "$_head_before" && -n "$_head_after" && "$_head_before" != "$_head_after" ]]; then
+      echo -e "  prev: $(git log -1 --oneline "$_head_before")"
+      echo -e "${_CYAN}  HEAD: $(git log -1 --oneline "$_head_after")${_RESET}"
+    else
+      echo -e "  prev: $(git log -1 --oneline "$_head_after")"
+      echo -e "${_CYAN}  HEAD: (same, up to date)${_RESET}"
+    fi
 
     # Copy secrets
     mkdir -p "${WORKING_DIR}/data/secrets"
@@ -139,8 +231,6 @@ EOF
 
 function run_puppet {
 
-    echo "current directory is: $(pwd)"
-
     # Always bring the puppet git up-to-sync before executing puppet
     if ! update_puppet; then
         echo "Failed to update puppet"
@@ -154,24 +244,26 @@ function run_puppet {
     PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
 
-    # debugging
     PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
-    echo "puppet command to run is: ${PUPPET_CMD}"
-
-    echo "running puppet command..."
+    echo "Running puppet apply..."
+    echo "  cmd: ${PUPPET_CMD}"
     echo ""
     # START: don't separate these two commands
-    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}"
+    $PUPPET_CMD 2>&1 | tee "${TMP_LOG}" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
     retval=${PIPESTATUS[0]}  # use pipestatus because tee masks the return value otherwise
     # END: don't separate these two commands
     PUPPET_RUN_DURATION=$SECONDS
     case $retval in
-        0) explanation="(success. no changes needed)" ;;
-        2) explanation="(success. changes applied)" ;;
-        *)
-            explanation="(unknown/failure)" ;;
+        0) explanation="no changes needed" ;;
+        2) explanation="changes applied" ;;
+        *) explanation="retval $retval" ;;
     esac
-    echo "puppet command done. retval is $retval ${explanation}"
+    echo ""
+    if [ $retval -eq 0 ] || [ $retval -eq 2 ]; then
+        echo -e "${_GREEN}  [PASS] puppet apply — ${explanation} (${PUPPET_RUN_DURATION}s)${_RESET}"
+    else
+        echo -e "${_RED}  [FAIL] puppet apply — ${explanation} (${PUPPET_RUN_DURATION}s)${_RESET}"
+    fi
     # if retval is zero, check the logs for errors
     if [ $retval -eq 0 ]; then
         # just in case, if there were any errors logged, flag it as an error run
@@ -191,10 +283,16 @@ function run_puppet {
     # This provides ground truth for monitoring and tracking applied configuration.
     # The function is designed to never fail the puppet run.
     if type write_puppet_state >/dev/null 2>&1; then
-        write_puppet_state "$WORKING_DIR" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
-            "/etc/puppet/ronin_settings" "/root/vault.yaml"
+        _state_out=$(write_puppet_state "$WORKING_DIR" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
+            "/etc/puppet/ronin_settings" "/root/vault.yaml" 2>&1)
+        _state_file=$(echo "$_state_out" | sed -n 's/^Puppet state written to //p')
+        if [[ -n "$_state_file" ]]; then
+            echo "  state: ${_state_file}"
+        else
+            echo "$_state_out" | sed 's/^/  /'
+        fi
     else
-        echo "WARNING: write_puppet_state function not available, skipping state file write" >&2
+        echo "  WARNING: write_puppet_state function not available, skipping state file write" >&2
     fi
     # ==============================================================================
 
@@ -215,6 +313,21 @@ function run_puppet {
 
 
 # Main script starts here
+
+# Color helpers — only when stdout is a TTY (suppresses codes in journal/pipes)
+if [ -t 1 ]; then
+    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _CYAN="\033[36m"; _RESET="\033[0m"
+else
+    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _CYAN=""; _RESET=""
+fi
+
+WRITE_SENTINEL=1
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -n|--no-sentinel) WRITE_SENTINEL=0 ;;
+    esac
+    shift
+done
 
 # Ensure we are running as root
 if [ "$(id -u)" -ne 0 ]; then
@@ -245,6 +358,7 @@ fi
 
 # show header (send to stderr to avoid appearing in log output?)
 # pyfiglet font is cricket
+[ -t 2 ] && printf '\033[2m' >&2
 cat <<'EOF' >&2
                                                          __
   .----.--.--.-----.______.-----.--.--.-----.-----.-----|  |_
@@ -252,6 +366,7 @@ cat <<'EOF' >&2
   |__| |_____|__|__|      |   __|_____|   __|   __|_____|____|
                           |__|        |__|  |__|
 EOF
+[ -t 2 ] && printf '\033[0m' >&2
 
 # Override defaults with values from /etc/puppet/ronin_settings if the file exists
 if [ -f "/etc/puppet/ronin_settings" ]; then
@@ -266,10 +381,10 @@ EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
     # show env vars of interest
-    echo "  PUPPET_BRANCH=$PUPPET_BRANCH"
-    echo "  PUPPET_REPO=$PUPPET_REPO"
-    echo "  PUPPET_MAIL=$PUPPET_MAIL"
-    echo "  WORKER_TYPE_OVERRIDE=$WORKER_TYPE_OVERRIDE"
+    echo -e "  PUPPET_BRANCH:         ${_DIM}$PUPPET_BRANCH${_RESET}"
+    echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
+    echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}$WORKER_TYPE_OVERRIDE${_RESET}"
 fi
 
 # Extract username from puppet_repo
@@ -299,50 +414,69 @@ fi
 
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
-echo "ROLE: ${ROLE}"
+echo ""
+echo -e "ROLE: ${_CYAN}${ROLE}${_RESET}"
+echo ""
+
+function show_previous_run_status {
+    local metadata_file="/etc/puppet/last_run_metadata.json"
+    echo "Previous run:"
+    if [ ! -f "$metadata_file" ]; then
+        echo "  (no metadata file found — first run or file missing)"
+        return
+    fi
+    $PYTHON_BIN - "$metadata_file" <<'PYEOF'
+import json, sys
+from datetime import datetime, timezone
+
+try:
+    with open(sys.argv[1]) as f:
+        m = json.load(f)
+    success   = m.get("success", False)
+    exit_code = m.get("exit_code", "?")
+    duration  = m.get("duration_s", "?")
+    ts        = m.get("ts", "")
+    git_sha   = (m.get("git_sha") or "?")[:8]
+
+    age_str = ts
+    if ts:
+        try:
+            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            age_s = (datetime.now(timezone.utc) - dt).total_seconds()
+            if age_s < 3600:
+                age_str = f"{int(age_s / 60)}m ago"
+            elif age_s < 86400:
+                age_str = f"{age_s / 3600:.1f}h ago"
+            else:
+                age_str = f"{age_s / 86400:.1f}d ago"
+        except Exception:
+            pass
+
+    if sys.stdout.isatty():
+        GREEN, RED, RESET = "\033[32m", "\033[31m", "\033[0m"
+    else:
+        GREEN = RED = RESET = ""
+    status_str = f"{GREEN}PASSED{RESET}" if success else f"{RED}FAILED (exit {exit_code}){RESET}"
+    print(f"  status:   {status_str}")
+    print(f"  when:     {age_str}  ({ts})")
+    print(f"  duration: {duration}s")
+    print(f"  git sha:  {git_sha}")
+except Exception as e:
+    print(f"  (could not parse metadata: {e})")
+PYEOF
+}
+
+show_previous_run_status
 echo ""
 
 # GitHub PAT authentication setup
-#
-# GH PAT auth defaults to enabled
-GH_PAT_AUTH=1
-# if YQ_PRESENT=0, disable GH PAT auth
-if [ "$YQ_PRESENT" = "0" ]; then
-    echo "yq-er not present, disabling GH PAT auth configuration"
-    GH_PAT_AUTH=0
-fi
-# add a way of disabling GH PAT AUTH (even if yq-er is present)
-SKIP_GH_PAT_AUTH=${SKIP_GH_PAT_AUTH:-0}
-if [ "$SKIP_GH_PAT_AUTH" = "1" ]; then
-    echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
-    # disable gh pat auth
-    GH_PAT_AUTH=0
-    # for this repo, unset any existing git config for extraHeader
-    git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
-fi
-# if GH_PAT_AUTH=1, proceed with configuring GH PAT auth
-if [ "$GH_PAT_AUTH" = "1" ]; then
-    # check if keys are present in config file
-    # TODO: add actual key checking logic here
-    GH_PAT=$($YQ_BIN .github.pat /root/vault.yaml 2>/dev/null)
-    GH_PAT_USER=$($YQ_BIN .github.pat_user /root/vault.yaml 2>/dev/null)
-    # if they're both non-empty, set the extraHeader config
-    if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
-        # base64 encode the credentials
-        b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
-        # for this repo, set the git config for extraHeader
-        git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
-        echo "GitHub PAT authentication is enabled."
-    else
-        echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
-    fi
-fi
+configure_git_pat_auth
 
 # block_on_network
 
 # Call the run_puppet function in a endless loop
 while ! run_puppet; do
-    echo "Puppet run failed; re-trying after 10m"
+    echo -e "${_RED}Puppet run failed; re-trying after 10m${_RESET}"
     sleep 600
 done
 
@@ -362,6 +496,10 @@ if [ -n "$WORKER_TYPE_OVERRIDE" ]; then
 fi
 
 # touch the semaphore to let run-start-worker know it can start start-worker
-touch "/tmp/puppet_run_done"
+if [ "$WRITE_SENTINEL" -eq 1 ]; then
+    touch "/tmp/puppet_run_done"
+else
+    echo "Skipping sentinel (--no-sentinel)"
+fi
 
 exit 0
