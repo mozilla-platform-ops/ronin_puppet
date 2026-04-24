@@ -1,0 +1,39 @@
+<%- | String  $registry_host,
+      Integer $registry_port,
+      String  $oci_image,
+      String  $oci_tag,
+      String  $vm_name_prefix,
+      Integer $worker_count,
+      String  $insecure_flag,
+      String  $bin_path,
+| -%>
+#!/bin/bash
+set -euo pipefail
+
+REGISTRY="<%= $registry_host %>:<%= $registry_port %>"
+IMAGE="<%= $oci_image %>:<%= $oci_tag %>"
+WORKER_COUNT=<%= $worker_count %>
+BIN_PATH="<%= $bin_path %>"
+VM_NAME_PREFIX="<%= $vm_name_prefix %>"
+INSECURE_FLAG="<%= $insecure_flag %>"
+
+echo "Pulling latest VM image from OCI registry..."
+"${BIN_PATH}" pull ${INSECURE_FLAG} "${REGISTRY}/${IMAGE}"
+
+echo "Setting up worker VMs..."
+for i in $(seq 1 ${WORKER_COUNT}); do
+  VM_NAME="${VM_NAME_PREFIX}-${i}"
+
+  if "${BIN_PATH}" list | awk '{print $1}' | grep -Fx "${VM_NAME}" > /dev/null 2>&1; then
+    echo "${VM_NAME} already exists, skipping clone"
+    continue
+  fi
+
+  echo "Cloning ${VM_NAME}..."
+  "${BIN_PATH}" clone "${REGISTRY}/${IMAGE}" "${VM_NAME}"
+
+  echo "Randomizing MAC and serial for ${VM_NAME}..."
+  "${BIN_PATH}" set "${VM_NAME}" --random-mac --random-serial
+done
+
+echo "VM setup complete"
