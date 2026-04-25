@@ -425,6 +425,7 @@ class linux_gui (
         command     => 'systemctl reload NetworkManager.service',
         user        => 'root',
         path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+        onlyif      => 'systemctl is-active NetworkManager.service',
         subscribe   => File['/etc/NetworkManager/conf.d/unmanaged-devices.conf'],
         refreshonly => true,
       }
