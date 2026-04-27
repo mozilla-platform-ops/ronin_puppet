@@ -143,7 +143,8 @@ FAIL_HOSTS=()
 for host in "${HOSTS[@]}"; do
     fqdn=$(fqdn_of "$host")
     label=$(short_label_of "$host")
-    out_file="$RUN_DIR/${label}.md"
+    collect_ts=$(date -u +"%Y%m%dT%H%M%SZ")
+    out_file="$RUN_DIR/${collect_ts}-${label}.md"
 
     echo "--- [$label] Collecting report from $fqdn ---"
 
