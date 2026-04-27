@@ -125,6 +125,18 @@ def build_steps(boot: int) -> List[Step]:
         ),
         Step("systemd failed units", "systemctl --failed"),
         Step("systemd-analyze blame (top 20)", "systemd-analyze blame | head -20"),
+        # --- puppet state ---
+        Step("puppet role", "cat /etc/puppet_role 2>/dev/null || echo '(not found)'"),
+        Step(
+            "puppet last run metadata",
+            "python3 -c \"import json,sys; print(json.dumps(json.load(open('/etc/puppet/last_run_metadata.json')), indent=2))\" 2>/dev/null || echo '(not found)'",
+            needs_sudo=True,
+        ),
+        Step(
+            "puppet ronin_settings (override)",
+            "cat /etc/puppet/ronin_settings 2>/dev/null || echo '(not present)'",
+            needs_sudo=True,
+        ),
     ]
 
 
