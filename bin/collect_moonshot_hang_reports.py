@@ -27,7 +27,12 @@ HANG_SCRIPT = SCRIPT_DIR / "moonshot_hang_report.py"
 RECENCY_MINUTES = 60
 AUTO_BATCH_SIZE = 10
 
-SSH_OPTS = ["-o", "StrictHostKeyChecking=accept-new", "-o", "ConnectTimeout=30"]
+SSH_OPTS = [
+    "-o", "StrictHostKeyChecking=accept-new",
+    "-o", "ConnectTimeout=30",
+    "-o", "ServerAliveInterval=15",
+    "-o", "ServerAliveCountMax=4",
+]
 
 # --- interrupt handling ---
 
@@ -218,7 +223,19 @@ def main() -> None:
     _voice_enabled = not args.no_voice
 
     if args.auto and not args.confirm:
-        err("--auto requires --confirm to proceed.")
+        info("Fetching bad-host list to preview run...")
+        raw = capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR, check=False)
+        preview_hosts = raw.split() if raw else []
+        n = min(len(preview_hosts), AUTO_BATCH_SIZE)
+        print()
+        if n:
+            warn(f"Auto mode would process {n} host(s) (of {len(preview_hosts)} found): "
+                 f"{' '.join(preview_hosts[:n])}")
+        else:
+            warn("Auto mode found no bad hosts to process.")
+        print()
+        warn("This is an automated script that will reboot hosts and collect diagnostics.")
+        warn("You must watch and monitor the run. Re-run with --confirm to proceed.")
         sys.exit(1)
 
     # --- verify dependencies ---
