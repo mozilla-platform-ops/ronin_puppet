@@ -164,22 +164,18 @@ def collect_host(fqdn: str, label: str, out_file: Path) -> bool:
         err(f"[{label}] scp upload failed")
         host_ok = False
 
-    if host_ok and run(
-        ["ssh"] + SSH_OPTS + [fqdn, "sudo python3 /tmp/moonshot_hang_report.py -o /tmp/hang_report.md"],
-        check=False,
-    ).returncode != 0:
-        err(f"[{label}] remote script failed")
-        host_ok = False
-
-    if host_ok and run(
-        ["scp"] + SSH_OPTS + [f"{fqdn}:/tmp/hang_report.md", str(out_file)],
-        check=False,
-    ).returncode != 0:
-        err(f"[{label}] scp download failed")
-        host_ok = False
+    if host_ok:
+        with out_file.open("w") as fh:
+            result = subprocess.run(
+                ["ssh"] + SSH_OPTS + [fqdn, "sudo python3 /tmp/moonshot_hang_report.py"],
+                stdout=fh, check=False,
+            )
+        if result.returncode != 0:
+            err(f"[{label}] remote script failed")
+            host_ok = False
 
     # cleanup regardless of prior failures
-    run(["ssh"] + SSH_OPTS + [fqdn, "rm -f /tmp/moonshot_hang_report.py /tmp/hang_report.md"],
+    run(["ssh"] + SSH_OPTS + [fqdn, "rm -f /tmp/moonshot_hang_report.py"],
         check=False)
 
     if host_ok:
