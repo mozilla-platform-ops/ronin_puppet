@@ -2,12 +2,13 @@
 # Collect hang-diagnostic reports from hung/rebooted t-linux64-ms-* cartridges.
 #
 # Usage:
-#   collect_moonshot_hang_reports.sh [--auto] [--no-reset] [--no-freshness] [HOST ...]
+#   collect_moonshot_hang_reports.sh [--auto] [--no-reset] [--no-freshness] [--ignore-recency] [HOST ...]
 #
-#   --auto          Fetch bad-host list from fleetroll instead of reading argv/stdin.
-#   --no-reset      Skip iLO reboot (host already freshly rebooted).
-#   --no-freshness  Skip fleetroll data-freshness check when using --auto.
-#   HOST ...        Short (ms025) or FQDN. If omitted and not --auto, reads stdin.
+#   --auto            Fetch bad-host list from fleetroll instead of reading argv/stdin.
+#   --no-reset        Skip iLO reboot (host already freshly rebooted).
+#   --no-freshness    Skip fleetroll data-freshness check when using --auto.
+#   --ignore-recency  Process hosts even if collected within the last 60 minutes.
+#   HOST ...          Short (ms025) or FQDN. If omitted and not --auto, reads stdin.
 
 set -euo pipefail
 
@@ -42,13 +43,16 @@ err()     { echo -e "${C_RED}[ERROR]${C_RESET} $*" >&2; }
 AUTO=0
 NO_RESET=0
 NO_FRESHNESS=0
+IGNORE_RECENCY=0
+RECENCY_MINUTES=60
 HOSTS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --auto)           AUTO=1 ;;
-        --no-reset)       NO_RESET=1 ;;
-        --no-freshness)   NO_FRESHNESS=1 ;;
+        --auto)             AUTO=1 ;;
+        --no-reset)         NO_RESET=1 ;;
+        --no-freshness)     NO_FRESHNESS=1 ;;
+        --ignore-recency)   IGNORE_RECENCY=1 ;;
         -h|--help)
             sed -n '2,10p' "$0" | sed 's/^# //'
             exit 0
@@ -117,6 +121,11 @@ short_label_of() {
     fi
 }
 
+recently_processed() {
+    local label="$1"
+    [[ -n "$(find "$RESULTS_BASE" -type f -name "*-${label}.md" -mmin -"$RECENCY_MINUTES" -print -quit 2>/dev/null)" ]]
+}
+
 # --- freshness gate ---
 if [[ "$AUTO" -eq 1 && "$NO_FRESHNESS" -eq 0 ]]; then
     info "Checking fleetroll data freshness..."
@@ -145,6 +154,28 @@ fi
 if [[ "${#HOSTS[@]}" -eq 0 ]]; then
     warn "No hosts specified. Nothing to do."
     exit 0
+fi
+
+# --- recency filter ---
+if [[ "$IGNORE_RECENCY" -eq 0 ]]; then
+    FILTERED=()
+    SKIPPED=()
+    for h in "${HOSTS[@]}"; do
+        if recently_processed "$(short_label_of "$h")"; then
+            SKIPPED+=("$h")
+        else
+            FILTERED+=("$h")
+        fi
+    done
+    if [[ "${#SKIPPED[@]}" -gt 0 ]]; then
+        warn "Skipping ${#SKIPPED[@]} host(s) processed within last ${RECENCY_MINUTES} min: ${SKIPPED[*]}"
+        warn "(use --ignore-recency to override)"
+    fi
+    HOSTS=("${FILTERED[@]}")
+    if [[ "${#HOSTS[@]}" -eq 0 ]]; then
+        info "All requested hosts were recently processed. Nothing to do."
+        exit 0
+    fi
 fi
 
 info "Hosts to process: ${HOSTS[*]}"
