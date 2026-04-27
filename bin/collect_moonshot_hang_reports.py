@@ -127,8 +127,12 @@ def recently_processed(label: str) -> bool:
 
 # --- announcements ---
 
+_voice_enabled = True
+
+
 def say(msg: str) -> None:
-    subprocess.run(["say", msg], check=False)
+    if _voice_enabled:
+        subprocess.run(["say", msg], check=False)
 
 
 # --- subprocess helpers ---
@@ -202,13 +206,16 @@ def parse_args() -> argparse.Namespace:
                         help=f"Process hosts even if collected within last {RECENCY_MINUTES} min.")
     parser.add_argument("--confirm", action="store_true",
                         help="Required with --auto to confirm you want to proceed.")
+    parser.add_argument("--no-voice", action="store_true",
+                        help="Suppress spoken announcements.")
     return parser.parse_args()
 
 
 def main() -> None:
-    global _log_fh
+    global _log_fh, _voice_enabled
 
     args = parse_args()
+    _voice_enabled = not args.no_voice
 
     if args.auto and not args.confirm:
         err("--auto requires --confirm to proceed.")
