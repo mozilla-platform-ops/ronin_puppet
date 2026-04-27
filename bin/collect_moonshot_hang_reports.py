@@ -213,7 +213,7 @@ def main() -> None:
         hosts = [line.strip() for line in sys.stdin if line.strip()]
 
     if not hosts:
-        warn("No hosts specified. Nothing to do.")
+        warn("No bad hosts found." if args.auto else "No hosts specified. Nothing to do.")
         sys.exit(0)
 
     # --- recency filter ---
