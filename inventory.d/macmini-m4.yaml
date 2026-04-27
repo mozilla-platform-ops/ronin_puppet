@@ -146,3 +146,9 @@ groups:
       - macmini-m4-173.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: enterprise_3_b_osx_arm64
+
+  - name: gecko-1-b-osx-arm64-vms-host
+    targets:
+      - macmini-m4-117.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_1_b_osx_arm64_vms_host

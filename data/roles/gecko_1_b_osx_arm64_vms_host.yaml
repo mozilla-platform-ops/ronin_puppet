@@ -13,7 +13,7 @@ tart:
   registry_host: '10.49.56.83'
   registry_port: 5000
   oci_image: 'sequoia-gecko1b-vms'
-  oci_tag: 'prod-latest'
+  oci_tag: 'gecko1b-prod-latest'
   vm_name_prefix: 'gecko1b-vm'
   worker_count: 2
   insecure: true
