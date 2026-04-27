@@ -14,6 +14,7 @@ Usage:
 import argparse
 import datetime
 import re
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +27,22 @@ HANG_SCRIPT = SCRIPT_DIR / "moonshot_hang_report.py"
 RECENCY_MINUTES = 60
 
 SSH_OPTS = ["-o", "StrictHostKeyChecking=accept-new", "-o", "ConnectTimeout=30"]
+
+# --- interrupt handling ---
+
+_interrupt_count = 0
+
+
+def _sigint_handler(sig, frame):
+    global _interrupt_count
+    _interrupt_count += 1
+    if _interrupt_count == 1:
+        print("\n[Ctrl-C] Will stop after current host finishes. Press again to exit immediately.",
+              file=sys.stderr)
+    else:
+        print("\n[Ctrl-C] Exiting immediately.", file=sys.stderr)
+        sys.exit(130)
+
 
 # --- color / logging ---
 
@@ -253,6 +270,8 @@ def main() -> None:
         warn("Skipping reset (--no-reset).")
 
     # --- collect reports ---
+    signal.signal(signal.SIGINT, _sigint_handler)
+
     ok_hosts: list[str] = []
     fail_hosts: list[str] = []
 
@@ -268,6 +287,10 @@ def main() -> None:
             err(f"[{label}] collection failed")
             fail_hosts.append(label)
         print()
+
+        if _interrupt_count:
+            warn("Stopping after interrupt.")
+            break
 
     # --- summary ---
     _emit(_c('1', "=" * 40))
