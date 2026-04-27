@@ -238,15 +238,14 @@ for host in "${HOSTS[@]}"; do
         "$fqdn" "rm -f /tmp/moonshot_hang_report.py /tmp/hang_report.md" 2>/dev/null || true
 
     if [[ "$host_ok" -eq 1 ]]; then
-        ok "[$label] -> $out_file"
         OK_HOSTS+=("$label")
         section "$label  host-audit"
-        audit_file="$RUN_DIR/${collect_ts}-${label}-audit.txt"
-        if (cd "$FLEETROLL_DIR" && uv run fleetroll host-audit "$fqdn" > "$audit_file" 2>&1); then
-            ok "[$label] audit -> $audit_file"
-        else
-            warn "[$label] host-audit failed (see $audit_file)"
-        fi
+        {
+            printf '\n---\n\n# Fleetroll Host Audit\n\n```\n'
+            (cd "$FLEETROLL_DIR" && uv run fleetroll host-audit "$fqdn" 2>&1) || true
+            printf '```\n'
+        } >> "$out_file"
+        ok "[$label] -> $out_file"
     else
         err "[$label] collection failed"
         FAIL_HOSTS+=("$label")
