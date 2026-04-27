@@ -17,6 +17,7 @@ import re
 import signal
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 FLEETROLL_DIR = Path.home() / "git/fleetroll_mvp"
@@ -214,6 +215,8 @@ def parse_args() -> argparse.Namespace:
                         help="Required with --auto to confirm you want to proceed.")
     parser.add_argument("--no-voice", action="store_true",
                         help="Suppress spoken announcements.")
+    parser.add_argument("--loop-interval", type=int, default=15, metavar="MINUTES",
+                        help="Minutes to sleep between auto runs (default: 15).")
     return parser.parse_args()
 
 
@@ -248,113 +251,138 @@ def main() -> None:
         err(f"Diagnostic script not found: {HANG_SCRIPT}")
         sys.exit(1)
 
-    # --- freshness gate ---
-    if args.auto and not args.no_freshness:
-        info("Checking fleetroll data freshness...")
-        if run(["uv", "run", "fleetroll", "data-freshness"], cwd=FLEETROLL_DIR, check=False).returncode != 0:
-            print()
-            err("Fleetroll data is stale. Refresh it or pass --no-freshness to skip.")
-            sys.exit(1)
-
-    # --- resolve host list ---
-    if args.auto:
-        info("Fetching bad-host list from fleetroll...")
-        hosts = capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR).split()
-    elif args.hostname:
-        hosts = args.hostname
-    else:
-        if sys.stdin.isatty():
-            print("Enter hostnames (one per line, Ctrl-D to finish):", file=sys.stderr)
-        hosts = [line.strip() for line in sys.stdin if line.strip()]
-
-    if not hosts:
-        warn("No bad hosts found." if args.auto else "No hosts specified. Nothing to do.")
-        sys.exit(0)
-
-    # --- recency filter ---
-    if not args.ignore_recency:
-        skipped, filtered = [], []
-        for h in hosts:
-            (skipped if recently_processed(short_label(h)) else filtered).append(h)
-        if skipped:
-            warn(f"Skipping {len(skipped)} host(s) processed within last {RECENCY_MINUTES} min:"
-                 f" {' '.join(skipped)}")
-            warn("(use --ignore-recency to override)")
-        hosts = filtered
-        if not hosts:
-            info("All requested hosts were recently processed. Nothing to do.")
-            sys.exit(0)
-
-    if args.auto and len(hosts) > AUTO_BATCH_SIZE:
-        warn(f"Auto mode: capping at {AUTO_BATCH_SIZE} hosts ({len(hosts)} found).")
-        hosts = hosts[:AUTO_BATCH_SIZE]
-
-    info(f"Hosts to process: {' '.join(hosts)}")
-    n = len(hosts)
-    say(f"{SCRIPT_VOICE_NAME}. Starting run. {n} host{'s' if n != 1 else ''} detected.")
-
-    # --- create results dir and open log ---
-    run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
-    run_dir.mkdir(parents=True, exist_ok=True)
-    log_path = run_dir / "run.log"
-    info(f"Results will be saved to: {run_dir}")
-    info(f"Log: {log_path}")
-
-    _log_fh = log_path.open("a")
-    _emit(f"Run started at {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
-    _emit(f"Hosts: {' '.join(hosts)}")
-    _emit("")
-
-    # --- reset ---
-    if not args.no_reset:
-        info("Resetting hosts via iLO (waiting for them to come back online)...")
-        run(["uv", "run", "./reset_moonshot.py", "--force"] + hosts, cwd=RESET_DIR)
-        print()
-    else:
-        warn("Skipping reset (--no-reset).")
-
-    # --- collect reports ---
     signal.signal(signal.SIGINT, _sigint_handler)
 
-    ok_hosts: list[str] = []
-    fail_hosts: list[str] = []
+    last_failed = False
 
-    for host in hosts:
-        fqdn = worker_fqdn(host)
-        label = short_label(host)
-        ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        out_file = run_dir / f"{ts}-{label}.md"
+    while True:
+        # --- freshness gate ---
+        if args.auto and not args.no_freshness:
+            info("Checking fleetroll data freshness...")
+            if run(["uv", "run", "fleetroll", "data-freshness"], cwd=FLEETROLL_DIR, check=False).returncode != 0:
+                print()
+                err("Fleetroll data is stale. Refresh it or pass --no-freshness to skip.")
+                sys.exit(1)
 
-        if collect_host(fqdn, label, out_file):
-            ok_hosts.append(label)
+        # --- resolve host list ---
+        if args.auto:
+            info("Fetching bad-host list from fleetroll...")
+            hosts = capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR).split()
+        elif args.hostname:
+            hosts = args.hostname
         else:
-            err(f"[{label}] collection failed")
-            fail_hosts.append(label)
-        print()
+            if sys.stdin.isatty():
+                print("Enter hostnames (one per line, Ctrl-D to finish):", file=sys.stderr)
+            hosts = [line.strip() for line in sys.stdin if line.strip()]
 
-        if _interrupt_count:
-            warn("Stopping after interrupt.")
+        if not hosts:
+            warn("No bad hosts found." if args.auto else "No hosts specified. Nothing to do.")
+            if args.auto:
+                say(f"{SCRIPT_VOICE_NAME}. No bad hosts. Rechecking in "
+                    f"{args.loop_interval} minute{'s' if args.loop_interval != 1 else ''}.")
+            else:
+                sys.exit(0)
+        else:
+            # --- recency filter ---
+            if not args.ignore_recency:
+                skipped, filtered = [], []
+                for h in hosts:
+                    (skipped if recently_processed(short_label(h)) else filtered).append(h)
+                if skipped:
+                    warn(f"Skipping {len(skipped)} host(s) processed within last {RECENCY_MINUTES} min:"
+                         f" {' '.join(skipped)}")
+                    warn("(use --ignore-recency to override)")
+                hosts = filtered
+
+            if not hosts:
+                info("All requested hosts were recently processed. Nothing to do.")
+            else:
+                if args.auto and len(hosts) > AUTO_BATCH_SIZE:
+                    warn(f"Auto mode: capping at {AUTO_BATCH_SIZE} hosts ({len(hosts)} found).")
+                    hosts = hosts[:AUTO_BATCH_SIZE]
+
+                info(f"Hosts to process: {' '.join(hosts)}")
+                n = len(hosts)
+                say(f"{SCRIPT_VOICE_NAME}. Starting run. {n} host{'s' if n != 1 else ''} detected.")
+
+                # --- create results dir and open log ---
+                run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
+                run_dir.mkdir(parents=True, exist_ok=True)
+                log_path = run_dir / "run.log"
+                info(f"Results will be saved to: {run_dir}")
+                info(f"Log: {log_path}")
+
+                _log_fh = log_path.open("a")
+                _emit(f"Run started at {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
+                _emit(f"Hosts: {' '.join(hosts)}")
+                _emit("")
+
+                # --- reset ---
+                if not args.no_reset:
+                    info("Resetting hosts via iLO (waiting for them to come back online)...")
+                    run(["uv", "run", "./reset_moonshot.py", "--force"] + hosts, cwd=RESET_DIR)
+                    print()
+                else:
+                    warn("Skipping reset (--no-reset).")
+
+                # --- collect reports ---
+                ok_hosts: list[str] = []
+                fail_hosts: list[str] = []
+
+                for host in hosts:
+                    fqdn = worker_fqdn(host)
+                    label = short_label(host)
+                    ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+                    out_file = run_dir / f"{ts}-{label}.md"
+
+                    if collect_host(fqdn, label, out_file):
+                        ok_hosts.append(label)
+                    else:
+                        err(f"[{label}] collection failed")
+                        fail_hosts.append(label)
+                    print()
+
+                    if _interrupt_count:
+                        warn("Stopping after interrupt.")
+                        break
+
+                # --- summary ---
+                _emit(_c('1', "=" * 40))
+                _emit(f"{_c('1', 'Run complete:')} {run_dir}")
+                if ok_hosts:
+                    _emit(f"{_c('1;32', 'OK:  ')} {' '.join(ok_hosts)}")
+                if fail_hosts:
+                    _emit(f"{_c('1;31', 'FAIL:')} {' '.join(fail_hosts)}")
+                _emit(_c('1', "=" * 40))
+
+                ok_n, fail_n = len(ok_hosts), len(fail_hosts)
+                if fail_n:
+                    say(f"{SCRIPT_VOICE_NAME}. {ok_n} succeeded, {fail_n} failed.")
+                else:
+                    say(f"{SCRIPT_VOICE_NAME}. All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
+
+                last_failed = bool(fail_hosts)
+
+                if _log_fh:
+                    _log_fh.close()
+                    _log_fh = None
+
+        if not args.auto or _interrupt_count:
             break
 
-    # --- summary ---
-    _emit(_c('1', "=" * 40))
-    _emit(f"{_c('1', 'Run complete:')} {run_dir}")
-    if ok_hosts:
-        _emit(f"{_c('1;32', 'OK:  ')} {' '.join(ok_hosts)}")
-    if fail_hosts:
-        _emit(f"{_c('1;31', 'FAIL:')} {' '.join(fail_hosts)}")
-    _emit(_c('1', "=" * 40))
+        info(f"Next run in {args.loop_interval} minute{'s' if args.loop_interval != 1 else ''}. "
+             f"Press Ctrl-C to stop.")
+        for _ in range(args.loop_interval * 60):
+            if _interrupt_count:
+                break
+            time.sleep(1)
 
-    ok_n, fail_n = len(ok_hosts), len(fail_hosts)
-    if fail_n:
-        say(f"{SCRIPT_VOICE_NAME}. {ok_n} succeeded, {fail_n} failed.")
-    else:
-        say(f"{SCRIPT_VOICE_NAME}. All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
+        if _interrupt_count:
+            break
 
-    if _log_fh:
-        _log_fh.close()
+        print()
 
-    sys.exit(1 if fail_hosts else 0)
+    sys.exit(1 if last_failed else 0)
 
 
 if __name__ == "__main__":
