@@ -150,8 +150,7 @@ fi
 info "Hosts to process: ${HOSTS[*]}"
 
 # --- create results dir ---
-RUN_TS=$(date -u +"%Y%m%dT%H%M%SZ")
-RUN_DIR="$RESULTS_BASE/$RUN_TS"
+RUN_DIR="$RESULTS_BASE/$(date -u +"%Y%m%d")"
 mkdir -p "$RUN_DIR"
 LOG="$RUN_DIR/run.log"
 info "Results will be saved to: $RUN_DIR"
