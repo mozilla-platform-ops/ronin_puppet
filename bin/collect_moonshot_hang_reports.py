@@ -25,6 +25,7 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 RESULTS_BASE = SCRIPT_DIR.parent / "moonshot_debugging_results"
 HANG_SCRIPT = SCRIPT_DIR / "moonshot_hang_report.py"
 RECENCY_MINUTES = 60
+AUTO_BATCH_SIZE = 10
 
 SSH_OPTS = ["-o", "StrictHostKeyChecking=accept-new", "-o", "ConnectTimeout=30"]
 
@@ -246,6 +247,10 @@ def main() -> None:
         if not hosts:
             info("All requested hosts were recently processed. Nothing to do.")
             sys.exit(0)
+
+    if args.auto and len(hosts) > AUTO_BATCH_SIZE:
+        warn(f"Auto mode: capping at {AUTO_BATCH_SIZE} hosts ({len(hosts)} found).")
+        hosts = hosts[:AUTO_BATCH_SIZE]
 
     info(f"Hosts to process: {' '.join(hosts)}")
 
