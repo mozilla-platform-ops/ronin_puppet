@@ -15,7 +15,7 @@ FLEETROLL_DIR="$HOME/git/fleetroll_mvp"
 RESET_DIR="$HOME/git/relops-infra/moonshot"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-HANG_SCRIPT="$REPO_DIR/moonshot_hang_report.py"
+HANG_SCRIPT="$SCRIPT_DIR/moonshot_hang_report.py"
 RESULTS_BASE="$REPO_DIR/moonshot_debugging_results"
 FQDN_SUFFIX=".test.releng.mdc1.mozilla.com"
 
