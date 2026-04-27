@@ -125,6 +125,12 @@ def recently_processed(label: str) -> bool:
     return any(f.stat().st_mtime > cutoff for f in RESULTS_BASE.rglob(f"*-{label}.md"))
 
 
+# --- announcements ---
+
+def say(msg: str) -> None:
+    subprocess.run(["say", msg], check=False)
+
+
 # --- subprocess helpers ---
 
 def run(cmd: list, *, cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess:
@@ -259,6 +265,8 @@ def main() -> None:
         hosts = hosts[:AUTO_BATCH_SIZE]
 
     info(f"Hosts to process: {' '.join(hosts)}")
+    n = len(hosts)
+    say(f"Starting moonshot run. {n} host{'s' if n != 1 else ''} detected.")
 
     # --- create results dir and open log ---
     run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
@@ -311,6 +319,12 @@ def main() -> None:
     if fail_hosts:
         _emit(f"{_c('1;31', 'FAIL:')} {' '.join(fail_hosts)}")
     _emit(_c('1', "=" * 40))
+
+    ok_n, fail_n = len(ok_hosts), len(fail_hosts)
+    if fail_n:
+        say(f"Moonshot run complete. {ok_n} succeeded, {fail_n} failed.")
+    else:
+        say(f"Moonshot run complete. All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
 
     if _log_fh:
         _log_fh.close()
