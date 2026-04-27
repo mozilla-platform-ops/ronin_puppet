@@ -26,6 +26,7 @@ RESULTS_BASE = SCRIPT_DIR.parent / "moonshot_debugging_results"
 HANG_SCRIPT = SCRIPT_DIR / "moonshot_hang_report.py"
 RECENCY_MINUTES = 60
 AUTO_BATCH_SIZE = 10
+SCRIPT_VOICE_NAME = "Moonshot Medic"
 
 SSH_OPTS = [
     "-o", "StrictHostKeyChecking=accept-new",
@@ -290,7 +291,7 @@ def main() -> None:
 
     info(f"Hosts to process: {' '.join(hosts)}")
     n = len(hosts)
-    say(f"Starting moonshot run. {n} host{'s' if n != 1 else ''} detected.")
+    say(f"{SCRIPT_VOICE_NAME}. Starting run. {n} host{'s' if n != 1 else ''} detected.")
 
     # --- create results dir and open log ---
     run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
@@ -346,9 +347,9 @@ def main() -> None:
 
     ok_n, fail_n = len(ok_hosts), len(fail_hosts)
     if fail_n:
-        say(f"Moonshot run complete. {ok_n} succeeded, {fail_n} failed.")
+        say(f"{SCRIPT_VOICE_NAME}. {ok_n} succeeded, {fail_n} failed.")
     else:
-        say(f"Moonshot run complete. All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
+        say(f"{SCRIPT_VOICE_NAME}. All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
 
     if _log_fh:
         _log_fh.close()
