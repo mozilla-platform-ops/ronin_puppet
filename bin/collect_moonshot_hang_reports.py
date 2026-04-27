@@ -135,11 +135,17 @@ def recently_processed(label: str) -> bool:
 # --- announcements ---
 
 _voice_enabled = True
+_voice_all_hours = False
+VOICE_HOUR_START = 10
+VOICE_HOUR_END = 18
 
 
 def say(msg: str) -> None:
-    if _voice_enabled:
-        subprocess.run(["say", msg], check=False)
+    if not _voice_enabled:
+        return
+    if not _voice_all_hours and not (VOICE_HOUR_START <= datetime.datetime.now().hour < VOICE_HOUR_END):
+        return
+    subprocess.run(["say", msg], check=False)
 
 
 # --- subprocess helpers ---
@@ -211,6 +217,8 @@ def parse_args() -> argparse.Namespace:
                         help="Required with --auto to confirm you want to proceed.")
     parser.add_argument("--no-voice", action="store_true",
                         help="Suppress spoken announcements.")
+    parser.add_argument("--voice-all-hours", action="store_true",
+                        help=f"Speak outside working hours ({VOICE_HOUR_START}:00-{VOICE_HOUR_END}:00).")
     parser.add_argument("--loop-interval", type=int, default=15, metavar="MINUTES",
                         help="Minutes to sleep between auto runs (default: 15).")
     return parser.parse_args()
@@ -221,6 +229,7 @@ def main() -> None:
 
     args = parse_args()
     _voice_enabled = not args.no_voice
+    _voice_all_hours = args.voice_all_hours
 
     if args.auto and not args.confirm:
         info("Fetching bad-host list to preview run...")
