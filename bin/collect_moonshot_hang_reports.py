@@ -4,7 +4,7 @@
 Usage:
   collect_moonshot_hang_reports.py [--auto] [--no-reset] [--no-freshness] [--ignore-recency] [HOST ...]
 
-  --auto            Fetch bad-host list from fleetroll instead of reading argv/stdin.
+  --auto            Fetch bad-host list from fleetroll instead of reading argv/stdin (requires --confirm).
   --no-reset        Skip iLO reboot (host already freshly rebooted).
   --no-freshness    Skip fleetroll data-freshness check when using --auto.
   --ignore-recency  Process hosts even if collected within the last 60 minutes.
@@ -194,6 +194,8 @@ def parse_args() -> argparse.Namespace:
                         help="Skip fleetroll data-freshness check (with --auto).")
     parser.add_argument("--ignore-recency", action="store_true",
                         help=f"Process hosts even if collected within last {RECENCY_MINUTES} min.")
+    parser.add_argument("--confirm", action="store_true",
+                        help="Required with --auto to confirm you want to proceed.")
     return parser.parse_args()
 
 
@@ -201,6 +203,10 @@ def main() -> None:
     global _log_fh
 
     args = parse_args()
+
+    if args.auto and not args.confirm:
+        err("--auto requires --confirm to proceed.")
+        sys.exit(1)
 
     # --- verify dependencies ---
     for d in (FLEETROLL_DIR, RESET_DIR):
