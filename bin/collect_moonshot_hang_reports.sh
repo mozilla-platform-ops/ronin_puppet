@@ -209,6 +209,8 @@ for host in "${HOSTS[@]}"; do
     if [[ "$host_ok" -eq 1 ]]; then
         ok "[$label] -> $out_file"
         OK_HOSTS+=("$label")
+        section "$label  host-audit"
+        (cd "$FLEETROLL_DIR" && uv run fleetroll host-audit "$fqdn") || warn "[$label] host-audit failed"
     else
         err "[$label] collection failed"
         FAIL_HOSTS+=("$label")
