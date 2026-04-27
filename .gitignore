@@ -60,3 +60,9 @@ doc/
 
 # node stuff
 node_modules
+
+# python
+*.pyc
+
+# moonshot debugging results
+moonshot_debugging_results/
