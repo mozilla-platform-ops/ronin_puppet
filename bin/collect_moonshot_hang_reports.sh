@@ -210,7 +210,12 @@ for host in "${HOSTS[@]}"; do
         ok "[$label] -> $out_file"
         OK_HOSTS+=("$label")
         section "$label  host-audit"
-        (cd "$FLEETROLL_DIR" && uv run fleetroll host-audit "$fqdn") || warn "[$label] host-audit failed"
+        audit_file="$RUN_DIR/${collect_ts}-${label}-audit.txt"
+        if (cd "$FLEETROLL_DIR" && uv run fleetroll host-audit "$fqdn" > "$audit_file" 2>&1); then
+            ok "[$label] audit -> $audit_file"
+        else
+            warn "[$label] host-audit failed (see $audit_file)"
+        fi
     else
         err "[$label] collection failed"
         FAIL_HOSTS+=("$label")
