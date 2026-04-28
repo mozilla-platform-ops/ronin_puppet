@@ -39,6 +39,7 @@ def build_steps(boot: int) -> List[Step]:
         Step("date (UTC)", "date -u"),
         Step("last boot (who)", "who -b"),
         Step("reboot history", "last -x reboot | head -30"),
+        Step("shutdown history", "last -x shutdown | head -10"),
         # --- 18.04 steps ---
         Step(
             "syslog files",
@@ -57,6 +58,20 @@ def build_steps(boot: int) -> List[Step]:
         Step(
             "syslog.1 tail (2000 lines)",
             "tail -2000 /var/log/syslog.1",
+            needs_sudo=True,
+            os_match="18.04",
+        ),
+        Step(
+            "kern.log.1 tail (500 lines)",
+            "tail -500 /var/log/kern.log.1",
+            needs_sudo=True,
+            os_match="18.04",
+        ),
+        Step(
+            "syslog.1 pre-shutdown sequence",
+            "grep -iE 'systemd.*Shutting down|systemd.*Reached target.*(Shutdown|Reboot|Halt|Power)"
+            "|systemd.*Starting.*(Reboot|Shutdown|Halt|Power)"
+            "|watchdog.*reset|sysrq.*reboot|ACPI.*shutdown|kernel.*reboot' /var/log/syslog.1 | tail -30",
             needs_sudo=True,
             os_match="18.04",
         ),
