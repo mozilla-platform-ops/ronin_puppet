@@ -69,7 +69,8 @@ def _emit(line: str, *, stderr: bool = False) -> None:
 
 
 def info(msg: str) -> None:
-    _emit(f"{_c('1;34', '==>')} {_c('1', msg)}")
+    ts = datetime.datetime.now().strftime("%H:%M:%S")
+    _emit(f"{_c('2', ts)} {_c('1;34', '==>')} {_c('1', msg)}")
 
 
 def section(msg: str) -> None:
