@@ -238,9 +238,14 @@ def main() -> None:
     print(_c('1;36', " █░▀░█ ▀▄▀ ▀▄▀ █░█ ▄█ █▀█ ▀▄▀ ░█▄    █░▀░█ █▄▄ █▄█ █ ▀▄▄"))
     print()
 
+    freshness_mins = args.freshness_requirement or args.loop_interval
+    freshness_label = (f"{freshness_mins}min"
+                       if args.freshness_requirement
+                       else f"{freshness_mins}min (from loop interval)")
+
     if args.auto and not args.confirm:
-        stale_threshold = (args.freshness_requirement or args.loop_interval) * 60
-        info(f"Checking fleetroll data freshness (max age: {args.freshness_requirement or args.loop_interval}min = {stale_threshold}s)...")
+        stale_threshold = freshness_mins * 60
+        info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
         if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
                cwd=FLEETROLL_DIR, check=False).returncode != 0:
             err(f"Fleetroll data is stale (older than {stale_threshold}s). Refresh it before previewing.")
@@ -276,8 +281,8 @@ def main() -> None:
     while True:
         # --- freshness gate ---
         if args.auto:
-            stale_threshold = (args.freshness_requirement or args.loop_interval) * 60
-            info(f"Checking fleetroll data freshness (max age: {args.freshness_requirement or args.loop_interval}min = {stale_threshold}s)...")
+            stale_threshold = freshness_mins * 60
+            info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
             if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
                    cwd=FLEETROLL_DIR, check=False).returncode != 0:
                 print()
