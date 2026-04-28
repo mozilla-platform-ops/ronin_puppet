@@ -35,6 +35,7 @@ class roles_profiles::profiles::disable_services {
       include macos_mobileconfig_profiles::disable_gatekeeper
     }
     'Windows': {
+      $worker_function = lookup('win-worker.function', String, 'first', $facts['custom_win_purpose'])
       include win_disable_services::disable_puppet
       include win_disable_services::disable_windows_update
       if $facts['custom_win_purpose'] != builder {
@@ -51,9 +52,11 @@ class roles_profiles::profiles::disable_services {
             include win_disable_services::disable_optional_services
           }
           'azure': {
-            $apx_uninstall = 'uninstall.ps1'
-            class { 'win_disable_services::uninstall_appx_packages':
-              apx_uninstall => $apx_uninstall,
+            if $worker_function != 'builder' {
+              $apx_uninstall = 'uninstall.ps1'
+              class { 'win_disable_services::uninstall_appx_packages':
+                apx_uninstall => $apx_uninstall,
+              }
             }
             include win_scheduled_tasks::kill_local_clipboard
             ## Disable Unnecessary tasks
