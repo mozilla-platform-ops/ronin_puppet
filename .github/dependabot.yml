@@ -2,6 +2,22 @@ version: 2
 updates:
 
 
+  # Ruby dependencies (Gemfile) - root
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "11:00"
+    open-pull-requests-limit: 5
+    target-branch: "master"
+    labels:
+      - "dependencies"
+      - "ruby"
+    commit-message:
+      prefix: "ruby"
+      include: "scope"
+
   # Python dependencies (.dev-requirements.txt) - root only
   - package-ecosystem: "pip"
     directory: "/"

@@ -13,3 +13,4 @@ if ($screen_res -eq "1920 x 1080 x 4294967296 colors") {
     Write-Output "CRITICAL: Resolution is $screen_res"
 
     exit 1
+}

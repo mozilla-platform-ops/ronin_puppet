@@ -1,0 +1,78 @@
+name: Kitchen Linux
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    name: ${{ matrix.kitchen_target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kitchen_target:
+          - linux-netperf-ubuntu-1804
+          - linux-perf-ubuntu-1804
+          - linux-perf-ubuntu-2404
+          - bitbar-ubuntu-2204
+    env:
+      KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@4c56a21280b36d862b5fc31348f463d60bdc55d5 # v1.221.0
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Cache gems
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.gem
+          key: v1-gems-${{ runner.os }}-${{ hashFiles('Gemfile.lock') }}
+
+      - name: Bundle install
+        run: |
+          gem install bundler:2.5.23
+          bundle install
+
+      - name: Prepare apt cache mount
+        run: mkdir -p /tmp/docker/var/cache/apt
+
+      - name: Rate-limit avoidance sleep
+        run: |
+          sleep_duration=$((RANDOM % 61))
+          echo "Sleeping for $sleep_duration seconds..."
+          sleep $sleep_duration
+
+      - name: Kitchen converge
+        timeout-minutes: 30
+        run: bundle exec kitchen converge ${{ matrix.kitchen_target }}
+
+      - name: Kitchen verify
+        run: bundle exec kitchen verify ${{ matrix.kitchen_target }}
+
+      - name: Kitchen destroy
+        if: always()
+        run: bundle exec kitchen destroy ${{ matrix.kitchen_target }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rspec-${{ matrix.kitchen_target }}
+          path: rspec/
+          if-no-files-found: ignore
