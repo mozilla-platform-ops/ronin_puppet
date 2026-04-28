@@ -4,10 +4,10 @@
 Usage:
   collect_moonshot_hang_reports.py [--auto] [--no-reset] [--no-freshness] [--ignore-recency] [HOST ...]
 
-  --auto            Fetch bad-host list from fleetroll instead of reading argv/stdin (requires --confirm).
-  --no-reset        Skip iLO reboot (host already freshly rebooted).
-  --no-freshness    Skip fleetroll data-freshness check when using --auto.
-  --ignore-recency  Process hosts even if collected within the last 60 minutes.
+  --auto                    Fetch bad-host list from fleetroll instead of reading argv/stdin (requires --confirm).
+  --no-reset                Skip iLO reboot (host already freshly rebooted).
+  --freshness-requirement   Max acceptable age of fleetroll data in minutes (default: loop-interval).
+  --ignore-recency          Process hosts even if collected within the last 60 minutes.
   HOST ...          Short (ms025) or FQDN. If omitted and not --auto, reads stdin.
 """
 
@@ -210,8 +210,9 @@ def parse_args() -> argparse.Namespace:
                         help="Fetch bad-host list from fleetroll.")
     parser.add_argument("--no-reset", action="store_true",
                         help="Skip iLO reboot.")
-    parser.add_argument("--no-freshness", action="store_true",
-                        help="Skip fleetroll data-freshness check (with --auto).")
+    parser.add_argument("--freshness-requirement", type=int, default=None, metavar="MINUTES",
+                        help="Max acceptable age of fleetroll data in minutes (default: same as --loop-interval). "
+                             "Set a large value to effectively disable the check.")
     parser.add_argument("--ignore-recency", action="store_true",
                         help=f"Process hosts even if collected within last {RECENCY_MINUTES} min.")
     parser.add_argument("--confirm", action="store_true",
@@ -238,6 +239,12 @@ def main() -> None:
     print()
 
     if args.auto and not args.confirm:
+        stale_threshold = (args.freshness_requirement or args.loop_interval) * 60
+        info(f"Checking fleetroll data freshness (max age: {args.freshness_requirement or args.loop_interval}min = {stale_threshold}s)...")
+        if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
+               cwd=FLEETROLL_DIR, check=False).returncode != 0:
+            err(f"Fleetroll data is stale (older than {stale_threshold}s). Refresh it before previewing.")
+            sys.exit(1)
         info("Fetching bad-host list to preview run...")
         raw = capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR, check=False)
         preview_hosts = raw.split() if raw else []
@@ -268,11 +275,14 @@ def main() -> None:
 
     while True:
         # --- freshness gate ---
-        if args.auto and not args.no_freshness:
-            info("Checking fleetroll data freshness...")
-            if run(["uv", "run", "fleetroll", "data-freshness"], cwd=FLEETROLL_DIR, check=False).returncode != 0:
+        if args.auto:
+            stale_threshold = (args.freshness_requirement or args.loop_interval) * 60
+            info(f"Checking fleetroll data freshness (max age: {args.freshness_requirement or args.loop_interval}min = {stale_threshold}s)...")
+            if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
+                   cwd=FLEETROLL_DIR, check=False).returncode != 0:
                 print()
-                err("Fleetroll data is stale. Refresh it or pass --no-freshness to skip.")
+                err(f"Fleetroll data is stale (older than {stale_threshold}s). "
+                    "Refresh it or pass --freshness-requirement with a larger value to override.")
                 sys.exit(1)
 
         # --- resolve host list ---
