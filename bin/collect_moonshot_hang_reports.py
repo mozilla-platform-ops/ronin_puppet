@@ -424,6 +424,7 @@ def main() -> None:
 
     while True:
         last_failed = False
+        stale = False
         # --- freshness gate ---
         if args.auto:
             stale_threshold = freshness_mins * 60
@@ -431,139 +432,141 @@ def main() -> None:
             if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
                    cwd=FLEETROLL_DIR, check=False).returncode != 0:
                 print()
-                warn(f"Fleetroll data is stale (older than {stale_threshold}s) — skipping this loop iteration.")
+                warn(f"Fleetroll data is stale (older than {stale_threshold}s) — will retry next loop.")
+                stale = True
                 last_failed = True
 
         # --- resolve host list ---
-        if args.auto:
-            info("Fetching bad-host list from fleetroll...")
-            hosts = [worker_fqdn(h) for h in capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR, check=False).split()]
-        elif args.hostname:
-            hosts = [worker_fqdn(h) for h in args.hostname]
-        else:
-            if sys.stdin.isatty():
-                print("Enter hostnames (one per line, Ctrl-D to finish):", file=sys.stderr)
-            hosts = [worker_fqdn(line.strip()) for line in sys.stdin if line.strip()]
-
-        if not hosts:
-            warn("No bad hosts found." if args.auto else "No hosts specified. Nothing to do.")
-            if not args.auto:
-                sys.exit(0)
-        else:
-            state = load_state()
-
-            # --- recency + skip filter ---
-            if not args.ignore_recency:
-                skipped, filtered = [], []
-                for h in hosts:
-                    fqdn = worker_fqdn(h)
-                    label = short_label(h)
-                    if recently_processed(label):
-                        skipped.append(h)
-                    elif is_skipped(state, fqdn):
-                        skip_until = state["hosts"].get(fqdn, {}).get("skip_until", "")
-                        warn(f"Skipping {label}: {SKIP_THRESHOLD_CONSECUTIVE}+ consecutive reset failures "
-                             f"(skip until {skip_until[:16]}Z — use --ignore-recency to override)")
-                        skipped.append(h)
-                    else:
-                        filtered.append(h)
-                if skipped:
-                    warn(f"Skipping {len(skipped)} host(s): {' '.join(short_label(h) for h in skipped)}")
-                hosts = filtered
+        if not stale:
+            if args.auto:
+                info("Fetching bad-host list from fleetroll...")
+                hosts = [worker_fqdn(h) for h in capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR, check=False).split()]
+            elif args.hostname:
+                hosts = [worker_fqdn(h) for h in args.hostname]
+            else:
+                if sys.stdin.isatty():
+                    print("Enter hostnames (one per line, Ctrl-D to finish):", file=sys.stderr)
+                hosts = [worker_fqdn(line.strip()) for line in sys.stdin if line.strip()]
 
             if not hosts:
-                info("All requested hosts were recently processed. Nothing to do.")
+                warn("No bad hosts found." if args.auto else "No hosts specified. Nothing to do.")
+                if not args.auto:
+                    sys.exit(0)
             else:
-                if args.auto and len(hosts) > AUTO_BATCH_SIZE:
-                    warn(f"Auto mode: capping at {AUTO_BATCH_SIZE} hosts ({len(hosts)} found).")
-                    hosts = hosts[:AUTO_BATCH_SIZE]
+                state = load_state()
 
-                info(f"Hosts to process: {' '.join(hosts)}")
-                n = len(hosts)
-                say(f"Starting run. {n} host{'s' if n != 1 else ''} detected.")
+                # --- recency + skip filter ---
+                if not args.ignore_recency:
+                    skipped, filtered = [], []
+                    for h in hosts:
+                        fqdn = worker_fqdn(h)
+                        label = short_label(h)
+                        if recently_processed(label):
+                            skipped.append(h)
+                        elif is_skipped(state, fqdn):
+                            skip_until = state["hosts"].get(fqdn, {}).get("skip_until", "")
+                            warn(f"Skipping {label}: {SKIP_THRESHOLD_CONSECUTIVE}+ consecutive reset failures "
+                                 f"(skip until {skip_until[:16]}Z — use --ignore-recency to override)")
+                            skipped.append(h)
+                        else:
+                            filtered.append(h)
+                    if skipped:
+                        warn(f"Skipping {len(skipped)} host(s): {' '.join(short_label(h) for h in skipped)}")
+                    hosts = filtered
 
-                # --- create results dir and open log ---
-                run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
-                run_dir.mkdir(parents=True, exist_ok=True)
-                log_path = run_dir / "run.log"
-                info(f"Results will be saved to: {run_dir}")
-                info(f"Log: {log_path}")
+                if not hosts:
+                    info("All requested hosts were recently processed. Nothing to do.")
+                else:
+                    if args.auto and len(hosts) > AUTO_BATCH_SIZE:
+                        warn(f"Auto mode: capping at {AUTO_BATCH_SIZE} hosts ({len(hosts)} found).")
+                        hosts = hosts[:AUTO_BATCH_SIZE]
 
-                _log_fh = log_path.open("a")
-                try:
-                    _emit(f"Run started at {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
-                    _emit(f"Hosts: {' '.join(hosts)}")
-                    _emit("")
+                    info(f"Hosts to process: {' '.join(hosts)}")
+                    n = len(hosts)
+                    say(f"Starting run. {n} host{'s' if n != 1 else ''} detected.")
 
-                    # --- reset ---
-                    reset_fail_labels: list[str] = []
-                    if not args.no_reset:
-                        info("Resetting hosts via iLO (waiting for them to come back online)...")
-                        run(["uv", "run", "./reset_moonshot.py", "--force"] + hosts,
-                            cwd=RESET_DIR, check=False)
-                        print()
-                        online_hosts = []
+                    # --- create results dir and open log ---
+                    run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
+                    run_dir.mkdir(parents=True, exist_ok=True)
+                    log_path = run_dir / "run.log"
+                    info(f"Results will be saved to: {run_dir}")
+                    info(f"Log: {log_path}")
+
+                    _log_fh = log_path.open("a")
+                    try:
+                        _emit(f"Run started at {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
+                        _emit(f"Hosts: {' '.join(hosts)}")
+                        _emit("")
+
+                        # --- reset ---
+                        reset_fail_labels: list[str] = []
+                        if not args.no_reset:
+                            info("Resetting hosts via iLO (waiting for them to come back online)...")
+                            run(["uv", "run", "./reset_moonshot.py", "--force"] + hosts,
+                                cwd=RESET_DIR, check=False)
+                            print()
+                            online_hosts = []
+                            for host in hosts:
+                                fqdn = worker_fqdn(host)
+                                label = short_label(host)
+                                if ssh_is_online(fqdn):
+                                    online_hosts.append(host)
+                                    record_reset_success(state, fqdn)
+                                else:
+                                    err(f"[{label}] did not come back online — skipping collection")
+                                    record_reset_failure(state, fqdn)
+                                    reset_fail_labels.append(label)
+                            save_state(state)
+                            update_overview_md(state)
+                            hosts = online_hosts
+                        else:
+                            warn("Skipping reset (--no-reset).")
+
+                        # --- collect reports ---
+                        ok_hosts: list[str] = []
+                        fail_hosts: list[str] = list(reset_fail_labels)
+
                         for host in hosts:
                             fqdn = worker_fqdn(host)
                             label = short_label(host)
-                            if ssh_is_online(fqdn):
-                                online_hosts.append(host)
-                                record_reset_success(state, fqdn)
-                            else:
-                                err(f"[{label}] did not come back online — skipping collection")
-                                record_reset_failure(state, fqdn)
-                                reset_fail_labels.append(label)
-                        save_state(state)
-                        update_overview_md(state)
-                        hosts = online_hosts
-                    else:
-                        warn("Skipping reset (--no-reset).")
+                            ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+                            out_file = run_dir / f"{ts}-{label}.md"
 
-                    # --- collect reports ---
-                    ok_hosts: list[str] = []
-                    fail_hosts: list[str] = list(reset_fail_labels)
-
-                    for host in hosts:
-                        fqdn = worker_fqdn(host)
-                        label = short_label(host)
-                        ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-                        out_file = run_dir / f"{ts}-{label}.md"
-
-                        try:
-                            if collect_host(fqdn, label, out_file):
-                                ok_hosts.append(label)
-                            else:
-                                err(f"[{label}] collection failed")
+                            try:
+                                if collect_host(fqdn, label, out_file):
+                                    ok_hosts.append(label)
+                                else:
+                                    err(f"[{label}] collection failed")
+                                    fail_hosts.append(label)
+                            except Exception as exc:
+                                err(f"[{label}] unexpected error: {exc}")
                                 fail_hosts.append(label)
-                        except Exception as exc:
-                            err(f"[{label}] unexpected error: {exc}")
-                            fail_hosts.append(label)
-                        print()
+                            print()
 
-                        if _interrupt_count:
-                            warn("Stopping after interrupt.")
-                            break
+                            if _interrupt_count:
+                                warn("Stopping after interrupt.")
+                                break
 
-                    # --- summary ---
-                    _emit(_c('1', "=" * 40))
-                    _emit(f"{_c('1', 'Run complete:')} {run_dir}")
-                    if ok_hosts:
-                        _emit(f"{_c('1;32', 'OK:  ')} {' '.join(ok_hosts)}")
-                    if fail_hosts:
-                        _emit(f"{_c('1;31', 'FAIL:')} {' '.join(fail_hosts)}")
-                    _emit(_c('1', "=" * 40))
+                        # --- summary ---
+                        _emit(_c('1', "=" * 40))
+                        _emit(f"{_c('1', 'Run complete:')} {run_dir}")
+                        if ok_hosts:
+                            _emit(f"{_c('1;32', 'OK:  ')} {' '.join(ok_hosts)}")
+                        if fail_hosts:
+                            _emit(f"{_c('1;31', 'FAIL:')} {' '.join(fail_hosts)}")
+                        _emit(_c('1', "=" * 40))
 
-                    ok_n, fail_n = len(ok_hosts), len(fail_hosts)
-                    if fail_n:
-                        say(f"{ok_n} succeeded, {fail_n} failed.")
-                    else:
-                        say(f"All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
+                        ok_n, fail_n = len(ok_hosts), len(fail_hosts)
+                        if fail_n:
+                            say(f"{ok_n} succeeded, {fail_n} failed.")
+                        else:
+                            say(f"All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
 
-                    last_failed = bool(fail_hosts)
-                finally:
-                    if _log_fh:
-                        _log_fh.close()
-                        _log_fh = None
+                        last_failed = bool(fail_hosts)
+                    finally:
+                        if _log_fh:
+                            _log_fh.close()
+                            _log_fh = None
 
         if not args.auto or _interrupt_count:
             break
