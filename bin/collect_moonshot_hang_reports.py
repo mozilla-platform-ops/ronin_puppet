@@ -34,6 +34,7 @@ STATE_FILE = RESULTS_BASE / "state.json"
 OVERVIEW_FILE = RESULTS_BASE / "OVERVIEW.md"
 SKIP_THRESHOLD_CONSECUTIVE = 3
 SKIP_DURATION_HOURS = 6
+FRESHNESS_MIN_PCT = 60
 
 SSH_OPTS = [
     "-o", "StrictHostKeyChecking=accept-new",
@@ -392,7 +393,7 @@ def main() -> None:
     if args.auto and not args.confirm:
         stale_threshold = freshness_mins * 60
         info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
-        r = subprocess.run(["uv", "run", "fleetroll", "data-freshness", "configs/host-lists/linux/all.list", "--stale-threshold", str(stale_threshold)],
+        r = subprocess.run(["uv", "run", "fleetroll", "data-freshness", "configs/host-lists/linux/all.list", "--stale-threshold", str(stale_threshold), "--min-fresh-pct", str(FRESHNESS_MIN_PCT)],
                            cwd=FLEETROLL_DIR, capture_output=True, text=True)
         freshness_out = (r.stdout + r.stderr).strip()
         if freshness_out:
@@ -434,7 +435,7 @@ def main() -> None:
         if args.auto:
             stale_threshold = freshness_mins * 60
             info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
-            r = subprocess.run(["uv", "run", "fleetroll", "data-freshness", "configs/host-lists/linux/all.list", "--stale-threshold", str(stale_threshold)],
+            r = subprocess.run(["uv", "run", "fleetroll", "data-freshness", "configs/host-lists/linux/all.list", "--stale-threshold", str(stale_threshold), "--min-fresh-pct", str(FRESHNESS_MIN_PCT)],
                                cwd=FLEETROLL_DIR, capture_output=True, text=True)
             freshness_out = (r.stdout + r.stderr).strip()
             if freshness_out:
