@@ -279,7 +279,7 @@ def say(msg: str) -> None:
         return
     if not _voice_all_hours and not (VOICE_HOUR_START <= datetime.datetime.now().hour < VOICE_HOUR_END):
         return
-    subprocess.run(["say", msg], check=False)
+    subprocess.run(["say", "-v", "Rocko", "-r", "220", msg], check=False)
 
 
 # --- subprocess helpers ---
