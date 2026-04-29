@@ -304,7 +304,7 @@ def update_overview_html(state: dict) -> None:
         "</head>",
         "<body>",
         "<h1>Moonshot Auto-Reset Overview</h1>",
-        f'<p class="generated">Generated: {now.strftime("%Y-%m-%d %H:%M:%S UTC")} &mdash; auto-refreshes every 60s</p>',
+        f'<p class="generated">Generated: {now.strftime("%Y-%m-%d %H:%M:%S UTC")}</p>',
     ]
 
     counts = daily_counts()
