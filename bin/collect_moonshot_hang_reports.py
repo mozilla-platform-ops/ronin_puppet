@@ -372,6 +372,9 @@ def main() -> None:
     if args.loop_interval < 1:
         err("--loop-interval must be at least 1 minute.")
         sys.exit(1)
+    if args.freshness_requirement is not None and args.freshness_requirement < 1:
+        err("--freshness-requirement must be at least 1 minute.")
+        sys.exit(1)
 
     signal.signal(signal.SIGINT, _sigint_handler)
 
@@ -434,13 +437,13 @@ def main() -> None:
         # --- resolve host list ---
         if args.auto:
             info("Fetching bad-host list from fleetroll...")
-            hosts = capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR, check=False).split()
+            hosts = [worker_fqdn(h) for h in capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR, check=False).split()]
         elif args.hostname:
-            hosts = args.hostname
+            hosts = [worker_fqdn(h) for h in args.hostname]
         else:
             if sys.stdin.isatty():
                 print("Enter hostnames (one per line, Ctrl-D to finish):", file=sys.stderr)
-            hosts = [line.strip() for line in sys.stdin if line.strip()]
+            hosts = [worker_fqdn(line.strip()) for line in sys.stdin if line.strip()]
 
         if not hosts:
             warn("No bad hosts found." if args.auto else "No hosts specified. Nothing to do.")
@@ -526,10 +529,14 @@ def main() -> None:
                         ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
                         out_file = run_dir / f"{ts}-{label}.md"
 
-                        if collect_host(fqdn, label, out_file):
-                            ok_hosts.append(label)
-                        else:
-                            err(f"[{label}] collection failed")
+                        try:
+                            if collect_host(fqdn, label, out_file):
+                                ok_hosts.append(label)
+                            else:
+                                err(f"[{label}] collection failed")
+                                fail_hosts.append(label)
+                        except Exception as exc:
+                            err(f"[{label}] unexpected error: {exc}")
                             fail_hosts.append(label)
                         print()
 
