@@ -32,6 +32,7 @@ AUTO_BATCH_SIZE = 10
 SCRIPT_VOICE_NAME = "Moonshot Medic"
 STATE_FILE = RESULTS_BASE / "state.json"
 OVERVIEW_FILE = RESULTS_BASE / "OVERVIEW.md"
+OVERVIEW_HTML_FILE = RESULTS_BASE / "OVERVIEW.html"
 SKIP_THRESHOLD_CONSECUTIVE = 3
 SKIP_DURATION_HOURS = 6
 FRESHNESS_MIN_PCT = 65
@@ -256,6 +257,95 @@ def update_overview_md(state: dict) -> None:
 
     RESULTS_BASE.mkdir(parents=True, exist_ok=True)
     OVERVIEW_FILE.write_text("\n".join(lines) + "\n")
+
+
+def update_overview_html(state: dict) -> None:
+    now = datetime.datetime.now(datetime.timezone.utc)
+    hosts = state.get("hosts", {})
+
+    def fmt(s: str | None) -> str:
+        return s[:19].replace("T", " ") + " UTC" if s else ""
+
+    skipped = {
+        fqdn: h for fqdn, h in hosts.items()
+        if h.get("skip_until") and
+        datetime.datetime.fromisoformat(h["skip_until"]) > now
+    }
+
+    parts = [
+        "<!DOCTYPE html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="utf-8">',
+        '<meta http-equiv="refresh" content="60">',
+        "<title>Moonshot Auto-Reset Overview</title>",
+        "<style>",
+        "  body { font-family: monospace; background: #111; color: #ccc; padding: 1.5rem; }",
+        "  h1 { color: #fff; }",
+        "  h2 { color: #f90; margin-top: 2rem; }",
+        "  .generated { color: #666; font-size: .85em; margin-bottom: 1.5rem; }",
+        "  table { border-collapse: collapse; width: 100%; }",
+        "  th { background: #222; color: #aaa; text-align: left; padding: .4rem .8rem; border-bottom: 1px solid #444; }",
+        "  td { padding: .35rem .8rem; border-bottom: 1px solid #2a2a2a; }",
+        "  tr:hover td { background: #1a1a1a; }",
+        "  .skip { background: #2a1a00; }",
+        "  .skip td { color: #f90; }",
+        "  .ok { color: #4c4; }",
+        "  .bad { color: #f44; }",
+        "  .warn { color: #f90; }",
+        "</style>",
+        "</head>",
+        "<body>",
+        "<h1>Moonshot Auto-Reset Overview</h1>",
+        f'<p class="generated">Generated: {now.strftime("%Y-%m-%d %H:%M:%S UTC")} &mdash; auto-refreshes every 60s</p>',
+    ]
+
+    if skipped:
+        parts.append('<h2>&#x26A0; Needs Human Attention (currently skipped)</h2>')
+        parts.append("<ul>")
+        for fqdn, h in sorted(skipped.items()):
+            label = short_label(fqdn)
+            parts.append(
+                f'  <li class="bad"><strong>{label}</strong> ({fqdn}): '
+                f'{h["consecutive_reset_failures"]} consecutive failures, '
+                f'skip until {fmt(h.get("skip_until"))}, '
+                f'last failure: {fmt(h.get("last_failure"))}</li>'
+            )
+        parts.append("</ul>")
+
+    if hosts:
+        parts += [
+            "<h2>Host History</h2>",
+            "<table>",
+            "  <thead><tr>",
+            "    <th>Host</th><th>Total Resets</th><th>Failures</th>"
+            "<th>Consec Fails</th><th>Last Success</th><th>Last Failure</th><th>Skip Until</th>",
+            "  </tr></thead>",
+            "  <tbody>",
+        ]
+        for fqdn, h in sorted(hosts.items()):
+            label = short_label(fqdn)
+            is_skip = fqdn in skipped
+            consec = h.get("consecutive_reset_failures", 0)
+            row_class = ' class="skip"' if is_skip else ""
+            consec_class = ' class="bad"' if consec >= SKIP_THRESHOLD_CONSECUTIVE else (' class="warn"' if consec > 0 else ' class="ok"')
+            parts.append(
+                f'  <tr{row_class}>'
+                f"<td>{label}</td>"
+                f'<td class="ok">{h.get("total_resets", 0)}</td>'
+                f'<td>{h.get("total_failures", 0)}</td>'
+                f"<td{consec_class}>{consec}</td>"
+                f"<td>{fmt(h.get('last_success'))}</td>"
+                f"<td>{fmt(h.get('last_failure'))}</td>"
+                f"<td>{fmt(h.get('skip_until'))}</td>"
+                f"</tr>"
+            )
+        parts += ["  </tbody>", "</table>"]
+
+    parts += ["</body>", "</html>", ""]
+
+    RESULTS_BASE.mkdir(parents=True, exist_ok=True)
+    OVERVIEW_HTML_FILE.write_text("\n".join(parts))
 
 
 # --- recency filter ---
@@ -550,6 +640,7 @@ def main() -> None:
                                         reset_fail_labels.append(label)
                                 save_state(state)
                                 update_overview_md(state)
+                                update_overview_html(state)
                                 batch = online_hosts
 
                             fail_hosts.extend(reset_fail_labels)
