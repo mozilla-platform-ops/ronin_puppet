@@ -7,8 +7,8 @@ Usage:
   --auto                    Fetch bad-host list from fleetroll instead of reading argv/stdin (requires --confirm).
   --no-reset                Skip iLO reboot (host already freshly rebooted).
   --freshness-requirement   Max acceptable age of fleetroll data in minutes (default: loop-interval).
-  --ignore-recency          Process hosts even if collected within the last 60 minutes.
-  HOST ...          Short (ms025) or FQDN. If omitted and not --auto, reads stdin.
+  --ignore-recency          Process hosts even if collected within the last RECENCY_MINUTES minutes.
+  HOST ...                  Short (ms025) or FQDN. If omitted and not --auto, reads stdin.
 """
 
 import argparse
@@ -210,7 +210,7 @@ def update_overview_md(state: dict) -> None:
     hosts = state.get("hosts", {})
 
     def fmt(s: str | None) -> str:
-        return s[:16].replace("T", " ") + "Z" if s else ""
+        return s[:19].replace("T", " ") + " UTC" if s else ""
 
     lines = [
         "# Moonshot Auto-Reset Overview",
@@ -263,7 +263,7 @@ def recently_processed(label: str) -> bool:
     if not RESULTS_BASE.exists():
         return False
     cutoff = datetime.datetime.now().timestamp() - RECENCY_MINUTES * 60
-    return any(f.stat().st_mtime > cutoff for f in RESULTS_BASE.rglob(f"*-{label}.md"))
+    return any(f.stat().st_mtime > cutoff for f in RESULTS_BASE.rglob(f"????????T??????Z-{label}.md"))
 
 
 # --- announcements ---
@@ -356,7 +356,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("-q", "--no-voice", action="store_true",
                         help="Suppress spoken announcements.")
     parser.add_argument("--voice-all-hours", action="store_true",
-                        help=f"Speak outside working hours ({VOICE_HOUR_START}:00-{VOICE_HOUR_END}:00).")
+                        help=f"Speak outside working hours ({VOICE_HOUR_START}:00–before {VOICE_HOUR_END}:00).")
     parser.add_argument("-l", "--loop-interval", type=int, default=15, metavar="MINUTES",
                         help="Minutes to sleep between auto runs (default: 15).")
     return parser.parse_args()
@@ -423,6 +423,7 @@ def main() -> None:
     last_failed = False
 
     while True:
+        last_failed = False
         # --- freshness gate ---
         if args.auto:
             stale_threshold = freshness_mins * 60
