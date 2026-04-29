@@ -487,13 +487,10 @@ def main() -> None:
                 if not hosts:
                     info("All requested hosts were recently processed. Nothing to do.")
                 else:
-                    if args.auto and len(hosts) > AUTO_BATCH_SIZE:
-                        warn(f"Auto mode: capping at {AUTO_BATCH_SIZE} hosts ({len(hosts)} found).")
-                        hosts = hosts[:AUTO_BATCH_SIZE]
-
-                    info(f"Hosts to process: {' '.join(hosts)}")
-                    n = len(hosts)
-                    say(f"Starting run. {n} host{'s' if n != 1 else ''} detected.")
+                    batches = [hosts[i:i + AUTO_BATCH_SIZE] for i in range(0, len(hosts), AUTO_BATCH_SIZE)]
+                    n_total = len(hosts)
+                    info(f"Hosts to process: {n_total} host(s) across {len(batches)} batch(es) of up to {AUTO_BATCH_SIZE}")
+                    say(f"Starting run. {n_total} host{'s' if n_total != 1 else ''} detected.")
 
                     if first_run:
                         first_run = False
@@ -519,54 +516,65 @@ def main() -> None:
                         _emit(f"Hosts: {' '.join(hosts)}")
                         _emit("")
 
-                        # --- reset ---
-                        reset_fail_labels: list[str] = []
-                        if not args.no_reset:
-                            info("Resetting hosts via iLO (waiting for them to come back online)...")
-                            run(["uv", "run", "./reset_moonshot.py", "--force"] + hosts,
-                                cwd=RESET_DIR, check=False)
-                            print()
-                            online_hosts = []
-                            for host in hosts:
-                                fqdn = worker_fqdn(host)
-                                label = short_label(host)
-                                if ssh_is_online(fqdn):
-                                    online_hosts.append(host)
-                                    record_reset_success(state, fqdn)
-                                else:
-                                    err(f"[{label}] did not come back online — skipping collection")
-                                    record_reset_failure(state, fqdn)
-                                    reset_fail_labels.append(label)
-                            save_state(state)
-                            update_overview_md(state)
-                            hosts = online_hosts
-                        else:
+                        if args.no_reset:
                             warn("Skipping reset (--no-reset).")
 
-                        # --- collect reports ---
                         ok_hosts: list[str] = []
-                        fail_hosts: list[str] = list(reset_fail_labels)
+                        fail_hosts: list[str] = []
 
-                        for host in hosts:
-                            fqdn = worker_fqdn(host)
-                            label = short_label(host)
-                            ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-                            out_file = run_dir / f"{ts}-{label}.md"
-
-                            try:
-                                if collect_host(fqdn, label, out_file):
-                                    ok_hosts.append(label)
-                                else:
-                                    err(f"[{label}] collection failed")
-                                    fail_hosts.append(label)
-                            except Exception as exc:
-                                err(f"[{label}] unexpected error: {exc}")
-                                fail_hosts.append(label)
-                            print()
-
+                        for batch_num, batch in enumerate(batches, 1):
                             if _interrupt_count:
                                 warn("Stopping after interrupt.")
                                 break
+
+                            if len(batches) > 1:
+                                section(f"Batch {batch_num}/{len(batches)}: {' '.join(short_label(h) for h in batch)}")
+
+                            # --- reset batch ---
+                            reset_fail_labels: list[str] = []
+                            if not args.no_reset:
+                                info("Resetting hosts via iLO (waiting for them to come back online)...")
+                                run(["uv", "run", "./reset_moonshot.py", "--force"] + batch,
+                                    cwd=RESET_DIR, check=False)
+                                print()
+                                online_hosts = []
+                                for host in batch:
+                                    fqdn = worker_fqdn(host)
+                                    label = short_label(host)
+                                    if ssh_is_online(fqdn):
+                                        online_hosts.append(host)
+                                        record_reset_success(state, fqdn)
+                                    else:
+                                        err(f"[{label}] did not come back online — skipping collection")
+                                        record_reset_failure(state, fqdn)
+                                        reset_fail_labels.append(label)
+                                save_state(state)
+                                update_overview_md(state)
+                                batch = online_hosts
+
+                            fail_hosts.extend(reset_fail_labels)
+
+                            # --- collect batch ---
+                            for host in batch:
+                                fqdn = worker_fqdn(host)
+                                label = short_label(host)
+                                ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+                                out_file = run_dir / f"{ts}-{label}.md"
+
+                                try:
+                                    if collect_host(fqdn, label, out_file):
+                                        ok_hosts.append(label)
+                                    else:
+                                        err(f"[{label}] collection failed")
+                                        fail_hosts.append(label)
+                                except Exception as exc:
+                                    err(f"[{label}] unexpected error: {exc}")
+                                    fail_hosts.append(label)
+                                print()
+
+                                if _interrupt_count:
+                                    warn("Stopping after interrupt.")
+                                    break
 
                         # --- summary ---
                         _emit(_c('1', "=" * 40))
