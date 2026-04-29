@@ -397,7 +397,7 @@ def main() -> None:
                            cwd=FLEETROLL_DIR, capture_output=True, text=True)
         freshness_out = (r.stdout + r.stderr).strip()
         for line in freshness_out.splitlines():
-            _emit(f"  {_c('2', line)}")
+            _emit(f"  {_c('2', re.sub(r'^=+>\s*', '', line))}")
         if r.returncode != 0:
             err(f"Fleetroll data is stale (older than {stale_threshold}s). Refresh it before previewing.")
             sys.exit(1)
@@ -438,8 +438,8 @@ def main() -> None:
             r = subprocess.run(["uv", "run", "fleetroll", "data-freshness", "configs/host-lists/linux/all.list", "--stale-threshold", str(stale_threshold), "--min-fresh-pct", str(FRESHNESS_MIN_PCT)],
                                cwd=FLEETROLL_DIR, capture_output=True, text=True)
             freshness_out = (r.stdout + r.stderr).strip()
-            if freshness_out:
-                info(freshness_out)
+            for line in freshness_out.splitlines():
+                _emit(f"  {_c('2', re.sub(r'^=+>\s*', '', line))}")
             if r.returncode != 0:
                 print()
                 warn(f"Fleetroll data is stale (older than {stale_threshold}s) — will retry next loop.")
