@@ -431,9 +431,8 @@ def main() -> None:
             if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
                    cwd=FLEETROLL_DIR, check=False).returncode != 0:
                 print()
-                err(f"Fleetroll data is stale (older than {stale_threshold}s). "
-                    "Refresh it or pass --freshness-requirement with a larger value to override.")
-                sys.exit(1)
+                warn(f"Fleetroll data is stale (older than {stale_threshold}s) — skipping this loop iteration.")
+                last_failed = True
 
         # --- resolve host list ---
         if args.auto:
