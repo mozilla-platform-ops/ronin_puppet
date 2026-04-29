@@ -402,8 +402,8 @@ def main() -> None:
         n = min(len(preview_hosts), AUTO_BATCH_SIZE)
         print()
         if n:
-            warn(f"Auto mode would process {n} host(s) (of {len(preview_hosts)} found): "
-                 f"{' '.join(preview_hosts[:n])}")
+            warn(f"Auto mode found {len(preview_hosts)} bad host(s); would process {n}:")
+            warn(' '.join(preview_hosts[:n]))
         else:
             warn("Auto mode found no bad hosts to process.")
         print()
@@ -421,6 +421,7 @@ def main() -> None:
         sys.exit(1)
 
     last_failed = False
+    first_run = True
 
     while True:
         last_failed = False
@@ -484,6 +485,17 @@ def main() -> None:
                     info(f"Hosts to process: {' '.join(hosts)}")
                     n = len(hosts)
                     say(f"Starting run. {n} host{'s' if n != 1 else ''} detected.")
+
+                    if first_run:
+                        first_run = False
+                        warn("Starting in 15 seconds — press Ctrl-C to abort.")
+                        for _ in range(15):
+                            if _interrupt_count:
+                                break
+                            time.sleep(1)
+                        if _interrupt_count:
+                            warn("Aborted before first run.")
+                            break
 
                     # --- create results dir and open log ---
                     run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
