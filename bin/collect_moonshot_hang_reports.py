@@ -392,7 +392,7 @@ def main() -> None:
     if args.auto and not args.confirm:
         stale_threshold = freshness_mins * 60
         info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
-        if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
+        if run(["uv", "run", "fleetroll", "data-freshness", "--all", "--stale-threshold", str(stale_threshold)],
                cwd=FLEETROLL_DIR, check=False).returncode != 0:
             err(f"Fleetroll data is stale (older than {stale_threshold}s). Refresh it before previewing.")
             sys.exit(1)
@@ -429,7 +429,7 @@ def main() -> None:
         if args.auto:
             stale_threshold = freshness_mins * 60
             info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
-            if run(["uv", "run", "fleetroll", "data-freshness", "--stale-threshold", str(stale_threshold)],
+            if run(["uv", "run", "fleetroll", "data-freshness", "--all", "--stale-threshold", str(stale_threshold)],
                    cwd=FLEETROLL_DIR, check=False).returncode != 0:
                 print()
                 warn(f"Fleetroll data is stale (older than {stale_threshold}s) — will retry next loop.")
