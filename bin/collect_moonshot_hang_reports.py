@@ -228,6 +228,13 @@ def update_overview_md(state: dict) -> None:
         if h.get("skip_until") and
         datetime.datetime.fromisoformat(h["skip_until"]) > now
     }
+    counts = daily_counts()
+    if counts:
+        lines += ["## Daily Activity", ""]
+        for date_str, count in counts:
+            lines.append(f"- {date_str}: {count} host{'s' if count != 1 else ''}")
+        lines.append("")
+
     if skipped:
         lines += ["## Needs Human Attention (currently skipped)", ""]
         for fqdn, h in sorted(skipped.items()):
@@ -300,6 +307,16 @@ def update_overview_html(state: dict) -> None:
         f'<p class="generated">Generated: {now.strftime("%Y-%m-%d %H:%M:%S UTC")} &mdash; auto-refreshes every 60s</p>',
     ]
 
+    counts = daily_counts()
+    if counts:
+        parts.append("<h2>Daily Activity</h2>")
+        parts.append("<table>")
+        parts.append("  <thead><tr><th>Date</th><th>Hosts collected</th></tr></thead>")
+        parts.append("  <tbody>")
+        for date_str, count in counts:
+            parts.append(f'  <tr><td>{date_str}</td><td class="ok">{count}</td></tr>')
+        parts += ["  </tbody>", "</table>"]
+
     if skipped:
         parts.append('<h2>&#x26A0; Needs Human Attention (currently skipped)</h2>')
         parts.append("<ul>")
@@ -346,6 +363,22 @@ def update_overview_html(state: dict) -> None:
 
     RESULTS_BASE.mkdir(parents=True, exist_ok=True)
     OVERVIEW_HTML_FILE.write_text("\n".join(parts))
+
+
+# --- daily activity ---
+
+def daily_counts() -> list[tuple[str, int]]:
+    """Return (date_str, count) pairs sorted newest-first by scanning results dirs."""
+    if not RESULTS_BASE.exists():
+        return []
+    results = []
+    for d in sorted(RESULTS_BASE.iterdir(), reverse=True):
+        if d.is_dir() and re.fullmatch(r'\d{8}', d.name):
+            count = sum(1 for f in d.iterdir() if f.suffix == '.md')
+            if count:
+                date_str = f"{d.name[:4]}-{d.name[4:6]}-{d.name[6:]}"
+                results.append((date_str, count))
+    return results
 
 
 # --- recency filter ---
@@ -514,6 +547,11 @@ def main() -> None:
     if not HANG_SCRIPT.is_file():
         err(f"Diagnostic script not found: {HANG_SCRIPT}")
         sys.exit(1)
+
+    if RESULTS_BASE.exists():
+        state = load_state()
+        update_overview_md(state)
+        update_overview_html(state)
 
     last_failed = False
     first_run = True
