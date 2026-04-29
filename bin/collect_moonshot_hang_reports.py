@@ -112,6 +112,8 @@ def worker_fqdn(hostname: str) -> str:
     if i > 630:
         c = ((i - 1) - 30) // 45 + 2
     elif i > 615:
+        # Slots 616-630: 15-slot extension block that wraps back to chassis 1 (mdc1).
+        # This reflects a specific DC layout exception; update if physical layout changes.
         c = ((i - 1) - 15) // 45 + 1 - 13
     elif i > 300:
         c = ((i - 1) + 15) // 45 + 1
@@ -147,14 +149,17 @@ def load_state() -> dict:
     if STATE_FILE.exists():
         try:
             return json.loads(STATE_FILE.read_text())
-        except Exception:
+        except Exception as exc:
+            warn(f"Could not parse {STATE_FILE}: {exc} — starting with empty state")
             return {"hosts": {}}
     return {"hosts": {}}
 
 
 def save_state(state: dict) -> None:
     RESULTS_BASE.mkdir(parents=True, exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, indent=2) + "\n")
+    tmp = STATE_FILE.with_suffix(".tmp")
+    tmp.write_text(json.dumps(state, indent=2) + "\n")
+    tmp.replace(STATE_FILE)
 
 
 def _host_entry(state: dict, fqdn: str) -> dict:
@@ -181,7 +186,6 @@ def record_reset_failure(state: dict, fqdn: str) -> None:
     h["consecutive_reset_failures"] = h.get("consecutive_reset_failures", 0) + 1
     h["last_failure"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     h["total_failures"] = h.get("total_failures", 0) + 1
-    h["total_resets"] = h.get("total_resets", 0) + 1
     if h["consecutive_reset_failures"] >= SKIP_THRESHOLD_CONSECUTIVE:
         skip_until = (
             datetime.datetime.now(datetime.timezone.utc)
@@ -294,6 +298,7 @@ def capture(cmd: list, *, cwd: Path | None = None, check: bool = True) -> str:
 def collect_host(fqdn: str, label: str, out_file: Path) -> bool:
     section(f"{label}  {fqdn}")
     host_ok = True
+    tmp_file = out_file.with_suffix(".tmp")
 
     if run(["scp"] + SSH_OPTS + [str(HANG_SCRIPT), f"{fqdn}:/tmp/moonshot_hang_report.py"],
            check=False).returncode != 0:
@@ -301,13 +306,14 @@ def collect_host(fqdn: str, label: str, out_file: Path) -> bool:
         host_ok = False
 
     if host_ok:
-        with out_file.open("w") as fh:
+        with tmp_file.open("w") as fh:
             result = subprocess.run(
                 ["ssh"] + SSH_OPTS + [fqdn, "sudo python3 /tmp/moonshot_hang_report.py"],
                 stdout=fh, check=False,
             )
         if result.returncode != 0:
             err(f"[{label}] remote script failed")
+            tmp_file.unlink(missing_ok=True)
             host_ok = False
 
     # cleanup regardless of prior failures
@@ -317,10 +323,11 @@ def collect_host(fqdn: str, label: str, out_file: Path) -> bool:
     if host_ok:
         section(f"{label}  host-audit")
         audit = capture(["uv", "run", "fleetroll", "host-audit", fqdn], cwd=FLEETROLL_DIR, check=False)
-        with out_file.open("a") as f:
+        with tmp_file.open("a") as f:
             f.write("\n---\n\n# Fleetroll Host Audit\n\n```\n")
             f.write(audit)
             f.write("\n```\n")
+        tmp_file.rename(out_file)
         ok(f"[{label}] -> {out_file}")
 
     return host_ok
@@ -356,20 +363,27 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
-    global _log_fh, _voice_enabled
+    global _log_fh, _voice_enabled, _voice_all_hours
 
     args = parse_args()
     _voice_enabled = not args.no_voice
     _voice_all_hours = args.voice_all_hours
 
+    if args.loop_interval < 1:
+        err("--loop-interval must be at least 1 minute.")
+        sys.exit(1)
+
+    signal.signal(signal.SIGINT, _sigint_handler)
+
     print()
     print(_c('1;36', " ▄▀▄▀▄ ▄▀▄ ▄▀▄ ▄▀█ █▀ █░░ ▄▀▄ ▄█▄    ▄▀▄▀▄ ██▀ ▄▄█ ▀ ▄▀▀"))
     print(_c('1;36', " █░▀░█ ▀▄▀ ▀▄▀ █░█ ▄█ █▀█ ▀▄▀ ░█▄    █░▀░█ █▄▄ █▄█ █ ▀▄▄"))
     print()
+    say(SCRIPT_VOICE_NAME)
 
-    freshness_mins = args.freshness_requirement or args.loop_interval
+    freshness_mins = args.freshness_requirement if args.freshness_requirement is not None else args.loop_interval
     freshness_label = (f"{freshness_mins}min"
-                       if args.freshness_requirement
+                       if args.freshness_requirement is not None
                        else f"{freshness_mins}min (from loop interval)")
 
     if args.auto and not args.confirm:
@@ -403,8 +417,6 @@ def main() -> None:
         err(f"Diagnostic script not found: {HANG_SCRIPT}")
         sys.exit(1)
 
-    signal.signal(signal.SIGINT, _sigint_handler)
-
     last_failed = False
 
     while True:
@@ -422,7 +434,7 @@ def main() -> None:
         # --- resolve host list ---
         if args.auto:
             info("Fetching bad-host list from fleetroll...")
-            hosts = capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR).split()
+            hosts = capture(["bash", "tools/list_bad_linux_hosts.sh"], cwd=FLEETROLL_DIR, check=False).split()
         elif args.hostname:
             hosts = args.hostname
         else:
@@ -465,7 +477,7 @@ def main() -> None:
 
                 info(f"Hosts to process: {' '.join(hosts)}")
                 n = len(hosts)
-                say(f"{SCRIPT_VOICE_NAME}. Starting run. {n} host{'s' if n != 1 else ''} detected.")
+                say(f"Starting run. {n} host{'s' if n != 1 else ''} detected.")
 
                 # --- create results dir and open log ---
                 run_dir = RESULTS_BASE / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
@@ -475,73 +487,76 @@ def main() -> None:
                 info(f"Log: {log_path}")
 
                 _log_fh = log_path.open("a")
-                _emit(f"Run started at {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
-                _emit(f"Hosts: {' '.join(hosts)}")
-                _emit("")
+                try:
+                    _emit(f"Run started at {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
+                    _emit(f"Hosts: {' '.join(hosts)}")
+                    _emit("")
 
-                # --- reset ---
-                if not args.no_reset:
-                    info("Resetting hosts via iLO (waiting for them to come back online)...")
-                    run(["uv", "run", "./reset_moonshot.py", "--force"] + hosts,
-                        cwd=RESET_DIR, check=False)
-                    print()
-                    online_hosts = []
+                    # --- reset ---
+                    reset_fail_labels: list[str] = []
+                    if not args.no_reset:
+                        info("Resetting hosts via iLO (waiting for them to come back online)...")
+                        run(["uv", "run", "./reset_moonshot.py", "--force"] + hosts,
+                            cwd=RESET_DIR, check=False)
+                        print()
+                        online_hosts = []
+                        for host in hosts:
+                            fqdn = worker_fqdn(host)
+                            label = short_label(host)
+                            if ssh_is_online(fqdn):
+                                online_hosts.append(host)
+                                record_reset_success(state, fqdn)
+                            else:
+                                err(f"[{label}] did not come back online — skipping collection")
+                                record_reset_failure(state, fqdn)
+                                reset_fail_labels.append(label)
+                        save_state(state)
+                        update_overview_md(state)
+                        hosts = online_hosts
+                    else:
+                        warn("Skipping reset (--no-reset).")
+
+                    # --- collect reports ---
+                    ok_hosts: list[str] = []
+                    fail_hosts: list[str] = list(reset_fail_labels)
+
                     for host in hosts:
                         fqdn = worker_fqdn(host)
                         label = short_label(host)
-                        if ssh_is_online(fqdn):
-                            online_hosts.append(host)
-                            record_reset_success(state, fqdn)
+                        ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+                        out_file = run_dir / f"{ts}-{label}.md"
+
+                        if collect_host(fqdn, label, out_file):
+                            ok_hosts.append(label)
                         else:
-                            err(f"[{label}] did not come back online — skipping collection")
-                            record_reset_failure(state, fqdn)
-                    save_state(state)
-                    update_overview_md(state)
-                    hosts = online_hosts
-                else:
-                    warn("Skipping reset (--no-reset).")
+                            err(f"[{label}] collection failed")
+                            fail_hosts.append(label)
+                        print()
 
-                # --- collect reports ---
-                ok_hosts: list[str] = []
-                fail_hosts: list[str] = []
+                        if _interrupt_count:
+                            warn("Stopping after interrupt.")
+                            break
 
-                for host in hosts:
-                    fqdn = worker_fqdn(host)
-                    label = short_label(host)
-                    ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-                    out_file = run_dir / f"{ts}-{label}.md"
+                    # --- summary ---
+                    _emit(_c('1', "=" * 40))
+                    _emit(f"{_c('1', 'Run complete:')} {run_dir}")
+                    if ok_hosts:
+                        _emit(f"{_c('1;32', 'OK:  ')} {' '.join(ok_hosts)}")
+                    if fail_hosts:
+                        _emit(f"{_c('1;31', 'FAIL:')} {' '.join(fail_hosts)}")
+                    _emit(_c('1', "=" * 40))
 
-                    if collect_host(fqdn, label, out_file):
-                        ok_hosts.append(label)
+                    ok_n, fail_n = len(ok_hosts), len(fail_hosts)
+                    if fail_n:
+                        say(f"{ok_n} succeeded, {fail_n} failed.")
                     else:
-                        err(f"[{label}] collection failed")
-                        fail_hosts.append(label)
-                    print()
+                        say(f"All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
 
-                    if _interrupt_count:
-                        warn("Stopping after interrupt.")
-                        break
-
-                # --- summary ---
-                _emit(_c('1', "=" * 40))
-                _emit(f"{_c('1', 'Run complete:')} {run_dir}")
-                if ok_hosts:
-                    _emit(f"{_c('1;32', 'OK:  ')} {' '.join(ok_hosts)}")
-                if fail_hosts:
-                    _emit(f"{_c('1;31', 'FAIL:')} {' '.join(fail_hosts)}")
-                _emit(_c('1', "=" * 40))
-
-                ok_n, fail_n = len(ok_hosts), len(fail_hosts)
-                if fail_n:
-                    say(f"{SCRIPT_VOICE_NAME}. {ok_n} succeeded, {fail_n} failed.")
-                else:
-                    say(f"{SCRIPT_VOICE_NAME}. All {ok_n} host{'s' if ok_n != 1 else ''} succeeded.")
-
-                last_failed = bool(fail_hosts)
-
-                if _log_fh:
-                    _log_fh.close()
-                    _log_fh = None
+                    last_failed = bool(fail_hosts)
+                finally:
+                    if _log_fh:
+                        _log_fh.close()
+                        _log_fh = None
 
         if not args.auto or _interrupt_count:
             break
