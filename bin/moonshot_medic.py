@@ -621,7 +621,6 @@ def main() -> None:
                     say(f"Starting run. {n_total} host{'s' if n_total != 1 else ''} detected.")
 
                     if first_run:
-                        first_run = False
                         warn("Starting in 15 seconds — press Ctrl-C to abort.")
                         for _ in range(15):
                             if _interrupt_count:
@@ -725,6 +724,8 @@ def main() -> None:
                         if _log_fh:
                             _log_fh.close()
                             _log_fh = None
+
+        first_run = False
 
         if not args.auto or _interrupt_count:
             break
