@@ -392,8 +392,12 @@ def main() -> None:
     if args.auto and not args.confirm:
         stale_threshold = freshness_mins * 60
         info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
-        if run(["uv", "run", "fleetroll", "data-freshness", "--all", "--stale-threshold", str(stale_threshold)],
-               cwd=FLEETROLL_DIR, check=False).returncode != 0:
+        r = subprocess.run(["uv", "run", "fleetroll", "data-freshness", "configs/host-lists/linux/all.list", "--stale-threshold", str(stale_threshold)],
+                           cwd=FLEETROLL_DIR, capture_output=True, text=True)
+        freshness_out = (r.stdout + r.stderr).strip()
+        if freshness_out:
+            info(freshness_out)
+        if r.returncode != 0:
             err(f"Fleetroll data is stale (older than {stale_threshold}s). Refresh it before previewing.")
             sys.exit(1)
         info("Fetching bad-host list to preview run...")
@@ -430,8 +434,12 @@ def main() -> None:
         if args.auto:
             stale_threshold = freshness_mins * 60
             info(f"Checking fleetroll data freshness (max age: {freshness_label})...")
-            if run(["uv", "run", "fleetroll", "data-freshness", "--all", "--stale-threshold", str(stale_threshold)],
-                   cwd=FLEETROLL_DIR, check=False).returncode != 0:
+            r = subprocess.run(["uv", "run", "fleetroll", "data-freshness", "configs/host-lists/linux/all.list", "--stale-threshold", str(stale_threshold)],
+                               cwd=FLEETROLL_DIR, capture_output=True, text=True)
+            freshness_out = (r.stdout + r.stderr).strip()
+            if freshness_out:
+                info(freshness_out)
+            if r.returncode != 0:
                 print()
                 warn(f"Fleetroll data is stale (older than {stale_threshold}s) — will retry next loop.")
                 stale = True
