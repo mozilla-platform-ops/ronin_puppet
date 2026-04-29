@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect hang-diagnostic reports from hung/rebooted t-linux64-ms-* cartridges.
+"""Automated triage for hung t-linux64-ms-* Moonshot cartridges: resets via iLO, collects hang diagnostics, and tracks repeat offenders.
 
 Usage:
   moonshot_medic.py [--auto] [--no-reset] [--no-freshness] [--ignore-recency] [HOST ...]
@@ -461,7 +461,7 @@ def collect_host(fqdn: str, label: str, out_file: Path) -> bool:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Collect hang-diagnostic reports from t-linux64-ms-* cartridges.",
+        description="Automated triage for hung t-linux64-ms-* Moonshot cartridges: resets via iLO, collects hang diagnostics, and tracks repeat offenders.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("hostname", nargs="*", metavar="HOST",
