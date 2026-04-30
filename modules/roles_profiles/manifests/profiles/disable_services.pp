@@ -35,13 +35,16 @@ class roles_profiles::profiles::disable_services {
       include macos_mobileconfig_profiles::disable_gatekeeper
     }
     'Windows': {
+      $worker_function = lookup('win-worker.function', String, 'first', $facts['custom_win_purpose'])
+      $appxsvc_excluded_worker_pools = [
+        'win11-64-24h2-hw-ref-alpha',
+        'win11-64-24h2-hw-ref',
+      ]
+
       include win_disable_services::disable_puppet
       include win_disable_services::disable_windows_update
-      if $facts['custom_win_purpose'] != builder {
+      if $worker_function != 'builder' {
         include win_disable_services::disable_wsearch
-        ## WIP for RELOPS-1946
-        ## Not currently working. Leaving n place for ref.
-        #include win_disable_services::disable_sync_from_cloud
         if $facts['custom_win_release_id'] in ['2004', '2009'] {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
@@ -62,12 +65,11 @@ class roles_profiles::profiles::disable_services {
             include win_disable_services::disable_scheduled_tasks
           }
           default: {
+            fail("custom_win_location ${facts['custom_win_location']} not supported")
           }
         }
-        ## Let's Uninstall Appx Packages
         ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
         ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499
-        ## must be ran after apx uninstall
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
           include win_disable_services::disable_defender_smartscreen
@@ -75,16 +77,11 @@ class roles_profiles::profiles::disable_services {
           ## Can't disable appxsvc on ref hardware as it will affect the task
           ## user's ability to use codecs
           ## Ref: https://bugzilla.mozilla.org/show_bug.cgi?id=2013985
-          if $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref-alpha' and
-              $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref' {
+          if !($facts['custom_win_worker_pool_id'] in $appxsvc_excluded_worker_pools) {
             include win_disable_services::disable_appxsvc
           }
         }
       }
-      # May be needed for non-hardaware
-      # Commented out because this will break the auto restore
-      # include win_disable_services::disable_vss
-      # include win_disable_services::disable_system_restore
     }
     default: {
       fail("${facts['os']['name']} not supported")
