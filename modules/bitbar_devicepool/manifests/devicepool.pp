@@ -55,4 +55,13 @@ class bitbar_devicepool::devicepool {
     ],
   }
 
+  # place systemd unit file for devicepool (v3 server)
+  file { '/etc/systemd/system/bitbar-v3.service':
+    ensure => file,
+    source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar-v3.service',
+    notify => [
+      Class['bitbar_devicepool::systemd_reload'],
+    ],
+  }
+
 }
