@@ -271,7 +271,11 @@ def update_overview_html(state: dict) -> None:
     hosts = state.get("hosts", {})
 
     def fmt(s: str | None) -> str:
-        return s[:19].replace("T", " ") + " UTC" if s else ""
+        if not s:
+            return ""
+        iso = s if ("+" in s or s.endswith("Z")) else s[:19] + "+00:00"
+        display = s[:19].replace("T", " ") + " UTC"
+        return f'<span class="utc-time" data-utc="{iso}">{display}</span>'
 
     skipped = {
         fqdn: h for fqdn, h in hosts.items()
@@ -290,9 +294,14 @@ def update_overview_html(state: dict) -> None:
         "  body { font-family: monospace; background: #111; color: #ccc; padding: 1.5rem; }",
         "  h1 { color: #fff; }",
         "  h2 { color: #f90; margin-top: 2rem; }",
-        "  .generated { color: #666; font-size: .85em; margin-bottom: 1.5rem; }",
+        "  .generated { color: #666; font-size: .85em; margin-bottom: 1rem; }",
+        "  .tz-toggle { margin-bottom: 1.5rem; font-size: .85em; color: #aaa; }",
+        "  .tz-toggle label { margin-right: 1rem; cursor: pointer; }",
         "  table { border-collapse: collapse; width: 100%; }",
-        "  th { background: #222; color: #aaa; text-align: left; padding: .4rem .8rem; border-bottom: 1px solid #444; }",
+        "  th { background: #222; color: #aaa; text-align: left; padding: .4rem .8rem; border-bottom: 1px solid #444; cursor: pointer; user-select: none; }",
+        "  th:hover { color: #fff; }",
+        "  th[data-sort='asc']::after  { content: ' ▲'; color: #f90; }",
+        "  th[data-sort='desc']::after { content: ' ▼'; color: #f90; }",
         "  td { padding: .35rem .8rem; border-bottom: 1px solid #2a2a2a; }",
         "  tr:hover td { background: #1a1a1a; }",
         "  .skip { background: #2a1a00; }",
@@ -304,7 +313,11 @@ def update_overview_html(state: dict) -> None:
         "</head>",
         "<body>",
         "<h1>Moonshot Medic: Overview</h1>",
-        f'<p class="generated">Generated: {now.strftime("%Y-%m-%d %H:%M:%S UTC")}</p>',
+        f'<p class="generated">Generated: <span class="utc-time" data-utc="{now.isoformat()}">{now.strftime("%Y-%m-%d %H:%M:%S UTC")}</span></p>',
+        '<div class="tz-toggle">',
+        '  <label><input type="radio" name="tz" value="local" checked> Local time</label>',
+        '  <label><input type="radio" name="tz" value="utc"> UTC</label>',
+        '</div>',
     ]
 
     counts = daily_counts()
@@ -359,7 +372,48 @@ def update_overview_html(state: dict) -> None:
             )
         parts += ["  </tbody>", "</table>"]
 
-    parts += ["</body>", "</html>", ""]
+    parts += [
+        "<script>",
+        "  function formatTime(isoStr, mode) {",
+        "    const d = new Date(isoStr);",
+        "    if (mode === 'utc') {",
+        "      return isoStr.slice(0, 19).replace('T', ' ') + ' UTC';",
+        "    }",
+        "    return d.toLocaleString(undefined, {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});",
+        "  }",
+        "  function updateTimes() {",
+        "    const mode = document.querySelector('input[name=\"tz\"]:checked').value;",
+        "    document.querySelectorAll('.utc-time').forEach(el => {",
+        "      el.textContent = formatTime(el.dataset.utc, mode);",
+        "    });",
+        "  }",
+        "  document.querySelectorAll('input[name=\"tz\"]').forEach(r => r.addEventListener('change', updateTimes));",
+        "  updateTimes();",
+        "  function cellValue(tr, idx) {",
+        "    const el = tr.children[idx];",
+        "    const utc = el.querySelector('.utc-time');",
+        "    return utc ? utc.dataset.utc : el.textContent.trim();",
+        "  }",
+        "  function sortTable(th) {",
+        "    const table = th.closest('table');",
+        "    const tbody = table.querySelector('tbody');",
+        "    const idx = Array.from(th.parentElement.children).indexOf(th);",
+        "    const asc = th.dataset.sort === 'desc';",
+        "    table.querySelectorAll('th').forEach(h => delete h.dataset.sort);",
+        "    th.dataset.sort = asc ? 'asc' : 'desc';",
+        "    const rows = Array.from(tbody.querySelectorAll('tr'));",
+        "    rows.sort((a, b) => {",
+        "      const av = cellValue(a, idx), bv = cellValue(b, idx);",
+        "      const an = Number(av), bn = Number(bv);",
+        "      const cmp = (av !== '' && bv !== '' && !isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv);",
+        "      return asc ? cmp : -cmp;",
+        "    });",
+        "    rows.forEach(r => tbody.appendChild(r));",
+        "  }",
+        "  document.querySelectorAll('th').forEach(th => th.addEventListener('click', () => sortTable(th)));",
+        "</script>",
+        "</body>", "</html>", "",
+    ]
 
     RESULTS_BASE.mkdir(parents=True, exist_ok=True)
     OVERVIEW_HTML_FILE.write_text("\n".join(parts))
