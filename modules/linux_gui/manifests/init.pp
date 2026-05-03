@@ -223,6 +223,19 @@ class linux_gui (
               refreshonly => true,
             }
 
+            # Remove the stub-resolv.conf symlink so NM (dns=default) can write
+            # /etc/resolv.conf as a regular file with the real nameserver.
+            # NM won't replace a symlink it didn't create, so this one-shot exec
+            # deletes it and restarts NM to trigger the write. The onlyif ensures
+            # it only runs while the stub symlink is still present.
+            exec { 'replace resolv.conf stub with nm-managed file':
+              command  => 'rm -f /etc/resolv.conf && systemctl restart NetworkManager.service',
+              onlyif   => 'readlink /etc/resolv.conf 2>/dev/null | grep -q stub',
+              path     => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+              provider => 'shell',
+              require  => File['/etc/NetworkManager/conf.d/50-dns-direct.conf'],
+            }
+
             # Mask networkd-dispatcher: it dispatches systemd-networkd events, but
             # systemd-networkd is disabled on these hosts (NetworkManager manages
             # networking). It crashes on every boot due to a python3-dbus version
