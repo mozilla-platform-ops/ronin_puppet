@@ -198,6 +198,55 @@ class linux_gui (
               enable   => true,
               require  => File['/lib/systemd/system/changeresolution.service'];
           }
+
+          if $facts['os']['release']['full'] == '18.04' {
+            # Bypass systemd-resolved stub resolver to prevent DNS wedge on 18.04.
+            # systemd 237 (shipped with 18.04) can get stuck forwarding queries after
+            # a network event, leaving generic-worker unable to resolve hostnames for
+            # 40+ hours until a reboot. Setting dns=default makes NetworkManager write
+            # the DHCP-assigned nameserver directly into /etc/resolv.conf instead of
+            # routing through the 127.0.0.53 stub. systemd-resolved continues running
+            # for other consumers; it just stops being in the DNS path for the OS.
+            file { '/etc/NetworkManager/conf.d/50-dns-direct.conf':
+              ensure  => file,
+              owner   => 'root',
+              group   => 'root',
+              mode    => '0644',
+              content => "[main]\ndns=default\n",
+            }
+            exec { 'reload NetworkManager for dns-direct':
+              command     => 'systemctl reload NetworkManager.service',
+              user        => 'root',
+              path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+              onlyif      => 'systemctl is-active NetworkManager.service',
+              subscribe   => File['/etc/NetworkManager/conf.d/50-dns-direct.conf'],
+              refreshonly => true,
+            }
+
+            # Remove the stub-resolv.conf symlink so NM (dns=default) can write
+            # /etc/resolv.conf as a regular file with the real nameserver.
+            # NM won't replace a symlink it didn't create, so this one-shot exec
+            # deletes it and restarts NM to trigger the write. The onlyif ensures
+            # it only runs while the stub symlink is still present.
+            exec { 'replace resolv.conf stub with nm-managed file':
+              command  => 'rm -f /etc/resolv.conf && systemctl restart NetworkManager.service',
+              onlyif   => 'readlink /etc/resolv.conf 2>/dev/null | grep -q stub',
+              path     => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+              provider => 'shell',
+              require  => File['/etc/NetworkManager/conf.d/50-dns-direct.conf'],
+            }
+
+            # Mask networkd-dispatcher: it dispatches systemd-networkd events, but
+            # systemd-networkd is disabled on these hosts (NetworkManager manages
+            # networking). It crashes on every boot due to a python3-dbus version
+            # mismatch and serves no purpose here.
+            exec { 'mask networkd-dispatcher':
+              command  => 'systemctl mask networkd-dispatcher.service',
+              unless   => 'systemctl is-enabled networkd-dispatcher.service | grep -q masked',
+              path     => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
+              provider => 'shell',
+            }
+          }
         }
         '24.04': {
           #
