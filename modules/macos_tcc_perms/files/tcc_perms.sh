@@ -17,6 +17,21 @@ execute_query() {
     sudo sqlite3 "$db_path" "$query"
 }
 
+# Build a TCC csreq blob (cdhash-anchored code requirement) for a given binary.
+# The csreq format is:
+#   FADE0C00 00000028 00000001 00000008 00000014 <20-byte cdhash>
+# Echoes the SQL X'...' literal, or empty string if cdhash cannot be read.
+csreq_for_binary() {
+    local bin_path=$1
+    local cdhash
+    cdhash=$(codesign -dvvv "$bin_path" 2>&1 | awk -F= '/^CDHash=/{print $2; exit}')
+    if [ -z "$cdhash" ]; then
+        echo "WARNING: could not read cdhash for ${bin_path}; skipping its TCC entries" >&2
+        return 0
+    fi
+    printf "X'fade0c0000000028000000010000000800000014%s'" "$cdhash"
+}
+
 # Get the macOS version
 macos_version=$(sw_vers -productVersion)
 macos_major_version=$(echo "$macos_version" | cut -d'.' -f1)
@@ -45,20 +60,31 @@ queries_11_12_13=(
     "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/sbin/sshd',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1705002869);"
 )
 
+# Build queries for macOS 14/15 with cdhashes captured at runtime so we
+# don't drift when start-worker / generic-worker-multiuser are upgraded.
 queries_14_user=(
-        "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
-        "REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,X'fade0c00000000280000000100000008000000147f41aa3c67a93ccd54d2e21d25ba664a2db38497',NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);"
-        "REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/generic-worker-multiuser',1,2,2,1,X'fade0c0000000028000000010000000800000014a7add5673f62ad48b6acc24c066a9bc966b68acc',NULL,NULL,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);"
-    )
+    "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
+)
 
 queries_14_system=(
     "REPLACE INTO access VALUES('kTCCServiceScreenCapture','/bin/bash',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e62617368000000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',0);"
     "REPLACE INTO access VALUES('kTCCServiceScreenCapture','com.apple.Terminal',0,2,4,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'UNUSED',NULL,0,1712861890,NULL,NULL,'UNUSED',0);"
     "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355061,NULL,NULL,'UNUSED',1710355061);"
     "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/sbin/sshd',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e73736864000000000003',NULL,0,'UNUSED',NULL,0,1712862105,NULL,NULL,'UNUSED',0);"
-    "REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/start-worker',1,2,4,1,X'fade0c00000000280000000100000008000000147f41aa3c67a93ccd54d2e21d25ba664a2db38497',NULL,0,'UNUSED',NULL,0,1733939636,NULL,NULL,'UNUSED',0);"
-    "REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/generic-worker-multiuser',1,2,4,1,X'fade0c0000000028000000010000000800000014a7add5673f62ad48b6acc24c066a9bc966b68acc',NULL,0,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);"
 )
+
+start_worker_csreq=$(csreq_for_binary /usr/local/bin/start-worker)
+gw_multiuser_csreq=$(csreq_for_binary /usr/local/bin/generic-worker-multiuser)
+
+if [ -n "$start_worker_csreq" ]; then
+    queries_14_user+=("REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,${start_worker_csreq},NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);")
+    queries_14_system+=("REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/start-worker',1,2,4,1,${start_worker_csreq},NULL,0,'UNUSED',NULL,0,1733939636,NULL,NULL,'UNUSED',0);")
+fi
+
+if [ -n "$gw_multiuser_csreq" ]; then
+    queries_14_user+=("REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/generic-worker-multiuser',1,2,2,1,${gw_multiuser_csreq},NULL,NULL,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
+    queries_14_system+=("REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/generic-worker-multiuser',1,2,4,1,${gw_multiuser_csreq},NULL,0,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
+fi
 
 # Execute the appropriate queries based on the macOS version
 if [[ "$macos_major_version" -eq 10 && "$macos_minor_version" -eq 15 ]]; then
