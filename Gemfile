@@ -34,7 +34,7 @@ gem 'vault'
 gem 'rspec_junit_formatter'
 gem 'erb'
 
-gem "puppet-strings", "~> 4.1", :group => :dev
+gem "puppet-strings", "~> 5.0", :group => :dev
 
 # ruby 3.4 drops base64 support, add back
 gem 'base64'
