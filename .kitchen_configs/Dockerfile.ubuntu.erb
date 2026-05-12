@@ -1,0 +1,78 @@
+<%
+require "shellwords"
+
+username = @username || "kitchen"
+homedir = username == "root" ? "/root" : "/home/#{username}"
+public_key = Shellwords.escape(File.read(@public_key).strip)
+provision_commands = Array(@provision_command)
+%>
+FROM <%= @image %>
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV container=docker
+
+<% if @disable_upstart %>
+RUN [ ! -f "/sbin/initctl" ] || dpkg-divert --local --rename --add /sbin/initctl \
+    && ln -sf /bin/true /sbin/initctl
+<% end %>
+
+RUN set -eux; \
+    rm -f /etc/apt/apt.conf.d/docker-clean; \
+    printf '%s\n' \
+      'Acquire::Retries "6";' \
+      'Acquire::http::Pipeline-Depth "0";' \
+      'Acquire::http::No-Cache "true";' \
+      'Acquire::http::Timeout "30";' \
+      > /etc/apt/apt.conf.d/80-retries; \
+    apt_sources="$(mktemp -d)"; \
+    cp -a /etc/apt/sources.list "${apt_sources}/sources.list" 2>/dev/null || true; \
+    cp -a /etc/apt/sources.list.d "${apt_sources}/sources.list.d" 2>/dev/null || true; \
+    mirrors="http://azure.archive.ubuntu.com/ubuntu/ http://archive.ubuntu.com/ubuntu/ http://us.archive.ubuntu.com/ubuntu/"; \
+    if /usr/lib/apt/apt-helper download-file http://mirrors.ubuntu.com/mirrors.txt /tmp/ubuntu-mirrors.txt; then \
+      mirrors="${mirrors} $(grep -vE '^[[:space:]]*$' /tmp/ubuntu-mirrors.txt | tr '\n' ' ')"; \
+    fi; \
+    installed=0; \
+    for mirror in ${mirrors}; do \
+      mirror="${mirror%/}"; \
+      if [ -f "${apt_sources}/sources.list" ]; then cp "${apt_sources}/sources.list" /etc/apt/sources.list; fi; \
+      rm -rf /etc/apt/sources.list.d; \
+      if [ -d "${apt_sources}/sources.list.d" ]; then cp -a "${apt_sources}/sources.list.d" /etc/apt/sources.list.d; else mkdir -p /etc/apt/sources.list.d; fi; \
+      find /etc/apt -type f \( -name '*.list' -o -name '*.sources' \) -exec sed -i \
+        -e "s|http://archive.ubuntu.com/ubuntu/|${mirror}/|g" \
+        -e "s|http://archive.ubuntu.com/ubuntu|${mirror}|g" \
+        -e "s|http://security.ubuntu.com/ubuntu/|${mirror}/|g" \
+        -e "s|http://security.ubuntu.com/ubuntu|${mirror}|g" \
+        -e "s|http://us.archive.ubuntu.com/ubuntu/|${mirror}/|g" \
+        -e "s|http://us.archive.ubuntu.com/ubuntu|${mirror}|g" \
+        {} +; \
+      rm -rf /var/lib/apt/lists/*; \
+      if apt-get -o Acquire::Retries=6 update -y \
+          && apt-get -o Acquire::Retries=6 install -y sudo openssh-server curl ca-certificates lsb-release dbus systemd; then \
+        installed=1; \
+        break; \
+      fi; \
+      echo "APT bootstrap failed using ${mirror}; trying the next Ubuntu mirror" >&2; \
+    done; \
+    [ "${installed}" = "1" ]; \
+    rm -rf /var/lib/apt/lists/* /tmp/ubuntu-mirrors.txt "${apt_sources}"
+
+RUN if ! getent passwd <%= username %>; then \
+      useradd -d <%= homedir %> -m -s /bin/bash -p '*' <%= username %>; \
+    fi
+RUN mkdir -p /etc/sudoers.d
+RUN chmod 0750 /etc/sudoers.d
+RUN echo "<%= username %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= username %>
+RUN echo "Defaults !requiretty" >> /etc/sudoers.d/<%= username %>
+RUN mkdir -p <%= homedir %>/.ssh
+RUN chown -R <%= username %> <%= homedir %>/.ssh
+RUN chmod 0700 <%= homedir %>/.ssh
+RUN touch <%= homedir %>/.ssh/authorized_keys
+RUN chown <%= username %> <%= homedir %>/.ssh/authorized_keys
+RUN chmod 0600 <%= homedir %>/.ssh/authorized_keys
+RUN mkdir -p /run/sshd
+
+<% provision_commands.each do |cmd| %>
+RUN <%= cmd %>
+<% end %>
+
+RUN echo <%= public_key %> >> <%= homedir %>/.ssh/authorized_keys
