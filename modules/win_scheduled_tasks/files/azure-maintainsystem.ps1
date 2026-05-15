@@ -174,11 +174,49 @@ function Check-RoninLock {
   }
 }
 
+function Write-PuppetSlowResourceSummary {
+  param (
+    [string] $LogPath,
+    [int] $Limit = 20
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (!(Test-Path $LogPath)) {
+      Write-Log -message ('{0} :: Puppet log not found: {1}' -f $($MyInvocation.MyCommand.Name), $LogPath) -severity 'WARN'
+      return
+    }
+
+    $slowResources = Get-Content -Path $LogPath -ErrorAction SilentlyContinue | ForEach-Object {
+      if ($_ -match '^(?:\w+:\s+)?(?<resource>.+): Evaluated in (?<seconds>[0-9]+(?:\.[0-9]+)?) seconds$') {
+        [PSCustomObject]@{
+          Seconds  = [double]$Matches.seconds
+          Resource = $Matches.resource.Trim()
+        }
+      }
+    } | Sort-Object -Property Seconds -Descending | Select-Object -First $Limit
+
+    if ($slowResources) {
+      foreach ($resource in $slowResources) {
+        Write-Log -message ('Puppet-Run :: slow resource {0:n3}s {1}' -f $resource.Seconds, $resource.Resource) -severity 'DEBUG'
+      }
+    }
+    else {
+      Write-Log -message ('{0} :: no Puppet evaltrace resource timings found in {1}' -f $($MyInvocation.MyCommand.Name), $LogPath) -severity 'DEBUG'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
 function Puppet-Run {
   param (
     [int] $exit,
     [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
     [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
+    [string] $run_to_success = 'true',
     [string] $inmutable = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable,
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
     [string] $logdir = "$env:systemdrive\logs",
@@ -214,6 +252,13 @@ function Puppet-Run {
 
     Set-Location "$env:systemdrive\ronin"
 
+    # Azure images should become immutable after the final Taskcluster boot apply.
+    # Preserve the legacy registry override for debugging nodes that need repeated Puppet runs.
+    $roninOptions = Get-ItemProperty -Path "$roninKey" -Name 'runtosuccess' -ErrorAction SilentlyContinue
+    if (($null -ne $roninOptions) -and ($null -ne $roninOptions.runtosuccess)) {
+      $run_to_success = $roninOptions.runtosuccess
+    }
+
     # Ensure worker pool ID matches what was provisioned.
     # So Puppet can update config files as needed.
     Write-Log -message  ('{0} :: Updating worker pool ID for final Puppet run' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -229,15 +274,20 @@ function Puppet-Run {
       New-Item -ItemType Directory -Force -Path $fail_dir
     }
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
+    $puppetLogPath = "$logdir\$log_file"
+    $puppetStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$log_file
+    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --evaltrace --summarize --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $puppetLogPath
     [int]$puppet_exit = $LastExitCode
+    $puppetStopwatch.Stop()
+    Write-Log -message  ('{0} :: Puppet apply completed in {1:n1} seconds with exit code {2}' -f $($MyInvocation.MyCommand.Name), $puppetStopwatch.Elapsed.TotalSeconds, $puppet_exit) -severity 'DEBUG'
+    Write-PuppetSlowResourceSummary -LogPath $puppetLogPath
 
     if ($run_to_success -eq 'true') {
       if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
         if ($last_exit -eq 0) {
           Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
+          Set-ItemProperty -Path "$roninKey" -name "last_run_exit" -value "$puppet_exit"
           Remove-Item $lock -ErrorAction SilentlyContinue
           # If the Puppet run fails send logs to papertrail
           # Nxlog watches $fail_dir for files names *-puppetrun.log
@@ -245,8 +295,8 @@ function Puppet-Run {
           shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
         }
         elseif ($last_exit -ne 0) {
-          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-          Remove-Item $lock
+          Set-ItemProperty -Path "$roninKey" -name "last_run_exit" -value "$puppet_exit"
+          Remove-Item $lock -ErrorAction SilentlyContinue
           Move-Item $logdir\$log_file -Destination $fail_dir
           Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
           sleep 600
@@ -255,15 +305,15 @@ function Puppet-Run {
       }
       elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
         Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-        Remove-Item -path $lock
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name inmutable -value true
+        Set-ItemProperty -Path "$roninKey" -name "last_run_exit" -value "$puppet_exit"
+        Remove-Item -path $lock -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path "$roninKey" -name inmutable -value 'true'
       }
       else {
         Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$last_exit"
+        Set-ItemProperty -Path "$roninKey" -name "last_run_exit" -value "$last_exit"
         Move-Item $logdir\$log_file -Destination $fail_dir
-        Remove-Item -path $lock
+        Remove-Item -path $lock -ErrorAction SilentlyContinue
         shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
       }
     }
