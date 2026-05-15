@@ -99,8 +99,7 @@ latest version, and the next EACS won't need any human follow-up.
 - **🔑 vault.yaml delivery.** Still a manual scp/drop step. Bootstrap
   script polls `/var/root/vault.yaml` up to 10 min. Open question:
   secure-fetch via an internal endpoint? SimpleMDM Custom Attribute
-  with the file body? Conversation worth having with whoever runs
-  SimpleMDM admin.
+  with the file body? Something else? Pick whichever path fits next.
 
 - **👤 admin VNC login** is still required to plant the Bootstrap Token
   before puppet flips autologin to cltbld. No known mechanism to script
@@ -110,15 +109,15 @@ latest version, and the next EACS won't need any human follow-up.
 - **🖋️ start-worker / generic-worker-multiuser** need Developer ID
   signing to be coverable by the PPPC profile (ScreenCapture
   specifically). `start-worker` is currently a user-DB fallback entry
-  in `tcc_perms.sh`.
+  in `tcc_perms.sh`. This is a long-standing open issue upstream:
+  [taskcluster/taskcluster#7413](https://github.com/taskcluster/taskcluster/issues/7413)
+  — worth noting on this PR but not blocking it.
 
 ---
 
-## 🔬 Verification method (per Ryan, after a long debug detour today)
+## 🔬 Verification method
 
-Forget `defaults read com.apple.Safari AllowRemoteAutomation` — the
-pref doesn't live there in any way our tooling can read. The gold
-standard is opening Safari in cltbld's VNC session and visually
+The gold standard is opening Safari in cltbld's VNC session and visually
 confirming:
 
 - Develop menu is in the menu bar
