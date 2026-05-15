@@ -8,7 +8,10 @@ class roles_profiles::profiles::google_chrome {
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1570767
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1876822
     'Windows': {
-      include win_packages::chrome
+      $version = lookup('windows.googlechrome.version')
+      class { 'win_packages::chrome':
+        version => $version,
+      }
     }
     'Ubuntu': {
       include linux_packages::google_chrome

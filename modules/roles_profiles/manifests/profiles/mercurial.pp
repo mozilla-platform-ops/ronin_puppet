@@ -6,8 +6,10 @@ class roles_profiles::profiles::mercurial {
   case $facts['os']['name'] {
     'Windows': {
       $version = lookup(['win-worker.variant.hg.version', 'windows.hg.version'])
+      $srcloc  = lookup('windows.ext_pkg_src')
       class { 'win_packages::mercurial':
         version => $version,
+        srcloc  => $srcloc,
       }
     }
     default: {

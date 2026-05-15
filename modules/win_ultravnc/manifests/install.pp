@@ -2,10 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_ultravnc::install {
+class win_ultravnc::install (
+    String $srcloc,
+) {
 
     win_packages::win_msi_pkg  { $win_ultravnc::package:
         pkg             => $win_ultravnc::msi,
         install_options => ['/quiet'],
+        srcloc          => $srcloc,
     }
 }

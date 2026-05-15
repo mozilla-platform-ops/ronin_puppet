@@ -2,8 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_packages::chrome {
-  $google_chrome_version = lookup('windows.googlechrome.version')
+class win_packages::chrome (
+  String $version,
+) {
 
   ## Block googleupdate.exe to prevent installing an updating version of chrome outside of chocolatey
   windows_firewall::exception { 'googleupdate':
@@ -65,7 +66,7 @@ class win_packages::chrome {
 
   ## Install the latest version of chrome via chocolatey
   package { 'googlechrome':
-    ensure   => $google_chrome_version,
+    ensure   => $version,
     provider => 'chocolatey',
   }
 

@@ -12,7 +12,11 @@ class roles_profiles::profiles::vnc {
       $msi                  = 'UltraVnc_1223_X64.msi'
       $firewall_port        = lookup('windows.datacenter.ports.vnc')
       $firewall_name        = 'UltraVNC'
+      $srcloc               = lookup('windows.ext_pkg_src')
 
+      class { 'win_ultravnc::install':
+        srcloc => $srcloc,
+      }
       class { 'win_ultravnc':
         package           => $package,
         msi               => $msi,

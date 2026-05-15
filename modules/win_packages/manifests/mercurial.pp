@@ -4,6 +4,7 @@
 
 class win_packages::mercurial (
   String $version,
+  String $srcloc,
 ) {
   case $version {
     '6.2.1': {
@@ -21,5 +22,6 @@ class win_packages::mercurial (
   win_packages::win_msi_pkg { "Mercurial ${version}" :
     pkg             => "mercurial-${version}-x64.msi",
     install_options => $install_opts,
+    srcloc          => $srcloc,
   }
 }

@@ -5,15 +5,11 @@
 define win_packages::win_msi_pkg (
   String $pkg,
   Array $install_options,
+  String $srcloc,
   String $package=$title
 ) {
   $pkgdir = $facts['custom_win_temp_dir']
-
-  $srcloc = lookup('windows.ext_pkg_src')
-
-
-
-  $url         = "${srcloc}/${pkg}"
+  $url    = "${srcloc}/${pkg}"
 
   # Use https://github.com/voxpupuli/puppet-archive instead of built-in file resource type to download files
   archive { $title:

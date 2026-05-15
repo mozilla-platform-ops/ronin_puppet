@@ -123,10 +123,12 @@ class roles_profiles::profiles::windows_worker_runner {
         }
       }
 
+      $srcloc = lookup('windows.ext_pkg_src')
       class { 'win_packages::custom_nssm':
         version  => $nssm_version,
         nssm_exe => $nssm_exe,
         nssm_dir => $nssm_dir,
+        srcloc   => $srcloc,
       }
 
       class { 'win_taskcluster::generic_worker' :

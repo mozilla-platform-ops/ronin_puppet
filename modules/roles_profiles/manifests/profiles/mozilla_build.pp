@@ -10,12 +10,19 @@ class roles_profiles::profiles::mozilla_build {
       include win_mozilla_build::hg_files
     }
     default: {
-      include win_mozilla_build::install
+      $srcloc  = lookup('windows.ext_pkg_src')
+      $version = lookup('windows.mozilla_build.version')
+      class { 'win_mozilla_build::install':
+        version => $version,
+        srcloc  => $srcloc,
+      }
+      class { 'win_mozilla_build::grant_symlink_access':
+        srcloc => $srcloc,
+      }
       include win_mozilla_build::modifications
       include win_mozilla_build::install_py3_certs
       include win_mozilla_build::tooltool
       include win_mozilla_build::hg_files
-      include win_mozilla_build::grant_symlink_access
       include win_mozilla_build::install_psutil
       include win_mozilla_build::install_zstandard
       include win_mozilla_build::pip

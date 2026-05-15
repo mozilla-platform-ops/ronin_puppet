@@ -9,6 +9,9 @@ class roles_profiles::profiles::mozilla_maintenance_service {
 
       $source_location = lookup('windows.ext_pkg_src')
 
+      class { 'win_mozilla_maintenance_service::install':
+        srcloc => $source_location,
+      }
       class { 'win_mozilla_maintenance_service':
         source_location => $source_location,
       }

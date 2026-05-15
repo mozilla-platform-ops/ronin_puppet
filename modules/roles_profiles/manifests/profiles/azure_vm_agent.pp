@@ -14,9 +14,11 @@ class roles_profiles::profiles::azure_vm_agent {
       }
       $msi = "WindowsAzureVmAgent.${arch}_${agent_version}.msi"
 
+      $srcloc = lookup('windows.ext_pkg_src')
       class { 'win_packages::azure_vm_agent':
         package => $package,
         msi     => $msi,
+        srcloc  => $srcloc,
       }
     }
     default: {

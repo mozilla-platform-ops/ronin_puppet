@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_packages::vc_redist_2022_x64 {
+class win_packages::vc_redist_2022_x64 (
+  String $srcloc,
+) {
   if $facts['os']['name'] == 'Windows' {
     #require win_packages::vc_redist_x86
     require win_packages::vc_redist_2022_x86
@@ -10,6 +12,7 @@ class win_packages::vc_redist_2022_x64 {
       pkg                    => 'VC_redist.x64.14.44.35211.0.exe',
       install_options_string => "/install /passive /norestart /log ${facts['custom_win_roninlogdir']}\\vc_redist_2022_x64-install.log",
       creates                => "${facts['custom_win_systemdrive']}\\Windows\\System32\\vcruntime140.dll",
+      srcloc                 => $srcloc,
     }
   } else {
     fail("${module_name} does not support ${facts['os']['name']}")

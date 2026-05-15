@@ -3,10 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::drivers::intel_gfx (
-  String $version
+  String $version,
+  String $srcloc,
 ) {
-
-    $srcloc = lookup('windows.ext_pkg_src')
 
     $pkgdir     =  "${facts['custom_win_systemdrive']}\\intel"
     $gfx_driver = "gfx_win_${version}"

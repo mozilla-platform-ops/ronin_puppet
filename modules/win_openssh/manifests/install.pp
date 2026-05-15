@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_openssh::install {
+class win_openssh::install (
+    String $srcloc,
+) {
 
     # This is being extracting into C:\programdata\ssh
     # This is not ideal, but puppet hit issues with extracting into C:\program files
@@ -15,6 +17,7 @@ class win_openssh::install {
         pkg         => 'OpenSSH-Win64.zip',
         creates     => "${local_program_dir}\\${package}\\ssh.exe",
         destination => $local_program_dir,
+        srcloc      => $srcloc,
     }
     win_shared::execonce { 'install_openssh':
         command   => "${win_openssh::pwrshl_run_script} ${ssh_script}",
