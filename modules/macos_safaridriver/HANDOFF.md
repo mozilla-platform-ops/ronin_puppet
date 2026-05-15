@@ -43,17 +43,6 @@ in. ✨
 > SimpleMDM driver's outer retry loop tries again instead of declaring
 > victory. EACS round 2 hit this clean path.
 
-### ⚠️ One footnote on the 2nd round
-
-The bootstrap script that was uploaded to SimpleMDM at the time of
-EACS#2 was the version BEFORE I added `touch /var/tmp/semaphore/run-buildbot`
-into the driver cleanup block. So bootstrap finished clean, but the
-worker stayed dormant until I manually touched the file. **The
-current in-tree script
-(`modules/macos_safaridriver/simplemdm-bootstrap-sip-safari.sh`) HAS
-the touch baked in** — just make sure SimpleMDM is using the latest
-version, and the next EACS won't need any human follow-up.
-
 ---
 
 ## 🪤 The footguns I left in the sand for you
