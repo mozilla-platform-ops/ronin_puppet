@@ -117,8 +117,10 @@ windows:
       isetup_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/ISetup_08-05-2025'
       date: '03-20-2026'
 
-# win_packages::sevenzip is required transitively by win_packages::win_zip_pkg
-# (which can't pass parameters through `require`), so srcloc is supplied here
-# via Hiera class-parameter auto-lookup. Every other class gets srcloc explicitly
-# from its profile.
+# The following install classes are reached transitively (via Puppet's `require`
+# keyword from sibling classes, or via a parent class that calls bare `include`)
+# without a profile in the path that can pass srcloc explicitly. Hiera supplies
+# the value via class-parameter auto-lookup. Every other class gets srcloc
+# directly from its profile.
 win_packages::sevenzip::srcloc: "%{lookup('windows.ext_pkg_src')}"
+win_openssh::install::srcloc: "%{lookup('windows.ext_pkg_src')}"

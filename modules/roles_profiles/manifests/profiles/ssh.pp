@@ -9,15 +9,11 @@ class roles_profiles::profiles::ssh {
       $programfiles         = $facts['custom_win_programfiles']
       $firewall_port        = lookup('windows.datacenter.ports.ssh')
       $firewall_rule_name   = 'SSH'
-      $srcloc               = lookup('windows.ext_pkg_src')
 
       $relops_key = lookup('windows.winaudit_ssh')
 
       class { 'win_users::administrator::authorized_keys':
         relops_key => $relops_key,
-      }
-      class { 'win_openssh::install':
-        srcloc => $srcloc,
       }
       case $facts['custom_win_os_version'] {
         'win_10_2009': {

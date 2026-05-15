@@ -34,16 +34,13 @@ class roles_profiles::profiles::logging (
       } else {
         $conf_file = 'non_datacenter_nxlog.conf'
       }
-      $srcloc = lookup('windows.ext_pkg_src')
-      class { 'win_nxlog::install':
-        srcloc => $srcloc,
-      }
       class { 'win_nxlog':
         nxlog_dir      => "${facts['custom_win_programfilesx86']}\\nxlog",
         location       => $facts['custom_win_location'],
         node_name      => $facts['networking']['fqdn'],
         log_aggregator => $log_aggregator,
         conf_file      => $conf_file,
+        srcloc         => lookup('windows.ext_pkg_src'),
       }
       # Bug List
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947
