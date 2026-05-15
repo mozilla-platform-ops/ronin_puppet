@@ -5,7 +5,10 @@
 class roles_profiles::profiles::mercurial {
   case $facts['os']['name'] {
     'Windows': {
-      include win_packages::mercurial
+      $version = lookup(['win-worker.variant.hg.version', 'windows.hg.version'])
+      class { 'win_packages::mercurial':
+        version => $version,
+      }
     }
     default: {
       fail("${facts['os']['name']} not supported")
