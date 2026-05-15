@@ -45,6 +45,26 @@
 						<key>Authorization</key>
 						<string>Allow</string>
 					</dict>
+					<dict>
+						<key>Identifier</key>
+						<string>/bin/bash</string>
+						<key>IdentifierType</key>
+						<string>path</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.bash" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
+					<dict>
+						<key>Identifier</key>
+						<string>/usr/bin/sqlite3</string>
+						<key>IdentifierType</key>
+						<string>path</string>
+						<key>CodeRequirement</key>
+						<string>identifier "com.apple.sqlite3" and anchor apple</string>
+						<key>Authorization</key>
+						<string>Allow</string>
+					</dict>
 				</array>
 				<key>Accessibility</key>
 				<array>
