@@ -49,9 +49,10 @@ The bootstrap script that was uploaded to SimpleMDM at the time of
 EACS#2 was the version BEFORE I added `touch /var/tmp/semaphore/run-buildbot`
 into the driver cleanup block. So bootstrap finished clean, but the
 worker stayed dormant until I manually touched the file. **The
-current Desktop script (`~/Desktop/m4-simplemdm-bootstrap-sip-safari.sh`)
-HAS the touch baked in** — just make sure SimpleMDM is using the
-latest version, and the next EACS won't need any human follow-up.
+current in-tree script
+(`modules/macos_safaridriver/simplemdm-bootstrap-sip-safari.sh`) HAS
+the touch baked in** — just make sure SimpleMDM is using the latest
+version, and the next EACS won't need any human follow-up.
 
 ---
 
@@ -63,9 +64,10 @@ latest version, and the next EACS won't need any human follow-up.
    bootstrap driver routes `run-puppet.sh` through `ssh root@localhost`
    so puppet inherits sshd's user-session TCC domain. One-shot ed25519
    key at `/var/root/.ssh/bootstrap_id_ed25519` during bootstrap,
-   removed on sentinel write. This lives in the Desktop bootstrap
-   script — when we evolve this, the workaround should probably move
-   into a real puppet/PR change.
+   removed on sentinel write. This lives in the in-tree bootstrap
+   script (`modules/macos_safaridriver/simplemdm-bootstrap-sip-safari.sh`)
+   — when we evolve this, the workaround should probably move into
+   a real puppet/PR change.
 
 2. **🐚 `launchctl asuser 0 <cmd>` does NOT escape the system domain
    when invoked from a LaunchDaemon.** It only actually transitions
@@ -82,15 +84,13 @@ latest version, and the next EACS won't need any human follow-up.
 
 ---
 
-## 📦 Artifacts worth bookmarking
+## 📦 Artifacts worth bookmarking (all in-tree)
 
 | Path | What it is |
 |---|---|
-| `~/Desktop/m4-simplemdm-bootstrap-sip-safari.sh` | The SimpleMDM script. Upload as a script-job, run-on-enrollment, scoped to the M4 staging group. Idempotent, self-cleans on success. |
-| `~/Desktop/org.mozilla.ci-tcc-pppc.mobileconfig` | Extracted from PR branch — upload to SimpleMDM as a Custom Configuration Profile, replacing the previous "Mozilla CI TCC Permissions". Has the new bash + sqlite3 FDA grants. |
-| `modules/macos_mobileconfig_profiles/files/org.mozilla.ci-tcc-pppc.mobileconfig` | In-tree source of truth for the above. |
-| `modules/macos_safaridriver/files/safari-enable-remote-automation.applescript` | The applescript with the new defensive verify. |
-| `~/Desktop/m4-provisioning-handoff.md` | Earlier handoff from the M4 rollout — procedural shape still applies. |
+| [`modules/macos_safaridriver/simplemdm-bootstrap-sip-safari.sh`](./simplemdm-bootstrap-sip-safari.sh) | The SimpleMDM script. Upload as a script-job, run-on-enrollment, scoped to the M4 staging group. Idempotent, self-cleans on success. |
+| [`modules/macos_mobileconfig_profiles/files/org.mozilla.ci-tcc-pppc.mobileconfig`](../macos_mobileconfig_profiles/files/org.mozilla.ci-tcc-pppc.mobileconfig) | The PPPC mobileconfig. Upload to SimpleMDM as a Custom Configuration Profile, replacing the previous "Mozilla CI TCC Permissions". Has the new bash + sqlite3 FDA grants this branch added. |
+| [`modules/macos_safaridriver/files/safari-enable-remote-automation.applescript`](./files/safari-enable-remote-automation.applescript) | The applescript with the new defensive verify. |
 
 ---
 
@@ -129,7 +129,7 @@ This is the dance the RelOps team has been doing since macOS 10.15. 🕺
 
 ## 🚀 Recommended reorientation playbook
 
-1. Read this file, the mobileconfig, and the Desktop bootstrap script.
+1. Read this file, the mobileconfig, and the in-tree bootstrap script linked above.
 2. EACS macmini-m4-118 (or any spare staging M4).
 3. Admin VNC login → drop `vault.yaml` → trigger the SimpleMDM script.
 4. Once bootstrap completes (sentinel `/var/log/m4-bootstrap-complete`),
@@ -139,15 +139,6 @@ This is the dance the RelOps team has been doing since macOS 10.15. 🕺
    your friends 🪵. SSH keys and LaunchDaemon plists self-clean on
    success; if they're still on disk, the driver hasn't declared
    victory yet.
-
----
-
-## 🧠 Related memory notes
-
-`~/.claude/projects/-Users-rcurran/memory/` is already updated for:
-
-- [[apple-silicon-bootstrap-token]] — the BST custody fix
-- [[sip-safari-automation]] — the PR's overall shape and validated state
 
 ---
 
