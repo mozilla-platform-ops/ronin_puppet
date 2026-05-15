@@ -92,6 +92,36 @@ function Disable-OneDrive {
 
 }
 
+function Mount-TaskUserYDrive {
+    param (
+        [string] $source = 'D:\',
+        [string] $drive = 'Y:'
+    )
+
+    $drive_path = ('{0}\' -f $drive)
+    if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+        Write-Log -Message ('{0} :: source path {1} does not exist; cannot create {2}' -f $($MyInvocation.MyCommand.Name), $source, $drive) -severity 'ERROR'
+        exit 1
+    }
+    if (Test-Path -LiteralPath $drive_path -PathType Container) {
+        Write-Log -Message ('{0} :: drive {1} already available for task user' -f $($MyInvocation.MyCommand.Name), $drive) -severity 'DEBUG'
+        return
+    }
+
+    $subst = Join-Path $env:SystemRoot 'System32\subst.exe'
+    & $subst @($drive, $source)
+    if ($LASTEXITCODE -ne 0) {
+        Write-Log -Message ('{0} :: subst failed to map {1} to {2}; exit code {3}' -f $($MyInvocation.MyCommand.Name), $drive, $source, $LASTEXITCODE) -severity 'ERROR'
+        exit 1
+    }
+    if (-not (Test-Path -LiteralPath $drive_path -PathType Container)) {
+        Write-Log -Message ('{0} :: subst reported success but {1} is not available for task user' -f $($MyInvocation.MyCommand.Name), $drive_path) -severity 'ERROR'
+        exit 1
+    }
+
+    Write-Log -Message ('{0} :: mapped {1} to {2} for task user' -f $($MyInvocation.MyCommand.Name), $drive, $source) -severity 'DEBUG'
+}
+
 $DhcpDomain = ((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'DhcpDomain')
 
 switch -Regex ($true) {
@@ -146,6 +176,10 @@ catch {
 while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
     Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Waiting for $localuser to be created", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
     Start-Sleep -Seconds 5
+}
+
+if ($location -eq "azure") {
+    Mount-TaskUserYDrive
 }
 
 switch ($os_version) {

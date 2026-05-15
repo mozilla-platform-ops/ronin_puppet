@@ -559,13 +559,34 @@ function Set-AzureInstanceMetadataScheduledEvents {
 ## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
 function LinkZY2D {
   param (
+    [string] $source = 'D:\',
+    [string] $drive = 'Y:'
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
-      subst Y: D:\
+    $drive_path = ('{0}\' -f $drive)
+    if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+      Write-Log -message ('{0} :: source path {1} does not exist; cannot create {2}' -f $($MyInvocation.MyCommand.Name), $source, $drive) -severity 'WARN'
+      return
+    }
+    if (Test-Path -LiteralPath $drive_path -PathType Container) {
+      Write-Log -message ('{0} :: drive {1} already available' -f $($MyInvocation.MyCommand.Name), $drive) -severity 'DEBUG'
+      return
+    }
+
+    $subst = Join-Path $env:SystemRoot 'System32\subst.exe'
+    & $subst @($drive, $source)
+    if ($LASTEXITCODE -ne 0) {
+      Write-Log -message ('{0} :: subst failed to map {1} to {2}; exit code {3}' -f $($MyInvocation.MyCommand.Name), $drive, $source, $LASTEXITCODE) -severity 'ERROR'
+      return
+    }
+    if (Test-Path -LiteralPath $drive_path -PathType Container) {
+      Write-Log -message ('{0} :: mapped {1} to {2}' -f $($MyInvocation.MyCommand.Name), $drive, $source) -severity 'DEBUG'
+    }
+    else {
+      Write-Log -message ('{0} :: subst reported success but {1} is not available' -f $($MyInvocation.MyCommand.Name), $drive_path) -severity 'ERROR'
     }
   }
   end {
@@ -603,8 +624,8 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
-    LinkZY2D
   }
+  LinkZY2D
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
 }
