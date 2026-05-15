@@ -30,14 +30,28 @@ in. ✨
 |---|---|
 | 🟢 In-place pivot from existing puppet state to PR branch | green |
 | 🟢 Fresh post-EACS + admin VNC + SSH-driven bootstrap | green |
-| 🟡 Fresh post-EACS + admin VNC + SimpleMDM-driven bootstrap | bootstrap completed; AppleScript silently skipped "Allow remote automation" on the first MDM-driven run — hence the defensive verify in this PR's latest commit |
+| 🟢 **Fresh post-EACS + admin VNC + SimpleMDM-driven bootstrap (2nd EACS round)** | **green — visually confirmed in cltbld VNC: Develop menu present + "Allow remote automation" checked.** Ryan eyeballed Safari → Settings → Developer. The earlier silent-skip on first MDM run is fixed by the verify-after-click commit on this branch. |
 | 🔐 Bootstrap Token custody stays on `admin` (cltbld DISABLED) | confirmed via `sysadminctl -secureTokenStatus` + APFS crypto users |
 | 🪪 PPPC FDA grants for `/bin/bash` + `/usr/bin/sqlite3` land on host | confirmed via `/Library/Managed Preferences/com.apple.TCC.configuration-profile-policy.plist` |
+| 🧪 Try-push validation on real CI tasks | in flight at time of writing: https://treeherder.mozilla.org/jobs?repo=try&landoInstance=lando-prod-2025&landoCommitID=47137 — `'test-macosx1500-aarch64 'mochitest-plain` with worker-override to staging pool, other staging hosts quarantined so everything serializes on m4-118 |
 
-> The bug that hid the silent-skip from us all day was the
-> semaphore-on-success-without-actual-success behavior. 🫠 The latest
-> commit on this branch adds post-click value-read verification so a
-> stuck toggle surfaces as a puppet failure instead.
+> The bug that hid the silent-skip from us on the *first* round was the
+> semaphore-on-success-without-actual-success behavior. 🫠 The
+> verify-after-click commit (4bf1b8bf/85876cc5) makes the script
+> error out if either of the two checkbox values is not 1 after the
+> click, so a stuck toggle surfaces as a puppet failure and the
+> SimpleMDM driver's outer retry loop tries again instead of declaring
+> victory. EACS round 2 hit this clean path.
+
+### ⚠️ One footnote on the 2nd round
+
+The bootstrap script that was uploaded to SimpleMDM at the time of
+EACS#2 was the version BEFORE I added `touch /var/tmp/semaphore/run-buildbot`
+into the driver cleanup block. So bootstrap finished clean, but the
+worker stayed dormant until I manually touched the file. **The
+current Desktop script (`~/Desktop/m4-simplemdm-bootstrap-sip-safari.sh`)
+HAS the touch baked in** — just make sure SimpleMDM is using the
+latest version, and the next EACS won't need any human follow-up.
 
 ---
 
