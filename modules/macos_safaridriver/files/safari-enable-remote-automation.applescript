@@ -42,6 +42,9 @@ tell application "System Events"
         tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
             if value is 0 then click it
             delay 5
+            if value is not 1 then
+                error "Show features for web developers did not toggle on (value=" & (value as string) & ")"
+            end if
         end tell
         delay 5
 
@@ -53,6 +56,9 @@ tell application "System Events"
         tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
             if value is 0 then click it
             delay 5
+            if value is not 1 then
+                error "Allow remote automation did not toggle on (value=" & (value as string) & ")"
+            end if
         end tell
     end tell
 end tell
@@ -60,4 +66,6 @@ end tell
 tell application "Safari" to quit
 
 -- Write semaphore (version 1 = done)
+-- Only reached if both checkbox verifications above passed; either errors abort the
+-- script before this line, leaving the semaphore as the empty file written at start.
 do shell script "printf '1' > " & quoted form of semaphoreFile
