@@ -6,8 +6,20 @@ if WORKER_FUNCTION == 'tester'
   gpu_key = ROLE_NAME == 'win116425h2azure' ? 'gpu_a10' : 'gpu'
   driver_name = expected_hiera_value(gpu_key, 'name')
 
+  # GRID install completes only after reboot, which kitchen does not perform
+  # mid-converge. Full install + nvidia-smi verification has to happen as part
+  # of worker image validation on a real A10 pool. The size check catches the
+  # case where the blob mirror returns a placeholder or 0-byte file. Serverspec
+  # on the winrm backend does not implement file.size, so we shell out.
   describe file("C:\\Windows\\Temp\\#{driver_name}.exe") do
     it { should exist }
+  end
+
+  describe powershell_command(
+    "if ((Get-Item 'C:\\Windows\\Temp\\#{driver_name}.exe').Length -gt 100000000) " \
+    "{ exit 0 } else { exit 1 }"
+  ) do
+    its(:exit_status) { should eq 0 }
   end
 end
 

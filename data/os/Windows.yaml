@@ -99,8 +99,8 @@ windows:
     name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
     display_name: "NVIDIA Graphics Driver 538.15"
   gpu_a10:
-    name: "553.62_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
-    display_name: "NVIDIA Graphics Driver 553.62"
+    name: "573.96_grid_win10_win11_server2022_server2025_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 573.96"
   hg:
     version: '6.9'
   nssm:
