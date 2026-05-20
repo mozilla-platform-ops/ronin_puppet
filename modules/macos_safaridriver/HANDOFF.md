@@ -30,10 +30,11 @@ in. ✨
 |---|---|
 | 🟢 In-place pivot from existing puppet state to PR branch | green |
 | 🟢 Fresh post-EACS + admin VNC + SSH-driven bootstrap | green |
-| 🟢 **Fresh post-EACS + admin VNC + SimpleMDM-driven bootstrap (2nd EACS round)** | **green — visually confirmed in cltbld VNC: Develop menu present + "Allow remote automation" checked.** Ryan eyeballed Safari → Settings → Developer. The earlier silent-skip on first MDM run is fixed by the verify-after-click commit on this branch. |
+| 🟢 **Fresh post-EACS + admin VNC + SimpleMDM-driven bootstrap** | **green — visually confirmed in cltbld VNC: Develop menu present + "Allow remote automation" checked.** The earlier silent-skip on first MDM run is fixed by the verify-after-click commit on this branch. |
 | 🔐 Bootstrap Token custody stays on `admin` (cltbld DISABLED) | confirmed via `sysadminctl -secureTokenStatus` + APFS crypto users |
 | 🪪 PPPC FDA grants for `/bin/bash` + `/usr/bin/sqlite3` land on host | confirmed via `/Library/Managed Preferences/com.apple.TCC.configuration-profile-policy.plist` |
-| 🧪 Try-push validation on real CI tasks | in flight at time of writing: https://treeherder.mozilla.org/jobs?repo=try&landoInstance=lando-prod-2025&landoCommitID=47137 — `'test-macosx1500-aarch64 'mochitest-plain` with worker-override to staging pool, other staging hosts quarantined so everything serializes on m4-118 |
+| 🧪 **Try-push validation on real CI tasks (Safari + Safari TP)** | **green — 6/7 safari-* benchmark tasks pass on m4-118, including `safari-tp-speedometer3` and `safari-tp-jetstream3` after b36069a3 landed.** Push: https://treeherder.mozilla.org/jobs?repo=try&revision=0502d2099c8a — only fail is `safari-jetstream3` which is fleet-wide broken (0/14 success across hosts, unrelated screenshot-LaunchAgent timeout bug). |
+| 🧪🧪 **Safari Technology Preview Allow Remote Automation enabled** | **green — `safari-tp-speedometer3` + `safari-tp-jetstream3` both pass.** Last push (without TP applescript) had both failing; this push (with b36069a3) has both passing. Proves the new TP LaunchAgent + applescript pair works end-to-end. |
 
 > The bug that hid the silent-skip from us on the *first* round was the
 > semaphore-on-success-without-actual-success behavior. 🫠 The
@@ -79,7 +80,10 @@ in. ✨
 |---|---|
 | [`modules/macos_safaridriver/simplemdm-bootstrap-sip-safari.sh`](./simplemdm-bootstrap-sip-safari.sh) | The SimpleMDM script. Upload as a script-job, run-on-enrollment, scoped to the M4 staging group. Idempotent, self-cleans on success. |
 | [`modules/macos_mobileconfig_profiles/files/org.mozilla.ci-tcc-pppc.mobileconfig`](../macos_mobileconfig_profiles/files/org.mozilla.ci-tcc-pppc.mobileconfig) | The PPPC mobileconfig. Upload to SimpleMDM as a Custom Configuration Profile, replacing the previous "Mozilla CI TCC Permissions". Has the new bash + sqlite3 FDA grants this branch added. |
-| [`modules/macos_safaridriver/files/safari-enable-remote-automation.applescript`](./files/safari-enable-remote-automation.applescript) | The applescript with the new defensive verify. |
+| [`modules/macos_safaridriver/files/safari-enable-remote-automation.applescript`](./files/safari-enable-remote-automation.applescript) | The stable-Safari applescript with the verify-after-click defensive gate. |
+| [`modules/macos_safaridriver/files/safari-tp-enable-remote-automation.applescript`](./files/safari-tp-enable-remote-automation.applescript) | The Safari Technology Preview applescript (added in b36069a3). Same dance against "Safari Technology Preview" with its own semaphore. |
+| [`modules/macos_safaridriver/files/com.mozilla.safari.enableautomation.plist`](./files/com.mozilla.safari.enableautomation.plist) | LaunchAgent for the stable-Safari applescript. |
+| [`modules/macos_safaridriver/files/com.mozilla.safari-tp.enableautomation.plist`](./files/com.mozilla.safari-tp.enableautomation.plist) | LaunchAgent for the Safari TP applescript. |
 
 ---
 
@@ -106,13 +110,17 @@ in. ✨
 
 ## 🔬 Verification method
 
-The gold standard is opening Safari in cltbld's VNC session and visually
-confirming:
+The gold standard is opening Safari (and Safari Technology Preview) in
+cltbld's VNC session and visually confirming, for each app:
 
 - Develop menu is in the menu bar
-- Safari → Settings → Developer → "Allow remote automation" is checked
+- Settings → Developer → "Allow remote automation" is checked
 
 This is the dance the RelOps team has been doing since macOS 10.15. 🕺
+
+Backup signal (faster than VNC): a try push with safari + safari-tp
+browsertime benchmarks all going green. Verified push on this branch:
+https://treeherder.mozilla.org/jobs?repo=try&revision=0502d2099c8a
 
 ---
 
@@ -122,7 +130,8 @@ This is the dance the RelOps team has been doing since macOS 10.15. 🕺
 2. EACS macmini-m4-118 (or any spare staging M4).
 3. Admin VNC login → drop `vault.yaml` → trigger the SimpleMDM script.
 4. Once bootstrap completes (sentinel `/var/log/m4-bootstrap-complete`),
-   eyeball Safari → Settings → Developer in cltbld's VNC session.
+   eyeball **both** Safari and Safari Technology Preview → Settings →
+   Developer in cltbld's VNC session.
 5. If anything is weird, `/var/log/m4-bootstrap.log` (one-shot setup)
    and `/var/log/m4-bootstrap-driver.log` (boot-by-boot puppet) are
    your friends 🪵. SSH keys and LaunchDaemon plists self-clean on
