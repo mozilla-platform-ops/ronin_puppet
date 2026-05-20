@@ -85,6 +85,43 @@ class macos_safaridriver (
                 timeout => 180,
                 # logoutput => true,
               }
+
+              # Safari Technology Preview parallel flow. Mirrors the stable Safari
+              # block above. Safari TP has a separate "Allow Remote Automation"
+              # toggle that the stable Safari enable does not flip, so without
+              # this our Safari TP webdriver tasks (browsertime-benchmark-safari-tp-*)
+              # fail with "No data to collect".
+              #
+              # packages::safari_preview installs Safari TP from S3, but ordering
+              # within the catalog is not enforced here; we gate on the app being
+              # on disk via `onlyif` so a missing Safari TP becomes a no-op rather
+              # than a failure. The next puppet run picks it up.
+              $tp_applescript = '/usr/local/bin/safari-tp-enable-remote-automation.applescript'
+              $tp_launchagent_plist = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari-tp.enableautomation.plist"
+              $tp_semaphore_file = "/Users/${user_running_safari}/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run"
+
+              file { $tp_applescript:
+                content => file('macos_safaridriver/safari-tp-enable-remote-automation.applescript'),
+                mode    => '0755',
+              }
+
+              file { $tp_launchagent_plist:
+                ensure  => file,
+                owner   => $user_running_safari,
+                group   => 'staff',
+                mode    => '0644',
+                content => file('macos_safaridriver/com.mozilla.safari-tp.enableautomation.plist'),
+                require => [File[$tp_applescript], Exec['execute perms script']],
+              }
+
+              exec { 'execute enable remote automation script (Safari TP)':
+                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari-tp.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari-tp.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${tp_launchagent_plist}; fi; count=0; while [ \$count -lt 120 ] && ! /bin/bash -c \"test -f ${tp_semaphore_file} && grep -q 1 ${tp_semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${tp_semaphore_file}'",
+                require => [File[$tp_applescript], File[$tp_launchagent_plist], Exec['execute perms script']],
+                cwd     => "/Users/${user_running_safari}",
+                onlyif  => '/bin/test -d "/Applications/Safari Technology Preview.app"',
+                unless  => "/bin/bash -c 'test -f ${tp_semaphore_file} && grep -q 1 ${tp_semaphore_file}'",
+                timeout => 180,
+              }
             } else {
               # macOS 10.15-13: typically deployed with SIP disabled; run directly
               # via launchctl asuser to get cltbld's session context.
