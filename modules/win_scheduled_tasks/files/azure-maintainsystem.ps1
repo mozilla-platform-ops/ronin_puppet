@@ -284,23 +284,8 @@ function Puppet-Run {
     Write-PuppetSlowResourceSummary -LogPath $puppetLogPath
 
     if ($run_to_success -eq 'true') {
-      $handleFailure = {
-        param (
-          [string] $message,
-          [int] $exitCode
-        )
-        Write-Log -message ('{0} :: {1} :: Error code {2}' -f $($MyInvocation.MyCommand.Name), $message, $exitCode) -severity 'DEBUG'
-        Set-ItemProperty -Path "$roninKey" -name "last_run_exit" -value "$exitCode"
-        Remove-Item -path $lock -ErrorAction SilentlyContinue
-        # If the Puppet run fails send logs to papertrail.
-        # Nxlog watches $fail_dir for file names matching *-puppetrun.log.
-        Move-Item $puppetLogPath -Destination $fail_dir -ErrorAction SilentlyContinue
-        if ($last_exit -ne 0) {
-          Write-Log -message  ('{0} :: Puppet apply failed repeatedly. Waiting 10 minutes before reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Start-Sleep 600
-        }
-        shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-      }
+      $puppet_failed = $false
+      $puppet_failure_message = $null
 
       switch ($puppet_exit) {
         0 {
@@ -310,7 +295,8 @@ function Puppet-Run {
           Set-ItemProperty -Path "$roninKey" -name inmutable -value 'true'
         }
         1 {
-          & $handleFailure 'Puppet apply failed' $puppet_exit
+          $puppet_failed = $true
+          $puppet_failure_message = 'Puppet apply failed'
         }
         2 {
           Write-Log -message  ('{0} :: Puppet apply succeeded, and some resources were changed :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -319,10 +305,12 @@ function Puppet-Run {
           Set-ItemProperty -Path "$roninKey" -name inmutable -value 'true'
         }
         4 {
-          & $handleFailure 'Puppet apply succeeded, but some resources failed' $puppet_exit
+          $puppet_failed = $true
+          $puppet_failure_message = 'Puppet apply succeeded, but some resources failed'
         }
         6 {
-          & $handleFailure 'Puppet apply succeeded, but included changes and failures' $puppet_exit
+          $puppet_failed = $true
+          $puppet_failure_message = 'Puppet apply succeeded, but included changes and failures'
         }
         Default {
           Write-Log -message  ('{0} :: Unable to determine state post Puppet apply :: Error code {1}' -f $($MyInvocation.MyCommand.Name), $puppet_exit) -severity 'DEBUG'
@@ -331,6 +319,19 @@ function Puppet-Run {
           Remove-Item -path $lock -ErrorAction SilentlyContinue
           shutdown @('-r', '-t', '600', '-c', 'Reboot; Unverifiable Puppet state', '-f', '-d', '4:5')
         }
+      }
+      if ($puppet_failed) {
+        Write-Log -message ('{0} :: {1} :: Error code {2}' -f $($MyInvocation.MyCommand.Name), $puppet_failure_message, $puppet_exit) -severity 'DEBUG'
+        Set-ItemProperty -Path "$roninKey" -name "last_run_exit" -value "$puppet_exit"
+        Remove-Item -path $lock -ErrorAction SilentlyContinue
+        # If the Puppet run fails send logs to papertrail.
+        # Nxlog watches $fail_dir for file names matching *-puppetrun.log.
+        Move-Item $puppetLogPath -Destination $fail_dir -ErrorAction SilentlyContinue
+        if (($last_exit -ne 0) -and ($last_exit -ne 2)) {
+          Write-Log -message  ('{0} :: Puppet apply failed repeatedly. Waiting 10 minutes before reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          Start-Sleep 600
+        }
+        shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
       }
     }
   }
