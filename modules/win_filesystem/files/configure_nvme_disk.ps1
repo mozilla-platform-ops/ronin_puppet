@@ -23,6 +23,20 @@ function Test-DevDrive {
     return ($queryText -match 'developer volume') -and ($queryText -notmatch 'not a developer volume')
 }
 
+function Test-TrustedDevDrive {
+    param (
+        [string] $DriveRoot
+    )
+
+    $queryOutput = & fsutil.exe devdrv query $DriveRoot 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        return $false
+    }
+
+    $queryText = $queryOutput -join "`n"
+    return ($queryText -match 'trusted developer volume')
+}
+
 function Test-ActivePageFileOnDrive {
     param (
         [string] $DriveLetter
@@ -46,8 +60,15 @@ function Format-TemporaryVolume {
     }
 
     if ($UseDevDrive) {
+        if (Test-TrustedDevDrive -DriveRoot "${DriveLetter}:\") {
+            return
+        }
+
         if (Test-DevDrive -DriveRoot "${DriveLetter}:\") {
             & fsutil.exe devdrv trust "${DriveLetter}:\" | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to trust existing Dev Drive ${DriveLetter}:."
+            }
             return
         }
 
@@ -57,6 +78,9 @@ function Format-TemporaryVolume {
 
         Format-Volume -DriveLetter $DriveLetter -DevDrive -NewFileSystemLabel $volumeLabel -Confirm:$false -Force | Out-Null
         & fsutil.exe devdrv trust "${DriveLetter}:\" | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to trust formatted Dev Drive ${DriveLetter}:."
+        }
         return
     }
 
