@@ -4,9 +4,11 @@
 
 class roles_profiles::profiles::mozbuild_post_boostrap {
   $mozbld = "C:\\mozilla-build"
+  $win_worker_function = lookup('win-worker.function', { 'default_value' => undef })
+  $configure_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($win_worker_function in ['builder', 'tester'])
   case $facts['custom_win_location'] {
     'azure': {
-      if $facts['custom_win_d_drive'] == 'exists' {
+      if ($facts['custom_win_d_drive'] == 'exists') or $configure_azure_temp_drive {
         $cache_drive = 'D:'
       } else {
         $cache_drive = 'C:'
@@ -19,9 +21,6 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
       fail('custom_win_location not supported')
     }
   }
-  $win_worker_function = lookup('win-worker.function', { 'default_value' => undef })
-  $is_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_d_drive'] == 'exists')
-  $configure_azure_temp_drive = $is_azure_temp_drive and ($win_worker_function in ['builder', 'tester'])
   if $configure_azure_temp_drive {
     include win_filesystem::configure_nvme_disk
     $azure_temp_drive_require = Class['win_filesystem::configure_nvme_disk']

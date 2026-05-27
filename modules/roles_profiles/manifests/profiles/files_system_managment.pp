@@ -5,14 +5,13 @@
 class roles_profiles::profiles::files_system_managment {
   case $facts['os']['name'] {
     'Windows': {
-      if $facts['custom_win_d_drive'] == 'exists' {
+      $win_worker_function = lookup('win-worker.function', { 'default_value' => undef })
+      $configure_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($win_worker_function in ['builder', 'tester'])
+      if ($facts['custom_win_d_drive'] == 'exists') or $configure_azure_temp_drive {
         $cache_drive = 'D:'
       } else {
         $cache_drive = 'C:'
       }
-      $win_worker_function = lookup('win-worker.function', { 'default_value' => undef })
-      $is_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_d_drive'] == 'exists')
-      $configure_azure_temp_drive = $is_azure_temp_drive and ($win_worker_function in ['builder', 'tester'])
       if $configure_azure_temp_drive {
         include win_filesystem::configure_nvme_disk
         $azure_temp_drive_require = Class['win_filesystem::configure_nvme_disk']
@@ -27,7 +26,7 @@ class roles_profiles::profiles::files_system_managment {
           require     => $azure_temp_drive_require,
         }
       }
-      if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_d_drive'] == 'exists') {
+      if ($facts['custom_win_location'] == 'azure') and ($cache_drive == 'D:') {
         win_filesystem::set_paging_file { 'azure_paging_file':
           location => 'D:\pagefile.sys',
           min_size => 8192,
