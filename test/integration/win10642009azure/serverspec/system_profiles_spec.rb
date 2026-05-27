@@ -13,6 +13,15 @@ describe file('D:\\') do
 end
 
 describe powershell_command(<<~POWERSHELL) do
+  if (-not (Get-Command -Name Format-Volume -ErrorAction Stop).Parameters.ContainsKey('DevDrive')) { exit 0 }
+  $query_output = fsutil.exe devdrv query D:\\ 2>$null
+  if ($LASTEXITCODE -ne 0) { exit 1 }
+  if (($query_output -join "`n") -notmatch 'trusted developer volume') { exit 1 }
+POWERSHELL
+  its(:exit_status) { should eq 0 }
+end
+
+describe powershell_command(<<~POWERSHELL) do
   $dump_folder = Get-ItemPropertyValue -Path '#{error_reporting_key}' -Name 'DumpFolder' -ErrorAction Stop
   if (-not (Test-Path $dump_folder)) { exit 1 }
   $dump_folder
