@@ -23,21 +23,6 @@ function Test-DevDrive {
     return ($queryText -match 'developer volume') -and ($queryText -notmatch 'not a developer volume')
 }
 
-function Clear-PageFileSetting {
-    param (
-        [string] $DriveLetter
-    )
-
-    $computerSystem = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction SilentlyContinue
-    if ($computerSystem -and $computerSystem.AutomaticManagedPagefile) {
-        Set-CimInstance -InputObject $computerSystem -Property @{ AutomaticManagedPagefile = $false }
-    }
-
-    Get-CimInstance -ClassName Win32_PageFileSetting -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -like "${DriveLetter}:\*" } |
-        ForEach-Object { Remove-CimInstance -InputObject $_ }
-}
-
 function Format-TemporaryVolume {
     param (
         [string] $DriveLetter,
@@ -55,7 +40,6 @@ function Format-TemporaryVolume {
             return
         }
 
-        Clear-PageFileSetting -DriveLetter $DriveLetter
         Format-Volume -DriveLetter $DriveLetter -DevDrive -NewFileSystemLabel $volumeLabel -Confirm:$false -Force | Out-Null
         & fsutil.exe devdrv trust "${DriveLetter}:\" | Out-Null
         return
