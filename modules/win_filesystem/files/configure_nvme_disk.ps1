@@ -9,32 +9,36 @@ function Test-DevDriveFormatSupported {
     return $formatVolumeCommand -and $formatVolumeCommand.Parameters.ContainsKey('DevDrive')
 }
 
-function Test-DevDrive {
+function Get-DevDriveState {
     param (
         [string] $DriveRoot
     )
 
     $queryOutput = & fsutil.exe devdrv query $DriveRoot 2>$null
     if ($LASTEXITCODE -ne 0) {
-        return $false
+        return 'None'
     }
 
     $queryText = $queryOutput -join "`n"
-    return ($queryText -match 'developer volume') -and ($queryText -notmatch 'not a developer volume')
+    if ($queryText -match 'trusted developer volume') {
+        return 'Trusted'
+    }
+    if (($queryText -match 'developer volume') -and ($queryText -notmatch 'not a developer volume')) {
+        return 'Untrusted'
+    }
+
+    return 'None'
 }
 
-function Test-TrustedDevDrive {
+function Set-TrustedDevDrive {
     param (
         [string] $DriveRoot
     )
 
-    $queryOutput = & fsutil.exe devdrv query $DriveRoot 2>$null
+    & fsutil.exe devdrv trust $DriveRoot | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        return $false
+        throw "Failed to trust Dev Drive $DriveRoot."
     }
-
-    $queryText = $queryOutput -join "`n"
-    return ($queryText -match 'trusted developer volume')
 }
 
 function Test-ActivePageFileOnDrive {
@@ -60,16 +64,16 @@ function Format-TemporaryVolume {
     }
 
     if ($UseDevDrive) {
-        if (Test-TrustedDevDrive -DriveRoot "${DriveLetter}:\") {
-            return
-        }
+        $driveRoot = "${DriveLetter}:\"
 
-        if (Test-DevDrive -DriveRoot "${DriveLetter}:\") {
-            & fsutil.exe devdrv trust "${DriveLetter}:\" | Out-Null
-            if ($LASTEXITCODE -ne 0) {
-                throw "Failed to trust existing Dev Drive ${DriveLetter}:."
+        switch (Get-DevDriveState -DriveRoot $driveRoot) {
+            'Trusted' {
+                return
             }
-            return
+            'Untrusted' {
+                Set-TrustedDevDrive -DriveRoot $driveRoot
+                return
+            }
         }
 
         if (Test-ActivePageFileOnDrive -DriveLetter $DriveLetter) {
@@ -77,10 +81,7 @@ function Format-TemporaryVolume {
         }
 
         Format-Volume -DriveLetter $DriveLetter -DevDrive -NewFileSystemLabel $volumeLabel -Confirm:$false -Force | Out-Null
-        & fsutil.exe devdrv trust "${DriveLetter}:\" | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Failed to trust formatted Dev Drive ${DriveLetter}:."
-        }
+        Set-TrustedDevDrive -DriveRoot $driveRoot
         return
     }
 
@@ -105,23 +106,34 @@ if ($volume) {
     return
 }
 
-$rawNvmeDisks = Get-PhysicalDisk -CanPool $true | Where-Object { $_.FriendlyName -like '*NVMe Direct Disk*' }
-
-if (-not $rawNvmeDisks) {
-    return
-}
-
 $poolName = 'NVMePool'
 $virtualDiskName = 'NVMeTemporary'
 
 $storagePool = Get-StoragePool -FriendlyName $poolName -ErrorAction SilentlyContinue
 if (-not $storagePool) {
-    $storagePool = New-StoragePool -FriendlyName $poolName -StorageSubsystemFriendlyName 'Windows Storage*' -PhysicalDisks $rawNvmeDisks -ResiliencySettingNameDefault Simple
+    $poolDisks = @(Get-PhysicalDisk -CanPool $true | Where-Object { $_.FriendlyName -like '*NVMe Direct Disk*' })
+    if ($poolDisks.Count -eq 0) {
+        return
+    }
+    $storagePool = New-StoragePool -FriendlyName $poolName -StorageSubsystemFriendlyName 'Windows Storage*' -PhysicalDisks $poolDisks -ResiliencySettingNameDefault Simple
+}
+else {
+    $poolDisks = @($storagePool | Get-PhysicalDisk)
 }
 
 $virtualDisk = Get-VirtualDisk -FriendlyName $virtualDiskName -ErrorAction SilentlyContinue
 if (-not $virtualDisk) {
-    $virtualDisk = New-VirtualDisk -FriendlyName $virtualDiskName -StoragePoolFriendlyName $poolName -NumberOfColumns @($rawNvmeDisks).Count -PhysicalDiskRedundancy 0 -ResiliencySettingName 'Simple' -UseMaximumSize
+    $virtualDiskParameters = @{
+        FriendlyName             = $virtualDiskName
+        StoragePoolFriendlyName  = $poolName
+        PhysicalDiskRedundancy   = 0
+        ResiliencySettingName    = 'Simple'
+        UseMaximumSize           = $true
+    }
+    if ($poolDisks.Count -gt 0) {
+        $virtualDiskParameters['NumberOfColumns'] = $poolDisks.Count
+    }
+    $virtualDisk = New-VirtualDisk @virtualDiskParameters
 }
 
 $disk = $virtualDisk | Get-Disk
@@ -129,9 +141,8 @@ if ($disk.PartitionStyle -eq 'RAW') {
     $disk = $disk | Initialize-Disk -PartitionStyle GPT -PassThru
 }
 
-$partition = Get-Partition -DiskNumber $disk.Number -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -eq 'D' } | Select-Object -First 1
-if (-not $partition) {
-    $partition = New-Partition -DiskNumber $disk.Number -DriveLetter $driveLetter -UseMaximumSize
+if (-not (Get-Partition -DiskNumber $disk.Number -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -eq $driveLetter } | Select-Object -First 1)) {
+    New-Partition -DiskNumber $disk.Number -DriveLetter $driveLetter -UseMaximumSize | Out-Null
 }
 
 Format-TemporaryVolume -DriveLetter $driveLetter -UseDevDrive $useDevDrive

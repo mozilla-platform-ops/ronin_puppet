@@ -51,3 +51,21 @@ describe powershell_command("[Environment]::GetEnvironmentVariable('TOOLTOOL_CAC
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match(/^C:\\builds\\tooltool_cache\s*$/i) }
 end
+
+describe file('C:\\ProgramData\\pip\\pip.ini') do
+  it { should exist }
+  its(:content) { should_not match(/^download-cache\s*=/i) }
+end
+
+describe powershell_command("[Environment]::GetEnvironmentVariable('PIP_DOWNLOAD_CACHE', 'Machine')") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(/^\s*$/) }
+end
+
+describe file('C:\\pip-cache') do
+  it { should_not exist }
+end
+
+describe file('D:\\pip-cache') do
+  it { should_not exist }
+end

@@ -3,55 +3,19 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build::pip {
-  $win_worker_function = lookup('win-worker.function', { 'default_value' => undef })
-  $configure_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($win_worker_function in ['builder', 'tester'])
-  case $facts['custom_win_location'] {
-    'azure': {
-      if ($facts['custom_win_d_drive'] == 'exists') or $configure_azure_temp_drive {
-        $cache_drive = 'D:'
-      } else {
-        $cache_drive = 'C:'
-      }
-    }
-    'datacenter': {
-      $cache_drive = 'C:'
-    }
-    default: {
-      fail('custom_win_location not supported')
-    }
-  }
-  if $configure_azure_temp_drive {
-    include win_filesystem::configure_nvme_disk
-    $azure_temp_drive_require = Class['win_filesystem::configure_nvme_disk']
-  } else {
-    $azure_temp_drive_require = undef
-  }
-
   file { "${$facts['custom_win_programdata']}\\pip":
     ensure => directory,
   }
   file { "${$facts['custom_win_programdata']}\\pip\\pip.ini":
     content => epp('win_mozilla_build/pip.conf.epp'),
   }
-  file { "${cache_drive}\\pip-cache":
-    ensure  => directory,
-    require => $azure_temp_drive_require,
+
+  file { ['C:\\pip-cache', 'D:\\pip-cache']:
+    ensure => absent,
+    force  => true,
   }
-  # Resource from puppetlabs-acl
-  acl { "${cache_drive}\\pip-cache":
-    target      => "${cache_drive}\\pip-cache",
-    require     => File["${cache_drive}\\pip-cache"],
-    permissions => {
-      identity                   => 'everyone',
-      rights                     => ['full'],
-      perm_type                  => 'allow',
-      child_types                => 'all',
-      affects                    => 'all',
-      inherit_parent_permissions => true,
-    },
-  }
-  # Resource from counsyl-windows
+
   windows::environment { 'PIP_DOWNLOAD_CACHE':
-    value => "${cache_drive}\\pip-cache",
+    ensure => absent,
   }
 }
