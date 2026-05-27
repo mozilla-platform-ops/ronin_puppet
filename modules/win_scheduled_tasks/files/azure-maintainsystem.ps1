@@ -523,6 +523,55 @@ function LinkZY2D {
   }
 }
 
+function Ensure-TemporaryDriveDirectory {
+  param (
+    [string] $path,
+    [bool] $grantEveryoneFullControl = $false
+  )
+
+  if (-not (Test-Path -LiteralPath $path -PathType Container)) {
+    New-Item -ItemType Directory -Force -Path $path | Out-Null
+    Write-Log -message ('{0} :: created {1}' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
+  }
+
+  if ($grantEveryoneFullControl) {
+    & icacls.exe @($path, '/grant', '*S-1-1-0:(OI)(CI)F', '/T', '/C') | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      throw ('Failed to grant Everyone full control on {0}' -f $path)
+    }
+  }
+}
+
+function Ensure-AzureTemporaryDrive {
+  param (
+    [string] $driveLetter = 'D',
+    [string] $scriptPath = "$env:programdata\PuppetLabs\ronin\configure_nvme_disk.ps1"
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (-not (Test-Path -LiteralPath $scriptPath -PathType Leaf)) {
+      Write-Log -message ('{0} :: skipping; {1} is missing' -f $($MyInvocation.MyCommand.Name), $scriptPath) -severity 'DEBUG'
+      return
+    }
+
+    Write-Log -message ('{0} :: running {1}' -f $($MyInvocation.MyCommand.Name), $scriptPath) -severity 'INFO'
+    & $scriptPath
+
+    $driveRoot = ('{0}:\' -f $driveLetter)
+    if (-not (Test-Path -LiteralPath $driveRoot -PathType Container)) {
+      throw ('Azure temporary drive {0} was not available after running {1}' -f $driveRoot, $scriptPath)
+    }
+
+    Ensure-TemporaryDriveDirectory -path (Join-Path $driveRoot 'hg-shared') -grantEveryoneFullControl $true
+    Ensure-TemporaryDriveDirectory -path (Join-Path $driveRoot 'hg-cache') -grantEveryoneFullControl $true
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
 ## Get the tags from azure imds
 $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
 
@@ -549,10 +598,14 @@ If ($hand_off_ready -eq 'yes') {
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   ## Set the VM the name that taskcluster gave it, if it's not already set
   Set-AzVMName
+  ## Azure temp disks are not part of the image. Ensure D: exists before generic-worker starts.
+  Ensure-AzureTemporaryDrive
+  LinkZY2D
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
+    Ensure-AzureTemporaryDrive
     LinkZY2D
   }
   ## Start worker runner, which starts generic-worker

@@ -90,6 +90,45 @@ function Format-TemporaryVolume {
     }
 }
 
+function Assert-TemporaryDriveReady {
+    param (
+        [string] $DriveLetter
+    )
+
+    $driveRoot = "${DriveLetter}:\"
+    if (-not (Test-Path -LiteralPath $driveRoot -PathType Container)) {
+        $physicalDisks = Get-PhysicalDisk | Select-Object FriendlyName, CanPool, OperationalStatus, HealthStatus | Format-Table -AutoSize | Out-String
+        $volumes = Get-Volume | Select-Object DriveLetter, FileSystemLabel, FileSystem, DriveType, HealthStatus | Format-Table -AutoSize | Out-String
+
+        throw "Azure temporary drive $driveRoot was not created. Physical disks:`n$physicalDisks`nVolumes:`n$volumes"
+    }
+}
+
+function New-TemporaryPartitionFromRawDisk {
+    param (
+        [string] $DriveLetter,
+        [bool] $UseDevDrive
+    )
+
+    $rawDisks = @(Get-Disk | Where-Object {
+        ($_.FriendlyName -like '*NVMe Direct Disk*') -and
+        (-not $_.IsBoot) -and
+        (-not $_.IsSystem) -and
+        ($_.PartitionStyle -eq 'RAW')
+    } | Sort-Object Number)
+
+    if ($rawDisks.Count -ne 1) {
+        return $false
+    }
+
+    $rawDisk = $rawDisks[0]
+    Initialize-Disk -Number $rawDisk.Number -PartitionStyle GPT | Out-Null
+    New-Partition -DiskNumber $rawDisk.Number -DriveLetter $DriveLetter -UseMaximumSize | Out-Null
+    Format-TemporaryVolume -DriveLetter $DriveLetter -UseDevDrive $UseDevDrive
+
+    return $true
+}
+
 # Based on Azure NVMe temporary disk guidance:
 # https://learn.microsoft.com/en-us/azure/virtual-machines/enable-nvme-temp-faqs
 $useDevDrive = Test-DevDriveFormatSupported
@@ -103,6 +142,12 @@ if ($cdRomDrive) {
 $volume = Get-Volume -DriveLetter $driveLetter -ErrorAction SilentlyContinue
 if ($volume) {
     Format-TemporaryVolume -DriveLetter $driveLetter -UseDevDrive $useDevDrive
+    Assert-TemporaryDriveReady -DriveLetter $driveLetter
+    return
+}
+
+if (New-TemporaryPartitionFromRawDisk -DriveLetter $driveLetter -UseDevDrive $useDevDrive) {
+    Assert-TemporaryDriveReady -DriveLetter $driveLetter
     return
 }
 
@@ -113,7 +158,7 @@ $storagePool = Get-StoragePool -FriendlyName $poolName -ErrorAction SilentlyCont
 if (-not $storagePool) {
     $poolDisks = @(Get-PhysicalDisk -CanPool $true | Where-Object { $_.FriendlyName -like '*NVMe Direct Disk*' })
     if ($poolDisks.Count -eq 0) {
-        return
+        Assert-TemporaryDriveReady -DriveLetter $driveLetter
     }
     $storagePool = New-StoragePool -FriendlyName $poolName -StorageSubsystemFriendlyName 'Windows Storage*' -PhysicalDisks $poolDisks -ResiliencySettingNameDefault Simple
 }
@@ -146,3 +191,4 @@ if (-not (Get-Partition -DiskNumber $disk.Number -ErrorAction SilentlyContinue |
 }
 
 Format-TemporaryVolume -DriveLetter $driveLetter -UseDevDrive $useDevDrive
+Assert-TemporaryDriveReady -DriveLetter $driveLetter
