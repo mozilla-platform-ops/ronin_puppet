@@ -14,7 +14,7 @@ class win_mozilla_build::hg_files {
 
   case $facts['custom_win_location'] {
     'azure': {
-      if ($facts['custom_win_d_drive'] == 'exists') or $configure_azure_temp_drive {
+      if $facts['custom_win_d_drive'] == 'exists' {
         $cache_drive = 'D:'
       } else {
         $cache_drive = 'C:'

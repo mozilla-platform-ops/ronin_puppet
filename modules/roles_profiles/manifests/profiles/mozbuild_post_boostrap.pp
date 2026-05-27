@@ -8,7 +8,7 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
   $configure_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($win_worker_function in ['builder', 'tester'])
   case $facts['custom_win_location'] {
     'azure': {
-      if ($facts['custom_win_d_drive'] == 'exists') or $configure_azure_temp_drive {
+      if $facts['custom_win_d_drive'] == 'exists' {
         $cache_drive = 'D:'
       } else {
         $cache_drive = 'C:'

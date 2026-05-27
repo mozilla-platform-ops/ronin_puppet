@@ -77,7 +77,8 @@ function Format-TemporaryVolume {
         }
 
         if (Test-ActivePageFileOnDrive -DriveLetter $DriveLetter) {
-            throw "Cannot format ${DriveLetter}: as a Dev Drive because it has an active pagefile. Move the pagefile off ${DriveLetter}: and reboot before retrying Dev Drive conversion."
+            Write-Host "Skipping Dev Drive conversion for ${DriveLetter}: because it has an active pagefile."
+            return
         }
 
         Format-Volume -DriveLetter $DriveLetter -DevDrive -NewFileSystemLabel $volumeLabel -Confirm:$false -Force | Out-Null
@@ -102,6 +103,17 @@ function Assert-TemporaryDriveReady {
 
         throw "Azure temporary drive $driveRoot was not created. Physical disks:`n$physicalDisks`nVolumes:`n$volumes"
     }
+}
+
+function Write-TemporaryDriveDiagnostics {
+    param (
+        [string] $Message
+    )
+
+    $physicalDisks = Get-PhysicalDisk | Select-Object FriendlyName, CanPool, OperationalStatus, HealthStatus | Format-Table -AutoSize | Out-String
+    $volumes = Get-Volume | Select-Object DriveLetter, FileSystemLabel, FileSystem, DriveType, HealthStatus | Format-Table -AutoSize | Out-String
+
+    Write-Host "${Message}`nPhysical disks:`n$physicalDisks`nVolumes:`n$volumes"
 }
 
 function New-TemporaryPartitionFromRawDisk {
@@ -158,7 +170,8 @@ $storagePool = Get-StoragePool -FriendlyName $poolName -ErrorAction SilentlyCont
 if (-not $storagePool) {
     $poolDisks = @(Get-PhysicalDisk -CanPool $true | Where-Object { $_.FriendlyName -like '*NVMe Direct Disk*' })
     if ($poolDisks.Count -eq 0) {
-        Assert-TemporaryDriveReady -DriveLetter $driveLetter
+        Write-TemporaryDriveDiagnostics -Message "No unused NVMe temporary disk is available for ${driveLetter}:. The OS disk may already be using the only local NVMe device."
+        return
     }
     $storagePool = New-StoragePool -FriendlyName $poolName -StorageSubsystemFriendlyName 'Windows Storage*' -PhysicalDisks $poolDisks -ResiliencySettingNameDefault Simple
 }
