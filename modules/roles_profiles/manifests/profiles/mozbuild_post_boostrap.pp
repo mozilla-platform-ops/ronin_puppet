@@ -4,8 +4,6 @@
 
 class roles_profiles::profiles::mozbuild_post_boostrap {
   $mozbld = "C:\\mozilla-build"
-  $win_worker_function = lookup('win-worker.function', { 'default_value' => undef })
-  $configure_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($win_worker_function in ['builder', 'tester'])
   case $facts['custom_win_location'] {
     'azure': {
       if $facts['custom_win_d_drive'] == 'exists' {
@@ -21,17 +19,10 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
       fail('custom_win_location not supported')
     }
   }
-  if $configure_azure_temp_drive {
-    include win_filesystem::configure_nvme_disk
-    $azure_temp_drive_require = Class['win_filesystem::configure_nvme_disk']
-  } else {
-    $azure_temp_drive_require = undef
-  }
   $srcloc = lookup('windows.ext_pkg_src')
 
   file { "${cache_drive}\\hg-shared":
-    ensure  => directory,
-    require => $azure_temp_drive_require,
+    ensure => directory,
   }
 
   # ACL permissions are managed by win_filesystem::grant_cache_access.

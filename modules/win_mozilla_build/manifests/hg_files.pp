@@ -7,8 +7,6 @@ class win_mozilla_build::hg_files {
 
   $mozbld      = "${facts['custom_win_systemdrive']}\\mozilla-build"
   $msys_dir = "${facts['custom_win_systemdrive']}\\mozilla-build\\msys2"
-  $win_worker_function = lookup('win-worker.function', { 'default_value' => undef })
-  $configure_azure_temp_drive = ($facts['custom_win_location'] == 'azure') and ($win_worker_function in ['builder', 'tester'])
 
   ## If Azure, then cache drive is either Y or D
 
@@ -27,16 +25,9 @@ class win_mozilla_build::hg_files {
       fail('custom_win_location not supported')
     }
   }
-  if $configure_azure_temp_drive {
-    include win_filesystem::configure_nvme_disk
-    $azure_temp_drive_require = Class['win_filesystem::configure_nvme_disk']
-  } else {
-    $azure_temp_drive_require = undef
-  }
 
   file { "${cache_drive}\\hg-shared":
-    ensure  => directory,
-    require => $azure_temp_drive_require,
+    ensure => directory,
   }
   # Resource from counsyl-windows
   windows::environment { 'HG_CACHE':
@@ -52,7 +43,6 @@ class win_mozilla_build::hg_files {
   # Resource from puppetlabs-acl
   acl { "${cache_drive}\\hg-shared":
     target      => "${cache_drive}\\hg-shared",
-    require     => File["${cache_drive}\\hg-shared"],
     permissions => {
       identity                   => 'everyone',
       rights                     => ['full'],

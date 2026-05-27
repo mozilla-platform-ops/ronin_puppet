@@ -23,7 +23,7 @@ class roles_profiles::roles::win11a6425h2azuretester {
       include roles_profiles::profiles::ntp
       ## errors if we don't have this, adding this
       include roles_profiles::profiles::mozilla_maintenance_service
-      ## We need hg-shared, so re-run this but just do the hg setup
+      ## We need hg-cache and pip-cache, so re-run this but just do the pip/hg stuff
       include roles_profiles::profiles::mozbuild_post_boostrap
     }
     default: {

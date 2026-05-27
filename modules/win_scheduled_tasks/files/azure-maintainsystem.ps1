@@ -89,7 +89,7 @@ function Run-MaintainSystem {
 }
 function Remove-OldTaskDirectories {
   param (
-    [string[]] $targets = @('D:\task_*', 'C:\task_*', 'C:\Users\task_*')
+    [string[]] $targets = @('D:\task_*', 'C:\Users\task_*')
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -506,37 +506,7 @@ function Set-AzureInstanceMetadataScheduledEvents {
   Invoke-WebRequest @iwsplat
 }
 
-function Get-AzureWorkerCacheDrive {
-  param (
-  )
-  if (Test-VolumeExists -DriveLetter 'D') {
-    return 'D'
-  }
-
-  if ([string]::IsNullOrEmpty($env:SystemDrive)) {
-    return 'C'
-  }
-
-  return ($env:SystemDrive -replace '[:\\]+$', '')
-}
-
-function Get-SubstDriveTarget {
-  param (
-    [string] $driveLetter
-  )
-
-  $drive = $driveLetter.Substring(0, 1).ToUpperInvariant()
-  $pattern = '^\s*{0}:\\: => (?<target>.+)$' -f [regex]::Escape($drive)
-  $substLine = & subst.exe 2>$null | Where-Object { $_ -match $pattern } | Select-Object -First 1
-
-  if ($substLine -and ($substLine -match $pattern)) {
-    return $Matches['target']
-  }
-
-  return $null
-}
-
-## Drive Y is hardcoded in tree. Point it at the runtime cache drive.
+## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
 function LinkZY2D {
   param (
   )
@@ -544,86 +514,9 @@ function LinkZY2D {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    $cacheDrive = Get-AzureWorkerCacheDrive
-    $targetRoot = ('{0}:\' -f $cacheDrive)
-    $existingSubstTarget = Get-SubstDriveTarget -driveLetter 'Y'
-
-    if ($existingSubstTarget) {
-      if ($existingSubstTarget.TrimEnd('\') -ieq $targetRoot.TrimEnd('\')) {
-        Write-Log -message ('{0} :: Y: already points at {1}' -f $($MyInvocation.MyCommand.Name), $targetRoot) -severity 'DEBUG'
-        return
-      }
-
-      & subst.exe 'Y:' '/D'
-      if ($LASTEXITCODE -ne 0) {
-        throw ('Failed to remove existing Y: subst mapping to {0}' -f $existingSubstTarget)
-      }
+    if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
+      subst Y: D:\
     }
-
-    if (-not (Test-Path -LiteralPath 'Y:\' -PathType Container)) {
-      & subst.exe 'Y:' $targetRoot
-      if ($LASTEXITCODE -ne 0) {
-        throw ('Failed to map Y: to {0}' -f $targetRoot)
-      }
-      Write-Log -message ('{0} :: mapped Y: to {1}' -f $($MyInvocation.MyCommand.Name), $targetRoot) -severity 'INFO'
-    }
-    else {
-      Write-Log -message ('{0} :: Y: already exists and is not a subst drive; leaving it unchanged' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-
-function Ensure-TemporaryDriveDirectory {
-  param (
-    [string] $path,
-    [bool] $grantEveryoneFullControl = $false
-  )
-
-  if (-not (Test-Path -LiteralPath $path -PathType Container)) {
-    New-Item -ItemType Directory -Force -Path $path | Out-Null
-    Write-Log -message ('{0} :: created {1}' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
-  }
-
-  if ($grantEveryoneFullControl) {
-    & icacls.exe @($path, '/grant', '*S-1-1-0:(OI)(CI)F', '/T', '/C') | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-      throw ('Failed to grant Everyone full control on {0}' -f $path)
-    }
-  }
-}
-
-function Ensure-AzureTemporaryDrive {
-  param (
-    [string] $scriptPath = "$env:programdata\PuppetLabs\ronin\configure_nvme_disk.ps1"
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    if (Test-Path -LiteralPath $scriptPath -PathType Leaf) {
-      Write-Log -message ('{0} :: running {1}' -f $($MyInvocation.MyCommand.Name), $scriptPath) -severity 'INFO'
-      & $scriptPath
-    }
-    else {
-      Write-Log -message ('{0} :: skipping; {1} is missing' -f $($MyInvocation.MyCommand.Name), $scriptPath) -severity 'DEBUG'
-    }
-
-    $cacheDrive = Get-AzureWorkerCacheDrive
-    $driveRoot = ('{0}:\' -f $cacheDrive)
-    if (-not (Test-Path -LiteralPath $driveRoot -PathType Container)) {
-      throw ('Azure worker cache drive {0} is not available' -f $driveRoot)
-    }
-
-    Ensure-TemporaryDriveDirectory -path (Join-Path $driveRoot 'hg-shared') -grantEveryoneFullControl $true
-    Ensure-TemporaryDriveDirectory -path (Join-Path $driveRoot 'hg-cache') -grantEveryoneFullControl $true
-
-    $hgCache = Join-Path $driveRoot 'hg-cache'
-    [Environment]::SetEnvironmentVariable('HG_CACHE', $hgCache, 'Machine')
-    $env:HG_CACHE = $hgCache
-    Write-Log -message ('{0} :: using {1} for Azure worker cache directories' -f $($MyInvocation.MyCommand.Name), $driveRoot) -severity 'INFO'
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -656,15 +549,10 @@ If ($hand_off_ready -eq 'yes') {
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   ## Set the VM the name that taskcluster gave it, if it's not already set
   Set-AzVMName
-  ## Azure temp disks are not part of the image. Recreate D: when Azure exposes one,
-  ## otherwise keep cache compatibility on C: for NVMe-backed ephemeral OS disks.
-  Ensure-AzureTemporaryDrive
-  LinkZY2D
-  ## Clean old task directories and any old log under C:\logs\old.
+  ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
-    Ensure-AzureTemporaryDrive
     LinkZY2D
   }
   ## Start worker runner, which starts generic-worker

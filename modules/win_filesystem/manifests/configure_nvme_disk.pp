@@ -3,19 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_filesystem::configure_nvme_disk {
-  include win_shared::win_ronin_dirs
-
-  $configure_nvme_disk_ps1 = "${facts['custom_win_roninprogramdata']}\\configure_nvme_disk.ps1"
-
-  file { $configure_nvme_disk_ps1:
-    ensure  => file,
-    content => file('win_filesystem/configure_nvme_disk.ps1'),
-    require => Class['win_shared::win_ronin_dirs'],
-  }
-
   exec { 'configure_nvme_disk':
-    command  => $configure_nvme_disk_ps1,
+    command  => file('win_filesystem/configure_nvme_disk.ps1'),
     provider => powershell,
-    require  => File[$configure_nvme_disk_ps1],
   }
 }
