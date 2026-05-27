@@ -23,6 +23,17 @@ function Test-DevDrive {
     return ($queryText -match 'developer volume') -and ($queryText -notmatch 'not a developer volume')
 }
 
+function Test-ActivePageFileOnDrive {
+    param (
+        [string] $DriveLetter
+    )
+
+    $driveRoot = "${DriveLetter}:\"
+    $pageFileUsage = Get-CimInstance -ClassName Win32_PageFileUsage -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "${driveRoot}*" } | Select-Object -First 1
+
+    return ($null -ne $pageFileUsage)
+}
+
 function Format-TemporaryVolume {
     param (
         [string] $DriveLetter,
@@ -38,6 +49,10 @@ function Format-TemporaryVolume {
         if (Test-DevDrive -DriveRoot "${DriveLetter}:\") {
             & fsutil.exe devdrv trust "${DriveLetter}:\" | Out-Null
             return
+        }
+
+        if (Test-ActivePageFileOnDrive -DriveLetter $DriveLetter) {
+            throw "Cannot format ${DriveLetter}: as a Dev Drive because it has an active pagefile. Move the pagefile off ${DriveLetter}: and reboot before retrying Dev Drive conversion."
         }
 
         Format-Volume -DriveLetter $DriveLetter -DevDrive -NewFileSystemLabel $volumeLabel -Confirm:$false -Force | Out-Null
