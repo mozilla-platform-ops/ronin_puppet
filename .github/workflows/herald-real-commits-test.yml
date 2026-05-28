@@ -139,7 +139,7 @@ jobs:
         continue-on-error: true
         uses: actions/ai-inference@a7805884c80886efc241e94a5351df715968a0ad # v2.1.1
         with:
-          model: anthropic/claude-sonnet-4
+          model: openai/gpt-4o-mini
           prompt-file: prompt.txt
           max-completion-tokens: 600
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -167,7 +167,7 @@ jobs:
             --timestamp "${{ steps.meta.outputs.timestamp }}" \
             --commit-subject "${{ steps.meta.outputs.subject }}" \
             --entities-file entities.json \
-            --ai-model "anthropic/claude-sonnet-4" \
+            --ai-model "openai/gpt-4o-mini" \
             --ai-generated-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --ai-outcome "${{ steps.ai.outcome }}" \
             --ai-response-file "${AI_RESPONSE_FILE}" \
