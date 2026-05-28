@@ -3,19 +3,25 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # @summary
-#   Drops /Library/Developer/CoreSimulator/RuntimeMap.plist with an iOS SDK
-#   build -> simulator runtime build override.
+#   Ensures Apple's CoreSimulator RuntimeMap override (iphoneos26.2 ->
+#   runtime build 23D8133) is in every generic-worker task user's home
+#   directory.
 #
-#   Xcode 26.2/26.3 ships with the iphoneos26.2 SDK whose paired runtime build
-#   (23C57) Apple no longer serves; only the newer 23D8133 (iOS 26.3.1) runtime
-#   is downloadable via `xcodebuild -downloadPlatform iOS`. Without the
-#   override, ibtool refuses to compile storyboards with
-#   "iOS 26.2 Platform Not Installed".
+#   Xcode 26.2 / 26.3 ships the iphoneos26.2 SDK paired with iOS
+#   simulator runtime build 23C57, which Apple no longer serves. Only
+#   23D8133 (iOS 26.3.1) is downloadable via `xcodebuild
+#   -downloadPlatform iOS`. Without an override, ibtool refuses to
+#   compile the LaunchScreen storyboard during build-ios-arm64/debug:
 #
-#   This file is the equivalent of running:
-#     xcrun simctl runtime match set iphoneos26.2 23D8133
-#   ...but placed at the system path so it applies to the ephemeral per-task
-#   users that generic-worker-multiuser spawns for builds.
+#     error: iOS 26.2 Platform Not Installed.
+#
+#   CoreSimulator reads its override map strictly from
+#   ~/Library/Developer/CoreSimulator/RuntimeMap.plist; the
+#   /Library/Developer/CoreSimulator/... path is ignored. Because
+#   generic-worker-multiuser creates a fresh task_<id> user per task,
+#   we keep the canonical file under /Library/... and use a LaunchDaemon
+#   triggered on /Users/ changes to copy it into each new task user's
+#   home before the build runs.
 #
 class macos_coresimulator_runtime_map (
   Boolean $enabled = true,
@@ -23,6 +29,9 @@ class macos_coresimulator_runtime_map (
   if $enabled {
     case $facts['os']['name'] {
       'Darwin': {
+        $sync_script        = '/usr/local/bin/coresim_runtimemap_sync.sh'
+        $launchdaemon_plist = '/Library/LaunchDaemons/com.mozilla.coresim-runtimemap-sync.plist'
+
         file { '/Library/Developer/CoreSimulator':
           ensure => 'directory',
           owner  => 'root',
@@ -37,6 +46,35 @@ class macos_coresimulator_runtime_map (
           group   => 'wheel',
           mode    => '0644',
           require => File['/Library/Developer/CoreSimulator'],
+        }
+
+        file { $sync_script:
+          ensure => 'file',
+          source => 'puppet:///modules/macos_coresimulator_runtime_map/coresim_runtimemap_sync.sh',
+          owner  => 'root',
+          group  => 'wheel',
+          mode   => '0755',
+        }
+
+        file { $launchdaemon_plist:
+          ensure  => 'file',
+          source  => 'puppet:///modules/macos_coresimulator_runtime_map/com.mozilla.coresim-runtimemap-sync.plist',
+          owner   => 'root',
+          group   => 'wheel',
+          mode    => '0644',
+          require => [
+            File[$sync_script],
+            File['/Library/Developer/CoreSimulator/RuntimeMap.plist'],
+          ],
+          notify  => Exec['load coresim-runtimemap-sync launchdaemon'],
+        }
+
+        exec { 'load coresim-runtimemap-sync launchdaemon':
+          command     => "/bin/launchctl bootstrap system ${launchdaemon_plist}",
+          unless      => '/bin/launchctl print system/com.mozilla.coresim-runtimemap-sync',
+          path        => ['/usr/bin', '/usr/sbin', '/bin', '/sbin'],
+          require     => File[$launchdaemon_plist],
+          refreshonly => false,
         }
       }
       default: {
