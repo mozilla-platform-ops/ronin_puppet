@@ -20,6 +20,16 @@ fi
 # Get macOS version
 os_version=$(sw_vers -productVersion)
 
+# Detect SIP state. On SIP-off hosts (existing pre-PR prod m4 fleet) we still
+# need to write system-level TCC entries via sqlite3 — those grants are what
+# the legacy fleet has always relied on. On SIP-on hosts the equivalent
+# grants come from the org.mozilla.ci-tcc-pppc MDM profile deployed via
+# SimpleMDM; the sqlite3 writes would silently fail or abort there.
+SIP_DISABLED=false
+if csrutil status 2>/dev/null | grep -qi "disabled"; then
+    SIP_DISABLED=true
+fi
+
 # Function to run SQLite queries
 run_query() {
     sudo sqlite3 "$1" "$2"
@@ -72,12 +82,30 @@ if [[ "$os_version" == "11."* || "$os_version" == "12."* || "$os_version" == "13
 fi
 
 # macOS 14 and 15
-# System-level TCC entries (Accessibility for Terminal/sshd-keygen-wrapper,
-# AppleEvents for Terminal/sshd-keygen-wrapper, SystemPolicyAllFiles) are now
-# handled by the org.mozilla.ci-tcc-pppc MDM profile deployed via SimpleMDM.
-# The system TCC database is SIP-protected on macOS 14/15 and cannot be written
-# by root directly; attempting to do so aborts this script via set -e.
+# On SIP-on hosts the system-level grants come from the org.mozilla.ci-tcc-pppc
+# MDM profile (the system TCC DB is SIP-protected; sqlite3 writes there would
+# silently fail or `set -e`-abort). On SIP-off hosts (existing pre-PR prod m4
+# fleet) we still write the system-DB entries directly so those workers keep
+# the grants they've always had. User-DB writes happen on every host.
 if [[ "$os_version" == "14."* || "$os_version" == "15."* ]]; then
+    if [ "$SIP_DISABLED" = "true" ]; then
+        # System-level entries — only when SIP allows direct writes.
+        system_queries=(
+            "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355061,NULL,NULL,'UNUSED',1710355061);"
+            "REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.Terminal',0,2,4,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'UNUSED',NULL,0,1710355518,NULL,NULL,'UNUSED',1710355518);"
+            "REPLACE INTO access VALUES('kTCCServiceAccessibility','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355823,NULL,NULL,'UNUSED',1710355823);"
+            "REPLACE INTO access VALUES('kTCCServiceLiverpool','com.apple.textinput.KeyboardServices',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1710355067,NULL,NULL,'UNUSED',1710355067);"
+            "REPLACE INTO access VALUES('kTCCServiceSystemPolicyDesktopFolder','com.apple.Terminal',0,2,2,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,NULL,'UNUSED',NULL,0,1710355245,NULL,NULL,'UNUSED',0);"
+            "REPLACE INTO access VALUES('kTCCServiceUbiquity','com.apple.Safari',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1710355252,NULL,NULL,'UNUSED',1710355252);"
+            "REPLACE INTO access VALUES('kTCCServiceAppleEvents','com.apple.Terminal',0,2,3,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1710355505,NULL,NULL,'UNUSED',1710355505);"
+            "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1710355814,NULL,NULL,'UNUSED',1710355814);"
+        )
+        for query in "${system_queries[@]}"; do
+            run_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
+        done
+    fi
+
+    # User-DB entries always — needed on both SIP states.
     user_queries=(
         "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
         # osascript TCC entries - required for GUI automation via LaunchAgent on SIP-enabled systems
