@@ -275,12 +275,31 @@ def collect_users_and_groups(inv)
 end
 
 def collect_platform_packages(inv)
-  collect_homebrew(inv) if macos?
-  collect_pkgutil(inv) if macos?
+  collect_macos_applications(inv) if macos?
+  if macos? && ENV['RONIN_SBOM_COLLECT_DEEP_PACKAGES'] == 'true'
+    collect_homebrew(inv)
+    collect_pkgutil(inv)
+  end
   collect_dpkg(inv) if linux?
   collect_rpm(inv) if linux?
   collect_snap(inv) if linux?
   collect_windows_package_extras(inv) if windows?
+end
+
+def collect_macos_applications(inv)
+  [
+    '/Applications/*.app',
+    '/System/Applications/*.app',
+  ].flat_map { |pattern| Dir.glob(pattern) }.each do |path|
+    inv.component(
+      name: File.basename(path, '.app'),
+      type: 'application',
+      source: 'macos-application',
+      properties: {
+        path: path,
+      },
+    )
+  end
 end
 
 def collect_homebrew(inv)
@@ -519,8 +538,10 @@ def collect_configuration(inv)
     )
   end
 
-  collect_services(inv)
-  collect_users_and_groups(inv)
+  unless macos?
+    collect_services(inv)
+    collect_users_and_groups(inv)
+  end
 end
 
 def selected_files
