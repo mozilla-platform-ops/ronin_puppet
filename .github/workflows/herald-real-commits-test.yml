@@ -133,29 +133,76 @@ jobs:
           cat prompt.txt
           echo "::endgroup::"
 
-      - name: Generate AI summary
+      - name: Generate AI summary (Anthropic Messages API)
         id: ai
         if: steps.entities.outputs.count != '0'
         continue-on-error: true
-        uses: actions/ai-inference@a7805884c80886efc241e94a5351df715968a0ad # v2.1.1
-        with:
-          model: openai/gpt-4o-mini
-          prompt-file: prompt.txt
-          max-completion-tokens: 600
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MODEL: claude-sonnet-4-6
+        run: |
+          set -euo pipefail
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "::error::ANTHROPIC_API_KEY is not set; AI step cannot run."
+            exit 1
+          fi
+
+          SYSTEM_PROMPT='You are a concise technical writer. Return only a JSON object — no prose, no Markdown code fences — with keys "description", "headline", "tags".'
+
+          jq -n \
+            --arg model "${MODEL}" \
+            --argjson max_tokens 600 \
+            --arg system "${SYSTEM_PROMPT}" \
+            --rawfile user_prompt prompt.txt \
+            '{model: $model, max_tokens: $max_tokens, system: $system, messages: [{role: "user", content: $user_prompt}]}' \
+            > request.json
+
+          # Call Anthropic; capture both response and HTTP status. Do not --fail
+          # so we can inspect the body on non-2xx.
+          HTTP_CODE=$(curl --silent --show-error \
+            --output response.json \
+            --write-out '%{http_code}' \
+            --max-time 60 \
+            --header "x-api-key: ${ANTHROPIC_API_KEY}" \
+            --header "anthropic-version: 2023-06-01" \
+            --header "content-type: application/json" \
+            --data @request.json \
+            https://api.anthropic.com/v1/messages)
+
+          echo "HTTP status: ${HTTP_CODE}"
+          echo "::group::response.json"
+          cat response.json
+          echo
+          echo "::endgroup::"
+
+          if [ "${HTTP_CODE}" != "200" ]; then
+            echo "::error::Anthropic API returned HTTP ${HTTP_CODE}"
+            exit 1
+          fi
+
+          # Concatenate all text blocks (defensive against multi-block responses).
+          jq -r '[.content[]? | select(.type == "text") | .text] | join("\n")' \
+            response.json > ai_response.txt
+
+          if [ ! -s ai_response.txt ]; then
+            echo "::error::No text content in Anthropic response"
+            exit 1
+          fi
 
       - name: Assemble and validate event JSON
         if: steps.entities.outputs.count != '0'
+        env:
+          MODEL: claude-sonnet-4-6
         run: |
           set -euo pipefail
-          AI_RESPONSE_FILE="${{ steps.ai.outputs.response-file }}"
-          if [ -z "${AI_RESPONSE_FILE}" ] || [ ! -f "${AI_RESPONSE_FILE}" ]; then
-            AI_RESPONSE_FILE=""
-          else
+          if [ -f ai_response.txt ]; then
+            AI_RESPONSE_FILE="$(pwd)/ai_response.txt"
             echo "::group::AI response"
             cat "${AI_RESPONSE_FILE}"
             echo
             echo "::endgroup::"
+          else
+            AI_RESPONSE_FILE=""
           fi
           python .github/herald/build_event.py assemble \
             --schema-file .github/herald/event.schema.json \
@@ -167,7 +214,7 @@ jobs:
             --timestamp "${{ steps.meta.outputs.timestamp }}" \
             --commit-subject "${{ steps.meta.outputs.subject }}" \
             --entities-file entities.json \
-            --ai-model "openai/gpt-4o-mini" \
+            --ai-model "${MODEL}" \
             --ai-generated-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --ai-outcome "${{ steps.ai.outcome }}" \
             --ai-response-file "${AI_RESPONSE_FILE}" \
