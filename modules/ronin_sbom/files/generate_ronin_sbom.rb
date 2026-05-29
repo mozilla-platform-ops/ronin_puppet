@@ -135,6 +135,10 @@ def linux?
   host_os =~ /linux/i
 end
 
+def env_true?(name)
+  %w[1 true yes].include?(ENV[name].to_s.downcase)
+end
+
 def command(*args, timeout: 60)
   Timeout.timeout(timeout) do
     stdout, stderr, status = Open3.capture3(*args)
@@ -190,7 +194,7 @@ rescue StandardError => e
 end
 
 def collect_packages(inv)
-  return unless ENV['RONIN_SBOM_COLLECT_PUPPET_PACKAGES'] == 'true'
+  return unless env_true?('RONIN_SBOM_COLLECT_PUPPET_PACKAGES')
 
   collect_puppet_type(inv, :package, timeout: 120).each do |package|
     name = resource_value(package, :name) || package.title
@@ -276,13 +280,13 @@ end
 
 def collect_platform_packages(inv)
   collect_macos_applications(inv) if macos?
-  if macos? && ENV['RONIN_SBOM_COLLECT_DEEP_PACKAGES'] == 'true'
+  if macos? && env_true?('RONIN_SBOM_COLLECT_DEEP_PACKAGES')
     collect_homebrew(inv)
     collect_pkgutil(inv)
   end
   collect_dpkg(inv) if linux?
   collect_rpm(inv) if linux?
-  collect_snap(inv) if linux?
+  collect_snap(inv) if linux? && env_true?('RONIN_SBOM_COLLECT_SNAP_PACKAGES')
   collect_windows_package_extras(inv) if windows?
 end
 
@@ -538,7 +542,7 @@ def collect_configuration(inv)
     )
   end
 
-  unless macos?
+  if windows? || env_true?('RONIN_SBOM_COLLECT_PUPPET_CONFIG')
     collect_services(inv)
     collect_users_and_groups(inv)
   end
@@ -596,7 +600,7 @@ def collect_taskcluster_binaries(inv)
     next unless File.file?(path)
 
     version = nil
-    unless macos?
+    if env_true?('RONIN_SBOM_COLLECT_BINARY_VERSIONS')
       ['--short-version', '--version', '-version'].each do |flag|
         result = command(path, flag, timeout: 10)
         next unless result[:ok]
