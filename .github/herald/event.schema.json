@@ -13,7 +13,8 @@
     "timestamp",
     "commit_subject",
     "ai_summary",
-    "entities"
+    "entities",
+    "impact"
   ],
   "additionalProperties": false,
   "properties": {
@@ -132,6 +133,26 @@
             "items": { "type": "string", "minLength": 1 },
             "description": "Repo-relative paths of files in this commit that mapped to this entity."
           }
+        }
+      }
+    },
+    "impact": {
+      "type": "object",
+      "required": ["worker_pools", "azure_images"],
+      "additionalProperties": false,
+      "description": "Roles affected transitively by this commit, bucketed by what they represent. Roles whose name contains 'azure' are treated as Azure custom images Herald keeps track of; all other roles map 1:1 to Taskcluster worker pools.",
+      "properties": {
+        "worker_pools": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Role names (== worker pool identifiers) impacted by the change, excluding any role whose name contains 'azure'. Sorted."
+        },
+        "azure_images": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Role names containing 'azure', representing Azure custom images tracked separately from worker pools. Sorted."
         }
       }
     }

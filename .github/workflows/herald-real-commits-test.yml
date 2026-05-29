@@ -218,6 +218,7 @@ jobs:
             --ai-generated-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --ai-outcome "${{ steps.ai.outcome }}" \
             --ai-response-file "${AI_RESPONSE_FILE}" \
+            --repo-root . \
             --output event.json
           echo "::group::event.json"
           cat event.json
