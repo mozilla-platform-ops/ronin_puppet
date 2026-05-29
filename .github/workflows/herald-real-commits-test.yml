@@ -111,9 +111,15 @@ jobs:
           {
             echo "You are summarizing a Mozilla RelOps ronin_puppet commit for a changelog."
             echo ""
-            echo "Commit subject: ${{ steps.meta.outputs.subject }}"
+            echo "## Repo conventions"
             echo ""
-            echo "Impacted entities (type/id):"
+            cat .github/herald/CONVENTIONS.md
+            echo ""
+            echo "## This commit"
+            echo ""
+            echo "Subject: ${{ steps.meta.outputs.subject }}"
+            echo ""
+            echo "Directly-touched entities (type/id):"
             python -c "import json; [print(f\"  - {e['type']}/{e['id']}\") for e in json.load(open('entities.json'))]"
             echo ""
             echo "Changed files:"
@@ -124,12 +130,14 @@ jobs:
             cat diff.txt
             echo '```'
             echo ""
+            echo "## Output"
+            echo ""
             echo "Return ONLY a JSON object, no code fences, with exactly these keys:"
-            echo "  - description: 1-3 sentence Markdown summary of what changed and why (if inferable)"
+            echo "  - description: 1-3 sentence Markdown summary using the conventions terminology above"
             echo "  - headline: short summary <= 80 chars suitable for a Slack digest line"
             echo "  - tags: array of short kebab-case tags (e.g. \"dependency-bump\", \"hiera\", \"security\")"
           } > prompt.txt
-          echo "::group::prompt.txt"
+          echo "::group::prompt.txt (size $(wc -c < prompt.txt) bytes)"
           cat prompt.txt
           echo "::endgroup::"
 

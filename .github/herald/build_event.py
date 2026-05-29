@@ -79,8 +79,23 @@ def map_files_to_entities(paths):
     ]
 
 
+def strip_puppet_comments(text):
+    """Remove Puppet comments before regex matching.
+
+    Drops `# ...` to end of line and `/* ... */` blocks. Naive about strings
+    that contain `#` characters, which is fine here since we only care about
+    statement-level include/require/class lines.
+    """
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+    text = re.sub(r"#.*", "", text)
+    return text
+
+
 def index_role_manifests(repo_root):
-    """Return {role_id: set(profile_ids)} parsed from modules/roles_profiles/manifests/roles/*.pp."""
+    """Return {role_id: set(profile_ids)} parsed from .../roles/*.pp.
+
+    Reads only un-commented include/require lines. Excludes staging/alpha roles.
+    """
     roles_dir = Path(repo_root) / "modules/roles_profiles/manifests/roles"
     out = {}
     if not roles_dir.is_dir():
@@ -89,57 +104,87 @@ def index_role_manifests(repo_root):
         role_id = pp.stem
         if STAGING_ALPHA_RE.search(role_id):
             continue
-        text = pp.read_text(errors="replace")
+        text = strip_puppet_comments(pp.read_text(errors="replace"))
         profiles = set(INCLUDE_PROFILE_RE.findall(text)) | set(PROFILE_CLASS_RE.findall(text))
         out[role_id] = profiles
     return out
 
 
 def index_profile_manifests(repo_root):
-    """Return {profile_id: set(module_ids)} parsed from .../profiles/*.pp.
+    """Return ({profile_id: set(module_ids)}, {profile_id: set(profile_ids)}).
 
-    A module is any include/require/class target that isn't itself a profile.
+    The first map is profile -> referenced module names. The second is
+    profile -> profiles it transitively includes (so we can build a closure).
     """
     profiles_dir = Path(repo_root) / "modules/roles_profiles/manifests/profiles"
-    out = {}
+    modules_by_profile, profiles_by_profile = {}, {}
     if not profiles_dir.is_dir():
-        return out
+        return modules_by_profile, profiles_by_profile
     for pp in profiles_dir.glob("*.pp"):
         profile_id = pp.stem
-        text = pp.read_text(errors="replace")
+        text = strip_puppet_comments(pp.read_text(errors="replace"))
+
+        included_profiles = set(INCLUDE_PROFILE_RE.findall(text)) | set(PROFILE_CLASS_RE.findall(text))
+        included_profiles.discard(profile_id)
+        profiles_by_profile[profile_id] = included_profiles
+
+        # Module refs: every top-level name from include/require/class that
+        # isn't itself a profile or a Puppet keyword.
         refs = set(MODULE_REF_RE.findall(text)) | set(MODULE_CLASS_RE.findall(text))
-        # Drop language keywords and profile self-references.
-        refs.discard("roles_profiles")
-        refs.discard("include")
-        refs.discard("require")
-        refs.discard("class")
-        out[profile_id] = refs
+        for stop in ("roles_profiles", "include", "require", "class"):
+            refs.discard(stop)
+        modules_by_profile[profile_id] = refs
+
+    return modules_by_profile, profiles_by_profile
+
+
+def profile_closure(seed_profiles, profile_to_profiles):
+    """Expand a set of profiles to include every profile they transitively
+    include (via profile -> profile chains in profile_to_profiles)."""
+    out = set(seed_profiles)
+    frontier = set(seed_profiles)
+    while frontier:
+        nxt = set()
+        for p in frontier:
+            for child in profile_to_profiles.get(p, ()):
+                if child not in out:
+                    nxt.add(child)
+                    out.add(child)
+        frontier = nxt
     return out
 
 
 def compute_impact(entities, repo_root):
     """Derive the set of affected roles from the touched entities.
 
-    Returns {"worker_pools": [...], "azure_images": [...]} of role names (no
-    staging/alpha; "azure" in name -> azure_images, otherwise worker_pools).
+    Returns {"worker_pools": [...], "azure_images": [...]} of role names.
+    'azure' in role name (case-insensitive) -> azure_images; else worker_pools.
+    Profile -> profile transitive includes are followed so a change deep in
+    the closure reaches every role that pulls it in indirectly.
     """
     role_to_profiles = index_role_manifests(repo_root)
-    profile_to_modules = index_profile_manifests(repo_root)
+    profile_to_modules, profile_to_profiles = index_profile_manifests(repo_root)
+    all_roles = set(role_to_profiles)
 
-    # Reverse maps for fast lookup.
+    # For each role, the full set of profiles it transitively pulls in.
+    role_profile_closure = {
+        role: profile_closure(profs, profile_to_profiles)
+        for role, profs in role_to_profiles.items()
+    }
+
+    # Reverse map: profile -> roles whose closure contains it.
     profile_to_roles = {}
-    for role, profs in role_to_profiles.items():
+    for role, profs in role_profile_closure.items():
         for p in profs:
             profile_to_roles.setdefault(p, set()).add(role)
 
+    # Reverse map: module -> profiles referencing it.
     module_to_profiles = {}
     for prof, mods in profile_to_modules.items():
         for m in mods:
             module_to_profiles.setdefault(m, set()).add(prof)
 
     affected = set()
-    all_roles = set(role_to_profiles)
-
     for e in entities:
         etype, eid = e["type"], e["id"]
         if etype in ("role", "role-hiera"):
