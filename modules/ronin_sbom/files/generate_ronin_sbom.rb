@@ -176,18 +176,23 @@ rescue StandardError
   nil
 end
 
-def collect_puppet_type(inv, type_name)
+def collect_puppet_type(inv, type_name, timeout: 120)
   type = Puppet::Type.type(type_name)
   return [] unless type
 
-  type.instances
+  Timeout.timeout(timeout) { type.instances }
+rescue Timeout::Error
+  inv.error("puppet-ral-#{type_name}", "collector exceeded #{timeout}s")
+  []
 rescue StandardError => e
   inv.error("puppet-ral-#{type_name}", e.message)
   []
 end
 
 def collect_packages(inv)
-  collect_puppet_type(inv, :package).each do |package|
+  return unless ENV['RONIN_SBOM_COLLECT_PUPPET_PACKAGES'] == 'true'
+
+  collect_puppet_type(inv, :package, timeout: 120).each do |package|
     name = resource_value(package, :name) || package.title
     ensure_value = resource_value(package, :ensure)
     version = ensure_value unless %w[present installed latest].include?(ensure_value.to_s)
@@ -226,7 +231,7 @@ def package_purl(name, version, provider)
 end
 
 def collect_services(inv)
-  collect_puppet_type(inv, :service).each do |service|
+  collect_puppet_type(inv, :service, timeout: 60).each do |service|
     inv.config(
       kind: 'service',
       name: resource_value(service, :name) || service.title,
@@ -241,7 +246,7 @@ def collect_services(inv)
 end
 
 def collect_users_and_groups(inv)
-  collect_puppet_type(inv, :user).each do |user|
+  collect_puppet_type(inv, :user, timeout: 60).each do |user|
     inv.config(
       kind: 'user',
       name: resource_value(user, :name) || user.title,
@@ -256,7 +261,7 @@ def collect_users_and_groups(inv)
     )
   end
 
-  collect_puppet_type(inv, :group).each do |group|
+  collect_puppet_type(inv, :group, timeout: 60).each do |group|
     inv.config(
       kind: 'group',
       name: resource_value(group, :name) || group.title,
@@ -272,6 +277,8 @@ end
 def collect_platform_packages(inv)
   collect_homebrew(inv) if macos?
   collect_pkgutil(inv) if macos?
+  collect_dpkg(inv) if linux?
+  collect_rpm(inv) if linux?
   collect_snap(inv) if linux?
   collect_windows_package_extras(inv) if windows?
 end
@@ -322,6 +329,62 @@ def collect_pkgutil(inv)
   end
 end
 
+def collect_dpkg(inv)
+  dpkg_query = find_command('dpkg-query')
+  return unless dpkg_query
+
+  result = command(dpkg_query, '-W', '-f=${binary:Package}\t${Version}\t${Architecture}\n', timeout: 60)
+  unless result[:ok]
+    inv.error('dpkg', result[:stderr])
+    return
+  end
+
+  result[:stdout].each_line do |line|
+    name, version, architecture = line.chomp.split("\t", 3)
+    next if name.nil? || name.empty?
+
+    inv.component(
+      name: name,
+      version: version,
+      type: 'application',
+      source: 'dpkg',
+      purl: version.to_s.empty? ? nil : "pkg:deb/debian/#{name}@#{version}",
+      properties: {
+        provider: 'dpkg',
+        architecture: architecture,
+      },
+    )
+  end
+end
+
+def collect_rpm(inv)
+  rpm = find_command('rpm')
+  return unless rpm
+
+  result = command(rpm, '-qa', '--qf', "%{NAME}\t%{VERSION}-%{RELEASE}\t%{ARCH}\n", timeout: 60)
+  unless result[:ok]
+    inv.error('rpm', result[:stderr])
+    return
+  end
+
+  result[:stdout].each_line do |line|
+    name, version, architecture = line.chomp.split("\t", 3)
+    next if name.nil? || name.empty?
+
+    inv.component(
+      name: name,
+      version: version,
+      type: 'application',
+      source: 'rpm',
+      purl: version.to_s.empty? ? nil : "pkg:rpm/#{name}@#{version}",
+      properties: {
+        provider: 'rpm',
+        architecture: architecture,
+      },
+    )
+  end
+end
+
 def collect_snap(inv)
   snap = find_command('snap')
   return unless snap
@@ -348,6 +411,29 @@ end
 def collect_windows_package_extras(inv)
   powershell = windows_powershell
   return unless powershell
+
+  collect_windows_json(inv, powershell, 'windows-installed-program', <<~'POWERSHELL') do |row|
+    $paths = @(
+      'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+      'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    Get-ItemProperty -Path $paths -ErrorAction SilentlyContinue |
+      Where-Object { $_.DisplayName } |
+      Select-Object DisplayName,DisplayVersion,Publisher,InstallDate,PSChildName |
+      ConvertTo-Json -Depth 4
+  POWERSHELL
+    inv.component(
+      name: row['DisplayName'],
+      version: row['DisplayVersion'],
+      type: 'application',
+      source: 'windows-installed-program',
+      properties: {
+        publisher: row['Publisher'],
+        install_date: row['InstallDate'],
+        registry_key: row['PSChildName'],
+      },
+    )
+  end
 
   collect_windows_json(inv, powershell, 'windows-hotfix',
                        'Get-HotFix | Select-Object HotFixID,Description,InstalledOn,InstalledBy | ConvertTo-Json -Depth 4') do |row|

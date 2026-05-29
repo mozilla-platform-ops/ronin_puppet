@@ -11,29 +11,24 @@ class ronin_sbom (
   if $enabled {
     case $facts['os']['name'] {
       'Windows': {
-        $ronin_dir = $facts['custom_win_roninprogramdata'] ? {
-          undef   => 'C:\ProgramData\PuppetLabs\ronin',
-          default => $facts['custom_win_roninprogramdata'],
-        }
         $programfiles = $facts['custom_win_programfiles'] ? {
           undef   => 'C:\Program Files',
           default => $facts['custom_win_programfiles'],
         }
         $ruby_exe    = "${programfiles}\\Puppet Labs\\Puppet\\puppet\\bin\\ruby.exe"
-        $script_dir  = "${ronin_dir}\\sbom"
-        $script_path = "${script_dir}\\generate_ronin_sbom.rb"
         $output_dir  = 'C:\sbom'
+        $script_path = "${output_dir}\\generate_ronin_sbom.rb"
         $command     = "& '${ruby_exe}' '${script_path}' --output-directory '${output_dir}' --base-name '${output_basename}'"
         $unless      = "Test-Path '${output_dir}\\${output_basename}.cdx.json'"
 
-        file { [$ronin_dir, $script_dir, $output_dir]:
+        file { $output_dir:
           ensure => directory,
         }
 
         file { $script_path:
           ensure  => file,
           source  => 'puppet:///modules/ronin_sbom/generate_ronin_sbom.rb',
-          require => File[$script_dir],
+          require => File[$output_dir],
         }
 
         if $run_on_every_puppet_run {

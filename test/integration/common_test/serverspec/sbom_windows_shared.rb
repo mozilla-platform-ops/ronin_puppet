@@ -32,7 +32,7 @@ describe powershell_command(<<~POWERSHELL) do
     }
   )
 
-  foreach ($source in @('puppet-ral-package', 'puppet-ral-service', 'windows-driver')) {
+  foreach ($source in @('windows-installed-program', 'puppet-ral-service', 'windows-driver')) {
     if ($sources -notcontains $source) { exit 1 }
   }
 
@@ -58,7 +58,7 @@ end
 
 describe powershell_command(<<~POWERSHELL) do
   $markdown = Get-Content -Raw -Path '#{sbom_paths[:markdown]}'
-  foreach ($needle in @('# Ronin Puppet SBOM', '## Summary', '## Components: puppet-ral-package', '## Components: windows-driver')) {
+  foreach ($needle in @('# Ronin Puppet SBOM', '## Summary', '## Components: windows-installed-program', '## Components: windows-driver')) {
     if (-not $markdown.Contains($needle)) { exit 1 }
   }
 POWERSHELL
