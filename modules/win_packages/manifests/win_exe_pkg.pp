@@ -27,7 +27,6 @@ define win_packages::win_exe_pkg (
     creates => $creates,
     timeout => 600,
     returns => $returns,
-    require => Archive[$title],
   }
 }
 

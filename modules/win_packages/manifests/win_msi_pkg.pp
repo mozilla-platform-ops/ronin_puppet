@@ -29,7 +29,6 @@ define win_packages::win_msi_pkg (
     ensure          => installed,
     source          => "${pkgdir}\\${pkg}",
     install_options => $install_options,
-    require         => Archive[$title],
   }
 }
 

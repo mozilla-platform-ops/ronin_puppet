@@ -36,10 +36,6 @@ define win_packages::win_zip_pkg (
   exec { $pkg:
     command => "${seven_zip} x ${source} -o${destination} -y",
     creates => $creates,
-    require => [
-      Archive[$title],
-      File[$destination],
-    ],
   }
 }
 
