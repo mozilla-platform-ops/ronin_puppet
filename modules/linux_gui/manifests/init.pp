@@ -269,6 +269,17 @@ class linux_gui (
             '/usr/share/X11/xorg.conf.d/50-display.conf':
               source => "puppet:///modules/${module_name}/50-display.conf";
 
+            '/etc/X11/xorg.conf.d':
+              ensure => directory,
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0755';
+            '/etc/X11/xorg.conf.d/20-intel-primary.conf':
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0644',
+              source => "puppet:///modules/${module_name}/20-intel-primary.conf";
+
             # make sure the builder user doesn't have any funny business
             ["${builder_home}/.xsession",
               "${builder_home}/.xinitrc",
