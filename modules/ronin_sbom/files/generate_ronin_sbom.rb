@@ -596,12 +596,14 @@ def collect_taskcluster_binaries(inv)
     next unless File.file?(path)
 
     version = nil
-    ['--short-version', '--version', '-version'].each do |flag|
-      result = command(path, flag, timeout: 10)
-      next unless result[:ok]
+    unless macos?
+      ['--short-version', '--version', '-version'].each do |flag|
+        result = command(path, flag, timeout: 10)
+        next unless result[:ok]
 
-      version = first_line(result[:stdout] + result[:stderr])
-      break if version
+        version = first_line(result[:stdout] + result[:stderr])
+        break if version
+      end
     end
 
     inv.component(
