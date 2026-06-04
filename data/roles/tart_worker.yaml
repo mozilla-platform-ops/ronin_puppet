@@ -1,0 +1,23 @@
+---
+ntp_server: time.apple.org
+
+# Puppet agent
+puppet_agent:
+  package_version: 7.28.0
+
+puppet_run_strategy: cron
+
+# Tart VM host configuration: runs gecko-t-osx-1500-m-vms tester VMs.
+# Registry/image differ from the gecko-1b builder hosts (which use 10.49.56.83
+# / sequoia-gecko1b-vms). The worker identity is baked into the sequoia-tester
+# image, so no host-side vault secrets are required.
+tart:
+  version: '2.30.0'
+  registry_host: '10.49.56.161'
+  registry_port: 5000
+  oci_image: 'sequoia-tester'
+  oci_tag: 'prod-latest'
+  vm_name_prefix: 'sequoia-tester'
+  worker_count: 2
+  insecure: true
+  user: 'admin'
