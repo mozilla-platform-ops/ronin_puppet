@@ -5,6 +5,7 @@
 class win_nsclient::init (
   String $server,
   String $server_pw,
+  String $srcloc,
 ){
   $nscp_dir    = "${facts['custom_win_programfiles']}\\NSClient++"
   $scripts_dir = "${nscp_dir}\\scripts"
@@ -12,6 +13,7 @@ class win_nsclient::init (
   win_packages::win_msi_pkg { 'NSClient++ (x64)':
     pkg             => 'NSCP-0.9.15-x64.msi',
     install_options => ['/quiet'],
+    srcloc          => $srcloc,
   }
 
   # Barrier: don't try to drop files until the dir exists

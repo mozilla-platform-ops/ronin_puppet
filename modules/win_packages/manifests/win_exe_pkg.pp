@@ -6,12 +6,12 @@ define win_packages::win_exe_pkg (
   String $pkg,
   String $creates,
   String $install_options_string,
+  String $srcloc,
   String $package=$title,
   $returns=undef
 ) {
-  $pkgdir       = $facts['custom_win_temp_dir']
-  $srcloc       = lookup('windows.ext_pkg_src')
-  $url         = "${srcloc}/${pkg}"
+  $pkgdir = $facts['custom_win_temp_dir']
+  $url    = "${srcloc}/${pkg}"
 
   archive { $title:
     ensure  => 'present',

@@ -5,12 +5,14 @@
 class win_packages::performance_tool_kit (
   String $moz_profile_source,
   String $moz_profile_file,
+  String $srcloc,
 ) {
   case $facts['os']['name'] {
     'Windows': {
       win_packages::win_msi_pkg { 'WPTx64':
         pkg             => 'WPTx64-x86_en-us.msi',
         install_options => ['/quiet'],
+        srcloc          => $srcloc,
       }
       file { $moz_profile_file:
         source => $moz_profile_source,

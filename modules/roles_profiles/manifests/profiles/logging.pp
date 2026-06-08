@@ -40,6 +40,7 @@ class roles_profiles::profiles::logging (
         node_name      => $facts['networking']['fqdn'],
         log_aggregator => $log_aggregator,
         conf_file      => $conf_file,
+        srcloc         => lookup('windows.ext_pkg_src'),
       }
       # Bug List
       # https://bugzilla.mozilla.org/show_bug.cgi?id=1520947

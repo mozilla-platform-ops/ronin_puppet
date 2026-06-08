@@ -5,12 +5,17 @@
 class roles_profiles::profiles::visual_studio_build_tools {
   case $facts['os']['name'] {
     'Windows': {
+      $srcloc = lookup('windows.ext_pkg_src')
       case $facts['custom_win_os_version'] {
         'win_2022_2009','win_11_2009': {
-          include win_packages::vs_buildtools_2022
+          class { 'win_packages::vs_buildtools_2022':
+            srcloc => $srcloc,
+          }
         }
         default: {
-          include win_packages::vs_build_tools
+          class { 'win_packages::vs_build_tools':
+            srcloc => $srcloc,
+          }
         }
       }
     }

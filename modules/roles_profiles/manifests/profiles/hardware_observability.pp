@@ -7,7 +7,8 @@ class roles_profiles::profiles::hardware_observability {
     'Windows': {
         class { win_nsclient::init:
             server    => lookup('windows.datacenter.marlin.ip'),
-            server_pw => lookup('marlin_pw')
+            server_pw => lookup('marlin_pw'),
+            srcloc    => lookup('windows.ext_pkg_src'),
         }
     }
     default: {

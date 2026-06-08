@@ -7,9 +7,11 @@ class roles_profiles::profiles::microsoft_tools {
   case $facts['os']['name'] {
     'Windows': {
       include win_shared::win_ronin_dirs
+      $srcloc = lookup('windows.ext_pkg_src')
       class { 'win_packages::performance_tool_kit':
         moz_profile_source => lookup('windows.mozilla_profile.source'),
         moz_profile_file   => lookup('windows.mozilla_profile.local'),
+        srcloc             => $srcloc,
       }
 
       $func = lookup('win-worker.function')
@@ -19,32 +21,53 @@ class roles_profiles::profiles::microsoft_tools {
           ## This class seems to timeout on the first run of a new VM
           ## For now don't look for it after bootstrap.
           if $facts['custom_win_bootstrap_stage'] != 'complete' {
-            include win_packages::dxsdk_jun10
+            class { 'win_packages::dxsdk_jun10':
+              srcloc => $srcloc,
+            }
           }
-          include win_packages::binscope
+          class { 'win_packages::binscope':
+            srcloc => $srcloc,
+          }
           # Required by rustc (tooltool artefact)
           if $facts['custom_win_os_arch'] == 'aarch64' {
-            include win_packages::vc_redist_x86
-            include win_packages::vc_redist_x64
+            class { 'win_packages::vc_redist_x86':
+              srcloc => $srcloc,
+            }
+            class { 'win_packages::vc_redist_x64':
+              srcloc => $srcloc,
+            }
           }
           else {
-            include win_packages::vc_redist_2022_x64
-            include win_packages::vc_redist_2022_x86
+            class { 'win_packages::vc_redist_2022_x86':
+              srcloc => $srcloc,
+            }
+            class { 'win_packages::vc_redist_2022_x64':
+              srcloc => $srcloc,
+            }
           }
         }
         'tester':{
           # Hardware testers don't need the windows sdk so skip installing them completely
           if $facts['custom_win_location'] == 'azure' and $facts['custom_win_os_arch'] != 'aarch64' {
             if $facts['custom_win_display_version'] in ['24H2', '25H2'] {
-              include win_packages::win_11_sdk
+              class { 'win_packages::win_11_sdk':
+                srcloc => $srcloc,
+              }
             } else {
               ## we still install win10 sdk on win11-64-2009
-              include win_packages::win_10_sdk
+              class { 'win_packages::win_10_sdk':
+                srcloc => $srcloc,
+              }
             }
           }
           # VC++ Redist needed on enterprise images (not pre-installed like AVD)
           if $facts['custom_win_location'] == 'azure' {
-            include win_packages::vc_redist_2022_x64
+            class { 'win_packages::vc_redist_2022_x86':
+              srcloc => $srcloc,
+            }
+            class { 'win_packages::vc_redist_2022_x64':
+              srcloc => $srcloc,
+            }
           }
           include win_hw_profiling::xperf_kernel_trace
         }

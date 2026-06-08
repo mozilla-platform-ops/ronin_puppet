@@ -6,16 +6,15 @@ define win_packages::win_zip_pkg (
   String $pkg,
   String $destination,
   String $creates,
+  String $srcloc,
   String $package=$title
 ) {
   require win_packages::sevenzip
 
-  $srcloc = lookup('windows.ext_pkg_src')
-
-  $pkgdir      = $facts['custom_win_temp_dir']
-  $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
-  $source      = "\"${pkgdir}\\${pkg}\""
-  $url         = "${srcloc}/${pkg}"
+  $pkgdir    = $facts['custom_win_temp_dir']
+  $seven_zip = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
+  $source    = "\"${pkgdir}\\${pkg}\""
+  $url       = "${srcloc}/${pkg}"
 
   # Use https://github.com/voxpupuli/puppet-archive instead of built-in file resource type to download files
   archive { $title:

@@ -7,10 +7,13 @@ class win_nxlog (
   String $location,
   String $node_name,
   String $log_aggregator,
-  String $conf_file
+  String $conf_file,
+  String $srcloc,
 ) {
   if $facts['os']['name'] == 'Windows' {
-    include win_nxlog::install
+    class { 'win_nxlog::install':
+      srcloc => $srcloc,
+    }
     include win_nxlog::fw_exception
     include win_nxlog::service
     include win_nxlog::configuration

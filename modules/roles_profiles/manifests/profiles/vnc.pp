@@ -19,6 +19,7 @@ class roles_profiles::profiles::vnc {
         ini_file          => $ini_file,
         pw_hash           => $pw_hash,
         read_only_pw_hash => $read_only_pw_hash,
+        srcloc            => lookup('windows.ext_pkg_src'),
       }
       windows_firewall::exception { "allow_${firewall_name}_mdc1":
         ensure       => present,

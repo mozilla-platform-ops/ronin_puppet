@@ -4,11 +4,13 @@
 
 class win_packages::azure_vm_agent (
     String  $package,
-    String  $msi
+    String  $msi,
+    String  $srcloc,
 ) {
 
     win_packages::win_msi_pkg  { $package:
         pkg             => $msi,
         install_options => ['/quiet'],
+        srcloc          => $srcloc,
     }
 }

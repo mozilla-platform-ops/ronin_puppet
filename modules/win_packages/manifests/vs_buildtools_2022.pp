@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_packages::vs_buildtools_2022 {
+class win_packages::vs_buildtools_2022 (
+  String $srcloc,
+) {
   $prog_dir = $facts['custom_win_programfilesx86']
   $tools_dir = "${prog_dir}\\Microsoft Visual Studio\\Installer"
 
@@ -11,6 +13,7 @@ class win_packages::vs_buildtools_2022 {
       pkg                    => 'vs_BuildTools_2022.exe',
       install_options_string => '--all --passive --norestart',
       creates                => "${tools_dir}\\NOTICE.txt",
+      srcloc                 => $srcloc,
     }
   } else {
     fail("${module_name} does not support ${$facts['os']['name']}")

@@ -5,6 +5,7 @@
 class roles_profiles::profiles::intel_drivers {
   class { 'win_packages::drivers::intel_gfx' :
     version => lookup('windows.driver.gfx.version'),
+    srcloc  => lookup('windows.ext_pkg_src'),
   }
   include win_os_settings::intel_gfx_settings
 }

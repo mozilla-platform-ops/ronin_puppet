@@ -10,7 +10,9 @@ class win_mozilla_maintenance_service (
 
   case $facts['os']['name'] {
     'Windows': {
-      include win_mozilla_maintenance_service::install
+      class { 'win_mozilla_maintenance_service::install':
+        srcloc => $source_location,
+      }
       include win_mozilla_maintenance_service::grant_registry_access
     }
     default: {

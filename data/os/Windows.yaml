@@ -116,3 +116,11 @@ windows:
       bios_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/BIOS_exports'
       isetup_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/ISetup_08-05-2025'
       date: '03-20-2026'
+
+# The following install classes are reached transitively (via Puppet's `require`
+# keyword from sibling classes, or via a parent class that calls bare `include`)
+# without a profile in the path that can pass srcloc explicitly. Hiera supplies
+# the value via class-parameter auto-lookup. Every other class gets srcloc
+# directly from its profile.
+win_packages::sevenzip::srcloc: "%{lookup('windows.ext_pkg_src')}"
+win_openssh::install::srcloc: "%{lookup('windows.ext_pkg_src')}"
