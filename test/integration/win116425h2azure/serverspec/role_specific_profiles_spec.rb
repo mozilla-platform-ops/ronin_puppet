@@ -21,6 +21,7 @@ if WORKER_FUNCTION == 'tester'
   describe powershell_command(<<~POWERSHELL) do
     $driverName = 'ronin_puppet_offline_nvidia_grid_test'
     $driverPath = "C:\\Windows\\Temp\\$driverName.exe"
+    $manifestPath = "C:\\Windows\\Temp\\$driverName.pp"
     $puppetLog = "C:\\Windows\\Temp\\$driverName.log"
     Set-Content -Path $driverPath -Value 'preseeded installer' -NoNewline -Encoding ASCII
     try {
@@ -31,18 +32,18 @@ if WORKER_FUNCTION == 'tester'
       if (-not (Test-Path $puppet)) {
         $puppet = Join-Path ${env:ProgramFiles} 'Puppet Labs\\Puppet\\bin\\puppet'
       }
-      $manifest = @"
+      @"
 class { 'win_packages::drivers::nvidia_grid':
   driver_name  => '$driverName',
   display_name => 'NVIDIA Offline Cache Test',
   srcloc       => 'https://127.0.0.1:9/unreachable',
 }
-"@
+"@ | Set-Content -Path $manifestPath -NoNewline -Encoding ASCII
       & $puppet apply `
         '--color=false' `
-        -e $manifest `
         '--modulepath=C:\\ronin_puppet\\modules;C:\\ronin_puppet\\r10k_modules' `
-        '--detailed-exitcodes' *> $puppetLog
+        '--detailed-exitcodes' `
+        $manifestPath *> $puppetLog
       $puppetExitCode = $LASTEXITCODE
       if ($puppetExitCode -notin 0, 2) {
         $puppetOutput = Get-Content -Path $puppetLog -Raw -ErrorAction SilentlyContinue
@@ -53,7 +54,7 @@ class { 'win_packages::drivers::nvidia_grid':
       }
     }
     finally {
-      Remove-Item -Path $driverPath,$puppetLog -Force -ErrorAction SilentlyContinue
+      Remove-Item -Path $driverPath,$manifestPath,$puppetLog -Force -ErrorAction SilentlyContinue
     }
   POWERSHELL
     its(:exit_status) { should eq 0 }
