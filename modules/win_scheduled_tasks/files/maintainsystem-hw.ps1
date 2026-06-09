@@ -595,6 +595,21 @@ function Get-FleetbenchTrend {
     return [pscustomobject]@{ Drift = ($reasons.Count -gt 0); Note = ($reasons -join '; '); History = $mPast.Count }
 }
 
+function Write-FleetbenchStatus {
+    # Persist the latest evaluation to a small status file that NSClient++ surfaces
+    # to Marlin (read by scripts\check_fleetbench.ps1). Best-effort; never throws.
+    param (
+        [Parameter(Mandatory)] [string] $Path,
+        [Parameter(Mandatory)] $Status
+    )
+    try {
+        $Status | ConvertTo-Json -Compress | Out-File -FilePath $Path -Encoding utf8
+    }
+    catch {
+        Write-Log -message ('Write-FleetbenchStatus :: failed: {0}' -f $_.Exception.Message) -severity 'WARN'
+    }
+}
+
 function Invoke-FleetbenchCheck {
     # Hardware-health / PSU-degradation benchmark + evaluation (RELOPS-2402). Runs the
     # fleetbench collector to completion and saves the JSON result, BEFORE worker-runner
@@ -646,8 +661,10 @@ function Invoke-FleetbenchCheck {
             }
 
             # Run the benchmark to completion (blocks ~duration) BEFORE worker-runner starts.
-            $stamp    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH-mm-ssZ')
-            $outFile  = Join-Path $ResultsDir ('{0}_{1}_cpu.json' -f $stamp, $env:COMPUTERNAME)
+            $stamp      = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH-mm-ssZ')
+            $stampIso   = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+            $outFile    = Join-Path $ResultsDir ('{0}_{1}_cpu.json' -f $stamp, $env:COMPUTERNAME)
+            $statusFile = Join-Path $ResultsDir 'fleetbench_status.json'
             Write-Log -message ('{0} :: running fleetbench cpu --mode {1} --duration {2} ...' -f $($MyInvocation.MyCommand.Name), $Mode, $Duration) -severity 'INFO'
 
             $json = & $exe.FullName cpu --mode $Mode --duration $Duration --json 2>$null | Out-String
@@ -663,6 +680,11 @@ function Invoke-FleetbenchCheck {
             $metrics = Get-FleetbenchMetrics -Json $json
             if (-not $metrics.Ok) {
                 Write-Log -message ('{0} :: result saved but metrics could not be parsed; skipping evaluation.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+                Write-FleetbenchStatus -Path $statusFile -Status ([pscustomobject]@{
+                    timestamp_utc = $stampIso; host = $env:COMPUTERNAME; model = $Model
+                    hw_type = 'unknown'; verdict = 'UNKNOWN'; min_pct = $null; mean_pct = $null
+                    tput_cv = $null; iterations = $null; drift = $false; drift_note = 'unparseable'
+                })
                 return
             }
 
@@ -675,6 +697,13 @@ function Invoke-FleetbenchCheck {
             if (-not $hw) {
                 # Unknown / unlisted hardware type: log metrics, do NOT error and do NOT block.
                 Write-Log -message ('{0} :: hardware type for model "{1}" not found in baselines ({2}); logging metrics only (min%base={3:N0} mean%base={4:N0} tputCV={5:N0}% iters={6}). No pass/fail evaluation.' -f $($MyInvocation.MyCommand.Name), $Model, $BaselinePath, $metrics.MinPct, $metrics.MeanPct, $metrics.TputCV, $metrics.Iterations) -severity 'WARN'
+                Write-FleetbenchStatus -Path $statusFile -Status ([pscustomobject]@{
+                    timestamp_utc = $stampIso; host = $env:COMPUTERNAME; model = $Model
+                    hw_type = 'unknown'; verdict = 'UNEVALUATED'
+                    min_pct = [math]::Round($metrics.MinPct, 1); mean_pct = [math]::Round($metrics.MeanPct, 1)
+                    tput_cv = [math]::Round($metrics.TputCV, 1); iterations = $metrics.Iterations
+                    drift = $false; drift_note = 'hardware_type_not_in_baselines'
+                })
                 return
             }
 
@@ -691,6 +720,15 @@ function Invoke-FleetbenchCheck {
             else {
                 Write-Log -message ('{0} :: trend ok ({1})' -f $($MyInvocation.MyCommand.Name), $trend.Note) -severity 'INFO'
             }
+
+            # Persist the latest status for NSClient++ -> Marlin reporting.
+            Write-FleetbenchStatus -Path $statusFile -Status ([pscustomobject]@{
+                timestamp_utc = $stampIso; host = $env:COMPUTERNAME; model = $Model
+                hw_type = $hw.Type; verdict = $verdict
+                min_pct = [math]::Round($metrics.MinPct, 1); mean_pct = [math]::Round($metrics.MeanPct, 1)
+                tput_cv = [math]::Round($metrics.TputCV, 1); iterations = $metrics.Iterations
+                drift = $trend.Drift; drift_note = $trend.Note
+            })
         }
         catch {
             # Health check must never block worker-runner from starting.
