@@ -473,6 +473,119 @@ function Wait-ForUserInitReady {
     return $false
 }
 
+function Get-FleetbenchVerdict {
+    # Classify a fleetbench cpu JSON envelope directly, per the RELOPS-2402 detection spec.
+    # GOOD : min>=75% AND tputCV<=25% AND mean>=100% of base clock
+    # BAD  : min<50%  OR  tputCV>40%  OR  mean<95% of base clock
+    param (
+        [Parameter(Mandatory)] [string] $Json
+    )
+    try {
+        $d    = $Json | ConvertFrom-Json
+        $base = [double]$d.cpu.frequency_mhz
+        $freqs = @($d.frequency_series | ForEach-Object { [double]$_.mean_mhz } | Where-Object { $_ -gt 0 })
+        $iters = @($d.results.prime_sieve_mt.iterations | ForEach-Object { [double]$_.seconds } | Where-Object { $_ -gt 0 })
+
+        if ($base -le 0 -or $freqs.Count -eq 0 -or $iters.Count -eq 0) {
+            return [pscustomobject]@{ Verdict = 'UNKNOWN'; MinPct = 0; MeanPct = 0; TputCV = 0 }
+        }
+
+        $minPct  = ($freqs | Measure-Object -Minimum).Minimum / $base * 100
+        $meanPct = ($freqs | Measure-Object -Average).Average / $base * 100
+
+        $avg = ($iters | Measure-Object -Average).Average
+        $var = ($iters | ForEach-Object { ($_ - $avg) * ($_ - $avg) } | Measure-Object -Average).Average
+        $sd  = [math]::Sqrt($var)
+        $tputCV = if ($avg -gt 0) { ($sd / $avg) * 100 } else { 0 }
+
+        $verdict = 'MARGINAL'
+        if ($minPct -lt 50 -or $tputCV -gt 40 -or $meanPct -lt 95) {
+            $verdict = 'BAD'
+        }
+        elseif ($minPct -ge 75 -and $tputCV -le 25 -and $meanPct -ge 100) {
+            $verdict = 'GOOD'
+        }
+        return [pscustomobject]@{ Verdict = $verdict; MinPct = $minPct; MeanPct = $meanPct; TputCV = $tputCV }
+    }
+    catch {
+        return [pscustomobject]@{ Verdict = 'UNKNOWN'; MinPct = 0; MeanPct = 0; TputCV = 0 }
+    }
+}
+
+function Invoke-FleetbenchCheck {
+    # Hardware-health / PSU-degradation benchmark (RELOPS-2402). Runs the fleetbench
+    # collector to completion and saves the JSON result to a known location, BEFORE
+    # worker-runner is started. Cadence: once after bootstrap (no prior result) and
+    # then at most once per $IntervalHours. Never throws / never blocks worker-runner.
+    # Paths match the win_fleetbench Puppet module (windows.fleetbench.* hiera).
+    param (
+        [string] $InstallDir   = 'C:\fleetbench',
+        [string] $ResultsDir   = 'C:\fleetbench\results',
+        [int]    $IntervalHours = 1,        # TESTING: 1h. PRODUCTION: set to 72 (every 3 days).
+        [string] $Mode         = 'quick',
+        [string] $Duration     = '120s'
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        try {
+            # Resolve the version-stamped collector binary installed by win_fleetbench.
+            $exe = Get-ChildItem -Path (Join-Path $InstallDir 'fleetbench*.exe') -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if (-not $exe) {
+                Write-Log -message ('{0} :: fleetbench binary not found in {1}; skipping benchmark.' -f $($MyInvocation.MyCommand.Name), $InstallDir) -severity 'WARN'
+                return
+            }
+
+            if (-not (Test-Path $ResultsDir)) {
+                New-Item -ItemType Directory -Path $ResultsDir -Force | Out-Null
+            }
+
+            # Cadence gate: run if there is no prior result (first run post-bootstrap),
+            # otherwise only when the newest result is older than $IntervalHours.
+            $newest = Get-ChildItem -Path (Join-Path $ResultsDir '*.json') -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($newest) {
+                $ageHours = ((Get-Date).ToUniversalTime() - $newest.LastWriteTimeUtc).TotalHours
+                if ($ageHours -lt $IntervalHours) {
+                    Write-Log -message ('{0} :: last benchmark {1:N1}h ago (< {2}h); skipping.' -f $($MyInvocation.MyCommand.Name), $ageHours, $IntervalHours) -severity 'INFO'
+                    return
+                }
+            }
+            else {
+                Write-Log -message ('{0} :: no prior result; running first post-bootstrap benchmark.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+            }
+
+            # Run the benchmark to completion (blocks ~duration) BEFORE worker-runner starts.
+            $stamp    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH-mm-ssZ')
+            $outFile  = Join-Path $ResultsDir ('{0}_{1}_cpu.json' -f $stamp, $env:COMPUTERNAME)
+            Write-Log -message ('{0} :: running fleetbench cpu --mode {1} --duration {2} ...' -f $($MyInvocation.MyCommand.Name), $Mode, $Duration) -severity 'INFO'
+
+            $json = & $exe.FullName cpu --mode $Mode --duration $Duration --json 2>$null | Out-String
+            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($json)) {
+                Write-Log -message ('{0} :: fleetbench run failed (exit {1}).' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'ERROR'
+                return
+            }
+
+            $json | Out-File -FilePath $outFile -Encoding utf8
+            Write-Log -message ('{0} :: result saved to {1}' -f $($MyInvocation.MyCommand.Name), $outFile) -severity 'INFO'
+
+            # Classify directly from fleetbench output and log the verdict.
+            $v   = Get-FleetbenchVerdict -Json $json
+            $sev = switch ($v.Verdict) { 'BAD' { 'ERROR' } 'GOOD' { 'INFO' } default { 'WARN' } }
+            Write-Log -message ('{0} :: verdict={1} min%base={2:N0} mean%base={3:N0} tputCV={4:N0}%' -f $($MyInvocation.MyCommand.Name), $v.Verdict, $v.MinPct, $v.MeanPct, $v.TputCV) -severity $sev
+        }
+        catch {
+            # Health check must never block worker-runner from starting.
+            Write-Log -message ('{0} :: error: {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
     Write-Log -message ('{0} :: No user logged in (no explorer.exe); sleeping 60s' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -527,6 +640,9 @@ If ($bootstrap_stage -eq 'complete') {
         # If you prefer fail-closed (PXE) instead, change this behavior.
         Write-Log -message "MOZ_GW_UI_READY :: proceeding despite timeout" -severity 'WARN'
     }
+    # RELOPS-2402: run the fleetbench hardware-health benchmark to completion BEFORE
+    # starting worker-runner. Hardware-only (this maintainsystem script is datacenter).
+    Invoke-FleetbenchCheck
     StartWorkerRunner
     Exit-PSSession
 }
