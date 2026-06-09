@@ -7,10 +7,13 @@ class roles_profiles::profiles::gpu_drivers_a10 {
   ## Use https://docs.nvidia.com/grid/index.html & https://github.com/Azure/azhpc-extensions/blob/master/NvidiaGPU/resources.json as reference
   case $facts['os']['name'] {
     'windows': {
+      include win_packages::vc_redist_2022_x64
+
       class { 'win_packages::drivers::nvidia_grid':
         display_name => lookup('windows.gpu_a10.display_name'),
         driver_name  => lookup('windows.gpu_a10.name'),
         srcloc       => lookup('windows.ext_pkg_src'),
+        require      => Class['win_packages::vc_redist_2022_x64'],
       }
     }
     default: {
