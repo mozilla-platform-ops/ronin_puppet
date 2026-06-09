@@ -473,10 +473,9 @@ function Wait-ForUserInitReady {
     return $false
 }
 
-function Get-FleetbenchVerdict {
-    # Classify a fleetbench cpu JSON envelope directly, per the RELOPS-2402 detection spec.
-    # GOOD : min>=75% AND tputCV<=25% AND mean>=100% of base clock
-    # BAD  : min<50%  OR  tputCV>40%  OR  mean<95% of base clock
+function Get-FleetbenchMetrics {
+    # Extract the evaluation metrics from a fleetbench cpu JSON envelope.
+    # Returns Ok=$false if the envelope cannot be parsed / has no data.
     param (
         [Parameter(Mandatory)] [string] $Json
     )
@@ -487,40 +486,129 @@ function Get-FleetbenchVerdict {
         $iters = @($d.results.prime_sieve_mt.iterations | ForEach-Object { [double]$_.seconds } | Where-Object { $_ -gt 0 })
 
         if ($base -le 0 -or $freqs.Count -eq 0 -or $iters.Count -eq 0) {
-            return [pscustomobject]@{ Verdict = 'UNKNOWN'; MinPct = 0; MeanPct = 0; TputCV = 0 }
+            return [pscustomobject]@{ Ok = $false }
         }
 
         $minPct  = ($freqs | Measure-Object -Minimum).Minimum / $base * 100
         $meanPct = ($freqs | Measure-Object -Average).Average / $base * 100
-
         $avg = ($iters | Measure-Object -Average).Average
         $var = ($iters | ForEach-Object { ($_ - $avg) * ($_ - $avg) } | Measure-Object -Average).Average
         $sd  = [math]::Sqrt($var)
         $tputCV = if ($avg -gt 0) { ($sd / $avg) * 100 } else { 0 }
 
-        $verdict = 'MARGINAL'
-        if ($minPct -lt 50 -or $tputCV -gt 40 -or $meanPct -lt 95) {
-            $verdict = 'BAD'
+        return [pscustomobject]@{
+            Ok = $true; MinPct = $minPct; MeanPct = $meanPct; TputCV = $tputCV; Iterations = $iters.Count
         }
-        elseif ($minPct -ge 75 -and $tputCV -le 25 -and $meanPct -ge 100) {
-            $verdict = 'GOOD'
-        }
-        return [pscustomobject]@{ Verdict = $verdict; MinPct = $minPct; MeanPct = $meanPct; TputCV = $tputCV }
     }
     catch {
-        return [pscustomobject]@{ Verdict = 'UNKNOWN'; MinPct = 0; MeanPct = 0; TputCV = 0 }
+        return [pscustomobject]@{ Ok = $false }
     }
 }
 
-function Invoke-FleetbenchCheck {
-    # Hardware-health / PSU-degradation benchmark (RELOPS-2402). Runs the fleetbench
-    # collector to completion and saves the JSON result to a known location, BEFORE
-    # worker-runner is started. Cadence: once after bootstrap (no prior result) and
-    # then at most once per $IntervalHours. Never throws / never blocks worker-runner.
-    # Paths match the win_fleetbench Puppet module (windows.fleetbench.* hiera).
+function Get-FleetbenchHardwareBaseline {
+    # Identify the hardware type by matching $Model against each entry's model_match
+    # glob in the baselines JSON. Returns $null if the file is missing/unparseable or
+    # no hardware type matches (caller logs, does NOT error). Scalable: add new hw
+    # types by adding entries to fleetbench_baselines.json.
     param (
+        [Parameter(Mandatory)] [string] $Model,
+        [Parameter(Mandatory)] [string] $BaselinePath
+    )
+    if ([string]::IsNullOrWhiteSpace($Model) -or -not (Test-Path -LiteralPath $BaselinePath)) { return $null }
+    try {
+        $cfg = Get-Content -LiteralPath $BaselinePath -Raw | ConvertFrom-Json
+    }
+    catch {
+        return $null
+    }
+    foreach ($name in $cfg.hardware_types.PSObject.Properties.Name) {
+        $entry = $cfg.hardware_types.$name
+        if ($Model -like $entry.model_match) {
+            return [pscustomobject]@{ Type = $name; Config = $entry }
+        }
+    }
+    return $null
+}
+
+function Get-FleetbenchVerdict {
+    # Absolute pass/fail against the matched hardware type's locked known-good range.
+    param (
+        [Parameter(Mandatory)] $Metrics,
+        [Parameter(Mandatory)] $Thresholds
+    )
+    if (-not $Metrics.Ok) { return 'UNKNOWN' }
+    $t = $Thresholds
+    if ($Metrics.MinPct  -lt $t.min_floor_pct.bad_below -or
+        $Metrics.TputCV  -gt $t.tput_cv_pct.bad_above -or
+        $Metrics.MeanPct -lt $t.mean_pct.bad_below) {
+        return 'BAD'
+    }
+    if ($Metrics.MinPct  -ge $t.min_floor_pct.good_min -and
+        $Metrics.TputCV  -le $t.tput_cv_pct.good_max -and
+        $Metrics.MeanPct -ge $t.mean_pct.good_min) {
+        return 'GOOD'
+    }
+    return 'MARGINAL'
+}
+
+function Get-FleetbenchTrend {
+    # Relative degradation detection: compare the current run to the median of the most
+    # recent prior runs on THIS node. Catches gradual drop-off even when the run is still
+    # within the absolute GOOD range. Thresholds come from the hw type's drop_off block.
+    param (
+        [Parameter(Mandatory)] $Current,
+        [Parameter(Mandatory)] [string] $ResultsDir,
+        [Parameter(Mandatory)] $DropOff,
+        [string] $ExcludeFile,
+        [int] $History = 5
+    )
+    $median = {
+        param($a)
+        $s = @($a | Sort-Object)
+        if ($s.Count -eq 0) { return $null }
+        return $s[[math]::Floor($s.Count / 2)]
+    }
+    $prior = Get-ChildItem -Path (Join-Path $ResultsDir '*.json') -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -ne $ExcludeFile } |
+        Sort-Object LastWriteTime -Descending | Select-Object -First $History
+
+    $mPast = @(); $minPast = @(); $itPast = @()
+    foreach ($f in $prior) {
+        $m = Get-FleetbenchMetrics -Json (Get-Content -LiteralPath $f.FullName -Raw)
+        if ($m.Ok) { $mPast += $m.MeanPct; $minPast += $m.MinPct; $itPast += $m.Iterations }
+    }
+    if ($mPast.Count -eq 0) {
+        return [pscustomobject]@{ Drift = $false; Note = 'no_history'; History = 0 }
+    }
+
+    $mMed = & $median $mPast; $minMed = & $median $minPast; $itMed = & $median $itPast
+    $reasons = @()
+    if (($mMed - $Current.MeanPct) -ge $DropOff.mean_pct_drop) {
+        $reasons += ('mean%base {0:N0}->{1:N0}' -f $mMed, $Current.MeanPct)
+    }
+    if (($minMed - $Current.MinPct) -ge $DropOff.min_floor_pct_drop) {
+        $reasons += ('min%base {0:N0}->{1:N0}' -f $minMed, $Current.MinPct)
+    }
+    if ($itMed -gt 0 -and ((($itMed - $Current.Iterations) / $itMed) * 100) -ge $DropOff.iterations_drop_pct) {
+        $reasons += ('iters {0:N0}->{1:N0}' -f $itMed, $Current.Iterations)
+    }
+    return [pscustomobject]@{ Drift = ($reasons.Count -gt 0); Note = ($reasons -join '; '); History = $mPast.Count }
+}
+
+function Invoke-FleetbenchCheck {
+    # Hardware-health / PSU-degradation benchmark + evaluation (RELOPS-2402). Runs the
+    # fleetbench collector to completion and saves the JSON result, BEFORE worker-runner
+    # starts. Evaluates against the locked known-good range for this hardware type
+    # (fleetbench_baselines.json, deployed next to this script) and against the node's
+    # own recent history (drop-off detection). Hardware identification is done here in
+    # the maintain script (Win32_ComputerSystem.Model). Never throws / never blocks
+    # worker-runner. Cadence: once after bootstrap (no prior result), then at most once
+    # per $IntervalHours. Paths match the win_fleetbench module (windows.fleetbench.*).
+    param (
+        [string] $Model        = '',
         [string] $InstallDir   = 'C:\fleetbench',
         [string] $ResultsDir   = 'C:\fleetbench\results',
+        [string] $BaselinePath = $(Join-Path $PSScriptRoot 'fleetbench_baselines.json'),
         [int]    $IntervalHours = 1,        # TESTING: 1h. PRODUCTION: set to 72 (every 3 days).
         [string] $Mode         = 'quick',
         [string] $Duration     = '120s'
@@ -571,10 +659,38 @@ function Invoke-FleetbenchCheck {
             $json | Out-File -FilePath $outFile -Encoding utf8
             Write-Log -message ('{0} :: result saved to {1}' -f $($MyInvocation.MyCommand.Name), $outFile) -severity 'INFO'
 
-            # Classify directly from fleetbench output and log the verdict.
-            $v   = Get-FleetbenchVerdict -Json $json
-            $sev = switch ($v.Verdict) { 'BAD' { 'ERROR' } 'GOOD' { 'INFO' } default { 'WARN' } }
-            Write-Log -message ('{0} :: verdict={1} min%base={2:N0} mean%base={3:N0} tputCV={4:N0}%' -f $($MyInvocation.MyCommand.Name), $v.Verdict, $v.MinPct, $v.MeanPct, $v.TputCV) -severity $sev
+            # ---- Evaluation ----
+            $metrics = Get-FleetbenchMetrics -Json $json
+            if (-not $metrics.Ok) {
+                Write-Log -message ('{0} :: result saved but metrics could not be parsed; skipping evaluation.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+                return
+            }
+
+            # Hardware identification (done here in the maintain script).
+            if ([string]::IsNullOrWhiteSpace($Model)) {
+                try { $Model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model } catch { $Model = '' }
+            }
+
+            $hw = Get-FleetbenchHardwareBaseline -Model $Model -BaselinePath $BaselinePath
+            if (-not $hw) {
+                # Unknown / unlisted hardware type: log metrics, do NOT error and do NOT block.
+                Write-Log -message ('{0} :: hardware type for model "{1}" not found in baselines ({2}); logging metrics only (min%base={3:N0} mean%base={4:N0} tputCV={5:N0}% iters={6}). No pass/fail evaluation.' -f $($MyInvocation.MyCommand.Name), $Model, $BaselinePath, $metrics.MinPct, $metrics.MeanPct, $metrics.TputCV, $metrics.Iterations) -severity 'WARN'
+                return
+            }
+
+            # Absolute pass/fail against the locked known-good range for this hardware type.
+            $verdict = Get-FleetbenchVerdict -Metrics $metrics -Thresholds $hw.Config.thresholds
+            $sev = switch ($verdict) { 'BAD' { 'ERROR' } 'GOOD' { 'INFO' } default { 'WARN' } }
+            Write-Log -message ('{0} :: hw={1} model={2} verdict={3} min%base={4:N0} mean%base={5:N0} tputCV={6:N0}% iters={7}' -f $($MyInvocation.MyCommand.Name), $hw.Type, $Model, $verdict, $metrics.MinPct, $metrics.MeanPct, $metrics.TputCV, $metrics.Iterations) -severity $sev
+
+            # Relative drop-off vs this node's recent history (catches gradual decline).
+            $trend = Get-FleetbenchTrend -Current $metrics -ResultsDir $ResultsDir -DropOff $hw.Config.drop_off -ExcludeFile $outFile
+            if ($trend.Drift) {
+                Write-Log -message ('{0} :: DROP-OFF vs recent {1} runs: {2}' -f $($MyInvocation.MyCommand.Name), $trend.History, $trend.Note) -severity 'WARN'
+            }
+            else {
+                Write-Log -message ('{0} :: trend ok ({1})' -f $($MyInvocation.MyCommand.Name), $trend.Note) -severity 'INFO'
+            }
         }
         catch {
             # Health check must never block worker-runner from starting.
@@ -642,7 +758,8 @@ If ($bootstrap_stage -eq 'complete') {
     }
     # RELOPS-2402: run the fleetbench hardware-health benchmark to completion BEFORE
     # starting worker-runner. Hardware-only (this maintainsystem script is datacenter).
-    Invoke-FleetbenchCheck
+    # $model is identified above from Win32_ComputerSystem.Model.
+    Invoke-FleetbenchCheck -Model $model
     StartWorkerRunner
     Exit-PSSession
 }
