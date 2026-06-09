@@ -452,11 +452,50 @@ function Set-AzureInstanceMetadataScheduledEvents {
   Invoke-WebRequest @iwsplat
 }
 
+function Test-LegacyYDriveRequired {
+  param (
+    [string] $WorkerPoolId
+  )
+
+  if ([string]::IsNullOrEmpty($WorkerPoolId)) {
+    return $false
+  }
+
+  return ($WorkerPoolId -match '(^|/)win10-64-2009($|-)' -or
+    $WorkerPoolId -match '(^|/)win11-64-2009($|-)' -or
+    $WorkerPoolId -match '(^|/)b-win2022($|-)')
+}
+
+function Set-LegacyYDriveMapping {
+  param (
+    [string] $WorkerPoolId
+  )
+
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (-not (Test-LegacyYDriveRequired -WorkerPoolId $WorkerPoolId)) {
+      Write-Log -message ('{0} :: Y: compatibility mapping skipped for worker pool: {1}' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'DEBUG'
+      return
+    }
+
+    if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
+      subst Y: D:\
+      Write-Log -message ('{0} :: mapped Y: to D: for legacy worker pool: {1}' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'INFO'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
 ## Get the tags from azure imds
 $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
 
 ## Get the managed-by tag value
 $managed_by = ($imds_tags | Where-object { $psitem.name -eq "managed-by" }).Value
+$worker_pool_id = ($imds_tags | Where-object { $psitem.name -eq "worker-pool-id" }).Value
 
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
 $ronin_key = "$mozilla_key\ronin_puppet"
@@ -471,6 +510,7 @@ If ($hand_off_ready -eq 'yes') {
     $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
     ## Get the managed-by tag value
     $managed_by = ($imds_tags | Where-object { $psitem.name -eq "managed-by" }).Value
+    $worker_pool_id = ($imds_tags | Where-object { $psitem.name -eq "worker-pool-id" }).Value
   }
 }
 
@@ -480,6 +520,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Set-AzVMName
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
+  Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }

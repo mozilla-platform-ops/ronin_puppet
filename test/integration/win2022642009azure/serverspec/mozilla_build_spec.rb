@@ -58,11 +58,6 @@ describe powershell_command("[Environment]::GetEnvironmentVariable('HG_CACHE', '
   its(:stdout) { should_not match(/^Y:/i) }
 end
 
-describe powershell_command("Test-Path 'Y:\\'") do
-  its(:exit_status) { should eq 0 }
-  its(:stdout) { should match(/^False\s*$/i) }
-end
-
 describe file('C:\\ProgramData\\pip\\pip.ini') do
   it { should exist }
   its(:content) { should_not match(/^download-cache\s*=/i) }
