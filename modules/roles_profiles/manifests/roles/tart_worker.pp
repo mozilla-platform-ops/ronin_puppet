@@ -3,12 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Physical macOS host that runs gecko-t-osx-1500-m-vms tester VMs via Tart.
-# Pulls sequoia-tester from the local OCI registry and manages worker VM
-# lifecycle via per-VM LaunchAgents. The Taskcluster worker identity lives
-# inside the VM image, so this host role only manages the Tart layer.
+# Manages worker VM lifecycle via per-VM system LaunchDaemons (launchd_type:
+# daemon in hiera), which load headlessly and survive reboot without a console
+# session. The Taskcluster worker identity lives inside the VM image, so this
+# host role only manages the Tart layer.
 #
-# Admin GUI auto-login (required for the gui-domain tartworker LaunchAgents to
-# run) is set out-of-band, not by puppet: macOS needs both the
+# manage_image is false for this role (see data/roles/tart_worker.yaml): on
+# macOS 15 `tart pull` only succeeds from the console GUI session, so the image
+# is seeded once by hand and puppet only manages tart + the launchd unit. The
+# VMs run under the admin user, so admin auto-login is still set out-of-band
+# (not by puppet) for the manual image-seed step: macOS needs both the
 # com.apple.loginwindow autoLoginUser preference and /etc/kcpassword, and the
 # latter (the obfuscated admin password) cannot be delivered by a config
 # profile. Kept out of this role to avoid the admin password entering vault.
