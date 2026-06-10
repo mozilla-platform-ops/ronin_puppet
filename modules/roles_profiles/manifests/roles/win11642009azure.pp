@@ -43,7 +43,6 @@ class roles_profiles::roles::win11642009azure {
       include roles_profiles::profiles::scheduled_tasks
       include roles_profiles::profiles::app_privacy
       include roles_profiles::profiles::azure_vm_agent
-      include roles_profiles::profiles::virtual_drivers
       include roles_profiles::profiles::gpu_drivers
 
       # Adminstration
