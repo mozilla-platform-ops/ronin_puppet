@@ -551,48 +551,46 @@ function Get-FleetbenchVerdict {
     return 'MARGINAL'
 }
 
-function Get-FleetbenchTrend {
-    # Relative degradation detection: compare the current run to the median of the most
-    # recent prior runs on THIS node. Catches gradual drop-off even when the run is still
-    # within the absolute GOOD range. Thresholds come from the hw type's drop_off block.
+function Get-FleetbenchVariance {
+    # Variance / degradation over the node's life: compare the latest run to the FIRST
+    # recorded run for this node (its initial post-bootstrap baseline). Flags drift if the
+    # latest is worse than the first beyond the hw type's drop_off deltas. Catches gradual
+    # decline even when the latest run still passes the absolute GOOD range.
     param (
         [Parameter(Mandatory)] $Current,
         [Parameter(Mandatory)] [string] $ResultsDir,
         [Parameter(Mandatory)] $DropOff,
-        [string] $ExcludeFile,
-        [int] $History = 5
+        [string] $ExcludeFile
     )
-    $median = {
-        param($a)
-        $s = @($a | Sort-Object)
-        if ($s.Count -eq 0) { return $null }
-        return $s[[math]::Floor($s.Count / 2)]
-    }
-    $prior = Get-ChildItem -Path (Join-Path $ResultsDir '*.json') -ErrorAction SilentlyContinue |
+    # Oldest envelope = the node's first run (its reference baseline).
+    $first = Get-ChildItem -Path (Join-Path $ResultsDir '*.json') -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -ne $ExcludeFile } |
-        Sort-Object LastWriteTime -Descending | Select-Object -First $History
-
-    $mPast = @(); $minPast = @(); $itPast = @()
-    foreach ($f in $prior) {
-        $m = Get-FleetbenchMetrics -Json (Get-Content -LiteralPath $f.FullName -Raw)
-        if ($m.Ok) { $mPast += $m.MeanPct; $minPast += $m.MinPct; $itPast += $m.Iterations }
+        Sort-Object LastWriteTime | Select-Object -First 1
+    if (-not $first) {
+        return [pscustomobject]@{ Drift = $false; Note = 'no_baseline'; FirstRun = $null }
     }
-    if ($mPast.Count -eq 0) {
-        return [pscustomobject]@{ Drift = $false; Note = 'no_history'; History = 0 }
+    $fm = Get-FleetbenchMetrics -Json (Get-Content -LiteralPath $first.FullName -Raw)
+    if (-not $fm.Ok) {
+        return [pscustomobject]@{ Drift = $false; Note = 'baseline_unparseable'; FirstRun = $first.Name }
     }
 
-    $mMed = & $median $mPast; $minMed = & $median $minPast; $itMed = & $median $itPast
-    $reasons = @()
-    if (($mMed - $Current.MeanPct) -ge $DropOff.mean_pct_drop) {
-        $reasons += ('mean%base {0:N0}->{1:N0}' -f $mMed, $Current.MeanPct)
+    # Deltas (last - first); negative = worse than the node's first run.
+    $dMin  = [math]::Round($Current.MinPct - $fm.MinPct, 1)
+    $dMean = [math]::Round($Current.MeanPct - $fm.MeanPct, 1)
+    $dIterPct = if ($fm.Iterations -gt 0) { [math]::Round((($Current.Iterations - $fm.Iterations) / $fm.Iterations) * 100, 1) } else { 0 }
+
+    # Always-populated variance summary (so it is logged every run, not only on drift).
+    $note = ('min%base {0:N0}->{1:N0} ({2:+0.0;-0.0;0}) mean%base {3:N0}->{4:N0} ({5:+0.0;-0.0;0}) iters {6}->{7} ({8:+0.0;-0.0;0}%)' -f `
+        $fm.MinPct, $Current.MinPct, $dMin, $fm.MeanPct, $Current.MeanPct, $dMean, $fm.Iterations, $Current.Iterations, $dIterPct)
+
+    $drift = ( (-$dMin) -ge $DropOff.min_floor_pct_drop -or
+               (-$dMean) -ge $DropOff.mean_pct_drop -or
+               (-$dIterPct) -ge $DropOff.iterations_drop_pct )
+
+    return [pscustomobject]@{
+        Drift = $drift; Note = $note; FirstRun = $first.Name
+        DeltaMin = $dMin; DeltaMean = $dMean; DeltaIterPct = $dIterPct
     }
-    if (($minMed - $Current.MinPct) -ge $DropOff.min_floor_pct_drop) {
-        $reasons += ('min%base {0:N0}->{1:N0}' -f $minMed, $Current.MinPct)
-    }
-    if ($itMed -gt 0 -and ((($itMed - $Current.Iterations) / $itMed) * 100) -ge $DropOff.iterations_drop_pct) {
-        $reasons += ('iters {0:N0}->{1:N0}' -f $itMed, $Current.Iterations)
-    }
-    return [pscustomobject]@{ Drift = ($reasons.Count -gt 0); Note = ($reasons -join '; '); History = $mPast.Count }
 }
 
 function Write-FleetbenchStatus {
@@ -623,7 +621,8 @@ function Invoke-FleetbenchCheck {
         [string] $Model        = '',
         [string] $InstallDir   = 'C:\fleetbench',
         [string] $ResultsDir   = 'C:\fleetbench\results',
-        [string] $BaselinePath = $(Join-Path $PSScriptRoot 'fleetbench_baselines.json'),
+        # Baselines are installed alongside the collector by the win_fleetbench module.
+        [string] $BaselinePath = $(Join-Path $InstallDir 'fleetbench_baselines.json'),
         [int]    $IntervalHours = 1,        # TESTING: 1h. PRODUCTION: set to 72 (every 3 days).
         [string] $Mode         = 'quick',
         # 900s (15 min): a 120s run at cold boot can pass a degrading node because the
@@ -716,13 +715,13 @@ function Invoke-FleetbenchCheck {
             $sev = switch ($verdict) { 'BAD' { 'ERROR' } 'GOOD' { 'INFO' } default { 'WARN' } }
             Write-Log -message ('{0} :: hw={1} model={2} verdict={3} min%base={4:N0} mean%base={5:N0} tputCV={6:N0}% iters={7}' -f $($MyInvocation.MyCommand.Name), $hw.Type, $Model, $verdict, $metrics.MinPct, $metrics.MeanPct, $metrics.TputCV, $metrics.Iterations) -severity $sev
 
-            # Relative drop-off vs this node's recent history (catches gradual decline).
-            $trend = Get-FleetbenchTrend -Current $metrics -ResultsDir $ResultsDir -DropOff $hw.Config.drop_off -ExcludeFile $outFile
-            if ($trend.Drift) {
-                Write-Log -message ('{0} :: DROP-OFF vs recent {1} runs: {2}' -f $($MyInvocation.MyCommand.Name), $trend.History, $trend.Note) -severity 'WARN'
+            # Variance vs this node's FIRST run (its initial baseline) - catches gradual decline.
+            $variance = Get-FleetbenchVariance -Current $metrics -ResultsDir $ResultsDir -DropOff $hw.Config.drop_off -ExcludeFile $outFile
+            if ($variance.Drift) {
+                Write-Log -message ('{0} :: VARIANCE vs first run ({1}): {2}' -f $($MyInvocation.MyCommand.Name), $variance.FirstRun, $variance.Note) -severity 'WARN'
             }
             else {
-                Write-Log -message ('{0} :: trend ok ({1})' -f $($MyInvocation.MyCommand.Name), $trend.Note) -severity 'INFO'
+                Write-Log -message ('{0} :: variance ok ({1})' -f $($MyInvocation.MyCommand.Name), $variance.Note) -severity 'INFO'
             }
 
             # Persist the latest status for NSClient++ -> Marlin reporting.
@@ -731,7 +730,7 @@ function Invoke-FleetbenchCheck {
                 hw_type = $hw.Type; verdict = $verdict
                 min_pct = [math]::Round($metrics.MinPct, 1); mean_pct = [math]::Round($metrics.MeanPct, 1)
                 tput_cv = [math]::Round($metrics.TputCV, 1); iterations = $metrics.Iterations
-                drift = $trend.Drift; drift_note = $trend.Note
+                drift = $variance.Drift; drift_note = $variance.Note
             })
         }
         catch {

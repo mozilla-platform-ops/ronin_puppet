@@ -12,13 +12,6 @@ class win_scheduled_tasks::maintain_system (
         file { $maintainsystem_ps1:
             content => file("win_scheduled_tasks/${startup_script}"),
         }
-        # Hardware-only: ship the fleetbench known-good baselines next to the
-        # maintain-system script so it can evaluate benchmark runs (RELOPS-2402).
-        if $startup_script == 'maintainsystem-hw.ps1' {
-            file { "${facts['custom_win_roninprogramdata']}\\fleetbench_baselines.json":
-                content => file('win_scheduled_tasks/fleetbench_baselines.json'),
-            }
-        }
         # Resource from puppetlabs-scheduled_task
         scheduled_task { 'maintain_system':
             ensure    => 'present',

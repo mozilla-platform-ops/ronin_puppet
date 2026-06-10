@@ -12,10 +12,11 @@ class win_fleetbench::init (
   String $install_dir,
   String $results_dir,
 ) {
-  $pkg     = "fleetbench-v${version}-windows-x86_64.exe"
-  $url     = "${download_url}/v${version}/${pkg}"
-  $binary  = "${install_dir}\\fleetbench-${version}.exe"
-  $wrapper = "${install_dir}\\run_fleetbench.ps1"
+  $pkg       = "fleetbench-v${version}-windows-x86_64.exe"
+  $url       = "${download_url}/v${version}/${pkg}"
+  $binary    = "${install_dir}\\fleetbench-${version}.exe"
+  $wrapper   = "${install_dir}\\run_fleetbench.ps1"
+  $baselines = "${install_dir}\\fleetbench_baselines.json"
 
   file { $install_dir:
     ensure => directory,
@@ -43,6 +44,14 @@ class win_fleetbench::init (
   file { $wrapper:
     ensure  => file,
     content => file('win_fleetbench/run_fleetbench.ps1'),
+    require => File[$install_dir],
+  }
+
+  # Known-good per-hardware-type baselines, co-located with the collector. The
+  # maintain-system fleetbench check reads this for its good/bad determination.
+  file { $baselines:
+    ensure  => file,
+    content => file('win_fleetbench/fleetbench_baselines.json'),
     require => File[$install_dir],
   }
 }
