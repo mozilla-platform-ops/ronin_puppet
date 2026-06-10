@@ -687,6 +687,7 @@ function Invoke-FleetbenchCheck {
                     timestamp_utc = $stampIso; host = $env:COMPUTERNAME; model = $Model
                     hw_type = 'unknown'; verdict = 'UNKNOWN'; min_pct = $null; mean_pct = $null
                     tput_cv = $null; iterations = $null; drift = $false; drift_note = 'unparseable'
+                    var_min_delta = $null; var_mean_delta = $null; var_iter_pct = $null; first_run = $null
                 })
                 return
             }
@@ -706,6 +707,7 @@ function Invoke-FleetbenchCheck {
                     min_pct = [math]::Round($metrics.MinPct, 1); mean_pct = [math]::Round($metrics.MeanPct, 1)
                     tput_cv = [math]::Round($metrics.TputCV, 1); iterations = $metrics.Iterations
                     drift = $false; drift_note = 'hardware_type_not_in_baselines'
+                    var_min_delta = $null; var_mean_delta = $null; var_iter_pct = $null; first_run = $null
                 })
                 return
             }
@@ -731,6 +733,8 @@ function Invoke-FleetbenchCheck {
                 min_pct = [math]::Round($metrics.MinPct, 1); mean_pct = [math]::Round($metrics.MeanPct, 1)
                 tput_cv = [math]::Round($metrics.TputCV, 1); iterations = $metrics.Iterations
                 drift = $variance.Drift; drift_note = $variance.Note
+                var_min_delta = $variance.DeltaMin; var_mean_delta = $variance.DeltaMean
+                var_iter_pct = $variance.DeltaIterPct; first_run = $variance.FirstRun
             })
         }
         catch {

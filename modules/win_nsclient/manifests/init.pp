@@ -71,6 +71,13 @@ class win_nsclient::init (
     notify  => Service['nscp'],
   }
 
+  # Surfaces fleetbench run-to-run variance (latest vs first run) to Marlin.
+  file { "${scripts_dir}\\check_fleetbench_variance.ps1":
+    content => file('win_nsclient/check_fleetbench_variance.ps1'),
+    require => File[$scripts_dir],
+    notify  => Service['nscp'],
+  }
+
   service { 'nscp':
     ensure  => running,
     enable  => true,
