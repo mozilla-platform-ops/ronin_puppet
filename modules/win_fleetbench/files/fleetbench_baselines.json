@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "_comment": "Known-good fleetbench `cpu` benchmark ranges per hardware type (RELOPS-2402). Deployed alongside the maintain-system script and read by maintainsystem-hw.ps1. To support a NEW hardware type, add an entry keyed by a short type name with a `model_match` glob (matched against Win32_ComputerSystem.Model) and its thresholds. All frequency values are % of the CPU base clock; tput_cv_pct is the prime-sieve throughput coefficient of variation (%). Collected with: fleetbench cpu --mode quick --duration 120s --json.",
+  "_comment": "Known-good fleetbench `cpu` benchmark ranges per hardware type (RELOPS-2402). Deployed alongside the collector by the win_fleetbench module and read by maintainsystem-hw.ps1. To support a NEW hardware type, add an entry keyed by a short type name with a `model_match` glob (matched against Win32_ComputerSystem.Model) and its thresholds. All frequency values are % of the CPU base clock; tput_cv_pct is the prime-sieve throughput coefficient of variation (%). Collected with: fleetbench cpu --mode quick --duration 900s --json.",
   "hardware_types": {
     "nuc13": {
       "model_match": "NUC13*",
-      "source": "7 healthy NUC13ANHi5 nodes (i5-1340P, base 1900 MHz), 2026-06; see RELOPS-2402",
+      "source": "healthy NUC13ANHi5 perf-debug nodes (i5-1340P, base 1900 MHz) at 900s, 2026-06-10; see RELOPS-2402",
       "thresholds": {
         "min_floor_pct": { "good_min": 75, "bad_below": 50 },
         "mean_pct":      { "good_min": 100, "bad_below": 95 },
         "tput_cv_pct":   { "good_max": 25, "bad_above": 40 }
       },
       "reference": {
-        "min_floor_pct": 85,
-        "mean_pct": 110,
-        "tput_cv_pct": 20,
-        "iterations": 30000
+        "min_floor_pct": 84,
+        "mean_pct": 108,
+        "tput_cv_pct": 17,
+        "iterations": 221600
       },
       "drop_off": {
         "mean_pct_drop": 5,
