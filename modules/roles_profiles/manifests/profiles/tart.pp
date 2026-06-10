@@ -23,7 +23,10 @@
 #     daemon - system LaunchDaemon in /Library/LaunchDaemons, runs `tart run`
 #              as the configured user via UserName. Loads headlessly with
 #              `launchctl bootstrap system` and starts at boot, so the VMs
-#              survive reboots without a console session.
+#              survive reboots without a console session. When switching a host
+#              from agent to daemon, any previously-loaded gui-domain agent is
+#              evicted and its plist removed first, so the two don't race to
+#              `tart run` the same VM.
 class roles_profiles::profiles::tart {
   $version        = lookup('tart.version',        String,  'first', '2.30.0')
   $registry_host  = lookup('tart.registry_host',  String,  'first', '10.49.56.83')
@@ -122,7 +125,24 @@ class roles_profiles::profiles::tart {
     $vm_name = "${vm_name_prefix}-${i}"
 
     if $launchd_type == 'daemon' {
-      $plist_path = "/Library/LaunchDaemons/com.mozilla.tartworker-${i}.plist"
+      $plist_path  = "/Library/LaunchDaemons/com.mozilla.tartworker-${i}.plist"
+      $agent_plist = "/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist"
+
+      # Migrate a host off the old gui-domain LaunchAgent. While the agent is
+      # loaded it holds the VM, so the daemon's `tart run` would lose the race
+      # and KeepAlive-flap on "VM already running". Evict the loaded agent
+      # (root can target the user's gui domain) and remove its plist so it
+      # cannot reload at the next autologin/reboot. onlyif keeps it idempotent.
+      exec { "evict_agent_tartworker_${i}":
+        command => "/bin/bash -c 'launchctl bootout gui/\$(id -u ${user})/com.mozilla.tartworker-${i}'",
+        path    => ['/bin', '/usr/bin'],
+        onlyif  => "/bin/bash -c 'launchctl print gui/\$(id -u ${user})/com.mozilla.tartworker-${i} >/dev/null 2>&1'",
+        notify  => Exec["load_tartworker_${i}"],
+      }
+
+      file { $agent_plist:
+        ensure => absent,
+      }
 
       file { $plist_path:
         ensure  => file,
@@ -135,13 +155,15 @@ class roles_profiles::profiles::tart {
         owner   => 'root',
         group   => 'wheel',
         mode    => '0644',
-        require => $image_require + $dir_require,
+        require => $image_require + $dir_require + [Exec["evict_agent_tartworker_${i}"], File[$agent_plist]],
         notify  => Exec["load_tartworker_${i}"],
       }
 
-      # system domain: loads headlessly, no console session required.
+      # system domain: loads headlessly, no console session required. Wrapped in
+      # bash -c because the command uses shell operators (;, ||, redirection)
+      # that Puppet's exec does not pass through a shell on its own.
       exec { "load_tartworker_${i}":
-        command     => "launchctl bootout system ${plist_path} 2>/dev/null || true; launchctl bootstrap system ${plist_path}",
+        command     => "/bin/bash -c 'launchctl bootout system ${plist_path} 2>/dev/null || true; launchctl bootstrap system ${plist_path}'",
         path        => ['/bin', '/usr/bin'],
         refreshonly => true,
         require     => File[$plist_path],
