@@ -18,4 +18,7 @@ class roles_profiles::roles::gecko_t_linux_2404_talos_wayland {
 
   # talos stuff
   include roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker_wayland
+
+  # perf profiling support (bug 2031822)
+  include roles_profiles::profiles::linux_perf_profiling
 }
