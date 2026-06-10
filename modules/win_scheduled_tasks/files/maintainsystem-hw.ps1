@@ -626,7 +626,11 @@ function Invoke-FleetbenchCheck {
         [string] $BaselinePath = $(Join-Path $PSScriptRoot 'fleetbench_baselines.json'),
         [int]    $IntervalHours = 1,        # TESTING: 1h. PRODUCTION: set to 72 (every 3 days).
         [string] $Mode         = 'quick',
-        [string] $Duration     = '120s'
+        # 900s (15 min): a 120s run at cold boot can pass a degrading node because the
+        # PSU/thermal throttle only engages after sustained load. The longer run self-warms
+        # the machine into that regime (prior stress work: 180s missed nodes that 900s caught).
+        # NOTE: the known-good baselines were measured at 120s; re-baseline at 900s if needed.
+        [string] $Duration     = '900s'
     )
     begin {
         Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
