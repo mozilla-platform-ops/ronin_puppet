@@ -623,7 +623,7 @@ function Invoke-FleetbenchCheck {
         [string] $ResultsDir   = 'C:\fleetbench\results',
         # Baselines are installed alongside the collector by the win_fleetbench module.
         [string] $BaselinePath = $(Join-Path $InstallDir 'fleetbench_baselines.json'),
-        [int]    $IntervalHours = 1,        # TESTING: 1h. PRODUCTION: set to 72 (every 3 days).
+        [int]    $IntervalHours = 72,       # production: run at most once per 72h (every 3 days).
         [string] $Mode         = 'quick',
         # 900s (15 min): a 120s run at cold boot can pass a degrading node because the
         # PSU/thermal throttle only engages after sustained load. The longer run self-warms
