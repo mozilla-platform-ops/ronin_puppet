@@ -40,6 +40,7 @@ if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir -Forc
 
 $log         = Join-Path $outDir 'xperf_kernel_stop.log'
 $combinedEtl = Join-Path $outDir 'combined.etl'
+$partialEtl  = Join-Path $outDir 'combined.etl.tmp'
 
 $xperf = Find-Xperf
 if (-not $xperf) {
@@ -50,10 +51,12 @@ if (-not $xperf) {
 WriteUserLog $log 'INFO' ("stop :: outDir={0}" -f $outDir)
 WriteUserLog $log 'INFO' ("stop :: combinedEtl={0}" -f $combinedEtl)
 
+if (Test-Path $partialEtl) { Remove-Item -Force $partialEtl }
+
 $args = @(
   '-stop', 'NT Kernel Logger',
   '-stop', 'usersession',
-  '-d',    $combinedEtl
+  '-d',    $partialEtl
 )
 
 WriteUserLog $log 'INFO' ("stop :: invoking xperf: {0} {1}" -f $xperf, ($args -join ' '))
@@ -68,5 +71,6 @@ if ($rc -ne 0) {
   exit $rc
 }
 
+Move-Item -Force $partialEtl $combinedEtl
 WriteUserLog $log 'INFO' "stop :: SUCCESS"
 exit 0

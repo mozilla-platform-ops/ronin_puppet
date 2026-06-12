@@ -40,6 +40,11 @@ class win_nsclient::init (
     require => File[$scripts_dir],
     notify  => Service['nscp'],
   }
+  file { "${scripts_dir}\\check_thermal_hp.ps1":
+    content => file('win_nsclient/check_thermal_hp.ps1'),
+    require => File[$scripts_dir],
+    notify  => Service['nscp'],
+  }
 
   file { "${scripts_dir}\\worker_bootstrap_stage.ps1":
     content => file('win_nsclient/worker_bootstrap_stage.ps1'),

@@ -1,0 +1,58 @@
+name: Mac signer deployment Slack notification
+
+on:
+  push:
+    branches: [macos-signer-latest]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Determine commit range
+        id: range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${EVENT_NAME}" = "push" ]; then
+            from_commit="${PUSH_BEFORE}"
+            to_commit="${PUSH_AFTER}"
+          else
+            default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
+            from_commit="$(git rev-parse "origin/${default_branch}")"
+            to_commit="${HEAD_SHA}"
+          fi
+          echo "from_commit=${from_commit}" >> "${GITHUB_OUTPUT}"
+          echo "to_commit=${to_commit}" >> "${GITHUB_OUTPUT}"
+
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.RELENG_MACSIGNER_SLACK_WEBHOOK_URL }}
+          FROM_COMMIT: ${{ steps.range.outputs.from_commit }}
+          TO_COMMIT: ${{ steps.range.outputs.to_commit }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg from_commit "${FROM_COMMIT}" \
+            --arg to_commit "${TO_COMMIT}" \
+            --arg branch "${BRANCH}" \
+            '{from_commit: $from_commit, to_commit: $to_commit, branch: $branch}')"
+          curl --fail --silent --show-error \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            --data "${payload}" \
+            "${SLACK_WEBHOOK_URL}"

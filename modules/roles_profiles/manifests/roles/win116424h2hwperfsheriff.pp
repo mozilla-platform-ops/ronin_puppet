@@ -24,6 +24,7 @@ class roles_profiles::roles::win116424h2hwperfsheriff {
   include roles_profiles::profiles::logging
   include roles_profiles::profiles::mercurial
   include roles_profiles::profiles::nuc_management
+  include roles_profiles::profiles::nuc_bios
   #include roles_profiles::profiles::vnc
 
   # Worker
