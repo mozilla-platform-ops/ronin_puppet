@@ -562,8 +562,10 @@ function Get-FleetbenchVariance {
         [Parameter(Mandatory)] $DropOff,
         [string] $ExcludeFile
     )
-    # Oldest envelope = the node's first run (its reference baseline).
-    $first = Get-ChildItem -Path (Join-Path $ResultsDir '*.json') -ErrorAction SilentlyContinue |
+    # Oldest envelope = the node's first run (its reference baseline). Match only fleetbench
+    # cpu envelopes (`<ts>_<host>_cpu.json`) so siblings like fleetbench_status.json /
+    # defender_status.json that share this dir are not picked up as a "first run."
+    $first = Get-ChildItem -Path (Join-Path $ResultsDir '*_cpu.json') -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -ne $ExcludeFile } |
         Sort-Object LastWriteTime | Select-Object -First 1
     if (-not $first) {
@@ -649,8 +651,11 @@ function Invoke-FleetbenchCheck {
             }
 
             # Cadence gate: run if there is no prior result (first run post-bootstrap),
-            # otherwise only when the newest result is older than $IntervalHours.
-            $newest = Get-ChildItem -Path (Join-Path $ResultsDir '*.json') -ErrorAction SilentlyContinue |
+            # otherwise only when the newest result is older than $IntervalHours. Match only
+            # fleetbench cpu envelopes (`<ts>_<host>_cpu.json`); the Defender guard and
+            # Write-FleetbenchStatus share this dir with `*_status.json` siblings that must
+            # not be mistaken for a prior benchmark run.
+            $newest = Get-ChildItem -Path (Join-Path $ResultsDir '*_cpu.json') -ErrorAction SilentlyContinue |
                 Sort-Object LastWriteTime -Descending | Select-Object -First 1
             if ($newest) {
                 $ageHours = ((Get-Date).ToUniversalTime() - $newest.LastWriteTimeUtc).TotalHours
