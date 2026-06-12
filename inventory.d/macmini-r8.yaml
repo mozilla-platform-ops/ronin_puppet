@@ -314,7 +314,6 @@ groups:
       - macmini-r8-274.test.releng.mdc1.mozilla.com
       - macmini-r8-275.test.releng.mdc1.mozilla.com
       - macmini-r8-276.test.releng.mdc1.mozilla.com
-      - macmini-r8-280.test.releng.mdc1.mozilla.com
       - macmini-r8-281.test.releng.mdc1.mozilla.com
       - macmini-r8-282.test.releng.mdc1.mozilla.com
       - macmini-r8-283.test.releng.mdc1.mozilla.com

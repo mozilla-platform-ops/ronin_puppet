@@ -2,8 +2,31 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Installs Tart, pulls an OCI VM image, clones N worker VMs, and manages
-# per-VM LaunchAgents so they start and stay running as the configured user.
+# Installs Tart and manages N worker VMs that start and stay running.
+#
+# Two axes of behaviour, both hiera-driven (defaults preserve the original
+# gecko-1b builder-host behaviour):
+#
+#   tart.manage_image (Boolean, default true)
+#     true  - puppet pulls the OCI image and clones the VMs.
+#     false - puppet does NOT pull/clone. Required on macOS 15+, where
+#             `tart pull` only succeeds from the logged-in console GUI session
+#             (Local Network privacy denies the registry connection from a
+#             headless puppet/ssh context, surfacing as "The Internet
+#             connection appears to be offline"). On those hosts the image is
+#             seeded once by hand from the console and puppet only manages tart
+#             itself + the launchd unit.
+#
+#   tart.launchd_type (Enum['agent','daemon'], default 'agent')
+#     agent  - per-user LaunchAgent in ~/Library/LaunchAgents (gui domain;
+#              only loads from a console session).
+#     daemon - system LaunchDaemon in /Library/LaunchDaemons, runs `tart run`
+#              as the configured user via UserName. Loads headlessly with
+#              `launchctl bootstrap system` and starts at boot, so the VMs
+#              survive reboots without a console session. When switching a host
+#              from agent to daemon, any previously-loaded gui-domain agent is
+#              evicted and its plist removed first, so the two don't race to
+#              `tart run` the same VM.
 class roles_profiles::profiles::tart {
   $version        = lookup('tart.version',        String,  'first', '2.30.0')
   $registry_host  = lookup('tart.registry_host',  String,  'first', '10.49.56.83')
@@ -14,6 +37,8 @@ class roles_profiles::profiles::tart {
   $worker_count   = lookup('tart.worker_count',   Integer, 'first', 2)
   $insecure       = lookup('tart.insecure',       Boolean, 'first', true)
   $user           = lookup('tart.user',           String,  'first', 'admin')
+  $manage_image   = lookup('tart.manage_image',   Boolean, 'first', true)
+  $launchd_type   = lookup('tart.launchd_type',   Enum['agent', 'daemon'], 'first', 'agent')
 
   $install_dir   = '/Applications'
   $bin_path      = '/usr/local/bin/tart'
@@ -67,44 +92,106 @@ class roles_profiles::profiles::tart {
     require => Exec['install_tart'],
   }
 
-  file { "/Users/${user}/Library/LaunchAgents":
-    ensure => directory,
-    owner  => $user,
-    group  => 'staff',
-    mode   => '0755',
+  # Pull the image + clone the VMs (only when puppet owns the image lifecycle).
+  if $manage_image {
+    exec { 'pull_initial_image':
+      command => "su - ${user} -c '/usr/local/bin/tart-pull-image.sh'",
+      path    => ['/usr/bin', '/bin', '/usr/local/bin'],
+      require => File['/usr/local/bin/tart-pull-image.sh'],
+      timeout => 1800,
+      # tart list is columnar ("local <name> ..."); match the name field ($2),
+      # not $1 (the literal "local"). The old $1 check never matched, so the
+      # pull re-ran on every apply.
+      unless  => "su - ${user} -c '${bin_path} list' | awk '\$1==\"local\"{print \$2}' | grep -Fx '${vm_name_prefix}-1'",
+    }
+    $image_require = [Exec['pull_initial_image']]
+  } else {
+    $image_require = []
   }
 
-  exec { 'pull_initial_image':
-    command => "su - ${user} -c '/usr/local/bin/tart-pull-image.sh'",
-    path    => ['/usr/bin', '/bin', '/usr/local/bin'],
-    require => [File['/usr/local/bin/tart-pull-image.sh']],
-    timeout => 1800,
-    unless  => "su - ${user} -c '${bin_path} list' | awk '{print \$1}' | grep -Fx '${vm_name_prefix}-1'",
+  if $launchd_type == 'agent' {
+    file { "/Users/${user}/Library/LaunchAgents":
+      ensure => directory,
+      owner  => $user,
+      group  => 'staff',
+      mode   => '0755',
+    }
+    $dir_require = [File["/Users/${user}/Library/LaunchAgents"]]
+  } else {
+    $dir_require = []
   }
 
   Integer[1, $worker_count].each |$i| {
     $vm_name = "${vm_name_prefix}-${i}"
 
-    file { "/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist":
-      ensure  => file,
-      content => epp('roles_profiles/tart/com.mozilla.tartworker.plist.epp', {
-        worker_id => $i,
-        vm_name   => $vm_name,
-        bin_path  => $bin_path,
-        user      => $user,
-      }),
-      owner   => $user,
-      group   => 'staff',
-      mode    => '0644',
-      require => [Exec['pull_initial_image'], File["/Users/${user}/Library/LaunchAgents"]],
-      notify  => Exec["load_tartworker_${i}"],
-    }
+    if $launchd_type == 'daemon' {
+      $plist_path  = "/Library/LaunchDaemons/com.mozilla.tartworker-${i}.plist"
+      $agent_plist = "/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist"
 
-    exec { "load_tartworker_${i}":
-      command     => "su - ${user} -c 'launchctl unload /Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist 2>/dev/null || true; launchctl load /Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist'",
-      path        => ['/bin', '/usr/bin'],
-      refreshonly => true,
-      require     => File["/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist"],
+      # Migrate a host off the old gui-domain LaunchAgent. While the agent is
+      # loaded it holds the VM, so the daemon's `tart run` would lose the race
+      # and KeepAlive-flap on "VM already running". Evict the loaded agent
+      # (root can target the user's gui domain) and remove its plist so it
+      # cannot reload at the next autologin/reboot. onlyif keeps it idempotent.
+      exec { "evict_agent_tartworker_${i}":
+        command => "/bin/bash -c 'launchctl bootout gui/\$(id -u ${user})/com.mozilla.tartworker-${i}'",
+        path    => ['/bin', '/usr/bin'],
+        onlyif  => "/bin/bash -c 'launchctl print gui/\$(id -u ${user})/com.mozilla.tartworker-${i} >/dev/null 2>&1'",
+        notify  => Exec["load_tartworker_${i}"],
+      }
+
+      file { $agent_plist:
+        ensure => absent,
+      }
+
+      file { $plist_path:
+        ensure  => file,
+        content => epp('roles_profiles/tart/com.mozilla.tartworker.daemon.plist.epp', {
+          worker_id => $i,
+          vm_name   => $vm_name,
+          bin_path  => $bin_path,
+          user      => $user,
+        }),
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0644',
+        require => $image_require + $dir_require + [Exec["evict_agent_tartworker_${i}"], File[$agent_plist]],
+        notify  => Exec["load_tartworker_${i}"],
+      }
+
+      # system domain: loads headlessly, no console session required. Wrapped in
+      # bash -c because the command uses shell operators (;, ||, redirection)
+      # that Puppet's exec does not pass through a shell on its own.
+      exec { "load_tartworker_${i}":
+        command     => "/bin/bash -c 'launchctl bootout system ${plist_path} 2>/dev/null || true; launchctl bootstrap system ${plist_path}'",
+        path        => ['/bin', '/usr/bin'],
+        refreshonly => true,
+        require     => File[$plist_path],
+      }
+    } else {
+      $plist_path = "/Users/${user}/Library/LaunchAgents/com.mozilla.tartworker-${i}.plist"
+
+      file { $plist_path:
+        ensure  => file,
+        content => epp('roles_profiles/tart/com.mozilla.tartworker.plist.epp', {
+          worker_id => $i,
+          vm_name   => $vm_name,
+          bin_path  => $bin_path,
+          user      => $user,
+        }),
+        owner   => $user,
+        group   => 'staff',
+        mode    => '0644',
+        require => $image_require + $dir_require,
+        notify  => Exec["load_tartworker_${i}"],
+      }
+
+      exec { "load_tartworker_${i}":
+        command     => "su - ${user} -c 'launchctl unload ${plist_path} 2>/dev/null || true; launchctl load ${plist_path}'",
+        path        => ['/bin', '/usr/bin'],
+        refreshonly => true,
+        require     => File[$plist_path],
+      }
     }
   }
 }
