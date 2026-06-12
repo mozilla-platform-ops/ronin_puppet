@@ -37,6 +37,16 @@ class linux_snmpd {
                   content => template('linux_snmpd/snmpd.conf.erb'),
                   mode    => '0644',
                   notify  => Service['snmpd'];
+
+                '/usr/local/bin/snmp_check_gw.sh':
+                  ensure => file,
+                  source => "puppet:///modules/${module_name}/snmp_check_gw.sh",
+                  mode   => '0755';
+
+                '/usr/local/bin/snmp_worker_pool_id.sh':
+                  ensure => file,
+                  source => "puppet:///modules/${module_name}/snmp_worker_pool_id.sh",
+                  mode   => '0755';
               }
             }
             else {

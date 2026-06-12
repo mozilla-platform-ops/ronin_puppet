@@ -64,6 +64,26 @@ groups:
       - macmini-m4-108.test.releng.mdc1.mozilla.com
       - macmini-m4-109.test.releng.mdc1.mozilla.com
       - macmini-m4-110.test.releng.mdc1.mozilla.com
+      - macmini-m4-130.test.releng.mdc1.mozilla.com
+      - macmini-m4-131.test.releng.mdc1.mozilla.com
+      - macmini-m4-132.test.releng.mdc1.mozilla.com
+      - macmini-m4-133.test.releng.mdc1.mozilla.com
+      - macmini-m4-134.test.releng.mdc1.mozilla.com
+      - macmini-m4-135.test.releng.mdc1.mozilla.com
+      - macmini-m4-136.test.releng.mdc1.mozilla.com
+      - macmini-m4-137.test.releng.mdc1.mozilla.com
+      - macmini-m4-138.test.releng.mdc1.mozilla.com
+      - macmini-m4-139.test.releng.mdc1.mozilla.com
+      - macmini-m4-140.test.releng.mdc1.mozilla.com
+      - macmini-m4-141.test.releng.mdc1.mozilla.com
+      - macmini-m4-142.test.releng.mdc1.mozilla.com
+      - macmini-m4-143.test.releng.mdc1.mozilla.com
+      - macmini-m4-144.test.releng.mdc1.mozilla.com
+      - macmini-m4-145.test.releng.mdc1.mozilla.com
+      - macmini-m4-146.test.releng.mdc1.mozilla.com
+      - macmini-m4-147.test.releng.mdc1.mozilla.com
+      - macmini-m4-148.test.releng.mdc1.mozilla.com
+      - macmini-m4-149.test.releng.mdc1.mozilla.com
       - macmini-m4-150.test.releng.mdc1.mozilla.com
       - macmini-m4-151.test.releng.mdc1.mozilla.com
       - macmini-m4-152.test.releng.mdc1.mozilla.com
@@ -98,6 +118,31 @@ groups:
       - macmini-m4-207.test.releng.mdc1.mozilla.com
       - macmini-m4-208.test.releng.mdc1.mozilla.com
       - macmini-m4-209.test.releng.mdc1.mozilla.com
+      - macmini-m4-210.test.releng.mdc1.mozilla.com
+      - macmini-m4-211.test.releng.mdc1.mozilla.com
+      - macmini-m4-212.test.releng.mdc1.mozilla.com
+      - macmini-m4-213.test.releng.mdc1.mozilla.com
+      - macmini-m4-214.test.releng.mdc1.mozilla.com
+      - macmini-m4-215.test.releng.mdc1.mozilla.com
+      - macmini-m4-216.test.releng.mdc1.mozilla.com
+      - macmini-m4-217.test.releng.mdc1.mozilla.com
+      - macmini-m4-218.test.releng.mdc1.mozilla.com
+      - macmini-m4-219.test.releng.mdc1.mozilla.com
+      - macmini-m4-220.test.releng.mdc1.mozilla.com
+      - macmini-m4-221.test.releng.mdc1.mozilla.com
+      - macmini-m4-222.test.releng.mdc1.mozilla.com
+      - macmini-m4-223.test.releng.mdc1.mozilla.com
+      - macmini-m4-224.test.releng.mdc1.mozilla.com
+      - macmini-m4-225.test.releng.mdc1.mozilla.com
+      - macmini-m4-226.test.releng.mdc1.mozilla.com
+      - macmini-m4-227.test.releng.mdc1.mozilla.com
+      - macmini-m4-228.test.releng.mdc1.mozilla.com
+      - macmini-m4-229.test.releng.mdc1.mozilla.com
+      - macmini-m4-230.test.releng.mdc1.mozilla.com
+      - macmini-m4-231.test.releng.mdc1.mozilla.com
+      - macmini-m4-232.test.releng.mdc1.mozilla.com
+      - macmini-m4-233.test.releng.mdc1.mozilla.com
+      - macmini-m4-234.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1500_m4
 
