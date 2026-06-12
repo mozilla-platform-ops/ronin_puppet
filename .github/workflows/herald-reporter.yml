@@ -1,0 +1,29 @@
+# Herald reporter (NO-OP STUB).
+#
+# Triggers on merges to master so the workflow path is reserved, but does
+# nothing yet. The real change-event emission is being prototyped in
+# herald-real-commits-test.yml; once that produces JSON we are happy with,
+# this file will be replaced with the production pipeline.
+#
+# See .github/herald/build_event.py and .github/herald/event.schema.json.
+
+name: herald-reporter
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  stub:
+    name: Herald reporter (no-op)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log stub invocation
+        run: |
+          echo "::notice::Herald reporter is scaffolded but in no-op mode."
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor:  ${{ github.actor }}"
+          echo "Run the herald-real-commits-test workflow to exercise the real pipeline."
