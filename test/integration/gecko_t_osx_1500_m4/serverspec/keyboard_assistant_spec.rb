@@ -1,9 +1,9 @@
 require_relative 'spec_helper'
 
-# This test checks if the keyboard assistant is suppressed by verifying
-# the keyboardtype plist has the expected dict entry
+# This test checks if the keyboard assistant suppression LaunchAgent is installed
 describe 'keyboard assistant suppressed' do
-  describe command('defaults read /Library/Preferences/com.apple.keyboardtype keyboardtype') do
-    its(:stdout) { should match(/"4101-5341-33" = 40/) }
+  describe file('/Users/cltbld/Library/LaunchAgents/com.mozilla.suppress-keyboard-assistant.plist') do
+    it { should be_file }
+    it { should be_owned_by 'cltbld' }
   end
 end

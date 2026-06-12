@@ -28,6 +28,8 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker {
       require linux_packages::python3_zstandard
       require linux_packages::tooltool
       require linux_packages::zstd
+      require linux_packages::pulseaudio
+      require linux_packages::openbox
 
       # moved from base to avoid ordering issues with py2/3
       require linux_mercurial
@@ -35,6 +37,7 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker {
       require linux_talos
 
       require linux_directory_cleaner
+      require linux_cltbld_and_apt_cleaner
 
       class { 'puppet::atboot':
         telegraf_user     => lookup('telegraf.user'),

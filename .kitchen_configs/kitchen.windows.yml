@@ -47,6 +47,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -70,6 +71,31 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
+  - name: win11-64-25h2-gpu
+    driver:
+      name: azurerm
+      location: 'East US'
+      machine_size: 'Standard_NV12ads_A10_v5'
+      spot_instance: true
+      image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-ent:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-gpu
+      use_ephemeral_osdisk: true
+      deployment_timeout_in_minutes: 30
+      username: kitchenadmin
+      password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -92,6 +118,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -114,6 +141,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -137,6 +165,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -160,6 +189,7 @@ platforms:
       vm_tags:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
@@ -179,6 +209,7 @@ suites:
     includes:
       - win11-64-24h2
       - win11-64-25h2
+      - win11-64-25h2-gpu
       - win11-a64-25h2-builder
       - win11-a64-25h2-tester
       - win2022-64-2009

@@ -23,17 +23,21 @@ fi
 echo "Disk usage above 70%, performing cleanup..."
 
 echo "Cleaning up build caches..."
-rm -rf /home/cltbld/.mozbuild \
-       /home/cltbld/caches \
-       /home/cltbld/file-caches.json \
-       /home/cltbld/directory-caches.json
+for target in /home/cltbld/.mozbuild \
+              /home/cltbld/caches \
+              /home/cltbld/file-caches.json \
+              /home/cltbld/directory-caches.json; do
+    if [ -e "$target" ]; then
+        size=$(du -sh "$target" 2>/dev/null | cut -f1)
+        echo "  removing $target ($size)"
+        rm -rf "$target"
+    else
+        echo "  skipping $target (not present)"
+    fi
+done
 
 echo "Cleaning up apt/deb..."
 apt-get autoremove -y
 apt-get clean
 echo "Cleanup complete. Elapsed: ${SECONDS}s"
-echo "Rebooting in 5 minutes..."
-shutdown -r +5 "System will reboot in 5 minutes due to high disk usage cleanup."
-# keep the script runnning for 5 minutes to allow the shutdown command to complete
-sleep 300
 exit 0

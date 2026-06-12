@@ -81,6 +81,9 @@ class puppet::atboot (
               group   => 'root',
               mode    => '0755',
               content => template("${module_name}/puppet-ubuntu-run-puppet.sh.erb");
+            '/usr/local/bin/run-puppet':
+              ensure => link,
+              target => '/usr/local/bin/run-puppet.sh';
           }
           # reload systemd daemon
           exec {
