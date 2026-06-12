@@ -27,6 +27,7 @@ class roles_profiles::profiles::worker {
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc
       include mercurial::ext::robustcheckout
+      include roles_profiles::profiles::sbom
     }
     default: {
       fail("${facts['os']['name']} not supported")
