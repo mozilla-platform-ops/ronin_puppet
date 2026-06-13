@@ -31,8 +31,10 @@ class macos_safaridriver (
             mode    => '0755',
           }
 
-          # TCC.db doesn't exist yet in ci, so skip running the script
-          if $facts['running_in_test_kitchen'] != 'true' {
+          # cltbld's user TCC.db only exists after cltbld first logs in.
+          # Skip these resources on first bootstrap; the next puppet apply
+          # (post-cltbld-autologin reboot) will pick them up.
+          if $facts['running_in_test_kitchen'] != 'true' and $facts['cltbld_tcc_db_present'] {
             exec { 'execute perms script':
               command     => $perm_script,
               subscribe   => File[$perm_script],
@@ -43,7 +45,7 @@ class macos_safaridriver (
           }
 
           # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
-          if $facts['running_in_test_kitchen'] != 'true' {
+          if $facts['running_in_test_kitchen'] != 'true' and $facts['cltbld_tcc_db_present'] {
             # needs to run as cltbld via launchctl or won't work
             exec { 'execute enable remote automation script':
               command => "/bin/launchctl asuser ${user_uid} sudo -u ${user_running_safari} ${enable_script}",

@@ -142,12 +142,6 @@ run_puppet() {
     retval=$?
     PUPPET_RUN_DURATION=$SECONDS
 
-    if grep -q "unable to open database \"/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$TMP_LOG"; then
-        echo "Detected TCC.db issue. A reboot is required."
-        sudo shutdown -r now
-        exit 0
-    fi
-
     if grep -q "^Error:" "$TMP_LOG"; then
         retval=1
     fi
@@ -284,5 +278,16 @@ done
 # Clean Up & Finish
 rm -rf "$TMP_PUPPET_DIR"
 echo "System Installed: $(date)" >> /etc/issue
+
+# If cltbld's user TCC.db doesn't exist yet, autologin hasn't fired. The
+# cltbld_tcc_db_present fact gated off TCC-writing resources in this apply
+# pass, so they haven't run. Reboot so cltbld autologs in and the next
+# puppet apply (via either the bootstrap LaunchDaemon or the regular
+# at-boot LaunchDaemon, see #1206) picks them up.
+if [ ! -f "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" ]; then
+    echo "cltbld TCC.db not present after successful puppet apply; rebooting so autologin can fire and TCC resources can apply on the next pass."
+    sudo shutdown -r now
+    exit 0
+fi
 
 exit 0
