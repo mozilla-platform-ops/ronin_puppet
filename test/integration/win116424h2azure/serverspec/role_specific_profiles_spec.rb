@@ -21,7 +21,11 @@ if x64_virtual_audio_role
     it { should be_directory }
   end
 
-  describe service_property_command(vac_service_name, 'Name') do
+  describe powershell_command(<<~POWERSHELL) do
+    $driver = Get-CimInstance Win32_SystemDriver -Filter "Name='#{vac_service_name}'" -ErrorAction Stop
+    if ($null -eq $driver) { exit 1 }
+    $driver.Name
+  POWERSHELL
     its(:exit_status) { should eq 0 }
     its(:stdout) { should match(/^#{Regexp.escape(vac_service_name)}\s*$/) }
   end
