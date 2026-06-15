@@ -32,7 +32,7 @@ class win_packages::vac (
 
     if $trusted_publisher_cat != '' {
         exec { 'vac_trust_publisher':
-            command     => "\$catPath = '${work_dir}\\${trusted_publisher_cat}'; if (-not (Test-Path -LiteralPath \$catPath)) { throw ('Missing VAC catalog: ' + \$catPath) }; \$signature = Get-AuthenticodeSignature -LiteralPath \$catPath; if (\$signature.Status -ne 'Valid') { throw ('VAC catalog signature is ' + \$signature.Status + ': ' + \$catPath) }; \$certPath = Join-Path '${work_dir}' 'vac-publisher.cer'; Export-Certificate -Cert \$signature.SignerCertificate -FilePath \$certPath -Force | Out-Null; & '${facts['custom_win_system32']}\\certutil.exe' -addstore TrustedPublisher \$certPath; exit \$LASTEXITCODE",
+            command     => "\$catPath = '${work_dir}\\${trusted_publisher_cat}'; if (-not (Test-Path -LiteralPath \$catPath)) { throw ('Missing VAC catalog: ' + \$catPath) }; \$signature = Get-AuthenticodeSignature -LiteralPath \$catPath; if (\$signature.Status -ne 'Valid') { throw ('VAC catalog signature is ' + \$signature.Status + ': ' + \$catPath) }; \$certPath = Join-Path '${work_dir}' 'vac-publisher.cer'; Export-Certificate -Cert \$signature.SignerCertificate -FilePath \$certPath -Force | Out-Null; Import-Certificate -FilePath \$certPath -CertStoreLocation 'Cert:\\LocalMachine\\TrustedPublisher' -ErrorAction Stop | Out-Null",
             provider    => powershell,
             subscribe   => Exec['vac_unzip'],
             refreshonly => true,
