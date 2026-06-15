@@ -1,0 +1,34 @@
+---
+ntp_server: time.apple.org
+
+# Puppet agent
+puppet_agent:
+  package_version: 7.28.0
+
+puppet_run_strategy: cron
+
+# Tart VM host configuration: runs gecko-t-osx-1500-m-vms tester VMs.
+# Registry/image differ from the gecko-1b builder hosts (which use 10.49.56.83
+# / sequoia-gecko1b-vms). The worker identity is baked into the sequoia-tester
+# image, so no host-side vault secrets are required.
+#
+# manage_image: false  -> puppet does NOT pull/clone. On macOS 15 `tart pull`
+#   only works from the console GUI session (Local Network privacy), so the
+#   image is seeded once by hand (see tart-provision.sh / the on-host vms.sh)
+#   and puppet only manages tart + the launchd unit. This also stops puppet
+#   from retry-looping the doomed headless pull (that caused an email storm).
+# launchd_type: daemon -> system LaunchDaemon (starts at boot headlessly,
+#   survives reboot) instead of a gui-domain LaunchAgent that can't load over
+#   ssh on 15.x.
+tart:
+  version: '2.30.0'
+  registry_host: '10.49.56.161'
+  registry_port: 5000
+  oci_image: 'sequoia-tester'
+  oci_tag: 'prod-latest'
+  vm_name_prefix: 'sequoia-tester'
+  worker_count: 2
+  insecure: true
+  user: 'admin'
+  manage_image: false
+  launchd_type: 'daemon'
