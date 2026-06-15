@@ -107,6 +107,14 @@ windows:
     version: '2.24'
   vac:
     version: '464'
+    package: 'vac464.zip'
+    package_dir: 'vac464'
+    installer: 'setup64.exe'
+    install_flags: '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
+    install_timeout: 1200
+    trusted_publisher_cat: ''
+    pnp_device_name: 'Virtual Audio Cable'
+    service_name: ''
   azure:
     vm_agent:
       version: '2.7.41491.1216_2604021216.fre'
