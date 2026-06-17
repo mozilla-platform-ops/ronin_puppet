@@ -8,6 +8,17 @@ win-worker:
     source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
     local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
+  vac:
+    version: '45'
+    package: 'VBCABLE_Driver_Pack45.zip'
+    package_dir: 'VBCABLE_Driver_Pack45'
+    installer: 'VBCABLE_Setup_x64.exe'
+    install_flags: '-h -i -H -n'
+    install_timeout: 1800
+    trusted_publisher_cat: 'vbaudio_cable64_win10.cat'
+    pnp_device_name: 'VB-Audio Virtual Cable'
+    service_name: 'VBAudioVACMME'
+
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:

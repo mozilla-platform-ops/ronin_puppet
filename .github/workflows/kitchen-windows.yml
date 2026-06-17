@@ -11,7 +11,7 @@ on:
 jobs:
   windows:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    name: ${{ matrix.role }}
+    name: ${{ matrix.role }} (${{ matrix.worker_pool_id }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,6 +20,9 @@ jobs:
           - role: win116425h2azure
             worker_pool_id: win11-64-25h2-alpha
             kitchen_instance: windows-win11-64-25h2
+          - role: win116425h2azure
+            worker_pool_id: win11-64-25h2-gpu-alpha
+            kitchen_instance: windows-win11-64-25h2-gpu
           - role: win116424h2azure
             worker_pool_id: win11-64-24h2-alpha
             kitchen_instance: windows-win11-64-24h2
