@@ -8,15 +8,7 @@ class win_filesystem::grant_cache_access (
   if $cache_drive {
     $_cache_drive = $cache_drive
   } elsif ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
-    ## 2012 r2 still uses y: for the cache drive
-    case $facts['custom_win_os_version'] {
-      'win_2012': {
-        $_cache_drive = 'Y:'
-      }
-      default: {
-        $_cache_drive = 'D:'
-      }
-    }
+    $_cache_drive = 'D:'
   } else {
     $_cache_drive = $facts['custom_win_systemdrive']
   }
