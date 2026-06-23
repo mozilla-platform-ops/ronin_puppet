@@ -1,7 +1,10 @@
 [Unit]
 Description=masterless puppet run
-Wants=network-online.target
-After=network-online.target
+# cleaner services added so puppet waits for disk cleanup before starting.
+# If cleaners are removed, revert to: Wants/After=network-online.target only.
+# Wants= is used (not Requires=) so missing units are silently ignored.
+Wants=network-online.target cltbld-cleaner.service clean_at_startup.service
+After=network-online.target cltbld-cleaner.service clean_at_startup.service
 
 [Service]
 ExecStart=/usr/local/bin/run-puppet.sh

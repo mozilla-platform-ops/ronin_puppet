@@ -57,7 +57,7 @@ windows:
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
     download_url: "https://github.com/taskcluster/taskcluster/releases/download"
-    version: "96.2.3"
+    version: "99.2.0"
     hw_version: "96.2.2"
 
     generic-worker:
@@ -99,15 +99,28 @@ windows:
     name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
     display_name: "NVIDIA Graphics Driver 538.15"
   gpu_a10:
-    name: "553.62_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
-    display_name: "NVIDIA Graphics Driver 553.62"
+    name: "573.96_grid_win10_win11_server2022_server2025_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 573.96"
   hg:
     version: '6.9'
   nssm:
     version: '2.24'
   vac:
     version: '464'
+    package: 'vac464.zip'
+    package_dir: 'vac464'
+    installer: 'setup64.exe'
+    install_flags: '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
+    install_timeout: 1200
+    trusted_publisher_cat: ''
+    pnp_device_name: 'Virtual Audio Cable'
+    service_name: ''
   azure:
     vm_agent:
-      version: '2.7.41491.1057_2205251057.fre'
-      display_name: "Windows Azure VM Agent - 2.7.41491.1057"
+      version: '2.7.41491.1216_2604021216.fre'
+      display_name: "Windows Azure VM Agent - 2.7.41491.1216"
+  bios:
+    NUC13:
+      bios_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/BIOS_exports'
+      isetup_src: 'https://roninpuppetassets.blob.core.windows.net/hardware/NUC13/ISetup_08-05-2025'
+      date: '03-20-2026'

@@ -22,6 +22,9 @@ class puppet::run_script (
               group   => 'root',
               mode    => '0755',
               content => template('puppet/puppet-ubuntu-run-puppet-barebones.sh.erb');
+            '/usr/local/bin/run-puppet':
+              ensure => link,
+              target => '/usr/local/bin/run-puppet.sh';
           }
         }
         default: {
