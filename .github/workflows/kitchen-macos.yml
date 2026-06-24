@@ -70,9 +70,18 @@ jobs:
         run: ./.github/scripts/install_puppet_mac.sh
 
       - name: Install Vault
-        run: brew install vault
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
+        # vault was moved out of homebrew-core into the hashicorp tap, which
+        # newer Homebrew refuses to install from ("Refusing to load formula
+        # hashicorp/tap/vault from untrusted tap"). Pull the binary straight
+        # from HashiCorp releases instead -- no brew, no tap-trust, both arches.
+        run: |
+          set -euo pipefail
+          ver="$(curl -fsSL https://api.releases.hashicorp.com/v1/releases/vault/latest | python3 -c 'import sys,json;print(json.load(sys.stdin)["version"])')"
+          case "$(uname -m)" in arm64) arch=arm64 ;; *) arch=amd64 ;; esac
+          echo "Installing vault ${ver} (darwin_${arch})"
+          curl -fsSL -o "$RUNNER_TEMP/vault.zip" "https://releases.hashicorp.com/vault/${ver}/vault_${ver}_darwin_${arch}.zip"
+          sudo unzip -o "$RUNNER_TEMP/vault.zip" -d /usr/local/bin
+          vault --version
 
       - name: Start Vault dev server
         run: |
