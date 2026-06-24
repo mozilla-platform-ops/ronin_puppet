@@ -8,7 +8,7 @@ class win_mozilla_build::hg_files {
   $mozbld      = "${facts['custom_win_systemdrive']}\\mozilla-build"
   $msys_dir = "${facts['custom_win_systemdrive']}\\mozilla-build\\msys2"
 
-  ## If Azure, then cache drive is either Y or D
+  ## If Azure, then cache drive is either D or C.
 
   case $facts['custom_win_location'] {
     'azure': {

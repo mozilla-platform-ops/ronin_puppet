@@ -8,8 +8,13 @@ worker_metadata:
   workerType: "%{lookup('gw.worker_type')}"
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
+# Role-owned Taskcluster worker version (read by profiles::worker; takes
+# precedence over the legacy vault-sourced worker.taskcluster_version below).
+# Pinned to the current running version -- this is a no-op control move.
+taskcluster_version: '91.0.2'
+
 worker:
-  taskcluster_version: 95.0.3
+  taskcluster_version: 91.0.2
   provider_type: standalone
   worker_pool_id: releng-hardware/gecko-t-osx-1500-m4
   worker_group: mdc1
