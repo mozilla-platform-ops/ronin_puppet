@@ -14,8 +14,11 @@ class macos_tcc_perms (
           mode    => '0755',
         }
 
-        # in CI, this tcc.db file doesn't exist yet, so skip running the script
-        if $facts['running_in_test_kitchen'] != 'true' {
+        # cltbld's user TCC.db only exists after cltbld first logs in.
+        # On fresh bootstrap (autologin set up but cltbld hasn't logged in
+        # yet) we skip this resource — a reboot triggers autologin and the
+        # next puppet apply will pick it up.
+        if $facts['running_in_test_kitchen'] != 'true' and $facts['cltbld_tcc_db_present'] {
           exec { 'execute tcc perms script':
             command => $tcc_script,
             require => File[$tcc_script],
