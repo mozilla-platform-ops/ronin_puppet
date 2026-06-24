@@ -18,7 +18,7 @@ class roles_profiles::profiles::worker {
       # `worker.taskcluster_version` for roles not yet migrated. The fallback is
       # lazy (only evaluated when the role key is unset) so it won't error once
       # vault's value is eventually retired.
-      $role_taskcluster_version = lookup('taskcluster_version', String, 'first', undef)
+      $role_taskcluster_version = lookup('taskcluster_version', Optional[String], 'first', undef)
       $taskcluster_version = $role_taskcluster_version ? {
         undef   => lookup('worker.taskcluster_version'),
         default => $role_taskcluster_version,
