@@ -126,16 +126,22 @@ jobs:
         if: steps.bump.outputs.changed == '1' && (github.event_name != 'workflow_dispatch' || inputs.dry_run == false)
         env:
           GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
           LATEST: ${{ steps.bump.outputs.latest }}
           SUMMARY: ${{ steps.bump.outputs.summary }}
         run: |
           set -euo pipefail
-          branch="auto/tc-staging-bump-$(date +%Y%m%d)"
+          # Unique per run so same-day/re-runs don't collide on the branch name.
+          branch="auto/tc-staging-bump-$(date +%Y%m%d)-${RUN_ID}"
           git config user.name  "relops-bot"
           git config user.email "ci-worker@mozilla.com"
           git checkout -b "$branch"
           git commit -am "roles: bump macOS staging taskcluster_version toward ${LATEST}"
-          git push -u origin "$branch"
+          # Checkout uses persist-credentials:false, so push with the token
+          # explicitly. Using AUTO_PR_TOKEN (not GITHUB_TOKEN) is also what lets
+          # the resulting PR trigger CI. GH masks the secret in logs.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:${branch}"
 
           body="$(cat <<EOF
           Automated monthly Taskcluster worker-version bump for the **macOS staging** pools.
