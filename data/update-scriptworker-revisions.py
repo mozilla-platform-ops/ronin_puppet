@@ -3,10 +3,10 @@
 Updates common.yaml scriptworker-scripts revisions with latest master/main commit hashes
 """
 
-import asyncio
-import aiohttp
+import json
 from os import path, replace
 import re
+from urllib.request import urlopen
 
 DIRECTIVES = [
     {
@@ -17,34 +17,22 @@ DIRECTIVES = [
 ]
 
 
-async def getLatestCommit(session, repo, branch):
-    async with session.get(
-        f"https://api.github.com/repos/{repo}/commits/{branch}"
-    ) as response:
-        data = await response.json()
-        print("-----")
-        print(f"{repo} last commit: {data['commit']['message']}")
-        print(f"{repo} sha: {data['sha']}")
-        print("-----")
-        return {repo: data["sha"]}
+def get_latest_commit(repo, branch):
+    with urlopen(f"https://api.github.com/repos/{repo}/commits/{branch}") as response:
+        data = json.load(response)
+
+    print("-----")
+    print(f"{repo} last commit: {data['commit']['message']}")
+    print(f"{repo} sha: {data['sha']}")
+    print("-----")
+    return data["sha"]
 
 
 async def main():
     common_yaml = path.join(path.dirname(__file__), "common.yaml")
 
-    # Get data from GitHub
-    async with aiohttp.ClientSession() as session:
-        responses = await asyncio.gather(
-            *[getLatestCommit(session, d["repo"], d["branch"]) for d in DIRECTIVES],
-            return_exceptions=True,
-        )
-    print(responses)
-
-    # Populate directives
-    for r in responses:
-        for d in DIRECTIVES:
-            if d["repo"] in r:
-                d["sha"] = r[d["repo"]]
+    for directive in DIRECTIVES:
+        directive["sha"] = get_latest_commit(directive["repo"], directive["branch"])
 
     # Read the file
     with open(common_yaml, "r") as f:
@@ -65,4 +53,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

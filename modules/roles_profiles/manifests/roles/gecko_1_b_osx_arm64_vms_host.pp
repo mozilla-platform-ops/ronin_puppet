@@ -7,8 +7,8 @@
 # worker VM lifecycle via per-VM LaunchAgents.
 class roles_profiles::roles::gecko_1_b_osx_arm64_vms_host {
   include macos_utils::disable_bluetooth_setup
-  include roles_profiles::profiles::macos_disable_firewall
-  include roles_profiles::profiles::macos_run_puppet
+  include macos_disable_firewall
+  include macos_run_puppet
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp

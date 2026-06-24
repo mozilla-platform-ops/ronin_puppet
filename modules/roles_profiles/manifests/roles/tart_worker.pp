@@ -20,6 +20,6 @@ class roles_profiles::roles::tart_worker {
   # The macOS application firewall blocks Tart's image-pull connections to the
   # OCI registry (surfaces as "The Internet connection appears to be offline"),
   # so it must be disabled — matching the existing tester hosts.
-  include roles_profiles::profiles::macos_disable_firewall
+  include macos_disable_firewall
   include roles_profiles::profiles::tart
 }

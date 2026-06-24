@@ -2,7 +2,6 @@ moduledir 'r10k_modules'
 forge "https://forgeapi.puppetlabs.com"
 
 # tip: keep sorted to avoid merge conflicts
-mod 'ipcrm-registry_acl', '0.0.6'
 mod 'jorten-timezone', '0.1.0'
 mod 'puppet-alternatives', '4.2.0'
 mod 'puppetlabs-acl', '5.0.3'
@@ -11,9 +10,6 @@ mod 'puppetlabs-chocolatey', '8.0.0'
 mod 'puppetlabs-concat', '5.1.0'
 mod 'puppetlabs-facts', '1.4.0'
 mod 'puppetlabs-firewall', '1.14.0'
-mod 'puppetlabs-inifile', '5.4.1'
-mod 'puppetlabs-motd', '2.1.1'
-mod 'puppetlabs-ntp', '7.3.0'
 mod 'puppetlabs-powershell', '6.0.0'
 mod 'puppetlabs-puppet_agent', '4.6.1'
 mod 'puppetlabs-pwshlib', '0.10.3'
@@ -24,8 +20,6 @@ mod 'puppetlabs-vcsrepo', '7.0.0'
 mod 'puppet-windows_env', '4.0.1'
 mod 'puppet-windows_firewall', '5.0.0'
 mod 'puppet-windowsfeature', '4.0.0'
-mod 'puppetlabs-yaml', '0.2.0'
-mod 'saz-rsyslog', '5.0.0'
 mod 'thekevjames-homebrew', '1.8.3'
 
 mod 'archive',
