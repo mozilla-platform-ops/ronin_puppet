@@ -9,8 +9,13 @@ class win_packages::drivers::nvidia_grid (
 ) {
   $driver_exe   = "${facts['custom_win_temp_dir']}\\${driver_name}.exe"
 
-  file { $driver_exe:
-    source => "${srcloc}/${driver_name}.exe",
+  archive { $driver_name:
+    ensure  => 'present',
+    source  => "${srcloc}/${driver_name}.exe",
+    path    => $driver_exe,
+    creates => $driver_exe,
+    cleanup => false,
+    extract => false,
   }
 
   if $facts['custom_win_gpu'] == 'yes' {
@@ -18,6 +23,7 @@ class win_packages::drivers::nvidia_grid (
       ensure          => 'present',
       source          => $driver_exe,
       install_options => ['-s','-noreboot'],
+      require         => Archive[$driver_name],
     }
   }
 }

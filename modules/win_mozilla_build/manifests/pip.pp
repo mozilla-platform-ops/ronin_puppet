@@ -3,45 +3,19 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_build::pip {
-  case $facts['custom_win_location'] {
-    'azure': {
-      if $facts['custom_win_d_drive'] == 'exists' {
-        $cache_drive = 'D:'
-      } else {
-        $cache_drive = 'C:'
-      }
-    }
-    'datacenter': {
-      $cache_drive = 'C:'
-    }
-    default: {
-      fail('custom_win_location not supported')
-    }
-  }
-
   file { "${$facts['custom_win_programdata']}\\pip":
     ensure => directory,
   }
   file { "${$facts['custom_win_programdata']}\\pip\\pip.ini":
     content => epp('win_mozilla_build/pip.conf.epp'),
   }
-  file { "${cache_drive}\\pip-cache":
-    ensure => directory,
+
+  file { ['C:\\pip-cache', 'D:\\pip-cache']:
+    ensure => absent,
+    force  => true,
   }
-  # Resource from puppetlabs-acl
-  acl { "${cache_drive}\\pip-cache":
-    target      => "${cache_drive}\\pip-cache",
-    permissions => {
-      identity                   => 'everyone',
-      rights                     => ['full'],
-      perm_type                  => 'allow',
-      child_types                => 'all',
-      affects                    => 'all',
-      inherit_parent_permissions => true,
-    },
-  }
-  # Resource from counsyl-windows
+
   windows::environment { 'PIP_DOWNLOAD_CACHE':
-    value => "${cache_drive}\\pip-cache",
+    ensure => absent,
   }
 }
