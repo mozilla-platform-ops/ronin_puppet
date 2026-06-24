@@ -18,7 +18,7 @@ class roles_profiles::profiles::microsoft_tools {
         'builder':{
           ## This class seems to timeout on the first run of a new VM
           ## For now don't look for it after bootstrap.
-          if $facts['custom_win_bootstrap_stage'] != 'complete' {
+          if $facts['custom_win_bootstrap_stage'] != 'complete' and $facts['custom_win_os_arch'] != 'aarch64' {
             include win_packages::dxsdk_jun10
           }
           include win_packages::binscope
