@@ -36,21 +36,40 @@ define packages::macos_taskcluster_binary (
   $s3_object = "${title}-${version}-${arch}"
   $s3_url    = "https://${packages::setup::default_s3_domain}/${packages::setup::default_bucket}/macos/public/common/${s3_object}"
 
-  $tmpfile = "/tmp/${asset}-${version}"
+  # Cache downloaded binaries under a persistent, version-named path -- NOT
+  # /tmp, which these workers wipe on reboot. They reboot between every task
+  # (dozens of times a day), so a /tmp cache means re-downloading every binary
+  # from GitHub on every boot even when the installed binary is already correct.
+  # With the version in the path, `creates` skips the download once a version is
+  # cached and only fetches again on a version bump; the cache also lets the
+  # file resource restore a deleted binary without a network fetch.
+  $cache_dir  = '/usr/local/lib/taskcluster-binaries'
+  $cache_file = "${cache_dir}/${asset}-${version}"
+
+  ensure_resource('file', $cache_dir, {
+    'ensure' => 'directory',
+    'owner'  => 'root',
+    'group'  => 'wheel',
+    'mode'   => '0755',
+  })
 
   # -f makes curl exit non-zero on HTTP errors so the S3 fallback fires, rather
-  # than silently saving an error page as the binary.
+  # than silently saving an error page as the binary. Download to a .part file
+  # and only move it into place on success, so an interrupted/failed download
+  # never leaves a truncated binary in the persistent cache (which `creates`
+  # would otherwise treat as complete).
   exec { "download-${asset}":
-    command  => "curl -fL -o ${tmpfile} ${gh_url} || curl -fL -o ${tmpfile} ${s3_url}",
-    creates  => $tmpfile,
+    command  => "(curl -fL -o ${cache_file}.part ${gh_url} || curl -fL -o ${cache_file}.part ${s3_url}) && mv -f ${cache_file}.part ${cache_file}",
+    creates  => $cache_file,
     path     => ['/usr/bin', '/bin'],
     provider => 'shell',
+    require  => File[$cache_dir],
   }
 
   if $sha256 {
     exec { "verify-sha-${asset}":
-      command => "/usr/bin/shasum -a 256 ${tmpfile} | /usr/bin/grep -q ${sha256}",
-      unless  => "/usr/bin/shasum -a 256 ${tmpfile} | /usr/bin/grep -q ${sha256}",
+      command => "/usr/bin/shasum -a 256 ${cache_file} | /usr/bin/grep -q ${sha256}",
+      unless  => "/usr/bin/shasum -a 256 ${cache_file} | /usr/bin/grep -q ${sha256}",
       require => Exec["download-${asset}"],
     }
   }
@@ -60,7 +79,7 @@ define packages::macos_taskcluster_binary (
     mode    => '0755',
     owner   => 'root',
     group   => 'wheel',
-    source  => "file://${tmpfile}",
+    source  => "file://${cache_file}",
     require => Exec["download-${asset}"],
   }
 }
