@@ -11,8 +11,21 @@ class roles_profiles::profiles::worker {
         default            => undef,
       }
 
+      # Taskcluster worker version precedence -- moving control out of vault.
+      # Prefer a role-owned top-level `taskcluster_version` (managed here in
+      # ronin role data) so a version bump is just a puppet change that workers
+      # pick up on their next run. Fall back to the legacy vault-provided
+      # `worker.taskcluster_version` for roles not yet migrated. The fallback is
+      # lazy (only evaluated when the role key is unset) so it won't error once
+      # vault's value is eventually retired.
+      $role_taskcluster_version = lookup('taskcluster_version', Optional[String], 'first', undef)
+      $taskcluster_version = $role_taskcluster_version ? {
+        undef   => lookup('worker.taskcluster_version'),
+        default => $role_taskcluster_version,
+      }
+
       class { 'worker_runner':
-        taskcluster_version   => lookup('worker.taskcluster_version'),
+        taskcluster_version   => $taskcluster_version,
         provider_type         => lookup('worker.provider_type'),
         root_url              => 'https://firefox-ci-tc.services.mozilla.com',
         client_id             => lookup('worker.client_id'),
