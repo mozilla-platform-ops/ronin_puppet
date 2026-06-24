@@ -34,6 +34,18 @@ export GIT_BRANCH="$PUPPET_BRANCH"
 : "${PUPPET_BIN:=/opt/puppetlabs/bin/puppet}"
 : "${FACTER_BIN:=/opt/puppetlabs/bin/facter}"
 
+# Reboot-survivable bootstrap: this script registers a LaunchDaemon that
+# re-runs it on every boot until puppet has applied cleanly and puppet's own
+# at-boot mechanism (com.mozilla.atboot_puppet) is in place. This means a
+# single MDM script-job (or one-shot ssh) can kick the bootstrap and the
+# host will finish provisioning across reboots without needing an external
+# babysitter session.
+BOOTSTRAP_LD_LABEL="com.mozilla.ronin-puppet-bootstrap"
+BOOTSTRAP_LD_PLIST="/Library/LaunchDaemons/${BOOTSTRAP_LD_LABEL}.plist"
+BOOTSTRAP_SCRIPT_INSTALL="/usr/local/sbin/ronin-puppet-bootstrap.sh"
+WORKER_SEMAPHORE="/var/tmp/semaphore/run-buildbot"
+ATBOOT_PUPPET_PLIST="/Library/LaunchDaemons/com.mozilla.atboot_puppet.plist"
+
 ### ---------------------------------------------
 ### 2. Function Definitions
 ### ---------------------------------------------
@@ -41,6 +53,80 @@ export GIT_BRANCH="$PUPPET_BRANCH"
 fail() {
     echo "${@}"
     exit 1
+}
+
+install_bootstrap_launchd() {
+    # Register this script as a self-removing LaunchDaemon so the bootstrap
+    # survives reboots (TCC.db reboot, MDM-driven OS upgrade, etc.) without
+    # needing an external ssh/Bolt session. Idempotent — does nothing if
+    # puppet's regular at-boot mechanism is already in place.
+    if [ -f "$ATBOOT_PUPPET_PLIST" ]; then
+        return 0
+    fi
+
+    install -m 0755 -o root -g wheel "$0" "$BOOTSTRAP_SCRIPT_INSTALL"
+
+    if [ -f "$BOOTSTRAP_LD_PLIST" ]; then
+        return 0
+    fi
+
+    cat > "$BOOTSTRAP_LD_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${BOOTSTRAP_LD_LABEL}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>${BOOTSTRAP_SCRIPT_INSTALL}</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>LaunchOnlyOnce</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/var/log/ronin-puppet-bootstrap.log</string>
+  <key>StandardErrorPath</key>
+  <string>/var/log/ronin-puppet-bootstrap.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>LANG</key>
+    <string>en_US.UTF-8</string>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin</string>
+  </dict>
+</dict>
+</plist>
+EOF
+    chown root:wheel "$BOOTSTRAP_LD_PLIST"
+    chmod 0644 "$BOOTSTRAP_LD_PLIST"
+    launchctl load -w "$BOOTSTRAP_LD_PLIST" 2>/dev/null || true
+    echo "Installed bootstrap LaunchDaemon ${BOOTSTRAP_LD_LABEL}."
+}
+
+finalize_bootstrap() {
+    # Called after a successful puppet apply. Writes the run-buildbot
+    # semaphore so generic-worker can start, then removes the bootstrap
+    # LaunchDaemon — but only once puppet's regular at-boot LaunchDaemon
+    # is in place so we don't leave the host with no puppet trigger.
+    mkdir -p /var/tmp/semaphore
+    chmod 0777 /var/tmp/semaphore
+    touch "$WORKER_SEMAPHORE"
+    echo "Wrote worker semaphore at ${WORKER_SEMAPHORE}."
+
+    if [ ! -f "$ATBOOT_PUPPET_PLIST" ]; then
+        echo "Puppet at-boot LaunchDaemon not yet installed at ${ATBOOT_PUPPET_PLIST}; leaving bootstrap LaunchDaemon in place for next run."
+        return 0
+    fi
+
+    if [ -f "$BOOTSTRAP_LD_PLIST" ]; then
+        echo "Removing bootstrap LaunchDaemon ${BOOTSTRAP_LD_LABEL}; puppet's at-boot mechanism will take over."
+        launchctl unload "$BOOTSTRAP_LD_PLIST" 2>/dev/null || true
+        rm -f "$BOOTSTRAP_LD_PLIST"
+    fi
+    rm -f "$BOOTSTRAP_SCRIPT_INSTALL"
 }
 
 email_report() {
@@ -218,6 +304,10 @@ fi
 [ -x "$PUPPET_BIN" ] || fail "Puppet is missing or not executable."
 [ -x "$FACTER_BIN" ] || fail "Facter is missing or not executable."
 
+# Now that we know the host is supposed to be puppet-managed, register the
+# bootstrap LaunchDaemon so subsequent reboots auto-resume this loop.
+install_bootstrap_launchd
+
 # Clone or update Puppet repository
 if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
     echo "Checking existing Puppet repository..."
@@ -284,5 +374,7 @@ done
 # Clean Up & Finish
 rm -rf "$TMP_PUPPET_DIR"
 echo "System Installed: $(date)" >> /etc/issue
+
+finalize_bootstrap
 
 exit 0
