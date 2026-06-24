@@ -1,0 +1,170 @@
+name: Taskcluster binary bump (staging)
+
+# Once a month, check the latest STABLE taskcluster/taskcluster release and, if
+# any macOS *staging* pool is behind (within the version its OS can run), open a
+# PR bumping the role-owned top-level `taskcluster_version` for that staging
+# role. Workers install the new binary on their next run (cached per #1245) once
+# the PR is merged. Staging is the canary; prod is bumped separately by a human
+# after validation.
+#
+# Per-pool version CEILING is mandatory — generic-worker is Go, and the Go
+# toolchain's macOS floor caps how far each OS can go:
+#   * gecko-t-osx-1015-r8-staging (macOS 10.15 Catalina) -> max v67.1.0
+#       (Go 1.22 is the last to support 10.15; v68.0.0 = Go 1.23 drops it)
+#   * gecko-t-osx-1400-r8-staging (macOS 14 Sonoma)       -> latest stable
+#   * gecko-t-osx-1500-m4-staging (macOS 15, arm64)       -> latest stable
+# Blindly pinning the Catalina pool to "latest" would brick it.
+#
+# NOTE on CI: a PR opened with the default GITHUB_TOKEN does NOT trigger the
+# kitchen/pre-commit workflows (GitHub blocks recursive workflow runs). To get
+# CI to run on the auto-PR, set repo secret AUTO_PR_TOKEN to a token that isn't
+# GITHUB_TOKEN -- a fine-grained PAT (or App token) scoped to this repo with
+# Contents: write + Pull requests: write (no Workflows scope; the bot only edits
+# data/roles/*.yaml). This workflow uses it when present and falls back to
+# GITHUB_TOKEN (PR still opens, but you must push an empty commit or re-run
+# checks to get CI). Manual runs default to dry_run=true and need no token.
+
+on:
+  schedule:
+    - cron: '0 15 1 * *'  # 15:00 UTC, 1st of each month
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Compute and log the proposed bumps but do NOT open a PR'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Compute bumps and edit staging role data
+        id: bump
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Latest STABLE release (the /latest endpoint excludes prereleases & drafts).
+          latest="$(gh api repos/taskcluster/taskcluster/releases/latest --jq .tag_name | sed 's/^v//')"
+          echo "Latest stable taskcluster: ${latest}"
+
+          # role-data file  ->  version ceiling ("" = no cap, use latest)
+          declare -A ceiling=(
+            ["data/roles/gecko_t_osx_1015_r8_staging.yaml"]="67.1.0"  # Catalina / Go 1.22 floor
+            ["data/roles/gecko_t_osx_1400_r8_staging.yaml"]=""        # Sonoma  -> latest ok
+            ["data/roles/gecko_t_osx_1500_m4_staging.yaml"]=""        # macOS15 -> latest ok
+          )
+
+          # min(a,b) and "a > b" by semver, via sort -V
+          vmin() { printf '%s\n%s\n' "$1" "$2" | sort -V | head -1; }
+          vgt()  { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$1" ]; }
+
+          summary=""
+          changed=0
+          for file in "${!ceiling[@]}"; do
+            cur="$(grep -E '^taskcluster_version:' "$file" | head -1 | sed -E "s/^taskcluster_version:[[:space:]]*['\"]?([^'\"]+)['\"]?.*/\1/")"
+            cap="${ceiling[$file]}"
+            target="$latest"
+            [ -n "$cap" ] && target="$(vmin "$latest" "$cap")"
+
+            if vgt "$target" "$cur"; then
+              echo "BUMP ${file}: ${cur} -> ${target} (latest=${latest}, ceiling=${cap:-none})"
+              sed -i -E "s/^taskcluster_version:.*/taskcluster_version: '${target}'/" "$file"
+              summary="${summary}- \`$(basename "$file" .yaml)\`: ${cur} → **${target}**$([ -n "$cap" ] && [ "$target" = "$cap" ] && echo ' (capped at OS ceiling)' || true)\n"
+              changed=1
+            else
+              echo "skip ${file}: at ${cur} (target ${target})"
+            fi
+          done
+
+          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          echo "changed=${changed}" >> "$GITHUB_OUTPUT"
+          # multiline output
+          {
+            echo "summary<<EOF"
+            echo -e "${summary}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        env:
+          CHANGED: ${{ steps.bump.outputs.changed }}
+          LATEST: ${{ steps.bump.outputs.latest }}
+          SUMMARY: ${{ steps.bump.outputs.summary }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          {
+            echo "## Taskcluster staging bump"
+            echo "Latest stable: **${LATEST}**"
+            echo ""
+            if [ "${CHANGED}" = "1" ]; then
+              echo -e "${SUMMARY}"
+              if [ "${DRY}" = "true" ]; then
+                echo "_Dry run — no PR opened._"
+              else
+                echo "_Opening a PR with these bumps._"
+              fi
+            else
+              echo "All staging pools already at target — nothing to do."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Scheduled runs always open the PR; manual (workflow_dispatch) runs only
+      # open one when dry_run=false. dry_run defaults to true, so a manual test
+      # run is safe and needs no token.
+      - name: Open PR
+        if: steps.bump.outputs.changed == '1' && (github.event_name != 'workflow_dispatch' || inputs.dry_run == false)
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          LATEST: ${{ steps.bump.outputs.latest }}
+          SUMMARY: ${{ steps.bump.outputs.summary }}
+        run: |
+          set -euo pipefail
+          # Unique per run so same-day/re-runs don't collide on the branch name.
+          branch="auto/tc-staging-bump-$(date +%Y%m%d)-${RUN_ID}"
+          git config user.name  "relops-bot"
+          git config user.email "ci-worker@mozilla.com"
+          git checkout -b "$branch"
+          git commit -am "roles: bump macOS staging taskcluster_version toward ${LATEST}"
+          # Checkout uses persist-credentials:false, so push with the token
+          # explicitly. Using AUTO_PR_TOKEN (not GITHUB_TOKEN) is also what lets
+          # the resulting PR trigger CI. GH masks the secret in logs.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:${branch}"
+
+          body="$(cat <<EOF
+          Automated monthly Taskcluster worker-version bump for the **macOS staging** pools.
+
+          Latest stable taskcluster: **${LATEST}**
+
+          Proposed staging bumps (capped per each pool's macOS/Go-toolchain ceiling):
+          $(echo -e "${SUMMARY}")
+
+          ### Validate before merging
+          Push a try run routing test tasks to the staging pools (they aren't in normal try routing):
+          \`\`\`
+          ./mach try fuzzy \\
+            --worker-override t-osx-1500-m4=releng-hardware/gecko-t-osx-1500-m4-staging \\
+            --worker-override t-osx-1400-r8=releng-hardware/gecko-t-osx-1400-r8-staging \\
+            --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1015-r8-staging \\
+            -q "'test"
+          \`\`\`
+          Staging hosts pick up the new binary on their next reboot (cached). After staging is green, bump the **prod** roles in a separate PR.
+
+          _Opened by \`.github/workflows/taskcluster-binary-bump.yml\`. Do not auto-merge._
+          EOF
+          )"
+          gh pr create --base master --head "$branch" \
+            --title "roles: bump macOS staging taskcluster_version toward ${LATEST}" \
+            --body "$body"
