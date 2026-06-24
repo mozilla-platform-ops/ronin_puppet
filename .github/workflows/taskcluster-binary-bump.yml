@@ -17,15 +17,22 @@ name: Taskcluster binary bump (staging)
 #
 # NOTE on CI: a PR opened with the default GITHUB_TOKEN does NOT trigger the
 # kitchen/pre-commit workflows (GitHub blocks recursive workflow runs). To get
-# CI to run on the auto-PR, set repo secret AUTO_PR_TOKEN to a PAT (or app
-# token) with `repo` + `workflow` scope; this workflow uses it when present and
-# falls back to GITHUB_TOKEN (PR still opens, but you must push an empty commit
-# or re-run checks to get CI).
+# CI to run on the auto-PR, set repo secret AUTO_PR_TOKEN to a token that isn't
+# GITHUB_TOKEN -- a fine-grained PAT (or App token) scoped to this repo with
+# Contents: write + Pull requests: write (no Workflows scope; the bot only edits
+# data/roles/*.yaml). This workflow uses it when present and falls back to
+# GITHUB_TOKEN (PR still opens, but you must push an empty commit or re-run
+# checks to get CI). Manual runs default to dry_run=true and need no token.
 
 on:
   schedule:
     - cron: '0 15 1 * *'  # 15:00 UTC, 1st of each month
-  workflow_dispatch:        # allow manual runs
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Compute and log the proposed bumps but do NOT open a PR'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -89,8 +96,34 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Summary
+        env:
+          CHANGED: ${{ steps.bump.outputs.changed }}
+          LATEST: ${{ steps.bump.outputs.latest }}
+          SUMMARY: ${{ steps.bump.outputs.summary }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          {
+            echo "## Taskcluster staging bump"
+            echo "Latest stable: **${LATEST}**"
+            echo ""
+            if [ "${CHANGED}" = "1" ]; then
+              echo -e "${SUMMARY}"
+              if [ "${DRY}" = "true" ]; then
+                echo "_Dry run — no PR opened._"
+              else
+                echo "_Opening a PR with these bumps._"
+              fi
+            else
+              echo "All staging pools already at target — nothing to do."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Scheduled runs always open the PR; manual (workflow_dispatch) runs only
+      # open one when dry_run=false. dry_run defaults to true, so a manual test
+      # run is safe and needs no token.
       - name: Open PR
-        if: steps.bump.outputs.changed == '1'
+        if: steps.bump.outputs.changed == '1' && (github.event_name != 'workflow_dispatch' || inputs.dry_run == false)
         env:
           GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN || secrets.GITHUB_TOKEN }}
           LATEST: ${{ steps.bump.outputs.latest }}
