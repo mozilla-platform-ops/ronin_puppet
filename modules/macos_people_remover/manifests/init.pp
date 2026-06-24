@@ -16,6 +16,8 @@ class macos_people_remover (
 
         exec { 'execute people remover script':
           command => $remover_script,
+          path    => ['/bin', '/usr/bin'],
+          unless  => "${remover_script} --check",
           require => File[$remover_script],
           user    => 'root',
         }

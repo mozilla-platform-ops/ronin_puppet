@@ -118,6 +118,31 @@ groups:
       - macmini-m4-207.test.releng.mdc1.mozilla.com
       - macmini-m4-208.test.releng.mdc1.mozilla.com
       - macmini-m4-209.test.releng.mdc1.mozilla.com
+      - macmini-m4-210.test.releng.mdc1.mozilla.com
+      - macmini-m4-211.test.releng.mdc1.mozilla.com
+      - macmini-m4-212.test.releng.mdc1.mozilla.com
+      - macmini-m4-213.test.releng.mdc1.mozilla.com
+      - macmini-m4-214.test.releng.mdc1.mozilla.com
+      - macmini-m4-215.test.releng.mdc1.mozilla.com
+      - macmini-m4-216.test.releng.mdc1.mozilla.com
+      - macmini-m4-217.test.releng.mdc1.mozilla.com
+      - macmini-m4-218.test.releng.mdc1.mozilla.com
+      - macmini-m4-219.test.releng.mdc1.mozilla.com
+      - macmini-m4-220.test.releng.mdc1.mozilla.com
+      - macmini-m4-221.test.releng.mdc1.mozilla.com
+      - macmini-m4-222.test.releng.mdc1.mozilla.com
+      - macmini-m4-223.test.releng.mdc1.mozilla.com
+      - macmini-m4-224.test.releng.mdc1.mozilla.com
+      - macmini-m4-225.test.releng.mdc1.mozilla.com
+      - macmini-m4-226.test.releng.mdc1.mozilla.com
+      - macmini-m4-227.test.releng.mdc1.mozilla.com
+      - macmini-m4-228.test.releng.mdc1.mozilla.com
+      - macmini-m4-229.test.releng.mdc1.mozilla.com
+      - macmini-m4-230.test.releng.mdc1.mozilla.com
+      - macmini-m4-231.test.releng.mdc1.mozilla.com
+      - macmini-m4-232.test.releng.mdc1.mozilla.com
+      - macmini-m4-233.test.releng.mdc1.mozilla.com
+      - macmini-m4-234.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1500_m4
 
@@ -166,3 +191,9 @@ groups:
       - macmini-m4-173.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: enterprise_3_b_osx_arm64
+
+  - name: gecko-1-b-osx-arm64-vms-host
+    targets:
+      - macmini-m4-117.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_1_b_osx_arm64_vms_host

@@ -7,6 +7,11 @@ worker_metadata:
   workerType: "%{lookup('gw.worker_type')}"
   provisionerId: "%{lookup('gw.provisioner_id')}"
 
+# Role-owned Taskcluster worker version (read by profiles::worker; takes
+# precedence over the legacy vault-sourced worker.taskcluster_version below).
+# Pinned to the current running version -- this is a no-op control move.
+taskcluster_version: '60.3.4'
+
 worker:
   taskcluster_version: 60.3.4
   provider_type: standalone
