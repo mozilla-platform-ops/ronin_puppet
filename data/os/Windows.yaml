@@ -99,14 +99,22 @@ windows:
     name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
     display_name: "NVIDIA Graphics Driver 538.15"
   gpu_a10:
-    name: "553.62_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
-    display_name: "NVIDIA Graphics Driver 553.62"
+    name: "573.96_grid_win10_win11_server2022_server2025_dch_64bit_international_azure_swl"
+    display_name: "NVIDIA Graphics Driver 573.96"
   hg:
     version: '6.9'
   nssm:
     version: '2.24'
   vac:
     version: '464'
+    package: 'vac464.zip'
+    package_dir: 'vac464'
+    installer: 'setup64.exe'
+    install_flags: '-s -k 30570681-0a8b-46e5-8cb2-d835f43af0c5'
+    install_timeout: 1200
+    trusted_publisher_cat: ''
+    pnp_device_name: 'Virtual Audio Cable'
+    service_name: ''
   azure:
     vm_agent:
       version: '2.7.41491.1216_2604021216.fre'

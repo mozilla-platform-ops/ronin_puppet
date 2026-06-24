@@ -116,6 +116,16 @@ elsif os.family == 'debian' && os.release.start_with?('24.04')
     it { should exist }
   end
 
+  if ENV['MOZILLA_WAYLAND'] != '1'
+    describe file('/etc/X11/xorg.conf.d/20-intel-primary.conf') do
+      it { should exist }
+      its('content') { should match(/Identifier "Intel P580"/) }
+      its('content') { should match(/Driver "modesetting"/) }
+      its('content') { should match(/BusID "PCI:0:2:0"/) }
+      its('content') { should match(/Option "PrimaryGPU" "true"/) }
+    end
+  end
+
   describe file('/home/cltbld/.fonts.conf') do
     it { should exist }
   end

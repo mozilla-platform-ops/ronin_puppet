@@ -11,7 +11,7 @@ on:
 jobs:
   windows:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    name: ${{ matrix.role }}
+    name: ${{ matrix.role }} (${{ matrix.worker_pool_id }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,6 +20,9 @@ jobs:
           - role: win116425h2azure
             worker_pool_id: win11-64-25h2-alpha
             kitchen_instance: windows-win11-64-25h2
+          - role: win116425h2azure
+            worker_pool_id: win11-64-25h2-gpu-alpha
+            kitchen_instance: windows-win11-64-25h2-gpu
           - role: win116424h2azure
             worker_pool_id: win11-64-24h2-alpha
             kitchen_instance: windows-win11-64-24h2
@@ -40,7 +43,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Azure login
         uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43

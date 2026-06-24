@@ -29,6 +29,7 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker {
       require linux_packages::tooltool
       require linux_packages::zstd
       require linux_packages::pulseaudio
+      require linux_packages::openbox
 
       # moved from base to avoid ordering issues with py2/3
       require linux_mercurial

@@ -10,11 +10,22 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# Function to execute the sqlite3 queries
+# Function to execute the sqlite3 queries.
+#
+# A 5s busy timeout makes sqlite wait out a transiently-locked TCC.db instead
+# of failing immediately with "database is locked (5)". This happens when
+# puppet runs at boot while cltbld's autologin session is still initializing
+# and the system briefly holds a write lock on the user TCC.db — without the
+# timeout that race fails the whole puppet apply (and fires a failure email),
+# even though a retry 60s later succeeds. The timeout is a cap, not a fixed
+# delay: sqlite returns the instant the lock frees, so the normal unlocked path
+# is not slowed. 5s comfortably covers the brief session-startup lock while
+# keeping the worst-case wait bounded on these CI hosts; a genuinely stuck lock
+# still fails (after 5s) so real problems are surfaced.
 execute_query() {
     local db_path=$1
     local query=$2
-    sudo sqlite3 "$db_path" "$query"
+    sudo sqlite3 -cmd ".timeout 5000" "$db_path" "$query"
 }
 
 # Build a TCC csreq blob (cdhash-anchored code requirement) for a given binary.

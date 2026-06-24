@@ -295,7 +295,7 @@ function AzMount-DiskTwo {
   }
   process {
     if ((Test-VolumeExists -DriveLetter 'Z')) {
-      Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+      Write-Log -message ('{0} :: skipping disk mount (drive z: already exists).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
     }
     else {
       $pagefileName = $false
@@ -349,60 +349,6 @@ function AzMount-DiskTwo {
       else {
         Write-Log -message ('{0} :: partitioning skipped on unsupported os' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
-    }
-  }
-}
-function Set-DriveLetters {
-  param (
-    [hashtable] $driveLetterMap = @{
-      'E:' = 'Y:';
-      'F:' = 'Z:'
-    }
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    $driveLetterMap.Keys | ForEach-Object {
-      $old = $_
-      $new = $driveLetterMap.Item($_)
-      if (Test-VolumeExists -DriveLetter @($old[0])) {
-        $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
-        if ($null -ne $volume) {
-          $volume.DriveLetter = $new
-          $volume.Put()
-          if ((Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$new'") -and (Test-VolumeExists -DriveLetter @($new[0]))) {
-            Write-Log -message ('{0} :: drive {1} assigned new drive letter: {2}.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'INFO'
-          }
-          else {
-            Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using wmi, failed.' -f $($MyInvocation.MyCommand.Name), $old, $new) -severity 'WARN'
-            try {
-              Get-Partition -DriveLetter $old[0] | Set-Partition -NewDriveLetter $new[0]
-            }
-            catch {
-              Write-Log -message ('{0} :: drive {1} assignment to new drive letter: {2} using get/set partition, failed. {3}' -f $($MyInvocation.MyCommand.Name), $old, $new, $_.Exception.Message) -severity 'ERROR'
-            }
-          }
-        }
-      }
-    }
-    if ((Test-VolumeExists -DriveLetter 'Y') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
-      $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
-      if ($null -ne $volume) {
-        $volume.DriveLetter = 'Z:'
-        $volume.Put()
-        Write-Log -message ('{0} :: drive Y: assigned new drive letter: Z:.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-      }
-    }
-    $volumes = @(Get-WmiObject -Class Win32_Volume | Sort-Object { $_.Name })
-    Write-Log -message ('{0} :: {1} volumes detected.' -f $($MyInvocation.MyCommand.Name), $volumes.length) -severity 'INFO'
-    foreach ($volume in $volumes) {
-      Write-Log -message ('{0} :: {1} {2}gb' -f $($MyInvocation.MyCommand.Name), $volume.Name.Trim('\'), [math]::Round($volume.Capacity / 1GB, 2)) -severity 'DEBUG'
-    }
-    $partitions = @(Get-WmiObject -Class Win32_DiskPartition | Sort-Object { $_.Name })
-    Write-Log -message ('{0} :: {1} disk partitions detected.' -f $($MyInvocation.MyCommand.Name), $partitions.length) -severity 'INFO'
-    foreach ($partition in $partitions) {
-      Write-Log -message ('{0} :: {1}: {2}gb' -f $($MyInvocation.MyCommand.Name), $partition.Name, [math]::Round($partition.Size / 1GB, 2)) -severity 'DEBUG'
     }
   }
 }
@@ -506,16 +452,37 @@ function Set-AzureInstanceMetadataScheduledEvents {
   Invoke-WebRequest @iwsplat
 }
 
-## Drive Y is hardcoded in tree. However, we are moving away from mounting a separate Y drive.
-function LinkZY2D {
+function Test-LegacyYDriveRequired {
   param (
+    [string] $WorkerPoolId
   )
+
+  if ([string]::IsNullOrEmpty($WorkerPoolId)) {
+    return $false
+  }
+
+  return ($WorkerPoolId -match '(^|/)win10-64-2009($|-)' -or
+    $WorkerPoolId -match '(^|/)win11-64-2009($|-)' -or
+    $WorkerPoolId -match '(^|/)b-win2022($|-)')
+}
+
+function Set-LegacyYDriveMapping {
+  param (
+    [string] $WorkerPoolId
+  )
+
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+    if (-not (Test-LegacyYDriveRequired -WorkerPoolId $WorkerPoolId)) {
+      Write-Log -message ('{0} :: Y: compatibility mapping skipped for worker pool: {1}' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'DEBUG'
+      return
+    }
+
     if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
       subst Y: D:\
+      Write-Log -message ('{0} :: mapped Y: to D: for legacy worker pool: {1}' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'INFO'
     }
   }
   end {
@@ -528,6 +495,7 @@ $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "insta
 
 ## Get the managed-by tag value
 $managed_by = ($imds_tags | Where-object { $psitem.name -eq "managed-by" }).Value
+$worker_pool_id = ($imds_tags | Where-object { $psitem.name -eq "worker-pool-id" }).Value
 
 $mozilla_key = "HKLM:\SOFTWARE\Mozilla"
 $ronin_key = "$mozilla_key\ronin_puppet"
@@ -542,6 +510,7 @@ If ($hand_off_ready -eq 'yes') {
     $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
     ## Get the managed-by tag value
     $managed_by = ($imds_tags | Where-object { $psitem.name -eq "managed-by" }).Value
+    $worker_pool_id = ($imds_tags | Where-object { $psitem.name -eq "worker-pool-id" }).Value
   }
 }
 
@@ -551,9 +520,9 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Set-AzVMName
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
+  Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
-    LinkZY2D
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
