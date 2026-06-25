@@ -9,8 +9,18 @@
   <array>
     <string>/Users/cltbld/bin/capture-on-demand.sh</string>
   </array>
-  <key>StartInterval</key>
-  <integer>1</integer>
+  <!--
+    Fire the moment the harness writes the trigger file. Previously this used
+    StartInterval=1, but because the helper exits almost instantly launchd
+    throttled respawns to its ~10s minimum-runtime floor, while the test
+    harness only waits 5s for the screenshot. That race produced empty /
+    blank-desktop screenshots on Apple Silicon workers. WatchPaths reacts on
+    write with sub-second latency and is not subject to the respawn throttle.
+  -->
+  <key>WatchPaths</key>
+  <array>
+    <string>/Users/cltbld/.trigger_screenshot</string>
+  </array>
   <key>RunAtLoad</key>
   <true/>
 </dict>
