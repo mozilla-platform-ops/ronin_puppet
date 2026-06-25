@@ -36,12 +36,23 @@ class macos_screenshot_helper (
       source => 'puppet:///modules/macos_screenshot_helper/com.mozilla.screencapture.plist',
     }
 
+    # The agent watches this file (WatchPaths), so it must exist for the watch
+    # to be armed before the first task runs. replace => false so we create it
+    # when absent but never clobber the path the harness writes into it.
+    file { $trigger_file:
+      ensure  => present,
+      owner   => 'cltbld',
+      group   => 'staff',
+      mode    => '0644',
+      replace => false,
+    }
+
+    # bootout then bootstrap so a changed plist (e.g. StartInterval -> WatchPaths)
+    # is actually re-read. launchctl kickstart only restarts the already-loaded
+    # job definition and would not pick up plist edits.
     exec { 'load or restart screenshot agent':
-      command     => "/bin/bash -c 'if /bin/launchctl print gui/${cltbld_uid}/com.mozilla.screencapture 2>/dev/null; then \
-                    /bin/launchctl kickstart -k gui/${cltbld_uid}/com.mozilla.screencapture; \
-                  else \
-                    /bin/launchctl bootstrap gui/${cltbld_uid} \"${launchagent_path}\" 2>/dev/null; \
-                  fi; exit 0'",
+      command     => "/bin/bash -c '/bin/launchctl bootout gui/${cltbld_uid}/com.mozilla.screencapture 2>/dev/null; \
+                    /bin/launchctl bootstrap gui/${cltbld_uid} \"${launchagent_path}\" 2>/dev/null; exit 0'",
       path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
       refreshonly => true,
       subscribe   => File[$launchagent_path],
