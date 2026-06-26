@@ -80,6 +80,21 @@ bundle install
 ./bin/kitchen_docker login linux-perf
 ```
 
+#### testing interrupted dpkg recovery
+
+Do not simulate interrupted dpkg by writing arbitrary files into
+`/var/lib/dpkg/updates`; apt may detect that state, but
+`dpkg --configure -a` will correctly reject invalid update files.
+
+Use a real unpacked package state instead:
+
+```bash
+./bin/kitchen_docker exec linux-perf-ubuntu-2404 -c \
+  'sudo rm -f /var/lib/dpkg/updates/0001 && cd /tmp && apt-get download zstd && sudo dpkg --unpack ./zstd_*.deb && sudo dpkg --audit'
+```
+
+Then run `run-puppet` and confirm `dpkg --audit` is clean afterward.
+
 #### creating a new suite
 
 1. Edit `.kitchen.docker.yml`. Set the appropriate details.
