@@ -42,16 +42,16 @@ end
 if ROLE_NAME == 'win11a6425h2azurebuilder'
   describe powershell_command("(Get-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -ErrorAction Stop).State") do
     its(:exit_status) { should eq 0 }
-    its(:stdout) { should match(/^Enabled\s*$/i) }
+    its(:stdout) { should match(/^Disabled(?:WithPayloadRemoved)?\s*$/i) }
   end
 
   describe machine_env_command('DXSDK_DIR') do
     its(:exit_status) { should eq 0 }
-    its(:stdout) { should match(/^#{Regexp.escape(dxsdk_dir)}\s*$/) }
+    its(:stdout) { should match(/^\s*$/) }
   end
 
   describe file("#{dxsdk_dir}\\Include\\audiodefs.h") do
-    it { should exist }
+    it { should_not exist }
   end
 
   describe software_property_command("$_.DisplayName -eq 'Microsoft BinScope 2014'", 'DisplayVersion') do
