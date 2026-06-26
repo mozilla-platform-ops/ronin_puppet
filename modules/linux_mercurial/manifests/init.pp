@@ -55,6 +55,6 @@ class linux_mercurial {
 
   # robust checkout
   file { "${hgext_dir}/robustcheckout.py":
-    source => 'puppet:///modules/linux_mercurial/robustcheckout.py',
+    source => 'puppet:///modules/mercurial/robustcheckout.py',
   }
 }

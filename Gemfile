@@ -4,7 +4,6 @@ gem 'puppet', '8.10.0', :require => false
 gem 'puppet-lint', '>= 2.4.2'
 gem 'test-kitchen', '>= 3.3.2'
 gem 'kitchen-inspec', '>= 3.1.0'
-gem 'rubocop'
 gem 'train', '~> 3.16.1'
 gem 'train-core', '= 3.16.1'
 gem 'train-winrm', '~> 0.4.3'
@@ -21,10 +20,8 @@ gem 'kitchen-docker', git: 'https://github.com/test-kitchen/kitchen-docker.git',
 # gem 'kitchen-docker', git: 'https://github.com/aerickson/kitchen-docker.git', ref: '9a1386c530c49a2784c051822177df3ac1a4550b'
 # end kitchen-docker
 gem 'kitchen-puppet'
-gem 'kitchen-sync'
 gem 'kitchen-vagrant'
 gem 'kitchen-azurerm', git: 'https://github.com/mozilla-platform-ops/kitchen-azurerm.git', branch: 'main'
-gem 'librarian-puppet'
 gem 'puppetlabs_spec_helper'
 gem 'rake'
 gem 'serverspec'
@@ -33,8 +30,6 @@ gem 'debouncer'
 gem 'vault'
 gem 'rspec_junit_formatter'
 gem 'erb'
-
-gem "puppet-strings", "~> 4.1", :group => :dev
 
 # ruby 3.4 drops base64 support, add back
 gem 'base64'

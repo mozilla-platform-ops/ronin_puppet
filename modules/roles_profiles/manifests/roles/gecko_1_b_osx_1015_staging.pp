@@ -4,15 +4,15 @@
 
 class roles_profiles::roles::gecko_1_b_osx_1015_staging {
   include macos_utils::disable_bluetooth_setup
-  include roles_profiles::profiles::macos_disable_firewall
-  include roles_profiles::profiles::macos_people_remover
-  include roles_profiles::profiles::macos_xcode_tools
+  include macos_disable_firewall
+  include macos_people_remover
+  include macos_xcode_tools
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::packages_installed
-  include roles_profiles::profiles::pipconf
-  include roles_profiles::profiles::power_management
+  include macos_pipconf
+  include macos_power_management
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::timezone

@@ -1,4 +1,12 @@
 ---
+lookup_options:
+  win-worker:
+    merge: deep
+
+win-worker:
+  log:
+    level: "restricted"
+
 windows:
 
 # Datacnter resources

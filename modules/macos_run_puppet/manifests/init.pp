@@ -24,7 +24,7 @@ class macos_run_puppet (
 
     file { '/opt/puppet_environments/lib/puppet_state_functions.sh':
       ensure => file,
-      source => "puppet:///modules/${module_name}/puppet_state_functions.sh",
+      source => 'puppet:///modules/puppet/puppet_state_functions.sh',
       owner  => 'root',
       group  => 'wheel',
       mode   => '0644',
