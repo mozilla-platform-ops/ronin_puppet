@@ -9,29 +9,73 @@ mkdir -p /tmp/docker/var/cache/apt
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "${script_dir}/.." && pwd)"
 
+if [ -t 1 ]; then
+    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _YELLOW="\033[33m"; _RED="\033[31m"; _RESET="\033[0m"
+else
+    _BOLD=""; _DIM=""; _GREEN=""; _YELLOW=""; _RED=""; _RESET=""
+fi
+
+function info {
+    echo -e "  ${_GREEN}ok${_RESET}   $*"
+}
+
+function warn {
+    echo -e "  ${_YELLOW}warn${_RESET} $*"
+}
+
+function fail {
+    echo -e "  ${_RED}fail${_RESET} $*"
+}
+
+function next_step {
+    echo -e "       ${_DIM}$*${_RESET}"
+}
+
+echo -e "${_BOLD}Kitchen Docker preflight${_RESET}"
+
 # ensure SSH key has correct permissions (git doesn't track this)
 chmod 600 "${root_dir}/test/id_ed25519" 2>/dev/null || true
+
+required_ruby_version="$(<"${root_dir}/.ruby-version")"
+if ! command -v ruby >/dev/null 2>&1; then
+    fail "Ruby is required for Test Kitchen."
+    next_step "Run: rbenv install -s ${required_ruby_version}"
+    next_step "Then run: rbenv local ${required_ruby_version}"
+    exit 1
+fi
+
+active_ruby_version="$(ruby -e 'print RUBY_VERSION')"
+if [ "${active_ruby_version}" != "${required_ruby_version}" ]; then
+    fail "Unsupported Ruby: $(ruby -v)"
+    next_step "This repo requires Ruby ${required_ruby_version}."
+    next_step "puppet/facter do not support Ruby 4 yet, and Ruby 3.2 is EOL."
+    next_step "Run: rbenv install -s ${required_ruby_version}"
+    next_step "Then run: rbenv local ${required_ruby_version}"
+    next_step "Then run: bundle install"
+    exit 1
+fi
+info "Ruby ${active_ruby_version}"
 
 kitchen_config="${root_dir}/.kitchen_configs/kitchen.docker.yml"
 temp_kitchen_config="/tmp/ronin_puppet_kitchen_docker_temp_config.yml"
 
 # check for yq
 if ! command -v yq &> /dev/null; then
-    echo "yq command not found. Please install yq to format the YAML file."
+    fail "yq command not found."
+    next_step "Install yq to format the YAML file."
     exit 1
 fi
+info "yq available"
 
 # add docker_platform if we're on arm64
 if [[ "$(uname -m)" == "arm64" ]]; then
-    echo "This system is running on arm64 architecture."
-
     # old way, force to amd64 to work around tc installation not picking correct arch
     # echo "Modifying kitchen.docker.yml to use linux/amd64 platform."
     # sed 's/# docker_platform: linux\/amd64$/docker_platform: linux\/amd64/' "${kitchen_config}" > "${temp_kitchen_config}"
 
     # new way, use arm64
-    echo "Modifying kitchen.docker.yml to use linux/arm64 platform."
     sed 's/# docker_platform: linux\/arm64$/docker_platform: linux\/arm64/' "${kitchen_config}" > "${temp_kitchen_config}"
+    info "Generated temporary Kitchen config for linux/arm64"
 
     export KITCHEN_YAML="${temp_kitchen_config}"
     # for testing
@@ -41,38 +85,36 @@ else
     # echo "This system is not running on arm64 architecture."
     # Still need to create temp config for proxy processing
     cp "${kitchen_config}" "${temp_kitchen_config}"
+    info "Generated temporary Kitchen config"
     export KITCHEN_YAML="${temp_kitchen_config}"
 fi
 
 # if command is test or converge, alert that results on arm64 will be different and recommend circleci run.
 if [[ "$1" == "test" || "$1" == "converge" && "$(uname -m)" == "arm64" ]]; then
-    echo ""
-    echo "Warning: Test results on arm64 can be misleading because we don't have arm64"
-    echo "binaries and/or detection everywhere. Everything should work on CircleCI."
-    echo ""
+    warn "arm64 Kitchen results can differ from CircleCI; some binaries/detection are amd64-oriented."
 fi
 
 PROXY_PORT=8123
 # check if the proxy is running, port 8123
-if nc -z localhost $PROXY_PORT; then
-    echo "Using proxy at localhost:$PROXY_PORT"
+if nc -z localhost $PROXY_PORT >/dev/null 2>&1; then
+    info "Proxy detected at localhost:$PROXY_PORT"
     export http_proxy=http://localhost:$PROXY_PORT
     export https_proxy=http://localhost:$PROXY_PORT
 else
-    echo "No proxy running at localhost:$PROXY_PORT, proceeding without proxy."
+    info "No local proxy detected"
     unset http_proxy
     unset https_proxy
 fi
 
 # create a venv for ruamel.yaml if it doesn't exist
 if [ ! -d "${root_dir}/venv" ]; then
-    echo "Creating virtual environment for ruamel.yaml..."
+    info "Creating Python virtual environment"
     python3 -m venv "${root_dir}/venv"
     source "${root_dir}/venv/bin/activate"
     pip install --upgrade pip
     pip install ruamel.yaml
 else
-    echo "Using existing virtual environment for ruamel.yaml."
+    info "Using existing Python virtual environment"
     source "${root_dir}/venv/bin/activate"
 fi
 
@@ -80,21 +122,21 @@ venv_python="${root_dir}/venv/bin/python"
 venv_pip="${root_dir}/venv/bin/pip"
 
 if ! "${venv_python}" -c 'import sys' >/dev/null 2>&1; then
-    echo "Python virtual environment is not usable."
-    echo "Run: rm -rf ${root_dir}/venv"
-    echo "Then rerun: ./bin/kitchen_docker $*"
+    fail "Python virtual environment is not usable."
+    next_step "Run: rm -rf ${root_dir}/venv"
+    next_step "Then rerun: ./bin/kitchen_docker $*"
     exit 1
 fi
 
 if ! "${venv_python}" -c 'import ruamel.yaml' >/dev/null 2>&1; then
-    echo "Missing Python dependency: ruamel.yaml"
-    echo "Run: ${venv_pip} install ruamel.yaml"
+    fail "Missing Python dependency: ruamel.yaml"
+    next_step "Run: ${venv_pip} install ruamel.yaml"
     exit 1
 fi
+info "Python dependency ruamel.yaml available"
 
 # if the proxy is running, use it in the temp kitchen config file
 if [[ -n "$http_proxy" ]]; then
-    echo "Using proxy in kitchen config."
     # Uncomment lines between START_PROXY_BLOCK and END_PROXY_BLOCK, preserving indentation
     # sed -i '' '/# START_PROXY_BLOCK/,/# END_PROXY_BLOCK/s/^\([[:space:]]*\)#\([[:space:]]*\)/\1/' "${temp_kitchen_config}"
     # Remove START_PROXY_BLOCK and END_PROXY_BLOCK lines
@@ -102,13 +144,16 @@ if [[ -n "$http_proxy" ]]; then
 
     # call $kitchen_config/add_proxy_entries.py
     "${venv_python}" "${root_dir}/.kitchen/add_proxy_entries.py" "${temp_kitchen_config}"
+    info "Added proxy settings to Kitchen config"
 fi
 
 if ! bundle check >/dev/null 2>&1; then
-    echo "Missing Ruby gem dependencies."
-    echo "Run: bundle install"
+    fail "Missing Ruby gem dependencies."
+    next_step "Run: bundle install"
     exit 1
 fi
+info "Ruby gems installed"
+echo ""
 
 # set CI=true so our spec_helper can disable problematic tests
 CI=TRUE bundle exec kitchen "$@"

@@ -57,10 +57,10 @@ We used Vagrant/VirutalBox because some things don't work with Docker (kernel mo
 #### converging and running tests
 
 ```bash
-# install ruby via homebrew or other means
-brew install ruby
-# add gem bin path (may differ on your system) to your PATH
-export PATH=$PATH:/usr/local/lib/ruby/gems/2.6.0/bin  # may be 2.7.0
+# install rbenv and the repo-pinned Ruby
+brew install rbenv ruby-build
+rbenv install -s "$(cat .ruby-version)"
+rbenv local "$(cat .ruby-version)"
 gem install bundler
 
 # install testing tools

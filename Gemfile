@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby file: '.ruby-version'
 
 gem 'puppet', '8.10.0', :require => false
 gem 'puppet-lint', '>= 2.4.2'
