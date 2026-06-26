@@ -1,0 +1,25 @@
+<%- | String $snmpd_path | -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>net.net-snmp.snmpd</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string><%= $snmpd_path %></string>
+        <string>-f</string>
+        <string>-Lo</string>
+        <string>-c</string>
+        <string>/etc/snmp/snmpd.conf</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/var/log/snmpd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/snmpd.log</string>
+</dict>
+</plist>
