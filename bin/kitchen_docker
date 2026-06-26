@@ -7,7 +7,7 @@ set -e
 mkdir -p /tmp/docker/var/cache/apt
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-root_dir="${script_dir}/.."
+root_dir="$(cd "${script_dir}/.." && pwd)"
 
 # ensure SSH key has correct permissions (git doesn't track this)
 chmod 600 "${root_dir}/test/id_ed25519" 2>/dev/null || true
@@ -76,6 +76,22 @@ else
     source "${root_dir}/venv/bin/activate"
 fi
 
+venv_python="${root_dir}/venv/bin/python"
+venv_pip="${root_dir}/venv/bin/pip"
+
+if ! "${venv_python}" -c 'import sys' >/dev/null 2>&1; then
+    echo "Python virtual environment is not usable."
+    echo "Run: rm -rf ${root_dir}/venv"
+    echo "Then rerun: ./bin/kitchen_docker $*"
+    exit 1
+fi
+
+if ! "${venv_python}" -c 'import ruamel.yaml' >/dev/null 2>&1; then
+    echo "Missing Python dependency: ruamel.yaml"
+    echo "Run: ${venv_pip} install ruamel.yaml"
+    exit 1
+fi
+
 # if the proxy is running, use it in the temp kitchen config file
 if [[ -n "$http_proxy" ]]; then
     echo "Using proxy in kitchen config."
@@ -85,7 +101,13 @@ if [[ -n "$http_proxy" ]]; then
     # sed -i '' '/START_PROXY_BLOCK\|END_PROXY_BLOCK/d' "${temp_kitchen_config}"
 
     # call $kitchen_config/add_proxy_entries.py
-    python3 "${root_dir}/.kitchen/add_proxy_entries.py" "${temp_kitchen_config}"
+    "${venv_python}" "${root_dir}/.kitchen/add_proxy_entries.py" "${temp_kitchen_config}"
+fi
+
+if ! bundle check >/dev/null 2>&1; then
+    echo "Missing Ruby gem dependencies."
+    echo "Run: bundle install"
+    exit 1
 fi
 
 # set CI=true so our spec_helper can disable problematic tests
