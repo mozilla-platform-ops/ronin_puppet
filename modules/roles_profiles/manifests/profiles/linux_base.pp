@@ -27,6 +27,7 @@ class roles_profiles::profiles::linux_base {
 
       # should be requires above, but fight that battle another day
       include linux_snmpd
+      include roles_profiles::profiles::sbom
 
       # TODO:
       # - add auditd

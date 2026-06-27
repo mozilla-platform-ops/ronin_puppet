@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win11a6425h2azuretester {
+  include roles_profiles::profiles::sbom
   case $facts['custom_win_bootstrap_stage'] {
     'complete': {
       include roles_profiles::profiles::azure_vm_file_system
