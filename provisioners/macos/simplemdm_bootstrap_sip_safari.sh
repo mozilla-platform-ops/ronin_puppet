@@ -1,12 +1,19 @@
 #!/bin/bash
-# m4-simplemdm-bootstrap-sip-safari.sh
+# simplemdm_bootstrap_sip_safari.sh
 #
-# SimpleMDM script-job for M4 Mac Mini staging bootstrap on the
-# `sip-compatible-safari-automation` branch of ronin_puppet (PR #1152).
+# Operator-facing bootstrap script. NOT deployed by puppet — this file
+# is the source-of-truth for the SimpleMDM script-job that runs on a
+# fresh M4 Mac Mini at DEP enrollment time. Sibling to
+# bootstrap_catalina.sh / bootstrap_mojave.sh in this directory.
 #
-# Run-once at enrollment time. Sets up the puppet override, clones ronin_puppet,
-# and installs a one-shot LaunchDaemon that runs run-puppet.sh on every boot
-# until the safari LaunchAgent flow completes — then the daemon self-removes.
+# Upload procedure: copy this file's contents into the corresponding
+# SimpleMDM Script (web UI → Scripts → "Dev - CC- Bootstrap" or
+# equivalent), then bind it to the target Assignment Group.
+#
+# Run-once at enrollment time. Sets up the puppet override, clones
+# ronin_puppet, and installs a one-shot LaunchDaemon that runs
+# run-puppet.sh on every boot until the safari LaunchAgent flow
+# completes — then the daemon self-removes.
 #
 # Prereqs delivered separately by MDM/operator:
 #   - /var/root/vault.yaml          (still hand-dropped today)
