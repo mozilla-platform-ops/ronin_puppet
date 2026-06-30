@@ -5,7 +5,7 @@
 class roles_profiles::profiles::power_management {
   case $facts['os']['name'] {
     'Darwin': {
-      include macos_mobileconfig_profiles::power_management
+      include macos_power_management
     }
     'Windows': {
       case $facts['custom_win_location'] {

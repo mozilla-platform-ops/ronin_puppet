@@ -126,16 +126,22 @@ jobs:
         if: steps.bump.outputs.changed == '1' && (github.event_name != 'workflow_dispatch' || inputs.dry_run == false)
         env:
           GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
           LATEST: ${{ steps.bump.outputs.latest }}
           SUMMARY: ${{ steps.bump.outputs.summary }}
         run: |
           set -euo pipefail
-          branch="auto/tc-staging-bump-$(date +%Y%m%d)"
+          # Unique per run so same-day/re-runs don't collide on the branch name.
+          branch="auto/tc-staging-bump-$(date +%Y%m%d)-${RUN_ID}"
           git config user.name  "relops-bot"
           git config user.email "ci-worker@mozilla.com"
           git checkout -b "$branch"
           git commit -am "roles: bump macOS staging taskcluster_version toward ${LATEST}"
-          git push -u origin "$branch"
+          # Checkout uses persist-credentials:false, so push with the token
+          # explicitly. Using AUTO_PR_TOKEN (not GITHUB_TOKEN) is also what lets
+          # the resulting PR trigger CI. GH masks the secret in logs.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:${branch}"
 
           body="$(cat <<EOF
           Automated monthly Taskcluster worker-version bump for the **macOS staging** pools.
@@ -146,15 +152,22 @@ jobs:
           $(echo -e "${SUMMARY}")
 
           ### Validate before merging
-          Push a try run routing test tasks to the staging pools (they aren't in normal try routing):
+          Push one try run per staging pool (these pools aren't in normal try routing). Each is a
+          minimal smoke that just exercises the worker binary (claim -> run -> upload); use the
+          suite that actually generates on each platform post-migration:
           \`\`\`
-          ./mach try fuzzy \\
-            --worker-override t-osx-1500-m4=releng-hardware/gecko-t-osx-1500-m4-staging \\
-            --worker-override t-osx-1400-r8=releng-hardware/gecko-t-osx-1400-r8-staging \\
-            --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1015-r8-staging \\
-            -q "'test"
+          # 1500 / m4
+          ./mach try fuzzy --all-tasks --worker-override t-osx-1500-m4=releng-hardware/gecko-t-osx-1500-m4-staging -q "'test-macosx1500-aarch64/opt 'xpcshell !vms"
+
+          # 1400 / Sonoma  (macosx1470-64 only generates cppunittest/gtest now; mochitests moved to m4)
+          ./mach try fuzzy --all-tasks --worker-override t-osx-1400-r8=releng-hardware/gecko-t-osx-1400-r8-staging -q "'test-macosx1470-64/opt 'cppunittest"
+
+          # 1015 / Catalina
+          ./mach try fuzzy --all-tasks --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1015-r8-staging -q "'test-macosx1015-64-qr/opt 'xpcshell"
           \`\`\`
-          Staging hosts pick up the new binary on their next reboot (cached). After staging is green, bump the **prod** roles in a separate PR.
+          (Or comment \`/try-mac 1500\` | \`/try-mac 1400\` | \`/try-mac 1015\` on this PR to deploy the
+          branch to that staging pool automatically.) Staging hosts pick up the new binary on their
+          next reboot (cached). After staging is green, bump the **prod** roles in a separate PR.
 
           _Opened by \`.github/workflows/taskcluster-binary-bump.yml\`. Do not auto-merge._
           EOF
