@@ -675,7 +675,21 @@ function Invoke-FleetbenchCheck {
             $statusFile = Join-Path $ResultsDir 'fleetbench_status.json'
             Write-Log -message ('{0} :: running fleetbench cpu --mode {1} --duration {2} ...' -f $($MyInvocation.MyCommand.Name), $Mode, $Duration) -severity 'INFO'
 
-            $json = & $exe.FullName cpu --mode $Mode --duration $Duration --json 2>$null | Out-String
+            # RELOPS-2402: signal gw_exe_check that a benchmark is in progress. This call blocks
+            # ~15 min while worker-runner is intentionally not yet started, which can push uptime
+            # past gw_exe_check's 15-min grace period and trip its watchdog into a needless
+            # reboot/PXE. The marker is the run's UTC start time; gw_exe_check ignores a stale
+            # marker so a crash/reboot mid-run cannot disable the watchdog. Written at Machine
+            # scope (registry) so the separately-scheduled gw_exe_check process reads it live.
+            [Environment]::SetEnvironmentVariable('MOZ_FLEETBENCH_RUNNING', (Get-Date).ToUniversalTime().ToString('o'), 'Machine')
+            Write-Log -message ('{0} :: MOZ_FLEETBENCH_RUNNING set (machine)' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            try {
+                $json = & $exe.FullName cpu --mode $Mode --duration $Duration --json 2>$null | Out-String
+            }
+            finally {
+                [Environment]::SetEnvironmentVariable('MOZ_FLEETBENCH_RUNNING', $null, 'Machine')
+                Write-Log -message ('{0} :: MOZ_FLEETBENCH_RUNNING cleared (machine)' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+            }
             if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($json)) {
                 Write-Log -message ('{0} :: fleetbench run failed (exit {1}).' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'ERROR'
                 return
