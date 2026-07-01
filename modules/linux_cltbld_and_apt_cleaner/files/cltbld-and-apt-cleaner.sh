@@ -13,28 +13,36 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 SECONDS=0
-usage=$(df --output=pcent / | tail -1 | tr -dc "0-9")
-echo "Disk usage is ${usage}%"
-if [ "$usage" -le 70 ]; then
-  echo "Disk usage below threshold, skipping cleanup. Elapsed: ${SECONDS}s"
+root_usage=$(df --output=pcent / | tail -1 | tr -dc "0-9")
+boot_usage=$(df --output=pcent /boot | tail -1 | tr -dc "0-9")
+
+echo "Root disk usage is ${root_usage}%"
+echo "Boot disk usage is ${boot_usage}%"
+
+if [ "$root_usage" -le 70 ] && [ "$boot_usage" -le 70 ]; then
+  echo "Disk usage below thresholds, skipping cleanup. Elapsed: ${SECONDS}s"
   exit 0
 fi
 
-echo "Disk usage above 70%, performing cleanup..."
+echo "Disk usage above threshold, performing cleanup..."
 
-echo "Cleaning up build caches..."
-for target in /home/cltbld/.mozbuild \
-              /home/cltbld/caches \
-              /home/cltbld/file-caches.json \
-              /home/cltbld/directory-caches.json; do
-    if [ -e "$target" ]; then
-        size=$(du -sh "$target" 2>/dev/null | cut -f1)
-        echo "  removing $target ($size)"
-        rm -rf "$target"
-    else
-        echo "  skipping $target (not present)"
-    fi
-done
+if [ "$root_usage" -gt 70 ]; then
+  echo "Cleaning up build caches..."
+  for target in /home/cltbld/.mozbuild \
+                /home/cltbld/caches \
+                /home/cltbld/file-caches.json \
+                /home/cltbld/directory-caches.json; do
+      if [ -e "$target" ]; then
+          size=$(du -sh "$target" 2>/dev/null | cut -f1)
+          echo "  removing $target ($size)"
+          rm -rf "$target"
+      else
+          echo "  skipping $target (not present)"
+      fi
+  done
+else
+  echo "Root disk usage below threshold; skipping build cache cleanup"
+fi
 
 echo "Cleaning up apt/deb..."
 apt-get autoremove -y
