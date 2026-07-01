@@ -115,30 +115,36 @@ echo "=== fetch vault.yaml via mTLS from forge.relops.mozilla.com ==="
 # Find the SCEP-issued identity by issuer DN. Subject CN comes from
 # %ComputerName% at SCEP-enrollment time and isn't stable across re-enrolls;
 # issuer DN is.
+# SCEP identity: pinned by the "Dev - SCEP" mobileconfig to Subject CN "Mac mini"
+# on every host in the assignment group. We use this fixed value directly
+# because on macOS 15+, SCEP-installed identities live in the data-protection
+# keychain (/Library/Keychains/keychain-2.db) and are invisible to
+# `security find-identity -v`. curl's SecureTransport backend, however, DOES
+# reach into that keychain when you pass `--cert <subject-CN>`, so we skip the
+# lookup dance entirely and just name the cert.
+IDENTITY_CN="Mac mini"
+
+# Wait for the SCEP-managed cert with this CN to actually be present. We check
+# via `find-certificate` (which sees non-identity cert entries in the System
+# keychain) — probes for the same subject/issuer pair the mobileconfig produces.
 ISSUER_CN="Mozilla RelOps Bootstrap CA Intermediate CA"
-IDENTITY_CN=""
-echo "Waiting for SCEP cert (issued by '$ISSUER_CN') in System keychain..."
+echo "Waiting for SCEP cert (subject CN '$IDENTITY_CN', issuer '$ISSUER_CN')..."
 deadline=$(( $(/bin/date +%s) + 300 ))
-while [ "$(/bin/date +%s)" -lt "$deadline" ] && [ -z "$IDENTITY_CN" ]; do
-  while IFS= read -r line; do
-    if [[ $line =~ \)\ ([0-9A-Fa-f]+)\ \"(.+)\"$ ]]; then
-      sha="${BASH_REMATCH[1]}"
-      cn="${BASH_REMATCH[2]}"
-      if /usr/bin/security find-certificate -Z "$sha" -p /Library/Keychains/System.keychain 2>/dev/null \
-          | /usr/bin/openssl x509 -noout -issuer 2>/dev/null \
-          | /usr/bin/grep -q "$ISSUER_CN"; then
-        IDENTITY_CN="$cn"
-        break
-      fi
-    fi
-  done < <(/usr/bin/security find-identity -v /Library/Keychains/System.keychain 2>/dev/null)
-  [ -z "$IDENTITY_CN" ] && /bin/sleep 5
+while [ "$(/bin/date +%s)" -lt "$deadline" ]; do
+  if /usr/bin/security find-certificate -c "$IDENTITY_CN" -p /Library/Keychains/System.keychain 2>/dev/null \
+      | /usr/bin/openssl x509 -noout -issuer 2>/dev/null \
+      | /usr/bin/grep -q "$ISSUER_CN"; then
+    echo "found SCEP cert (subject '$IDENTITY_CN')"
+    break
+  fi
+  /bin/sleep 5
 done
-if [ -z "$IDENTITY_CN" ]; then
-  echo "ERROR: no SCEP identity found in keychain after 5 min. Aborting."
+if ! /usr/bin/security find-certificate -c "$IDENTITY_CN" -p /Library/Keychains/System.keychain 2>/dev/null \
+    | /usr/bin/openssl x509 -noout -issuer 2>/dev/null \
+    | /usr/bin/grep -q "$ISSUER_CN"; then
+  echo "ERROR: no SCEP cert with expected issuer found after 5 min. Aborting."
   exit 1
 fi
-echo "using identity: '$IDENTITY_CN'"
 
 # CURL_SSL_BACKEND=securetransport routes TLS handshake signing through the
 # OS-level network stack — which IS in the keychain ACL sign-allowlist. Our
