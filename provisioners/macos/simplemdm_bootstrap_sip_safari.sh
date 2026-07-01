@@ -67,8 +67,12 @@ else
     /usr/sbin/sysadminctl -addUser admin -password "admin" -admin -fullName "admin" 2>&1
   fi
 
+  # `-user` + `-password` flags are load-bearing on macOS 15 — the command
+  # prompts interactively for the admin username when called without them
+  # and exits 1 without doing anything if run non-interactively (as a
+  # SimpleMDM script-job is). Feed the credentials directly.
   echo "escrowing bootstrap token to MDM"
-  /usr/bin/profiles install -type bootstraptoken 2>&1 || true
+  /usr/bin/profiles install -type bootstraptoken -user admin -password admin 2>&1 || true
   sleep 10
 
   echo "granting SecureToken to admin via bootstrap token"
