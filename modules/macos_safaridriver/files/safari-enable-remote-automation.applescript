@@ -87,21 +87,14 @@ repeat maxAttempts times
                 click button "Advanced" of toolbar 1 of window 1
                 delay 5
 
-                -- Enable "Show features for web developers"
-                tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
-                    if value is 0 then click it
-                    delay 5
-                    if value is not 1 then
-                        error "Show features for web developers did not toggle on (value=" & (value as string) & ")"
-                    end if
-                end tell
-                delay 5
-
-                -- Open Developer tab
-                click button "Developer" of toolbar 1 of window 1
-                delay 5
-
                 -- Enable "Allow remote automation"
+                -- Safari 18 (macOS 15) restructured the Settings UI: the Advanced
+                -- pane now contains what used to be a separate Developer tab,
+                -- and the "Show features for web developers" gate was removed
+                -- entirely. "Allow remote automation" is directly at the same
+                -- depth. If we ever need to support older Safari (17 / macOS 14),
+                -- we'd need to conditionalize this or fall back to the old
+                -- two-step (enable dev features -> Developer tab -> click).
                 tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
                     if value is 0 then click it
                     delay 5

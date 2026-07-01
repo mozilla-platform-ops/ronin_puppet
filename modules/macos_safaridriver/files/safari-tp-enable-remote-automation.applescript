@@ -74,18 +74,8 @@ repeat maxAttempts times
                 click button "Advanced" of toolbar 1 of window 1
                 delay 5
 
-                tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
-                    if value is 0 then click it
-                    delay 5
-                    if value is not 1 then
-                        error "Show features for web developers did not toggle on (value=" & (value as string) & ")"
-                    end if
-                end tell
-                delay 5
-
-                click button "Developer" of toolbar 1 of window 1
-                delay 5
-
+                -- Safari 18 consolidation (see stable-Safari script for details) —
+                -- "Allow remote automation" is directly in the Advanced pane.
                 tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
                     if value is 0 then click it
                     delay 5
