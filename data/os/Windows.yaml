@@ -48,6 +48,14 @@ windows:
   ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
   ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
 
+  # Fleetbench - fleet hardware-health benchmarking collector (RELOPS-2402)
+  # Collector binary is pulled from GitHub releases; pin the version here.
+  fleetbench:
+    version: '0.4.0'
+    download_url: "https://github.com/mozilla-platform-ops/fleetbench/releases/download"
+    install_dir: "%{facts.custom_win_systemdrive}\\fleetbench"
+    results_dir: "%{facts.custom_win_systemdrive}\\fleetbench\\results"
+
   # Taskcluster resources
   taskcluster:
     root_url: "https://firefox-ci-tc.services.mozilla.com"
