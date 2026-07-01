@@ -76,11 +76,16 @@ class roles_profiles::profiles::cltbld_user {
         }
       }
       # Ensure the AuthenticationAuthority hash is set.  Puppet does not set this when creating a user.  Needed for GUI/VNC access.
+      # macOS 14/15 (Darwin 23/24): AuthenticationAuthority key does not exist in the
+      # directory record and dscl -create returns eDSPermissionError. Authentication
+      # works without it on these versions, so skip the exec.
       $auth_key_hash = '\';ShadowHash;HASHLIST:<SALTED-SHA512-PBKDF2,SRP-RFC5054-4096-SHA512-PBKDF2,SMB-NT>\''
-      exec { 'cltbld_auth_key':
-        command => "/usr/bin/dscl . -create /Users/cltbld AuthenticationAuthority ${auth_key_hash}",
-        unless  => "/usr/bin/dscl . -read /Users/cltbld AuthenticationAuthority| grep -q -w ${auth_key_hash}",
-        #require => User['cltbld'],
+      unless $facts['os']['release']['major'] in ['23', '24'] {
+        exec { 'cltbld_auth_key':
+          command => "/usr/bin/dscl . -create /Users/cltbld AuthenticationAuthority ${auth_key_hash}",
+          unless  => "/usr/bin/dscl . -read /Users/cltbld AuthenticationAuthority| grep -q -w ${auth_key_hash}",
+          #require => User['cltbld'],
+        }
       }
 
       # Enable DevToolsSecurity
