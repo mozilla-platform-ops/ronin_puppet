@@ -97,9 +97,44 @@ repeat maxAttempts times
                 -- two-step (enable dev features -> Developer tab -> click).
                 tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
                     if value is 0 then click it
-                    delay 5
+                    delay 3
+                end tell
+
+                -- Safari shows a confirmation sheet ("Are you sure? Allow Remote
+                -- Automation?") when the checkbox is toggled on. The sheet has
+                -- a confirm button that varies by macOS version — commonly
+                -- "Enable", "Allow", or "Turn On". Try each; if none work,
+                -- enumerate the sheet's buttons and log them for diagnosis.
+                try
+                    if exists sheet 1 of window 1 then
+                        set sheetHandled to false
+                        repeat with btnName in {"Enable", "Allow", "Turn On", "OK"}
+                            try
+                                click button (btnName as string) of sheet 1 of window 1
+                                set sheetHandled to true
+                                exit repeat
+                            end try
+                        end repeat
+                        if not sheetHandled then
+                            -- Fallback: log every button on the sheet for diagnosis,
+                            -- then click the first non-Cancel one.
+                            set btnNames to name of every button of sheet 1 of window 1
+                            do shell script "echo \"confirmation sheet buttons: " & (btnNames as string) & "\" >> /Users/cltbld/Library/Logs/safari-enable-remote-automation.log"
+                            repeat with b in (buttons of sheet 1 of window 1)
+                                if (name of b) is not "Cancel" then
+                                    click b
+                                    exit repeat
+                                end if
+                            end repeat
+                        end if
+                        delay 5
+                    end if
+                end try
+
+                -- Verify checkbox is now on
+                tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
                     if value is not 1 then
-                        error "Allow remote automation did not toggle on (value=" & (value as string) & ")"
+                        error "Allow remote automation did not toggle on (value=" & (value as string) & ") — confirmation sheet may not have been handled"
                     end if
                 end tell
             end tell
