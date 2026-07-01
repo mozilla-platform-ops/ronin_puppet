@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mozilla-platform-ops/relops-herald/schema/event.schema.json",
+  "title": "Herald Change Event",
+  "description": "Structured change event emitted by a reporter workflow (e.g., ronin_puppet) on merge to its default branch. Consumed by Herald to render Markdown changelogs and (later) Slack digests.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source_repo",
+    "commit_sha",
+    "commit_url",
+    "actor",
+    "timestamp",
+    "commit_subject",
+    "ai_summary",
+    "entities",
+    "impact"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1",
+      "description": "Schema version. Bump when breaking changes are made."
+    },
+    "source_repo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+      "description": "GitHub <owner>/<repo> of the reporter."
+    },
+    "commit_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "description": "Full 40-char SHA of the merged commit on the default branch."
+    },
+    "commit_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Permalink to the commit on GitHub."
+    },
+    "pr_number": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "description": "PR number that merged this commit, if discoverable. Null for direct pushes."
+    },
+    "pr_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "Permalink to the PR. Null when pr_number is null."
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "GitHub login of the user who authored the merge."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp of the merge commit (UTC)."
+    },
+    "commit_subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "First line of the commit message."
+    },
+    "ai_summary": {
+      "type": "object",
+      "required": ["model", "generated_at", "description", "error"],
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Model ID used for generation (e.g., 'claude-opus-4-7', 'codex-2026-04'). Recorded for debugging quality regressions."
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp when the AI call completed (UTC)."
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Long-form Markdown summary (1-3 sentences). Null when the AI call failed; in that case 'error' is non-null."
+        },
+        "headline": {
+          "type": ["string", "null"],
+          "maxLength": 120,
+          "description": "Short summary (~80 chars) for Slack digests and central activity rows. Optional."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "Free-form labels proposed by the AI (e.g., 'dependency-bump', 'security'). Optional; safe to ignore in POC rendering."
+        },
+        "error": {
+          "type": ["string", "null"],
+          "description": "Non-null only when the AI call failed. Crier renders a stub entry in that case rather than dropping the change."
+        }
+      },
+      "allOf": [
+        {
+          "description": "If description is null, error must be non-null (and vice versa).",
+          "oneOf": [
+            { "properties": { "description": { "type": "string" }, "error": { "type": "null" } } },
+            { "properties": { "description": { "type": "null" }, "error": { "type": "string", "minLength": 1 } } }
+          ]
+        }
+      ]
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Entities impacted by this commit, derived deterministically from changed file paths.",
+      "items": {
+        "type": "object",
+        "required": ["type", "id", "files"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["role", "profile", "module", "role-hiera", "os-data", "common-data"],
+            "description": "Entity category. Set is intentionally small for the POC; new types added per reporter as needed."
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable identifier for the entity within its type (e.g., role name 'gecko_t_linux_2404_talos')."
+          },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 },
+            "description": "Repo-relative paths of files in this commit that mapped to this entity."
+          }
+        }
+      }
+    },
+    "impact": {
+      "type": "object",
+      "required": ["worker_pools", "azure_images"],
+      "additionalProperties": false,
+      "description": "Roles affected transitively by this commit, bucketed by what they represent. Roles whose name contains 'azure' are treated as Azure custom images Herald keeps track of; all other roles map 1:1 to Taskcluster worker pools.",
+      "properties": {
+        "worker_pools": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Role names (== worker pool identifiers) impacted by the change, excluding any role whose name contains 'azure'. Sorted."
+        },
+        "azure_images": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Role names containing 'azure', representing Azure custom images tracked separately from worker pools. Sorted."
+        }
+      }
+    }
+  }
+}
