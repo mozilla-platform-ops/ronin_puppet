@@ -45,8 +45,23 @@ RONIN_SETTINGS="ronin_settings"
 # remote files
 ROLE_FILE_REMOTE="/etc/puppet_role"
 SECRETS_FILE_REMOTE="/root/vault.yaml"
+RELOPS_BOOTSTRAP_CERT_DIR_REMOTE="/etc/relops-bootstrap"
 RONIN_SETTINGS_REMOTE="/etc/puppet/ronin_settings"
 BOOTSTRAP_FILE_REMOTE="/tmp/bootstrap.sh"
+
+# RELOPS_BOOTSTRAP_REPO env var: path to a local checkout of
+# mozilla-platform-ops/relops-bootstrap. When set, this script mints a
+# step-ca-issued client cert via $RELOPS_BOOTSTRAP_REPO/scripts/mint-scep-cert.sh
+# and SCPs it to /etc/relops-bootstrap/ on the worker, instead of SCP'ing a
+# local vault.yaml file. bootstrap_linux.sh on the worker then fetches
+# vault.yaml from forge.relops.mozilla.com via mTLS using that cert.
+#
+# Unset RELOPS_BOOTSTRAP_REPO to keep the legacy flow (local vault.yaml SCP).
+USE_MTLS_FLOW=0
+if [ -n "${RELOPS_BOOTSTRAP_REPO:-}" ]; then
+  USE_MTLS_FLOW=1
+  MINT_HELPER="${RELOPS_BOOTSTRAP_REPO}/scripts/mint-scep-cert.sh"
+fi
 
 
 # ensure critical scripts/files exist
@@ -56,9 +71,20 @@ if [ ! -e "$BOOTSTRAP_FILE" ]; then
   exit 1
 fi
 
-if [ ! -e "$SECRETS_FILE" ]; then
-  echo "Couldn't find secrets ('$SECRETS_FILE')"
-  exit 1
+if [ "$USE_MTLS_FLOW" -eq 1 ]; then
+  if [ ! -x "$MINT_HELPER" ]; then
+    echo "ERROR: RELOPS_BOOTSTRAP_REPO is set but mint helper not executable at $MINT_HELPER"
+    exit 1
+  fi
+else
+  if [ ! -e "$SECRETS_FILE" ]; then
+    echo "Couldn't find secrets ('$SECRETS_FILE') and RELOPS_BOOTSTRAP_REPO not set."
+    echo "Either:"
+    echo "  - Drop a vault.yaml in CWD for the legacy flow, OR"
+    echo "  - export RELOPS_BOOTSTRAP_REPO=/path/to/relops-bootstrap to mint a cert and"
+    echo "    have bootstrap_linux.sh fetch vault.yaml via mTLS on the worker."
+    exit 1
+  fi
 fi
 
 
@@ -125,12 +151,38 @@ scp "$BOOTSTRAP_FILE" "$REMOTE_SSH_USER"@"$THE_HOST":$BOOTSTRAP_FILE_REMOTE
 ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 755 $BOOTSTRAP_FILE_REMOTE"
 
 # place secrets
-# TODO: generate vault.yml with vault data
-scp "$SECRETS_FILE" "$REMOTE_SSH_USER"@"$THE_HOST":/tmp/vault.yaml
-# shellcheck disable=SC2029
-ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo mv /tmp/vault.yaml $SECRETS_FILE_REMOTE"
-# shellcheck disable=SC2029
-ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 640 $SECRETS_FILE_REMOTE"
+if [ "$USE_MTLS_FLOW" -eq 1 ]; then
+  # New flow: mint a step-ca cert + key locally via the relops-bootstrap helper,
+  # scp them to /etc/relops-bootstrap/ on the worker. bootstrap_linux.sh will
+  # then mTLS-fetch /root/vault.yaml from forge.relops.mozilla.com.
+  CERT_OUT=$(mktemp -d)
+  # shellcheck disable=SC2064
+  trap "rm -rf '$CERT_OUT'" EXIT
+
+  echo "Minting step-ca client cert for $THE_HOST (role=$THE_ROLE)..."
+  "$MINT_HELPER" "$THE_HOST" "$THE_ROLE" "$CERT_OUT"
+
+  # Stage cert + key under /tmp first, then sudo-move into the privileged dir.
+  scp "$CERT_OUT/cert.pem" "$REMOTE_SSH_USER"@"$THE_HOST":/tmp/relops-cert.pem
+  scp "$CERT_OUT/key.pem"  "$REMOTE_SSH_USER"@"$THE_HOST":/tmp/relops-key.pem
+
+  # shellcheck disable=SC2029
+  ssh "$REMOTE_SSH_USER"@"$THE_HOST" "
+    sudo mkdir -p $RELOPS_BOOTSTRAP_CERT_DIR_REMOTE &&
+    sudo chmod 0700 $RELOPS_BOOTSTRAP_CERT_DIR_REMOTE &&
+    sudo mv /tmp/relops-cert.pem $RELOPS_BOOTSTRAP_CERT_DIR_REMOTE/cert.pem &&
+    sudo mv /tmp/relops-key.pem  $RELOPS_BOOTSTRAP_CERT_DIR_REMOTE/key.pem &&
+    sudo chmod 0600 $RELOPS_BOOTSTRAP_CERT_DIR_REMOTE/cert.pem $RELOPS_BOOTSTRAP_CERT_DIR_REMOTE/key.pem &&
+    sudo chown -R root:root $RELOPS_BOOTSTRAP_CERT_DIR_REMOTE
+  "
+else
+  # Legacy flow: SCP a locally-staged vault.yaml directly.
+  scp "$SECRETS_FILE" "$REMOTE_SSH_USER"@"$THE_HOST":/tmp/vault.yaml
+  # shellcheck disable=SC2029
+  ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo mv /tmp/vault.yaml $SECRETS_FILE_REMOTE"
+  # shellcheck disable=SC2029
+  ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 640 $SECRETS_FILE_REMOTE"
+fi
 
 # finally, place role
 # shellcheck disable=SC2029
