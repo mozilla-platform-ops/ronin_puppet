@@ -35,7 +35,7 @@ if [ -f "$SENTINEL" ]; then
   exit 0
 fi
 
-PUPPET_BRANCH=sip-compatible-safari-automation
+PUPPET_BRANCH=master
 PUPPET_REPO=https://github.com/mozilla-platform-ops/ronin_puppet.git
 REPO_DIR=/opt/puppet_environments/mozilla-platform-ops/ronin_puppet
 LD_LABEL=com.mozilla.m4-bootstrap
