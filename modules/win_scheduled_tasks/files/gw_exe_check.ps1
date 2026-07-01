@@ -94,6 +94,31 @@ if ($uptimeMinutes -lt 15) {
     exit
 }
 
+# RELOPS-2402: fleetbench runs a ~15-min CPU benchmark BEFORE worker-runner starts
+# (maintainsystem-hw.ps1 :: Invoke-FleetbenchCheck). During that run generic-worker is
+# intentionally not started yet and uptime can pass the 15-min grace above, which would
+# otherwise trip this watchdog into a needless reboot/PXE. Skip while a fresh benchmark
+# marker is present. Read at Machine scope so we get the value live from the registry, not
+# the (possibly stale) process env block. The marker is the run's UTC start time; a marker
+# older than the max expected run is treated as stale so a crashed/rebooted run mid-benchmark
+# cannot silently disable this check forever.
+$fleetbenchMarker = [Environment]::GetEnvironmentVariable('MOZ_FLEETBENCH_RUNNING', 'Machine')
+if ($fleetbenchMarker) {
+    $fleetbenchMaxRunMinutes = 30   # 900s benchmark + warmup/startup slack
+    [datetimeoffset] $fleetbenchStarted = [datetimeoffset]::MinValue
+    if ([datetimeoffset]::TryParse($fleetbenchMarker, [ref] $fleetbenchStarted)) {
+        $fleetbenchRunMinutes = ([datetimeoffset]::UtcNow - $fleetbenchStarted).TotalMinutes
+        if ($fleetbenchRunMinutes -ge 0 -and $fleetbenchRunMinutes -lt $fleetbenchMaxRunMinutes) {
+            Write-Log -message "Fleetbench benchmark in progress (started $($fleetbenchStarted.UtcDateTime.ToString('o')), $([math]::Round($fleetbenchRunMinutes, 1)) min ago). Skipping generic-worker check until it completes." -severity 'DEBUG'
+            exit
+        }
+        Write-Log -message "Fleetbench marker present but stale ($([math]::Round($fleetbenchRunMinutes, 1)) min old, max $fleetbenchMaxRunMinutes). Ignoring and continuing generic-worker check." -severity 'WARN'
+    }
+    else {
+        Write-Log -message "Fleetbench marker present but unparseable ('$fleetbenchMarker'). Ignoring and continuing generic-worker check." -severity 'WARN'
+    }
+}
+
 # Var set by the maintain system script
 # Check gw_initiated env var
 if ($env:gw_initiated -ne 'true') {
