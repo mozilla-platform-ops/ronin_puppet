@@ -15,15 +15,21 @@
 # run-puppet.sh on every boot until the safari LaunchAgent flow
 # completes — then the daemon self-removes.
 #
-# Prereqs delivered separately by MDM/operator:
-#   - /var/root/vault.yaml          (still hand-dropped today)
+# Prereqs delivered by SimpleMDM:
 #   - /etc/puppet_role              (MDM Custom Attribute)
 #   - "Mozilla CI TCC Permissions"  PPPC mobileconfig (MDM Custom Profile)
-#   - Xcode Command Line Tools      (DEP image — confirmed present on m4-118 post-EACS)
-#   - admin GUI/VNC login           (load-bearing for Bootstrap Token custody)
+#   - "Dev - SCEP" MDM profile      (installs step-ca-issued client cert into
+#                                    /Library/Keychains/System.keychain — used
+#                                    for the mTLS vault.yaml fetch below)
+#   - Xcode Command Line Tools      (DEP image)
 #
-# The script will block until `admin` holds a SecureToken before proceeding,
-# so an out-of-order MDM kickoff won't strand BST on cltbld.
+# What used to be manual and is now automatic:
+#   - admin Bootstrap Token custody — handled via `profiles install -type
+#     bootstraptoken` + `sysadminctl -secureTokenOn admin` in step 1 below.
+#     No VNC-in-as-admin required.
+#   - vault.yaml delivery — fetched via SecureTransport-curl mTLS from
+#     forge.relops.mozilla.com using the SCEP-issued keychain identity.
+#     No hand-drop from an operator laptop required.
 
 set -u
 exec > /var/log/m4-bootstrap.log 2>&1
@@ -43,39 +49,118 @@ LD_PATH=/Library/LaunchDaemons/${LD_LABEL}.plist
 DRIVER=/usr/local/sbin/m4-bootstrap-driver.sh
 
 #------------------------------------------------------------------------------
-# 1. Wait for admin BST custody
+# 1. Ensure admin has SecureToken via Bootstrap Token escrow
 #------------------------------------------------------------------------------
-echo "Waiting for SecureToken on admin (admin must VNC-login first)..."
-for _ in $(seq 1 180); do
-  if /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
-    echo "admin SecureToken ENABLED — BST custody good."
-    break
+# macOS 12.4+: when no -adminUser is passed to `sysadminctl -secureTokenOn`,
+# the system auto-uses the escrowed Bootstrap Token to grant SecureToken.
+# DEP-enrolled devices escrow BST to SimpleMDM after the first console login;
+# `profiles install -type bootstraptoken` force-escrows on demand and is
+# idempotent.
+echo "=== ensuring admin has SecureToken via Bootstrap Token ==="
+
+if /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
+  echo "admin already has SecureToken — skipping BST grant"
+else
+  # Create admin user if it doesn't already exist (cred: admin/admin)
+  if ! /usr/bin/dscl . -read /Users/admin >/dev/null 2>&1; then
+    echo "creating admin user"
+    /usr/sbin/sysadminctl -addUser admin -password "admin" -admin -fullName "admin" 2>&1
   fi
+
+  echo "escrowing bootstrap token to MDM"
+  /usr/bin/profiles install -type bootstraptoken 2>&1 || true
   sleep 10
-done
+
+  echo "granting SecureToken to admin via bootstrap token"
+  /usr/sbin/sysadminctl -secureTokenOn admin -password "admin" 2>&1
+  sleep 5
+
+  if ! /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
+    echo "BST grant didn't take. Falling back to waiting for manual VNC-admin login..."
+    for _ in $(seq 1 180); do
+      if /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
+        break
+      fi
+      sleep 10
+    done
+  fi
+fi
+
 if ! /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
-  echo "ERROR: admin does not hold a SecureToken after 30 min. Aborting."
-  echo "Action: VNC in as admin and complete a console login, then re-run script."
+  echo "ERROR: admin does not hold a SecureToken after BST attempt + 30 min wait."
+  echo "Action: ssh in as admin (or VNC) to trigger an interactive auth, then"
+  echo "re-run this script. SSH login alone is enough to seed BST custody."
   exit 1
 fi
 
 #------------------------------------------------------------------------------
-# 2. Wait for prerequisites delivered out-of-band
+# 2. Wait for MDM-delivered puppet_role, then fetch vault.yaml via mTLS
 #------------------------------------------------------------------------------
-for need in /var/root/vault.yaml /etc/puppet_role; do
-  echo "Waiting for $need..."
-  for _ in $(seq 1 60); do
-    [ -f "$need" ] && break
-    sleep 10
-  done
-  if [ ! -f "$need" ]; then
-    echo "ERROR: $need not delivered within 10 min. Aborting."
-    exit 1
-  fi
+# Only prereq we now wait for out-of-band is /etc/puppet_role, delivered by a
+# SimpleMDM Custom Attribute. vault.yaml is no longer hand-dropped — we fetch
+# it via SecureTransport-curl mTLS using the SCEP-issued keychain identity.
+echo "Waiting for /etc/puppet_role..."
+for _ in $(seq 1 60); do
+  [ -f /etc/puppet_role ] && break
+  sleep 10
 done
-/bin/chmod 0600 /var/root/vault.yaml
-/usr/sbin/chown root:wheel /var/root/vault.yaml
-echo "puppet_role = $(cat /etc/puppet_role)"
+if [ ! -f /etc/puppet_role ]; then
+  echo "ERROR: /etc/puppet_role not delivered within 10 min. Aborting."
+  exit 1
+fi
+ROLE=$(/usr/bin/tr -d '[:space:]' < /etc/puppet_role)
+echo "puppet_role = $ROLE"
+
+echo "=== fetch vault.yaml via mTLS from forge.relops.mozilla.com ==="
+# Find the SCEP-issued identity by issuer DN. Subject CN comes from
+# %ComputerName% at SCEP-enrollment time and isn't stable across re-enrolls;
+# issuer DN is.
+ISSUER_CN="Mozilla RelOps Bootstrap CA Intermediate CA"
+IDENTITY_CN=""
+echo "Waiting for SCEP cert (issued by '$ISSUER_CN') in System keychain..."
+deadline=$(( $(/bin/date +%s) + 300 ))
+while [ "$(/bin/date +%s)" -lt "$deadline" ] && [ -z "$IDENTITY_CN" ]; do
+  while IFS= read -r line; do
+    if [[ $line =~ \)\ ([0-9A-Fa-f]+)\ \"(.+)\"$ ]]; then
+      sha="${BASH_REMATCH[1]}"
+      cn="${BASH_REMATCH[2]}"
+      if /usr/bin/security find-certificate -Z "$sha" -p /Library/Keychains/System.keychain 2>/dev/null \
+          | /usr/bin/openssl x509 -noout -issuer 2>/dev/null \
+          | /usr/bin/grep -q "$ISSUER_CN"; then
+        IDENTITY_CN="$cn"
+        break
+      fi
+    fi
+  done < <(/usr/bin/security find-identity -v /Library/Keychains/System.keychain 2>/dev/null)
+  [ -z "$IDENTITY_CN" ] && /bin/sleep 5
+done
+if [ -z "$IDENTITY_CN" ]; then
+  echo "ERROR: no SCEP identity found in keychain after 5 min. Aborting."
+  exit 1
+fi
+echo "using identity: '$IDENTITY_CN'"
+
+# CURL_SSL_BACKEND=securetransport routes TLS handshake signing through the
+# OS-level network stack — which IS in the keychain ACL sign-allowlist. Our
+# shell is not, so a stock curl would prompt or fail.
+TMP_YAML=$(/usr/bin/mktemp /var/root/.vault-yaml.XXXXXX)
+HTTP=$(CURL_SSL_BACKEND=securetransport /usr/bin/curl -sS --fail-with-body --max-time 30 \
+    --cert "$IDENTITY_CN" \
+    -w '%{http_code}' \
+    -o "$TMP_YAML" \
+    "https://forge.relops.mozilla.com/secret/$ROLE") || true
+
+if [ "$HTTP" != "200" ]; then
+  echo "ERROR: broker returned HTTP $HTTP"
+  /bin/cat "$TMP_YAML" 2>/dev/null
+  /bin/rm -f "$TMP_YAML"
+  exit 1
+fi
+
+/bin/chmod 0600 "$TMP_YAML"
+/usr/sbin/chown root:wheel "$TMP_YAML"
+/bin/mv "$TMP_YAML" /var/root/vault.yaml
+echo "vault.yaml fetched ($(/usr/bin/wc -c < /var/root/vault.yaml) bytes)"
 
 #------------------------------------------------------------------------------
 # 3. Ensure git works
