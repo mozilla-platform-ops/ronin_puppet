@@ -12,9 +12,21 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+disk_usage_percent() {
+  local path="$1"
+  local usage
+
+  usage=$(df --output=pcent "$path" 2>/dev/null | tail -1 | tr -dc "0-9")
+  if [[ "$usage" =~ ^[0-9]+$ ]]; then
+    echo "$usage"
+  else
+    echo 0
+  fi
+}
+
 SECONDS=0
-root_usage=$(df --output=pcent / | tail -1 | tr -dc "0-9")
-boot_usage=$(df --output=pcent /boot | tail -1 | tr -dc "0-9")
+root_usage=$(disk_usage_percent /)
+boot_usage=$(disk_usage_percent /boot)
 
 echo "Root disk usage is ${root_usage}%"
 echo "Boot disk usage is ${boot_usage}%"
