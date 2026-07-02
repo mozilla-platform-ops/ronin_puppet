@@ -71,7 +71,11 @@ class roles_profiles::profiles::disable_services {
         if ($facts['custom_win_location'] == 'datacenter') {
           include win_disable_services::disable_ms_edge
           include win_disable_services::disable_defender_smartscreen
-          include win_disable_services::extended_uninstall_appx_packages
+          # RELOPS-2464: Commented out for evaluation. This works correctly, but the
+          # AppX package removal on HW (datacenter) workers adds an incredible amount of
+          # overhead/time to deployment and to startup after every reboot / new task-user
+          # logon. Kept in place (not removed) while we evaluate removing it.
+          # include win_disable_services::extended_uninstall_appx_packages
           ## Can't disable appxsvc on ref hardware as it will affect the task
           ## user's ability to use codecs
           ## Ref: https://bugzilla.mozilla.org/show_bug.cgi?id=2013985
