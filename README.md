@@ -57,10 +57,10 @@ We used Vagrant/VirutalBox because some things don't work with Docker (kernel mo
 #### converging and running tests
 
 ```bash
-# install ruby via homebrew or other means
-brew install ruby
-# add gem bin path (may differ on your system) to your PATH
-export PATH=$PATH:/usr/local/lib/ruby/gems/2.6.0/bin  # may be 2.7.0
+# install rbenv and the repo-pinned Ruby
+brew install rbenv ruby-build
+rbenv install -s "$(cat .ruby-version)"
+rbenv local "$(cat .ruby-version)"
 gem install bundler
 
 # install testing tools
@@ -79,6 +79,21 @@ bundle install
 # login to host
 ./bin/kitchen_docker login linux-perf
 ```
+
+#### testing interrupted dpkg recovery
+
+Do not simulate interrupted dpkg by writing arbitrary files into
+`/var/lib/dpkg/updates`; apt may detect that state, but
+`dpkg --configure -a` will correctly reject invalid update files.
+
+Use a real unpacked package state instead:
+
+```bash
+./bin/kitchen_docker exec linux-perf-ubuntu-2404 -c \
+  'sudo rm -f /var/lib/dpkg/updates/0001 && cd /tmp && apt-get download zstd && sudo dpkg --unpack ./zstd_*.deb && sudo dpkg --audit'
+```
+
+Then run `run-puppet` and confirm `dpkg --audit` is clean afterward.
 
 #### creating a new suite
 

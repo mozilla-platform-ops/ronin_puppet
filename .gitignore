@@ -38,9 +38,6 @@ vendor/
 # ignore direnv
 .envrc
 
-# rbenv
-.ruby-version
-
 # Local .terraform directories
 **/.terraform/*
 
