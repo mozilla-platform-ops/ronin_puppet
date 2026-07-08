@@ -128,6 +128,27 @@ class worker_runner (
                 }
             }
 
+            # Purge generic-worker's persisted cache-state on a version change.
+            # Across some version boundaries the on-disk cache-state schema
+            # changes (e.g. the ownerUsername/mounterUID fields dropped in
+            # v100.5.0), and the new binary aborts at Mounts/Caches init with
+            # `json: unknown field ...` when it loads state written by the old
+            # binary. These workers reboot themselves between tasks, so there is
+            # no reliable manual window to clear this after a bump -- it must
+            # land in the same catalog that swaps the binary, before the worker
+            # next starts. Fires only when a binary actually changes
+            # (refreshonly + subscribe). rm -f is idempotent and engine-agnostic:
+            # multiuser* runs from ${gw_root_dir}, the simple engine from
+            # ${data_dir}. The files regenerate on the next clean start.
+            exec { 'purge-stale-gw-cache-state-on-version-change':
+                command     => "/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json",
+                refreshonly => true,
+                subscribe   => [
+                    File['/usr/local/bin/generic-worker-multiuser'],
+                    File['/usr/local/bin/generic-worker-simple'],
+                ],
+            }
+
             # Create worker data dir
             file { $data_dir:
                 ensure => 'directory',
