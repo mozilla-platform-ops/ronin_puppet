@@ -10,8 +10,10 @@ worker_metadata:
 
 # Role-owned Taskcluster worker version (read by profiles::worker; takes
 # precedence over the legacy vault-sourced worker.taskcluster_version below).
-# Pinned to the current running version -- this is a no-op control move.
-taskcluster_version: '91.0.2'
+# Bumped 91.0.2 -> 100.5.0 to validate end-to-end that the role-owned value
+# drives the worker version with no per-host vault edit (vault's nested
+# worker.taskcluster_version is never read once this top-level key is set).
+taskcluster_version: '100.5.0'
 
 worker:
   taskcluster_version: 91.0.2
