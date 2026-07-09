@@ -132,13 +132,16 @@ class reprovision_runner (
     # PIP_CONFIG_FILE=/dev/null ignores the fleet-wide /Library/Application Support/pip/pip.conf
     # (no-index + internal mirror), which only carries the CI worker's deps — the orchestrator's
     # deps (httpx, typer, taskcluster, …) live on public PyPI, which MDC1 can reach.
+    # creates-guarded (not refreshonly): installs whenever the console script is
+    # absent, so a partial/failed prior run self-heals on the next apply. The
+    # editable install source-links the repo, so vcsrepo's `latest` pulls pick up
+    # code changes without a reinstall — only a missing bin needs this to re-run.
     exec { 'reprovision_runner_pip_install':
       command     => "${venv_dir}/bin/pip install --upgrade pip && ${venv_dir}/bin/pip install -e ${orch_dir}",
       path        => ['/usr/bin', '/bin'],
       environment => ['PIP_CONFIG_FILE=/dev/null'],
-      refreshonly => true,
+      creates     => $runner_bin,
       timeout     => 900,
-      subscribe   => Exec['reprovision_runner_venv'],
       require     => [Exec['reprovision_runner_venv'], Vcsrepo[$repo_dir]],
       notify      => Exec['reprovision_runner_reload'],
     }
