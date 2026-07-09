@@ -86,6 +86,13 @@ class reprovision_runner (
     $plist_label   = 'com.mozilla.reprovision-runner'
     $plist_path    = "/Library/LaunchDaemons/${plist_label}.plist"
 
+    # Companion: the hangar-screen-agent (on-demand VNC frames for the live view). Same
+    # venv, same env file (HANGAR_API_URL + mTLS cert + admin creds), second LaunchDaemon.
+    $screen_bin          = "${venv_dir}/bin/hangar-screen-agent"
+    $screen_wrapper      = '/usr/local/bin/hangar-screen-agent.sh'
+    $screen_plist_label  = 'com.mozilla.hangar-screen-agent'
+    $screen_plist_path   = "/Library/LaunchDaemons/${screen_plist_label}.plist"
+
     # ---- python 3.11 (framework build, same source as scriptworker_prereqs) ----
     class { 'packages::python3':
       version => $python_version,
@@ -140,10 +147,12 @@ class reprovision_runner (
       command     => "${venv_dir}/bin/pip install --upgrade pip && ${venv_dir}/bin/pip install -e ${orch_dir}",
       path        => ['/usr/bin', '/bin'],
       environment => ['PIP_CONFIG_FILE=/dev/null'],
-      creates     => $runner_bin,
+      # Guard on the *screen-agent* bin (the newest console script) so an existing venv
+      # re-installs to pick up asyncvnc + hangar-screen-agent, not just reprovision-runner.
+      creates     => $screen_bin,
       timeout     => 900,
       require     => [Exec['reprovision_runner_venv'], Vcsrepo[$repo_dir]],
-      notify      => Exec['reprovision_runner_reload'],
+      notify      => [Exec['reprovision_runner_reload'], Exec['reprovision_runner_screen_reload']],
     }
 
     # ---- config dir + cert/key + env file (all root-only) ----
@@ -251,9 +260,10 @@ class reprovision_runner (
       group   => 'wheel',
       mode    => '0644',
       content => epp("${module_name}/com.mozilla.reprovision-runner.plist.epp", {
-        label   => $plist_label,
-        wrapper => $wrapper,
-        log_dir => $log_dir,
+        label    => $plist_label,
+        wrapper  => $wrapper,
+        log_dir  => $log_dir,
+        log_name => 'runner',
       }),
       require => [File[$wrapper], File[$env_file]],
       notify  => Exec['reprovision_runner_reload'],
@@ -267,6 +277,44 @@ class reprovision_runner (
       path        => ['/bin', '/usr/bin'],
       refreshonly => true,
       require     => File[$plist_path],
+    }
+
+    # ---- companion: hangar-screen-agent (VNC frames for the live view) ----
+    # Reuses the runner's env file + the same wrapper/plist templates, pointed at the
+    # screen-agent bin.
+    file { $screen_wrapper:
+      ensure  => file,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0755',
+      content => epp("${module_name}/reprovision-runner.sh.epp", {
+        env_file   => $env_file,
+        runner_bin => $screen_bin,
+      }),
+      require => Exec['reprovision_runner_pip_install'],
+      notify  => Exec['reprovision_runner_screen_reload'],
+    }
+
+    file { $screen_plist_path:
+      ensure  => file,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0644',
+      content => epp("${module_name}/com.mozilla.reprovision-runner.plist.epp", {
+        label    => $screen_plist_label,
+        wrapper  => $screen_wrapper,
+        log_dir  => $log_dir,
+        log_name => 'screen-agent',
+      }),
+      require => [File[$screen_wrapper], File[$env_file]],
+      notify  => Exec['reprovision_runner_screen_reload'],
+    }
+
+    exec { 'reprovision_runner_screen_reload':
+      command     => "/bin/bash -c 'launchctl bootout system ${screen_plist_path} 2>/dev/null || true; launchctl bootstrap system ${screen_plist_path}'",
+      path        => ['/bin', '/usr/bin'],
+      refreshonly => true,
+      require     => File[$screen_plist_path],
     }
   }
 }
