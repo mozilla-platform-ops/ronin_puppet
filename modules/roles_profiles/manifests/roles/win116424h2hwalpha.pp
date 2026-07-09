@@ -1,4 +1,5 @@
 class roles_profiles::roles::win116424h2hwalpha {
+  include roles_profiles::profiles::sbom
   include roles_profiles::profiles::chocolatey
   ## Install before Widnows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
