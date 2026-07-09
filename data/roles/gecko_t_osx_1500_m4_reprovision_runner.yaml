@@ -1,33 +1,32 @@
 ---
 ntp_server: time.apple.org
 
-# Hangar reprovision-runner. Non-secret config here; creds resolve from HashiCorp
-# Vault via the vault_secrets:: hiera-vault backend (same pattern the CI m4 role
-# uses for worker creds). See modules/reprovision_runner/README.md.
+# Hangar reprovision-runner. Only NON-secret config lives here. The creds resolve
+# from the `vault_secrets::reprovision_runner` key, which comes from the host's
+# /var/root/vault.yaml (dropped on every worker; run-puppet.sh copies it to
+# data/secrets/vault.yaml — the top hiera layer — so it wins). Same key also
+# resolves from the live Vault server via the vault_secrets:: hiera-vault backend
+# on the rare `bolt` path. See modules/reprovision_runner/README.md.
+#
+# Add this block to /var/root/vault.yaml on the runner host (NOT committed here):
+#   vault_secrets::reprovision_runner:
+#     data:
+#       tc_client_id:       <op://RelOps/Taskcluster Quarantine/username>
+#       tc_access_token:    <op://RelOps/Taskcluster Quarantine/password>
+#       simplemdm_api_key:  <op://RelOps/SimpleMDM API admin/password>
+#       ssh_admin_password: <op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password>
+#       ssh_admin_key: |    <op://RelOps/RelOps Worker Admin Key/notesPlain>  (PEM)
+#       client_cert: |      mTLS cert — PEM leaf + intermediates (CN=<hostname>)
+#       client_key: |       mTLS key — PEM
 reprovision_runner:
   enabled: true
-  # 'vault' until step-ca is reachable from MDC1 (it isn't today — step-ca is
-  # GCP/IAP-only, so the step_renew renew daemon can't reach it). The cert+key
-  # ride the same Vault pipeline as the other creds; flip to 'step_renew' once
-  # step-ca has an MDC1-reachable endpoint (like forge.relops.mozilla.com does).
+  # 'vault' = cert+key delivered via /var/root/vault.yaml. step-ca isn't reachable
+  # from MDC1 (GCP/IAP-only), so the step_renew auto-renew daemon can't run here
+  # yet; flip to 'step_renew' once step-ca has an MDC1-reachable endpoint.
   cert_mode: vault
   repo_revision: main
   runner_id: "%{facts.networking.hostname}"
   # hangar_api_url + step_ca_url use the module defaults.
-  #
-  # Creds — write these to Vault at hiera/data/roles/%{facts.puppet_role}/reprovision_runner
-  # (KV fields below). Same values the operator CLI resolves from the RelOps
-  # 1Password vault:
-  #   tc_client_id       <- op://RelOps/Taskcluster Quarantine/username
-  #   tc_access_token    <- op://RelOps/Taskcluster Quarantine/password
-  #   simplemdm_api_key  <- op://RelOps/SimpleMDM API admin/password
-  #   ssh_admin_password <- op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password
-  #   ssh_admin_key      <- op://RelOps/RelOps Worker Admin Key/notesPlain  (PEM)
-  # cert_mode 'vault' also needs the mTLS client cert + key (CN=<hostname>, minted
-  # operator-side from step-ca via the IAP tunnel and written into the same Vault
-  # KV). Rotate by re-minting + updating Vault before expiry.
-  #   client_cert        <- PEM leaf + intermediates
-  #   client_key         <- PEM private key
   tc_client_id: "%{lookup('vault_secrets::reprovision_runner.data.tc_client_id')}"
   tc_access_token: "%{lookup('vault_secrets::reprovision_runner.data.tc_access_token')}"
   simplemdm_api_key: "%{lookup('vault_secrets::reprovision_runner.data.simplemdm_api_key')}"
@@ -36,6 +35,5 @@ reprovision_runner:
   client_cert: "%{lookup('vault_secrets::reprovision_runner.data.client_cert')}"
   client_key: "%{lookup('vault_secrets::reprovision_runner.data.client_key')}"
 
-# --- For the future flip to cert_mode: step_renew (once step-ca is MDC1-reachable) ---
-# step-ca root CA fingerprint (public, non-secret) for `step ca bootstrap`:
+# --- Future: flip to cert_mode: step_renew once step-ca is MDC1-reachable ---
 #   reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
