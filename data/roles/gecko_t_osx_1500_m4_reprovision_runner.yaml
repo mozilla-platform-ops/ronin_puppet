@@ -1,26 +1,41 @@
 ---
 ntp_server: time.apple.org
 
-# Hangar reprovision-runner. Non-secret config lives here; creds + the step-ca
-# enrollment live in vault.yaml (see modules/reprovision_runner/README.md).
+# Hangar reprovision-runner. Non-secret config here; creds resolve from HashiCorp
+# Vault via the vault_secrets:: hiera-vault backend (same pattern the CI m4 role
+# uses for worker creds). See modules/reprovision_runner/README.md.
 reprovision_runner:
   enabled: true
-  cert_mode: step_renew
+  # 'vault' until step-ca is reachable from MDC1 (it isn't today — step-ca is
+  # GCP/IAP-only, so the step_renew renew daemon can't reach it). The cert+key
+  # ride the same Vault pipeline as the other creds; flip to 'step_renew' once
+  # step-ca has an MDC1-reachable endpoint (like forge.relops.mozilla.com does).
+  cert_mode: vault
   repo_revision: main
   runner_id: "%{facts.networking.hostname}"
-  # hangar_api_url + step_ca_url use the module defaults
+  # hangar_api_url + step_ca_url use the module defaults.
   #
-  # Secrets (data/secrets/vault.yaml, fetched per-host) — same values the
-  # operator CLI resolves from the RelOps 1Password vault:
-  #   reprovision_runner:
-  #     tc_client_id:        <op://RelOps/Taskcluster Quarantine/username>
-  #     tc_access_token:     <op://RelOps/Taskcluster Quarantine/password>
-  #     simplemdm_api_key:   <op://RelOps/SimpleMDM API admin/password>
-  #     ssh_admin_password:  <op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password>
-  #     ssh_admin_key: |     <op://RelOps/RelOps Worker Admin Key/notesPlain>
-  #       -----BEGIN OPENSSH PRIVATE KEY-----
-  #       ...
-  #
-  # step-ca enrollment (cert_mode: step_renew), also in vault.yaml:
-  #   reprovision_runner::step_renew::ca_fingerprint: <root CA SHA-256 fingerprint>
-  #   reprovision_runner::step_renew::enrollment_token: <single-use bootstrap token>
+  # Creds — write these to Vault at hiera/data/roles/%{facts.puppet_role}/reprovision_runner
+  # (KV fields below). Same values the operator CLI resolves from the RelOps
+  # 1Password vault:
+  #   tc_client_id       <- op://RelOps/Taskcluster Quarantine/username
+  #   tc_access_token    <- op://RelOps/Taskcluster Quarantine/password
+  #   simplemdm_api_key  <- op://RelOps/SimpleMDM API admin/password
+  #   ssh_admin_password <- op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password
+  #   ssh_admin_key      <- op://RelOps/RelOps Worker Admin Key/notesPlain  (PEM)
+  # cert_mode 'vault' also needs the mTLS client cert + key (CN=<hostname>, minted
+  # operator-side from step-ca via the IAP tunnel and written into the same Vault
+  # KV). Rotate by re-minting + updating Vault before expiry.
+  #   client_cert        <- PEM leaf + intermediates
+  #   client_key         <- PEM private key
+  tc_client_id: "%{lookup('vault_secrets::reprovision_runner.data.tc_client_id')}"
+  tc_access_token: "%{lookup('vault_secrets::reprovision_runner.data.tc_access_token')}"
+  simplemdm_api_key: "%{lookup('vault_secrets::reprovision_runner.data.simplemdm_api_key')}"
+  ssh_admin_password: "%{lookup('vault_secrets::reprovision_runner.data.ssh_admin_password')}"
+  ssh_admin_key: "%{lookup('vault_secrets::reprovision_runner.data.ssh_admin_key')}"
+  client_cert: "%{lookup('vault_secrets::reprovision_runner.data.client_cert')}"
+  client_key: "%{lookup('vault_secrets::reprovision_runner.data.client_key')}"
+
+# --- For the future flip to cert_mode: step_renew (once step-ca is MDC1-reachable) ---
+# step-ca root CA fingerprint (public, non-secret) for `step ca bootstrap`:
+#   reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
