@@ -99,6 +99,16 @@ class reprovision_runner (
       mode   => '0755',
     }
 
+    # vcsrepo runs `git config --system --add safe.directory` for the root-owned
+    # clone (git's dubious-ownership guard). That writes /usr/local/etc/gitconfig,
+    # whose parent dir doesn't exist by default on macOS — without it the clone
+    # fails with "could not lock config file ...: No such file or directory".
+    exec { 'reprovision_runner_git_systemdir':
+      command => 'mkdir -p /usr/local/etc',
+      path    => ['/bin', '/usr/bin'],
+      creates => '/usr/local/etc',
+    }
+
     vcsrepo { $repo_dir:
       ensure   => latest,
       provider => git,
@@ -106,7 +116,7 @@ class reprovision_runner (
       revision => $repo_revision,
       owner    => 'root',
       group    => 'wheel',
-      require  => File[$install_dir],
+      require  => [File[$install_dir], Exec['reprovision_runner_git_systemdir']],
       notify   => Exec['reprovision_runner_pip_install'],
     }
 
@@ -119,12 +129,19 @@ class reprovision_runner (
 
     # Editable install so a repo bump (vcsrepo latest) takes effect without a
     # rebuild. Re-runs when the venv is (re)created or the repo advances.
+    # PIP_CONFIG_FILE=/dev/null ignores the fleet-wide /Library/Application Support/pip/pip.conf
+    # (no-index + internal mirror), which only carries the CI worker's deps — the orchestrator's
+    # deps (httpx, typer, taskcluster, …) live on public PyPI, which MDC1 can reach.
+    # creates-guarded (not refreshonly): installs whenever the console script is
+    # absent, so a partial/failed prior run self-heals on the next apply. The
+    # editable install source-links the repo, so vcsrepo's `latest` pulls pick up
+    # code changes without a reinstall — only a missing bin needs this to re-run.
     exec { 'reprovision_runner_pip_install':
       command     => "${venv_dir}/bin/pip install --upgrade pip && ${venv_dir}/bin/pip install -e ${orch_dir}",
       path        => ['/usr/bin', '/bin'],
-      refreshonly => true,
+      environment => ['PIP_CONFIG_FILE=/dev/null'],
+      creates     => $runner_bin,
       timeout     => 900,
-      subscribe   => Exec['reprovision_runner_venv'],
       require     => [Exec['reprovision_runner_venv'], Vcsrepo[$repo_dir]],
       notify      => Exec['reprovision_runner_reload'],
     }
