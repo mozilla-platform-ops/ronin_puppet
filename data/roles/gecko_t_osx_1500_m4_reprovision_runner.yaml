@@ -1,23 +1,21 @@
 ---
 ntp_server: time.apple.org
 
-# Hangar reprovision-runner. Only NON-secret config lives here. The creds resolve
-# from the `vault_secrets::reprovision_runner` key, which comes from the host's
-# /var/root/vault.yaml (dropped on every worker; run-puppet.sh copies it to
-# data/secrets/vault.yaml — the top hiera layer — so it wins). Same key also
-# resolves from the live Vault server via the vault_secrets:: hiera-vault backend
-# on the rare `bolt` path. See modules/reprovision_runner/README.md.
+# Hangar reprovision-runner. NON-secret config only. The sensitive fields are
+# dropped on the host in /var/root/vault.yaml (same as every worker; run-puppet.sh
+# copies it to data/secrets/vault.yaml, the top hiera layer). Config here + secrets
+# there share the `reprovision_runner` key and are combined with a DEEP merge, so
+# neither shadows the other.
 #
-# Add this block to /var/root/vault.yaml on the runner host (NOT committed here):
-#   vault_secrets::reprovision_runner:
-#     data:
-#       tc_client_id:       <op://RelOps/Taskcluster Quarantine/username>
-#       tc_access_token:    <op://RelOps/Taskcluster Quarantine/password>
-#       simplemdm_api_key:  <op://RelOps/SimpleMDM API admin/password>
-#       ssh_admin_password: <op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password>
-#       ssh_admin_key: |    <op://RelOps/RelOps Worker Admin Key/notesPlain>  (PEM)
-#       client_cert: |      mTLS cert — PEM leaf + intermediates (CN=<hostname>)
-#       client_key: |       mTLS key — PEM
+# Add this flat block to /var/root/vault.yaml on the runner host (NOT committed):
+#   reprovision_runner:
+#     tc_client_id:       <op://RelOps/Taskcluster Quarantine/username>
+#     tc_access_token:    <op://RelOps/Taskcluster Quarantine/password>
+#     simplemdm_api_key:  <op://RelOps/SimpleMDM API admin/password>
+#     ssh_admin_password: <op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password>
+#     ssh_admin_key: |    <op://RelOps/RelOps Worker Admin Key/notesPlain>  (PEM)
+#     client_cert: |      mTLS cert — PEM leaf + intermediates (CN=<hostname>)
+#     client_key: |       mTLS key — PEM
 reprovision_runner:
   enabled: true
   # 'vault' = cert+key delivered via /var/root/vault.yaml. step-ca isn't reachable
@@ -27,13 +25,6 @@ reprovision_runner:
   repo_revision: main
   runner_id: "%{facts.networking.hostname}"
   # hangar_api_url + step_ca_url use the module defaults.
-  tc_client_id: "%{lookup('vault_secrets::reprovision_runner.data.tc_client_id')}"
-  tc_access_token: "%{lookup('vault_secrets::reprovision_runner.data.tc_access_token')}"
-  simplemdm_api_key: "%{lookup('vault_secrets::reprovision_runner.data.simplemdm_api_key')}"
-  ssh_admin_password: "%{lookup('vault_secrets::reprovision_runner.data.ssh_admin_password')}"
-  ssh_admin_key: "%{lookup('vault_secrets::reprovision_runner.data.ssh_admin_key')}"
-  client_cert: "%{lookup('vault_secrets::reprovision_runner.data.client_cert')}"
-  client_key: "%{lookup('vault_secrets::reprovision_runner.data.client_key')}"
 
 # --- Future: flip to cert_mode: step_renew once step-ca is MDC1-reachable ---
 #   reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
