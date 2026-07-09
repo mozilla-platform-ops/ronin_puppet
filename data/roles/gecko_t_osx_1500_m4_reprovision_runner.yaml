@@ -1,0 +1,26 @@
+---
+ntp_server: time.apple.org
+
+# Hangar reprovision-runner. Non-secret config lives here; creds + the step-ca
+# enrollment live in vault.yaml (see modules/reprovision_runner/README.md).
+reprovision_runner:
+  enabled: true
+  cert_mode: step_renew
+  repo_revision: main
+  runner_id: "%{facts.networking.hostname}"
+  # hangar_api_url + step_ca_url use the module defaults
+  #
+  # Secrets (data/secrets/vault.yaml, fetched per-host) — same values the
+  # operator CLI resolves from the RelOps 1Password vault:
+  #   reprovision_runner:
+  #     tc_client_id:        <op://RelOps/Taskcluster Quarantine/username>
+  #     tc_access_token:     <op://RelOps/Taskcluster Quarantine/password>
+  #     simplemdm_api_key:   <op://RelOps/SimpleMDM API admin/password>
+  #     ssh_admin_password:  <op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password>
+  #     ssh_admin_key: |     <op://RelOps/RelOps Worker Admin Key/notesPlain>
+  #       -----BEGIN OPENSSH PRIVATE KEY-----
+  #       ...
+  #
+  # step-ca enrollment (cert_mode: step_renew), also in vault.yaml:
+  #   reprovision_runner::step_renew::ca_fingerprint: <root CA SHA-256 fingerprint>
+  #   reprovision_runner::step_renew::enrollment_token: <single-use bootstrap token>
