@@ -19,12 +19,22 @@ ntp_server: time.apple.org
 reprovision_runner:
   enabled: true
   # 'vault' = cert+key delivered via /var/root/vault.yaml. step-ca isn't reachable
-  # from MDC1 (GCP/IAP-only), so the step_renew auto-renew daemon can't run here
-  # yet; flip to 'step_renew' once step-ca has an MDC1-reachable endpoint.
+  # from MDC1 (GCP/IAP-only), so the auto-renewing step_renew daemon can't run here
+  # yet. The 'vault' cert is capped at step-ca's global 24h provisioner limit, so it
+  # must be re-minted (scripts/mint-runner-cert.sh in relops-bootstrap) periodically.
+  # DURABLE FIX once step-ca is MDC1-reachable: see the ready-to-activate block below.
   cert_mode: vault
   repo_revision: main
   runner_id: "%{facts.networking.hostname}"
   # hangar_api_url + step_ca_url use the module defaults.
 
-# --- Future: flip to cert_mode: step_renew once step-ca is MDC1-reachable ---
+# --- Flip to auto-renewing certs once step-ca is reachable from MDC1 ---------------
+# Tracked in relops-bootstrap#28. To activate: change `cert_mode: vault` above to
+# `cert_mode: step_renew`, uncomment the fingerprint line below, then run puppet on
+# the host (the module installs `step` + a `step ca renew --daemon` LaunchDaemon that
+# generates the key on-host and auto-rotates within the 24h cap). Finally remove
+# client_cert/client_key from that host's /var/root/vault.yaml. Bootstrap options
+# (single-use token vs. one-time on-host `step ca certificate`) are in
+# ronin_puppet modules/reprovision_runner/README.md.
+#
 #   reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
