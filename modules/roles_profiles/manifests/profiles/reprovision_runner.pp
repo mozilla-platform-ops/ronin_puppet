@@ -47,6 +47,7 @@ class roles_profiles::profiles::reprovision_runner {
       repo_url       => pick_default($rr['repo_url'], 'https://github.com/mozilla-platform-ops/relops-bootstrap.git'),
       repo_revision  => pick_default($rr['repo_revision'], 'main'),
       step_ca_url    => pick_default($rr['step_ca_url'], 'https://step-ca.relops.mozilla'),
+      step_ca_ip     => pick_default($rr['step_ca_ip'], undef),
       client_cert    => $client_cert,
       client_key     => $client_key,
       secrets        => $secrets,

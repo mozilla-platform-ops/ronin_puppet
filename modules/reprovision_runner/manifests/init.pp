@@ -66,6 +66,7 @@ class reprovision_runner (
   Optional[Sensitive[String[1]]]   $client_cert    = undef,
   Optional[Sensitive[String[1]]]   $client_key     = undef,
   String[1]                        $step_ca_url    = 'https://step-ca.relops.mozilla',
+  Optional[String[1]]              $step_ca_ip     = undef,
   String[1]                        $step_version   = '0.28.2',
   Hash[Pattern[/^REPROVISION_[A-Z0-9_]+$/], Sensitive[String]] $secrets = {},
 ) {
