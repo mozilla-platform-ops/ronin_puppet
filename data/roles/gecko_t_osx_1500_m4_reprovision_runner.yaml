@@ -27,7 +27,11 @@ reprovision_runner:
   step_ca_ip: 34.61.3.27
   repo_revision: main
   runner_id: "%{facts.networking.hostname}"
-  # hangar_api_url + step_ca_url use the module defaults.
+  # Talk to Hangar's DEDICATED runner frontend (mTLS on its own hostname). The human/browser
+  # frontend (hangar.relops.mozilla.com) no longer carries mTLS, so the runner MUST use this
+  # host to reach /api/reprovision/runner/* + /api/screen/agent/*. See hangar PR #65.
+  hangar_api_url: https://hangar-runner.relops.mozilla.com/api
+  # step_ca_url uses the module default.
 
 # step-ca root CA fingerprint — pins trust during `step ca bootstrap` (non-secret).
 reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
