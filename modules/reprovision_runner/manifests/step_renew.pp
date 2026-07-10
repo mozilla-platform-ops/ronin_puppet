@@ -35,9 +35,26 @@ class reprovision_runner::step_renew (
   $cert_path   = $reprovision_runner::cert_path
   $key_path    = $reprovision_runner::key_path
   $step_ca_url = $reprovision_runner::step_ca_url
+  $step_ca_ip  = $reprovision_runner::step_ca_ip
   $step_ver    = $reprovision_runner::step_version
   $runner_id   = $reprovision_runner::runner_id
   $plist_label = $reprovision_runner::plist_label
+
+  # step-ca lives in GCP and is only reachable from MDC1 by IP; its hostname isn't in MDC1 DNS.
+  # When $step_ca_ip is set, pin it in /etc/hosts so `step ca bootstrap`/`renew` resolve the
+  # name (the cert's SAN is the hostname, so TLS validates against the name, not the IP).
+  $ca_host = regsubst(regsubst($step_ca_url, '^https?://', ''), '[:/].*$', '')
+  if $step_ca_ip {
+    host { $ca_host:
+      ensure => present,
+      ip     => $step_ca_ip,
+    }
+    # Ensure the hosts entry is written before the bootstrap tries to resolve the name.
+    # (Exec['step_ca_bootstrap'] only exists when $ca_fingerprint is set — guard the ordering.)
+    if $ca_fingerprint {
+      Host[$ca_host] -> Exec['step_ca_bootstrap']
+    }
+  }
 
   $step_bin    = '/usr/local/bin/step'
   $step_path   = "${conf_dir}/step" # STEPPATH: CA trust bundle + config

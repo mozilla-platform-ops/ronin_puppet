@@ -18,23 +18,16 @@ ntp_server: time.apple.org
 #     client_key: |       mTLS key — PEM
 reprovision_runner:
   enabled: true
-  # 'vault' = cert+key delivered via /var/root/vault.yaml. step-ca isn't reachable
-  # from MDC1 (GCP/IAP-only), so the auto-renewing step_renew daemon can't run here
-  # yet. The 'vault' cert is capped at step-ca's global 24h provisioner limit, so it
-  # must be re-minted (scripts/mint-runner-cert.sh in relops-bootstrap) periodically.
-  # DURABLE FIX once step-ca is MDC1-reachable: see the ready-to-activate block below.
-  cert_mode: vault
+  # AUTO-RENEWING certs. step-ca is reachable from MDC1 by IP (verified 2026-07-10: TCP 443 +
+  # /health 200); its hostname just isn't in MDC1 DNS, so step_ca_ip pins it in /etc/hosts. The
+  # module then runs a `step ca renew --daemon` LaunchDaemon that rotates the cert within step-ca's
+  # 24h provisioner cap — key generated on-host, nothing in vault. Replaces the manual
+  # mint-runner-cert.sh reissue chore (relops-bootstrap#28).
+  cert_mode: step_renew
+  step_ca_ip: 34.61.3.27
   repo_revision: main
   runner_id: "%{facts.networking.hostname}"
   # hangar_api_url + step_ca_url use the module defaults.
 
-# --- Flip to auto-renewing certs once step-ca is reachable from MDC1 ---------------
-# Tracked in relops-bootstrap#28. To activate: change `cert_mode: vault` above to
-# `cert_mode: step_renew`, uncomment the fingerprint line below, then run puppet on
-# the host (the module installs `step` + a `step ca renew --daemon` LaunchDaemon that
-# generates the key on-host and auto-rotates within the 24h cap). Finally remove
-# client_cert/client_key from that host's /var/root/vault.yaml. Bootstrap options
-# (single-use token vs. one-time on-host `step ca certificate`) are in
-# ronin_puppet modules/reprovision_runner/README.md.
-#
-#   reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
+# step-ca root CA fingerprint — pins trust during `step ca bootstrap` (non-secret).
+reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
