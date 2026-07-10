@@ -1,0 +1,33 @@
+---
+ntp_server: time.apple.org
+
+# Hangar reprovision-runner. NON-secret config only. The sensitive fields are
+# dropped on the host in /var/root/vault.yaml (same as every worker; run-puppet.sh
+# copies it to data/secrets/vault.yaml, the top hiera layer). Config here + secrets
+# there share the `reprovision_runner` key and are combined with a DEEP merge, so
+# neither shadows the other.
+#
+# Add this flat block to /var/root/vault.yaml on the runner host (NOT committed):
+#   reprovision_runner:
+#     tc_client_id:       <op://RelOps/Taskcluster Quarantine/username>
+#     tc_access_token:    <op://RelOps/Taskcluster Quarantine/password>
+#     simplemdm_api_key:  <op://RelOps/SimpleMDM API admin/password>
+#     ssh_admin_password: <op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password>
+#     ssh_admin_key: |    <op://RelOps/RelOps Worker Admin Key/notesPlain>  (PEM)
+#     client_cert: |      mTLS cert — PEM leaf + intermediates (CN=<hostname>)
+#     client_key: |       mTLS key — PEM
+reprovision_runner:
+  enabled: true
+  # AUTO-RENEWING certs. step-ca is reachable from MDC1 by IP (verified 2026-07-10: TCP 443 +
+  # /health 200); its hostname just isn't in MDC1 DNS, so step_ca_ip pins it in /etc/hosts. The
+  # module then runs a `step ca renew --daemon` LaunchDaemon that rotates the cert within step-ca's
+  # 24h provisioner cap — key generated on-host, nothing in vault. Replaces the manual
+  # mint-runner-cert.sh reissue chore (relops-bootstrap#28).
+  cert_mode: step_renew
+  step_ca_ip: 34.61.3.27
+  repo_revision: main
+  runner_id: "%{facts.networking.hostname}"
+  # hangar_api_url + step_ca_url use the module defaults.
+
+# step-ca root CA fingerprint — pins trust during `step ca bootstrap` (non-secret).
+reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
