@@ -1,133 +1,76 @@
 -- safari-tp-enable-remote-automation.applescript
 -- Used on macOS 14+ (Darwin 23+) where SIP is enabled.
 -- Runs via LaunchAgent as cltbld so osascript has full GUI session context.
--- Idempotent + retry-hardened.
+-- Handles its own semaphore so it is idempotent.
 --
 -- Mirror of safari-enable-remote-automation.applescript, but addressing the
 -- "Safari Technology Preview" app instead of stable Safari. Safari TP has
 -- its own separate "Allow Remote Automation" toggle that the stable Safari
 -- enable does not flip.
---
--- Semaphore contract: same as the stable Safari script — file contains "1"
--- only on success, does NOT exist between runs.
 
 set semaphoreFile to "/Users/cltbld/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run"
 set semaphoreVersion to "1"
-set logFile to "/Users/cltbld/Library/Logs/safari-tp-enable-remote-automation.log"
 
-do shell script "mkdir -p /Users/cltbld/Library/Logs /Users/cltbld/Library/Preferences/semaphore"
-
-on logLine(msg)
-    global logFile
-    do shell script "echo \"[$(date '+%Y-%m-%dT%H:%M:%S')] " & msg & "\" >> " & quoted form of logFile
-end logLine
-
--- Skip if already succeeded
+-- Check semaphore
 try
     set semaphoreContent to do shell script "cat " & quoted form of semaphoreFile
     if semaphoreContent is semaphoreVersion then
-        my logLine("semaphore already at version 1 — nothing to do")
         return
     end if
 on error
-    -- file doesn't exist yet
+    -- file doesn't exist, proceed
 end try
 
-my logLine("waiting for Dock to be running (GUI session readiness)")
-set dockReady to false
-repeat 12 times
-    try
-        do shell script "pgrep -x Dock >/dev/null"
-        set dockReady to true
-        exit repeat
-    on error
+-- Create semaphore dir and empty file (signals script is running)
+do shell script "mkdir -p /Users/cltbld/Library/Preferences/semaphore && touch " & quoted form of semaphoreFile
+
+-- Activate Safari Technology Preview
+tell application "Safari Technology Preview"
+    activate
+end tell
+delay 15
+
+tell application "System Events"
+    tell process "Safari Technology Preview"
+        set frontmost to true
         delay 5
-    end try
-end repeat
-if not dockReady then
-    my logLine("Dock never came up — bailing")
-    error "GUI session did not initialize (Dock process absent after 60s)"
-end if
-my logLine("Dock is up")
 
-delay 5
+        -- Open Settings (ellipsis is U+2026)
+        click menu item "Settings…" of menu "Safari Technology Preview" of menu bar 1
+        delay 5
 
-set maxAttempts to 3
-set attempt to 0
-repeat maxAttempts times
-    set attempt to attempt + 1
-    my logLine("attempt " & attempt & " of " & maxAttempts)
-    try
-        tell application "Safari Technology Preview"
-            activate
+        -- Go to Advanced tab
+        click button "Advanced" of toolbar 1 of window 1
+        delay 5
+
+        -- Enable Show features for web developers
+        tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
+            if value is 0 then click it
+            delay 5
+            if value is not 1 then
+                error "Show features for web developers did not toggle on (value=" & (value as string) & ")"
+            end if
         end tell
-        delay 15
+        delay 5
 
-        tell application "System Events"
-            tell process "Safari Technology Preview"
-                set frontmost to true
-                delay 5
+        -- Open Developer tab
+        click button "Developer" of toolbar 1 of window 1
+        delay 5
 
-                click menu item "Settings…" of menu "Safari Technology Preview" of menu bar 1
-                delay 5
-
-                click button "Advanced" of toolbar 1 of window 1
-                delay 5
-
-                -- Safari 18 consolidation (see stable-Safari script for details) —
-                -- "Allow remote automation" is directly in the Advanced pane.
-                tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
-                    if value is 0 then click it
-                    delay 3
-                end tell
-
-                -- Confirmation-sheet handling (see stable-Safari script comment).
-                try
-                    if exists sheet 1 of window 1 then
-                        set sheetHandled to false
-                        repeat with btnName in {"Enable", "Allow", "Turn On", "OK"}
-                            try
-                                click button (btnName as string) of sheet 1 of window 1
-                                set sheetHandled to true
-                                exit repeat
-                            end try
-                        end repeat
-                        if not sheetHandled then
-                            set btnNames to name of every button of sheet 1 of window 1
-                            do shell script "echo \"confirmation sheet buttons: " & (btnNames as string) & "\" >> /Users/cltbld/Library/Logs/safari-tp-enable-remote-automation.log"
-                            repeat with b in (buttons of sheet 1 of window 1)
-                                if (name of b) is not "Cancel" then
-                                    click b
-                                    exit repeat
-                                end if
-                            end repeat
-                        end if
-                        delay 5
-                    end if
-                end try
-
-                tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
-                    if value is not 1 then
-                        error "Allow remote automation did not toggle on (value=" & (value as string) & ") — confirmation sheet may not have been handled"
-                    end if
-                end tell
-            end tell
+        -- Enable Allow remote automation
+        tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
+            if value is 0 then click it
+            delay 5
+            if value is not 1 then
+                error "Allow remote automation did not toggle on (value=" & (value as string) & ")"
+            end if
         end tell
+    end tell
+end tell
 
-        tell application "Safari Technology Preview" to quit
+tell application "Safari Technology Preview" to quit
 
-        do shell script "printf '1' > " & quoted form of semaphoreFile
-        my logLine("attempt " & attempt & " succeeded, semaphore written")
-        return
-
-    on error errMsg number errNum
-        my logLine("attempt " & attempt & " failed (error " & errNum & "): " & errMsg)
-        try
-            tell application "Safari Technology Preview" to quit
-        end try
-        delay 10
-    end try
-end repeat
-
-my logLine("all " & maxAttempts & " attempts failed")
-error "safari TP enable script failed after " & maxAttempts & " attempts — see " & logFile
+-- Write semaphore (version 1 = done)
+-- Only reached if both checkbox verifications above passed; either errors abort the
+-- script before this line, leaving the semaphore as the empty file written at start.
+do shell script "printf '1' > " & quoted form of semaphoreFile
