@@ -23,3 +23,4 @@ class roles_profiles::roles::gecko_1_b_osx_1015 {
 }
 
 # herald pipeline end-to-end test (2026-07-13) — no functional change
+# herald pipeline test round 2 (2026-07-13) — post payload-nesting fix
