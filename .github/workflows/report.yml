@@ -125,8 +125,10 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
+          # client_payload is capped at 10 top-level properties by the API, and
+          # the event has 11 — so nest the whole event under a single key.
           jq -n --slurpfile p "$RUNNER_TEMP/event.json" \
-            '{event_type: "herald-change", client_payload: $p[0]}' \
+            '{event_type: "herald-change", client_payload: {event: $p[0]}}' \
             > "$RUNNER_TEMP/dispatch.json"
           gh api --method POST \
             "repos/mozilla-platform-ops/relops-herald/dispatches" \
