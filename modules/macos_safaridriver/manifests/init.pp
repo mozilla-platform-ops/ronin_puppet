@@ -77,12 +77,16 @@ class macos_safaridriver (
                 require => [File[$applescript], Exec['execute perms script']],
               }
 
+              # Poll for 300s (150 * 2s) — the applescript's Dock-wait +
+              # settle + 3 retry attempts fits inside ~250s worst case.
+              # Puppet timeout at 400s to allow for the launchctl bootstrap
+              # itself + a safety margin over the internal polling loop.
               exec { 'execute enable remote automation script':
-                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${launchagent_plist}; fi; count=0; while [ \$count -lt 120 ] && ! /bin/bash -c \"test -f ${semaphore_file} && grep -q 1 ${semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${semaphore_file}'",
+                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${launchagent_plist}; fi; count=0; while [ \$count -lt 150 ] && ! /bin/bash -c \"test -f ${semaphore_file} && grep -q 1 ${semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${semaphore_file}'",
                 require => [File[$applescript], File[$launchagent_plist], Exec['execute perms script']],
                 cwd     => "/Users/${user_running_safari}",
                 unless  => "/bin/bash -c 'test -f ${semaphore_file} && grep -q 1 ${semaphore_file}'",
-                timeout => 180,
+                timeout => 400,
                 # logoutput => true,
               }
 
@@ -115,12 +119,12 @@ class macos_safaridriver (
               }
 
               exec { 'execute enable remote automation script (Safari TP)':
-                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari-tp.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari-tp.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${tp_launchagent_plist}; fi; count=0; while [ \$count -lt 120 ] && ! /bin/bash -c \"test -f ${tp_semaphore_file} && grep -q 1 ${tp_semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${tp_semaphore_file}'",
+                command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari-tp.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari-tp.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${tp_launchagent_plist}; fi; count=0; while [ \$count -lt 150 ] && ! /bin/bash -c \"test -f ${tp_semaphore_file} && grep -q 1 ${tp_semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${tp_semaphore_file}'",
                 require => [File[$tp_applescript], File[$tp_launchagent_plist], Exec['execute perms script']],
                 cwd     => "/Users/${user_running_safari}",
                 onlyif  => '/bin/test -d "/Applications/Safari Technology Preview.app"',
                 unless  => "/bin/bash -c 'test -f ${tp_semaphore_file} && grep -q 1 ${tp_semaphore_file}'",
-                timeout => 180,
+                timeout => 400,
               }
             } else {
               # macOS 10.15-13: typically deployed with SIP disabled; run directly
