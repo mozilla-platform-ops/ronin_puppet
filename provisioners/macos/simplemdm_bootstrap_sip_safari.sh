@@ -24,9 +24,10 @@
 #   - Xcode Command Line Tools      (DEP image)
 #
 # What used to be manual and is now automatic:
-#   - admin Bootstrap Token custody — handled via `profiles install -type
-#     bootstraptoken` + `sysadminctl -secureTokenOn admin` in step 1 below.
-#     No VNC-in-as-admin required.
+#   - admin SecureToken + Bootstrap Token custody — established out-of-band by the
+#     reprovision runner (`reprovision mint` + `escrow-bst`, using the real admin
+#     password from the vault). This script holds NO password; step 1 only waits
+#     for the SecureToken to land. No VNC-in-as-admin required.
 #   - vault.yaml delivery — fetched via SecureTransport-curl mTLS from
 #     forge.relops.mozilla.com using the SCEP-issued keychain identity.
 #     No hand-drop from an operator laptop required.
@@ -49,53 +50,24 @@ LD_PATH=/Library/LaunchDaemons/${LD_LABEL}.plist
 DRIVER=/usr/local/sbin/m4-bootstrap-driver.sh
 
 #------------------------------------------------------------------------------
-# 1. Ensure admin has SecureToken via Bootstrap Token escrow
+# 1. Wait for admin's SecureToken (granted out-of-band — no password handled here)
 #------------------------------------------------------------------------------
-# macOS 12.4+: when no -adminUser is passed to `sysadminctl -secureTokenOn`,
-# the system auto-uses the escrowed Bootstrap Token to grant SecureToken.
-# DEP-enrolled devices escrow BST to SimpleMDM after the first console login;
-# `profiles install -type bootstraptoken` force-escrows on demand and is
-# idempotent.
-echo "=== ensuring admin has SecureToken via Bootstrap Token ==="
-
-if /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
-  echo "admin already has SecureToken — skipping BST grant"
-else
-  # Create admin user if it doesn't already exist (cred: admin/admin)
-  if ! /usr/bin/dscl . -read /Users/admin >/dev/null 2>&1; then
-    echo "creating admin user"
-    /usr/sbin/sysadminctl -addUser admin -password "admin" -admin -fullName "admin" 2>&1
+# admin's SecureToken + Bootstrap Token are established out-of-band by the
+# reprovision runner (`reprovision mint` + `escrow-bst`) using the real admin
+# password from the vault — NEVER in this script. This block only WAITS for that
+# to land before proceeding, so an out-of-order MDM kickoff can't strand BST on
+# cltbld. No credential is hard-coded here.
+echo "=== waiting for admin SecureToken (granted out-of-band by the reprovision runner) ==="
+deadline=$(( $(/bin/date +%s) + 1800 ))   # 30 min
+until /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; do
+  if [ "$(/bin/date +%s)" -ge "$deadline" ]; then
+    echo "ERROR: admin has no SecureToken after 30 min — the reprovision runner"
+    echo "(mint + escrow-bst) or an operator must grant it first. Aborting."
+    exit 1
   fi
-
-  # `-user` + `-password` flags are load-bearing on macOS 15 — the command
-  # prompts interactively for the admin username when called without them
-  # and exits 1 without doing anything if run non-interactively (as a
-  # SimpleMDM script-job is). Feed the credentials directly.
-  echo "escrowing bootstrap token to MDM"
-  /usr/bin/profiles install -type bootstraptoken -user admin -password admin 2>&1 || true
-  sleep 10
-
-  echo "granting SecureToken to admin via bootstrap token"
-  /usr/sbin/sysadminctl -secureTokenOn admin -password "admin" 2>&1
-  sleep 5
-
-  if ! /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
-    echo "BST grant didn't take. Falling back to waiting for manual VNC-admin login..."
-    for _ in $(seq 1 180); do
-      if /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
-        break
-      fi
-      sleep 10
-    done
-  fi
-fi
-
-if ! /usr/sbin/sysadminctl -secureTokenStatus admin 2>&1 | grep -q 'ENABLED'; then
-  echo "ERROR: admin does not hold a SecureToken after BST attempt + 30 min wait."
-  echo "Action: ssh in as admin (or VNC) to trigger an interactive auth, then"
-  echo "re-run this script. SSH login alone is enough to seed BST custody."
-  exit 1
-fi
+  /bin/sleep 10
+done
+echo "admin SecureToken ENABLED — proceeding."
 
 #------------------------------------------------------------------------------
 # 2. Wait for MDM-delivered puppet_role, then fetch vault.yaml via mTLS
