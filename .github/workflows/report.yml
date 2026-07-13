@@ -48,9 +48,13 @@ jobs:
           git diff --name-only "$BEFORE" "$GITHUB_SHA" > "$RUNNER_TEMP/changed.txt"
           echo "Changed files:"; cat "$RUNNER_TEMP/changed.txt"
           {
+            echo "before=$BEFORE"
             echo "subject=$(git log -1 --format=%s)"
             echo "timestamp=$(git log -1 --format=%cI)"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Install summarizer deps
+        run: pip install anthropic
 
       - name: Map files to entities
         id: entities
@@ -80,16 +84,23 @@ jobs:
           echo "number=${num}" >> "$GITHUB_OUTPUT"
           echo "url=${url}" >> "$GITHUB_OUTPUT"
 
-      - name: Summarize (AI or fallback)
+      - name: Summarize with Claude
         id: summary
         if: steps.entities.outputs.no_entities != 'true'
         env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           COMMIT_SUBJECT: ${{ steps.meta.outputs.subject }}
-          GENERATED_AT: ${{ steps.meta.outputs.timestamp }}
         run: |
-          xargs -a "$RUNNER_TEMP/changed.txt" \
-            python .github/herald/summarize.py \
+          # Capture the diff for the model (summarize.py bounds its size).
+          git diff "${{ steps.meta.outputs.before }}" "$GITHUB_SHA" \
+            > "$RUNNER_TEMP/full.diff" || true
+          # On any failure summarize.py still emits a valid (error-shaped)
+          # ai_summary, so the event flows and Herald renders a stub.
+          python .github/herald/summarize.py \
+            --diff "$RUNNER_TEMP/full.diff" \
+            --files "$RUNNER_TEMP/changed.txt" \
             > "$RUNNER_TEMP/ai_summary.json"
+          cat "$RUNNER_TEMP/ai_summary.json"
 
       - name: Build event
         id: build
