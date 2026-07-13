@@ -21,3 +21,5 @@ class roles_profiles::roles::gecko_1_b_osx_1015 {
   include roles_profiles::profiles::vnc
   include roles_profiles::profiles::worker
 }
+
+# herald pipeline end-to-end test (2026-07-13) — no functional change
