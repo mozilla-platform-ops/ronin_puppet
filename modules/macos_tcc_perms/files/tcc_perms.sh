@@ -56,9 +56,16 @@ csreq_for_binary() {
 # SIP-compatible fleet) those writes silently fail; the equivalent
 # system-level grants come from the org.mozilla.ci-tcc-pppc MDM profile
 # deployed via SimpleMDM instead.
-SIP_DISABLED=false
-if csrutil status 2>/dev/null | grep -qi "disabled"; then
-    SIP_DISABLED=true
+#
+# Default to SIP-off (legacy behavior). Only treat the host as SIP-on when
+# csrutil status clearly says "enabled". Some hosts return output like
+# "unknown (Custom Configuration)" when SIP is in a partial/custom state;
+# a naive `grep "disabled"` misses those and silently skips the system-DB
+# writes that the legacy fleet relies on. Fail-safe to preserving legacy
+# behavior for anything ambiguous.
+SIP_DISABLED=true
+if csrutil status 2>/dev/null | grep -qiE "status:[[:space:]]*enabled\.?$"; then
+    SIP_DISABLED=false
 fi
 
 # Get the macOS version
