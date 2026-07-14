@@ -25,7 +25,7 @@ packages_classes:
   - zstandard
 
 # Package class parameters
-packages::mercurial::version: 6.4.5
+packages::mercurial::version: 6.4.6
 packages::python3::version: 3.11.0
 packages::python3_zstandard::version: 0.22.0
 
