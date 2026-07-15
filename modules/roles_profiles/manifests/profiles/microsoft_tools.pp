@@ -47,6 +47,7 @@ class roles_profiles::profiles::microsoft_tools {
             include win_packages::vc_redist_2022_x64
           }
           include win_hw_profiling::xperf_kernel_trace
+          include win_hw_profiling::xperf_dynamic_trace
         }
         default: {
           fail("${$facts['custom_win_purpose']} not supported")
