@@ -46,6 +46,10 @@ function Write-Log {
     }
 }
 
+# RELOPS-2464: Commented out for evaluation. This works correctly, but adds an
+# incredible amount of overhead/time on every reboot / new task-user logon.
+# Kept in place (not removed) while we evaluate removing it.
+<#
 function Remove-OneDriveScheduledTasks {
     [CmdletBinding()]
     param(
@@ -167,7 +171,12 @@ function Remove-OneDriveScheduledTasks {
         Write-Log -message "OneDriveTasks :: end (success at timeout boundary)" -severity 'INFO'
     }
 }
+#>
 
+# RELOPS-2464: Commented out for evaluation. This works correctly, but adds an
+# incredible amount of overhead/time on every reboot / new task-user logon.
+# Kept in place (not removed) while we evaluate removing it.
+<#
 function Disable-OneDriveBackupPopup {
     [CmdletBinding()]
     param()
@@ -241,7 +250,12 @@ function Disable-OneDriveBackupPopup {
 
     Write-Log -message "Disable-OneDriveBackupPopup :: complete (recommend reboot)" -severity 'INFO'
 }
+#>
 
+# RELOPS-2464: Commented out for evaluation. This works correctly, but adds an
+# incredible amount of overhead/time on every reboot / new task-user logon.
+# Kept in place (not removed) while we evaluate removing it.
+<#
 function Disable-PerUserUwpServices {
     [CmdletBinding()]
     param (
@@ -284,7 +298,12 @@ function Disable-PerUserUwpServices {
         }
     }
 }
+#>
 
+# RELOPS-2464: Commented out for evaluation. This works correctly, but adds an
+# incredible amount of overhead/time on every reboot / new task-user logon.
+# Kept in place (not removed) while we evaluate removing it.
+<#
 function Remove-EdgeScheduledTasks {
     [CmdletBinding()]
     param(
@@ -419,6 +438,7 @@ function Remove-EdgeScheduledTasks {
         Write-Log -message "EdgeTasks :: end (success at timeout boundary)" -severity 'INFO'
     }
 }
+#>
 
 function Disable-SyncFromCloud {
     [CmdletBinding()]
@@ -619,10 +639,15 @@ switch ($os_version) {
             if ($env:USERNAME -match 'administrator') {
                 exit
             } else {
-                Disable-PerUserUwpServices
-                Remove-OneDriveScheduledTasks
-                Disable-OneDriveBackupPopup
-                Remove-EdgeScheduledTasks
+                # RELOPS-2464: Commented out for evaluation. These functions work
+                # correctly, but they run on every reboot / new task-user logon and add
+                # an incredible amount of overhead/time to startup. Kept in place (not
+                # removed) while we evaluate removing them. See the wrapped function
+                # definitions above.
+                # Disable-PerUserUwpServices
+                # Remove-OneDriveScheduledTasks
+                # Disable-OneDriveBackupPopup
+                # Remove-EdgeScheduledTasks
                 ## Not currently functioning
                 #Disable-SyncFromCloud
                 #Disable-SmartScreenStoreApps
