@@ -1,0 +1,117 @@
+<%- | String $user, String $registry_name, Integer $registry_port, Integer $keep_prod_shas, Boolean $prune_pr_shas | -%>
+#!/bin/bash
+# Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
+#
+# Daily registry maintenance: prune disposable tags, then garbage-collect so
+# registry:2 actually reclaims the freed storage (it never does on its own).
+#
+# Retention policy (per repository):
+#   * keep every "*-latest" moving tag (e.g. prod-latest, pr-19-latest)
+#   * <% if $prune_pr_shas { -%>delete transient PR build tags: pr-<n>-<sha><% } else { -%>keep PR build tags<% } -%>
+#
+#   * keep the newest <%= $keep_prod_shas %> prod-<sha> tags (by image created time), delete older
+#
+# GC caveat: garbage-collect runs against the live registry. registry:2 has a
+# documented race where a blob uploaded *during* GC can be collected. We run in
+# a low-traffic window (image promotes are infrequent and operator-driven) to
+# avoid it; if that ever changes, switch the container to read-only for the GC.
+set -uo pipefail
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+REG="http://localhost:<%= $registry_port %>"
+REGISTRY_NAME="<%= $registry_name %>"
+KEEP_PROD_SHAS=<%= $keep_prod_shas %>
+PRUNE_PR_SHAS=<%= $prune_pr_shas ? { true => 1, default => 0 } %>
+DOCKER="/opt/homebrew/bin/docker"
+SU_USER="<%= $user %>"
+
+log() { echo "$(date -u +%FT%TZ) $*"; }
+
+log "=== registry maintenance start ==="
+
+# Tag pruning via the registry HTTP API (delete manifests by digest).
+/usr/bin/python3 - "$REG" "$KEEP_PROD_SHAS" "$PRUNE_PR_SHAS" <<'PYEOF'
+import json, sys, re, urllib.request
+
+reg, keep_prod, prune_pr = sys.argv[1], int(sys.argv[2]), sys.argv[3] == "1"
+ACCEPT = ", ".join([
+    "application/vnd.oci.image.manifest.v1+json",
+    "application/vnd.oci.image.index.v1+json",
+    "application/vnd.docker.distribution.manifest.v2+json",
+    "application/vnd.docker.distribution.manifest.list.v2+json",
+])
+
+def req(method, path, headers=None):
+    r = urllib.request.Request(reg + path, method=method)
+    for k, v in (headers or {}).items():
+        r.add_header(k, v)
+    return urllib.request.urlopen(r, timeout=30)
+
+def get_json(path, headers=None):
+    with req("GET", path, headers) as resp:
+        return json.load(resp), dict(resp.headers)
+
+def digest_for(repo, tag):
+    with req("GET", f"/v2/{repo}/manifests/{tag}", {"Accept": ACCEPT}) as resp:
+        return resp.headers.get("Docker-Content-Digest")
+
+def created_for(repo, tag):
+    # Best-effort image created time; return None (=> keep) if unavailable.
+    try:
+        man, _ = get_json(f"/v2/{repo}/manifests/{tag}", {"Accept": ACCEPT})
+        cfg = man.get("config", {}).get("digest")
+        if not cfg:
+            return None
+        blob, _ = get_json(f"/v2/{repo}/blobs/{cfg}")
+        return blob.get("created")
+    except Exception:
+        return None
+
+try:
+    repos = get_json("/v2/_catalog")[0].get("repositories", [])
+except Exception as e:
+    print(f"  ERROR listing catalog: {e}", flush=True)
+    sys.exit(0)
+
+to_delete = []  # (repo, tag)
+for repo in repos:
+    try:
+        tags = get_json(f"/v2/{repo}/tags/list")[0].get("tags") or []
+    except Exception as e:
+        print(f"  {repo}: ERROR listing tags: {e}", flush=True)
+        continue
+    prod_shas = []
+    for t in tags:
+        if t.endswith("-latest"):
+            continue
+        if prune_pr and re.match(r"^pr-.+-[0-9a-f]{7,}$", t):
+            to_delete.append((repo, t)); continue
+        if re.match(r"^prod-[0-9a-f]{7,}$", t):
+            prod_shas.append(t)
+    # Keep the newest KEEP_PROD_SHAS prod-<sha> by created time; delete the rest.
+    if len(prod_shas) > keep_prod:
+        dated = sorted(prod_shas, key=lambda t: (created_for(repo, t) or ""), reverse=True)
+        for t in dated[keep_prod:]:
+            to_delete.append((repo, t))
+
+# Delete unique manifests (dedupe by digest).
+seen = set()
+for repo, tag in to_delete:
+    try:
+        dig = digest_for(repo, tag)
+        if not dig or (repo, dig) in seen:
+            continue
+        seen.add((repo, dig))
+        req("DELETE", f"/v2/{repo}/manifests/{dig}").read()
+        print(f"  deleted {repo}:{tag} ({dig})", flush=True)
+    except Exception as e:
+        print(f"  WARN could not delete {repo}:{tag}: {e}", flush=True)
+
+print(f"  pruned {len(seen)} manifest(s)", flush=True)
+PYEOF
+
+# Reclaim the storage freed by the deleted manifests.
+log "running garbage-collect inside ${REGISTRY_NAME}"
+/usr/bin/su - "${SU_USER}" -c "PATH=/opt/homebrew/bin:\$PATH ${DOCKER} exec ${REGISTRY_NAME} registry garbage-collect /etc/docker/registry/config.yml" || log "WARN garbage-collect returned non-zero"
+
+log "=== registry maintenance done ==="
