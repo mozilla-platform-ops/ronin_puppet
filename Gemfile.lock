@@ -56,6 +56,7 @@ GEM
       ms_rest_azure (~> 0.12.0)
     base64 (0.3.0)
     bcrypt_pbkdf (1.1.2)
+    bcrypt_pbkdf (1.1.2-arm64-darwin)
     benchmark (0.5.0)
     bigdecimal (4.0.1)
     builder (3.3.0)
@@ -136,16 +137,6 @@ GEM
     fast_gettext (2.4.0)
       prime
     ffi (1.17.3)
-    ffi (1.17.3-aarch64-linux-gnu)
-    ffi (1.17.3-aarch64-linux-musl)
-    ffi (1.17.3-aarch64-mingw-ucrt)
-    ffi (1.17.3-arm-linux-gnu)
-    ffi (1.17.3-arm-linux-musl)
-    ffi (1.17.3-arm64-darwin)
-    ffi (1.17.3-x86-linux-gnu)
-    ffi (1.17.3-x86-linux-musl)
-    ffi (1.17.3-x86_64-linux-gnu)
-    ffi (1.17.3-x86_64-linux-musl)
     fiddle (1.1.8)
     forwardable (1.4.0)
     fuzzyurl (0.9.0)
@@ -648,9 +639,6 @@ DEPENDENCIES
   train-core (= 3.16.1)
   train-winrm (~> 0.4.3)
   vault
-
-RUBY VERSION
-   ruby 3.4.8p72
 
 BUNDLED WITH
    2.5.23

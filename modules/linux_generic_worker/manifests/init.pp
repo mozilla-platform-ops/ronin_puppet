@@ -17,16 +17,15 @@ class linux_generic_worker (
   String $user,
   String $user_homedir,
   Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
-  Variant[String, Hash[String, String]] $generic_worker_sha256,
+  String $generic_worker_sha256,
   Pattern[/^v\d+\.\d+\.\d+$/] $taskcluster_proxy_version,
-  Variant[String, Hash[String, String]] $taskcluster_proxy_sha256,
+  String $taskcluster_proxy_sha256,
   Pattern[/^v\d+\.\d+\.\d+$/] $livelog_version,
-  Variant[String, Hash[String, String]] $livelog_sha256,
+  String                      $livelog_sha256,
   Pattern[/^v\d+\.\d+\.\d+$/] $start_worker_version,
-  Variant[String, Hash[String, String]] $start_worker_sha256,
+  String                      $start_worker_sha256,
   Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
   String $quarantine_worker_sha256,
-  Enum['s3', 'github'] $taskcluster_binary_source = 's3',
   String $taskcluster_host = 'taskcluster',
 ) {
   # include httpd
@@ -46,7 +45,6 @@ class linux_generic_worker (
     start_worker_sha256       => $start_worker_sha256,
     quarantine_worker_version => $quarantine_worker_version,
     quarantine_worker_sha256  => $quarantine_worker_sha256,
-    taskcluster_binary_source => $taskcluster_binary_source,
   }
 
   class { 'linux_generic_worker::control_bug':

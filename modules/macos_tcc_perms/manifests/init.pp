@@ -20,7 +20,6 @@ class macos_tcc_perms (
             command => $tcc_script,
             require => File[$tcc_script],
             user    => 'root',
-            unless  => '/bin/test -f /var/tmp/semaphore/tcc-perms-applied',
           }
         }
       }

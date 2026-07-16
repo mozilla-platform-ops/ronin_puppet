@@ -20,15 +20,12 @@ worker:
 
 packages_classes:
   - mercurial
-  - openssl_legacy_cellar
   - python3
   - python3_zstandard
   - zstandard
 
 # Package class parameters
 packages::mercurial::version: 6.4.5
-packages::openssl_legacy_cellar::version: 1.1.1h
-packages::openssl_legacy_cellar::checksum: 366f359fa6d5c397ce7c7860511080faf9c36537fc8747438d1b5d238cbf598c
 packages::python3::version: 3.11.0
 packages::python3_zstandard::version: 0.22.0
 

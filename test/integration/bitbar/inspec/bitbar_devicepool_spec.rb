@@ -25,16 +25,6 @@ describe 'service' do
     # code 3 is loaded, but not running
     its(:exit_status) { should eq 3 }
   end
-
-  # v3 server unit file
-  describe file('/etc/systemd/system/bitbar-v3.service') do
-    it { should be_file }
-  end
-
-  describe command('systemctl status bitbar-v3') do
-    # code 3 is loaded, but not running
-    its(:exit_status) { should eq 3 }
-  end
 end
 
 # 2204 doesn't have python(2)

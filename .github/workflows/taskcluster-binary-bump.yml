@@ -152,22 +152,15 @@ jobs:
           $(echo -e "${SUMMARY}")
 
           ### Validate before merging
-          Push one try run per staging pool (these pools aren't in normal try routing). Each is a
-          minimal smoke that just exercises the worker binary (claim -> run -> upload); use the
-          suite that actually generates on each platform post-migration:
+          Push a try run routing test tasks to the staging pools (they aren't in normal try routing):
           \`\`\`
-          # 1500 / m4
-          ./mach try fuzzy --all-tasks --worker-override t-osx-1500-m4=releng-hardware/gecko-t-osx-1500-m4-staging -q "'test-macosx1500-aarch64/opt 'xpcshell !vms"
-
-          # 1400 / Sonoma  (macosx1470-64 only generates cppunittest/gtest now; mochitests moved to m4)
-          ./mach try fuzzy --all-tasks --worker-override t-osx-1400-r8=releng-hardware/gecko-t-osx-1400-r8-staging -q "'test-macosx1470-64/opt 'cppunittest"
-
-          # 1015 / Catalina
-          ./mach try fuzzy --all-tasks --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1015-r8-staging -q "'test-macosx1015-64-qr/opt 'xpcshell"
+          ./mach try fuzzy \\
+            --worker-override t-osx-1500-m4=releng-hardware/gecko-t-osx-1500-m4-staging \\
+            --worker-override t-osx-1400-r8=releng-hardware/gecko-t-osx-1400-r8-staging \\
+            --worker-override t-osx-1015-r8=releng-hardware/gecko-t-osx-1015-r8-staging \\
+            -q "'test"
           \`\`\`
-          (Or comment \`/try-mac 1500\` | \`/try-mac 1400\` | \`/try-mac 1015\` on this PR to deploy the
-          branch to that staging pool automatically.) Staging hosts pick up the new binary on their
-          next reboot (cached). After staging is green, bump the **prod** roles in a separate PR.
+          Staging hosts pick up the new binary on their next reboot (cached). After staging is green, bump the **prod** roles in a separate PR.
 
           _Opened by \`.github/workflows/taskcluster-binary-bump.yml\`. Do not auto-merge._
           EOF

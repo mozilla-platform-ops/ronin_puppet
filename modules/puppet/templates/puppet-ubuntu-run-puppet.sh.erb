@@ -229,58 +229,11 @@ EOF
     return 0
 }
 
-function recover_interrupted_dpkg {
-    if ! command -v dpkg >/dev/null 2>&1; then
-        return 0
-    fi
-
-    DPKG_AUDIT_OUT=$(dpkg --audit 2>&1)
-    DPKG_UPDATES_PENDING=0
-    if [ -d /var/lib/dpkg/updates ] && find /var/lib/dpkg/updates -type f -print -quit 2>/dev/null | grep -q .; then
-        DPKG_UPDATES_PENDING=1
-    fi
-
-    if [ -z "${DPKG_AUDIT_OUT}" ] && [ "${DPKG_UPDATES_PENDING}" -eq 0 ]; then
-        return 0
-    fi
-
-    if [ "${DPKG_UPDATES_PENDING}" -eq 0 ] && ! echo "${DPKG_AUDIT_OUT}" | grep -Eiq 'dpkg was interrupted|unpacked but not yet configured|half-configured|triggers-pending'; then
-        echo "dpkg audit found package issues that do not match automatic recovery criteria:"
-        echo "${DPKG_AUDIT_OUT}" | sed 's/^/  /'
-        return 0
-    fi
-
-    echo "Detected interrupted dpkg state; running dpkg --configure -a before puppet apply..."
-    if [ -n "${DPKG_AUDIT_OUT}" ]; then
-        echo "${DPKG_AUDIT_OUT}" | sed 's/^/  /'
-    fi
-    if [ "${DPKG_UPDATES_PENDING}" -eq 1 ]; then
-        echo "  pending dpkg update files found in /var/lib/dpkg/updates"
-    fi
-
-    DPKG_CONFIGURE_OUT=$(dpkg --configure -a 2>&1)
-    DPKG_CONFIGURE_RETVAL=$?
-    if [ -n "${DPKG_CONFIGURE_OUT}" ]; then
-        echo "${DPKG_CONFIGURE_OUT}" | sed 's/^/  /'
-    fi
-    if [ ${DPKG_CONFIGURE_RETVAL} -ne 0 ]; then
-        echo "dpkg --configure -a failed with exit code ${DPKG_CONFIGURE_RETVAL}"
-        return ${DPKG_CONFIGURE_RETVAL}
-    fi
-
-    return 0
-}
-
 function run_puppet {
 
     # Always bring the puppet git up-to-sync before executing puppet
     if ! update_puppet; then
         echo "Failed to update puppet"
-        return 1
-    fi
-    echo ""
-
-    if ! recover_interrupted_dpkg; then
         return 1
     fi
     echo ""
