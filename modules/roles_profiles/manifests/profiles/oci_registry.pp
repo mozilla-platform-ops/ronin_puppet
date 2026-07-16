@@ -2,81 +2,130 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Runs the local, insecure Docker-based OCI registry that serves Tart VM images
-# to the tester fleet, and keeps it healthy over time.
+# Runs the local, insecure OCI registry that serves Tart VM images to the
+# tester fleet, as a NATIVE macOS process (no Docker/Colima).
 #
-# Resilience features added on top of the basic container:
-#   * The container runs with --restart=always, and Colima itself is made
-#     boot-persistent by roles_profiles::profiles::colima_docker, so the
-#     registry returns on its own after a reboot.
-#   * A daily maintenance LaunchDaemon prunes disposable tags and runs
-#     `registry garbage-collect` so storage does not grow without bound
-#     (registry:2 never reclaims deleted blobs on its own).
-#   * A periodic health-check LaunchDaemon verifies /v2/ is reachable and that
-#     the storage volume has headroom, writes a status file for dashboards to
-#     scrape, and emails on trouble.
+# The distribution `registry` (v3) binary is a static Go HTTP server. We fetch
+# it from the ronin package bucket (verified by sha256), drop a filesystem-
+# backed config, and run it under a launchd KeepAlive daemon. Because it is a
+# plain native process, it starts at boot and restarts on crash with no VM,
+# vsock, or GUI-session dependency — the reboot-resilience the Colima setup
+# never had.
 #
-# Idempotency note: a *running* container of the expected name is left
-# untouched (no needless bounce on every apply). Only a missing or stale
-# (exited) container is (re)created. Storage lives in a host bind-mount, so
-# recreating the container never loses image data.
+# Resilience features:
+#   * launchd RunAtLoad + KeepAlive  -> survives reboot and crash on its own.
+#   * daily maintenance daemon        -> prune disposable tags + native
+#                                        `registry garbage-collect` so storage
+#                                        does not grow without bound.
+#   * periodic health/disk daemon     -> verify /v2/ + storage headroom, write a
+#                                        status file for dashboards, alert.
 class roles_profiles::profiles::oci_registry {
-  $registry_port     = lookup('docker.registry_port',           Integer, 'first', 5000)
-  $registry_network  = lookup('docker.registry_network',        String,  'first', 'bridge')
-  $enable_delete     = lookup('oci_registry.enable_delete',     Boolean, 'first', true)
-  $registry_dir      = lookup('oci_registry.registry_dir',      String,  'first', '/Users/admin/registry-data')
-  $registry_name     = lookup('oci_registry.registry_name',     String,  'first', 'tart-registry')
-  $user              = lookup('docker.user',                    String,  'first', 'admin')
-  $keep_prod_shas    = lookup('oci_registry.keep_prod_shas',    Integer, 'first', 10)
-  $prune_pr_shas     = lookup('oci_registry.prune_pr_shas',     Boolean, 'first', true)
-  $maintenance_hour  = lookup('oci_registry.maintenance_hour',  Integer, 'first', 9)
-  $disk_threshold    = lookup('oci_registry.disk_threshold_pct', Integer, 'first', 85)
-  $health_interval   = lookup('oci_registry.health_interval',   Integer, 'first', 300)
-  $alert_email       = lookup('oci_registry.alert_email',       String,  'first', 'releng-ci-alerts@mozilla.com')
-  $smtp_relay        = lookup('oci_registry.smtp_relay',        String,  'first', 'smtp1.mail.mdc1.mozilla.com')
+  $version        = lookup('oci_registry.version',        String,  'first', 'v3.0.0')
+  $binary_url     = lookup('oci_registry.binary_url',     String,  'first')
+  $binary_sha256  = lookup('oci_registry.binary_sha256',  String,  'first')
+  $registry_dir   = lookup('oci_registry.registry_dir',   String,  'first', '/Users/admin/registry-data')
+  $registry_port  = lookup('oci_registry.registry_port',  Integer, 'first', 5000)
+  $user           = lookup('oci_registry.user',           String,  'first', 'admin')
+  $http_secret    = lookup('oci_registry.http_secret',    String,  'first', 'change-me-single-node')
+  $keep_prod_shas = lookup('oci_registry.keep_prod_shas', Integer, 'first', 10)
+  $prune_pr_shas  = lookup('oci_registry.prune_pr_shas',  Boolean, 'first', true)
+  $maint_hour     = lookup('oci_registry.maintenance_hour', Integer, 'first', 9)
+  $disk_threshold = lookup('oci_registry.disk_threshold_pct', Integer, 'first', 85)
+  $health_interval = lookup('oci_registry.health_interval', Integer, 'first', 300)
+  $alert_email    = lookup('oci_registry.alert_email',    String,  'first', 'releng-ci-alerts@mozilla.com')
+  $smtp_relay     = lookup('oci_registry.smtp_relay',     String,  'first', 'smtp1.mail.mdc1.mozilla.com')
 
-  $su          = "/usr/bin/su - ${user} -c"
-  $docker      = '/opt/homebrew/bin/docker'
-  $ps_name     = "${docker} ps --filter name=${registry_name} --format {{.Names}}"
-  $ps_all_name = "${docker} ps -a --filter name=${registry_name} --format {{.Names}}"
+  $bin_path    = '/usr/local/bin/registry'
+  $config_dir  = '/usr/local/etc/oci-registry'
+  $config_path = "${config_dir}/config.yml"
+  $log_path    = '/var/log/oci-registry.log'
+  $daemon      = '/Library/LaunchDaemons/com.mozilla.oci-registry.plist'
 
-  # Storage dir (host bind-mount). Managed as present only; ownership/mode left
-  # alone so we never chown the large live data directory.
+  # --- Retire the superseded Colima registry stack -------------------------
+  # This host used to run com.mozilla.colima (+ a registry container). Boot it
+  # out and remove the plist so it cannot start Colima at the next reboot.
+  exec { 'bootout_colima_daemon':
+    command => '/bin/bash -c \'launchctl bootout system /Library/LaunchDaemons/com.mozilla.colima.plist 2>/dev/null || true\'',
+    onlyif  => '/bin/test -f /Library/LaunchDaemons/com.mozilla.colima.plist',
+    path    => ['/bin', '/usr/bin'],
+  }
+  file { ['/Library/LaunchDaemons/com.mozilla.colima.plist', '/usr/local/bin/colima-ensure.sh']:
+    ensure  => absent,
+    require => Exec['bootout_colima_daemon'],
+  }
+
+  # --- Native registry binary (fetched + sha256-verified) ------------------
   file { $registry_dir:
     ensure => directory,
   }
 
-  # Remove only a STALE (exists but not running) container before (re)creating.
-  # A healthy running container is left as-is by the `unless` on the run exec.
-  exec { 'remove_stale_registry_container':
-    command   => "${su} 'PATH=/opt/homebrew/bin:\$PATH ${docker} rm -f ${registry_name}'",
-    onlyif    => "${su} '${ps_all_name}' | grep -q ${registry_name}",
-    unless    => "${su} '${ps_name}' | grep -q ${registry_name}",
-    path      => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
-    logoutput => on_failure,
-    require   => [Class['roles_profiles::profiles::colima_docker'], File[$registry_dir]],
+  exec { 'download_registry_binary':
+    command => "/bin/bash -c 'set -e; /usr/bin/curl -fsSL -o ${bin_path} \"${binary_url}\"; /bin/chmod 0755 ${bin_path}; echo \"${binary_sha256}  ${bin_path}\" | /usr/bin/shasum -a 256 -c -'",
+    unless  => "/bin/test -x ${bin_path} && /usr/bin/shasum -a 256 ${bin_path} | /usr/bin/grep -q '${binary_sha256}'",
+    path    => ['/usr/bin', '/bin'],
+    timeout => 600,
   }
 
-  $docker_run_cmd = "${su} 'PATH=/opt/homebrew/bin:\$PATH ${docker} run -d --network ${registry_network} -p ${registry_port}:${registry_port} --restart=always --name ${registry_name} -v ${registry_dir}:/var/lib/registry -e REGISTRY_HTTP_ADDR=0.0.0.0:${registry_port} -e REGISTRY_STORAGE_DELETE_ENABLED=${enable_delete} registry:2'" # lint:ignore:140chars
-
-  exec { 'run_registry_container':
-    command   => $docker_run_cmd,
-    unless    => "${su} '${ps_name}' | grep -q ${registry_name}",
-    path      => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
-    logoutput => on_failure,
-    require   => Exec['remove_stale_registry_container'],
+  file { $config_dir:
+    ensure => directory,
+    owner  => 'root',
+    group  => 'wheel',
+    mode   => '0755',
   }
 
-  exec { 'verify_registry':
+  file { $config_path:
+    ensure  => file,
+    owner   => 'root',
+    group   => 'wheel',
+    mode    => '0644',
+    content => epp('roles_profiles/oci_registry/config.yml.epp', {
+      registry_dir  => $registry_dir,
+      registry_port => $registry_port,
+      http_secret   => $http_secret,
+    }),
+    notify  => Exec['load_oci_registry_daemon'],
+  }
+
+  # launchd writes here as $user, so pre-create it owned by $user.
+  file { $log_path:
+    ensure => file,
+    owner  => $user,
+    group  => 'staff',
+    mode   => '0644',
+  }
+
+  file { $daemon:
+    ensure  => file,
+    owner   => 'root',
+    group   => 'wheel',
+    mode    => '0644',
+    content => epp('roles_profiles/oci_registry/com.mozilla.oci-registry.plist.epp', {
+      user        => $user,
+      bin_path    => $bin_path,
+      config_path => $config_path,
+      log_path    => $log_path,
+    }),
+    require => [Exec['download_registry_binary'], File[$config_path], File[$log_path]],
+    notify  => Exec['load_oci_registry_daemon'],
+  }
+
+  exec { 'load_oci_registry_daemon':
+    command     => "/bin/bash -c 'launchctl bootout system ${daemon} 2>/dev/null || true; launchctl bootstrap system ${daemon}'",
+    path        => ['/bin', '/usr/bin'],
+    refreshonly => true,
+    require     => File[$daemon],
+  }
+
+  exec { 'verify_oci_registry':
     command   => "/usr/bin/curl -fsSL http://localhost:${registry_port}/v2/ || (echo 'Registry not reachable' && exit 1)",
     path      => ['/usr/bin', '/bin'],
-    tries     => 3,
-    try_sleep => 5,
+    tries     => 5,
+    try_sleep => 3,
     logoutput => on_failure,
-    require   => Exec['run_registry_container'],
+    require   => Exec['load_oci_registry_daemon'],
   }
 
-  # --- Daily maintenance: tag retention + garbage collection ----------------
+  # --- Daily maintenance: tag retention + native garbage collection --------
   file { '/usr/local/bin/registry-maintenance.sh':
     ensure  => file,
     owner   => 'root',
@@ -84,12 +133,13 @@ class roles_profiles::profiles::oci_registry {
     mode    => '0755',
     content => epp('roles_profiles/oci_registry/registry-maintenance.sh.epp', {
       user           => $user,
-      registry_name  => $registry_name,
+      bin_path       => $bin_path,
+      config_path    => $config_path,
       registry_port  => $registry_port,
       keep_prod_shas => $keep_prod_shas,
       prune_pr_shas  => $prune_pr_shas,
     }),
-    require => Exec['verify_registry'],
+    require => Exec['verify_oci_registry'],
   }
 
   file { '/Library/LaunchDaemons/com.mozilla.registry-maintenance.plist':
@@ -98,7 +148,7 @@ class roles_profiles::profiles::oci_registry {
     group   => 'wheel',
     mode    => '0644',
     content => epp('roles_profiles/oci_registry/com.mozilla.registry-maintenance.plist.epp', {
-      hour => $maintenance_hour,
+      hour => $maint_hour,
     }),
     require => File['/usr/local/bin/registry-maintenance.sh'],
     notify  => Exec['load_registry_maintenance_daemon'],
@@ -111,7 +161,7 @@ class roles_profiles::profiles::oci_registry {
     require     => File['/Library/LaunchDaemons/com.mozilla.registry-maintenance.plist'],
   }
 
-  # --- Periodic health + disk monitoring ------------------------------------
+  # --- Periodic health + disk monitoring -----------------------------------
   file { '/usr/local/bin/registry-healthcheck.sh':
     ensure  => file,
     owner   => 'root',
@@ -124,7 +174,7 @@ class roles_profiles::profiles::oci_registry {
       alert_email    => $alert_email,
       smtp_relay     => $smtp_relay,
     }),
-    require => Exec['verify_registry'],
+    require => Exec['verify_oci_registry'],
   }
 
   file { '/Library/LaunchDaemons/com.mozilla.registry-healthcheck.plist':
