@@ -65,3 +65,5 @@ class roles_profiles::roles::win116424h2azure {
     }
   }
 }
+
+# herald replay test: touch to exercise Herald windows-azure routing
