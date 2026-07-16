@@ -36,3 +36,5 @@ class roles_profiles::roles::win116424h2hw {
   #include roles_profiles::profiles::windows_generic_worker_standalone
   include roles_profiles::profiles::windows_worker_runner
 }
+
+# herald replay test: touch to exercise Herald windows-hardware routing
