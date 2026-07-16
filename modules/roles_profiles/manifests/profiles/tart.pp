@@ -40,6 +40,26 @@ class roles_profiles::profiles::tart {
   $manage_image   = lookup('tart.manage_image',   Boolean, 'first', true)
   $launchd_type   = lookup('tart.launchd_type',   Enum['agent', 'daemon'], 'first', 'agent')
 
+  # Autologin the VM-host user. Apple's Virtualization Framework needs an active
+  # GUI (Aqua) session for `tart run` to start a VM, and on a headless host that
+  # session only exists via autologin at boot. Without a puppet-managed
+  # /etc/kcpassword, a host can reboot to the login window with no session: the
+  # launchd daemons load fine but every VM fails to start with "Internal
+  # Virtualization error" (hit on macmini-m4-187, 2026-07-16 — its kcpassword
+  # was missing while sibling hosts happened to have it). Managing it here makes
+  # reboot-resilience guaranteed instead of dependent on original provisioning.
+  #
+  # tart.autologin_kcpassword = base64 of the admin user's /etc/kcpassword.
+  # Populate it in vault/hiera; left empty it is a no-op (autologin unmanaged,
+  # falls back to whatever the host was provisioned with).
+  $autologin_kcpassword = lookup('tart.autologin_kcpassword', String, 'first', '')
+  if $autologin_kcpassword != '' {
+    class { 'macos_utils::autologin_user':
+      user       => $user,
+      kcpassword => $autologin_kcpassword,
+    }
+  }
+
   $install_dir   = '/Applications'
   $bin_path      = '/usr/local/bin/tart'
   $tart_url      = "https://github.com/cirruslabs/tart/releases/download/${version}/tart.tar.gz"
