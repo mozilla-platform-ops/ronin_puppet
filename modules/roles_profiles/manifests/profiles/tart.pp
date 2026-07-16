@@ -49,10 +49,16 @@ class roles_profiles::profiles::tart {
   # was missing while sibling hosts happened to have it). Managing it here makes
   # reboot-resilience guaranteed instead of dependent on original provisioning.
   #
-  # tart.autologin_kcpassword = base64 of the admin user's /etc/kcpassword.
+  # tart_autologin_kcpassword = base64 of the admin user's /etc/kcpassword.
   # Populate it in vault/hiera; left empty it is a no-op (autologin unmanaged,
   # falls back to whatever the host was provisioned with).
-  $autologin_kcpassword = lookup('tart.autologin_kcpassword', String, 'first', '')
+  #
+  # NB: TOP-LEVEL key, deliberately NOT nested under the `tart` hash. Secrets
+  # live in vault.yaml (highest-priority hiera layer) and lookups here use
+  # 'first' (no deep merge); a partial `tart: {autologin_kcpassword: ...}` in
+  # vault.yaml would shadow the whole role-data `tart` hash (hiding version /
+  # registry_host / oci_image / etc.). A distinct top-level key avoids that.
+  $autologin_kcpassword = lookup('tart_autologin_kcpassword', String, 'first', '')
   if $autologin_kcpassword != '' {
     class { 'macos_utils::autologin_user':
       user       => $user,

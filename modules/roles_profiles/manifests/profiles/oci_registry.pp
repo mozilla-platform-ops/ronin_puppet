@@ -156,11 +156,23 @@ class roles_profiles::profiles::oci_registry {
   $nginx_bin    = '/opt/homebrew/bin/nginx'
 
   if $push_auth {
+    # `brew install` writes into the prefix, so ${user} must own it. Ownership
+    # can drift (seen on m4-194: /opt/homebrew/bin became non-admin-writable and
+    # `brew install nginx` failed). Restore it before installing; the `unless`
+    # keeps this a no-op once the prefix is correctly owned.
+    exec { 'ensure_homebrew_admin_owned':
+      command => "/usr/sbin/chown -R ${user} /opt/homebrew",
+      unless  => "/bin/bash -c '/usr/bin/test $(/usr/bin/stat -f %Su /opt/homebrew/bin) = ${user}'",
+      path    => ['/usr/sbin', '/usr/bin', '/bin'],
+      timeout => 600,
+    }
+
     exec { 'install_nginx':
       command => "/usr/bin/su - ${user} -c '/opt/homebrew/bin/brew install nginx || true'",
       unless  => "/bin/test -x ${nginx_bin}",
       path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
       timeout => 600,
+      require => Exec['ensure_homebrew_admin_owned'],
     }
 
     file { $htpasswd:
