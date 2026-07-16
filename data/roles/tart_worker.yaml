@@ -32,9 +32,11 @@ tart:
   user: 'admin'
   manage_image: false
   launchd_type: 'daemon'
-  # base64 of the admin user's /etc/kcpassword — enables puppet-managed autologin
-  # so the host reliably comes back with an admin GUI session on reboot (required
-  # for Apple Virtualization Framework / `tart run`; see profiles::tart). Leave
-  # blank here and set the real value via vault / a secure override — do NOT
-  # commit the credential. Blank = autologin unmanaged.
-  autologin_kcpassword: ''
+
+# Puppet-managed autologin for the VM host (see profiles::tart): base64 of the
+# admin user's /etc/kcpassword, enabling an admin GUI session on reboot (required
+# for Apple Virtualization Framework / `tart run`). This is a TOP-LEVEL key, NOT
+# nested under `tart:` — a secret nested there would shadow the whole tart config
+# hash via hiera 'first' merge. Set the real value via vault / a secure override
+# only; do NOT commit the credential. Unset/blank = autologin unmanaged.
+tart_autologin_kcpassword: ''
