@@ -1,0 +1,25 @@
+<%- | String $nginx_bin, String $conf_path | -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mozilla.oci-registry-nginx</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string><%= $nginx_bin %></string>
+        <string>-g</string>
+        <string>daemon off;</string>
+        <string>-c</string>
+        <string><%= $conf_path %></string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/var/log/oci-registry-nginx.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/oci-registry-nginx.log</string>
+</dict>
+</plist>
