@@ -35,15 +35,21 @@ class roles_profiles::profiles::oci_registry {
   $alert_email    = lookup('oci_registry.alert_email',    String,  'first', 'releng-ci-alerts@mozilla.com')
   $smtp_relay     = lookup('oci_registry.smtp_relay',     String,  'first', 'smtp1.mail.mdc1.mozilla.com')
 
-  # Push authentication (Bug 2049579 rec #4). When oci_registry.push_htpasswd is
-  # set (a bcrypt htpasswd file body, delivered via a SECRET override — never
+  # Push authentication (Bug 2049579 rec #4). When oci_registry_push_htpasswd is
+  # set (an htpasswd file body, delivered via a SECRET override — never
   # committed; ronin_puppet is public), an nginx reverse proxy fronts the
   # registry and requires basic auth for writes (PUT/POST/PATCH/DELETE) while
   # leaving pulls (GET/HEAD) anonymous, so only the holder of the push
   # credential can publish images. The registry then binds loopback only and
   # nginx owns the public port. Empty (default) = no proxy, registry binds the
   # public port directly (open push, the pre-hardening behaviour).
-  $push_htpasswd = lookup('oci_registry.push_htpasswd', String,  'first', '')
+  #
+  # NB: this is a TOP-LEVEL key, deliberately NOT nested under the oci_registry
+  # hash. Secrets live in vault.yaml (the highest-priority hiera layer) and
+  # lookups here use 'first' (no deep merge); a partial `oci_registry:` hash in
+  # vault.yaml would shadow the whole role-data `oci_registry` hash (hiding
+  # binary_url etc.). A distinct top-level key avoids that collision.
+  $push_htpasswd = lookup('oci_registry_push_htpasswd', String,  'first', '')
   $internal_port = lookup('oci_registry.internal_port', Integer, 'first', 5001)
   $push_auth     = $push_htpasswd != ''
   $listen_addr   = $push_auth ? { true => "127.0.0.1:${internal_port}", default => "0.0.0.0:${registry_port}" }

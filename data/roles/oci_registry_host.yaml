@@ -16,14 +16,7 @@ oci_registry:
   registry_dir: '/Users/admin/registry-data'
   registry_port: 5000
   user: admin
-  # Push authentication (Bug 2049579 rec #4). Leave push_htpasswd EMPTY here —
-  # ronin_puppet is public, so the credential must NOT be committed. Populate it
-  # via a secret override (the bcrypt htpasswd body, e.g. `builder:$2y$05$...`
-  # from `htpasswd -nbB builder '<password>'`); the plaintext password goes only
-  # to the builder's GitHub Actions secret. When set, an nginx proxy requires
-  # auth for pushes and the registry binds internal_port (loopback) behind it.
-  # Empty = no proxy, registry binds registry_port directly (open push).
-  push_htpasswd: ''
+  # Internal loopback port the registry binds when the push-auth proxy is on.
   internal_port: 5001
   # http.secret signs upload state; single-node so not sensitive, but override
   # via a secure source if desired.
