@@ -1,0 +1,43 @@
+---
+# Role data for oci_registry_host: the self-hosted OCI registry (registry:2 in
+# a Colima/Docker VM) that serves Tart VM images to the gecko-t-osx-1500-m-vms
+# tester fleet. See roles_profiles::roles::oci_registry_host.
+#
+# Homebrew is expected to be preinstalled (Apple-Silicon /opt/homebrew,
+# admin-owned); the role only ensures the docker/lima/colima formulae.
+
+docker:
+  user: admin
+  package_name: docker
+  cpu: 8
+  memory: 8
+  disk_size: 200
+  # How often the colima LaunchDaemon re-checks/heals colima (seconds).
+  colima_ensure_interval: 300
+  registry_port: 5000
+  registry_network: bridge
+
+oci_registry:
+  enable_delete: true
+  # Host bind-mount that backs /var/lib/registry inside the container. This is
+  # the live storage path; do not change without migrating the data.
+  registry_dir: /Users/admin/registry-data
+  registry_name: tart-registry
+  # Daily maintenance retention: keep the newest N prod-<sha> images, prune
+  # transient PR build tags (pr-<n>-<sha>); "*-latest" moving tags are always
+  # kept. maintenance_hour is the local hour (0-23) the GC job runs.
+  keep_prod_shas: 10
+  prune_pr_shas: true
+  maintenance_hour: 9
+  # Health check: alert when the storage volume is at/above this percent full,
+  # or /v2/ is unreachable. health_interval is the poll cadence (seconds).
+  disk_threshold_pct: 85
+  health_interval: 300
+  alert_email: releng-ci-alerts@mozilla.com
+  smtp_relay: smtp1.mail.mdc1.mozilla.com
+
+# Optional autologin safety net for Colima (headless, normally NOT needed).
+# Leave blank; populate via a secure override only if a host proves to need a
+# live console session for the VZ backend. Blank = autologin unmanaged.
+colima:
+  autologin_kcpassword: ''
