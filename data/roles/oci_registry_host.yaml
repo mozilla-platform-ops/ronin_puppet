@@ -1,31 +1,27 @@
 ---
-# Role data for oci_registry_host: the self-hosted OCI registry (registry:2 in
-# a Colima/Docker VM) that serves Tart VM images to the gecko-t-osx-1500-m-vms
-# tester fleet. See roles_profiles::roles::oci_registry_host.
-#
-# Homebrew is expected to be preinstalled (Apple-Silicon /opt/homebrew,
-# admin-owned); the role only ensures the docker/lima/colima formulae.
-
-docker:
-  user: admin
-  package_name: docker
-  cpu: 8
-  memory: 8
-  disk_size: 200
-  # How often the colima LaunchDaemon re-checks/heals colima (seconds).
-  colima_ensure_interval: 300
-  registry_port: 5000
-  registry_network: bridge
+# Role data for oci_registry_host: the native OCI registry (distribution v3
+# binary under launchd) that serves Tart VM images to the
+# gecko-t-osx-1500-m-vms tester fleet. See roles_profiles::roles::oci_registry_host.
 
 oci_registry:
-  enable_delete: true
-  # Host bind-mount that backs /var/lib/registry inside the container. This is
-  # the live storage path; do not change without migrating the data.
-  registry_dir: /Users/admin/registry-data
-  registry_name: tart-registry
+  version: 'v3.0.0'
+  # distribution `registry` v3 built for darwin/arm64 and published to the ronin
+  # package bucket (no official darwin release exists; 2.8.x will not build on
+  # current Go). v3 reads the existing v2 on-disk layout, so no data migration.
+  # Verified by sha256 on download.
+  binary_url: 'https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/common/registry-v3.0.0-darwin-arm64'
+  binary_sha256: '10c708e527bf65e48a2cd9633133e0c411f49d3159c7c84eb87c8fe2526cbfab'
+  # Filesystem storage root (existing image data lives here; unchanged from the
+  # former Colima bind-mount). delete is enabled so maintenance GC can reclaim.
+  registry_dir: '/Users/admin/registry-data'
+  registry_port: 5000
+  user: admin
+  # http.secret signs upload state; single-node so not sensitive, but override
+  # via a secure source if desired.
+  http_secret: 'm4-194-oci-registry-shared-secret'
   # Daily maintenance retention: keep the newest N prod-<sha> images, prune
-  # transient PR build tags (pr-<n>-<sha>); "*-latest" moving tags are always
-  # kept. maintenance_hour is the local hour (0-23) the GC job runs.
+  # transient PR build tags (pr-<n>-<sha>); "*-latest" moving tags always kept.
+  # maintenance_hour is the local hour (0-23) the GC job runs.
   keep_prod_shas: 10
   prune_pr_shas: true
   maintenance_hour: 9
@@ -35,9 +31,3 @@ oci_registry:
   health_interval: 300
   alert_email: releng-ci-alerts@mozilla.com
   smtp_relay: smtp1.mail.mdc1.mozilla.com
-
-# Optional autologin safety net for Colima (headless, normally NOT needed).
-# Leave blank; populate via a secure override only if a host proves to need a
-# live console session for the VZ backend. Blank = autologin unmanaged.
-colima:
-  autologin_kcpassword: ''

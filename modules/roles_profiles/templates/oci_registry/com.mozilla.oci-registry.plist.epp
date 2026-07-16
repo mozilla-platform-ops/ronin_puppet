@@ -1,0 +1,35 @@
+<%- | String $user, String $bin_path, String $config_path, String $log_path | -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mozilla.oci-registry</string>
+    <key>UserName</key>
+    <string><%= $user %></string>
+    <key>ProgramArguments</key>
+    <array>
+        <string><%= $bin_path %></string>
+        <string>serve</string>
+        <string><%= $config_path %></string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin</string>
+        <!-- registry v3 otherwise spams trace-export errors to localhost:4318 -->
+        <key>OTEL_SDK_DISABLED</key>
+        <string>true</string>
+        <key>OTEL_TRACES_EXPORTER</key>
+        <string>none</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string><%= $log_path %></string>
+    <key>StandardErrorPath</key>
+    <string><%= $log_path %></string>
+</dict>
+</plist>

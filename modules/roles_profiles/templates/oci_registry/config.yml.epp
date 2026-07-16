@@ -1,0 +1,20 @@
+<%- | String $registry_dir, Integer $registry_port, String $http_secret | -%>
+# Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
+# distribution (registry) v3 config, filesystem storage, insecure HTTP.
+version: 0.1
+log:
+  level: info
+storage:
+  filesystem:
+    rootdirectory: <%= $registry_dir %>
+  delete:
+    enabled: true
+  maintenance:
+    uploadpurging:
+      enabled: true
+      age: 168h
+      interval: 24h
+      dryrun: false
+http:
+  addr: 0.0.0.0:<%= $registry_port %>
+  secret: <%= $http_secret %>

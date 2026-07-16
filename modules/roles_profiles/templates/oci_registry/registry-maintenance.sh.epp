@@ -1,9 +1,10 @@
-<%- | String $user, String $registry_name, Integer $registry_port, Integer $keep_prod_shas, Boolean $prune_pr_shas | -%>
+<%- | String $user, String $bin_path, String $config_path, Integer $registry_port, Integer $keep_prod_shas, Boolean $prune_pr_shas | -%>
 #!/bin/bash
 # Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
 #
-# Daily registry maintenance: prune disposable tags, then garbage-collect so
-# registry:2 actually reclaims the freed storage (it never does on its own).
+# Daily registry maintenance: prune disposable tags via the HTTP API, then run
+# the native `registry garbage-collect` so distribution actually reclaims the
+# freed storage (it never does on its own).
 #
 # Retention policy (per repository):
 #   * keep every "*-latest" moving tag (e.g. prod-latest, pr-19-latest)
@@ -11,19 +12,16 @@
 #
 #   * keep the newest <%= $keep_prod_shas %> prod-<sha> tags (by image created time), delete older
 #
-# GC caveat: garbage-collect runs against the live registry. registry:2 has a
+# GC caveat: garbage-collect runs against the live registry. distribution has a
 # documented race where a blob uploaded *during* GC can be collected. We run in
 # a low-traffic window (image promotes are infrequent and operator-driven) to
-# avoid it; if that ever changes, switch the container to read-only for the GC.
+# avoid it.
 set -uo pipefail
-export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH="/usr/local/bin:/usr/bin:/bin"
 
 REG="http://localhost:<%= $registry_port %>"
-REGISTRY_NAME="<%= $registry_name %>"
 KEEP_PROD_SHAS=<%= $keep_prod_shas %>
 PRUNE_PR_SHAS=<%= $prune_pr_shas ? { true => 1, default => 0 } %>
-DOCKER="/opt/homebrew/bin/docker"
-SU_USER="<%= $user %>"
 
 log() { echo "$(date -u +%FT%TZ) $*"; }
 
@@ -110,8 +108,9 @@ for repo, tag in to_delete:
 print(f"  pruned {len(seen)} manifest(s)", flush=True)
 PYEOF
 
-# Reclaim the storage freed by the deleted manifests.
-log "running garbage-collect inside ${REGISTRY_NAME}"
-/usr/bin/su - "${SU_USER}" -c "PATH=/opt/homebrew/bin:\$PATH ${DOCKER} exec ${REGISTRY_NAME} registry garbage-collect /etc/docker/registry/config.yml" || log "WARN garbage-collect returned non-zero"
+# Reclaim the storage freed by the deleted manifests (native binary, run as the
+# registry user so any rewritten files keep consistent ownership).
+log "running native garbage-collect"
+/usr/bin/su - "<%= $user %>" -c "PATH=/usr/local/bin:\$PATH <%= $bin_path %> garbage-collect --delete-untagged=false <%= $config_path %>" || log "WARN garbage-collect returned non-zero"
 
 log "=== registry maintenance done ==="
