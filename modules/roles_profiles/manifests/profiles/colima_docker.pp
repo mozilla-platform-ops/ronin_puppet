@@ -75,15 +75,15 @@ class roles_profiles::profiles::colima_docker {
     require => Exec['verify_docker_colima'],
   }
 
-  # System LaunchDaemon: starts Colima at boot (RunAtLoad) and self-heals on an
-  # interval. Loads headlessly, no console session required.
+  # System LaunchDaemon (runs as root, drives colima via `su - ${user}`): starts
+  # Colima at boot (RunAtLoad) and self-heals on an interval. Loads headlessly,
+  # no console session required.
   file { '/Library/LaunchDaemons/com.mozilla.colima.plist':
     ensure  => file,
     owner   => 'root',
     group   => 'wheel',
     mode    => '0644',
     content => epp('roles_profiles/oci_registry/com.mozilla.colima.plist.epp', {
-      user            => $user,
       ensure_interval => $ensure_interval,
     }),
     require => File['/usr/local/bin/colima-ensure.sh'],
