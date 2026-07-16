@@ -1,4 +1,4 @@
-<%- | String $registry_dir, Integer $registry_port, String $http_secret | -%>
+<%- | String $registry_dir, String $listen_addr, String $http_secret | -%>
 # Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
 # distribution (registry) v3 config, filesystem storage, insecure HTTP.
 version: 0.1
@@ -16,5 +16,5 @@ storage:
       interval: 24h
       dryrun: false
 http:
-  addr: 0.0.0.0:<%= $registry_port %>
+  addr: <%= $listen_addr %>
   secret: <%= $http_secret %>

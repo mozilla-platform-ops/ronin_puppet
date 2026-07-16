@@ -35,6 +35,23 @@ class roles_profiles::profiles::oci_registry {
   $alert_email    = lookup('oci_registry.alert_email',    String,  'first', 'releng-ci-alerts@mozilla.com')
   $smtp_relay     = lookup('oci_registry.smtp_relay',     String,  'first', 'smtp1.mail.mdc1.mozilla.com')
 
+  # Push authentication (Bug 2049579 rec #4). When oci_registry.push_htpasswd is
+  # set (a bcrypt htpasswd file body, delivered via a SECRET override — never
+  # committed; ronin_puppet is public), an nginx reverse proxy fronts the
+  # registry and requires basic auth for writes (PUT/POST/PATCH/DELETE) while
+  # leaving pulls (GET/HEAD) anonymous, so only the holder of the push
+  # credential can publish images. The registry then binds loopback only and
+  # nginx owns the public port. Empty (default) = no proxy, registry binds the
+  # public port directly (open push, the pre-hardening behaviour).
+  $push_htpasswd = lookup('oci_registry.push_htpasswd', String,  'first', '')
+  $internal_port = lookup('oci_registry.internal_port', Integer, 'first', 5001)
+  $push_auth     = $push_htpasswd != ''
+  $listen_addr   = $push_auth ? { true => "127.0.0.1:${internal_port}", default => "0.0.0.0:${registry_port}" }
+  # Host-local tooling (maintenance, verify) talks straight to the registry,
+  # bypassing the auth proxy: internal port when the proxy is on, public port
+  # otherwise.
+  $local_port    = $push_auth ? { true => $internal_port, default => $registry_port }
+
   $bin_path    = '/usr/local/bin/registry'
   $config_dir  = '/usr/local/etc/oci-registry'
   $config_path = "${config_dir}/config.yml"
@@ -79,9 +96,9 @@ class roles_profiles::profiles::oci_registry {
     group   => 'wheel',
     mode    => '0644',
     content => epp('roles_profiles/oci_registry/config.yml.epp', {
-      registry_dir  => $registry_dir,
-      registry_port => $registry_port,
-      http_secret   => $http_secret,
+      registry_dir => $registry_dir,
+      listen_addr  => $listen_addr,
+      http_secret  => $http_secret,
     }),
     notify  => Exec['load_oci_registry_daemon'],
   }
@@ -116,13 +133,95 @@ class roles_profiles::profiles::oci_registry {
     require     => File[$daemon],
   }
 
+  # Verify the registry process itself (direct, bypassing any proxy).
   exec { 'verify_oci_registry':
-    command   => "/usr/bin/curl -fsSL http://localhost:${registry_port}/v2/ || (echo 'Registry not reachable' && exit 1)",
+    command   => "/usr/bin/curl -fsSL http://localhost:${local_port}/v2/ || (echo 'Registry not reachable' && exit 1)",
     path      => ['/usr/bin', '/bin'],
     tries     => 5,
     try_sleep => 3,
     logoutput => on_failure,
     require   => Exec['load_oci_registry_daemon'],
+  }
+
+  # --- Push-auth reverse proxy (nginx): anonymous pull, authenticated push --
+  $nginx_conf   = "${config_dir}/nginx.conf"
+  $htpasswd     = "${config_dir}/htpasswd"
+  $nginx_daemon = '/Library/LaunchDaemons/com.mozilla.oci-registry-nginx.plist'
+  $nginx_bin    = '/opt/homebrew/bin/nginx'
+
+  if $push_auth {
+    exec { 'install_nginx':
+      command => "/usr/bin/su - ${user} -c '/opt/homebrew/bin/brew install nginx || true'",
+      unless  => "/bin/test -x ${nginx_bin}",
+      path    => ['/opt/homebrew/bin', '/usr/bin', '/bin'],
+      timeout => 600,
+    }
+
+    file { $htpasswd:
+      ensure    => file,
+      owner     => 'root',
+      group     => 'wheel',
+      mode      => '0644',
+      content   => "${push_htpasswd}\n",
+      show_diff => false,
+      require   => File[$config_dir],
+      notify    => Exec['load_oci_registry_nginx'],
+    }
+
+    file { $nginx_conf:
+      ensure  => file,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0644',
+      content => epp('roles_profiles/oci_registry/nginx.conf.epp', {
+        registry_port => $registry_port,
+        internal_port => $internal_port,
+        htpasswd_path => $htpasswd,
+      }),
+      require => File[$config_dir],
+      notify  => Exec['load_oci_registry_nginx'],
+    }
+
+    file { $nginx_daemon:
+      ensure  => file,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0644',
+      content => epp('roles_profiles/oci_registry/com.mozilla.oci-registry-nginx.plist.epp', {
+        nginx_bin => $nginx_bin,
+        conf_path => $nginx_conf,
+      }),
+      require => [Exec['install_nginx'], File[$nginx_conf], File[$htpasswd], Exec['verify_oci_registry']],
+      notify  => Exec['load_oci_registry_nginx'],
+    }
+
+    exec { 'load_oci_registry_nginx':
+      command     => "/bin/bash -c 'launchctl bootout system ${nginx_daemon} 2>/dev/null || true; launchctl bootstrap system ${nginx_daemon}'",
+      path        => ['/bin', '/usr/bin'],
+      refreshonly => true,
+      require     => File[$nginx_daemon],
+    }
+
+    # Self-test: anonymous GET works, unauthenticated write is refused (401).
+    exec { 'verify_push_auth':
+      command   => "/bin/bash -c 'set -e; /usr/bin/curl -fsS http://localhost:${registry_port}/v2/ >/dev/null; code=\$(/usr/bin/curl -s -o /dev/null -w \"%{http_code}\" -X POST http://localhost:${registry_port}/v2/_authtest/blobs/uploads/); test \"\$code\" = 401'", # lint:ignore:140chars
+      path      => ['/usr/bin', '/bin'],
+      tries     => 5,
+      try_sleep => 3,
+      logoutput => on_failure,
+      require   => Exec['load_oci_registry_nginx'],
+    }
+  } else {
+    # Proxy disabled: ensure any previously-installed front-end is removed.
+    exec { 'bootout_oci_registry_nginx':
+      command => "/bin/bash -c 'launchctl bootout system ${nginx_daemon} 2>/dev/null || true'",
+      onlyif  => "/bin/test -f ${nginx_daemon}",
+      path    => ['/bin', '/usr/bin'],
+    }
+    file { [$nginx_daemon, $nginx_conf, $htpasswd]:
+      ensure  => absent,
+      require => Exec['bootout_oci_registry_nginx'],
+    }
   }
 
   # --- Daily maintenance: tag retention + native garbage collection --------
@@ -135,7 +234,7 @@ class roles_profiles::profiles::oci_registry {
       user           => $user,
       bin_path       => $bin_path,
       config_path    => $config_path,
-      registry_port  => $registry_port,
+      registry_port  => $local_port,
       keep_prod_shas => $keep_prod_shas,
       prune_pr_shas  => $prune_pr_shas,
     }),
