@@ -76,13 +76,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Best-effort: find a PR associated with this commit.
-          num=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
-                  --jq '.[0].number // empty' 2>/dev/null || true)
-          url=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
-                  --jq '.[0].html_url // empty' 2>/dev/null || true)
+          # Best-effort: find a PR associated with this commit (one API call).
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+            > "$RUNNER_TEMP/pulls.json" 2>/dev/null || echo '[]' > "$RUNNER_TEMP/pulls.json"
+          num=$(jq -r '.[0].number // empty' "$RUNNER_TEMP/pulls.json")
+          url=$(jq -r '.[0].html_url // empty' "$RUNNER_TEMP/pulls.json")
+          author=$(jq -r '.[0].user.login // empty' "$RUNNER_TEMP/pulls.json")
           echo "number=${num}" >> "$GITHUB_OUTPUT"
           echo "url=${url}" >> "$GITHUB_OUTPUT"
+          echo "author=${author}" >> "$GITHUB_OUTPUT"
 
       - name: Summarize with Claude
         id: summary
@@ -109,7 +111,9 @@ jobs:
           SOURCE_REPO: ${{ github.repository }}
           COMMIT_SHA: ${{ github.sha }}
           COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
-          ACTOR: ${{ github.actor }}
+          # Prefer the PR author (who wrote the change) over the pusher/merger;
+          # fall back to github.actor for direct pushes with no PR.
+          ACTOR: ${{ steps.pr.outputs.author || github.actor }}
           TIMESTAMP: ${{ steps.meta.outputs.timestamp }}
           COMMIT_SUBJECT: ${{ steps.meta.outputs.subject }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
