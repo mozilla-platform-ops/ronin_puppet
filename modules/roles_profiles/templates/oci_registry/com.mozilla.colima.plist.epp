@@ -1,12 +1,10 @@
-<%- | String $user, Integer $ensure_interval | -%>
+<%- | Integer $ensure_interval | -%>
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key>
     <string>com.mozilla.colima</string>
-    <key>UserName</key>
-    <string><%= $user %></string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
@@ -14,8 +12,6 @@
     </array>
     <key>EnvironmentVariables</key>
     <dict>
-        <key>HOME</key>
-        <string>/Users/<%= $user %></string>
         <key>PATH</key>
         <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
     </dict>
