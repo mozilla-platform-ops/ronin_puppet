@@ -40,6 +40,20 @@ class roles_profiles::profiles::tart {
   $manage_image   = lookup('tart.manage_image',   Boolean, 'first', true)
   $launchd_type   = lookup('tart.launchd_type',   Enum['agent', 'daemon'], 'first', 'agent')
 
+  # Host-mediated worker-vault injection (tart.inject_vault, default false).
+  # When true, the tartworker daemon runs tart-run-vm.sh, which fetches the
+  # worker vault from the relops-bootstrap broker over mTLS using the host's
+  # SCEP-issued System-keychain cert (role = tart.vault_role) and shares it into
+  # the guest via `tart run --dir`; the guest's first-boot puppet run turns it
+  # into the generic-worker config. Leave false until the credential-free image
+  # (which reads the injected vault at boot) is deployed — with a baked image the
+  # injected dir is simply ignored. Only meaningful when launchd_type == daemon.
+  $inject_vault   = lookup('tart.inject_vault',   Boolean, 'first', false)
+  $vault_role     = lookup('tart.vault_role',     String,  'first', '')
+  $broker_host    = lookup('tart.broker_host',    String,  'first', 'forge.relops.mozilla.com')
+  $scep_issuer_cn = lookup('tart.scep_issuer_cn', String,  'first', 'Mozilla RelOps Bootstrap CA Intermediate CA')
+  $vault_dir_base = "/Users/${user}/.tart-vault"
+
   # Autologin the VM-host user. Apple's Virtualization Framework needs an active
   # GUI (Aqua) session for `tart run` to start a VM, and on a headless host that
   # session only exists via autologin at boot. Without a puppet-managed
@@ -147,6 +161,31 @@ class roles_profiles::profiles::tart {
     $dir_require = []
   }
 
+  # The daemon runs this wrapper instead of `tart run` directly, so it can inject
+  # the worker vault into each VM at launch (see tart.inject_vault above). One
+  # shared script; the plist passes the VM name. Only the daemon path uses it.
+  if $launchd_type == 'daemon' {
+    file { '/usr/local/bin/tart-run-vm.sh':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0755',
+      content => epp('roles_profiles/tart/tart-run-vm.sh.epp', {
+        user           => $user,
+        bin_path       => $bin_path,
+        inject_vault   => $inject_vault,
+        vault_role     => $vault_role,
+        broker_host    => $broker_host,
+        scep_issuer_cn => $scep_issuer_cn,
+        vault_dir_base => $vault_dir_base,
+      }),
+      require => Exec['install_tart'],
+    }
+    $wrapper_require = [File['/usr/local/bin/tart-run-vm.sh']]
+  } else {
+    $wrapper_require = []
+  }
+
   Integer[1, $worker_count].each |$i| {
     $vm_name = "${vm_name_prefix}-${i}"
 
@@ -175,13 +214,12 @@ class roles_profiles::profiles::tart {
         content => epp('roles_profiles/tart/com.mozilla.tartworker.daemon.plist.epp', {
           worker_id => $i,
           vm_name   => $vm_name,
-          bin_path  => $bin_path,
           user      => $user,
         }),
         owner   => 'root',
         group   => 'wheel',
         mode    => '0644',
-        require => $image_require + $dir_require + [Exec["evict_agent_tartworker_${i}"], File[$agent_plist]],
+        require => $image_require + $dir_require + $wrapper_require + [Exec["evict_agent_tartworker_${i}"], File[$agent_plist]],
         notify  => Exec["load_tartworker_${i}"],
       }
 

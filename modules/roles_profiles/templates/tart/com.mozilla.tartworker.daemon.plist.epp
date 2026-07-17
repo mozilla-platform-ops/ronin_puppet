@@ -1,6 +1,5 @@
 <%- | Integer $worker_id,
       String  $vm_name,
-      String  $bin_path,
       String  $user,
 | -%>
 <?xml version="1.0" encoding="UTF-8"?>
@@ -11,11 +10,12 @@
     <string>com.mozilla.tartworker-<%= $worker_id %></string>
     <key>UserName</key>
     <string><%= $user %></string>
+    <!-- Runs the tart-run-vm.sh wrapper (fetches + injects the worker vault when
+         enabled, then execs `tart run`) rather than tart directly. -->
     <key>ProgramArguments</key>
     <array>
-        <string><%= $bin_path %></string>
-        <string>run</string>
-        <string>--no-graphics</string>
+        <string>/bin/bash</string>
+        <string>/usr/local/bin/tart-run-vm.sh</string>
         <string><%= $vm_name %></string>
     </array>
     <key>EnvironmentVariables</key>
