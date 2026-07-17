@@ -162,7 +162,7 @@ class roles_profiles::profiles::oci_registry {
     # keeps this a no-op once the prefix is correctly owned.
     exec { 'ensure_homebrew_admin_owned':
       command => "/usr/sbin/chown -R ${user} /opt/homebrew",
-      unless  => "/bin/bash -c '/usr/bin/test $(/usr/bin/stat -f %Su /opt/homebrew/bin) = ${user}'",
+      unless  => "/bin/bash -c '/bin/test $(/usr/bin/stat -f %Su /opt/homebrew/bin) = ${user}'",
       path    => ['/usr/sbin', '/usr/bin', '/bin'],
       timeout => 600,
     }
