@@ -18,7 +18,12 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::power_management
   include roles_profiles::profiles::relops_users
-  include roles_profiles::profiles::safaridriver
+  # Disabled on the VM image role: safaridriver's "Allow Remote Automation"
+  # enable execs drive osascript in cltbld's GUI session, which a headless VM
+  # image build doesn't have — they hang on the Accessibility/auth prompts and
+  # fail phase-2 puppet non-deterministically. These VMs don't run Safari/perf
+  # tasks, so we skip the profile entirely.
+  # include roles_profiles::profiles::safaridriver
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::talos
   include roles_profiles::profiles::timezone
