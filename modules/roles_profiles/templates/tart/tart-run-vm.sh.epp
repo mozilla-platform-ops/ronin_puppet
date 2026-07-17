@@ -1,0 +1,74 @@
+<%- | String $user,
+      String $bin_path,
+      Boolean $inject_vault,
+      String $vault_role,
+      String $broker_host,
+      String $scep_issuer_cn,
+      String $vault_dir_base,
+| -%>
+#!/bin/bash
+# Managed by Puppet (roles_profiles::profiles::tart). Do not edit.
+#
+# Wrapper the tartworker LaunchDaemon runs INSTEAD of `tart run` directly.
+# When vault injection is enabled it fetches the worker vault on the HOST (the
+# VM is not MDM-enrolled and has no broker identity; the host holds the SCEP
+# cert), writes it to a per-VM directory, and shares that dir into the guest via
+# `tart run --dir`. The guest's first-boot puppet run reads it and turns it into
+# the generic-worker config (worker.access_token etc). Runs as the daemon user
+# (admin) — the SCEP profile's AllowAllAppsAccess lets SecureTransport sign with
+# the System-keychain key without root.
+set -uo pipefail
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+VM="$1"
+BIN="<%= $bin_path %>"
+<% if $inject_vault { -%>
+
+BROKER="<%= $broker_host %>"
+ROLE="<%= $vault_role %>"
+ISSUER_CN="<%= $scep_issuer_cn %>"
+VDIR="<%= $vault_dir_base %>/${VM}"
+
+/bin/mkdir -p "$VDIR"
+/bin/chmod 700 "$VDIR"
+
+log() { echo "$(/bin/date -u +%FT%TZ) tart-run-vm[$VM] $*"; }
+
+# Find the SCEP identity by ISSUER CN. `find-identity` WITHOUT -v on purpose:
+# -v filters by local chain validity, which fails for MDM-pushed CAs (the LB
+# validates the chain, not us). Subject CN varies by ComputerName, so match the
+# stable issuer instead.
+IDENTITY_CN=""
+while IFS= read -r line; do
+  if [[ $line =~ \)\ ([0-9A-Fa-f]+)\ \"([^\"]+)\" ]]; then
+    cn="${BASH_REMATCH[2]}"
+    if /usr/bin/security find-certificate -c "$cn" -p /Library/Keychains/System.keychain 2>/dev/null \
+        | /usr/bin/openssl x509 -noout -issuer 2>/dev/null | /usr/bin/grep -q "$ISSUER_CN"; then
+      IDENTITY_CN="$cn"
+      break
+    fi
+  fi
+done < <(/usr/bin/security find-identity /Library/Keychains/System.keychain 2>/dev/null)
+
+if [ -n "$IDENTITY_CN" ]; then
+  TMP="$VDIR/.vault.yaml.tmp"
+  code=$(CURL_SSL_BACKEND=securetransport /usr/bin/curl -sS --max-time 30 \
+      --cert "$IDENTITY_CN" -w '%{http_code}' -o "$TMP" \
+      "https://${BROKER}/secret/${ROLE}") || true
+  if [ "$code" = "200" ] && [ -s "$TMP" ]; then
+    /bin/chmod 600 "$TMP"
+    /bin/mv "$TMP" "$VDIR/vault.yaml"
+    log "fetched vault for role ${ROLE} ($(/usr/bin/wc -c <"$VDIR/vault.yaml" | /usr/bin/tr -d ' ') bytes)"
+  else
+    log "WARN broker fetch HTTP ${code:-000} for ${ROLE}; leaving prior vault (if any) in place"
+    /bin/rm -f "$TMP"
+  fi
+else
+  log "WARN no SCEP identity (issuer '${ISSUER_CN}') in System keychain; starting VM without a fresh vault"
+fi
+
+exec "$BIN" run --no-graphics --dir="vault:${VDIR}:ro" "$VM"
+<% } else { -%>
+
+exec "$BIN" run --no-graphics "$VM"
+<% } -%>

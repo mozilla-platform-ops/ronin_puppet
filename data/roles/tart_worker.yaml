@@ -32,6 +32,14 @@ tart:
   user: 'admin'
   manage_image: false
   launchd_type: 'daemon'
+  # Host-mediated worker-vault injection (see profiles::tart). Keep FALSE until
+  # the credential-free tester image (which reads the injected vault at first
+  # boot) is built + promoted — with today's baked image the injected dir is
+  # simply ignored, so flipping this early is harmless but pointless. When true,
+  # the host fetches vault-<vault_role> from the broker (mTLS via its SCEP cert)
+  # and shares it into each VM via `tart run --dir`.
+  inject_vault: false
+  vault_role: 'gecko_t_osx_1500_m_vms'
 
 # Puppet-managed autologin for the VM host (see profiles::tart): base64 of the
 # admin user's /etc/kcpassword, enabling an admin GUI session on reboot (required
