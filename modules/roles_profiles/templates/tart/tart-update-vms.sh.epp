@@ -7,53 +7,140 @@
       String  $insecure_flag,
       String  $bin_path,
       String  $user,
+      String  $launchd_type,
+      String  $tc_root_url,
+      String  $tc_worker_pool,
+      Integer $drain_timeout,
 | -%>
 #!/bin/bash
-# Manual VM update script: stops workers, pulls fresh image, reclones, restarts.
-set -euo pipefail
+# Rolling, drain-aware VM image update for a tart host.
+#
+# Updates ONE worker slot at a time so the other keeps serving, and before
+# recreating a slot it drains that slot's worker — waits for its current task to
+# finish — using the Taskcluster *public* API (no credentials). Works with both
+# the daemon (LaunchDaemon, launchd_type=daemon) and agent (LaunchAgent) worker
+# units. The new image is pulled once; each slot is then evicted, deleted,
+# recloned, and its unit restarted (first-boot vault-inject + auto-reboot then
+# bring the worker up on the real creds).
+#
+# Fleet-wide orchestration + TC quarantine belongs one layer up (the on-network
+# reprovision runner / Hangar trigger). This is the safe per-host primitive that
+# layer calls.
+set -uo pipefail
 
 REGISTRY="<%= $registry_host %>:<%= $registry_port %>"
 IMAGE="<%= $oci_image %>:<%= $oci_tag %>"
 WORKER_COUNT=<%= $worker_count %>
-BIN_PATH="<%= $bin_path %>"
-VM_NAME_PREFIX="<%= $vm_name_prefix %>"
-INSECURE_FLAG="<%= $insecure_flag %>"
-USER="<%= $user %>"
-PLIST_DIR="/Users/${USER}/Library/LaunchAgents"
+BIN="<%= $bin_path %>"
+PREFIX="<%= $vm_name_prefix %>"
+INSECURE="<%= $insecure_flag %>"
+USER_NAME="<%= $user %>"
+LAUNCHD_TYPE="<%= $launchd_type %>"
+TC_ROOT="<%= $tc_root_url %>"
+POOL="<%= $tc_worker_pool %>"
+DRAIN_TIMEOUT=<%= $drain_timeout %>
 
-echo "Stopping Tart worker LaunchAgents..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  launchctl unload "${PLIST_DIR}/com.mozilla.tartworker-${i}.plist" 2>/dev/null || true
+TART_VMS="/Users/${USER_NAME}/.tart/vms"
+PROVISIONER="${POOL%%/*}"
+WORKERTYPE="${POOL##*/}"
+
+log() { echo "$(date -u +%FT%TZ) $*"; }
+
+uid_of() { /usr/bin/id -u "${USER_NAME}"; }
+
+# --- launchd helpers: daemon (system) vs agent (per-user gui) --------------
+stop_unit() {  # $1 = slot index
+  local i="$1" label="com.mozilla.tartworker-${i}"
+  if [ "${LAUNCHD_TYPE}" = "daemon" ]; then
+    /bin/launchctl bootout "system/${label}" 2>/dev/null || true
+  else
+    /bin/launchctl bootout "gui/$(uid_of)/${label}" 2>/dev/null \
+      || /bin/launchctl unload "/Users/${USER_NAME}/Library/LaunchAgents/${label}.plist" 2>/dev/null || true
+  fi
+}
+
+start_unit() {  # $1 = slot index
+  local i="$1" label="com.mozilla.tartworker-${i}"
+  if [ "${LAUNCHD_TYPE}" = "daemon" ]; then
+    /bin/launchctl bootstrap system "/Library/LaunchDaemons/${label}.plist"
+  else
+    /bin/launchctl bootstrap "gui/$(uid_of)" "/Users/${USER_NAME}/Library/LaunchAgents/${label}.plist" \
+      || /bin/launchctl load "/Users/${USER_NAME}/Library/LaunchAgents/${label}.plist"
+  fi
+}
+
+# workerId a VM registers as = mac-<last 3 MAC octets> (see set_hostname.sh).
+worker_id_for_vm() {
+  local vm="$1" mac
+  mac=$(/usr/bin/python3 -c "import json;print(json.load(open('${TART_VMS}/${vm}/config.json')).get('macAddress',''))" 2>/dev/null) || return
+  [ -z "${mac}" ] && return
+  printf 'mac-%s' "$(printf '%s' "${mac}" | awk -F: '{print $4$5$6}' | tr 'A-F' 'a-f')"
+}
+
+# Exit 0 if the worker is currently running/claiming a task. Best-effort and
+# fail-open (any API hiccup => "not busy") so a transient blip never hangs a roll.
+worker_busy() {
+  local wid="$1"
+  [ -z "${wid}" ] && return 1
+  [ -z "${POOL}" ] && return 1
+  /usr/bin/curl -fsS --max-time 15 \
+    "${TC_ROOT}/api/queue/v1/provisioners/${PROVISIONER}/worker-types/${WORKERTYPE}/workers" 2>/dev/null \
+  | TC_ROOT="${TC_ROOT}" WID="${wid}" /usr/bin/python3 -c '
+import json,os,sys,urllib.request
+wid=os.environ["WID"]; root=os.environ["TC_ROOT"]
+try:
+    d=json.load(sys.stdin)
+except Exception:
+    sys.exit(1)
+w=[x for x in d.get("workers",[]) if x.get("workerId")==wid]
+if not w: sys.exit(1)
+tid=(w[0].get("latestTask") or {}).get("taskId")
+if not tid: sys.exit(1)
+try:
+    with urllib.request.urlopen("%s/api/queue/v1/task/%s/status" % (root,tid), timeout=15) as r:
+        runs=json.load(r).get("status",{}).get("runs",[])
+    sys.exit(0 if runs and runs[-1].get("state") in ("running","pending") else 1)
+except Exception:
+    sys.exit(1)
+' 2>/dev/null
+}
+
+drain_slot() {  # $1 = vm name
+  local vm="$1" wid waited=0
+  wid=$(worker_id_for_vm "${vm}")
+  if [ -z "${wid}" ] || [ -z "${POOL}" ]; then
+    log "  (no workerId/pool for ${vm}; skipping drain)"; return
+  fi
+  log "  draining ${vm} (worker ${wid}); waiting up to ${DRAIN_TIMEOUT}s for its task to finish"
+  while worker_busy "${wid}"; do
+    if [ "${waited}" -ge "${DRAIN_TIMEOUT}" ]; then
+      log "  drain timeout (${DRAIN_TIMEOUT}s) — proceeding anyway"; return
+    fi
+    sleep 30; waited=$((waited + 30))
+  done
+  log "  ${wid} idle"
+}
+
+# --- pull the new image once ----------------------------------------------
+log "pulling ${REGISTRY}/${IMAGE}"
+"${BIN}" pull ${INSECURE} "${REGISTRY}/${IMAGE}"
+
+# --- roll each slot, one at a time ----------------------------------------
+for i in $(seq 1 "${WORKER_COUNT}"); do
+  VM="${PREFIX}-${i}"
+  log "== slot ${i} (${VM}) =="
+  drain_slot "${VM}"
+  log "  stopping worker unit ${i}"
+  stop_unit "${i}"
+  sleep 5
+  "${BIN}" stop "${VM}" 2>/dev/null || true
+  "${BIN}" delete "${VM}" 2>/dev/null || true
+  log "  cloning fresh ${VM} from ${IMAGE}"
+  "${BIN}" clone "${REGISTRY}/${IMAGE}" "${VM}"
+  "${BIN}" set "${VM}" --random-mac --random-serial
+  log "  starting worker unit ${i}"
+  start_unit "${i}"
+  log "  slot ${i} updated"
 done
 
-echo "Waiting 30s for VMs to shut down gracefully..."
-sleep 30
-
-echo "Force-stopping any remaining VMs..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  VM_NAME="${VM_NAME_PREFIX}-${i}"
-  "${BIN_PATH}" stop "${VM_NAME}" 2>/dev/null || true
-done
-
-echo "Deleting old VMs..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  VM_NAME="${VM_NAME_PREFIX}-${i}"
-  "${BIN_PATH}" delete "${VM_NAME}" 2>/dev/null || true
-done
-
-echo "Pulling latest image..."
-"${BIN_PATH}" pull ${INSECURE_FLAG} "${REGISTRY}/${IMAGE}"
-
-echo "Cloning fresh VMs..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  VM_NAME="${VM_NAME_PREFIX}-${i}"
-  "${BIN_PATH}" clone "${REGISTRY}/${IMAGE}" "${VM_NAME}"
-  "${BIN_PATH}" set "${VM_NAME}" --random-mac --random-serial
-done
-
-echo "Reloading LaunchAgents..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  launchctl load "${PLIST_DIR}/com.mozilla.tartworker-${i}.plist"
-done
-
-echo "Update complete. VMs are restarting."
+log "rolling update complete (${WORKER_COUNT} slot(s))"

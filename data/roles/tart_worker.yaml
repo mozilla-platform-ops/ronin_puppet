@@ -40,6 +40,10 @@ tart:
   # and shares it into each VM via `tart run --dir`.
   inject_vault: false
   vault_role: 'gecko_t_osx_1500_m_vms'
+  # TC pool the VMs join. Enables tart-update-vms.sh's per-slot drain (waits for a
+  # slot's worker to finish its current task, via the TC public API, before
+  # recreating it). Empty elsewhere = mechanical recreate with no drain.
+  tc_worker_pool: 'releng-hardware/gecko-t-osx-1500-m-vms'
 
 # Puppet-managed autologin for the VM host (see profiles::tart): base64 of the
 # admin user's /etc/kcpassword, enabling an admin GUI session on reboot (required
