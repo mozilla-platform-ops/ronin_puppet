@@ -1,0 +1,21 @@
+---
+# Hiera data for the wim-packer BAKE role. Mirrors win116424h2hw.yaml but WITHOUT
+# generic_worker.client_id — worker registration (windows_worker_runner) is not
+# part of the bake role, so no registration secret path is referenced here.
+
+win-worker:
+  function: "tester"
+
+  # Mozilla profile
+  mozilla_profile:
+    source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
+    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
+
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "verbose"
+
+  ## Use to overwrite values in the Windows yaml file.
+  ## Replace windows. with win-worker.variant.
+  variant:
