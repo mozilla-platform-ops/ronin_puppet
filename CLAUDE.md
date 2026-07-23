@@ -107,7 +107,7 @@ Note: Windows hierarchy differs — worker-type data takes priority over secrets
 
 - **InSpec tests**: `test/integration/<suite>/inspec/` — Linux suites (linux-perf, linux-netperf, bitbar)
 - **Serverspec tests**: `test/integration/<suite>/serverspec/` — macOS and Windows suites
-- **Terraform fixtures**: Some macOS test suites (e.g., `mac_v3_signing_dep`, `gecko_t_osx_*`) include Terraform configs for provisioning test infrastructure
+- **Terraform fixtures**: Some macOS test suites (e.g., `gecko_t_osx_*`) include Terraform configs for provisioning test infrastructure
 
 ### CI Workflows (`.github/workflows/`)
 

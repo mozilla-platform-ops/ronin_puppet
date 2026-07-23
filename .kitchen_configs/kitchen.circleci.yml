@@ -45,7 +45,7 @@ platforms:
       name: exec
       #clean_up_on_destroy: false
 
-# Fake mac-v3-signing secrets
+# Fake signing secrets
 secrets: &secrets
   duo:
     ikey: duo_ikey_testing
@@ -186,9 +186,9 @@ suites:
     includes:
       - localhost
     attributes:
-    # This suite solely exists to mock the secrets.yaml for the mac-v3-siging roles
+    # This suite mocks secrets/vault.yaml for the mac signing roles (the mac_v4_signing_* roles that include profiles::mac_signing)
     # Once all secrets are migrated to vault, this can be dropped and the default suite can be used
-  - name: mac-v3-signing
+  - name: signing-secrets
     provisioner:
       custom_options: '-e "include roles_profiles::roles::<%= ENV["PUPPET_ROLE"] %>"'
       custom_facts:
