@@ -1,6 +1,6 @@
 # BAKE role for the wim-packer pipeline.
 #
-# This is win116424h2hw with the four DEPLOY-TIME / machine-specific / hardware
+# This is win116424h2hw with the DEPLOY-TIME / machine-specific / hardware
 # profiles removed, so it can run on a reference VM and be Sysprep-generalized
 # and captured into a golden install.wim. The removed profiles run at first boot
 # on the real NUC (via the full win116424h2hw role):
@@ -14,6 +14,12 @@
 #   - nuc_bios               : flashes NUC13 BIOS; physical-hardware only.
 #   - nuc_management         : datacenter management scripts (incl. PXE redeploy);
 #                              physical/datacenter only.
+#   - scheduled_tasks        : runtime/operational tasks — maintain_system
+#                              (maintainsystem-hw.ps1 at startup), self_redeploy_check
+#                              (can trigger a PXE redeploy), gw_exe_check, task-user
+#                              logon init. Excluded so they don't fire during the bake
+#                              or on the generalized image's first boot before the
+#                              deploy-time run; the full role registers them at deploy.
 #
 # NOTE: hardware_observability (win_nsclient) is kept here per the bake plan, but
 # it looks up `marlin_pw` from Vault. The bake environment must provide a
@@ -35,7 +41,8 @@ class roles_profiles::roles::win116424h2hwbake {
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::power_management
-  include roles_profiles::profiles::scheduled_tasks
+  # scheduled_tasks intentionally excluded from the bake (runtime/operational;
+  # registered at deploy time). See header.
   include roles_profiles::profiles::hardware
   include roles_profiles::profiles::virtual_drivers
   include roles_profiles::profiles::windows_datacenter_administrator
@@ -48,5 +55,8 @@ class roles_profiles::roles::win116424h2hwbake {
   include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
+  # TODO(wim-bake): Chrome is baked here and can go stale between bake and deploy.
+  # Ensure it is refreshed to current (deploy-time re-apply / auto-update) BEFORE the
+  # first worker-runner start, so jobs run against an up-to-date Chrome. Revisit.
   include roles_profiles::profiles::google_chrome
 }
