@@ -54,6 +54,14 @@ class roles_profiles::profiles::tart {
   $scep_issuer_cn = lookup('tart.scep_issuer_cn', String,  'first', 'Mozilla RelOps Bootstrap CA Intermediate CA')
   $vault_dir_base = "/Users/${user}/.tart-vault"
 
+  # Rolling image-update knobs (tart-update-vms.sh). tc_worker_pool is the TC
+  # pool the VMs join (provisioner/worker-type); when set, the update drains each
+  # slot's worker (waits for its current task to finish, via the TC *public* API
+  # — no creds) before recreating it. Empty = no drain (mechanical recreate).
+  $tc_root_url    = lookup('tart.tc_root_url',    String,  'first', 'https://firefox-ci-tc.services.mozilla.com')
+  $tc_worker_pool = lookup('tart.tc_worker_pool', String,  'first', '')
+  $drain_timeout  = lookup('tart.drain_timeout',  Integer, 'first', 3600)
+
   # Autologin the VM-host user. Apple's Virtualization Framework needs an active
   # GUI (Aqua) session for `tart run` to start a VM, and on a headless host that
   # session only exists via autologin at boot. Without a puppet-managed
@@ -128,6 +136,10 @@ class roles_profiles::profiles::tart {
       insecure_flag  => $insecure_flag,
       bin_path       => $bin_path,
       user           => $user,
+      launchd_type   => $launchd_type,
+      tc_root_url    => $tc_root_url,
+      tc_worker_pool => $tc_worker_pool,
+      drain_timeout  => $drain_timeout,
     }),
     require => Exec['install_tart'],
   }

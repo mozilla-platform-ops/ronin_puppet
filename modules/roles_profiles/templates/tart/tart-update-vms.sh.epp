@@ -7,53 +7,261 @@
       String  $insecure_flag,
       String  $bin_path,
       String  $user,
+      String  $launchd_type,
+      String  $tc_root_url,
+      String  $tc_worker_pool,
+      Integer $drain_timeout,
 | -%>
 #!/bin/bash
-# Manual VM update script: stops workers, pulls fresh image, reclones, restarts.
-set -euo pipefail
+# Rolling, drain-aware VM image update for a tart host.
+#
+# Updates ONE worker slot at a time so the other keeps serving, and before
+# recreating a slot it drains that slot's worker — waits for its current task to
+# finish — using the Taskcluster *public* API (no credentials). Works with both
+# the daemon (LaunchDaemon, launchd_type=daemon) and agent (LaunchAgent) worker
+# units. The new image is pulled once; each slot is then evicted, deleted,
+# recloned, and its unit restarted (first-boot vault-inject + auto-reboot then
+# bring the worker up on the real creds).
+#
+# Drain is FAIL CLOSED: a slot is only recreated once its worker has been proven
+# idle (twice in a row, since the queue's worker listing lags a fresh claim). If
+# that cannot be proven — TC unreachable, unexpected response, workerId
+# undeterminable, or still busy at DRAIN_TIMEOUT — the slot is SKIPPED and left
+# running on the old image, and the script exits non-zero so a partial roll is
+# never mistaken for a complete one. Rationale: a stalled roll is cheap, a killed
+# production task is not.
+#
+# Fleet-wide orchestration + TC quarantine belongs one layer up (the on-network
+# reprovision runner / Hangar trigger). This is the safe per-host primitive that
+# layer calls.
+set -uo pipefail
 
 REGISTRY="<%= $registry_host %>:<%= $registry_port %>"
 IMAGE="<%= $oci_image %>:<%= $oci_tag %>"
 WORKER_COUNT=<%= $worker_count %>
-BIN_PATH="<%= $bin_path %>"
-VM_NAME_PREFIX="<%= $vm_name_prefix %>"
-INSECURE_FLAG="<%= $insecure_flag %>"
-USER="<%= $user %>"
-PLIST_DIR="/Users/${USER}/Library/LaunchAgents"
+BIN="<%= $bin_path %>"
+PREFIX="<%= $vm_name_prefix %>"
+INSECURE="<%= $insecure_flag %>"
+USER_NAME="<%= $user %>"
+LAUNCHD_TYPE="<%= $launchd_type %>"
+TC_ROOT="<%= $tc_root_url %>"
+POOL="<%= $tc_worker_pool %>"
+DRAIN_TIMEOUT=<%= $drain_timeout %>
 
-echo "Stopping Tart worker LaunchAgents..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  launchctl unload "${PLIST_DIR}/com.mozilla.tartworker-${i}.plist" 2>/dev/null || true
+TART_VMS="/Users/${USER_NAME}/.tart/vms"
+PROVISIONER="${POOL%%/*}"
+WORKERTYPE="${POOL##*/}"
+
+log() { echo "$(date -u +%FT%TZ) $*"; }
+
+uid_of() { /usr/bin/id -u "${USER_NAME}"; }
+
+# --- launchd helpers: daemon (system) vs agent (per-user gui) --------------
+# NOTE: two separate `local` statements, not `local i="$1" label="...${i}"`.
+# `local` expands all its arguments before assigning any of them, so on the
+# single-statement form ${i} resolves to the OUTER i (empty) and label came out
+# as "com.mozilla.tartworker-" with no index. That made bootout target a
+# nonexistent label, the `|| true` swallowed the failure, and the slot's launchd
+# job stayed loaded with KeepAlive=true while `tart delete` removed its VM.
+stop_unit() {  # $1 = slot index
+  local i="$1"
+  local label="com.mozilla.tartworker-${i}"
+  if [ "${LAUNCHD_TYPE}" = "daemon" ]; then
+    /bin/launchctl bootout "system/${label}" 2>/dev/null || true
+  else
+    /bin/launchctl bootout "gui/$(uid_of)/${label}" 2>/dev/null \
+      || /bin/launchctl unload "/Users/${USER_NAME}/Library/LaunchAgents/${label}.plist" 2>/dev/null || true
+  fi
+}
+
+start_unit() {  # $1 = slot index
+  local i="$1"
+  local label="com.mozilla.tartworker-${i}"
+  if [ "${LAUNCHD_TYPE}" = "daemon" ]; then
+    /bin/launchctl bootstrap system "/Library/LaunchDaemons/${label}.plist"
+  else
+    /bin/launchctl bootstrap "gui/$(uid_of)" "/Users/${USER_NAME}/Library/LaunchAgents/${label}.plist" \
+      || /bin/launchctl load "/Users/${USER_NAME}/Library/LaunchAgents/${label}.plist"
+  fi
+}
+
+# How many consecutive idle observations are needed before a slot is considered
+# drained, and how long to wait between checks. More than one on purpose: the
+# queue's worker listing lags, so a worker that has JUST claimed a task can still
+# advertise its previous (resolved) task for a few seconds and read as idle.
+# Requiring two readings POLL_INTERVAL apart closes that window.
+IDLE_CONFIRMATIONS=2
+POLL_INTERVAL=30
+
+# workerId a VM registers as = mac-<last 3 MAC octets> (see set_hostname.sh).
+# Non-zero (and no output) when it cannot be determined.
+worker_id_for_vm() {
+  local vm="$1" mac
+  [ -f "${TART_VMS}/${vm}/config.json" ] || return 1
+  mac=$(/usr/bin/python3 -c "import json;print(json.load(open('${TART_VMS}/${vm}/config.json')).get('macAddress',''))" 2>/dev/null) || return 1
+  [ -z "${mac}" ] && return 1
+  printf 'mac-%s' "$(printf '%s' "${mac}" | awk -F: '{print $4$5$6}' | tr 'A-F' 'a-f')"
+}
+
+vm_exists() { [ -d "${TART_VMS}/$1" ]; }
+
+# Echoes exactly one of: idle | busy | unknown
+#
+# FAIL CLOSED. Every path that cannot PROVE the worker is idle reports busy or
+# unknown, and the caller then refuses to wipe the slot. The first version of
+# this was fail-open ("any API hiccup => not busy"), which meant a transient TC
+# blip, a JSON parse error, or a paginated listing that happened not to contain
+# this worker all read as "idle" -- and the roll deleted a VM mid-task. That
+# exact class of false-negative already wiped a running worker once via the
+# reprovision orchestrator's is_currently_busy. Do not reintroduce it: a stalled
+# roll is cheap, a killed production task is not.
+worker_state() {
+  local wid="$1" body
+  [ -z "${wid}" ] && { echo unknown; return; }
+  body=$(/usr/bin/curl -fsS --max-time 15 \
+    "${TC_ROOT}/api/queue/v1/provisioners/${PROVISIONER}/worker-types/${WORKERTYPE}/workers" 2>/dev/null) \
+    || { echo unknown; return; }
+  printf '%s' "${body}" | TC_ROOT="${TC_ROOT}" PROVISIONER="${PROVISIONER}" \
+      WORKERTYPE="${WORKERTYPE}" WID="${wid}" /usr/bin/python3 -c '
+import json,os,sys,urllib.parse,urllib.request
+wid=os.environ["WID"]; root=os.environ["TC_ROOT"]
+prov=os.environ["PROVISIONER"]; wt=os.environ["WORKERTYPE"]
+
+def get(url):
+    with urllib.request.urlopen(url, timeout=15) as r:
+        return json.load(r)
+
+try:
+    d=json.load(sys.stdin)
+except Exception:
+    print("unknown"); sys.exit()
+
+# Follow continuationToken: the listing is paginated, and a worker sitting on a
+# later page would otherwise look absent -- which is read as idle below.
+me=None
+while me is None:
+    for x in d.get("workers",[]):
+        if x.get("workerId")==wid:
+            me=x; break
+    if me is not None:
+        break
+    tok=d.get("continuationToken")
+    if not tok:
+        break
+    try:
+        d=get("%s/api/queue/v1/provisioners/%s/worker-types/%s/workers?continuationToken=%s"
+              % (root,prov,wt,urllib.parse.quote(tok)))
+    except Exception:
+        print("unknown"); sys.exit()
+
+if me is None:
+    # Not known to the queue on any page, so it has never claimed a task and
+    # there is nothing to drain.
+    print("idle"); sys.exit()
+
+tid=(me.get("latestTask") or {}).get("taskId")
+if not tid:
+    print("idle"); sys.exit()
+try:
+    runs=get("%s/api/queue/v1/task/%s/status" % (root,tid)).get("status",{}).get("runs",[])
+except Exception:
+    print("unknown"); sys.exit()
+if not runs:
+    print("unknown"); sys.exit()
+last=runs[-1]
+if last.get("state") in ("running","pending"):
+    # Ours, or not yet assigned (a claim in flight) => busy. A run reassigned to
+    # some other worker after ours failed does not make us busy.
+    w=last.get("workerId")
+    print("busy" if (w is None or w==wid) else "idle")
+else:
+    print("idle")
+'
+}
+
+# Returns 0 ONLY when it is safe to recreate the slot. Returns 1 otherwise, and
+# the caller skips the slot instead of wiping it.
+drain_slot() {  # $1 = vm name
+  local vm="$1" wid st waited=0 idle_streak=0
+
+  # Drain deliberately disabled (no pool configured) => mechanical recreate.
+  if [ -z "${POOL}" ]; then
+    log "  (no tc_worker_pool configured; recreating without drain)"; return 0
+  fi
+
+  # Nothing on disk => nothing can be running inside it.
+  if ! vm_exists "${vm}"; then
+    log "  (${vm} does not exist yet; nothing to drain)"; return 0
+  fi
+
+  if ! wid=$(worker_id_for_vm "${vm}") || [ -z "${wid}" ]; then
+    log "  REFUSING to recreate ${vm}: cannot determine its workerId, so cannot"
+    log "  prove it is idle. Check its config.json, or drain and roll it by hand."
+    return 1
+  fi
+
+  log "  draining ${vm} (worker ${wid}); need ${IDLE_CONFIRMATIONS} consecutive idle checks, up to ${DRAIN_TIMEOUT}s"
+  while :; do
+    st=$(worker_state "${wid}")
+    case "${st}" in
+      idle)
+        idle_streak=$((idle_streak + 1))
+        if [ "${idle_streak}" -ge "${IDLE_CONFIRMATIONS}" ]; then
+          log "  ${wid} idle (confirmed ${idle_streak}x)"; return 0
+        fi
+        ;;
+      busy)
+        [ "${idle_streak}" -gt 0 ] && log "  ${wid} busy again; idle streak reset"
+        idle_streak=0
+        ;;
+      *)
+        # unknown is treated exactly like busy: we cannot prove it is idle.
+        log "  ${wid} state UNKNOWN (TC unreachable or unexpected response); treating as busy"
+        idle_streak=0
+        ;;
+    esac
+    if [ "${waited}" -ge "${DRAIN_TIMEOUT}" ]; then
+      log "  drain timeout (${DRAIN_TIMEOUT}s), last state '${st}' — SKIPPING slot rather than"
+      log "  wiping a worker that may be running a task"
+      return 1
+    fi
+    sleep "${POLL_INTERVAL}"; waited=$((waited + POLL_INTERVAL))
+  done
+}
+
+# --- pull the new image once ----------------------------------------------
+log "pulling ${REGISTRY}/${IMAGE}"
+"${BIN}" pull ${INSECURE} "${REGISTRY}/${IMAGE}"
+
+# --- roll each slot, one at a time ----------------------------------------
+SKIPPED=()
+for i in $(seq 1 "${WORKER_COUNT}"); do
+  VM="${PREFIX}-${i}"
+  log "== slot ${i} (${VM}) =="
+  if ! drain_slot "${VM}"; then
+    log "  slot ${i} SKIPPED — left running on the OLD image"
+    SKIPPED+=("${i}")
+    continue
+  fi
+  log "  stopping worker unit ${i}"
+  stop_unit "${i}"
+  sleep 5
+  "${BIN}" stop "${VM}" 2>/dev/null || true
+  "${BIN}" delete "${VM}" 2>/dev/null || true
+  log "  cloning fresh ${VM} from ${IMAGE}"
+  "${BIN}" clone "${REGISTRY}/${IMAGE}" "${VM}"
+  "${BIN}" set "${VM}" --random-mac --random-serial
+  log "  starting worker unit ${i}"
+  start_unit "${i}"
+  log "  slot ${i} updated"
 done
 
-echo "Waiting 30s for VMs to shut down gracefully..."
-sleep 30
+# Exit non-zero on a partial roll so the caller (the on-network reprovision
+# runner / Hangar trigger) does not record a skipped slot as a success. Silent
+# truncation reads as "everything is on the new image" when it is not.
+if [ "${#SKIPPED[@]}" -gt 0 ]; then
+  log "rolling update INCOMPLETE: ${#SKIPPED[@]}/${WORKER_COUNT} slot(s) skipped (${SKIPPED[*]}) — still on the old image"
+  exit 1
+fi
 
-echo "Force-stopping any remaining VMs..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  VM_NAME="${VM_NAME_PREFIX}-${i}"
-  "${BIN_PATH}" stop "${VM_NAME}" 2>/dev/null || true
-done
-
-echo "Deleting old VMs..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  VM_NAME="${VM_NAME_PREFIX}-${i}"
-  "${BIN_PATH}" delete "${VM_NAME}" 2>/dev/null || true
-done
-
-echo "Pulling latest image..."
-"${BIN_PATH}" pull ${INSECURE_FLAG} "${REGISTRY}/${IMAGE}"
-
-echo "Cloning fresh VMs..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  VM_NAME="${VM_NAME_PREFIX}-${i}"
-  "${BIN_PATH}" clone "${REGISTRY}/${IMAGE}" "${VM_NAME}"
-  "${BIN_PATH}" set "${VM_NAME}" --random-mac --random-serial
-done
-
-echo "Reloading LaunchAgents..."
-for i in $(seq 1 ${WORKER_COUNT}); do
-  launchctl load "${PLIST_DIR}/com.mozilla.tartworker-${i}.plist"
-done
-
-echo "Update complete. VMs are restarting."
+log "rolling update complete (${WORKER_COUNT} slot(s))"
