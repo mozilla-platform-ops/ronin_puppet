@@ -56,6 +56,26 @@ log() { echo "$(date -u +%FT%TZ) $*"; }
 
 uid_of() { /usr/bin/id -u "${USER_NAME}"; }
 
+# Run tart AS THE VM-OWNING USER. This is not optional and not cosmetic.
+#
+# tart resolves VMs from $HOME/.tart. This script must run as root (the daemon
+# path does `launchctl bootout system/...`, which root alone can do), and root's
+# $HOME is /var/root -- an entirely separate, empty tart namespace. Invoking tart
+# directly here therefore operates on the wrong VMs.
+#
+# Observed on macmini-m4-188 (2026-07-27) before this fix: `tart stop`/`delete`
+# hit root's empty namespace and failed silently behind `2>/dev/null || true`,
+# `tart clone` then SUCCEEDED into /var/root/.tart (two phantom VMs + a 25 GB
+# cache), `start_unit` restarted the launchd job -- which runs as ${USER_NAME}
+# and picked up the untouched original VM -- and the script logged
+# "rolling update complete". Nothing had been updated.
+#
+# Same convention as profiles::tart, which invokes tart-pull-image.sh and
+# `tart list` via `su - ${user} -c`.
+tart_user() {
+  su - "${USER_NAME}" -c "$(printf '%q ' "${BIN}" "$@")"
+}
+
 # --- launchd helpers: daemon (system) vs agent (per-user gui) --------------
 # NOTE: two separate `local` statements, not `local i="$1" label="...${i}"`.
 # `local` expands all its arguments before assigning any of them, so on the
@@ -231,10 +251,15 @@ drain_slot() {  # $1 = vm name
 
 # --- pull the new image once ----------------------------------------------
 log "pulling ${REGISTRY}/${IMAGE}"
-"${BIN}" pull ${INSECURE} "${REGISTRY}/${IMAGE}"
+if ! tart_user pull ${INSECURE} "${REGISTRY}/${IMAGE}"; then
+  log "FATAL: pull of ${REGISTRY}/${IMAGE} failed — refusing to delete any VM"
+  log "       without a usable image to clone from"
+  exit 1
+fi
 
 # --- roll each slot, one at a time ----------------------------------------
 SKIPPED=()
+FAILED=()
 for i in $(seq 1 "${WORKER_COUNT}"); do
   VM="${PREFIX}-${i}"
   log "== slot ${i} (${VM}) =="
@@ -243,24 +268,74 @@ for i in $(seq 1 "${WORKER_COUNT}"); do
     SKIPPED+=("${i}")
     continue
   fi
+
+  # Record the identity we expect to change, so "updated" can be VERIFIED rather
+  # than assumed. Without this the loop reported success merely for reaching its
+  # end, which is exactly how the run-as-root bug went unnoticed.
+  mac_before="$(worker_id_for_vm "${VM}" || true)"
+
   log "  stopping worker unit ${i}"
   stop_unit "${i}"
   sleep 5
-  "${BIN}" stop "${VM}" 2>/dev/null || true
-  "${BIN}" delete "${VM}" 2>/dev/null || true
+  # No 2>/dev/null here: swallowing these is what hid the run-as-root bug for the
+  # entire life of this script. A stop/delete failure is worth seeing in the log.
+  tart_user stop "${VM}" || log "  (stop returned non-zero; VM may already be stopped)"
+  if ! tart_user delete "${VM}"; then
+    log "  slot ${i} FAILED: could not delete ${VM}; leaving it alone rather than"
+    log "  cloning over a VM that still exists"
+    FAILED+=("${i}")
+    start_unit "${i}"
+    continue
+  fi
+
   log "  cloning fresh ${VM} from ${IMAGE}"
-  "${BIN}" clone "${REGISTRY}/${IMAGE}" "${VM}"
-  "${BIN}" set "${VM}" --random-mac --random-serial
+  if ! tart_user clone "${REGISTRY}/${IMAGE}" "${VM}"; then
+    log "  slot ${i} FAILED: clone of ${IMAGE} failed — slot is now EMPTY and its"
+    log "  worker is DOWN. Manual recovery needed: clone ${IMAGE} to ${VM}."
+    FAILED+=("${i}")
+    continue
+  fi
+  if ! tart_user set "${VM}" --random-mac --random-serial; then
+    log "  slot ${i} FAILED: could not randomise MAC/serial; the clone would keep"
+    log "  the image's baked identity and collide with other slots"
+    FAILED+=("${i}")
+    continue
+  fi
+
+  # Post-condition: the workerId is derived from the MAC, so a successful
+  # recreate MUST change it. If it did not, the recreate silently operated
+  # somewhere else and the slot is still on the old image.
+  mac_after="$(worker_id_for_vm "${VM}" || true)"
+  if [ -z "${mac_after}" ]; then
+    log "  slot ${i} FAILED: no workerId readable after recreate (missing config.json?)"
+    FAILED+=("${i}")
+    continue
+  fi
+  if [ -n "${mac_before}" ] && [ "${mac_before}" = "${mac_after}" ]; then
+    log "  slot ${i} FAILED: workerId unchanged (${mac_after}) after clone+set."
+    log "  The recreate did not take effect on ${TART_VMS}/${VM} — check that tart"
+    log "  is running as ${USER_NAME} and not root."
+    FAILED+=("${i}")
+    continue
+  fi
+
   log "  starting worker unit ${i}"
   start_unit "${i}"
-  log "  slot ${i} updated"
+  log "  slot ${i} updated (${mac_before:-unknown} -> ${mac_after})"
 done
 
-# Exit non-zero on a partial roll so the caller (the on-network reprovision
-# runner / Hangar trigger) does not record a skipped slot as a success. Silent
-# truncation reads as "everything is on the new image" when it is not.
-if [ "${#SKIPPED[@]}" -gt 0 ]; then
-  log "rolling update INCOMPLETE: ${#SKIPPED[@]}/${WORKER_COUNT} slot(s) skipped (${SKIPPED[*]}) — still on the old image"
+# Exit non-zero on anything less than a full roll so the caller (the on-network
+# reprovision runner / Hangar trigger) cannot record a partial roll as a success.
+# Silent truncation reads as "everything is on the new image" when it is not.
+#
+# SKIPPED = intentionally left alone (could not prove the worker idle) and still
+#           serving on the old image.
+# FAILED  = the recreate was attempted and did not complete. A slot in here may
+#           be DOWN and needs looking at.
+if [ "${#FAILED[@]}" -gt 0 ] || [ "${#SKIPPED[@]}" -gt 0 ]; then
+  log "rolling update INCOMPLETE (${WORKER_COUNT} slot(s) total):"
+  [ "${#SKIPPED[@]}" -gt 0 ] && log "  skipped, still on old image: ${SKIPPED[*]}"
+  [ "${#FAILED[@]}" -gt 0 ] && log "  FAILED mid-recreate, may be DOWN: ${FAILED[*]}"
   exit 1
 fi
 
