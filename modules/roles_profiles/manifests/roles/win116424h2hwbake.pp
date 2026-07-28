@@ -28,6 +28,10 @@
 #   - windows_datacenter_administrator : sets the local admin account password from
 #                              `win_adminpw` (Vault). Deployment-time identity/secret —
 #                              MUST NOT be baked; applied at deploy.
+#   - ssh                    : OpenSSH server + the winaudit SSH public key on the
+#                              Administrator account. Datacenter access/identity — set
+#                              up at deploy (and it needs the Administrator profile to
+#                              exist, which it doesn't on a generalized image).
 #   - google_chrome / chocolatey : Chrome is the only chocolatey consumer, and a baked
 #                              Chrome goes stale between bake and deploy. Installing it at
 #                              deploy keeps it current AND removes chocolatey (whose
@@ -43,7 +47,8 @@ class roles_profiles::roles::win116424h2hwbake {
   # which is now deploy-time. See header.
   ## Install before Windows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
-  include roles_profiles::profiles::ssh
+  # ssh excluded — OpenSSH server + the winaudit SSH key on Administrator are
+  # datacenter access/identity; set up at deploy. See header.
   # System
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
