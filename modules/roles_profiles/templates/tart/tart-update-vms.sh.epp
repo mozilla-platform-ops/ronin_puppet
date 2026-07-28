@@ -289,7 +289,18 @@ for i in $(seq 1 "${WORKER_COUNT}"); do
   fi
 
   log "  cloning fresh ${VM} from ${IMAGE}"
-  if ! tart_user clone "${REGISTRY}/${IMAGE}" "${VM}"; then
+  # ${INSECURE} is required here, not just on the pull above. `tart clone` from an
+  # OCI reference will re-fetch the manifest from the registry whenever the image
+  # is not in the local cache, and without --insecure it tries HTTPS against a
+  # registry that serves plain HTTP, failing with "An SSL error has occurred".
+  #
+  # It is easy to miss because the FIRST slot usually clones straight from the
+  # cache the pull just populated, and only a later slot re-fetches: tart prunes
+  # that cache automatically under disk pressure (`--prune-limit`, default 100 GB).
+  # Exactly that happened on macmini-m4-188 (2026-07-28) -- slot 1 cloned from
+  # cache and succeeded, the cache was pruned, slot 2 re-fetched over HTTPS and
+  # died, leaving its worker DOWN. A single-slot test cannot catch this.
+  if ! tart_user clone ${INSECURE} "${REGISTRY}/${IMAGE}" "${VM}"; then
     log "  slot ${i} FAILED: clone of ${IMAGE} failed — slot is now EMPTY and its"
     log "  worker is DOWN. Manual recovery needed: clone ${IMAGE} to ${VM}."
     FAILED+=("${i}")
