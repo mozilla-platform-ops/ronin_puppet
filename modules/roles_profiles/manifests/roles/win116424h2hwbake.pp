@@ -28,13 +28,19 @@
 #   - windows_datacenter_administrator : sets the local admin account password from
 #                              `win_adminpw` (Vault). Deployment-time identity/secret —
 #                              MUST NOT be baked; applied at deploy.
+#   - google_chrome / chocolatey : Chrome is the only chocolatey consumer, and a baked
+#                              Chrome goes stale between bake and deploy. Installing it at
+#                              deploy keeps it current AND removes chocolatey (whose
+#                              provider is not functional in the bake's single puppet
+#                              pass). chocolatey is dropped with it.
 #
 # Consequence: the bake role references NO Vault secrets, so the bake needs only an
 # empty/placeholder vault.yaml (see win-hw-wim/scripts/bake-bootstrap.ps1). No
 # worker-registration secrets are baked either, because windows_worker_runner is
 # excluded above.
 class roles_profiles::roles::win116424h2hwbake {
-  include roles_profiles::profiles::chocolatey
+  # chocolatey excluded — its only consumer in this role was google_chrome (below),
+  # which is now deploy-time. See header.
   ## Install before Windows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
@@ -62,8 +68,7 @@ class roles_profiles::roles::win116424h2hwbake {
   include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
-  # TODO(wim-bake): Chrome is baked here and can go stale between bake and deploy.
-  # Ensure it is refreshed to current (deploy-time re-apply / auto-update) BEFORE the
-  # first worker-runner start, so jobs run against an up-to-date Chrome. Revisit.
-  include roles_profiles::profiles::google_chrome
+  # google_chrome excluded — deploy-time. It was the only chocolatey consumer, and a
+  # baked Chrome goes stale between bake and deploy; installing it at deploy keeps it
+  # current and removes the chocolatey provider dependency from the single-pass bake.
 }
