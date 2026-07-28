@@ -23,6 +23,12 @@ worker:
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
   generic_worker_engine: multiuser-static
   idle_timeout_secs: 21600 # 6 hours
+  # EXPERIMENT (RELOPS capacity): tasks run per boot before the worker exits and
+  # the host reboots + re-runs puppet + re-downloads binaries. Default is 1 (one
+  # reboot per task). Raising it on staging only, to measure whether reclaiming
+  # the ~7min/task boot overhead increases effective throughput without hurting
+  # test integrity. Roll back by removing this key (reverts to default 1).
+  number_of_tasks_to_run: 5
 
 packages_classes:
   - git

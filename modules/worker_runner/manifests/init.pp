@@ -23,6 +23,7 @@ class worker_runner (
     Optional[Hash] $provider_metadata                                      = undef,
     Optional[Hash] $worker_location                                        = undef,
     Optional[Integer] $idle_timeout_secs                                   = undef,
+    Integer[1] $number_of_tasks_to_run                                     = 1,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
