@@ -20,12 +20,19 @@
 #                              logon init. Excluded so they don't fire during the bake
 #                              or on the generalized image's first boot before the
 #                              deploy-time run; the full role registers them at deploy.
+#   - hardware_observability : installs/configures win_nsclient (monitoring agent) and
+#                              looks up `marlin_pw` from Vault. Deployment-time config
+#                              tied to the datacenter/monitoring endpoint, not stable
+#                              catalog — applied at deploy so no monitoring secret is
+#                              baked into the generalized image.
+#   - windows_datacenter_administrator : sets the local admin account password from
+#                              `win_adminpw` (Vault). Deployment-time identity/secret —
+#                              MUST NOT be baked; applied at deploy.
 #
-# NOTE: hardware_observability (win_nsclient) is kept here per the bake plan, but
-# it looks up `marlin_pw` from Vault. The bake environment must provide a
-# vault.yaml containing at least the secrets referenced by baked profiles
-# (see wim-packer/scripts/bake-bootstrap.ps1). No worker-registration secrets are
-# baked, because windows_worker_runner is excluded above.
+# Consequence: the bake role references NO Vault secrets, so the bake needs only an
+# empty/placeholder vault.yaml (see win-hw-wim/scripts/bake-bootstrap.ps1). No
+# worker-registration secrets are baked either, because windows_worker_runner is
+# excluded above.
 class roles_profiles::roles::win116424h2hwbake {
   include roles_profiles::profiles::chocolatey
   ## Install before Windows Updates is disabled.
@@ -37,7 +44,7 @@ class roles_profiles::roles::win116424h2hwbake {
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
   include roles_profiles::profiles::firewall
-  include roles_profiles::profiles::hardware_observability
+  # hardware_observability (win_nsclient monitoring) excluded — deploy-time; see header.
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::power_management
@@ -45,7 +52,7 @@ class roles_profiles::roles::win116424h2hwbake {
   # registered at deploy time). See header.
   include roles_profiles::profiles::hardware
   include roles_profiles::profiles::virtual_drivers
-  include roles_profiles::profiles::windows_datacenter_administrator
+  # windows_datacenter_administrator (admin account password) excluded — deploy-time; see header.
 
   # Adminstration
   include roles_profiles::profiles::logging
