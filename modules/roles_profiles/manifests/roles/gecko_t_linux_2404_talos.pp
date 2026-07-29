@@ -24,4 +24,7 @@ class roles_profiles::roles::gecko_t_linux_2404_talos {
 
   # turbostat support
   include roles_profiles::profiles::linux_turbostat
+
+  # CPU performance limit support
+  include roles_profiles::profiles::linux_intel_pstate
 }
