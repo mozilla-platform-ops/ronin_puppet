@@ -113,6 +113,12 @@ class roles_profiles::profiles::tart {
       step_version   => $step_version,
       ca_fingerprint => $step_ca_fingerprint,
       token_file     => $step_token_file,
+      # tart-run-vm.sh reads the cert as ${user}, because the tartworker daemon
+      # must run as that user (tart resolves VMs from $HOME/.tart). step writes
+      # the cert 0600 root:wheel, which that user cannot read — so declare the
+      # consumer and let the module chown it. Without this the wrapper logs
+      # "no client cert" and starts VMs with no credentials.
+      consumer_user  => $user,
       conf_dir       => $step_cert_dir,
       label          => 'com.mozilla.tart-certrenew',
       log_dir        => '/var/log/step-cert',
