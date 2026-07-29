@@ -43,16 +43,85 @@ class roles_profiles::profiles::tart {
   # Host-mediated worker-vault injection (tart.inject_vault, default false).
   # When true, the tartworker daemon runs tart-run-vm.sh, which fetches the
   # worker vault from the relops-bootstrap broker over mTLS using the host's
-  # SCEP-issued System-keychain cert (role = tart.vault_role) and shares it into
-  # the guest via `tart run --dir`; the guest's first-boot puppet run turns it
-  # into the generic-worker config. Leave false until the credential-free image
-  # (which reads the injected vault at boot) is deployed — with a baked image the
-  # injected dir is simply ignored. Only meaningful when launchd_type == daemon.
+  # client cert (role = tart.vault_role) and shares it into the guest via
+  # `tart run --dir`; the guest's first-boot puppet run turns it into the
+  # generic-worker config. Only meaningful when launchd_type == daemon.
   $inject_vault   = lookup('tart.inject_vault',   Boolean, 'first', false)
   $vault_role     = lookup('tart.vault_role',     String,  'first', '')
   $broker_host    = lookup('tart.broker_host',    String,  'first', 'forge.relops.mozilla.com')
   $scep_issuer_cn = lookup('tart.scep_issuer_cn', String,  'first', 'Mozilla RelOps Bootstrap CA Intermediate CA')
   $vault_dir_base = "/Users/${user}/.tart-vault"
+
+  # Rolling image-update knobs (tart-update-vms.sh). tc_worker_pool is the TC
+  # pool the VMs join (provisioner/worker-type); when set, the update drains each
+  # slot's worker (waits for its current task to finish, via the TC *public* API
+  # — no creds) before recreating it. Empty = no drain (mechanical recreate).
+  $tc_root_url    = lookup('tart.tc_root_url',    String,  'first', 'https://firefox-ci-tc.services.mozilla.com')
+  $tc_worker_pool = lookup('tart.tc_worker_pool', String,  'first', '')
+  $drain_timeout  = lookup('tart.drain_timeout',  Integer, 'first', 3600)
+
+  # Which client identity tart-run-vm.sh authenticates to the broker with.
+  #
+  #   'keychain' - the MDM/SCEP identity in the System keychain, found by issuer
+  #       CN and used via CURL_SSL_BACKEND=securetransport (the key is
+  #       non-extractable, so TLS signing has to go through the OS stack).
+  #       DO NOT USE for a host that fetches at runtime: that cert is issued with
+  #       step-ca's default 24h lifetime and NOTHING renews it (Apple's SCEP
+  #       payload does not self-renew; only an MDM profile re-install re-enrolls).
+  #       All five tart hosts were found with certs 9 days expired on 2026-07-27.
+  #       It remains the default only because it is the pre-existing behaviour.
+  #
+  #   'file' - a PEM cert/key pair kept fresh by macos_step_cert's renew daemon
+  #       (see tart.step_cert_* below). This is the supported mode for runtime
+  #       fetching. Requires tart.step_cert_enabled.
+  $cert_source    = lookup('tart.cert_source',    Enum['keychain', 'file'], 'first', 'keychain')
+
+  # Self-renewing file-based step-ca identity. Independent of the MDM/SCEP cert:
+  # a separate key generated on-host, renewed well before expiry by a LaunchDaemon.
+  #
+  # The one-time enrollment token is read from a FILE on the host, not from hiera.
+  # An earlier revision of this took it as a vault-delivered Sensitive value, which
+  # cannot work: /var/root/vault.yaml is 0 bytes on every tart host, so the vault
+  # hiera layer is empty and any secret routed through it resolves to undef. (Same
+  # reason tart_autologin_kcpassword below never takes effect.)
+  #
+  # A file is also the better design regardless: the token never enters puppet's
+  # catalog or logs, and it fits the delivery path that already exists — the
+  # bootstrap PKG / reprovision orchestrator already drops /var/root/vault.yaml
+  # over the same channel. macos_step_cert consumes the file and removes it on
+  # success, so it is genuinely single-use.
+  $step_cert_enabled  = lookup('tart.step_cert_enabled',  Boolean, 'first', false)
+  $step_ca_url        = lookup('tart.step_ca_url',        String,  'first', 'https://step-ca.relops.mozilla')
+  $step_ca_ip         = lookup('tart.step_ca_ip',         Optional[String], 'first', undef)
+  $step_version       = lookup('tart.step_version',       String,  'first', '0.28.2')
+  $step_ca_fingerprint = lookup('tart_step_ca_fingerprint', Optional[String], 'first', undef)
+  $step_token_file    = lookup('tart.step_token_file',    String,  'first', '/var/root/step-enrollment-token')
+  $step_cert_dir      = '/etc/step-cert'
+  $step_cert_path     = "${step_cert_dir}/tart-client.crt"
+  $step_key_path      = "${step_cert_dir}/tart-client.key"
+
+  if $step_cert_enabled {
+    # No exec_kick: tart-run-vm.sh reads the PEM files fresh on every VM launch,
+    # so a renewal needs nothing restarted.
+    class { 'macos_step_cert':
+      enabled        => true,
+      cert_path      => $step_cert_path,
+      key_path       => $step_key_path,
+      subject        => $facts['networking']['hostname'],
+      step_ca_url    => $step_ca_url,
+      step_ca_ip     => $step_ca_ip,
+      step_version   => $step_version,
+      ca_fingerprint => $step_ca_fingerprint,
+      token_file     => $step_token_file,
+      conf_dir       => $step_cert_dir,
+      label          => 'com.mozilla.tart-certrenew',
+      log_dir        => '/var/log/step-cert',
+    }
+  }
+
+  if $cert_source == 'file' and !$step_cert_enabled {
+    fail('tart.cert_source is "file" but tart.step_cert_enabled is false — there would be no cert to use, and no renewal.')
+  }
 
   # Autologin the VM-host user. Apple's Virtualization Framework needs an active
   # GUI (Aqua) session for `tart run` to start a VM, and on a headless host that
@@ -128,6 +197,10 @@ class roles_profiles::profiles::tart {
       insecure_flag  => $insecure_flag,
       bin_path       => $bin_path,
       user           => $user,
+      launchd_type   => $launchd_type,
+      tc_root_url    => $tc_root_url,
+      tc_worker_pool => $tc_worker_pool,
+      drain_timeout  => $drain_timeout,
     }),
     require => Exec['install_tart'],
   }
@@ -178,6 +251,9 @@ class roles_profiles::profiles::tart {
         broker_host    => $broker_host,
         scep_issuer_cn => $scep_issuer_cn,
         vault_dir_base => $vault_dir_base,
+        cert_source    => $cert_source,
+        cert_path      => $step_cert_path,
+        key_path       => $step_key_path,
       }),
       require => Exec['install_tart'],
     }
