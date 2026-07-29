@@ -33,17 +33,48 @@ tart:
   manage_image: false
   launchd_type: 'daemon'
   # Host-mediated worker-vault injection (see profiles::tart). Keep FALSE until
-  # the credential-free tester image (which reads the injected vault at first
-  # boot) is built + promoted — with today's baked image the injected dir is
-  # simply ignored, so flipping this early is harmless but pointless. When true,
-  # the host fetches vault-<vault_role> from the broker (mTLS via its SCEP cert)
-  # and shares it into each VM via `tart run --dir`.
+  # the host has a RENEWING client cert (see cert_source / step_cert_* below).
+  # When true, the host fetches vault-<vault_role> from the broker over mTLS and
+  # shares it into each VM via `tart run --dir`.
+  #
+  # Prereq for flipping this: step_cert_enabled + cert_source: 'file'. Flipping
+  # it while cert_source is 'keychain' gives every slot ~24h of working vault
+  # fetches and then silent failure, because the MDM/SCEP cert expires and
+  # nothing renews it. (Measured 2026-07-27: all of m4-235..239 had SCEP certs
+  # 9 days expired.) A slot that cannot fetch now degrades to a plain `tart run`
+  # with an ERROR to syslog rather than hanging the guest on an empty share.
   inject_vault: false
   vault_role: 'gecko_t_osx_1500_m_vms'
   # TC pool the VMs join. Enables tart-update-vms.sh's per-slot drain (waits for a
   # slot's worker to finish its current task, via the TC public API, before
   # recreating it). Empty elsewhere = mechanical recreate with no drain.
   tc_worker_pool: 'releng-hardware/gecko-t-osx-1500-m-vms'
+
+  # Client identity for the broker fetch: 'keychain' (MDM/SCEP, non-renewing —
+  # legacy) or 'file' (PEM pair renewed by macos_step_cert). Use 'file' for
+  # anything that fetches at runtime; see the long note in profiles::tart.
+  cert_source: 'keychain'
+
+  # Self-renewing file-based step-ca identity (macos_step_cert). Enable per-host
+  # once it has been handed an enrollment token, then flip cert_source to 'file'
+  # and inject_vault to true.
+  step_cert_enabled: false
+  # step-ca lives in GCP and is reachable from MDC1 by IP only (its name isn't in
+  # MDC1 DNS), so pin it in /etc/hosts. TLS still validates against the name.
+  step_ca_ip: 34.61.3.27
+  step_version: '0.28.2'
+  # Where the one-time enrollment token is read from. A FILE, not a hiera/vault
+  # value: /var/root/vault.yaml is 0 bytes on these hosts so the vault layer is
+  # empty, and a file also keeps the token out of puppet's catalog entirely.
+  # Consumed and deleted on successful enrollment. Mint one with
+  # relops-bootstrap scripts/mint-tart-enrollment-token.sh and drop it here over
+  # the same channel the bootstrap PKG uses for vault.yaml.
+  step_token_file: '/var/root/step-enrollment-token'
+
+# step-ca root CA fingerprint — pins trust during `step ca bootstrap`. Non-secret,
+# same value the reprovision runner uses. TOP-LEVEL key, not nested under `tart:`
+# (see the kcpassword note below for why).
+tart_step_ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
 
 # Puppet-managed autologin for the VM host (see profiles::tart): base64 of the
 # admin user's /etc/kcpassword, enabling an admin GUI session on reboot (required
