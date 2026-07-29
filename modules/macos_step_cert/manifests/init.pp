@@ -106,6 +106,11 @@
 #   Path to a file holding a single-use JWK enrollment token. When the file is
 #   present and there is no valid cert, Puppet enrolls and then removes the file.
 #   Deliberately a file, not a hiera/vault value — see ENROLLMENT above.
+# @param consumer_user
+#   The non-root user that must be able to READ the cert and key. step writes
+#   them 0600 root:wheel, which is unusable by anything else, so when this is set
+#   the files are chowned to it (mode stays 0600) and $conf_dir becomes 0711 so
+#   the user can traverse into it. Leave undef for a root-only consumer.
 # @param conf_dir
 #   Base dir for STEPPATH (CA trust bundle + step config). Mode 0700.
 # @param label
@@ -126,6 +131,7 @@ class macos_step_cert (
   String[1]                      $step_version     = '0.28.2',
   Optional[String[1]]            $ca_fingerprint   = undef,
   String[1]                      $token_file       = '/var/root/step-enrollment-token',
+  Optional[String[1]]            $consumer_user    = undef,
   String[1]                      $conf_dir         = '/etc/step-cert',
   String[1]                      $label            = 'com.mozilla.step-certrenew',
   Optional[String[1]]            $exec_kick        = undef,
@@ -138,11 +144,55 @@ class macos_step_cert (
     $renew_plist = "/Library/LaunchDaemons/${label}.plist"
 
     # ---- dirs ----
-    file { [$conf_dir, $step_path]:
+    # When a consumer is declared, $conf_dir must be TRAVERSABLE by it or the
+    # consumer cannot reach the cert however permissive the cert's own mode is.
+    # 0711 grants +x (traverse) without +r (list); the key itself stays 0600 and
+    # owned by the consumer, so this does not widen who can read it.
+    $conf_dir_mode = $consumer_user ? { undef => '0700', default => '0711' }
+    file { $conf_dir:
       ensure => directory,
       owner  => 'root',
       group  => 'wheel',
-      mode   => '0700',
+      mode   => $conf_dir_mode,
+    }
+
+    # STEPPATH holds the CA trust bundle and step's own config. Nothing outside
+    # root reads it, so it stays 0700 regardless.
+    file { $step_path:
+      ensure  => directory,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0700',
+      require => File[$conf_dir],
+    }
+
+    # ---- cert/key ownership ----
+    # `step ca certificate` and `step ca renew` write these 0600 root:wheel. That
+    # is unusable when the consumer is not root: tart-run-vm.sh runs as the tart
+    # user (the tartworker daemon's UserName, which it must be, because tart
+    # resolves VMs from $HOME/.tart), so a root-only cert means the process that
+    # needs the credential cannot read it.
+    #
+    # Observed on macmini-m4-235 (2026-07-29) with inject_vault first enabled:
+    #   WARN  no client cert at /etc/step-cert/tart-client.crt
+    #   ERROR no vault available and none cached — starting WITHOUT credentials
+    # while a manual fetch AS ROOT with the same cert returned HTTP 200. The
+    # credential was fine; the owner was wrong.
+    #
+    # Chown to the consumer and keep 0600, rather than widening the group: on
+    # macOS the tart user's primary group is `staff`, which every local account
+    # belongs to, so group-readable would be far broader than intended.
+    #
+    # Puppet converges these on each run, and the renew daemon re-applies them
+    # after every renewal via --exec (see below) so they are correct in between.
+    if $consumer_user {
+      file { [$cert_path, $key_path]:
+        ensure  => file,
+        owner   => $consumer_user,
+        group   => 'wheel',
+        mode    => '0600',
+        require => File[$conf_dir],
+      }
     }
 
     file { $log_dir:
@@ -214,6 +264,20 @@ class macos_step_cert (
       notify      => Exec["${label}_reload"],
     }
 
+    # ---- what the renew daemon runs after each successful renewal ----
+    # `step ca renew` rewrites the cert 0600 root:wheel every time, undoing the
+    # chown above. Puppet would put it back on its next run, but puppet is not on
+    # a timer on these hosts, so the consumer would lose access from the moment of
+    # renewal until someone applied again. Re-assert ownership from the daemon's
+    # own --exec so it is correct immediately, and append any caller-supplied kick.
+    if $consumer_user and $exec_kick {
+      $renew_exec = "/bin/sh -c '/usr/sbin/chown ${consumer_user} ${cert_path} ${key_path}; ${exec_kick}'"
+    } elsif $consumer_user {
+      $renew_exec = "/usr/sbin/chown ${consumer_user} ${cert_path} ${key_path}"
+    } else {
+      $renew_exec = $exec_kick
+    }
+
     # ---- renew daemon ----
     # `step ca renew --daemon` no-ops until a cert exists, so this is safe to
     # load before enrollment; KeepAlive + ThrottleInterval back it off.
@@ -228,7 +292,7 @@ class macos_step_cert (
           step_path => $step_path,
           cert_path => $cert_path,
           key_path  => $key_path,
-          exec_kick => $exec_kick,
+          exec_kick => $renew_exec,
           log_dir   => $log_dir,
       }),
       require => [Exec["${label}_install_step_cli"], File[$log_dir]],
