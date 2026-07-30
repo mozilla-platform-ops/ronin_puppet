@@ -37,13 +37,32 @@ tart:
   # When true, the host fetches vault-<vault_role> from the broker over mTLS and
   # shares it into each VM via `tart run --dir`.
   #
-  # Prereq for flipping this: step_cert_enabled + cert_source: 'file'. Flipping
-  # it while cert_source is 'keychain' gives every slot ~24h of working vault
-  # fetches and then silent failure, because the MDM/SCEP cert expires and
-  # nothing renews it. (Measured 2026-07-27: all of m4-235..239 had SCEP certs
-  # 9 days expired.) A slot that cannot fetch now degrades to a plain `tart run`
-  # with an ERROR to syslog rather than hanging the guest on an empty share.
-  inject_vault: false
+  # ENABLED FLEET-WIDE 2026-07-29, but read the ordering note below before
+  # applying puppet on a host that has not been enrolled yet.
+  #
+  # Proven end to end on macmini-m4-235: both slots run workers whose credentials
+  # were never in the image, fetched at launch over mTLS with a self-renewing
+  # step-ca cert. mac-794176 registered 2m20s after being cloned from the
+  # credential-free prod-latest image; mac-39474a followed.
+  #
+  # PER-HOST PREREQUISITE — enroll before you apply:
+  #   1. mint a token:  relops-bootstrap scripts/mint-tart-enrollment-token.sh <host>
+  #   2. drop it at the step_token_file path below
+  #   3. then apply puppet; macos_step_cert enrolls, starts the renew daemon, and
+  #      chowns the cert to tart.user so tart-run-vm.sh can read it
+  #
+  # Applying WITHOUT that enrollment is safe but loud, by design: the wrapper
+  # finds no readable cert, logs ERROR to syslog, and starts the VM with a plain
+  # `tart run` rather than handing the guest an empty vault share. A VM cloned
+  # from a BAKED image still registers (it has its own credentials); a VM cloned
+  # from the credential-free prod-latest will NOT. So an un-enrolled host keeps
+  # working until someone recreates a slot from a current image.
+  #
+  # Do not set cert_source: 'keychain' with this on. That cert is issued with
+  # step-ca's 24h default and nothing renews it, so it buys ~a day and then fails
+  # silently (measured 2026-07-27: all of m4-235..239 held SCEP certs 9 days
+  # expired).
+  inject_vault: true
   vault_role: 'gecko_t_osx_1500_m_vms'
   # TC pool the VMs join. Enables tart-update-vms.sh's per-slot drain (waits for a
   # slot's worker to finish its current task, via the TC public API, before
@@ -51,14 +70,17 @@ tart:
   tc_worker_pool: 'releng-hardware/gecko-t-osx-1500-m-vms'
 
   # Client identity for the broker fetch: 'keychain' (MDM/SCEP, non-renewing —
-  # legacy) or 'file' (PEM pair renewed by macos_step_cert). Use 'file' for
-  # anything that fetches at runtime; see the long note in profiles::tart.
-  cert_source: 'keychain'
+  # legacy) or 'file' (PEM pair renewed by macos_step_cert). 'file' is the only
+  # supported mode for a host that fetches at runtime; see the long note in
+  # profiles::tart for why the keychain identity cannot do this job.
+  cert_source: 'file'
 
-  # Self-renewing file-based step-ca identity (macos_step_cert). Enable per-host
-  # once it has been handed an enrollment token, then flip cert_source to 'file'
-  # and inject_vault to true.
-  step_cert_enabled: false
+  # Self-renewing file-based step-ca identity (macos_step_cert): installs the step
+  # CLI, bootstraps CA trust, enrolls from step_token_file when one is present,
+  # and runs a renew daemon that also re-chowns the cert to tart.user after each
+  # renewal. Enabling this on a host with no token is harmless — enrollment is
+  # guarded on the token file existing, so it installs the machinery and waits.
+  step_cert_enabled: true
   # step-ca lives in GCP and is reachable from MDC1 by IP only (its name isn't in
   # MDC1 DNS), so pin it in /etc/hosts. TLS still validates against the name.
   step_ca_ip: 34.61.3.27
