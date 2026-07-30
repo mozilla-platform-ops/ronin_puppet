@@ -53,6 +53,19 @@
 #   REPROVISION_* creds the `reprovision` CLI needs, keyed by env var name, e.g.
 #   { 'REPROVISION_TC_CLIENT_ID' => Sensitive('...'), ... }. Sourced from vault
 #   by the profile and written to a 0600 env file the daemon sources.
+# @param tart_health_enabled
+#   Run hangar-tart-health-agent, which sweeps the tart VM hosts and pushes per-slot
+#   health to Hangar. Requires tart_health_hosts.
+# @param tart_health_hosts
+#   Tart hosts to sweep, one FQDN per entry. Puppet writes the agent's hosts file, so a
+#   host missing here is never checked.
+# @param tart_health_interval
+#   Seconds between sweeps. Must stay under Hangar's 30 minute staleness window or every
+#   row ages to `unknown` between sweeps.
+# @param tart_health_guests
+#   Also probe inside each VM (disk headroom, clock skew, worker identity). Needs an
+#   `expect` password login per VM and is much slower, hence opt-in — but these are the
+#   checks that catch a crash-looping guest under a healthy host.
 class reprovision_runner (
   Boolean                          $enabled        = false,
   String[1]                        $hangar_api_url = 'https://hangar.relops.mozilla.com/api',
@@ -69,6 +82,10 @@ class reprovision_runner (
   Optional[String[1]]              $step_ca_ip     = undef,
   String[1]                        $step_version   = '0.28.2',
   Hash[Pattern[/^REPROVISION_[A-Z0-9_]+$/], Sensitive[String]] $secrets = {},
+  Boolean                          $tart_health_enabled  = false,
+  Array[Stdlib::Fqdn]              $tart_health_hosts    = [],
+  Integer[60]                      $tart_health_interval = 600,
+  Boolean                          $tart_health_guests   = false,
 ) {
   if $enabled {
     $short_python  = split(String($python_version), '[.]')[0, 2].join('.')
@@ -93,6 +110,18 @@ class reprovision_runner (
     $screen_wrapper      = '/usr/local/bin/hangar-screen-agent.sh'
     $screen_plist_label  = 'com.mozilla.hangar-screen-agent'
     $screen_plist_path   = "/Library/LaunchDaemons/${screen_plist_label}.plist"
+
+    # Companion: hangar-tart-health-agent (per-slot health of the tart VM hosts, pushed
+    # to Hangar's /api/tart-health). Third daemon on the same venv/env file/cert.
+    $tart_bin            = "${venv_dir}/bin/hangar-tart-health-agent"
+    $tart_wrapper        = '/usr/local/bin/hangar-tart-health-agent.sh'
+    $tart_plist_label    = 'com.mozilla.hangar-tart-health-agent'
+    $tart_plist_path     = "/Library/LaunchDaemons/${tart_plist_label}.plist"
+    $tart_hosts_file     = "${conf_dir}/tart-hosts.txt"
+
+    # Every console script pyproject declares. The pip install is guarded on ALL of
+    # them (see below), not just the newest one.
+    $console_bins        = [$runner_bin, $screen_bin, $tart_bin]
 
     # ---- python 3.11 (framework build, same source as scriptworker_prereqs) ----
     class { 'packages::python3':
@@ -140,17 +169,24 @@ class reprovision_runner (
     # PIP_CONFIG_FILE=/dev/null ignores the fleet-wide /Library/Application Support/pip/pip.conf
     # (no-index + internal mirror), which only carries the CI worker's deps — the orchestrator's
     # deps (httpx, typer, taskcluster, …) live on public PyPI, which MDC1 can reach.
-    # creates-guarded (not refreshonly): installs whenever the console script is
+    # Guarded (not refreshonly): installs whenever ANY expected console script is
     # absent, so a partial/failed prior run self-heals on the next apply. The
     # editable install source-links the repo, so vcsrepo's `latest` pulls pick up
     # code changes without a reinstall — only a missing bin needs this to re-run.
+    #
+    # The guard tests EVERY script in $console_bins, because a `creates` on one bin
+    # silently skips the install for all the others. That is not hypothetical: the
+    # guard was `creates => $screen_bin`, and since hangar-screen-agent had existed
+    # since July, adding hangar-tart-health-agent to pyproject never materialized it on
+    # any host with an existing venv — vcsrepo pulled, this exec was notified, and the
+    # guard short-circuited it. An editable install picks up *code* changes without
+    # reinstalling, but a new [project.scripts] entry only appears on reinstall.
+    $bins_present = $console_bins.map |$b| { "-x '${b}'" }.join(' -a ')
     exec { 'reprovision_runner_pip_install':
       command     => "${venv_dir}/bin/pip install --upgrade pip && ${venv_dir}/bin/pip install -e ${orch_dir}",
       path        => ['/usr/bin', '/bin'],
       environment => ['PIP_CONFIG_FILE=/dev/null'],
-      # Guard on the *screen-agent* bin (the newest console script) so an existing venv
-      # re-installs to pick up asyncvnc + hangar-screen-agent, not just reprovision-runner.
-      creates     => $screen_bin,
+      unless      => "/bin/test ${bins_present}",
       timeout     => 900,
       require     => [Exec['reprovision_runner_venv'], Vcsrepo[$repo_dir]],
       notify      => [Exec['reprovision_runner_reload'], Exec['reprovision_runner_screen_reload']],
@@ -316,6 +352,83 @@ class reprovision_runner (
       path        => ['/bin', '/usr/bin'],
       refreshonly => true,
       require     => File[$screen_plist_path],
+    }
+
+    # ---- companion: hangar-tart-health-agent (per-slot tart VM health) ----
+    # Third daemon on the same venv, env file and mTLS cert. Unlike the other two it
+    # takes arguments, so the shared wrapper template renders an argv.
+    #
+    # Opt-in per host: only the runner host should sweep the tart fleet, and a daemon
+    # with no hosts would push an empty payload that ages every row to `unknown`.
+    if $tart_health_enabled {
+      if empty($tart_health_hosts) {
+        fail('reprovision_runner: tart_health_enabled requires a non-empty tart_health_hosts')
+      }
+
+      # Guest probes need an `expect` password login per VM and are much slower than the
+      # host-level sweep, so they are opt-in separately.
+      if $tart_health_guests {
+        $guest_args = []
+      } else {
+        $guest_args = ['--no-guests']
+      }
+      $tart_args = [
+        '--hosts-file', $tart_hosts_file,
+        '--loop',
+        '--interval', String($tart_health_interval),
+      ] + $guest_args
+
+      # Puppet owns the host list: hand-maintaining it means the daemon silently keeps
+      # sweeping a stale fleet as hosts are added or converted. The agent ignores blank
+      # lines and # comments.
+      $tart_hosts_lines = ['# Managed by Puppet (reprovision_runner). Do not edit.'] + $tart_health_hosts
+      $tart_hosts_content = join($tart_hosts_lines, "\n")
+
+      file { $tart_hosts_file:
+        ensure  => file,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0600',
+        content => "${tart_hosts_content}\n",
+        require => File[$conf_dir],
+        notify  => Exec['reprovision_runner_tart_reload'],
+      }
+
+      file { $tart_wrapper:
+        ensure  => file,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0755',
+        content => epp("${module_name}/reprovision-runner.sh.epp", {
+          env_file   => $env_file,
+          runner_bin => $tart_bin,
+          args       => $tart_args,
+        }),
+        require => Exec['reprovision_runner_pip_install'],
+        notify  => Exec['reprovision_runner_tart_reload'],
+      }
+
+      file { $tart_plist_path:
+        ensure  => file,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0644',
+        content => epp("${module_name}/com.mozilla.reprovision-runner.plist.epp", {
+          label    => $tart_plist_label,
+          wrapper  => $tart_wrapper,
+          log_dir  => $log_dir,
+          log_name => 'tart-health-agent',
+        }),
+        require => [File[$tart_wrapper], File[$env_file], File[$tart_hosts_file]],
+        notify  => Exec['reprovision_runner_tart_reload'],
+      }
+
+      exec { 'reprovision_runner_tart_reload':
+        command     => "/bin/bash -c 'launchctl bootout system ${tart_plist_path} 2>/dev/null || true; launchctl bootstrap system ${tart_plist_path}'",
+        path        => ['/bin', '/usr/bin'],
+        refreshonly => true,
+        require     => File[$tart_plist_path],
+      }
     }
   }
 }

@@ -40,17 +40,23 @@ class roles_profiles::profiles::reprovision_runner {
     }
 
     class { 'reprovision_runner':
-      enabled        => true,
-      cert_mode      => $cert_mode,
-      hangar_api_url => pick_default($rr['hangar_api_url'], 'https://hangar.relops.mozilla.com/api'),
-      runner_id      => pick_default($rr['runner_id'], $facts['networking']['hostname']),
-      repo_url       => pick_default($rr['repo_url'], 'https://github.com/mozilla-platform-ops/relops-bootstrap.git'),
-      repo_revision  => pick_default($rr['repo_revision'], 'main'),
-      step_ca_url    => pick_default($rr['step_ca_url'], 'https://step-ca.relops.mozilla'),
-      step_ca_ip     => pick_default($rr['step_ca_ip'], undef),
-      client_cert    => $client_cert,
-      client_key     => $client_key,
-      secrets        => $secrets,
+      enabled              => true,
+      cert_mode            => $cert_mode,
+      hangar_api_url       => pick_default($rr['hangar_api_url'], 'https://hangar.relops.mozilla.com/api'),
+      runner_id            => pick_default($rr['runner_id'], $facts['networking']['hostname']),
+      repo_url             => pick_default($rr['repo_url'], 'https://github.com/mozilla-platform-ops/relops-bootstrap.git'),
+      repo_revision        => pick_default($rr['repo_revision'], 'main'),
+      step_ca_url          => pick_default($rr['step_ca_url'], 'https://step-ca.relops.mozilla'),
+      step_ca_ip           => pick_default($rr['step_ca_ip'], undef),
+      client_cert          => $client_cert,
+      client_key           => $client_key,
+      secrets              => $secrets,
+      # Tart VM slot health sweep (hangar-tart-health-agent). Non-secret config, so it
+      # lives in role data rather than vault.
+      tart_health_enabled  => pick_default($rr['tart_health_enabled'], false),
+      tart_health_hosts    => pick_default($rr['tart_health_hosts'], []),
+      tart_health_interval => pick_default($rr['tart_health_interval'], 600),
+      tart_health_guests   => pick_default($rr['tart_health_guests'], false),
     }
   }
 }
