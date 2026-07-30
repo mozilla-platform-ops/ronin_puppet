@@ -33,5 +33,38 @@ reprovision_runner:
   hangar_api_url: https://hangar-runner.relops.mozilla.com/api
   # step_ca_url uses the module default.
 
+  # ---- tart VM slot health sweep (hangar-tart-health-agent) ----
+  # Pushes per-slot health for gecko-t-osx-1500-m-vms to Hangar's /api/tart-health,
+  # which the Tart VMs page renders. Runs here because Cloud Run cannot reach MDC1 and
+  # this host already holds the mTLS cert and the admin SSH identity.
+  #
+  # Proven from this host 2026-07-30: {"accepted":26,"runner":"cert:macmini-m4-81"}.
+  #
+  # Interval must stay UNDER Hangar's 30 minute staleness window, or every row ages to
+  # `unknown` between sweeps. 600s leaves plenty of margin for a slow sweep.
+  tart_health_enabled: true
+  tart_health_interval: 600
+  # Guest probes (disk headroom, clock skew, worker identity) need an `expect` password
+  # login into each VM and are much slower. They are also the checks that actually catch
+  # a crash-looping guest inside a healthy host — the July 2026 failure mode — so this
+  # should become true once the guest probe path has been exercised in production.
+  tart_health_guests: false
+  # The tart hosts to sweep. Keep in step with the tart_worker role's fleet; a host
+  # missing here is simply never checked.
+  tart_health_hosts:
+    - macmini-m4-185.test.releng.mdc1.mozilla.com
+    - macmini-m4-186.test.releng.mdc1.mozilla.com
+    - macmini-m4-187.test.releng.mdc1.mozilla.com
+    - macmini-m4-188.test.releng.mdc1.mozilla.com
+    - macmini-m4-189.test.releng.mdc1.mozilla.com
+    - macmini-m4-190.test.releng.mdc1.mozilla.com
+    - macmini-m4-191.test.releng.mdc1.mozilla.com
+    - macmini-m4-192.test.releng.mdc1.mozilla.com
+    - macmini-m4-235.test.releng.mdc1.mozilla.com
+    - macmini-m4-236.test.releng.mdc1.mozilla.com
+    - macmini-m4-237.test.releng.mdc1.mozilla.com
+    - macmini-m4-238.test.releng.mdc1.mozilla.com
+    - macmini-m4-239.test.releng.mdc1.mozilla.com
+
 # step-ca root CA fingerprint — pins trust during `step ca bootstrap` (non-secret).
 reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
