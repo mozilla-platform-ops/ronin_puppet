@@ -1,6 +1,6 @@
 #!/bin/bash
 
-peopleToRemove=("dhouse" "jwatkins" "mgoossens" "rthijssen" "andrej" "michelle")
+peopleToRemove=("dhouse" "jwatkins" "mgoossens" "rthijssen" "andrej" "michelle" "amadan")
 
 # --check: report whether there is anything to do, without changing state.
 # Exit 1 if any listed user still has a home directory (work to do), else 0.
