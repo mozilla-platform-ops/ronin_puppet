@@ -9,7 +9,7 @@ class roles_profiles::roles::mac_v4_signing_adhoc {
   include fw::roles::mac_signing
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_xcode_tools
-  include roles_profiles::profiles::mac_v3_signing
+  include roles_profiles::profiles::mac_signing
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp

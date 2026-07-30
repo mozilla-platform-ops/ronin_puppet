@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::profiles::mac_v3_signing {
+class roles_profiles::profiles::mac_signing {
   case $facts['os']['name'] {
     'Darwin': {
       $worker_type  = 'mac-v3-signing'
