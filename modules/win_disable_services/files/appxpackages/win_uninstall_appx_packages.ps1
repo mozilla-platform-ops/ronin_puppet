@@ -186,8 +186,28 @@ function Remove-PreinstalledAppxPackages {
         "Microsoft.Wallet"                = @{ }
     }
 
+    # Snapshot current AppX state ONCE so we can tell present-vs-absent per app without
+    # enumerating 48 times. Provisioned = image-level (DISM; works even when AppXSvc is
+    # disabled, e.g. after the bake disabled it). Installed enumeration can fail if AppXSvc
+    # is off - treat that as "none installed" and rely on the provisioned view.
+    $provAll = @(); $instAll = @()
+    try { $provAll = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop) }
+    catch { Write-Log -message ("uninstall_appx_packages :: could not list provisioned packages: {0}" -f $_.Exception.Message) -severity 'WARN' }
+    try { $instAll = @(Get-AppxPackage -AllUsers -ErrorAction Stop) }
+    catch { Write-Log -message ("uninstall_appx_packages :: could not list installed packages (AppXSvc disabled?): {0}" -f $_.Exception.Message) -severity 'WARN' }
+
     foreach ($Key in $apps.Keys) {
-        Write-Log -message ("uninstall_appx_packages :: removing AppX match: {0}" -f $Key) -severity 'DEBUG'
+        # Presence check FIRST: only act (and only log 'removing') when the app is actually
+        # here. Previously this logged 'removing AppX match: X' for EVERY key unconditionally,
+        # so a WIM already debloated in the bake looked like it was removing ~48 apps on every
+        # run. Now: remove if present, otherwise log that it isn't installed.
+        $provMatch = @($provAll | Where-Object { $_.PackageName -like ("*{0}*" -f $Key) })
+        $instMatch = @($instAll | Where-Object { ($_.Name -like ("*{0}*" -f $Key)) -or ($_.PackageFullName -like ("*{0}*" -f $Key)) })
+        if (($provMatch.Count -eq 0) -and ($instMatch.Count -eq 0)) {
+            Write-Log -message ("uninstall_appx_packages :: not installed, skipping: {0}" -f $Key) -severity 'DEBUG'
+            continue
+        }
+        Write-Log -message ("uninstall_appx_packages :: removing AppX (provisioned={1}, installed={2}): {0}" -f $Key, $provMatch.Count, $instMatch.Count) -severity 'DEBUG'
 
         # Run each key's removal in a job w/ timeout so we never hang forever.
         $safeKey = $Key.Replace("'","''")
