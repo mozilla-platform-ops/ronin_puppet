@@ -485,17 +485,17 @@ if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
 ## This next line will check if the refresh rate is not 60hz and trigger a reimage if so.
-## RELOPS-2487: this is INTENTIONALLY strict. A NUC that reports refresh rate 1 (i.e. it fell back to
-## the Microsoft Basic Display Adapter because the real Intel GPU driver isn't loaded) is a bad
-## environment - our workers require the Intel GPU at a real 60 Hz - so reimaging it is correct. The
-## fix for the pre-baked-WIM path is to inject the Intel drivers into the WIM (win-hw-wim drivers.inject)
-## so the node comes up at 60, NOT to soften this check.
+## RELOPS-2487 TROUBLESHOOTING (TEMP): even after baking the NUC13 driver pack into the WIM, the
+## pre-baked node still comes up at refresh rate 1 (Intel GPU driver not active -> Microsoft Basic
+## Display Adapter). Reimaging can't fix that, so the Set-PXE below is COMMENTED OUT to stop the
+## reimage loop while we diagnose why the Intel display driver isn't loading. Keep logging the rate.
+## *** RESTORE the Set-PXE once the driver loads and the node reports a real 60 Hz. ***
 $hardware = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Manufacturer, Model
 $model = $hardware.Model
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
 if ($refresh_rate -ne "60") {
-    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
-    Set-PXE
+    Write-Log -message ('{0} :: Refresh rate is {1} (expected 60). Reimage SUPPRESSED for RELOPS-2487 troubleshooting - NOT reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+    #Set-PXE
 }
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
