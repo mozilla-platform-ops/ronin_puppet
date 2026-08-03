@@ -484,10 +484,16 @@ if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
 $hardware = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Manufacturer, Model
 $model = $hardware.Model
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
-if ($refresh_rate -ne "60") {
-    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
-    Set-PXE
-}
+## RELOPS-2487 (canary): refresh-rate reimage DISABLED while validating the pre-baked WIM.
+## nuc13-160 is headless/on a KVM and reports CurrentRefreshRate=1, so `-ne "60"` tripped this
+## into an endless Set-PXE reimage loop right after a successful deploy. Log the value for
+## troubleshooting but do NOT reimage. TODO: restore this (or make detection headless-aware -
+## e.g. skip when no real display / refresh_rate is 0/1) before merging to master.
+Write-Log -message ('{0} :: Refresh rate is {1} (reimage-on-mismatch DISABLED for canary)' -f $($MyInvocation.MyCommand.Name), $refresh_rate) -severity 'DEBUG'
+#if ($refresh_rate -ne "60") {
+#    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+#    Set-PXE
+#}
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
