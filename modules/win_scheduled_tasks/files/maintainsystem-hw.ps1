@@ -484,20 +484,19 @@ if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
 }
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
 ## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
-## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
+## This next line will check if the refresh rate is not 60hz and trigger a reimage if so.
+## RELOPS-2487: this is INTENTIONALLY strict. A NUC that reports refresh rate 1 (i.e. it fell back to
+## the Microsoft Basic Display Adapter because the real Intel GPU driver isn't loaded) is a bad
+## environment - our workers require the Intel GPU at a real 60 Hz - so reimaging it is correct. The
+## fix for the pre-baked-WIM path is to inject the Intel drivers into the WIM (win-hw-wim drivers.inject)
+## so the node comes up at 60, NOT to soften this check.
 $hardware = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Manufacturer, Model
 $model = $hardware.Model
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
-## RELOPS-2487 (canary): refresh-rate reimage DISABLED while validating the pre-baked WIM.
-## nuc13-160 is headless/on a KVM and reports CurrentRefreshRate=1, so `-ne "60"` tripped this
-## into an endless Set-PXE reimage loop right after a successful deploy. Log the value for
-## troubleshooting but do NOT reimage. TODO: restore this (or make detection headless-aware -
-## e.g. skip when no real display / refresh_rate is 0/1) before merging to master.
-Write-Log -message ('{0} :: Refresh rate is {1} (reimage-on-mismatch DISABLED for canary)' -f $($MyInvocation.MyCommand.Name), $refresh_rate) -severity 'DEBUG'
-#if ($refresh_rate -ne "60") {
-#    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
-#    Set-PXE
-#}
+if ($refresh_rate -ne "60") {
+    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+    Set-PXE
+}
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
