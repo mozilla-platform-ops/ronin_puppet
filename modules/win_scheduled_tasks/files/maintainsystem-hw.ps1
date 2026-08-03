@@ -106,7 +106,11 @@ function Invoke-DownloadWithRetryGithub {
 
 function CompareConfigBasic {
     param (
-        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
+        # TEMPORARY (RELOPS-2487 canary): drift-check against the nuc-wim-pipeline branch's
+        # pools.yml, NOT main. The canary deploys from the dev branch (its hash+image live there),
+        # so checking against main's relops1213 (edef633 / older image) is a permanent false
+        # "config mismatch" -> Set-PXE reimage loop. *** REVERT this URL to main before master. ***
+        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/nuc-wim-pipeline/provisioners/windows/MDC1Windows/pools.yml",
         [string]$PAT
     )
 
