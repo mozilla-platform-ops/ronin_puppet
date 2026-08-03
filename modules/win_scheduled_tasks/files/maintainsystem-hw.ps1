@@ -483,19 +483,30 @@ if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
     Start-Sleep -Seconds 60
 }
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
-## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
-## This next line will check if the refresh rate is not 60hz and trigger a reimage if so.
-## RELOPS-2487 TROUBLESHOOTING (TEMP): even after baking the NUC13 driver pack into the WIM, the
-## pre-baked node still comes up at refresh rate 1 (Intel GPU driver not active -> Microsoft Basic
-## Display Adapter). Reimaging can't fix that, so the Set-PXE below is COMMENTED OUT to stop the
-## reimage loop while we diagnose why the Intel display driver isn't loading. Keep logging the rate.
-## *** RESTORE the Set-PXE once the driver loads and the node reports a real 60 Hz. ***
+## Original heuristic reimaged when CurrentRefreshRate != 60. That is a fragile proxy: these NUCs run
+## through a Raritan KVM whose EDID advertises 64 Hz, so a HEALTHY node reports 64 (not 60), while a
+## BAD node (Intel GPU driver not loaded -> Microsoft Basic Display Adapter) reports the sentinel 1.
+## The REAL signal is the ADAPTER: a node still on the generic Microsoft Basic Display Adapter has no
+## working Intel GPU driver and is a bad environment. Check that directly instead of the refresh number.
+## This is also KVM-independent - the Intel driver binds the iGPU whether or not a Raritan session is
+## open (the KVM is closed during test runs), so the adapter check holds headless; the refresh rate would
+## not. 60-vs-64 is intentionally NOT considered - only "is the real Intel GPU in use".
 $hardware = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Manufacturer, Model
 $model = $hardware.Model
+$videoControllers = @(Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name)
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
-if ($refresh_rate -ne "60") {
-    Write-Log -message ('{0} :: Refresh rate is {1} (expected 60). Reimage SUPPRESSED for RELOPS-2487 troubleshooting - NOT reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+## "Real" GPU = any present controller that isn't the generic Microsoft fallback (Basic Display Adapter /
+## Basic Render) or the Hyper-V ghost. If none, the Intel driver never bound.
+$realGpu = $videoControllers | Where-Object { $_ -notmatch 'Basic Display Adapter|Basic Render|Hyper-V Video' }
+if (-not $realGpu) {
+    ## RELOPS-2487 TROUBLESHOOTING (TEMP): the pre-baked WIM ships without the Intel GRAPHICS driver, so
+    ## the node comes up on the generic adapter. Set-PXE is COMMENTED OUT to stop the reimage loop while
+    ## we get the graphics driver into the bake. *** RESTORE Set-PXE once the Intel GPU driver loads. ***
+    Write-Log -message ('{0} :: Display on GENERIC adapter ({1}); Intel GPU driver not loaded (refresh {2}). Reimage SUPPRESSED for RELOPS-2487 - NOT reimaging {3}' -f $($MyInvocation.MyCommand.Name), ($videoControllers -join ', '), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
     #Set-PXE
+}
+else {
+    Write-Log -message ('{0} :: Display driver OK ({1}), refresh rate {2}' -f $($MyInvocation.MyCommand.Name), ($realGpu -join ', '), $refresh_rate) -severity 'DEBUG'
 }
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
