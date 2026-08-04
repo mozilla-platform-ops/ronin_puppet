@@ -24,8 +24,15 @@ class roles_profiles::profiles::worker {
         default => $role_taskcluster_version,
       }
 
+      # Developer-ID-signed worker binaries, opt-in per role as
+      # installed-binary-name => expected sha256. Mozilla signs only a subset of
+      # the release assets, so this is a map rather than a boolean; an empty map
+      # (the default) keeps every binary on the ad-hoc GitHub release asset.
+      $signed_binaries = lookup('taskcluster_signed_binaries', Hash[String, String], 'first', {})
+
       class { 'worker_runner':
         taskcluster_version   => $taskcluster_version,
+        signed_binaries       => $signed_binaries,
         provider_type         => lookup('worker.provider_type'),
         root_url              => 'https://firefox-ci-tc.services.mozilla.com',
         client_id             => lookup('worker.client_id'),

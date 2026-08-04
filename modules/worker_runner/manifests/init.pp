@@ -23,6 +23,10 @@ class worker_runner (
     Optional[Hash] $provider_metadata                                      = undef,
     Optional[Hash] $worker_location                                        = undef,
     Optional[Integer] $idle_timeout_secs                                   = undef,
+    # Developer-ID-signed binaries to install instead of the ad-hoc release
+    # assets, as installed-binary-name => expected sha256. Opt-in per role;
+    # anything not listed keeps the normal ad-hoc GitHub release path.
+    Hash[String, String] $signed_binaries                                  = {},
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -116,15 +120,27 @@ class worker_runner (
                 'taskcluster-proxy'        => undef,
             }
 
-            # Install binaries directly from GitHub releases
+            # A typo in a role's signed-binaries map would otherwise be silently
+            # ignored and leave that role on ad-hoc binaries, which is exactly
+            # the failure this opt-in exists to avoid. Fail the catalog instead.
+            $unknown_signed = $signed_binaries.keys - $taskcluster_binaries.keys
+            unless empty($unknown_signed) {
+                fail("[${module_name}] signed_binaries names no such taskcluster binary: ${unknown_signed.join(', ')}")
+            }
+
+            # Install binaries directly from GitHub releases, except any the role
+            # has opted into Developer-ID-signed builds for.
             $taskcluster_binaries.each |String $bin, $asset_name| {
+                $signed_sha256 = $signed_binaries[$bin]
                 packages::macos_taskcluster_binary { $bin:
                     version          => $taskcluster_version,
                     arch             => $arch_name,
                     file_destination => "/usr/local/bin/${bin}",
                     asset_name       => $asset_name,
-                    # optionally add checksum lookups here:
+                    signed           => $bin in $signed_binaries,
+                    # optionally add checksum lookups for the unsigned assets here:
                     # sha256 => lookup("taskcluster::sha256::${bin}-${arch_name}", undef, undef),
+                    sha256           => $signed_sha256,
                 }
             }
 
