@@ -3,5 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win11a6425h2azurebuilder {
-  include roles_profiles::roles::win11a64h2azurebuilder
+  class { 'roles_profiles::roles::win11a64h2azure':
+    tester => false,
+  }
 }
