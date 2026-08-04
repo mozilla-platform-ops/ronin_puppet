@@ -40,6 +40,121 @@ class roles_profiles::profiles::tart {
   $manage_image   = lookup('tart.manage_image',   Boolean, 'first', true)
   $launchd_type   = lookup('tart.launchd_type',   Enum['agent', 'daemon'], 'first', 'agent')
 
+  # Host-mediated worker-vault injection (tart.inject_vault, default false).
+  # When true, the tartworker daemon runs tart-run-vm.sh, which fetches the
+  # worker vault from the relops-bootstrap broker over mTLS using the host's
+  # client cert (role = tart.vault_role) and shares it into the guest via
+  # `tart run --dir`; the guest's first-boot puppet run turns it into the
+  # generic-worker config. Only meaningful when launchd_type == daemon.
+  $inject_vault   = lookup('tart.inject_vault',   Boolean, 'first', false)
+  $vault_role     = lookup('tart.vault_role',     String,  'first', '')
+  $broker_host    = lookup('tart.broker_host',    String,  'first', 'forge.relops.mozilla.com')
+  $scep_issuer_cn = lookup('tart.scep_issuer_cn', String,  'first', 'Mozilla RelOps Bootstrap CA Intermediate CA')
+  $vault_dir_base = "/Users/${user}/.tart-vault"
+
+  # Rolling image-update knobs (tart-update-vms.sh). tc_worker_pool is the TC
+  # pool the VMs join (provisioner/worker-type); when set, the update drains each
+  # slot's worker (waits for its current task to finish, via the TC *public* API
+  # — no creds) before recreating it. Empty = no drain (mechanical recreate).
+  $tc_root_url    = lookup('tart.tc_root_url',    String,  'first', 'https://firefox-ci-tc.services.mozilla.com')
+  $tc_worker_pool = lookup('tart.tc_worker_pool', String,  'first', '')
+  $drain_timeout  = lookup('tart.drain_timeout',  Integer, 'first', 3600)
+
+  # Which client identity tart-run-vm.sh authenticates to the broker with.
+  #
+  #   'keychain' - the MDM/SCEP identity in the System keychain, found by issuer
+  #       CN and used via CURL_SSL_BACKEND=securetransport (the key is
+  #       non-extractable, so TLS signing has to go through the OS stack).
+  #       DO NOT USE for a host that fetches at runtime: that cert is issued with
+  #       step-ca's default 24h lifetime and NOTHING renews it (Apple's SCEP
+  #       payload does not self-renew; only an MDM profile re-install re-enrolls).
+  #       All five tart hosts were found with certs 9 days expired on 2026-07-27.
+  #       It remains the default only because it is the pre-existing behaviour.
+  #
+  #   'file' - a PEM cert/key pair kept fresh by macos_step_cert's renew daemon
+  #       (see tart.step_cert_* below). This is the supported mode for runtime
+  #       fetching. Requires tart.step_cert_enabled.
+  $cert_source    = lookup('tart.cert_source',    Enum['keychain', 'file'], 'first', 'keychain')
+
+  # Self-renewing file-based step-ca identity. Independent of the MDM/SCEP cert:
+  # a separate key generated on-host, renewed well before expiry by a LaunchDaemon.
+  #
+  # The one-time enrollment token is read from a FILE on the host, not from hiera.
+  # An earlier revision of this took it as a vault-delivered Sensitive value, which
+  # cannot work: /var/root/vault.yaml is 0 bytes on every tart host, so the vault
+  # hiera layer is empty and any secret routed through it resolves to undef. (Same
+  # reason tart_autologin_kcpassword below never takes effect.)
+  #
+  # A file is also the better design regardless: the token never enters puppet's
+  # catalog or logs, and it fits the delivery path that already exists — the
+  # bootstrap PKG / reprovision orchestrator already drops /var/root/vault.yaml
+  # over the same channel. macos_step_cert consumes the file and removes it on
+  # success, so it is genuinely single-use.
+  $step_cert_enabled  = lookup('tart.step_cert_enabled',  Boolean, 'first', false)
+  $step_ca_url        = lookup('tart.step_ca_url',        String,  'first', 'https://step-ca.relops.mozilla')
+  $step_ca_ip         = lookup('tart.step_ca_ip',         Optional[String], 'first', undef)
+  $step_version       = lookup('tart.step_version',       String,  'first', '0.28.2')
+  $step_ca_fingerprint = lookup('tart_step_ca_fingerprint', Optional[String], 'first', undef)
+  $step_token_file    = lookup('tart.step_token_file',    String,  'first', '/var/root/step-enrollment-token')
+  $step_cert_dir      = '/etc/step-cert'
+  $step_cert_path     = "${step_cert_dir}/tart-client.crt"
+  $step_key_path      = "${step_cert_dir}/tart-client.key"
+
+  if $step_cert_enabled {
+    # No exec_kick: tart-run-vm.sh reads the PEM files fresh on every VM launch,
+    # so a renewal needs nothing restarted.
+    class { 'macos_step_cert':
+      enabled        => true,
+      cert_path      => $step_cert_path,
+      key_path       => $step_key_path,
+      subject        => $facts['networking']['hostname'],
+      step_ca_url    => $step_ca_url,
+      step_ca_ip     => $step_ca_ip,
+      step_version   => $step_version,
+      ca_fingerprint => $step_ca_fingerprint,
+      token_file     => $step_token_file,
+      # tart-run-vm.sh reads the cert as ${user}, because the tartworker daemon
+      # must run as that user (tart resolves VMs from $HOME/.tart). step writes
+      # the cert 0600 root:wheel, which that user cannot read — so declare the
+      # consumer and let the module chown it. Without this the wrapper logs
+      # "no client cert" and starts VMs with no credentials.
+      consumer_user  => $user,
+      conf_dir       => $step_cert_dir,
+      label          => 'com.mozilla.tart-certrenew',
+      log_dir        => '/var/log/step-cert',
+    }
+  }
+
+  if $cert_source == 'file' and !$step_cert_enabled {
+    fail('tart.cert_source is "file" but tart.step_cert_enabled is false — there would be no cert to use, and no renewal.')
+  }
+
+  # Autologin the VM-host user. Apple's Virtualization Framework needs an active
+  # GUI (Aqua) session for `tart run` to start a VM, and on a headless host that
+  # session only exists via autologin at boot. Without a puppet-managed
+  # /etc/kcpassword, a host can reboot to the login window with no session: the
+  # launchd daemons load fine but every VM fails to start with "Internal
+  # Virtualization error" (hit on macmini-m4-187, 2026-07-16 — its kcpassword
+  # was missing while sibling hosts happened to have it). Managing it here makes
+  # reboot-resilience guaranteed instead of dependent on original provisioning.
+  #
+  # tart_autologin_kcpassword = base64 of the admin user's /etc/kcpassword.
+  # Populate it in vault/hiera; left empty it is a no-op (autologin unmanaged,
+  # falls back to whatever the host was provisioned with).
+  #
+  # NB: TOP-LEVEL key, deliberately NOT nested under the `tart` hash. Secrets
+  # live in vault.yaml (highest-priority hiera layer) and lookups here use
+  # 'first' (no deep merge); a partial `tart: {autologin_kcpassword: ...}` in
+  # vault.yaml would shadow the whole role-data `tart` hash (hiding version /
+  # registry_host / oci_image / etc.). A distinct top-level key avoids that.
+  $autologin_kcpassword = lookup('tart_autologin_kcpassword', String, 'first', '')
+  if $autologin_kcpassword != '' {
+    class { 'macos_utils::autologin_user':
+      user       => $user,
+      kcpassword => $autologin_kcpassword,
+    }
+  }
+
   $install_dir   = '/Applications'
   $bin_path      = '/usr/local/bin/tart'
   $tart_url      = "https://github.com/cirruslabs/tart/releases/download/${version}/tart.tar.gz"
@@ -88,6 +203,10 @@ class roles_profiles::profiles::tart {
       insecure_flag  => $insecure_flag,
       bin_path       => $bin_path,
       user           => $user,
+      launchd_type   => $launchd_type,
+      tc_root_url    => $tc_root_url,
+      tc_worker_pool => $tc_worker_pool,
+      drain_timeout  => $drain_timeout,
     }),
     require => Exec['install_tart'],
   }
@@ -121,6 +240,34 @@ class roles_profiles::profiles::tart {
     $dir_require = []
   }
 
+  # The daemon runs this wrapper instead of `tart run` directly, so it can inject
+  # the worker vault into each VM at launch (see tart.inject_vault above). One
+  # shared script; the plist passes the VM name. Only the daemon path uses it.
+  if $launchd_type == 'daemon' {
+    file { '/usr/local/bin/tart-run-vm.sh':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'wheel',
+      mode    => '0755',
+      content => epp('roles_profiles/tart/tart-run-vm.sh.epp', {
+        user           => $user,
+        bin_path       => $bin_path,
+        inject_vault   => $inject_vault,
+        vault_role     => $vault_role,
+        broker_host    => $broker_host,
+        scep_issuer_cn => $scep_issuer_cn,
+        vault_dir_base => $vault_dir_base,
+        cert_source    => $cert_source,
+        cert_path      => $step_cert_path,
+        key_path       => $step_key_path,
+      }),
+      require => Exec['install_tart'],
+    }
+    $wrapper_require = [File['/usr/local/bin/tart-run-vm.sh']]
+  } else {
+    $wrapper_require = []
+  }
+
   Integer[1, $worker_count].each |$i| {
     $vm_name = "${vm_name_prefix}-${i}"
 
@@ -149,13 +296,12 @@ class roles_profiles::profiles::tart {
         content => epp('roles_profiles/tart/com.mozilla.tartworker.daemon.plist.epp', {
           worker_id => $i,
           vm_name   => $vm_name,
-          bin_path  => $bin_path,
           user      => $user,
         }),
         owner   => 'root',
         group   => 'wheel',
         mode    => '0644',
-        require => $image_require + $dir_require + [Exec["evict_agent_tartworker_${i}"], File[$agent_plist]],
+        require => $image_require + $dir_require + $wrapper_require + [Exec["evict_agent_tartworker_${i}"], File[$agent_plist]],
         notify  => Exec["load_tartworker_${i}"],
       }
 

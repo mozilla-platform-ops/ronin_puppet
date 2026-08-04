@@ -1,0 +1,135 @@
+<%- | String                    $user,
+      String                    $bin_path,
+      Boolean                   $inject_vault,
+      String                    $vault_role,
+      String                    $broker_host,
+      String                    $scep_issuer_cn,
+      String                    $vault_dir_base,
+      Enum['keychain', 'file']  $cert_source,
+      String                    $cert_path,
+      String                    $key_path,
+| -%>
+#!/bin/bash
+# Managed by Puppet (roles_profiles::profiles::tart). Do not edit.
+#
+# Wrapper the tartworker LaunchDaemon runs INSTEAD of `tart run` directly.
+# When vault injection is enabled it fetches the worker vault on the HOST (the
+# VM is not MDM-enrolled and has no broker identity; the host holds the client
+# cert), writes it to a per-VM directory, and shares that dir into the guest via
+# `tart run --dir`. The guest's first-boot puppet run reads it and turns it into
+# the generic-worker config (worker.access_token etc).
+#
+# Client identity comes from one of two places (tart.cert_source):
+#   file     - PEM cert/key kept fresh by macos_step_cert's renew daemon. Use
+#              this. It is the only mode that survives past a cert lifetime.
+#   keychain - the MDM/SCEP System-keychain identity, via SecureTransport (the
+#              SCEP key is non-extractable so signing must go through the OS
+#              stack). Legacy: that cert is issued with step-ca's default 24h
+#              lifetime and nothing renews it, so a host using this mode stops
+#              being able to fetch a day after enrollment.
+#
+# Degradation: if no vault can be obtained (no cert, expired cert, broker down)
+# the VM is still started, but with a PLAIN `tart run` and a loud log line —
+# never with an empty share that would leave the guest waiting on a file that
+# will not appear. A VM started this way boots on its baked (fake) credentials
+# and will NOT register as a worker; that is a dead slot, so the message goes to
+# syslog as well as the daemon log.
+set -uo pipefail
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+VM="$1"
+BIN="<%= $bin_path %>"
+<% if $inject_vault { -%>
+
+BROKER="<%= $broker_host %>"
+ROLE="<%= $vault_role %>"
+VDIR="<%= $vault_dir_base %>/${VM}"
+<% if $cert_source == 'file' { -%>
+CERT="<%= $cert_path %>"
+KEY="<%= $key_path %>"
+<% } else { -%>
+ISSUER_CN="<%= $scep_issuer_cn %>"
+<% } -%>
+
+/bin/mkdir -p "$VDIR"
+/bin/chmod 700 "$VDIR"
+
+log() {
+  echo "$(/bin/date -u +%FT%TZ) tart-run-vm[$VM] $*"
+  /usr/bin/logger -t tart-run-vm "[$VM] $*"
+}
+
+# Writes the fetched vault to $VDIR/vault.yaml on success. Returns non-zero and
+# leaves any prior vault untouched on failure.
+fetch_vault() {
+  local tmp="$VDIR/.vault.yaml.tmp" code
+<% if $cert_source == 'file' { -%>
+  if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
+    log "WARN no client cert at ${CERT} (macos_step_cert not enrolled yet?)"
+    return 1
+  fi
+  # Fail early and clearly on an expired cert rather than as an opaque TLS error.
+  if ! /usr/bin/openssl x509 -checkend 0 -noout -in "$CERT" 2>/dev/null; then
+    log "WARN client cert ${CERT} is EXPIRED ($(/usr/bin/openssl x509 -enddate -noout -in "$CERT" 2>/dev/null)); renew daemon com.mozilla.tart-certrenew may be dead"
+    return 1
+  fi
+  # LibreSSL backend: SecureTransport cannot take a separate PEM key file.
+  code=$(CURL_SSL_BACKEND=openssl /usr/bin/curl -sS --max-time 30 \
+      --cert "$CERT" --key "$KEY" -w '%{http_code}' -o "$tmp" \
+      "https://${BROKER}/secret/${ROLE}") || true
+<% } else { -%>
+  # Find the SCEP identity by ISSUER CN. `find-identity` WITHOUT -v on purpose:
+  # -v filters by local chain validity, which fails for MDM-pushed CAs (the LB
+  # validates the chain, not us). Subject CN varies by ComputerName, so match the
+  # stable issuer instead. NOTE: this also means an EXPIRED cert is selected and
+  # used, surfacing as an opaque TLS failure below — one reason to prefer
+  # cert_source=file.
+  local identity_cn="" line cn
+  while IFS= read -r line; do
+    if [[ $line =~ \)\ ([0-9A-Fa-f]+)\ \"([^\"]+)\" ]]; then
+      cn="${BASH_REMATCH[2]}"
+      if /usr/bin/security find-certificate -c "$cn" -p /Library/Keychains/System.keychain 2>/dev/null \
+          | /usr/bin/openssl x509 -noout -issuer 2>/dev/null | /usr/bin/grep -q "$ISSUER_CN"; then
+        identity_cn="$cn"
+        break
+      fi
+    fi
+  done < <(/usr/bin/security find-identity /Library/Keychains/System.keychain 2>/dev/null)
+
+  if [ -z "$identity_cn" ]; then
+    log "WARN no SCEP identity (issuer '${ISSUER_CN}') in System keychain"
+    return 1
+  fi
+  code=$(CURL_SSL_BACKEND=securetransport /usr/bin/curl -sS --max-time 30 \
+      --cert "$identity_cn" -w '%{http_code}' -o "$tmp" \
+      "https://${BROKER}/secret/${ROLE}") || true
+<% } -%>
+
+  if [ "$code" = "200" ] && [ -s "$tmp" ]; then
+    /bin/chmod 600 "$tmp"
+    /bin/mv "$tmp" "$VDIR/vault.yaml"
+    log "fetched vault for role ${ROLE} ($(/usr/bin/wc -c <"$VDIR/vault.yaml" | /usr/bin/tr -d ' ') bytes)"
+    return 0
+  fi
+
+  log "WARN broker fetch HTTP ${code:-000} for ${ROLE}"
+  /bin/rm -f "$tmp"
+  return 1
+}
+
+if ! fetch_vault; then
+  if [ -s "$VDIR/vault.yaml" ]; then
+    # A previously-fetched vault is still on disk. Worth using: the worker token
+    # usually outlives the client cert. Stale only matters if the token rotated.
+    log "WARN using PREVIOUSLY FETCHED vault (fetch failed); token may be stale"
+  else
+    log "ERROR no vault available and none cached — starting ${VM} WITHOUT credentials; it will NOT register as a worker"
+    exec "$BIN" run --no-graphics "$VM"
+  fi
+fi
+
+exec "$BIN" run --no-graphics --dir="vault:${VDIR}:ro" "$VM"
+<% } else { -%>
+
+exec "$BIN" run --no-graphics "$VM"
+<% } -%>

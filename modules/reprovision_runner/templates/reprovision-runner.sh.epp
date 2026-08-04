@@ -1,0 +1,22 @@
+<%- | String $env_file,
+      String $runner_bin,
+      Array[String] $args = [],
+| -%>
+#!/bin/bash
+# Managed by Puppet (reprovision_runner). Do not edit.
+# Source the root-only env file (HANGAR_API_URL, RUNNER_*, REPROVISION_* creds)
+# then exec the runner. The env file is the only place secrets live at rest.
+#
+# Sourcing is not optional for hangar-tart-health-agent: without
+# REPROVISION_SSH_ADMIN_KEY in the environment its secret resolution falls through to
+# an op:// ref, and the 1Password CLI is not installed on the runner host.
+set -euo pipefail
+set -a
+# shellcheck disable=SC1090
+source '<%= $env_file %>'
+set +a
+<% if empty($args) { -%>
+exec '<%= $runner_bin %>'
+<% } else { -%>
+exec '<%= $runner_bin %>' <%= $args.map |$a| { "'${a}'" }.join(' ') %>
+<% } -%>

@@ -20,16 +20,15 @@ jobs:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@4c56a21280b36d862b5fc31348f463d60bdc55d5 # v1.221.0
+        uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
         with:
-          ruby-version: '3.2'
           bundler-cache: false
 
       - name: Cache gems
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ~/.gem
-          key: v1-gems-${{ runner.os }}-${{ hashFiles('Gemfile.lock') }}
+          key: v1-gems-${{ runner.os }}-${{ hashFiles('.ruby-version', 'Gemfile.lock') }}
 
       - name: Bundle install
         run: |

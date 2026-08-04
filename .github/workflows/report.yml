@@ -1,0 +1,147 @@
+name: Herald reporter
+
+# Emits a Herald change event on merge and dispatches it to relops-herald.
+# Helper scripts live in .github/herald/ (copied from
+# relops-herald/reporter-templates/ronin_puppet/).
+#
+# BUILDOUT NOTE: while this is being developed the push trigger is scoped to the
+# `herald-reporter-dev` branch, NOT master, so real merges to master do not fire
+# it. workflow_dispatch is included so it can be run manually from the Actions
+# tab (which requires this file to exist on the default branch). When the
+# reporter is ready, change `branches: [herald-reporter-dev]` to `[master]`.
+#
+# Prerequisites (see reporter-templates/ronin_puppet/README.md):
+#   * Secrets HERALD_APP_ID and HERALD_APP_PRIVATE_KEY on this repo.
+#   * The relops-herald-dispatch app installed on the TARGET repo relops-herald
+#     with Contents:write (that authorizes the dispatch POST).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [herald-reporter-dev]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need the parent commit to diff the merge.
+          fetch-depth: 2
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Collect commit metadata + changed files
+        id: meta
+        run: |
+          # Works for push, branch-creation (zero 'before'), and manual dispatch.
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="$(git rev-parse HEAD^ 2>/dev/null || git hash-object -t tree /dev/null)"
+          fi
+          git diff --name-only "$BEFORE" "$GITHUB_SHA" > "$RUNNER_TEMP/changed.txt"
+          echo "Changed files:"; cat "$RUNNER_TEMP/changed.txt"
+          {
+            echo "before=$BEFORE"
+            echo "subject=$(git log -1 --format=%s)"
+            echo "timestamp=$(git log -1 --format=%cI)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install summarizer deps
+        run: pip install anthropic
+
+      - name: Map files to entities
+        id: entities
+        run: |
+          xargs -a "$RUNNER_TEMP/changed.txt" \
+            python .github/herald/map_entities.py \
+            > "$RUNNER_TEMP/entities.json"
+          cat "$RUNNER_TEMP/entities.json"
+          # Nothing in scope (all excluded/unmapped) → stop; nothing to report.
+          count=$(python -c 'import json,sys;print(len(json.load(open(sys.argv[1]))))' "$RUNNER_TEMP/entities.json")
+          if [ "$count" = "0" ]; then
+            echo "no_entities=true" >> "$GITHUB_OUTPUT"
+            echo "No in-scope entities changed; skipping dispatch."
+          fi
+
+      - name: Discover merged PR
+        id: pr
+        if: steps.entities.outputs.no_entities != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Best-effort: find a PR associated with this commit.
+          num=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+                  --jq '.[0].number // empty' 2>/dev/null || true)
+          url=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+                  --jq '.[0].html_url // empty' 2>/dev/null || true)
+          echo "number=${num}" >> "$GITHUB_OUTPUT"
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
+
+      - name: Summarize with Claude
+        id: summary
+        if: steps.entities.outputs.no_entities != 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          COMMIT_SUBJECT: ${{ steps.meta.outputs.subject }}
+        run: |
+          # Capture the diff for the model (summarize.py bounds its size).
+          git diff "${{ steps.meta.outputs.before }}" "$GITHUB_SHA" \
+            > "$RUNNER_TEMP/full.diff" || true
+          # On any failure summarize.py still emits a valid (error-shaped)
+          # ai_summary, so the event flows and Herald renders a stub.
+          python .github/herald/summarize.py \
+            --diff "$RUNNER_TEMP/full.diff" \
+            --files "$RUNNER_TEMP/changed.txt" \
+            > "$RUNNER_TEMP/ai_summary.json"
+          cat "$RUNNER_TEMP/ai_summary.json"
+
+      - name: Build event
+        id: build
+        if: steps.entities.outputs.no_entities != 'true'
+        env:
+          SOURCE_REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          TIMESTAMP: ${{ steps.meta.outputs.timestamp }}
+          COMMIT_SUBJECT: ${{ steps.meta.outputs.subject }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          python .github/herald/build_event.py \
+            --entities "$RUNNER_TEMP/entities.json" \
+            --ai "$RUNNER_TEMP/ai_summary.json" \
+            > "$RUNNER_TEMP/event.json"
+          cat "$RUNNER_TEMP/event.json"
+
+      - name: Mint token for relops-herald
+        id: token
+        if: steps.entities.outputs.no_entities != 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.HERALD_APP_ID }}
+          private-key: ${{ secrets.HERALD_APP_PRIVATE_KEY }}
+          owner: mozilla-platform-ops
+          repositories: relops-herald
+
+      - name: Dispatch to Herald
+        if: steps.entities.outputs.no_entities != 'true'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          # client_payload is capped at 10 top-level properties by the API, and
+          # the event has 11 — so nest the whole event under a single key.
+          jq -n --slurpfile p "$RUNNER_TEMP/event.json" \
+            '{event_type: "herald-change", client_payload: {event: $p[0]}}' \
+            > "$RUNNER_TEMP/dispatch.json"
+          gh api --method POST \
+            "repos/mozilla-platform-ops/relops-herald/dispatches" \
+            --input "$RUNNER_TEMP/dispatch.json"
+          echo "Dispatched herald-change for ${{ github.sha }}"

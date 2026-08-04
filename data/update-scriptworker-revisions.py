@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "aiohttp>=3.14.3",
+# ]
+# ///
 """
 Updates common.yaml scriptworker-scripts revisions with latest master/main commit hashes
 """

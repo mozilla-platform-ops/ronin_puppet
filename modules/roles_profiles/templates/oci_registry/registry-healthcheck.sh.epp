@@ -1,0 +1,81 @@
+<%- | Integer $registry_port, String $registry_dir, Integer $disk_threshold, String $alert_email, String $smtp_relay | -%>
+#!/bin/bash
+# Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
+#
+# Periodic health + disk check for the OCI registry. Writes a JSON status file
+# (/var/log/registry-health.json) for dashboards (Hangar) to scrape, and emails
+# on trouble with a cooldown so a sustained problem does not spam the inbox.
+set -uo pipefail
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+PORT=<%= $registry_port %>
+REG_DIR="<%= $registry_dir %>"
+THRESHOLD=<%= $disk_threshold %>
+ALERT_EMAIL="<%= $alert_email %>"
+SMTP_RELAY="<%= $smtp_relay %>"
+STATUS_FILE="/var/log/registry-health.json"
+COOLDOWN_FILE="/var/tmp/registry-health.last-alert"
+COOLDOWN_SECS=21600  # 6h
+
+NOW=$(date -u +%FT%TZ)
+FQDN=$(hostname -f 2>/dev/null || hostname)
+
+# /v2/ reachability
+if curl -fsS --max-time 10 "http://localhost:${PORT}/v2/" >/dev/null 2>&1; then
+  REACHABLE=true
+else
+  REACHABLE=false
+fi
+
+# disk usage of the storage volume (macOS df: Capacity is field 5, e.g. "73%")
+DISK_PCT=$(df -k "${REG_DIR}" 2>/dev/null | tail -1 | awk '{print $5}' | tr -d '%')
+[ -z "${DISK_PCT}" ] && DISK_PCT=-1
+
+PROBLEMS=()
+[ "${REACHABLE}" = "false" ] && PROBLEMS+=("registry /v2/ unreachable on :${PORT}")
+if [ "${DISK_PCT}" -ge "${THRESHOLD}" ] 2>/dev/null; then
+  PROBLEMS+=("storage ${DISK_PCT}% >= ${THRESHOLD}% threshold on ${REG_DIR}")
+fi
+
+if [ "${#PROBLEMS[@]}" -eq 0 ]; then HEALTHY=true; else HEALTHY=false; fi
+
+cat > "${STATUS_FILE}" <<JSON
+{"host":"${FQDN}","checked":"${NOW}","healthy":${HEALTHY},"reachable":${REACHABLE},"disk_pct":${DISK_PCT},"disk_threshold":${THRESHOLD},"problems":$(printf '%s\n' "${PROBLEMS[@]}" | python3 -c 'import json,sys; print(json.dumps([l for l in sys.stdin.read().splitlines() if l]))')}
+JSON
+
+[ "${HEALTHY}" = "true" ] && exit 0
+
+# Cooldown: only email if none sent in the last COOLDOWN_SECS.
+LAST=0
+[ -f "${COOLDOWN_FILE}" ] && LAST=$(cat "${COOLDOWN_FILE}" 2>/dev/null || echo 0)
+EPOCH=$(date +%s)
+if [ $((EPOCH - LAST)) -lt "${COOLDOWN_SECS}" ]; then
+  echo "${NOW} unhealthy but within cooldown; not emailing"
+  exit 0
+fi
+echo "${EPOCH}" > "${COOLDOWN_FILE}"
+
+BODY="OCI registry health check FAILED on ${FQDN} at ${NOW}:\n\n"
+for p in "${PROBLEMS[@]}"; do BODY="${BODY} - ${p}\n"; done
+
+SMTP_RELAY="${SMTP_RELAY}" ALERT_EMAIL="${ALERT_EMAIL}" FQDN="${FQDN}" BODY="${BODY}" python3 <<'PYEOF'
+import os, smtplib, email.utils, datetime
+sender = "ci-worker@mozilla.com"
+recipient = os.environ["ALERT_EMAIL"]
+subject = f"OCI registry unhealthy on {os.environ['FQDN']}"
+body = os.environ["BODY"].replace("\\n", "\n")
+msg = f"""From: {sender}
+To: {recipient}
+Date: {email.utils.formatdate()}
+Subject: {subject}
+
+{body}
+"""
+try:
+    s = smtplib.SMTP(os.environ["SMTP_RELAY"], 25, timeout=30)
+    s.sendmail(sender, recipient, msg)
+    s.quit()
+    print("alert email sent")
+except Exception as e:
+    print(f"WARN could not send alert email: {e}")
+PYEOF

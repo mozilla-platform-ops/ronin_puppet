@@ -1,0 +1,22 @@
+<%- | Integer $interval | -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mozilla.registry-healthcheck</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/usr/local/bin/registry-healthcheck.sh</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StartInterval</key>
+    <integer><%= $interval %></integer>
+    <key>StandardOutPath</key>
+    <string>/var/log/registry-healthcheck.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/registry-healthcheck.log</string>
+</dict>
+</plist>
