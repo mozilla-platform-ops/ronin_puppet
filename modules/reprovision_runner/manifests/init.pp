@@ -123,6 +123,25 @@ class reprovision_runner (
     # them (see below), not just the newest one.
     $console_bins        = [$runner_bin, $screen_bin, $tart_bin]
 
+    # Every daemon that runs code out of the editable install. A repo advance changes
+    # the code these processes are executing, and a long-lived Python process does not
+    # reload source, so each one must be restarted when the working copy moves. Used by
+    # both Vcsrepo and Exec[reprovision_runner_pip_install] below.
+    #
+    # tart_reload only exists when $tart_health_enabled, so it can't be referenced
+    # unconditionally -- Puppet would fail on a dangling resource reference.
+    $daemon_reloads = $tart_health_enabled ? {
+      true    => [
+        Exec['reprovision_runner_reload'],
+        Exec['reprovision_runner_screen_reload'],
+        Exec['reprovision_runner_tart_reload'],
+      ],
+      default => [
+        Exec['reprovision_runner_reload'],
+        Exec['reprovision_runner_screen_reload'],
+      ],
+    }
+
     # ---- python 3.11 (framework build, same source as scriptworker_prereqs) ----
     class { 'packages::python3':
       version => $python_version,
@@ -154,7 +173,15 @@ class reprovision_runner (
       owner    => 'root',
       group    => 'wheel',
       require  => [File[$install_dir], Exec['reprovision_runner_git_systemdir']],
-      notify   => Exec['reprovision_runner_pip_install'],
+      # Notify the reloads as well as the install. The install is guarded on the console
+      # bins existing, so on any host with a working venv a code-only bump SKIPS it --
+      # and with it, the reload notifications it would have sent. That left every daemon
+      # running whatever code it started with, indefinitely: relops-bootstrap#60 (the
+      # tart agent's stale ssh identity path) landed on main, vcsrepo pulled it onto
+      # m4-81, and the agent kept executing the old module because nothing restarted it.
+      # vcsrepo only notifies when it actually moves the working copy, so this restarts
+      # daemons when commits land, not on every apply.
+      notify   => [Exec['reprovision_runner_pip_install']] + $daemon_reloads,
     }
 
     exec { 'reprovision_runner_venv':
@@ -189,7 +216,10 @@ class reprovision_runner (
       unless      => "/bin/test ${bins_present}",
       timeout     => 900,
       require     => [Exec['reprovision_runner_venv'], Vcsrepo[$repo_dir]],
-      notify      => [Exec['reprovision_runner_reload'], Exec['reprovision_runner_screen_reload']],
+      # $daemon_reloads, not a hand-listed pair: this previously named the runner and
+      # screen reloads only, so a run that DID reinstall (fresh venv, or a newly added
+      # console script) still left the tart agent on its old process.
+      notify      => $daemon_reloads,
     }
 
     # ---- config dir + cert/key + env file (all root-only) ----
@@ -313,7 +343,9 @@ class reprovision_runner (
       command     => "/bin/bash -c 'launchctl bootout system ${plist_path} 2>/dev/null || true; launchctl bootstrap system ${plist_path}'",
       path        => ['/bin', '/usr/bin'],
       refreshonly => true,
-      require     => File[$plist_path],
+      # Ordered after the install so that when a repo bump triggers both, the daemon
+      # restarts onto the reinstalled code rather than racing it.
+      require     => [File[$plist_path], Exec['reprovision_runner_pip_install']],
     }
 
     # ---- companion: hangar-screen-agent (VNC frames for the live view) ----
@@ -351,7 +383,7 @@ class reprovision_runner (
       command     => "/bin/bash -c 'launchctl bootout system ${screen_plist_path} 2>/dev/null || true; launchctl bootstrap system ${screen_plist_path}'",
       path        => ['/bin', '/usr/bin'],
       refreshonly => true,
-      require     => File[$screen_plist_path],
+      require     => [File[$screen_plist_path], Exec['reprovision_runner_pip_install']],
     }
 
     # ---- companion: hangar-tart-health-agent (per-slot tart VM health) ----
@@ -427,7 +459,7 @@ class reprovision_runner (
         command     => "/bin/bash -c 'launchctl bootout system ${tart_plist_path} 2>/dev/null || true; launchctl bootstrap system ${tart_plist_path}'",
         path        => ['/bin', '/usr/bin'],
         refreshonly => true,
-        require     => File[$tart_plist_path],
+        require     => [File[$tart_plist_path], Exec['reprovision_runner_pip_install']],
       }
     }
   }
