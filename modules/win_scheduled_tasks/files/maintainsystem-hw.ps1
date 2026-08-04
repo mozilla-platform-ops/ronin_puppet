@@ -499,11 +499,12 @@ $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
 ## Basic Render) or the Hyper-V ghost. If none, the Intel driver never bound.
 $realGpu = $videoControllers | Where-Object { $_ -notmatch 'Basic Display Adapter|Basic Render|Hyper-V Video' }
 if (-not $realGpu) {
-    ## RELOPS-2487 TROUBLESHOOTING (TEMP): the pre-baked WIM ships without the Intel GRAPHICS driver, so
-    ## the node comes up on the generic adapter. Set-PXE is COMMENTED OUT to stop the reimage loop while
-    ## we get the graphics driver into the bake. *** RESTORE Set-PXE once the Intel GPU driver loads. ***
-    Write-Log -message ('{0} :: Display on GENERIC adapter ({1}); Intel GPU driver not loaded (refresh {2}). Reimage SUPPRESSED for RELOPS-2487 - NOT reimaging {3}' -f $($MyInvocation.MyCommand.Name), ($videoControllers -join ', '), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
-    #Set-PXE
+    ## The node fell back to the generic Microsoft adapter = the Intel GPU driver never bound = a bad
+    ## environment. The golden WIM bakes in the Intel graphics driver (RELOPS-2487, proven on nuc13-160:
+    ## Intel Iris Xe @ 60), so a healthy node comes up on the real Intel adapter; a generic-adapter node
+    ## should reimage to recover.
+    Write-Log -message ('{0} :: Display on GENERIC adapter ({1}); Intel GPU driver not loaded (refresh {2}). Reimaging {3}' -f $($MyInvocation.MyCommand.Name), ($videoControllers -join ', '), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+    Set-PXE
 }
 else {
     Write-Log -message ('{0} :: Display driver OK ({1}), refresh rate {2}' -f $($MyInvocation.MyCommand.Name), ($realGpu -join ', '), $refresh_rate) -severity 'DEBUG'
