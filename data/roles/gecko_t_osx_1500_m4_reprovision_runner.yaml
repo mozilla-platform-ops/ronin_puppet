@@ -1,6 +1,18 @@
 ---
 ntp_server: time.apple.org
 
+# Converge on a timer. This host is off-CI, so it inherits none of the CI worker
+# roles' task-lifecycle puppet runs -- convergence was entirely manual, and on
+# 2026-08-04 the last apply was found to be from 2026-07-30 (last_run_metadata.json
+# ts 19:00:20Z, success, and nothing since). That is why relops-bootstrap#60 never
+# reached the runner: not a failing apply, just no apply at all.
+#
+# Hourly, not tighter: every run clones/fetches ronin_puppet, and this host has no
+# CI work whose freshness demands more.
+macos_run_puppet::schedule:
+  enabled: true
+  interval: 3600
+
 # Hangar reprovision-runner. NON-secret config only. The sensitive fields are
 # dropped on the host in /var/root/vault.yaml (same as every worker; run-puppet.sh
 # copies it to data/secrets/vault.yaml, the top hiera layer). Config here + secrets

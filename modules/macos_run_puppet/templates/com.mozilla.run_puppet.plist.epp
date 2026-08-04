@@ -1,0 +1,44 @@
+<%- | String  $label,
+      String  $script,
+      Integer $interval,
+      String  $log_out,
+      String  $log_err,
+| -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string><%= $label %></string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string><%= $script %></string>
+    </array>
+
+    <key>StartInterval</key>
+    <integer><%= $interval %></integer>
+
+    <!-- Deliberately NOT RunAtLoad: converging during boot races the rest of the
+         startup (and, on a freshly imaged host, the provisioner's own apply). The
+         first scheduled run lands one interval after load, which is soon enough for
+         a host whose whole problem was "nothing ever runs puppet". -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- KeepAlive false + StartInterval: launchd runs one instance at a time and will
+         not start another tick while the previous run is still going, so a slow apply
+         cannot stack on itself. -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- Persistent, unlike run-puppet.sh's own `mktemp /tmp/puppet-outputXXXXXX`, which
+         lands in /tmp and gets cleared -- so a failed apply currently leaves no
+         evidence behind at all. -->
+    <key>StandardOutPath</key>
+    <string><%= $log_out %></string>
+    <key>StandardErrorPath</key>
+    <string><%= $log_err %></string>
+</dict>
+</plist>
