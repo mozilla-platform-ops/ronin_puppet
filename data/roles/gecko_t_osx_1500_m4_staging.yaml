@@ -13,6 +13,15 @@ worker_metadata:
 # Pinned to the current effective version -- this is a no-op control move.
 taskcluster_version: '100.5.0'
 
+# EXPERIMENT (RELOPS capacity): tasks run per boot before the worker exits and
+# the host reboots + re-runs puppet + re-downloads binaries. Default is 1 (one
+# reboot per task). Raising it on staging only, to measure whether reclaiming the
+# boot overhead increases effective throughput without hurting test integrity.
+# Role-owned at the top level, not under `worker`: vault supplies its own
+# top-level `worker` hash that outranks roles/ in the hiera hierarchy, so a key
+# nested under `worker` here would never be read. Roll back by removing this key.
+number_of_tasks_to_run: 5
+
 worker:
   taskcluster_version: 95.0.3
   provider_type: standalone
@@ -23,12 +32,6 @@ worker:
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
   generic_worker_engine: multiuser-static
   idle_timeout_secs: 21600 # 6 hours
-  # EXPERIMENT (RELOPS capacity): tasks run per boot before the worker exits and
-  # the host reboots + re-runs puppet + re-downloads binaries. Default is 1 (one
-  # reboot per task). Raising it on staging only, to measure whether reclaiming
-  # the ~7min/task boot overhead increases effective throughput without hurting
-  # test integrity. Roll back by removing this key (reverts to default 1).
-  number_of_tasks_to_run: 5
 
 packages_classes:
   - git
