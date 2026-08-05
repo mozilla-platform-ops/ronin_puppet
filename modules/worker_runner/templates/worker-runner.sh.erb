@@ -35,33 +35,47 @@ fi
 # its "Loaded file file-caches.json" and "All features initialised" log lines, so
 # on hosts that reboot between tasks that cost is paid per task.
 #
-# Measured on gecko-t-osx-1015-r8 (2026-08-05): macmini-r8-181 had 21289 index
-# entries and 21292 files (29 GB) in downloads, and spent ~11 minutes there;
-# macmini-r8-208, with 3 entries and 3 files, spent under 2 seconds. Clearing the
-# index on r8-181 took its next startup to 2 seconds.
+# Observed on gecko-t-osx-1015-r8 (2026-08-05): r8-147 held 20495 files / 20479
+# index entries, r8-226 17203 / 17188, r8-181 21292 / 29 GB. Startup stalled for
+# 294-396s on 14 of 15 boots on r8-147 and 524-585s on 9 of 15 on r8-226, against
+# under 2s on r8-208 which had 3 of each. After purging, both hosts start with no
+# index to load at all and reclaimed 31 GB and 27 GB respectively.
 #
 # The index and the files must be cleared together. Removing only the index
-# strands the downloads: the worker cannot evict files it no longer has a record
-# of, and 29 GB was orphaned on r8-181 doing exactly that. Note this is the file
-# cache only -- the named directory caches (pip/uv, ~65 GB) are tracked
-# separately in directory-caches.json and are deliberately left alone.
+# strands the downloads -- the worker cannot evict files it has no record of -- and
+# 29 GB was orphaned on r8-181 doing exactly that. This is the file cache only:
+# the named directory caches (pip/uv, ~65 GB) are tracked separately in
+# directory-caches.json and are deliberately left alone.
 #
 # Done here rather than in macos_directory_cleaner's clean_before_reboot.sh so the
 # ordering relative to the start-worker call below is deterministic; both would
 # otherwise run at boot, and org.mozilla.cleanbeforereboot was observed not loaded
 # on at least one host.
 #
-# find -delete rather than rm -rf on a glob: the directory routinely holds 16k-21k
-# entries, which risks ARG_MAX ("Argument list too long") when expanded onto a
-# single command line. find has no such limit. Verified as the task user (cltbld,
-# who owns the 0700 directory) on r8-70 and r8-181: cleared 16080 and 21292 files
-# respectively, 29 GB in 21s on r8-181.
+# The delete is detached, and the directory is renamed out of the way first, so
+# worker startup never waits on it. That matters for the first purge on a host that
+# has already accumulated: clearing ~20k files inline took 15 minutes on r8-147 and
+# 2.5 minutes on r8-226, and the worker had not started during that time. A rename
+# is O(1) regardless of how much has piled up. In steady state only a handful of
+# files accumulate per task, so there is normally nothing to do. Renaming rather
+# than globbing also avoids ARG_MAX on the accumulated case.
 if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
     rm -f <%= @gw_root_dir %>/file-caches.json
 else
     rm -f <%= @data_dir %>/file-caches.json
 fi
-find <%= @data_dir %>/downloads -mindepth 1 -delete
+gw_downloads=<%= @data_dir %>/downloads
+if [ -d "$gw_downloads" ]; then
+    gw_purge="${gw_downloads}.purging.$$"
+    if mv "$gw_downloads" "$gw_purge" 2>/dev/null; then
+        mkdir -p "$gw_downloads"
+        ( rm -rf "$gw_purge" >/dev/null 2>&1 & )
+    fi
+fi
+# Sweep any leftovers from an interrupted purge on a previous boot.
+for gw_stale in "${gw_downloads}".purging.*; do
+    [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+done
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
 # find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
