@@ -12,6 +12,18 @@ worker_metadata:
 # Pinned to the current running version -- this is a no-op control move.
 taskcluster_version: '60.3.4'
 
+# EXPERIMENT (RELOPS capacity): tasks run per boot before the worker exits and
+# worker-runner.sh reboots the host, re-runs puppet and restarts the worker.
+# Default is 1, i.e. one full reboot cycle per task. Measured across all 74
+# workers in this pool (814 inter-task gaps, 2026-08-05): mean 3.63 min dead time
+# per task, median 1.44 min, p90 12.46 min. At ~5224 tasks/day that is ~316
+# machine-hours/day, 17.6% of the pool. Raising this to 5 should reclaim ~253
+# h/day (~14%).
+# Role-owned at the top level, not under `worker`: vault supplies its own
+# top-level `worker` hash that outranks roles/ in the hiera hierarchy, so a key
+# nested under `worker` here would never be read. Roll back by removing this key.
+number_of_tasks_to_run: 5
+
 worker:
   taskcluster_version: 60.3.4
   provider_type: standalone
