@@ -10,17 +10,38 @@
     <string>/Users/cltbld/bin/capture-on-demand.sh</string>
   </array>
   <!--
-    Fire the moment the harness writes the trigger file. Previously this used
-    StartInterval=1, but because the helper exits almost instantly launchd
-    throttled respawns to its ~10s minimum-runtime floor, while the test
-    harness only waits 5s for the screenshot. That race produced empty /
-    blank-desktop screenshots on Apple Silicon workers. WatchPaths reacts on
-    write with sub-second latency and is not subject to the respawn throttle.
+    Fire the moment the harness writes the trigger file. This replaced
+    StartInterval=1, which launchd throttled to its ~10s respawn floor because
+    the helper exits almost instantly -- while the harness only waits 5s for the
+    screenshot, producing empty / blank-desktop screenshots on Apple Silicon.
   -->
   <key>WatchPaths</key>
   <array>
     <string>/Users/cltbld/.trigger_screenshot</string>
   </array>
+  <!--
+    WatchPaths does NOT escape the respawn throttle -- switching away from
+    StartInterval only moved the same 10s floor, it did not remove it. Measured
+    on macmini-m4-80 (macOS 15) through the real trigger path: the first capture
+    after load lands in ~0.3-0.5s, then EVERY subsequent capture is held at
+    10.1-10.3s, because launchd applies ThrottleInterval (default 10s) to any
+    job it relaunches, however that relaunch was triggered. Since the harness
+    gives up at 5s, that means only the first failure screenshot per boot could
+    ever arrive on time.
+
+    Worse than a plain miss: the capture still happens ~10s later and lands at
+    the path the harness asked for, so a screenshot does get uploaded -- just
+    taken 10s after the fact, by which point the browser under test is often
+    gone. That is a blank-desktop image from a capture that "succeeded", which
+    is exactly the signature that survived the earlier WatchPaths change.
+
+    Dropping the floor to 1s brings repeat captures to 1.1-1.35s (same host,
+    same method), comfortably inside the harness window. 1 rather than 0 keeps a
+    small floor as a runaway guard; screenshot requests are failure-driven and
+    rare, so there is no meaningful respawn pressure either way.
+  -->
+  <key>ThrottleInterval</key>
+  <integer>1</integer>
   <key>RunAtLoad</key>
   <true/>
 </dict>
