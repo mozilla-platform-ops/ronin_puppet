@@ -29,6 +29,40 @@ else
     rm -rf <%= @task_dir %>/task_*
 fi
 
+# generic-worker's file cache (downloadsDir plus its file-caches.json index) is
+# not bounded: it gains an entry and a file per task artifact fetched, and nothing
+# prunes either. The worker revalidates the whole index on every start, between
+# its "Loaded file file-caches.json" and "All features initialised" log lines, so
+# on hosts that reboot between tasks that cost is paid per task.
+#
+# Measured on gecko-t-osx-1015-r8 (2026-08-05): macmini-r8-181 had 21289 index
+# entries and 21292 files (29 GB) in downloads, and spent ~11 minutes there;
+# macmini-r8-208, with 3 entries and 3 files, spent under 2 seconds. Clearing the
+# index on r8-181 took its next startup to 2 seconds.
+#
+# The index and the files must be cleared together. Removing only the index
+# strands the downloads: the worker cannot evict files it no longer has a record
+# of, and 29 GB was orphaned on r8-181 doing exactly that. Note this is the file
+# cache only -- the named directory caches (pip/uv, ~65 GB) are tracked
+# separately in directory-caches.json and are deliberately left alone.
+#
+# Done here rather than in macos_directory_cleaner's clean_before_reboot.sh so the
+# ordering relative to the start-worker call below is deterministic; both would
+# otherwise run at boot, and org.mozilla.cleanbeforereboot was observed not loaded
+# on at least one host.
+#
+# find -delete rather than rm -rf on a glob: the directory routinely holds 16k-21k
+# entries, which risks ARG_MAX ("Argument list too long") when expanded onto a
+# single command line. find has no such limit. Verified as the task user (cltbld,
+# who owns the 0700 directory) on r8-70 and r8-181: cleared 16080 and 21292 files
+# respectively, 29 GB in 21s on r8-181.
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    rm -f <%= @gw_root_dir %>/file-caches.json
+else
+    rm -f <%= @data_dir %>/file-caches.json
+fi
+find <%= @data_dir %>/downloads -mindepth 1 -delete
+
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
 # find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
 
