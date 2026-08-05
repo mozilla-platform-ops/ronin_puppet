@@ -24,18 +24,27 @@ class roles_profiles::profiles::worker {
         default => $role_taskcluster_version,
       }
 
+      # Role-owned, and deliberately a top-level key rather than nested under
+      # `worker`. Vault supplies its own top-level `worker` hash, which sits
+      # above roles/ in the hiera hierarchy, so a `first` lookup of
+      # `worker.<anything>` resolves against vault's hash and never sees role
+      # data. Same reason `taskcluster_version` above is role-owned at the top
+      # level. Default 1 preserves the reboot-per-task behaviour.
+      $number_of_tasks_to_run = lookup('number_of_tasks_to_run', Integer[1], 'first', 1)
+
       class { 'worker_runner':
-        taskcluster_version   => $taskcluster_version,
-        provider_type         => lookup('worker.provider_type'),
-        root_url              => 'https://firefox-ci-tc.services.mozilla.com',
-        client_id             => lookup('worker.client_id'),
-        access_token          => lookup('worker.access_token'),
-        worker_pool_id        => lookup('worker.worker_pool_id'),
-        worker_group          => lookup('worker.worker_group'),
-        worker_id             => lookup('worker.worker_id'),
-        generic_worker_engine => $generic_worker_engine,
-        idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
-        task_user_password    => $task_user_password,
+        taskcluster_version    => $taskcluster_version,
+        provider_type          => lookup('worker.provider_type'),
+        root_url               => 'https://firefox-ci-tc.services.mozilla.com',
+        client_id              => lookup('worker.client_id'),
+        access_token           => lookup('worker.access_token'),
+        worker_pool_id         => lookup('worker.worker_pool_id'),
+        worker_group           => lookup('worker.worker_group'),
+        worker_id              => lookup('worker.worker_id'),
+        generic_worker_engine  => $generic_worker_engine,
+        idle_timeout_secs      => lookup('worker.idle_timeout_secs'),
+        number_of_tasks_to_run => $number_of_tasks_to_run,
+        task_user_password     => $task_user_password,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc
