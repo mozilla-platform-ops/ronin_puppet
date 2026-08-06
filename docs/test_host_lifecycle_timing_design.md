@@ -136,11 +136,23 @@ is the time the observer ran. It can be called near the beginning of
 `run-puppet.sh`; callers do not construct or pass the boot timestamp.
 
 `import-generic-worker` reads the `generic-worker` records from the local
-system log. It parses only the structured `WORKER_METRICS` JSON records:
-`workerReady`, `taskStart`, and `taskFinish`. Their metric timestamps and
-task/run identities become extracted lifecycle-event fields; raw
-generic-worker log content is never copied into the lifecycle log. The
-importer is generic-worker-version-aware and records its parser version.
+system log. It parses only the JSON object immediately following the literal
+`WORKER_METRICS ` prefix. The supported initial generic-worker versions are
+`v61.0.0` and `v88.0.2`; `v61.0.0` is the minimum version. The selected ready
+marker is a record whose `eventType` is `workerReady`.
+
+The parser accepts these event shapes, established from sanitized records on
+both pilot hosts. All accepted records require string `eventType`, integer
+epoch-seconds `timestamp`, string `workerId`, and string `workerPoolId`.
+`workerReady` maps to `worker_ready`; `taskStart` maps to `task_started`; and
+`taskFinish` maps to `task_finished`. The two task records also require string
+`taskId` and integer `runId`, which become `task_id` and the task-run
+identifier. The observed `worker`, `instanceType`, and `region` fields are not
+used by the initial event model. No other `eventType` is imported.
+
+Their metric timestamps and task/run identities become extracted lifecycle-
+event fields; raw generic-worker log content is never copied into the
+lifecycle log. The importer records its own parser version.
 
 The importer accepts only metrics whose embedded epoch timestamp falls from
 the current boot's `boot_started.event_time` through the import time. This
@@ -198,6 +210,15 @@ directory rather than overwriting a previous collection.
 The pilot hosts are `t-linux64-ms-015` (Ubuntu 18.04) and
 `t-linux64-ms-016` (Ubuntu 24.04). Deployment of the pilot is handled
 separately from this design and implementation work.
+
+The initial Puppet deployment scope is
+`roles_profiles::roles::gecko_t_linux_talos` and
+`roles_profiles::roles::gecko_t_linux_2404_talos`. Their deployed
+generic-worker versions are `v61.0.0` and `v88.0.2`, respectively.
+
+Use only synthetic fixtures that preserve the documented metric shapes. Do
+not commit raw syslog because it can contain task environment or credential
+material.
 
 ## Hook Placement
 
