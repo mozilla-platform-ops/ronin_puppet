@@ -5,8 +5,12 @@
 class users::remove_relops_pw {
 
   user { 'relops':
-    ensure   => present,
-    password => '*',
+    ensure => present,
+  }
+
+  exec { 'remove relops password':
+    command => '/usr/sbin/usermod --password "*" relops',
+    unless  => "/usr/bin/getent shadow relops | /usr/bin/grep -q '^relops:[*]:'",
   }
 
 }
