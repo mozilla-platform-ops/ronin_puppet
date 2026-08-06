@@ -281,6 +281,21 @@ measurement purpose. Candidates include:
 - Centralized ingestion, dashboards, and alerting after the event model and
   analysis are validated locally.
 
+## Implementation Tracking
+
+Implementation is tracked by epic `rp-u2z`, **Instrument Linux test-host
+lifecycle timing pilot**, with these child beads:
+
+- `rp-u2z.1` — Create lifecycle module and core logger
+- `rp-u2z.2` — Import generic-worker lifecycle metrics
+- `rp-u2z.3` — Integrate lifecycle hooks and target roles
+- `rp-u2z.4` — Implement offline lifecycle-log collection helper
+- `rp-u2z.5` — Implement offline lifecycle analyzer and reports
+
+The importer depends on the core logger; hook integration depends on both.
+The collection helper depends on the core logger, and the analyzer depends on
+the core logger and importer.
+
 ## Decisions Still Needed Before Implementation
 
 - Define post-pilot thresholds for classifying stale or incomplete lifecycles.
