@@ -34,5 +34,12 @@ class linux_host_lifecycle {
       ensure  => file,
       source  => "puppet:///modules/${module_name}/host-lifecycle.logrotate",
       require => Package['logrotate'];
+
+    '/etc/sudoers.d/lifecycle-log-import':
+      ensure       => file,
+      source       => "puppet:///modules/${module_name}/lifecycle-log-import.sudoers",
+      mode         => '0440',
+      validate_cmd => '/usr/sbin/visudo -cf %',
+      require      => File['/usr/local/bin/lifecycle-log'];
   }
 }

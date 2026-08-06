@@ -5,6 +5,7 @@ import pathlib
 import tempfile
 import unittest
 from unittest import mock
+import gzip
 
 
 LOGGER_PATH = pathlib.Path(__file__).parents[1] / "files" / "lifecycle-log"
@@ -24,6 +25,12 @@ class LifecycleLogTests(unittest.TestCase):
 
     def read_events(self):
         return [json.loads(line) for line in self.log_path.read_text().splitlines()]
+
+    @staticmethod
+    def metric_line(metric):
+        return "Aug  5 06:41:02 test-host generic-worker: WORKER_METRICS {}\n".format(
+            json.dumps(metric)
+        )
 
     @mock.patch.object(lifecycle_log, "read_boot_id", return_value="boot-123")
     @mock.patch.object(lifecycle_log.socket, "gethostname", return_value="test-host")
@@ -60,6 +67,66 @@ class LifecycleLogTests(unittest.TestCase):
             except json.JSONDecodeError:
                 pass
         self.assertEqual(len(valid_events), 1)
+
+    @mock.patch.object(lifecycle_log.socket, "gethostname", return_value="test-host")
+    def test_importer_filters_deduplicates_and_reads_rotations(self, _hostname):
+        boot_time = 1_725_000_000
+        boot_id = "boot-123"
+        syslog_path = pathlib.Path(self.tempdir.name) / "syslog"
+        rotation_path = pathlib.Path(self.tempdir.name) / "syslog.1"
+        compressed_rotation_path = pathlib.Path(self.tempdir.name) / "syslog.2.gz"
+        worker_fields = {
+            "worker": "generic-worker",
+            "workerId": "test-host",
+            "workerPoolId": "releng-hardware/test",
+            "instanceType": "",
+            "region": "",
+        }
+        ready = {"eventType": "workerReady", "timestamp": boot_time + 10, **worker_fields}
+        started = {
+            "eventType": "taskStart",
+            "timestamp": boot_time + 20,
+            "taskId": "task-1",
+            "runId": 0,
+            **worker_fields,
+        }
+        finished = {
+            "eventType": "taskFinish",
+            "timestamp": boot_time + 30,
+            "taskId": "task-1",
+            "runId": 0,
+            **worker_fields,
+        }
+        old_metric = {"eventType": "workerReady", "timestamp": boot_time - 1, **worker_fields}
+
+        lifecycle_log.observe_boot(str(self.log_path), boot_id, boot_time)
+        syslog_path.write_text(self.metric_line(ready) + self.metric_line(old_metric))
+        rotation_path.write_text(self.metric_line(started))
+        with gzip.open(compressed_rotation_path, "wt", encoding="utf-8") as compressed_log:
+            compressed_log.write(self.metric_line(finished))
+
+        imported = lifecycle_log.import_generic_worker(
+            str(self.log_path), str(syslog_path), boot_id, boot_time + 60
+        )
+        self.assertEqual(imported, 3)
+        events = self.read_events()
+        imported_events = [event for event in events if event["source"] == "generic-worker-log"]
+        self.assertEqual(
+            [event["event"] for event in imported_events],
+            ["worker_ready", "task_started", "task_finished"],
+        )
+        self.assertEqual(imported_events[1]["task_id"], "task-1")
+        self.assertEqual(imported_events[1]["run_id"], 0)
+        self.assertEqual(imported_events[0]["event_time"], "2024-08-30T06:40:10.000Z")
+        self.assertEqual(len({event["source_record_id"] for event in imported_events}), 3)
+
+        self.assertEqual(
+            lifecycle_log.import_generic_worker(
+                str(self.log_path), str(syslog_path), boot_id, boot_time + 60
+            ),
+            0,
+        )
+        self.assertEqual(len(self.read_events()), 4)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,2 @@
+# Permit only the fixed, root-run generic-worker importer.
+cltbld ALL=(root) NOPASSWD: /usr/local/bin/lifecycle-log import-generic-worker
