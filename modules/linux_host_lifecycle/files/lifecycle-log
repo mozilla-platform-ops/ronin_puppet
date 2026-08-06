@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""Write local Linux test-host lifecycle events as JSON Lines."""
+
+import argparse
+import datetime
+import fcntl
+import json
+import os
+import socket
+import sys
+import uuid
+
+
+EVENT_LOG_PATH = "/var/log/host-lifecycle/events.jsonl"
+BOOT_ID_PATH = "/proc/sys/kernel/random/boot_id"
+PROC_STAT_PATH = "/proc/stat"
+SCHEMA_VERSION = 1
+
+EMITTABLE_EVENTS = {
+    "puppet_run_started",
+    "puppet_run_succeeded",
+    "worker_started",
+    "worker_exited",
+    "restart_executed",
+}
+
+
+def utc_timestamp(epoch=None):
+    """Return an RFC 3339 UTC timestamp with millisecond precision."""
+    value = datetime.datetime.fromtimestamp(
+        epoch if epoch is not None else datetime.datetime.now().timestamp(),
+        tz=datetime.timezone.utc,
+    )
+    return value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def read_boot_id(path=BOOT_ID_PATH):
+    with open(path, encoding="utf-8") as boot_id_file:
+        return boot_id_file.read().strip()
+
+
+def read_boot_time(path=PROC_STAT_PATH):
+    with open(path, encoding="utf-8") as proc_stat:
+        for line in proc_stat:
+            name, _, value = line.partition(" ")
+            if name == "btime":
+                return int(value.strip())
+    raise ValueError("could not find btime in /proc/stat")
+
+
+def append_event(event, log_path=EVENT_LOG_PATH):
+    """Append one complete JSON record while holding an exclusive file lock."""
+    encoded = (json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n").encode(
+        "utf-8"
+    )
+    descriptor = os.open(log_path, os.O_RDWR | os.O_APPEND | os.O_CREAT, 0o664)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        size = os.lseek(descriptor, 0, os.SEEK_END)
+        if size and os.pread(descriptor, 1, size - 1) != b"\n":
+            os.write(descriptor, b"\n")
+        os.write(descriptor, encoded)
+    finally:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(descriptor)
+
+
+def append_boot_event_once(event, log_path=EVENT_LOG_PATH):
+    """Append a boot event only when the active log lacks its boot ID."""
+    encoded = (json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n").encode(
+        "utf-8"
+    )
+    descriptor = os.open(log_path, os.O_RDWR | os.O_APPEND | os.O_CREAT, 0o664)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        contents = os.pread(descriptor, os.lseek(descriptor, 0, os.SEEK_END), 0)
+        for line in contents.splitlines():
+            try:
+                existing_event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (
+                existing_event.get("event") == "boot_started"
+                and existing_event.get("boot_id") == event["boot_id"]
+            ):
+                return False
+        if contents and not contents.endswith(b"\n"):
+            os.write(descriptor, b"\n")
+        os.write(descriptor, encoded)
+        return True
+    finally:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(descriptor)
+
+
+def base_event(event_name, boot_id=None, recorded_at=None):
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "event": event_name,
+        "recorded_at": recorded_at or utc_timestamp(),
+        "host_id": socket.gethostname(),
+        "boot_id": boot_id or read_boot_id(),
+        "event_id": str(uuid.uuid4()),
+        "source": "lifecycle-wrapper",
+    }
+
+
+def emit(event_name, exit_code=None, trigger=None, log_path=EVENT_LOG_PATH):
+    if event_name not in EMITTABLE_EVENTS:
+        raise ValueError("unsupported emitted event: {}".format(event_name))
+    event = base_event(event_name)
+    if exit_code is not None:
+        event["exit_code"] = exit_code
+    if trigger is not None:
+        event["trigger"] = trigger
+    append_event(event, log_path)
+    return event
+
+
+def observe_boot(log_path=EVENT_LOG_PATH, boot_id=None, boot_time=None):
+    boot_id = boot_id or read_boot_id()
+    event = base_event("boot_started", boot_id=boot_id)
+    event["source"] = "boot-metadata-observer"
+    event["event_time"] = utc_timestamp(boot_time if boot_time is not None else read_boot_time())
+    return append_boot_event_once(event, log_path)
+
+
+def parse_args(arguments):
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    emit_parser = subparsers.add_parser("emit", help="record a wrapper lifecycle event")
+    emit_parser.add_argument("event", choices=sorted(EMITTABLE_EVENTS))
+    emit_parser.add_argument("--exit-code", type=int)
+    emit_parser.add_argument("--trigger")
+
+    subparsers.add_parser("observe-boot", help="idempotently record the current boot")
+    return parser.parse_args(arguments)
+
+
+def main(arguments=None):
+    args = parse_args(arguments)
+    if args.command == "emit":
+        emit(args.event, args.exit_code, args.trigger)
+    else:
+        observe_boot()
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except (OSError, ValueError) as error:
+        print("lifecycle-log: {}".format(error), file=sys.stderr)
+        sys.exit(1)
