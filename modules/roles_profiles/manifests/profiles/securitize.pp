@@ -10,6 +10,13 @@ class roles_profiles::profiles::securitize {
       include users::add_relops_keys_to_relops_user
       include users::remove_root_pw
       include users::remove_root_keys
+
+      # Preserve relops SSH access before locking the bootstrap account or
+      # removing the bootstrap root access.
+      Class['users::add_relops_keys_to_relops_user']
+        -> Class['users::remove_relops_pw']
+        -> Class['users::remove_root_pw']
+        -> Class['users::remove_root_keys']
     }
     default: {
       fail("${facts['os']['name']} not supported")
