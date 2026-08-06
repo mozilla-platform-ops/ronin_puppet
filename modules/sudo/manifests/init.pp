@@ -10,9 +10,10 @@ class sudo {
   $root_group = $shared::file_defaults['group']
 
   concat { '/etc/sudoers':
-    owner => $root_user,
-    group => $root_group,
-    mode  => '0440',
+    owner        => $root_user,
+    group        => $root_group,
+    mode         => '0440',
+    validate_cmd => '/usr/sbin/visudo -c -f %',
   }
 
   case $facts['os']['name'] {
