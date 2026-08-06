@@ -3,6 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class users::remove_relops_pw {
+  # WARNING: locking this bootstrap account before provisioning SSH access can
+  # lock out the host. Profiles that include this class must order
+  # Exec['remove relops password'] after their access resources, as
+  # roles_profiles::profiles::securitize does.
 
   user { 'relops':
     ensure => present,
