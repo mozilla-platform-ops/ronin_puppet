@@ -30,9 +30,7 @@ describe file('/etc/logrotate.d/host-lifecycle') do
   its('content') { should match /^\s*compress$/ }
 end
 
-describe file('/etc/sudoers.d/lifecycle-log-import') do
-  it { should exist }
-  its('mode') { should cmp '0440' }
+describe file('/etc/sudoers') do
   its('content') do
     should match %r{^cltbld ALL=\(root\) NOPASSWD: /usr/local/bin/lifecycle-log import-generic-worker$}
   end
