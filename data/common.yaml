@@ -198,7 +198,7 @@ scriptworker_config:
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
-        scriptworker_scripts_revision: "b87f6cef82c69545f77cc0cc6dd38fda86ebb3d1"
+        scriptworker_scripts_revision: "feedad760e47fd21b0e98547b7d825b599abb053"
 
     ff-prod:
         <<: *defaults
