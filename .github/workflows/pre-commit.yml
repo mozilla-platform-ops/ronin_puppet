@@ -59,23 +59,3 @@ jobs:
       if: steps.changed-files.outputs.any_changed == 'false'
       run: |
         echo "No relevant files changed (excluding r10k_modules/), skipping pre-commit"
-
-  pester:
-    name: Pester
-    runs-on: windows-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        persist-credentials: false
-
-    - name: Run PowerShell unit tests
-      shell: pwsh
-      run: |
-        $ErrorActionPreference = 'Stop'
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-        Install-Module -Name Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force
-        $result = Invoke-Pester -Path test/unit/windows -PassThru
-        if ($result.FailedCount -gt 0) {
-          exit 1
-        }

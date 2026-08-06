@@ -22,6 +22,38 @@ POWERSHELL
   its(:stdout) { should match(/^Fixed\|NTFS\s*$/i) }
 end
 
+describe powershell_command(<<~POWERSHELL) do
+  . '#{task_script_dir}\maintainsystem.ps1'
+
+  $requiredSizes = @(
+    'Standard_F8alds_v7'
+    'Standard_F8ads_v7'
+  )
+  $existingSizes = @(
+    'Standard_F8s_v2'
+    'Standard_D8ads_v5'
+    'Standard_D8alds_v6'
+    'Standard_E8ads_v6'
+    'Standard_NV12ads_A10_v5'
+    'Standard_E8pds_v5'
+  )
+
+  $missingRequiredSize = $requiredSizes | Where-Object {
+    -not (Test-AzureNvmeTemporaryDriveRequired -vmSize $_)
+  }
+  $selectedExistingSize = $existingSizes | Where-Object {
+    Test-AzureNvmeTemporaryDriveRequired -vmSize $_
+  }
+
+  if ($missingRequiredSize -or $selectedExistingSize) {
+    exit 1
+  }
+  'valid'
+POWERSHELL
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(/^valid\s*$/i) }
+end
+
 {
   'puppet' => {
     'State' => 'Stopped',
