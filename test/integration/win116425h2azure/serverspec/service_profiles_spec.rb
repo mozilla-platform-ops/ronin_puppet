@@ -7,6 +7,21 @@ clipboard_key = 'HKLM:\\SOFTWARE\\Microsoft\\Clipboard'
 task_script_dir = 'C:\\ProgramData\\PuppetLabs\\ronin'
 tester_role = WORKER_FUNCTION == 'tester'
 
+describe file("#{task_script_dir}\\configure_nvme_disk.ps1") do
+  it { should exist }
+end
+
+describe powershell_command(<<~POWERSHELL) do
+  $volume = Get-Volume -DriveLetter D -ErrorAction Stop
+  if ($volume.DriveType -ne 'Fixed' -or $volume.FileSystem -ne 'NTFS') {
+    exit 1
+  }
+  '{0}|{1}' -f $volume.DriveType, $volume.FileSystem
+POWERSHELL
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(/^Fixed\|NTFS\s*$/i) }
+end
+
 {
   'puppet' => {
     'State' => 'Stopped',
