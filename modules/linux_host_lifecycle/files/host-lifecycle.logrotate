@@ -1,0 +1,8 @@
+/var/log/host-lifecycle/events.jsonl {
+    size 1M
+    rotate 39
+    compress
+    missingok
+    notifempty
+    create 0664 root cltbld
+}
