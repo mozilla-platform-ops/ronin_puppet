@@ -12,7 +12,7 @@ class users::remove_relops_pw {
     command => '/usr/sbin/usermod --password "*" relops',
     # Match only a shadow entry whose password field is `*`. The bootstrap
     # image lacks /usr/bin/grep, so use the POSIX shell's built-in `case`.
-    unless  => 'case "$(/usr/bin/getent shadow relops)" in relops:[*]:*) exit 0 ;; *) exit 1 ;; esac',
+    unless  => '/bin/sh -c \'case "$(/usr/bin/getent shadow relops)" in relops:[*]:*) exit 0 ;; *) exit 1 ;; esac\'',
   }
 
 }
