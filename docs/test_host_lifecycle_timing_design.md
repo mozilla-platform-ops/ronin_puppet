@@ -1,138 +1,152 @@
-# Test Host Lifecycle Timing Design
+# Linux Test Host Lifecycle Timing Design
 
 ## Goal
 
-Measure where time is spent on Taskcluster test hosts, especially the
-time *outside* of task execution. The initial implementation favors
-simplicity and local data collection over centralized metrics.
+Measure where time is spent on Linux Taskcluster test hosts, especially
+time outside task execution. The first implementation favors local data
+collection and offline analysis over centralized metrics.
 
-## Initial Approach
+The initial scope is deliberately limited to the normal single-task Linux
+worker lifecycle. Other platforms and centralized ingestion can use the
+validated event model later.
 
-Instead of integrating directly with Prometheus or InfluxDB, each host
-will maintain a local append-only event log.
+## Approach
 
-The logs will be collected later over SSH for offline analysis. This
-allows the event model and analysis to mature before introducing
-centralized ingestion.
+Each host maintains a local append-only JSON Lines event log. Logs are
+collected over SSH and merged for offline analysis.
 
-## Design Principles
+The design records facts, rather than durations or conclusions. Analysis
+computes durations and identifies incomplete lifecycles after collection.
 
--   Record facts, not derived state.
--   Emit lifecycle events as they occur.
--   Keep the logging wrapper simple.
--   Compute durations during analysis rather than on the host.
--   Prefer explicit hooks over inference.
--   Fall back to log scanning only where no explicit signal exists.
+## Event Model
 
-## Event Logger
+Every event contains these common fields:
 
-A small Python wrapper/library will be responsible for writing
-structured lifecycle events.
-
-Recommended format:
-
-``` json
+```json
 {
-  "timestamp": "2026-08-05T23:03:14Z",
-  "event": "task_finished",
-  "task_id": "...",
-  "source": "generic-worker"
+  "schema_version": 1,
+  "event": "worker_started",
+  "recorded_at": "2026-08-05T23:03:14.123Z",
+  "host_id": "example-host",
+  "boot_id": "Linux boot ID",
+  "sequence": 42,
+  "source": "lifecycle-wrapper"
 }
 ```
 
-JSON Lines (one JSON object per line) is preferred because it is easy to
-append, parse, and extend.
+`host_id`, `boot_id`, and `sequence` make events unambiguously orderable
+when logs from multiple hosts and reboots are merged. `sequence` increases
+for each event written during a boot.
+
+Events extracted after the fact from generic-worker logs also contain:
+
+```json
+{
+  "event_time": "2026-08-05T23:01:12.000Z",
+  "recorded_at": "2026-08-05T23:03:14.123Z",
+  "source": "generic-worker-log",
+  "parser_version": 1,
+  "source_record_id": "stable journal-record ID"
+}
+```
+
+`event_time` is the original generic-worker log timestamp, while
+`recorded_at` is when the importer wrote the lifecycle event. This
+distinction prevents delayed parsing from looking like delayed worker
+readiness or task start.
 
 ## Initial Events
 
-The following events should be emitted where possible:
+The initial Linux event set is intentionally small:
 
--   task_started
--   task_finished
--   cleanup_started
--   cleanup_finished
--   drain_started
--   reboot_requested
--   boot_completed
--   worker_ready
+| Event | Source | Meaning |
+| --- | --- | --- |
+| `worker_started` | Explicit wrapper hook | The wrapper is about to invoke `start-worker`. |
+| `worker_ready` | generic-worker log import | generic-worker reached the selected, documented ready marker. |
+| `task_started` | generic-worker log import | generic-worker log evidence identifies a task run beginning. |
+| `task_finished` | generic-worker log import | generic-worker log evidence identifies that task run completing. |
+| `worker_exited` | Explicit wrapper hook | `start-worker` returned to the wrapper; includes its exit code. |
+| `restart_executed` | Explicit wrapper hook | The wrapper has reached the point where it invokes the reboot command. |
 
-Additional events can be added later without changing the analysis
-model.
+Task events include `task_id` and a task run or attempt identifier when the
+generic-worker record provides one.
 
-## Hook Locations
+`restart_executed` records that the reboot command was invoked; it does not
+claim that reboot completed. A subsequent `worker_started` with a new
+`boot_id` establishes that the host returned and began launching the worker.
 
-### Task Started
+The normal lifecycle is:
 
-Currently there is no explicit signal from generic-worker.
+```text
+worker_started -> worker_ready -> task_started -> task_finished
+    -> worker_exited -> restart_executed -> worker_started (new boot_id)
+```
 
-Initial implementation:
+The sequence is not a success criterion. Missing events are expected for
+worker crashes, host failures, quarantine, operator holds, and collection
+before a lifecycle has completed.
 
--   Scan generic-worker logs or status output after task completion to
-    recover the task_started timestamp.
+## Logger and Generic-Worker Importer
 
-Future improvement:
+One small `lifecycle-log` tool provides two separate responsibilities:
 
--   Work with the Taskcluster team to expose task_started directly via a
-    status file or explicit lifecycle event.
+```text
+lifecycle-log emit worker_started
+lifecycle-log emit worker_exited --exit-code 0
+lifecycle-log emit restart_executed --trigger post_task
+lifecycle-log import-generic-worker --journal-tag generic-worker
+```
 
-### Task Finished
+`emit` is deliberately simple: it writes a fact at the current time and
+automatically supplies the host, current Linux `boot_id`, and sequence.
 
-This is a natural hook because generic-worker exits and the existing
-wrapper script takes control.
+`import-generic-worker` reads the generic-worker records from journald,
+recognizes the supported log markers, preserves their original timestamps,
+and appends extracted lifecycle events. It is generic-worker-version-aware
+and records its parser version.
 
-The wrapper should:
+The importer is idempotent. Each imported source record receives a stable
+`source_record_id`; the importer checks the current JSONL log and does not
+write an event already represented by that ID. The ID remains in the event
+so offline analysis can also deduplicate records.
 
-1.  Read any available task timing information.
-2.  Emit a task_finished event.
-3.  Continue logging subsequent lifecycle events.
+## Initial Analysis
 
-### Cleanup
+Only compute a duration when both named endpoints are present and have the
+expected host, boot, and task/run relationship:
 
-Emit cleanup_started and cleanup_finished around any host cleanup
-activities.
+| Measurement | Calculation | Meaning |
+| --- | --- | --- |
+| Task runtime | `task_finished - task_started` | Time executing a task. |
+| Post-task overhead | `restart_executed - task_finished` | Wrapper work after task completion and before reboot invocation. |
+| Restart-to-worker | next `worker_started` - `restart_executed` | End-to-end time for host restart and pre-worker initialization. |
+| Worker initialization | `worker_ready - worker_started` | Time from launching `start-worker` until generic-worker is ready. |
+| Idle/claim latency | `task_started - worker_ready` | Time a ready worker waits before starting a task. |
 
-### Reboot
+If an endpoint is missing, the duration is unavailable rather than inferred.
+Analysis may classify an incomplete lifecycle only after a defined threshold
+and relative to the collection time. For example, a
+`restart_executed` event without a new-boot `worker_started` after a chosen
+threshold is a possible failed return, not proof of one.
 
-Emit reboot_requested immediately before initiating a reboot.
+## Deferred Events and Enhancements
 
-### Boot
+Do not add an event until it has a concrete Linux hook and a specific
+measurement purpose. Candidates include:
 
-During boot, emit:
+- `shutdown_started`, from a best-effort systemd shutdown hook, if splitting
+  reboot-command delay from the remainder of the restart cycle becomes useful.
+- `cleanup_started` and `cleanup_finished`, once the exact cleanup operation
+  to measure is defined.
+- Centralized ingestion, dashboards, and alerting after the event model and
+  analysis are validated locally.
 
--   boot_completed when userspace reaches the desired initialization
-    point.
--   worker_ready once the worker is capable of accepting new work.
+## Decisions Still Needed Before Implementation
 
-## Data Collection
-
-Initially:
-
--   SSH into hosts.
--   Collect the append-only event logs.
--   Merge and analyze them offline.
-
-No centralized metrics infrastructure is required for the first
-implementation.
-
-## Analysis
-
-Durations are computed by subtracting adjacent event timestamps.
-
-Examples:
-
--   task_started -\> task_finished = task runtime
--   task_finished -\> cleanup_started = handoff latency
--   cleanup_started -\> reboot_requested = cleanup duration
--   reboot_requested -\> boot_completed = reboot duration
--   boot_completed -\> worker_ready = worker initialization
--   worker_ready -\> task_started = idle time
-
-## Future Enhancements
-
-Once the event model is validated:
-
--   Feed events into InfluxDB.
--   Build Grafana dashboards.
--   Alert on excessive phase durations.
--   Replace inferred events with explicit lifecycle notifications from
-    generic-worker.
+- Confirm journald retention and the exact generic-worker markers for the
+  deployed version.
+- Choose the canonical Linux `host_id` and JSONL path, permissions, rotation,
+  retention, and append/locking behavior.
+- Define the importer source-record identity and collection/analysis
+  thresholds.
+- Select pilot hosts and the expected event coverage and first report.
