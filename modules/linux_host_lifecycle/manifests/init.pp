@@ -37,6 +37,6 @@ class linux_host_lifecycle {
   }
 
   sudo::customfile { 'lifecycle-log-import':
-    content => 'cltbld ALL=(root) NOPASSWD: /usr/local/bin/lifecycle-log import-generic-worker\n',
+    content => "cltbld ALL=(root) NOPASSWD: /usr/local/bin/lifecycle-log import-generic-worker\n",
   }
 }
