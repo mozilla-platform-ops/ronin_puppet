@@ -8,6 +8,10 @@ ronin_puppet is Mozilla's masterless Puppet configuration for Firefox CI workers
 
 ## Commands
 
+### Git Commit Safety
+
+- Do not amend commits (`git commit --amend`) unless the user has explicitly requested or approved the amend operation. Create a new commit instead.
+
 ### Setup
 ```bash
 gem install bundler:2.5.23

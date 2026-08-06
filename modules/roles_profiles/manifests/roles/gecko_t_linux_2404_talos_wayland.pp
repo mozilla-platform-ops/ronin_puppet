@@ -21,4 +21,10 @@ class roles_profiles::roles::gecko_t_linux_2404_talos_wayland {
 
   # perf profiling support (bug 2031822)
   include roles_profiles::profiles::linux_perf_profiling
+
+  # turbostat support
+  include roles_profiles::profiles::linux_turbostat
+
+  # CPU performance limit support
+  include roles_profiles::profiles::linux_intel_pstate
 }

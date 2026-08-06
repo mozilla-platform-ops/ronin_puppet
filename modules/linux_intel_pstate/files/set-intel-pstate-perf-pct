@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Set Intel pstate minimum and maximum performance percentages.
+#
+# Usage: set-intel-pstate-perf-pct MIN MAX
+
+set -euo pipefail
+
+readonly MIN_PERF_PCT=/sys/devices/system/cpu/intel_pstate/min_perf_pct
+readonly MAX_PERF_PCT=/sys/devices/system/cpu/intel_pstate/max_perf_pct
+
+usage() {
+  echo "Usage: ${0##*/} MIN MAX (each an integer from 0 to 100)" >&2
+  exit 2
+}
+
+if [[ $# -ne 2 ]]; then
+  usage
+fi
+
+min=$1
+max=$2
+
+if ! [[ $min =~ ^[0-9]+$ && $max =~ ^[0-9]+$ ]] || (( min > 100 || max > 100 || min > max )); then
+  usage
+fi
+
+if [[ ! -w $MIN_PERF_PCT || ! -w $MAX_PERF_PCT ]]; then
+  echo 'Intel pstate performance controls are not available or writable.' >&2
+  exit 1
+fi
+
+current_min=$(<"$MIN_PERF_PCT")
+current_max=$(<"$MAX_PERF_PCT")
+
+# Keep min_perf_pct <= max_perf_pct throughout the update. The required write
+# order depends on whether the requested range lies above or below the current
+# range.
+if (( min > current_max )); then
+  printf '%s\n' "$max" > "$MAX_PERF_PCT"
+  printf '%s\n' "$min" > "$MIN_PERF_PCT"
+elif (( max < current_min )); then
+  printf '%s\n' "$min" > "$MIN_PERF_PCT"
+  printf '%s\n' "$max" > "$MAX_PERF_PCT"
+else
+  printf '%s\n' "$min" > "$MIN_PERF_PCT"
+  printf '%s\n' "$max" > "$MAX_PERF_PCT"
+fi
