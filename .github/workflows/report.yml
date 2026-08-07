@@ -33,7 +33,7 @@ jobs:
           # Need the parent commit to diff the merge.
           fetch-depth: 2
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
