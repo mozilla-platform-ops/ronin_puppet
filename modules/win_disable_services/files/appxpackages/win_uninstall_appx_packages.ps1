@@ -204,7 +204,9 @@ function Remove-PreinstalledAppxPackages {
         $provMatch = @($provAll | Where-Object { $_.PackageName -like ("*{0}*" -f $Key) })
         $instMatch = @($instAll | Where-Object { ($_.Name -like ("*{0}*" -f $Key)) -or ($_.PackageFullName -like ("*{0}*" -f $Key)) })
         if (($provMatch.Count -eq 0) -and ($instMatch.Count -eq 0)) {
-            Write-Log -message ("uninstall_appx_packages :: not installed, skipping: {0}" -f $Key) -severity 'DEBUG'
+            # Not present (already debloated in the bake) - skip silently. The per-key
+            # 'not installed, skipping' line was pure noise on a pre-baked image (~48/run);
+            # only actual removals are logged now (below).
             continue
         }
         Write-Log -message ("uninstall_appx_packages :: removing AppX (provisioned={1}, installed={2}): {0}" -f $Key, $provMatch.Count, $instMatch.Count) -severity 'DEBUG'
