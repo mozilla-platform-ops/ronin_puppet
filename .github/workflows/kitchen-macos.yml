@@ -89,10 +89,21 @@ jobs:
           vault --version
 
       - name: Start Vault dev server
+        id: vault
+        run: vault server -dev -dev-root-token-id="root" -dev-listen-address=127.0.0.1:8202
+        background: true
+
+      - name: Wait for Vault to become ready
         run: |
-          vault server -dev -dev-root-token-id="root" -dev-listen-address=127.0.0.1:8202 &
-          sleep 2
-          vault status
+          attempt=0
+          until vault status; do
+            attempt=$((attempt + 1))
+            if [ "$attempt" -ge 30 ]; then
+              echo "::error::Vault did not become ready within 30 seconds"
+              exit 1
+            fi
+            sleep 1
+          done
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
@@ -108,6 +119,9 @@ jobs:
 
       - name: Kitchen verify
         run: kitchen verify ${{ matrix.suite }}
+
+      - name: Stop Vault dev server
+        cancel: vault
 
       - name: Upload test results
         if: always()
