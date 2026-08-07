@@ -490,6 +490,53 @@ function Set-LegacyYDriveMapping {
   }
 }
 
+function Test-AzureNvmeTemporaryDriveRequired {
+  param (
+    [string] $vmSize
+  )
+
+  return @(
+    'Standard_F8alds_v7'
+    'Standard_F8ads_v7'
+  ) -contains $vmSize
+}
+
+function Ensure-AzureNvmeTemporaryDrive {
+  param (
+    [string] $vmSize,
+    [string] $scriptPath = "$env:programdata\PuppetLabs\ronin\configure_nvme_disk.ps1"
+  )
+
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (-not (Test-AzureNvmeTemporaryDriveRequired -vmSize $vmSize)) {
+      Write-Log -message ('{0} :: skipped for VM size {1}' -f $($MyInvocation.MyCommand.Name), $vmSize) -severity 'DEBUG'
+      return
+    }
+
+    if (-not (Test-Path -LiteralPath $scriptPath -PathType Leaf)) {
+      throw ('Required Azure NVMe setup script is missing: {0}' -f $scriptPath)
+    }
+
+    Write-Log -message ('{0} :: configuring D: for VM size {1}' -f $($MyInvocation.MyCommand.Name), $vmSize) -severity 'INFO'
+    & $scriptPath -Required -WaitSeconds 300 -RetrySeconds 5
+
+    $volume = Get-Volume -DriveLetter D -ErrorAction SilentlyContinue
+    if (-not $volume -or $volume.DriveType -ne 'Fixed' -or $volume.FileSystem -ne 'NTFS') {
+      throw ('D: is not a ready fixed NTFS volume for VM size {0}' -f $vmSize)
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+
+if ($MyInvocation.InvocationName -eq '.') {
+  return
+}
+
 ## Get the tags from azure imds
 $imds_tags = Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "tags"
 
@@ -518,6 +565,9 @@ If ($hand_off_ready -eq 'yes') {
 If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   ## Set the VM the name that taskcluster gave it, if it's not already set
   Set-AzVMName
+  $vm_size = (Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "compute").vmSize
+  ## NVMe v7 workers must create D: from the unused local disk before Puppet reads drive facts.
+  Ensure-AzureNvmeTemporaryDrive -vmSize $vm_size
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id

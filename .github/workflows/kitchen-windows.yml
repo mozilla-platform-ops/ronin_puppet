@@ -21,6 +21,9 @@ jobs:
             worker_pool_id: win11-64-25h2-alpha
             kitchen_instance: windows-win11-64-25h2
           - role: win116425h2azure
+            worker_pool_id: win11-64-25h2-amd-v7-kitchen
+            kitchen_instance: windows-win11-64-25h2-amd-v7
+          - role: win116425h2azure
             worker_pool_id: win11-64-25h2-gpu-alpha
             kitchen_instance: windows-win11-64-25h2-gpu
           - role: win116424h2azure
