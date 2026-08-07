@@ -23,7 +23,7 @@ POWERSHELL
 end
 
 describe powershell_command(<<~POWERSHELL) do
-  . '#{task_script_dir}\maintainsystem.ps1'
+  . '#{task_script_dir}\\maintainsystem.ps1'
 
   $requiredSizes = @(
     'Standard_F8alds_v7'
