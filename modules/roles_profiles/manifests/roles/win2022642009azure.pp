@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 class roles_profiles::roles::win2022642009azure {
+  include roles_profiles::profiles::sbom
   case $facts['custom_win_bootstrap_stage'] {
     ## Include only what is needed in the catalog post bootstrap
     ## Saves minutes on workers first boot

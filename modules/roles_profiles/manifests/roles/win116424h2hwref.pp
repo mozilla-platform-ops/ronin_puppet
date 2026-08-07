@@ -1,4 +1,5 @@
 class roles_profiles::roles::win116424h2hwref {
+  include roles_profiles::profiles::sbom
   include roles_profiles::profiles::chocolatey
   # Install MS tools earlier
   include roles_profiles::profiles::microsoft_tools
