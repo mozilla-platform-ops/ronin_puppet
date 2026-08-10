@@ -70,6 +70,17 @@ class AnalyzerTests(unittest.TestCase):
                 rotated.write(json.dumps(record) + "\n")
             self.assertEqual(analyzer.load_events([root]), [record])
 
+    def test_loader_skips_events_with_non_string_timestamps(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = pathlib.Path(temporary_directory)
+            valid_record = event("boot_started", 0, "boot-a", "event-1")
+            malformed_record = event("worker_started", 1, "boot-a", "event-2")
+            malformed_record["event_time"] = None
+            (root / "events.jsonl").write_text(
+                json.dumps(malformed_record) + "\n" + json.dumps(valid_record) + "\n"
+            )
+            self.assertEqual(analyzer.load_events([root]), [valid_record])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -24,6 +24,8 @@ REPORT_MEASUREMENTS = (
 
 def event_timestamp(event):
     value = event.get("event_time", event.get("recorded_at"))
+    if not isinstance(value, str):
+        raise ValueError("event timestamp must be a string")
     return datetime.datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
 
 
