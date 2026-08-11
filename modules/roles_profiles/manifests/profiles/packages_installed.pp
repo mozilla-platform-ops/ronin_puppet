@@ -7,6 +7,7 @@ class roles_profiles::profiles::packages_installed {
     'Darwin': {
       $package_list = lookup('packages_classes', Array[String], 'unique', [])
       map ($package_list) | $package | { "packages::${package}" }.include
+      include roles_profiles::profiles::sbom
     }
     default: {
       fail("${facts['os']['name']} not supported")
