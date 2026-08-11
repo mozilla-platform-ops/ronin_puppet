@@ -28,6 +28,42 @@ execute_query() {
     sudo sqlite3 -cmd ".timeout 5000" "$db_path" "$query"
 }
 
+SEMAPHORE_FILE="/var/tmp/semaphore/tcc-perms-applied"
+
+# Read a binary's cdhash, or echo nothing if it cannot be read. codesign's
+# failure output is fed to awk, so a missing binary yields empty, not an error.
+cdhash_for_binary() {
+    codesign -dvvv "$1" 2>&1 | awk -F= '/^CDHash=/{print $2; exit}'
+}
+
+# Binaries whose TCC entries are cdhash-anchored, and therefore need their
+# grants rewritten whenever the binary changes.
+CDHASH_ANCHORED_BINARIES=(
+    /usr/local/bin/start-worker
+    /usr/local/bin/generic-worker-multiuser
+)
+
+# Fingerprint of the cdhash-anchored binaries, recorded in the semaphore so that
+# swapping one of them re-runs this script rather than leaving a stale csreq
+# behind. Both a version bump and moving a pool onto Developer-ID-signed builds
+# change these cdhashes. Getting this wrong is silent: TCC stores the stale
+# grant row happily and then ignores it at policy evaluation time, so captures
+# come back blank/denied while the row still sits in the DB looking correct.
+worker_binary_fingerprint() {
+    local bin
+    for bin in "${CDHASH_ANCHORED_BINARIES[@]}"; do
+        printf '%s %s\n' "$bin" "$(cdhash_for_binary "$bin")"
+    done
+}
+
+# Idempotence check used as puppet's `unless` for this script: already applied
+# AND applied against the binaries currently on disk.
+if [ "${1:-}" = "--check" ]; then
+    [ -f "$SEMAPHORE_FILE" ] || exit 1
+    [ "$(worker_binary_fingerprint)" = "$(cat "$SEMAPHORE_FILE")" ] || exit 1
+    exit 0
+fi
+
 # Build a TCC csreq blob (cdhash-anchored code requirement) for a given binary.
 # The csreq format is:
 #   FADE0C00 00000028 00000001 00000008 00000014 <20-byte cdhash>
@@ -42,7 +78,7 @@ execute_query() {
 csreq_for_binary() {
     local bin_path=$1
     local cdhash
-    cdhash=$(codesign -dvvv "$bin_path" 2>&1 | awk -F= '/^CDHash=/{print $2; exit}')
+    cdhash=$(cdhash_for_binary "$bin_path")
     if [ -z "$cdhash" ]; then
         echo "WARNING: could not read cdhash for ${bin_path}; skipping its TCC entries" >&2
         return 0
@@ -163,5 +199,5 @@ else
 fi
 
 echo "Permissions updated successfully."
-mkdir -p /var/tmp/semaphore
-touch /var/tmp/semaphore/tcc-perms-applied
+mkdir -p "$(dirname "$SEMAPHORE_FILE")"
+worker_binary_fingerprint > "$SEMAPHORE_FILE"
