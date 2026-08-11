@@ -31,6 +31,20 @@ class macos_tcc_perms (
             user    => 'root',
             unless  => "${tcc_script} --check",
           }
+
+          # Must run AFTER any worker binary is installed, not before.
+          #
+          # The semaphore records the cdhashes of the binaries this script
+          # anchors grants to. If the script runs first and worker_runner swaps
+          # a binary later in the same catalog, the semaphore is stale the
+          # moment it is written: `--check` fails on the next run and the script
+          # re-runs every time. Observed on macmini-m4-84, where a run wrote the
+          # ad-hoc cdhashes and the Developer-ID binaries landed afterwards in
+          # the same apply.
+          #
+          # Collector form so this is a no-op on roles that install no worker
+          # binaries, and so it does not couple this module to worker_runner.
+          Packages::Macos_taskcluster_binary <| |> -> Exec['execute tcc perms script']
         }
       }
       default: {
