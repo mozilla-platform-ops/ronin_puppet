@@ -29,6 +29,64 @@ execute_query() {
 }
 
 SEMAPHORE_FILE="/var/tmp/semaphore/tcc-perms-applied"
+# Overridable so the defer path can be exercised without a SIP-on host.
+: "${USER_TCC_DB:=/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db}"
+
+# How long to wait for cltbld's user TCC database to become writable before
+# giving up and deferring to a later puppet run.
+: "${USER_DB_WAIT_SECS:=60}"
+
+# Can we actually open cltbld's user TCC database for writing?
+#
+# Two distinct failures hide behind "no":
+#   database is locked (5)  -- transient, cltbld's autologin session is still
+#                              starting. execute_query's 5s busy timeout covers
+#                              the short version of this.
+#   authorization denied    -- TCC itself is refusing. This is what a puppet run
+#                              spawned from the org.mozilla.worker-runner
+#                              LaunchDaemon hits: it has no user-session TCC
+#                              domain, so sqlite3 cannot touch the user DB no
+#                              matter how long it waits. An SSH-driven run works
+#                              because it inherits sshd's domain.
+# BEGIN IMMEDIATE acquires the write lock without modifying anything, and the
+# ROLLBACK releases it -- so this proves both "TCC will let us open it" and "the
+# database is not locked", without writing to TCC.db.
+user_db_writable() {
+    sudo sqlite3 -cmd ".timeout 5000" "$USER_TCC_DB" \
+        "BEGIN IMMEDIATE; ROLLBACK;" >/dev/null 2>&1
+}
+
+# Wait briefly for the user DB, then defer rather than fail.
+#
+# This script runs under `set -e`, so any sqlite3 failure used to abort it with
+# a non-zero exit. Puppet turned that into a failed Exec, run-puppet.sh saw
+# "^Error:" and retried the whole apply every 60s -- and worker-runner.sh calls
+# run-puppet.sh synchronously before starting the worker, so the host never took
+# a task. On a SIP-enabled host, where the LaunchDaemon path can never get the
+# TCC domain, that is not a retry, it is a permanent wedge: macmini-m4-84 sat
+# there from 2026-04-15 to 2026-08-11 with 102k denials and no worker.
+#
+# Deferring instead means puppet succeeds, the worker starts, and the grants are
+# reapplied by a later run that does have the domain. The semaphore is
+# deliberately NOT written on this path, so `--check` keeps failing and the
+# script keeps being retried until it genuinely succeeds.
+wait_for_user_db_or_defer() {
+    local waited=0
+    while ! user_db_writable; do
+        if [ "$waited" -ge "$USER_DB_WAIT_SECS" ]; then
+            echo "WARNING: cannot write ${USER_TCC_DB} after ${USER_DB_WAIT_SECS}s." >&2
+            echo "WARNING: skipping TCC grants this run; no semaphore written, so the" >&2
+            echo "WARNING: next puppet run will retry. Not failing the run -- doing so" >&2
+            echo "WARNING: blocks worker startup (see worker-runner.sh)." >&2
+            exit 0
+        fi
+        sleep 5
+        waited=$(( waited + 5 ))
+    done
+    if [ "$waited" -gt 0 ]; then
+        echo "User TCC database became writable after ${waited}s."
+    fi
+}
 
 # Read a binary's cdhash, or echo nothing if it cannot be read. codesign's
 # failure output is fed to awk, so a missing binary yields empty, not an error.
@@ -172,8 +230,9 @@ fi
 
 # Execute the appropriate queries based on the macOS version
 if [[ "$macos_major_version" -eq 10 && "$macos_minor_version" -eq 15 ]]; then
+    wait_for_user_db_or_defer
     for query in "${queries_10_15_user[@]}"; do
-        execute_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
+        execute_query "$USER_TCC_DB" "$query"
     done
     for query in "${queries_10_15_system[@]}"; do
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
@@ -183,8 +242,9 @@ elif [[ "$macos_major_version" -eq 11 || "$macos_major_version" -eq 12 || "$maco
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
 elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 ]]; then
+    wait_for_user_db_or_defer
     for query in "${queries_14_user[@]}"; do
-        execute_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
+        execute_query "$USER_TCC_DB" "$query"
     done
     # System-DB writes only on SIP-off hosts. On SIP-on hosts the equivalent
     # grants come from the org.mozilla.ci-tcc-pppc MDM profile.
