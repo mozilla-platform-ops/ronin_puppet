@@ -6,7 +6,7 @@
 	<array>
 		<dict>
 			<key>PayloadDescription</key>
-			<string>Grants TCC system-level permissions to CI worker binaries. Replaces system TCC database sqlite3 writes that fail on SIP-enabled macOS 14/15.</string>
+			<string>Grants system-level TCC (PPPC) permissions to the Apple support binaries Firefox CI workers depend on: sshd and sshd-keygen-wrapper (full disk access, so SSH-driven puppet runs can write TCC), osascript and Terminal (accessibility and Apple Events, for the Safari remote-automation flow), and bash and sqlite3 (full disk access, so puppet can write the per-user TCC database).</string>
 			<key>PayloadDisplayName</key>
 			<string>Mozilla CI TCC Permissions</string>
 			<key>PayloadEnabled</key>
@@ -18,9 +18,9 @@
 			<key>PayloadType</key>
 			<string>com.apple.TCC.configuration-profile-policy</string>
 			<key>PayloadUUID</key>
-			<string>C4D5E6F7-A8B9-4C0D-8E1F-2A3B4C5D6E7F</string>
+			<string>CD31009A-69CD-4194-9E03-9B0FE24AF370</string>
 			<key>PayloadVersion</key>
-			<integer>1</integer>
+			<integer>2</integer>
 			<key>Services</key>
 			<dict>
 				<key>SystemPolicyAllFiles</key>
@@ -138,7 +138,7 @@
 		</dict>
 	</array>
 	<key>PayloadDescription</key>
-	<string>Privacy Preferences Policy Control for Mozilla CI workers (macOS 14/15, SIP enabled). Deployed via SimpleMDM.</string>
+	<string>Privacy Preferences Policy Control for Firefox CI macOS workers (macOS 14/15), deployed via SimpleMDM. Complements the TCC database rows written directly by puppet (modules/macos_tcc_perms); on SIP-disabled hosts those rows are what actually grant access, and this profile is the equivalent for grants that cannot be written to a SIP-protected system database. TWO RULES. First, exactly one SimpleMDM profile object may carry PayloadIdentifier org.mozilla.ci-tcc-pppc -- two objects sharing it do not merge, macOS drops services and hosts end up with fewer grants than either object declares. Update this object in place rather than adding a second one. Second, bump PayloadVersion and regenerate both PayloadUUIDs on every content change, or hosts that already hold an older copy will silently keep it and SimpleMDM will still report them Up to date.</string>
 	<key>PayloadDisplayName</key>
 	<string>Mozilla CI TCC Permissions</string>
 	<key>PayloadIdentifier</key>
@@ -152,8 +152,8 @@
 	<key>PayloadType</key>
 	<string>Configuration</string>
 	<key>PayloadUUID</key>
-	<string>A1B2C3D4-E5F6-4789-ABCD-EF0123456789</string>
+	<string>7FBFA6D2-D1F5-4F88-BB85-4DDA7BB90B46</string>
 	<key>PayloadVersion</key>
-	<integer>1</integer>
+	<integer>2</integer>
 </dict>
 </plist>
