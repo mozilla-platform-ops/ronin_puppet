@@ -31,7 +31,15 @@ end
 
 gpu_key = 'gpu'
 driver_name = expected_hiera_value(gpu_key, 'name')
+driver_installer = "C:\\Windows\\Temp\\#{driver_name}.exe"
 
-describe file("C:\\Windows\\Temp\\#{driver_name}.exe") do
+describe file(driver_installer) do
   it { should exist }
+end
+
+describe powershell_command(
+  "if ((Get-Item '#{driver_installer}').Length -gt 100000000) " \
+  "{ exit 0 } else { exit 1 }"
+) do
+  its(:exit_status) { should eq 0 }
 end

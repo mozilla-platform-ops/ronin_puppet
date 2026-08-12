@@ -3,7 +3,7 @@ require_relative 'spec_helper'
 x64_tester = %w[win116424h2azure win116425h2azure].include?(ROLE_NAME)
 
 if WORKER_FUNCTION == 'tester'
-  gpu_key = ROLE_NAME == 'win116425h2azure' ? 'gpu_a10' : 'gpu'
+  gpu_key = 'gpu'
   driver_name = expected_hiera_value(gpu_key, 'name')
 
   describe file("C:\\Windows\\Temp\\#{driver_name}.exe") do
