@@ -25,6 +25,20 @@ quarantine_semaphore_file='<%= @user_homedir %>/quarantined'
 hold_semaphore_file='<%= @user_homedir %>/operator_hold'
 puppet_run_done_file='/tmp/puppet_run_done'
 
+# Lifecycle logging is observational only: no failure may interrupt the worker.
+function lifecycle_log {
+    if [ ! -x /usr/local/bin/lifecycle-log ]; then
+        return 0
+    fi
+    if [ "$1" = 'import-generic-worker' ]; then
+        if ! /usr/bin/sudo /usr/local/bin/lifecycle-log "$@"; then
+            echo "lifecycle-log $* failed; continuing without lifecycle event" >&2
+        fi
+    elif ! /usr/local/bin/lifecycle-log "$@"; then
+        echo "lifecycle-log $* failed; continuing without lifecycle event" >&2
+    fi
+}
+
 # if the  host is in hold mode, don't start until cleared
 if [ -f "$hold_semaphore_file" ]; then
     echo "Worker is in operator hold mode. Waiting to start..."
@@ -48,9 +62,13 @@ fi
 
 # First run the start-worker, passing through any arguments handed to this
 # wrapper script...
+lifecycle_log emit worker_started
 /usr/local/bin/start-worker "$@" 2>&1 | logger -t generic-worker
 
 exitstatus="${PIPESTATUS[0]}"
+
+lifecycle_log import-generic-worker
+lifecycle_log emit worker_exited --exit-code "$exitstatus"
 
 # if the  host is in hold mode, exit now
 if [ -f "$hold_semaphore_file" ]; then
@@ -100,6 +118,7 @@ elif [ $exitstatus -gt 69 -o $exitstatus -lt 69 ]; then
         /bin/rm -rf <%= @user_homedir %>/bug_id
     fi
     # Now reboot the machine immediately (time costs money)
+    lifecycle_log emit restart_executed --trigger post_task
     <%= @reboot_command %>
     # Sleep to prevent this script from terminating naturally, and launchd restarting
     # it. Instead, the shutdown should cause this script to terminate (so it won't
