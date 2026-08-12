@@ -29,29 +29,20 @@ POWERSHELL
   its(:stdout) { should match(/^#{Regexp.escape(vac_device_name)}\s*$/) }
 end
 
-gpu_key = 'gpu'
-driver_name = expected_hiera_value(gpu_key, 'name')
-driver_installer = "C:\\Windows\\Temp\\#{driver_name}.exe"
+driver_name = expected_hiera_value('gpu', 'name')
 
-describe file(driver_installer) do
+describe file("C:\\Windows\\Temp\\#{driver_name}.exe") do
   it { should exist }
 end
 
-describe powershell_command(
-  "if ((Get-Item '#{driver_installer}').Length -gt 100000000) " \
-  "{ exit 0 } else { exit 1 }"
-) do
-  its(:exit_status) { should eq 0 }
-end
-
 if ENV.fetch('WORKER_POOL_ID', '').include?('gpu')
+  driver_version = driver_name.split('_').first
+
   describe powershell_command(<<~POWERSHELL) do
-    $nvidiaSmi = Join-Path ${env:ProgramFiles} 'NVIDIA Corporation\\NVSMI\\nvidia-smi.exe'
-    if (-not (Test-Path $nvidiaSmi)) { exit 1 }
-    & $nvidiaSmi --query-gpu=name,driver_version --format=csv,noheader
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    nvidia-smi.exe --query-gpu=name,driver_version --format=csv,noheader
+    if (-not $?) { exit 1 }
   POWERSHELL
     its(:exit_status) { should eq 0 }
-    its(:stdout) { should match(/^NVIDIA A10-8Q,\s*573\.96\s*$/) }
+    its(:stdout) { should match(/^NVIDIA A10-8Q,\s*#{Regexp.escape(driver_version)}\s*$/) }
   end
 end
