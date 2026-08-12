@@ -43,3 +43,15 @@ describe powershell_command(
 ) do
   its(:exit_status) { should eq 0 }
 end
+
+if ENV.fetch('WORKER_POOL_ID', '').include?('gpu')
+  describe powershell_command(<<~POWERSHELL) do
+    $nvidiaSmi = Join-Path ${env:ProgramFiles} 'NVIDIA Corporation\\NVSMI\\nvidia-smi.exe'
+    if (-not (Test-Path $nvidiaSmi)) { exit 1 }
+    & $nvidiaSmi --query-gpu=name,driver_version --format=csv,noheader
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  POWERSHELL
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^NVIDIA A10-8Q,\s*573\.96\s*$/) }
+  end
+end
