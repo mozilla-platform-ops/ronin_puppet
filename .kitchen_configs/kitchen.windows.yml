@@ -222,6 +222,50 @@ platforms:
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
         winrm set winrm/config/service/auth '@{Negotiate="false"}'
+  - name: win10-64-2009-gpu
+    driver:
+      name: azurerm
+      location: 'West US 3'
+      machine_size: 'Standard_NV12ads_A10_v5'
+      image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009-gpu
+      use_ephemeral_osdisk: true
+      deployment_timeout_in_minutes: 30
+      username: kitchenadmin
+      password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['WORKER_POOL_ID'] %>
+      winrm_powershell_script: |-
+        Set-NetConnectionProfile -NetworkCategory Private
+        winrm quickconfig -q
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+        winrm set winrm/config/service/auth '@{Negotiate="false"}'
+    lifecycle:
+      post_converge:
+        - remote: shutdown.exe /r /t 5 /f
+      pre_verify:
+        - local: |
+            reboot_started=false
+            for attempt in $(seq 1 30); do
+              if ! timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
+                reboot_started=true
+                break
+              fi
+              sleep 2
+            done
+            $reboot_started || exit 1
+            for attempt in $(seq 1 60); do
+              if timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
+                exit 0
+              fi
+              sleep 10
+            done
+            exit 1
 
 suites:
   - name: windows
@@ -239,3 +283,4 @@ suites:
       - win11-a64-25h2-tester
       - win2022-64-2009
       - win10-64-2009
+      - win10-64-2009-gpu

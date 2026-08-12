@@ -41,6 +41,9 @@ jobs:
           - role: win10642009azure
             worker_pool_id: win10-64-2009
             kitchen_instance: windows-win10-64-2009
+          - role: win10642009azure
+            worker_pool_id: win10-64-2009-gpu-alpha
+            kitchen_instance: windows-win10-64-2009-gpu
     permissions:
       id-token: write
       contents: read
