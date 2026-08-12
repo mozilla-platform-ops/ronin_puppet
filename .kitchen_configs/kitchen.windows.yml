@@ -227,7 +227,6 @@ platforms:
       name: azurerm
       location: 'West US 3'
       machine_size: 'Standard_NV12ads_A10_v5'
-      spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009-gpu
       use_ephemeral_osdisk: true
