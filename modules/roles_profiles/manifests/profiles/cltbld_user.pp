@@ -97,10 +97,21 @@ class roles_profiles::profiles::cltbld_user {
         # require => User['cltbld'],
       }
 
+      # Granted only to roles that opt into the between-tasks OS cache reclaim by
+      # setting worker.reclaim_free_space_gb. Roles that do not get their existing
+      # sudoers content unchanged. The script takes only a numeric free-space floor
+      # and operates on fixed paths, so granting it does not widen what cltbld can
+      # reach.
+      $reclaim_free_space_gb = lookup('worker.reclaim_free_space_gb', Optional[Integer], 'first', undef)
+      $reclaim_sudo_commands = $reclaim_free_space_gb ? {
+        undef   => [],
+        default => ['/usr/local/bin/reclaim_worker_caches.sh'],
+      }
+
       $sudo_commands = [
         '/sbin/reboot',
         '/usr/local/bin/run-puppet.sh',
-      ]
+      ] + $reclaim_sudo_commands
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',

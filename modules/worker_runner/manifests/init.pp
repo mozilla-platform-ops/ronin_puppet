@@ -27,6 +27,19 @@ class worker_runner (
     # assets, as installed-binary-name => expected sha256. Opt-in per role;
     # anything not listed keeps the normal ad-hoc GitHub release path.
     Hash[String, String] $signed_binaries                                  = {},
+    # Free space on / in whole GB below which reclaim_worker_caches.sh purges the
+    # Rosetta and CoreSymbolication caches between tasks. Must stay above
+    # generic-worker's requiredDiskSpaceMegabytes (20480, i.e. 20 GiB) with room
+    # for a task's own footprint, or the worker still hits exit 69 before the
+    # reclaim gets a chance to run. Purging is not free -- see the script -- so
+    # this is a floor to stay off, not a target to sit at.
+    #
+    # undef (the default) disables the feature outright: no script is installed,
+    # no sudoers rule is granted, and worker-runner.sh renders without the call.
+    # Opt in per role. Only the tart VM guests need it -- their 87 GiB volume over
+    # a ~74 GB image baseline leaves ~20 GiB headroom, where sampled bare-metal
+    # testers sit at 89-154 GiB free with caches of 1-3 GB rather than 12-29 GB.
+    Optional[Integer] $reclaim_free_space_gb                                = undef,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -255,6 +268,21 @@ class worker_runner (
                 ensure  => present,
                 content => template("${module_name}/worker-runner.sh.erb"),
                 mode    => '0755',
+            }
+
+            # Opt-in per role; absent entirely where $reclaim_free_space_gb is
+            # undef, so roles that do not need it gain no resource at all. Runs as
+            # root via a NOPASSWD sudoers rule (see
+            # roles_profiles::profiles::cltbld_user), so it must not be writable
+            # by the task user that can invoke it.
+            if $reclaim_free_space_gb {
+                file { '/usr/local/bin/reclaim_worker_caches.sh':
+                    ensure => present,
+                    source => "puppet:///modules/${module_name}/reclaim_worker_caches.sh",
+                    owner  => 'root',
+                    group  => 'wheel',
+                    mode   => '0755',
+                }
             }
 
             # Add taskcluster host entry

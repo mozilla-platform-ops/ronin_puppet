@@ -30,6 +30,14 @@ class roles_profiles::profiles::worker {
       # (the default) keeps every binary on the ad-hoc GitHub release asset.
       $signed_binaries = lookup('taskcluster_signed_binaries', Hash[String, String], 'first', {})
 
+      # Free-space floor for the between-tasks OS cache reclaim, opt-in per role.
+      # Unset means the feature is absent entirely rather than merely inert, so a
+      # role that does not ask for it gains no script, no sudoers rule and an
+      # unchanged worker-runner.sh. Only the tart VM guests need it: they sit at
+      # ~20 GiB headroom against generic-worker's 20 GiB requirement, where
+      # sampled bare-metal testers have 89-154 GiB free.
+      $reclaim_free_space_gb = lookup('worker.reclaim_free_space_gb', Optional[Integer], 'first', undef)
+
       class { 'worker_runner':
         taskcluster_version   => $taskcluster_version,
         signed_binaries       => $signed_binaries,
@@ -43,6 +51,7 @@ class roles_profiles::profiles::worker {
         generic_worker_engine => $generic_worker_engine,
         idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
         task_user_password    => $task_user_password,
+        reclaim_free_space_gb => $reclaim_free_space_gb,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc
