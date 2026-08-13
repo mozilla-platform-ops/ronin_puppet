@@ -16,7 +16,21 @@ worker:
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
-  generic_worker_engine: multiuser-static
+  # TEMPORARY: pinned back to the engine the running image actually uses, so the
+  # next tester image rebuild is not also the first-ever multiuser-static flip on
+  # the VM guests. #964 set this role to multiuser-static on 2026-01-12 and that
+  # migration is live on the bare-metal roles, but the guests have never run it:
+  # the published sequoia-tester image renders `if [[ "simple" == ... ]]` in
+  # worker-runner.sh, because it was built before #964 and has not been rebuilt
+  # since. The guests do not run Puppet at reboot, so unlike hardware they never
+  # picked the change up.
+  #
+  # Revert this to multiuser-static and validate it as its own change on one or
+  # two slots. Flipping it as a side effect of an unrelated rebuild would move
+  # task_dir, tasks-resolved-count and the worker cwd to $gw_root_dir and swap
+  # generic-worker-simple for generic-worker-multiuser, all at once, on a pool
+  # that had 12 of 26 slots out of production on 2026-08-13.
+  generic_worker_engine: simple
   idle_timeout_secs: 21600 # 6 hours
   # Purge the Rosetta and CoreSymbolication caches between tasks when free space
   # on / drops below this. Set only for this role: the guests run on an 87 GiB
