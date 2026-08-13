@@ -76,6 +76,7 @@ fi
 for gw_stale in "${gw_downloads}".purging.*; do
     [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
 done
+<% if @reclaim_free_space_gb -%>
 
 # The file cache above is generic-worker's own. Two OS-owned caches -- the Rosetta
 # 2 AOT cache and CoreSymbolication -- grow unbounded too, are invisible to the
@@ -84,11 +85,15 @@ done
 # and threshold-gated inside the script so it is a no-op where there is headroom.
 # Needs root, hence sudo: see the sudoers rule in
 # roles_profiles::profiles::cltbld_user.
+#
+# Emitted only for roles that set worker.reclaim_free_space_gb. Roles that do not
+# render this file exactly as they did before the reclaim work landed.
 if [ -x /usr/local/bin/reclaim_worker_caches.sh ]; then
     sudo /usr/local/bin/reclaim_worker_caches.sh <%= @reclaim_free_space_gb %>
 else
     echo "reclaim_worker_caches.sh not found, skipping OS cache reclaim."
 fi
+<% end -%>
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
 # find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +

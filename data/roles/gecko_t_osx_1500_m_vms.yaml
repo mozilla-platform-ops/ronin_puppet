@@ -18,6 +18,13 @@ worker:
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
   generic_worker_engine: multiuser-static
   idle_timeout_secs: 21600 # 6 hours
+  # Purge the Rosetta and CoreSymbolication caches between tasks when free space
+  # on / drops below this. Set only for this role: the guests run on an 87 GiB
+  # volume over a ~74 GB image baseline, leaving ~20 GiB against generic-worker's
+  # 20 GiB requiredDiskSpaceMegabytes, so the two caches can and did push 12 of 26
+  # slots into an exit-69 reboot loop. Sampled bare-metal testers have 89-154 GiB
+  # free with caches of 1-3 GB and do not need it.
+  reclaim_free_space_gb: 30
 
 packages_classes:
   - mercurial

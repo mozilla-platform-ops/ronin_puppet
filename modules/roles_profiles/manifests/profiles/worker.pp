@@ -30,11 +30,13 @@ class roles_profiles::profiles::worker {
       # (the default) keeps every binary on the ad-hoc GitHub release asset.
       $signed_binaries = lookup('taskcluster_signed_binaries', Hash[String, String], 'first', {})
 
-      # Free-space floor for the between-tasks OS cache reclaim. Role-tunable
-      # because the tart VM guests sit far closer to generic-worker's 20 GiB
-      # requirement than bare metal does: a 94 GB container with a ~74 GB image
-      # baseline leaves only ~20 GiB free on a freshly cloned slot.
-      $reclaim_free_space_gb = lookup('worker.reclaim_free_space_gb', Integer, 'first', 30)
+      # Free-space floor for the between-tasks OS cache reclaim, opt-in per role.
+      # Unset means the feature is absent entirely rather than merely inert, so a
+      # role that does not ask for it gains no script, no sudoers rule and an
+      # unchanged worker-runner.sh. Only the tart VM guests need it: they sit at
+      # ~20 GiB headroom against generic-worker's 20 GiB requirement, where
+      # sampled bare-metal testers have 89-154 GiB free.
+      $reclaim_free_space_gb = lookup('worker.reclaim_free_space_gb', Optional[Integer], 'first', undef)
 
       class { 'worker_runner':
         taskcluster_version   => $taskcluster_version,
