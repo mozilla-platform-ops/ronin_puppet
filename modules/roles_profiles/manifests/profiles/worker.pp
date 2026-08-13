@@ -36,7 +36,15 @@ class roles_profiles::profiles::worker {
       # unchanged worker-runner.sh. Only the tart VM guests need it: they sit at
       # ~20 GiB headroom against generic-worker's 20 GiB requirement, where
       # sampled bare-metal testers have 89-154 GiB free.
-      $reclaim_free_space_gb = lookup('worker.reclaim_free_space_gb', Optional[Integer], 'first', undef)
+      #
+      # Deliberately a TOP-LEVEL role key, not `worker.reclaim_free_space_gb`.
+      # secrets/vault.yaml is the highest-priority hierarchy level and it owns a
+      # `worker:` hash; for a dotted key hiera resolves the root key from the first
+      # source that has it and then traverses, so vault's hash wins outright and any
+      # sub-key that exists only in role data is invisible. #1329 shipped with the
+      # lookup under `worker.` and silently compiled the whole feature out. Same
+      # reason `taskcluster_version` above is read from the top level.
+      $reclaim_free_space_gb = lookup('reclaim_free_space_gb', Optional[Integer], 'first', undef)
 
       class { 'worker_runner':
         taskcluster_version   => $taskcluster_version,

@@ -98,11 +98,15 @@ class roles_profiles::profiles::cltbld_user {
       }
 
       # Granted only to roles that opt into the between-tasks OS cache reclaim by
-      # setting worker.reclaim_free_space_gb. Roles that do not get their existing
-      # sudoers content unchanged. The script takes only a numeric free-space floor
-      # and operates on fixed paths, so granting it does not widen what cltbld can
-      # reach.
-      $reclaim_free_space_gb = lookup('worker.reclaim_free_space_gb', Optional[Integer], 'first', undef)
+      # setting the top-level `reclaim_free_space_gb`. Roles that do not get their
+      # existing sudoers content unchanged. The script takes only a numeric
+      # free-space floor and operates on fixed paths, so granting it does not widen
+      # what cltbld can reach.
+      #
+      # Top-level, not `worker.reclaim_free_space_gb`: secrets/vault.yaml outranks
+      # role data and owns the `worker:` hash, so a sub-key present only in role data
+      # never resolves. Must stay in step with the lookup in profiles::worker.
+      $reclaim_free_space_gb = lookup('reclaim_free_space_gb', Optional[Integer], 'first', undef)
       $reclaim_sudo_commands = $reclaim_free_space_gb ? {
         undef   => [],
         default => ['/usr/local/bin/reclaim_worker_caches.sh'],
