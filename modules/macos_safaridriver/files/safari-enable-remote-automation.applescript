@@ -93,14 +93,45 @@ repeat maxAttempts times
                 click button "Advanced" of toolbar 1 of window 1
                 delay 5
 
-                -- Enable "Show features for web developers"
-                tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
-                    if value is 0 then click it
-                    delay 5
-                    if value is not 1 then
-                        error "Show features for web developers did not toggle on (value=" & (value as string) & ")"
+                -- Enable "Show features for web developers".
+                --
+                -- This step is IDEMPOTENT on purpose. Turning it on adds a
+                -- "Developer" tab to the Settings toolbar, which re-renders the
+                -- Advanced pane and moves this checkbox out of
+                -- `group 1 of group 1`. So on any later run -- a retry within
+                -- this script, or a whole new puppet apply -- the old
+                -- unconditional lookup raised
+                --   -1728: Can't get checkbox "Show features for web developers"
+                -- and the script died here before it could ever reach step 2.
+                --
+                -- That turned a partial success into a PERMANENT wedge: step 1
+                -- persists in Safari's prefs, so once a host got step 1 on and
+                -- step 2 failed, no number of retries could recover it. Seen on
+                -- macmini-m4-214 2026-08-11 (9+ attempts, all -1728, worker
+                -- never started). Treat a present "Developer" tab as proof the
+                -- setting is already on and fall through to step 2.
+                set devFeaturesEnabled to false
+                try
+                    tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
+                        if value is 1 then
+                            set devFeaturesEnabled to true
+                        else
+                            click it
+                            delay 5
+                            if value is 1 then set devFeaturesEnabled to true
+                        end if
+                    end tell
+                on error errMsg
+                    -- Expected once the setting is already on and the pane has
+                    -- re-rendered. Anything else is a real failure.
+                    if exists button "Developer" of toolbar 1 of window 1 then
+                        log "Show features for web developers already enabled (checkbox moved: " & errMsg & ")"
+                        set devFeaturesEnabled to true
                     end if
-                end tell
+                end try
+                if not devFeaturesEnabled then
+                    error "Show features for web developers did not toggle on and no Developer tab is present"
+                end if
                 delay 5
 
                 -- Open Developer tab

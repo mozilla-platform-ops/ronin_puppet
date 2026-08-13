@@ -84,14 +84,35 @@ repeat maxAttempts times
                 click button "Advanced" of toolbar 1 of window 1
                 delay 5
 
-                -- Enable "Show features for web developers"
-                tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
-                    if value is 0 then click it
-                    delay 5
-                    if value is not 1 then
-                        error "Show features for web developers did not toggle on (value=" & (value as string) & ")"
+                -- Enable "Show features for web developers".
+                --
+                -- Idempotent for the same reason as the stable-Safari script:
+                -- turning this on adds a "Developer" tab, re-renders the
+                -- Advanced pane and moves this checkbox out of
+                -- `group 1 of group 1`, so an unconditional lookup raises -1728
+                -- on every later run and the script never reaches step 2. That
+                -- makes a partial success permanently unrecoverable, because
+                -- step 1 persists in Safari's prefs.
+                set devFeaturesEnabled to false
+                try
+                    tell checkbox "Show features for web developers" of group 1 of group 1 of window 1
+                        if value is 1 then
+                            set devFeaturesEnabled to true
+                        else
+                            click it
+                            delay 5
+                            if value is 1 then set devFeaturesEnabled to true
+                        end if
+                    end tell
+                on error errMsg
+                    if exists button "Developer" of toolbar 1 of window 1 then
+                        log "Show features for web developers already enabled (checkbox moved: " & errMsg & ")"
+                        set devFeaturesEnabled to true
                     end if
-                end tell
+                end try
+                if not devFeaturesEnabled then
+                    error "Show features for web developers did not toggle on and no Developer tab is present"
+                end if
                 delay 5
 
                 -- Open Developer tab
