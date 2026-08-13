@@ -100,6 +100,11 @@ if [ -d "$OAH_DIR" ]; then
                 oah_moved=$((oah_moved + 1))
             fi
         done
+        # Put the directory's own flag back. Clearing it is only a means to
+        # unlink the children, and leaving `restricted` off permanently is not
+        # something to do to a SIP flag even where SIP is disabled and it is
+        # inert. The next run clears it again, so this stays idempotent.
+        chflags restricted "$OAH_DIR" >/dev/null 2>&1 || true
         if [ "$oah_moved" -eq 0 ]; then
             # Nothing moved: either already empty or the flags could not be
             # cleared (SIP enabled). Leave no empty staging directory behind.
