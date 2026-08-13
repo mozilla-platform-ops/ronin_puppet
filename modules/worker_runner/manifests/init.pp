@@ -27,6 +27,13 @@ class worker_runner (
     # assets, as installed-binary-name => expected sha256. Opt-in per role;
     # anything not listed keeps the normal ad-hoc GitHub release path.
     Hash[String, String] $signed_binaries                                  = {},
+    # Free space on / in whole GB below which reclaim_worker_caches.sh purges the
+    # Rosetta and CoreSymbolication caches between tasks. Must stay above
+    # generic-worker's requiredDiskSpaceMegabytes (20480, i.e. 20 GiB) with room
+    # for a task's own footprint, or the worker still hits exit 69 before the
+    # reclaim gets a chance to run. Purging is not free -- see the script -- so
+    # this is a floor to stay off, not a target to sit at.
+    Integer $reclaim_free_space_gb                                          = 30,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -255,6 +262,17 @@ class worker_runner (
                 ensure  => present,
                 content => template("${module_name}/worker-runner.sh.erb"),
                 mode    => '0755',
+            }
+
+            # Runs as root via a NOPASSWD sudoers rule (see
+            # roles_profiles::profiles::cltbld_user), so it must not be writable
+            # by the task user that can invoke it.
+            file { '/usr/local/bin/reclaim_worker_caches.sh':
+                ensure => present,
+                source => "puppet:///modules/${module_name}/reclaim_worker_caches.sh",
+                owner  => 'root',
+                group  => 'wheel',
+                mode   => '0755',
             }
 
             # Add taskcluster host entry

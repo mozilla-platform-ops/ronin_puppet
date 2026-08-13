@@ -30,6 +30,12 @@ class roles_profiles::profiles::worker {
       # (the default) keeps every binary on the ad-hoc GitHub release asset.
       $signed_binaries = lookup('taskcluster_signed_binaries', Hash[String, String], 'first', {})
 
+      # Free-space floor for the between-tasks OS cache reclaim. Role-tunable
+      # because the tart VM guests sit far closer to generic-worker's 20 GiB
+      # requirement than bare metal does: a 94 GB container with a ~74 GB image
+      # baseline leaves only ~20 GiB free on a freshly cloned slot.
+      $reclaim_free_space_gb = lookup('worker.reclaim_free_space_gb', Integer, 'first', 30)
+
       class { 'worker_runner':
         taskcluster_version   => $taskcluster_version,
         signed_binaries       => $signed_binaries,
@@ -43,6 +49,7 @@ class roles_profiles::profiles::worker {
         generic_worker_engine => $generic_worker_engine,
         idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
         task_user_password    => $task_user_password,
+        reclaim_free_space_gb => $reclaim_free_space_gb,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc

@@ -100,6 +100,11 @@ class roles_profiles::profiles::cltbld_user {
       $sudo_commands = [
         '/sbin/reboot',
         '/usr/local/bin/run-puppet.sh',
+        # Called between tasks by worker-runner.sh to bound the Rosetta and
+        # CoreSymbolication caches. Takes only a numeric free-space floor and
+        # operates on fixed paths, so granting it does not widen what cltbld can
+        # reach.
+        '/usr/local/bin/reclaim_worker_caches.sh',
       ]
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
