@@ -46,9 +46,25 @@ reprovision_runner:
   tart_health_interval: 600
   # Guest probes (disk headroom, clock skew, worker identity) need an `expect` password
   # login into each VM and are much slower. They are also the checks that actually catch
-  # a crash-looping guest inside a healthy host — the July 2026 failure mode — so this
-  # should become true once the guest probe path has been exercised in production.
-  tart_health_guests: false
+  # a crash-looping guest inside a healthy host.
+  #
+  # ENABLED 2026-08-17. The host-level sweep is a lagging indicator and it has now cost
+  # us twice: 12 of 26 slots were out of production on 08-13 and 7 more on 08-17, every
+  # one of them found by sweeping the guests BY HAND. Registration in Taskcluster lags by
+  # hours (`mac-b531d3` read `ok` in Hangar while it was already dead), whereas guest disk
+  # headroom trends down for days beforehand — the two caches in
+  # reclaim_worker_caches.sh cross generic-worker's 20 GiB floor and the slot starts an
+  # 84s exit-69 reboot loop. Headroom is the only leading signal we have.
+  #
+  # Timing: 13 hosts at --concurrency 4, each host probing its 2 guests serially with a
+  # 150s ssh timeout. Realistic sweep is ~140-400s, comfortably inside the 600s interval.
+  # A wedged guest burns its full timeout (seen 2026-08-17: mac-866d5e's sshd accepted TCP
+  # but never sent a banner), so a pathological sweep could reach ~1680s. That is still
+  # under Hangar's 30 minute staleness window, and the loop simply runs back-to-back
+  # rather than failing. The interval is deliberately left at 600s: raising it would not
+  # improve staleness, since worst-case sweep DURATION is the binding constraint, not the
+  # interval. If sweeps are observed to overrun in practice, raise it then, with data.
+  tart_health_guests: true
   # The tart hosts to sweep. Keep in step with the tart_worker role's fleet; a host
   # missing here is simply never checked.
   tart_health_hosts:
