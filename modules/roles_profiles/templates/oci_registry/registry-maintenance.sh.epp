@@ -10,7 +10,10 @@
 #   * keep every "*-latest" moving tag (e.g. prod-latest, pr-19-latest)
 #   * <% if $prune_pr_shas { -%>delete transient PR build tags: pr-<n>-<sha><% } else { -%>keep PR build tags<% } -%>
 #
-#   * keep the newest <%= $keep_prod_shas %> prod-<sha> tags (by image created time), delete older
+#   * keep the newest <%= $keep_prod_shas %> prod-<sha> tags (by push time), delete older
+#
+# To see what the current policy would delete, without deleting anything:
+#   sudo /usr/local/bin/registry-maintenance.sh --list
 #
 # Retention is SPACE-AWARE, and that matters more than the count. A Tart VM
 # image is ~20-24GiB, so a count-only policy silently overcommits the volume:
@@ -68,11 +71,12 @@ cleanup() { rm -f "${PRUNER}"; }
 trap cleanup EXIT
 
 cat > "${PRUNER}" <<'PYEOF'
-import json, sys, re, urllib.request
+import datetime, json, os, sys, re, urllib.request
 
-# argv: <registry-url> <keep-prod-shas> <prune-pr-shas:0|1> <mode:prune|report>
+# argv: <registry-url> <keep-prod-shas> <prune-pr-shas:0|1> <mode:prune|report> <registry-dir>
 reg, keep_prod, prune_pr = sys.argv[1], int(sys.argv[2]), sys.argv[3] == "1"
 mode = sys.argv[4] if len(sys.argv) > 4 else "prune"
+reg_dir = sys.argv[5] if len(sys.argv) > 5 else ""
 ACCEPT = ", ".join([
     "application/vnd.oci.image.manifest.v1+json",
     "application/vnd.oci.image.index.v1+json",
@@ -95,8 +99,7 @@ def digest_for(repo, tag):
         return resp.headers.get("Docker-Content-Digest")
 
 def created_for(repo, tag):
-    # Best-effort image created time; return None (=> sorts last, pruned first)
-    # only if the config blob is unreadable.
+    # Best-effort OCI image created time. Usually absent here -- see pushed_at.
     try:
         man, _ = get_json(f"/v2/{repo}/manifests/{tag}", {"Accept": ACCEPT})
         cfg = man.get("config", {}).get("digest")
@@ -106,6 +109,42 @@ def created_for(repo, tag):
         return blob.get("created")
     except Exception:
         return None
+
+
+def pushed_at(repo, tag):
+    """When this tag was last pointed at a manifest, as an epoch float.
+
+    Ordering cannot use the OCI created time: Tart image configs do not carry
+    one. The entire config blob for a Tart image is
+
+        {"architecture":"arm64","config":{"Labels":{...}},"os":"darwin"}
+
+    so created_for() returns None for every tag, every sort key ties, and
+    "newest N" degrades to whatever order the registry happened to list. That
+    was harmless while retention never actually deleted anything, but it is not
+    harmless now: on m4-194 it would have dropped sonoma-signer-dep prod-df3e104
+    (pushed Aug 13) while keeping prod-6270277 (pushed Aug 12).
+
+    The tag's current/link mtime is the real push time and is always local.
+    Falls back to the config created time for images that do carry one, and
+    returns None if neither can be read -- callers must treat None as newest and
+    keep the tag, so an unreadable timestamp can never cause a deletion.
+    """
+    if reg_dir:
+        link = os.path.join(reg_dir, "docker/registry/v2/repositories", repo,
+                            "_manifests/tags", tag, "current/link")
+        try:
+            return os.stat(link).st_mtime
+        except OSError:
+            pass
+    created = created_for(repo, tag)
+    if created:
+        try:
+            return datetime.datetime.fromisoformat(
+                created.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            return None
+    return None
 
 try:
     repos = get_json("/v2/_catalog")[0].get("repositories", [])
@@ -130,16 +169,35 @@ for repo in repos:
         if re.match(r"^prod-[0-9a-f]{7,}$", t):
             prod_shas.append(t)
     max_shas = max(max_shas, len(prod_shas))
-    # Keep the newest KEEP_PROD_SHAS prod-<sha> by created time; delete the rest.
+    # Keep the newest KEEP_PROD_SHAS prod-<sha> by push time; delete the rest.
+    # An unreadable push time sorts as newest (+inf) so it is never deleted.
     if len(prod_shas) > keep_prod:
-        dated = sorted(prod_shas, key=lambda t: (created_for(repo, t) or ""), reverse=True)
-        for t in dated[keep_prod:]:
+        keyed = []
+        for t in prod_shas:
+            ts = pushed_at(repo, t)
+            if ts is None:
+                print(f"  WARN {repo}:{t} has no readable push time; keeping it", flush=True)
+            keyed.append((float("inf") if ts is None else ts, t))
+        keyed.sort(key=lambda kt: kt[0], reverse=True)
+        for _, t in keyed[keep_prod:]:
             to_delete.append((repo, t))
 
 if mode == "report":
     # Let the caller clamp its starting retention to what actually exists, so
     # it does not burn tightening rounds decrementing past thin air.
     print(f"MAX_PROD_SHAS={max_shas}", flush=True)
+    sys.exit(0)
+
+if mode == "list":
+    # Read-only: show the deletion set for the current policy. Deleting a VM
+    # image is only reversible by rebuilding it, so make it inspectable first.
+    for repo, tag in to_delete:
+        ts = pushed_at(repo, tag)
+        when = ("unknown" if ts is None else
+                datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        print(f"  would delete {repo}:{tag} (pushed {when})", flush=True)
+    if not to_delete:
+        print("  nothing would be deleted at this retention", flush=True)
     sys.exit(0)
 
 # Delete unique manifests (dedupe by digest).
@@ -159,7 +217,7 @@ print(f"  pruned {len(seen)} manifest(s)", flush=True)
 PYEOF
 
 run_prune() {  # $1 = keep count
-  /usr/bin/python3 "${PRUNER}" "${REG}" "$1" "${PRUNE_PR_SHAS}" prune
+  /usr/bin/python3 "${PRUNER}" "${REG}" "$1" "${PRUNE_PR_SHAS}" prune "${REG_DIR}"
 }
 
 # Reclaim the storage freed by the deleted manifests (native binary, run as the
@@ -176,6 +234,24 @@ run_gc() {
   /usr/bin/su - "<%= $user %>" -c "PATH=/usr/local/bin:\$PATH <%= $bin_path %> garbage-collect --delete-untagged=${untagged} <%= $config_path %>" \
     || log "WARN garbage-collect returned non-zero"
 }
+
+# --list: read-only preview of the deletion set at the configured retention and
+# at every tightening step it could reach. Nothing is deleted and no GC is run.
+if [ "${1:-}" = "--list" ]; then
+  FREE=$(free_gib)
+  if [ "${FREE}" -lt 0 ]; then
+    log "free space: unknown (could not read ${REG_DIR}), floor ${MIN_FREE_GIB}GiB"
+  else
+    log "free space: ${FREE}GiB (floor ${MIN_FREE_GIB}GiB)"
+  fi
+  K="${KEEP_PROD_SHAS}"
+  while [ "${K}" -ge "${MIN_KEEP_PROD_SHAS}" ]; do
+    echo "-- at keep=${K}:"
+    /usr/bin/python3 "${PRUNER}" "${REG}" "${K}" "${PRUNE_PR_SHAS}" list "${REG_DIR}"
+    K=$((K - 1))
+  done
+  exit 0
+fi
 
 log "=== registry maintenance start ==="
 FREE=$(free_gib)
@@ -199,7 +275,7 @@ if [ "${FREE}" -lt 0 ]; then
   exit 0
 fi
 
-MAX_SHAS=$(/usr/bin/python3 "${PRUNER}" "${REG}" "${KEEP_PROD_SHAS}" "${PRUNE_PR_SHAS}" report 2>/dev/null | sed -n 's/^MAX_PROD_SHAS=//p')
+MAX_SHAS=$(/usr/bin/python3 "${PRUNER}" "${REG}" "${KEEP_PROD_SHAS}" "${PRUNE_PR_SHAS}" report "${REG_DIR}" 2>/dev/null | sed -n 's/^MAX_PROD_SHAS=//p')
 case "${MAX_SHAS}" in
   '' | *[!0-9]*) MAX_SHAS="${KEEP_PROD_SHAS}" ;;
 esac
