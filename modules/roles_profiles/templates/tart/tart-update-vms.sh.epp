@@ -34,6 +34,41 @@
 # Fleet-wide orchestration + TC quarantine belongs one layer up (the on-network
 # reprovision runner / Hangar trigger). This is the safe per-host primitive that
 # layer calls.
+#
+# USAGE
+#   tart-update-vms.sh              # every slot, in order
+#   tart-update-vms.sh 2            # slot 2 only
+#   tart-update-vms.sh 1 2          # slots 1 and 2
+#
+# Slot arguments matter operationally: a dead slot often needs recreating while its
+# healthy sibling keeps serving, and before this there was no way to say so.
+#
+# KNOWN LIMIT OF THE DRAIN — read before trusting a SKIPPED result
+# ----------------------------------------------------------------
+# The drain's idle test reads the queue's *worker listing*, which lags reality by
+# minutes. Right after a guest reboots, the listing still reports the worker busy
+# even though generic-worker is not running at all. Measured on
+# gecko-t-osx-1500-m-vms, guest REBOOT line vs the drain's "busy again":
+#
+#   19:00:12 -> 19:01:00 (+48s)   19:20:44 -> 19:21:43 (+59s)
+#   19:29:22 -> 19:30:19 (+57s)   19:51:34 -> 19:52:34 (+60s)
+#
+# In each case the guest had been booting for ~1 minute and generic-worker takes
+# ~2.5 min from boot to claiming, so it could not have had a task. With
+# IDLE_CONFIRMATIONS=2 at POLL_INTERVAL=30 the streak resets every time, and on a
+# busy pool the drain can burn the full DRAIN_TIMEOUT and SKIP a slot that was
+# repeatedly idle. It is not wrong to fail closed, but do not read SKIPPED as
+# "the worker was busy" — it means "could not prove idle".
+#
+# It does converge once a genuinely-running task ends (verified on mac-fc186c and
+# mac-10ab6f, 2026-08-17), so this is a blind spot, not a broken predicate.
+#
+# The reliable alternative is the guest's own REBOOT line in
+# /opt/worker/logs/stdout.log: these guests are numberOfTasksToRun=1, so they reboot
+# after EVERY task, and a fresh REBOOT means the task is already resolved and
+# generic-worker has exited. Gating on that rolled 6 slots for 6 attempts on
+# 2026-08-17 where the drain had timed out. Worth folding in here as a second
+# accepted signal.
 set -uo pipefail
 
 REGISTRY="<%= $registry_host %>:<%= $registry_port %>"
@@ -249,6 +284,28 @@ drain_slot() {  # $1 = vm name
   done
 }
 
+# --- which slots to roll --------------------------------------------------
+# No arguments = every slot, as before. Arguments select specific slots, so a dead
+# slot can be recreated without touching its healthy sibling.
+#
+# Validated BEFORE the pull, deliberately: a typo'd slot should cost nothing, not a
+# 22 GB image fetch followed by a refusal.
+SLOTS=()
+if [ "$#" -eq 0 ]; then
+  for s in $(seq 1 "${WORKER_COUNT}"); do SLOTS+=("${s}"); done
+else
+  for s in "$@"; do
+    case "${s}" in
+      ''|*[!0-9]*) log "FATAL: '${s}' is not a slot number"; exit 2 ;;
+    esac
+    if [ "${s}" -lt 1 ] || [ "${s}" -gt "${WORKER_COUNT}" ]; then
+      log "FATAL: slot ${s} out of range 1..${WORKER_COUNT}"; exit 2
+    fi
+    SLOTS+=("${s}")
+  done
+fi
+log "slots to roll: ${SLOTS[*]}"
+
 # --- pull the new image once ----------------------------------------------
 log "pulling ${REGISTRY}/${IMAGE}"
 if ! tart_user pull ${INSECURE} "${REGISTRY}/${IMAGE}"; then
@@ -260,7 +317,7 @@ fi
 # --- roll each slot, one at a time ----------------------------------------
 SKIPPED=()
 FAILED=()
-for i in $(seq 1 "${WORKER_COUNT}"); do
+for i in "${SLOTS[@]}"; do
   VM="${PREFIX}-${i}"
   log "== slot ${i} (${VM}) =="
   if ! drain_slot "${VM}"; then
@@ -343,11 +400,15 @@ done
 #           serving on the old image.
 # FAILED  = the recreate was attempted and did not complete. A slot in here may
 #           be DOWN and needs looking at.
+#
+# Counts report the slots ACTUALLY attempted, not WORKER_COUNT: with slot arguments
+# those differ, and "complete (2 slots)" after rolling one is the kind of log line
+# that gets believed later.
 if [ "${#FAILED[@]}" -gt 0 ] || [ "${#SKIPPED[@]}" -gt 0 ]; then
-  log "rolling update INCOMPLETE (${WORKER_COUNT} slot(s) total):"
+  log "rolling update INCOMPLETE (${#SLOTS[@]} slot(s) attempted: ${SLOTS[*]}):"
   [ "${#SKIPPED[@]}" -gt 0 ] && log "  skipped, still on old image: ${SKIPPED[*]}"
   [ "${#FAILED[@]}" -gt 0 ] && log "  FAILED mid-recreate, may be DOWN: ${FAILED[*]}"
   exit 1
 fi
 
-log "rolling update complete (${WORKER_COUNT} slot(s))"
+log "rolling update complete (${#SLOTS[@]} slot(s): ${SLOTS[*]})"
