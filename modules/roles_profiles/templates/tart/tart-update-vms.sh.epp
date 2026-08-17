@@ -63,12 +63,17 @@
 # It does converge once a genuinely-running task ends (verified on mac-fc186c and
 # mac-10ab6f, 2026-08-17), so this is a blind spot, not a broken predicate.
 #
-# The reliable alternative is the guest's own REBOOT line in
-# /opt/worker/logs/stdout.log: these guests are numberOfTasksToRun=1, so they reboot
-# after EVERY task, and a fresh REBOOT means the task is already resolved and
-# generic-worker has exited. Gating on that rolled 6 slots for 6 attempts on
-# 2026-08-17 where the drain had timed out. Worth folding in here as a second
-# accepted signal.
+# So a fresh REBOOT line in the guest's /opt/worker/logs/stdout.log is now accepted as a
+# second, independent drain signal: these guests are numberOfTasksToRun=1, so they reboot
+# after EVERY task, and worker-runner.sh writes that line only after the task resolved and
+# generic-worker exited. Gating on it rolled 6 slots in 6 attempts on 2026-08-17 where the
+# listing-based drain had timed out.
+#
+# Both signals are kept because they fail in opposite conditions:
+#   busy pool  the listing loses (resets forever), the reboot signal fires quickly
+#   idle pool  the reboot signal loses (no task -> no reboot), the listing goes idle
+# Neither is ever weakened to "assume idle": an unreachable guest simply yields no reboot
+# signal and the listing has to carry it alone.
 set -uo pipefail
 
 REGISTRY="<%= $registry_host %>:<%= $registry_port %>"
@@ -147,6 +152,13 @@ start_unit() {  # $1 = slot index
 # Requiring two readings POLL_INTERVAL apart closes that window.
 IDLE_CONFIRMATIONS=2
 POLL_INTERVAL=30
+
+# Guest login for the reboot-window signal below. These images have no key auth, so
+# the password is the only way in; it is the image default and is already in the
+# macos-vms packer configs and in hangar-tart-health-agent, so this is not a secret
+# being newly exposed.
+GUEST_USER=admin
+GUEST_PASS=admin
 
 # workerId a VM registers as = mac-<last 3 MAC octets> (see set_hostname.sh).
 # Non-zero (and no output) when it cannot be determined.
@@ -236,8 +248,45 @@ else:
 
 # Returns 0 ONLY when it is safe to recreate the slot. Returns 1 otherwise, and
 # the caller skips the slot instead of wiping it.
+# Count "REBOOT <date>" lines in the guest's worker-runner log, or nothing if the guest
+# cannot be reached. worker-runner.sh writes one immediately before rebooting, AFTER the
+# task has resolved and generic-worker has exited — so an increase is proof that nothing
+# is running, observed from inside the guest rather than inferred from a lagging listing.
+#
+# The probe is base64'd and the password matched on its own line with a glob. Both are
+# deliberate: hangar-tart-health-agent had this exact code interpolating a multi-line
+# script into a Tcl double-quoted spawn argument (Tcl ate the $ and [ ]) and matching the
+# prompt with a single-line `-re` form that never sent the password. Neither worked for
+# months. See relops-bootstrap#70.
+guest_reboot_count() {  # $1 = vm name
+  local vm="$1" ip b64 out
+  ip=$(tart_user ip "${vm}" --wait 5 2>/dev/null | head -1)
+  [ -z "${ip}" ] && return 1
+  # sudo, because /opt/worker/logs is 0700 cltbld and the guest login is admin. And NO
+  # `|| echo 0` fallback: a masked failure would report 0 forever, the drain would read
+  # "no reboot yet" for the whole DRAIN_TIMEOUT, and the signal would be silently dead.
+  # Emitting nothing instead makes the function return 1 and the caller fall back to the
+  # listing. (`grep -c` prints 0 and exits 1 on a genuine zero, so real zeros survive.)
+  b64=$(printf '%s' 'sudo -n grep -ac REBOOT /opt/worker/logs/stdout.log 2>/dev/null' | base64)
+  cat > /tmp/.tart_roll_gp.exp <<EXPEOF
+log_user 1
+set timeout 45
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR ${GUEST_USER}@${ip} "echo ${b64} | base64 -d | bash"
+expect {
+  "assword:" { send "${GUEST_PASS}\r" }
+  timeout { exit 1 }
+  eof { exit 1 }
+}
+expect eof
+EXPEOF
+  out=$(/usr/bin/expect /tmp/.tart_roll_gp.exp 2>/dev/null | tr -d '\r' | grep -oE '^[0-9]+$' | tail -1)
+  rm -f /tmp/.tart_roll_gp.exp
+  [ -z "${out}" ] && return 1
+  printf '%s' "${out}"
+}
+
 drain_slot() {  # $1 = vm name
-  local vm="$1" wid st waited=0 idle_streak=0
+  local vm="$1" wid st waited=0 idle_streak=0 rb_base rb_now
 
   # Drain deliberately disabled (no pool configured) => mechanical recreate.
   if [ -z "${POOL}" ]; then
@@ -255,8 +304,26 @@ drain_slot() {  # $1 = vm name
     return 1
   fi
 
-  log "  draining ${vm} (worker ${wid}); need ${IDLE_CONFIRMATIONS} consecutive idle checks, up to ${DRAIN_TIMEOUT}s"
+  # Baseline for the reboot-window signal. If the guest is unreachable we simply do not
+  # get this signal and fall back to the listing alone — never to "assume idle".
+  rb_base=$(guest_reboot_count "${vm}") || rb_base=""
+
+  log "  draining ${vm} (worker ${wid}); need ${IDLE_CONFIRMATIONS} consecutive idle checks"
+  log "  or one fresh guest REBOOT, up to ${DRAIN_TIMEOUT}s${rb_base:+ (reboot baseline ${rb_base})}"
   while :; do
+    # The two signals are complementary, which is why both are accepted rather than one
+    # being chosen. On a BUSY pool the listing loses: it reports the worker busy for
+    # about a minute after every reboot, while generic-worker is not running at all, so
+    # the streak resets forever (measured 4/4 on 2026-08-13, and a 3600s drain timed out
+    # and SKIPPED a slot that had been idle repeatedly). On an IDLE pool the reboot
+    # signal loses: with nothing to claim the guest never finishes a task, so it never
+    # reboots, and the wait times out instead (m4-236:2 and m4-238:2, 2026-08-17).
+    # Whichever fires first is sufficient — both mean no task is running.
+    if [ -n "${rb_base}" ] && rb_now=$(guest_reboot_count "${vm}") \
+       && [ "${rb_now}" -gt "${rb_base}" ]; then
+      log "  ${vm} rebooted (REBOOT count ${rb_base} -> ${rb_now}) — task resolved, worker exited"
+      return 0
+    fi
     st=$(worker_state "${wid}")
     case "${st}" in
       idle)
@@ -320,6 +387,11 @@ FAILED=()
 for i in "${SLOTS[@]}"; do
   VM="${PREFIX}-${i}"
   log "== slot ${i} (${VM}) =="
+  # Identity BEFORE the drain, so it can be compared to the identity after it. A drain
+  # can wait the better part of an hour, and anything that recreates the slot in the
+  # meantime — a second operator, an overlapping roll — leaves us holding a stale idea
+  # of which worker we proved idle.
+  mac_pre_drain="$(worker_id_for_vm "${VM}" || true)"
   if ! drain_slot "${VM}"; then
     log "  slot ${i} SKIPPED — left running on the OLD image"
     SKIPPED+=("${i}")
@@ -330,6 +402,21 @@ for i in "${SLOTS[@]}"; do
   # than assumed. Without this the loop reported success merely for reaching its
   # end, which is exactly how the run-as-root bug went unnoticed.
   mac_before="$(worker_id_for_vm "${VM}" || true)"
+
+  # TOCTOU guard. If the workerId changed while we were draining, this slot was already
+  # recreated by something else and is now a DIFFERENT, freshly booted VM whose worker
+  # may be seconds from claiming. Recreating it again would be a second wipe we never
+  # proved safe. Observed 2026-08-17: m4-188 slot 1 was rolled twice ~18s apart because
+  # two overlapping runs each held mac-0a946a as "the worker I drained"; it only escaped
+  # killing a task because the new VM had not claimed yet.
+  if [ -n "${mac_pre_drain}" ] && [ -n "${mac_before}" ] \
+     && [ "${mac_pre_drain}" != "${mac_before}" ]; then
+    log "  slot ${i} SKIPPED: identity changed during the drain"
+    log "  (${mac_pre_drain} -> ${mac_before}) — something else recreated this slot, and"
+    log "  the idle proof no longer applies to the VM that is there now."
+    SKIPPED+=("${i}")
+    continue
+  fi
 
   log "  stopping worker unit ${i}"
   stop_unit "${i}"
