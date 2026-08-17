@@ -91,12 +91,34 @@ jobs:
           RONIN_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
           max_attempts=3
+          is_transient_azure_failure() {
+            local log_file="$1"
+
+            # Retry only failures that indicate the Azure VM was evicted or
+            # became unreachable. Puppet convergence failures need a code or
+            # dependency fix; a new VM will reproduce them.
+            grep -Eqi \
+              'execution expired|WinRM::WinRMHTTPTransportError|Errno::(ECONNREFUSED|ECONNRESET|ETIMEDOUT)|OperationPreempted|evict(ed|ion)?|AllocationFailed|OverconstrainedAllocationRequest|SkuNotAvailable|InternalServerError' \
+              "$log_file"
+          }
+
           for attempt in $(seq 1 $max_attempts); do
             echo "=== Attempt $attempt of $max_attempts ==="
-            if bundle exec kitchen test ${{ matrix.kitchen_instance }} -l debug; then
+            attempt_log="${RUNNER_TEMP}/kitchen-${{ matrix.kitchen_instance }}-attempt-${attempt}.log"
+            set +e
+            bundle exec kitchen test ${{ matrix.kitchen_instance }} -l debug 2>&1 | tee "$attempt_log"
+            kitchen_status=${PIPESTATUS[0]}
+            set -e
+            if [ "$kitchen_status" -eq 0 ]; then
               exit 0
             fi
-            echo "::warning::Attempt $attempt failed (likely spot VM eviction)"
+
+            if ! is_transient_azure_failure "$attempt_log"; then
+              echo "::error::Kitchen failed without a recognized Azure/WinRM transient error; not retrying."
+              exit "$kitchen_status"
+            fi
+
+            echo "::warning::Attempt $attempt failed with a recognized Azure/WinRM transient error"
             if [ "$attempt" -lt "$max_attempts" ]; then
               echo "Destroying failed instance before retry..."
               bundle exec kitchen destroy ${{ matrix.kitchen_instance }} -l debug || true
