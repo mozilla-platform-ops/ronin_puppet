@@ -29,6 +29,14 @@ class roles_profiles::profiles::oci_registry {
   $http_secret    = lookup('oci_registry.http_secret',    String,  'first', 'change-me-single-node')
   $keep_prod_shas = lookup('oci_registry.keep_prod_shas', Integer, 'first', 10)
   $prune_pr_shas  = lookup('oci_registry.prune_pr_shas',  Boolean, 'first', true)
+  # Space-aware retention. A Tart VM image is ~20-24GiB, so a count-only policy
+  # overcommits the volume and nothing ever becomes eligible for collection.
+  # Retention tightens below keep_prod_shas (never past min_keep_prod_shas, so a
+  # rollback target survives) until min_free_gib is free.
+  $min_keep_prod_shas  = lookup('oci_registry.min_keep_prod_shas',  Integer, 'first', 1)
+  $min_free_gib        = lookup('oci_registry.min_free_gib',        Integer, 'first', 60)
+  $delete_untagged     = lookup('oci_registry.delete_untagged',     Boolean, 'first', true)
+  $alert_min_free_gib  = lookup('oci_registry.alert_min_free_gib',  Integer, 'first', 50)
   $maint_hour     = lookup('oci_registry.maintenance_hour', Integer, 'first', 9)
   $disk_threshold = lookup('oci_registry.disk_threshold_pct', Integer, 'first', 85)
   $health_interval = lookup('oci_registry.health_interval', Integer, 'first', 300)
@@ -249,12 +257,16 @@ class roles_profiles::profiles::oci_registry {
     group   => 'wheel',
     mode    => '0755',
     content => epp('roles_profiles/oci_registry/registry-maintenance.sh.epp', {
-      user           => $user,
-      bin_path       => $bin_path,
-      config_path    => $config_path,
-      registry_port  => $local_port,
-      keep_prod_shas => $keep_prod_shas,
-      prune_pr_shas  => $prune_pr_shas,
+      user               => $user,
+      bin_path           => $bin_path,
+      config_path        => $config_path,
+      registry_dir       => $registry_dir,
+      registry_port      => $local_port,
+      keep_prod_shas     => $keep_prod_shas,
+      min_keep_prod_shas => $min_keep_prod_shas,
+      min_free_gib       => $min_free_gib,
+      prune_pr_shas      => $prune_pr_shas,
+      delete_untagged    => $delete_untagged,
     }),
     require => Exec['verify_oci_registry'],
   }
@@ -285,11 +297,12 @@ class roles_profiles::profiles::oci_registry {
     group   => 'wheel',
     mode    => '0755',
     content => epp('roles_profiles/oci_registry/registry-healthcheck.sh.epp', {
-      registry_port  => $registry_port,
-      registry_dir   => $registry_dir,
-      disk_threshold => $disk_threshold,
-      alert_email    => $alert_email,
-      smtp_relay     => $smtp_relay,
+      registry_port      => $registry_port,
+      registry_dir       => $registry_dir,
+      disk_threshold     => $disk_threshold,
+      alert_min_free_gib => $alert_min_free_gib,
+      alert_email        => $alert_email,
+      smtp_relay         => $smtp_relay,
     }),
     require => Exec['verify_oci_registry'],
   }
