@@ -1,4 +1,4 @@
-<%- | String $user, String $bin_path, String $config_path, String $registry_dir, Integer $registry_port, Integer $keep_prod_shas, Integer $min_keep_prod_shas, Integer $min_free_gib, Boolean $prune_pr_shas, Boolean $delete_untagged | -%>
+<%- | String $user, String $bin_path, String $config_path, String $registry_dir, Integer $registry_port, Integer $keep_prod_shas, Integer $min_keep_prod_shas, Integer $min_free_gib, Boolean $prune_pr_shas, Boolean $delete_untagged, Integer $upload_inflight_minutes | -%>
 #!/bin/bash
 # Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
 #
@@ -43,6 +43,8 @@ MIN_FREE_GIB=<%= $min_free_gib %>
 PRUNE_PR_SHAS=<%= $prune_pr_shas ? { true => 1, default => 0 } %>
 DELETE_UNTAGGED=<%= $delete_untagged ? { true => 1, default => 0 } %>
 MAX_TIGHTEN_ROUNDS=6
+# An _uploads dir touched within this window counts as a live push.
+UPLOAD_INFLIGHT_MIN=<%= $upload_inflight_minutes %>
 
 log() { echo "$(date -u +%FT%TZ) $*"; }
 
@@ -60,9 +62,18 @@ free_gib() {
 }
 
 # Any in-progress layer upload parks a directory under <repo>/_uploads/<uuid>.
+#
+# The age gate is essential, not a refinement. A cancelled or failed build leaves
+# its _uploads dirs behind and distribution's own uploadpurging does not touch
+# them for 168h, so "does any _uploads dir exist" stays true for a week after any
+# aborted push -- which would suppress --delete-untagged for that whole week and
+# quietly make the setting inert. m4-194 had 12 such dirs from cancelled signer
+# builds on 2026-08-13, still present on 2026-08-17. A push that is genuinely in
+# flight writes continuously, so recency is the signal that matters.
 uploads_in_flight() {
   local hit
-  hit=$(find "${REG_DIR}/docker/registry/v2/repositories" -type d -path '*/_uploads/*' -print 2>/dev/null | head -1)
+  hit=$(find "${REG_DIR}/docker/registry/v2/repositories" -type d -path '*/_uploads/*' \
+        -mmin -"${UPLOAD_INFLIGHT_MIN}" -print 2>/dev/null | head -1)
   [ -n "${hit}" ]
 }
 

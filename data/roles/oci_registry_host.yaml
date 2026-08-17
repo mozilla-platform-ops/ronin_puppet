@@ -41,6 +41,8 @@ oci_registry:
   # live tags on sequoia-tester, 2026-08-17). Suppressed automatically while an
   # upload is in flight, since it can collect a pushed-but-not-yet-tagged image.
   delete_untagged: true
+  # An _uploads dir touched within this many minutes counts as a live push.
+  upload_inflight_minutes: 60
   maintenance_hour: 9
   # Health check: alert when the storage volume is at/above this percent full,
   # has less than alert_min_free_gib free, or /v2/ is unreachable. Percent alone

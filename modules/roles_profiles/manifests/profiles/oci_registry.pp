@@ -37,6 +37,11 @@ class roles_profiles::profiles::oci_registry {
   $min_free_gib        = lookup('oci_registry.min_free_gib',        Integer, 'first', 60)
   $delete_untagged     = lookup('oci_registry.delete_untagged',     Boolean, 'first', true)
   $alert_min_free_gib  = lookup('oci_registry.alert_min_free_gib',  Integer, 'first', 50)
+  # An _uploads dir touched inside this window counts as a live push and
+  # suppresses --delete-untagged. Aborted builds leave _uploads behind for the
+  # full 168h uploadpurging age, so this has to be an age gate: an existence
+  # check goes inert for a week after any cancelled build.
+  $upload_inflight_minutes = lookup('oci_registry.upload_inflight_minutes', Integer, 'first', 60)
   $maint_hour     = lookup('oci_registry.maintenance_hour', Integer, 'first', 9)
   $disk_threshold = lookup('oci_registry.disk_threshold_pct', Integer, 'first', 85)
   $health_interval = lookup('oci_registry.health_interval', Integer, 'first', 300)
@@ -257,16 +262,17 @@ class roles_profiles::profiles::oci_registry {
     group   => 'wheel',
     mode    => '0755',
     content => epp('roles_profiles/oci_registry/registry-maintenance.sh.epp', {
-      user               => $user,
-      bin_path           => $bin_path,
-      config_path        => $config_path,
-      registry_dir       => $registry_dir,
-      registry_port      => $local_port,
-      keep_prod_shas     => $keep_prod_shas,
-      min_keep_prod_shas => $min_keep_prod_shas,
-      min_free_gib       => $min_free_gib,
-      prune_pr_shas      => $prune_pr_shas,
-      delete_untagged    => $delete_untagged,
+      user                    => $user,
+      bin_path                => $bin_path,
+      config_path             => $config_path,
+      registry_dir            => $registry_dir,
+      registry_port           => $local_port,
+      keep_prod_shas          => $keep_prod_shas,
+      min_keep_prod_shas      => $min_keep_prod_shas,
+      min_free_gib            => $min_free_gib,
+      prune_pr_shas           => $prune_pr_shas,
+      delete_untagged         => $delete_untagged,
+      upload_inflight_minutes => $upload_inflight_minutes,
     }),
     require => Exec['verify_oci_registry'],
   }
