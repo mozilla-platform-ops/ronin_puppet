@@ -44,31 +44,46 @@ reprovision_runner:
   # `unknown` between sweeps. 600s leaves plenty of margin for a slow sweep.
   tart_health_enabled: true
   tart_health_interval: 600
-  # Guest probes (disk headroom, clock skew, worker identity) need an `expect` password
-  # login into each VM and are much slower. They are also the checks that actually catch
-  # a crash-looping guest inside a healthy host.
+  # Guest probes (disk headroom, clock skew, worker identity, and the exit-69
+  # semaphore) need an `expect` password login into each VM. They are the checks that
+  # actually catch a crash-looping guest inside a healthy-looking host.
   #
-  # TURNED ON 2026-08-17 and TURNED BACK OFF the same day. The probe path does not work
-  # as deployed: every slot came back `guest_reachable: false` with NO guest fields at all
-  # (26/26), so the only effect was 24 slots reporting "guest not reachable over ssh" and
-  # the /tart-vms page going from a useful mixed signal to warn-on-everything. That is the
-  # exact failure this module's own retry comment warns about — monitoring that cries wolf
-  # gets ignored — and it bought no disk-headroom data in exchange.
+  # History, because this flag has been flipped twice: enabled 2026-08-17 (#1336) and
+  # reverted the same day (#1338) because every slot reported `guest_reachable: false`
+  # with no guest fields at all — 24 false "guest not reachable over ssh" warns and no
+  # data. Four separate bugs, all now fixed and verified against live hosts:
   #
-  # A second, independent bug makes the flag worthless even once ssh works:
-  # tart_run_uptime_s was None on 25/26 slots, because the agent finds the pid with
-  #   pgrep -f "[t]art run --no-graphics $vm"
-  # and enabling tart.inject_vault fleet-wide changed the command line to
-  #   tart run --no-graphics --dir=vault:/Users/admin/.tart-vault/<vm>:ro <vm>
-  # so --no-graphics and the VM name are no longer adjacent and the pattern never matches.
-  # The reboot-loop check needs guest_uptime_s AND tart_run_uptime_s, so it is inert.
+  #   relops-bootstrap#70  the multi-line GUEST_PROBE was interpolated into a Tcl
+  #                        double-quoted spawn arg, so expect died with "extra
+  #                        characters after close-quote" before connecting; base64'd now
+  #   relops-bootstrap#70  the single-line `expect { -re "(P|p)assword:" ... }` form
+  #                        never sent the password (sat until the 60s timeout)
+  #   relops-bootstrap#70  an unanchored sed on kern.boottime matched "usec = " and
+  #                        captured MICROSECONDS, so guest_up_s was ~1.79e9 not ~263
+  #   relops-bootstrap#70  the tart pid lookup pattern was broken by inject_vault's
+  #                        `--dir=vault:` argument, so tart_run_uptime_s was None on
+  #                        25/26 slots and the reboot-loop check could not fire
   #
-  # Fix both in relops-bootstrap (orchestrator/tart_health_agent.py), verify with
-  #   hangar-tart-health-agent --hosts-file <one host> --dry-run
-  # (source /var/root/reprovision-runner/runner.env first, or secret resolution falls
-  # through to an op:// ref and the 1Password CLI is not installed on the runner), and
-  # only then set this back to true.
-  tart_health_guests: false
+  # And the check itself was wrong: hangar#119 replaced
+  # `guest_uptime_s < tart_run_uptime_s * 0.5` with the guest's own
+  # /opt/worker/worker_exit_69 semaphore. These guests are numberOfTasksToRun=1 so they
+  # reboot after EVERY task; the ratio held permanently for healthy slots and would have
+  # turned 24 false warns into ~24 false crits. relops-bootstrap#71 collects the
+  # semaphore.
+  #
+  # Verified before flipping this back: agent on the runner at 51d0653 carrying all four
+  # fixes; a --dry-run against macmini-m4-236 returning guest_reachable True,
+  # guest_uptime_s 368/616, guest_disk_free_gib 61/45, clock_skew_s 0/-6,
+  # tart_run_uptime_s 6701/11405, and worker_exit_69_age_s None on a healthy slot and
+  # 2566 on one where the semaphore was deliberately backdated 42m; hangar serving
+  # revision hangar-00153-gcz built from the merge of #119.
+  #
+  # If this ever needs debugging again, source the runner env first or secret resolution
+  # falls through to an op:// ref and the 1Password CLI is not installed on the runner:
+  #   sudo bash -c 'set -a; source /var/root/reprovision-runner/runner.env; set +a; \
+  #     /opt/reprovision-runner/.venv/bin/hangar-tart-health-agent \
+  #     --hosts-file <one-host> --dry-run'
+  tart_health_guests: true
   # The tart hosts to sweep. Keep in step with the tart_worker role's fleet; a host
   # missing here is simply never checked.
   tart_health_hosts:
