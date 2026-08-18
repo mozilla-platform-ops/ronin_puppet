@@ -14,6 +14,7 @@ define signing_worker (
   String $keychain_filename,
   Hash $worker_config,
   Hash $role_config,
+  String $python_version,
   Variant[String, Undef] $widevine_user = undef,
   Variant[String, Undef] $widevine_key = undef,
   Variant[String, Undef] $widevine_filename = undef,
@@ -30,6 +31,8 @@ define signing_worker (
   $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
   $launchctl_wrapper        = "${scriptworker_base}/launchctl_wrapper.sh"
   $enable_scriptworker      = "${scriptworker_base}/enable_scriptworker.sh"
+  $launchd_script_name      = "org.mozilla.scriptworker.${user}"
+  $launchd_script           = "/Library/LaunchDaemons/${launchd_script_name}.plist"
 
   # TODO: $worker_{id,type,group} only works with newer signers
   # Dep workers have a non-deterministic suffix
@@ -112,13 +115,37 @@ define signing_worker (
   # 3) Install iscript and its dependencies
   $scriptworker_scripts_clone_dir = "${scriptworker_base}/scriptworker-scripts"
 
+  # uv resolves the interpreter when it builds a venv, recording the
+  # patch-specific prefix rather than the /usr/local/bin/python3 symlink that
+  # points at it. So this one check covers a python upgrade, a downgrade, and a
+  # base interpreter that has been deleted out from under the venv: in each case
+  # the venv is rebuilt rather than left stale, which is what lets a python bump
+  # be a one-line hiera change.
+  $venv_python_matches = "${virtualenv_dir}/bin/python -V | grep -qFx 'Python ${python_version}'"
+
+  # launchd has to let go of the venv before it is replaced. The daemon is
+  # KeepAlive, so stopping scriptworker any other way just has launchd restart it
+  # on a venv that is being rebuilt underneath it. Runs as root, because the
+  # daemon is in the system domain and $user cannot unload it.
+  exec { "stop scriptworker ${scriptworker_base}":
+    command => "/bin/launchctl unload ${launchd_script}",
+    onlyif  => "/bin/launchctl list | grep -qwF ${launchd_script_name}",
+    unless  => $venv_python_matches,
+    path    => ['/bin', '/usr/bin'],
+  }
+
+  # --clear rebuilds in place, so this covers both the first install and a
+  # replacement. --no-python-downloads stops uv from quietly fetching its own
+  # copy of $python_version into the worker's home when the pinned interpreter is
+  # not installed: it fails the run instead, and leaves the existing venv alone.
   exec { "install ${scriptworker_base} virtualenv":
-    command => 'uv venv',
+    command => "uv venv --python ${python_version} --no-python-downloads --clear",
     cwd     => $scriptworker_base,
     user    => $user,
     group   => $group,
-    onlyif  => 'test ! -f .venv/bin/activate',
+    unless  => $venv_python_matches,
     path    => ['/usr/local/bin', '/bin', '/usr/sbin'],
+    require => [File[$scriptworker_base], Exec["stop scriptworker ${scriptworker_base}"]],
   }
 
   vcsrepo { $scriptworker_scripts_clone_dir:
@@ -225,8 +252,6 @@ define signing_worker (
     group   => $group,
   }
 
-  $launchd_script_name = "org.mozilla.scriptworker.${user}"
-  $launchd_script = "/Library/LaunchDaemons/${launchd_script_name}.plist"
   file { $launchd_script:
     content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
     mode    => '0644',

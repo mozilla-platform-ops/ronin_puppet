@@ -1,4 +1,6 @@
-class scriptworker_prereqs {
+class scriptworker_prereqs (
+  String $python_version,
+) {
 
   # Determine macOS version
   $mac_version = $facts['os']['release']['major']
@@ -54,7 +56,7 @@ class scriptworker_prereqs {
       # The interpreter the scriptworker venvs are built from. `uv venv` picks it
       # up through the python3 link this drops in /usr/local/bin.
       class { 'packages::uvpython':
-        version => '3.14.6',
+        version => $python_version,
         require => File['/usr/local/bin/uv'],
       }
 
