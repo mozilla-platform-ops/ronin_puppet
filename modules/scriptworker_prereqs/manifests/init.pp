@@ -3,102 +3,77 @@ class scriptworker_prereqs {
   # Determine macOS version
   $mac_version = $facts['os']['release']['major']
 
-  # Select Python version based on OS
-  $python_version = $mac_version ? {
-    '18'    => '3.8.3',
-    '19'    => '3.8.3',
-    '21'    => '3.11.0',
-    '23'    => '3.11.0',
-    '24'    => '3.11.0',
-    default => fail("Unsupported macOS version: ${mac_version}"),
+  # Everything below is aarch64-only: both the uv release asset and the
+  # uv-managed python build are pinned to that architecture. Facter spells it
+  # arm64 on Darwin.
+  $arch = $facts['os']['architecture']
+  unless $arch in ['aarch64', 'arm64'] {
+    fail("Unsupported CPU architecture: ${arch} - scriptworker_prereqs requires aarch64")
   }
 
-  # Install appropriate Python version
-  class { 'packages::python3':
-    version => $python_version,
-  }
+  case $mac_version {
+    # macOS 14+ (aarch64). uv owns both the venv tooling and the interpreter.
+    '21', '23', '24': {
+      $uv_version = '0.12.4'
+      $uv_checksum = '99a913b606194867b43086404412c1afe079547fee72ecfb6af7e7b0dd54b0c6'
 
-  # Install virtualenv and setup tools symlink for macOS 14+ (mac_version 21 or 23)
-  if $mac_version in ['21', '23', '24'] {
-    exec { 'install python3 virtualenv':
-      command => '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m pip install virtualenv',
-      unless  => '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m virtualenv --version',
-      path    => ['/Library/Frameworks/Python.framework/Versions/3.11/bin', '/usr/bin', '/bin'],
-      user    => 'root',
-      require => Class['packages::python3'],
+      file { "/opt/tools/uv-${uv_version}":
+        ensure => 'directory',
+        owner  => 'root',
+        group  => 'wheel',
+        mode   => '0755',
+      }
+
+      archive { 'install UV':
+        path            => '/tmp/uv.tar.gz',
+        source          => "https://github.com/astral-sh/uv/releases/download/${uv_version}/uv-aarch64-apple-darwin.tar.gz",
+        checksum        => $uv_checksum,
+        checksum_type   => 'sha256',
+        extract_command => 'tar xfz %s --strip-components=1',
+        extract         => true,
+        extract_path    => "/opt/tools/uv-${uv_version}",
+        creates         => "/opt/tools/uv-${uv_version}/uv",
+        require         => File["/opt/tools/uv-${uv_version}"],
+      }
+
+      file { '/usr/local/bin/uv':
+        ensure  => 'link',
+        target  => "/opt/tools/uv-${uv_version}/uv",
+        require => Archive['install UV'],
+      }
+
+      # Scoped to uv-* so it leaves the uv-managed pythons (/opt/tools/python) alone.
+      exec { 'cleanup other UV installs':
+        command     => "find /opt/tools/ -mindepth 1 -maxdepth 1 -type d -name 'uv-*' ! -name \"uv-${uv_version}\" -exec rm -rf {} +",
+        onlyif      => 'ls /opt/tools/uv-*',
+        path        => ['/usr/bin', '/bin'],
+        subscribe   => Archive['install UV'],
+        refreshonly => true,
+      }
+
+      # The interpreter the scriptworker venvs are built from. `uv venv` picks it
+      # up through the python3 link this drops in /usr/local/bin.
+      class { 'packages::uvpython':
+        version => '3.14.6',
+        require => File['/usr/local/bin/uv'],
+      }
+
+      file { '/usr/local/tools':
+        ensure => 'directory',
+        owner  => 'root',
+        group  => 'wheel',
+        mode   => '0755',
+      }
+
+      file { '/usr/local/tools/python3':
+        ensure  => 'link',
+        target  => '/usr/local/bin/python3',
+        require => [Class['packages::uvpython'], File['/usr/local/tools']],
+      }
     }
-
-    file { '/usr/local/tools':
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
-    }
-
-    file { '/usr/local/tools/python3':
-      ensure  => 'link',
-      target  => '/usr/local/bin/python3',
-      require => [Class['packages::python3'], File['/usr/local/tools']],
-    }
-
-    $uv_version = '0.8.2'
-    $uv_checksum = '954d24634d5f37fa26c7af75eb79893d11623fc81b4de4b82d60d1ade4bfca22'
-    # Note: This is hard-coded to aarch64 architecture - we currently don't have plans on supporting old signers
-
-    file { "/opt/tools/uv-${uv_version}":
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
-    }
-
-    archive { 'install UV':
-      path            => '/tmp/uv.tar.gz',
-      source          => "https://github.com/astral-sh/uv/releases/download/${uv_version}/uv-aarch64-apple-darwin.tar.gz",
-      checksum        => $uv_checksum,
-      checksum_type   => 'sha256',
-      extract_command => 'tar xfz %s --strip-components=1',
-      extract         => true,
-      extract_path    => "/opt/tools/uv-${uv_version}",
-      creates         => "/opt/tools/uv-${uv_version}/uv",
-      require         => File["/opt/tools/uv-${uv_version}"],
-    }
-
-    file { '/usr/local/bin/uv':
-      ensure  => 'link',
-      target  => "/opt/tools/uv-${uv_version}/uv",
-      require => Archive['install UV'],
-    }
-
-    exec { 'cleanup other UV installs':
-      command     => "find /opt/tools/ -mindepth 1 -maxdepth 1 -type d ! -name \"uv-${uv_version}\" -exec rm -rf {} +",
-      onlyif      => 'ls /opt/tools/uv-*',
-      path        => ['/usr/bin', '/bin'],
-      subscribe   => Archive['install UV'],
-      refreshonly => true,
-    }
-  }
-
-  # Legacy dirs and symlink for older macOS (macOS 10.14 and 10.15)
-  if $mac_version in ['18', '19'] {
-    file { '/tools':
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
-    }
-
-    file { '/tools/python3':
-      ensure  => 'link',
-      target  => '/usr/local/bin/python3',
-      require => [Class['packages::python3'], File['/tools']],
-    }
-
-    file { '/builds':
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
+    # Older versions of macos are not supported.
+    default: {
+      fail("Unsupported macOS version: ${mac_version}")
     }
   }
 
