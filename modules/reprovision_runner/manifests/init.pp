@@ -143,6 +143,7 @@ class reprovision_runner (
     }
 
     # ---- python 3.11 (framework build, same source as scriptworker_prereqs) ----
+    # TODO: python install moved to UV - investigate if this needs to be updated
     class { 'packages::python3':
       version => $python_version,
     }
