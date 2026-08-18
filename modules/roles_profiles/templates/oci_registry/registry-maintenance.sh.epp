@@ -1,4 +1,4 @@
-<%- | String $user, String $bin_path, String $config_path, Integer $registry_port, Integer $keep_prod_shas, Boolean $prune_pr_shas | -%>
+<%- | String $user, String $bin_path, String $config_path, String $registry_dir, Integer $registry_port, Integer $keep_prod_shas, Integer $min_keep_prod_shas, Integer $min_free_gib, Boolean $prune_pr_shas, Boolean $delete_untagged, Integer $upload_inflight_minutes | -%>
 #!/bin/bash
 # Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
 #
@@ -10,28 +10,84 @@
 #   * keep every "*-latest" moving tag (e.g. prod-latest, pr-19-latest)
 #   * <% if $prune_pr_shas { -%>delete transient PR build tags: pr-<n>-<sha><% } else { -%>keep PR build tags<% } -%>
 #
-#   * keep the newest <%= $keep_prod_shas %> prod-<sha> tags (by image created time), delete older
+#   * keep the newest <%= $keep_prod_shas %> prod-<sha> tags (by push time), delete older
+#
+# To see what the current policy would delete, without deleting anything:
+#   sudo /usr/local/bin/registry-maintenance.sh --list
+#
+# Retention is SPACE-AWARE, and that matters more than the count. A Tart VM
+# image is ~20-24GiB, so a count-only policy silently overcommits the volume:
+# keeping 10 prod-shas across two repos asks for 400GiB+ on a 228GiB disk, so
+# nothing is ever eligible, GC reports "0 blobs eligible", and the volume fills
+# while this job exits 0 every day (observed on m4-194, 2026-08-17). After the
+# count-based pass we therefore check free space and keep tightening retention
+# one sha at a time -- never below <%= $min_keep_prod_shas %>, so a rollback target always
+# survives -- until at least <%= $min_free_gib %>GiB is free. GC has to run inside that loop:
+# deleting a manifest frees nothing until the blobs are collected, so free
+# space cannot be re-measured without a collection pass in between.
 #
 # GC caveat: garbage-collect runs against the live registry. distribution has a
 # documented race where a blob uploaded *during* GC can be collected. We run in
-# a low-traffic window (image promotes are infrequent and operator-driven) to
-# avoid it.
+# a low-traffic window (image promotes are infrequent and operator-driven), and
+# --delete-untagged is additionally suppressed whenever an upload is in flight,
+# because that mode can collect a manifest that has been pushed but not yet
+# tagged.
 set -uo pipefail
 export PATH="/usr/local/bin:/usr/bin:/bin"
 
 REG="http://localhost:<%= $registry_port %>"
+REG_DIR="<%= $registry_dir %>"
 KEEP_PROD_SHAS=<%= $keep_prod_shas %>
+MIN_KEEP_PROD_SHAS=<%= $min_keep_prod_shas %>
+MIN_FREE_GIB=<%= $min_free_gib %>
 PRUNE_PR_SHAS=<%= $prune_pr_shas ? { true => 1, default => 0 } %>
+DELETE_UNTAGGED=<%= $delete_untagged ? { true => 1, default => 0 } %>
+MAX_TIGHTEN_ROUNDS=6
+# An _uploads dir touched within this window counts as a live push.
+UPLOAD_INFLIGHT_MIN=<%= $upload_inflight_minutes %>
 
 log() { echo "$(date -u +%FT%TZ) $*"; }
 
-log "=== registry maintenance start ==="
+# Echoes -1 rather than an empty string when the volume cannot be measured (bad
+# REG_DIR, df failure). Callers must treat -1 as "unknown" and skip tightening:
+# an empty value would make every [ -lt ] comparison error out and fall through
+# to the success branch, reporting a healthy disk we never actually read.
+free_gib() {
+  local v
+  v=$(df -k "${REG_DIR}" 2>/dev/null | tail -1 | awk '{print int($4/1048576)}')
+  case "${v}" in
+    '' | *[!0-9]*) echo -1 ;;
+    *)             echo "${v}" ;;
+  esac
+}
 
-# Tag pruning via the registry HTTP API (delete manifests by digest).
-/usr/bin/python3 - "$REG" "$KEEP_PROD_SHAS" "$PRUNE_PR_SHAS" <<'PYEOF'
-import json, sys, re, urllib.request
+# Any in-progress layer upload parks a directory under <repo>/_uploads/<uuid>.
+#
+# The age gate is essential, not a refinement. A cancelled or failed build leaves
+# its _uploads dirs behind and distribution's own uploadpurging does not touch
+# them for 168h, so "does any _uploads dir exist" stays true for a week after any
+# aborted push -- which would suppress --delete-untagged for that whole week and
+# quietly make the setting inert. m4-194 had 12 such dirs from cancelled signer
+# builds on 2026-08-13, still present on 2026-08-17. A push that is genuinely in
+# flight writes continuously, so recency is the signal that matters.
+uploads_in_flight() {
+  local hit
+  hit=$(find "${REG_DIR}/docker/registry/v2/repositories" -type d -path '*/_uploads/*' \
+        -mmin -"${UPLOAD_INFLIGHT_MIN}" -print 2>/dev/null | head -1)
+  [ -n "${hit}" ]
+}
 
+PRUNER=$(mktemp /tmp/registry-prune.XXXXXX)
+cleanup() { rm -f "${PRUNER}"; }
+trap cleanup EXIT
+
+cat > "${PRUNER}" <<'PYEOF'
+import datetime, json, os, sys, re, urllib.request
+
+# argv: <registry-url> <keep-prod-shas> <prune-pr-shas:0|1> <mode:prune|report> <registry-dir>
 reg, keep_prod, prune_pr = sys.argv[1], int(sys.argv[2]), sys.argv[3] == "1"
+mode = sys.argv[4] if len(sys.argv) > 4 else "prune"
+reg_dir = sys.argv[5] if len(sys.argv) > 5 else ""
 ACCEPT = ", ".join([
     "application/vnd.oci.image.manifest.v1+json",
     "application/vnd.oci.image.index.v1+json",
@@ -54,7 +110,7 @@ def digest_for(repo, tag):
         return resp.headers.get("Docker-Content-Digest")
 
 def created_for(repo, tag):
-    # Best-effort image created time; return None (=> keep) if unavailable.
+    # Best-effort OCI image created time. Usually absent here -- see pushed_at.
     try:
         man, _ = get_json(f"/v2/{repo}/manifests/{tag}", {"Accept": ACCEPT})
         cfg = man.get("config", {}).get("digest")
@@ -65,6 +121,42 @@ def created_for(repo, tag):
     except Exception:
         return None
 
+
+def pushed_at(repo, tag):
+    """When this tag was last pointed at a manifest, as an epoch float.
+
+    Ordering cannot use the OCI created time: Tart image configs do not carry
+    one. The entire config blob for a Tart image is
+
+        {"architecture":"arm64","config":{"Labels":{...}},"os":"darwin"}
+
+    so created_for() returns None for every tag, every sort key ties, and
+    "newest N" degrades to whatever order the registry happened to list. That
+    was harmless while retention never actually deleted anything, but it is not
+    harmless now: on m4-194 it would have dropped sonoma-signer-dep prod-df3e104
+    (pushed Aug 13) while keeping prod-6270277 (pushed Aug 12).
+
+    The tag's current/link mtime is the real push time and is always local.
+    Falls back to the config created time for images that do carry one, and
+    returns None if neither can be read -- callers must treat None as newest and
+    keep the tag, so an unreadable timestamp can never cause a deletion.
+    """
+    if reg_dir:
+        link = os.path.join(reg_dir, "docker/registry/v2/repositories", repo,
+                            "_manifests/tags", tag, "current/link")
+        try:
+            return os.stat(link).st_mtime
+        except OSError:
+            pass
+    created = created_for(repo, tag)
+    if created:
+        try:
+            return datetime.datetime.fromisoformat(
+                created.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            return None
+    return None
+
 try:
     repos = get_json("/v2/_catalog")[0].get("repositories", [])
 except Exception as e:
@@ -72,6 +164,7 @@ except Exception as e:
     sys.exit(0)
 
 to_delete = []  # (repo, tag)
+max_shas = 0
 for repo in repos:
     try:
         tags = get_json(f"/v2/{repo}/tags/list")[0].get("tags") or []
@@ -86,11 +179,37 @@ for repo in repos:
             to_delete.append((repo, t)); continue
         if re.match(r"^prod-[0-9a-f]{7,}$", t):
             prod_shas.append(t)
-    # Keep the newest KEEP_PROD_SHAS prod-<sha> by created time; delete the rest.
+    max_shas = max(max_shas, len(prod_shas))
+    # Keep the newest KEEP_PROD_SHAS prod-<sha> by push time; delete the rest.
+    # An unreadable push time sorts as newest (+inf) so it is never deleted.
     if len(prod_shas) > keep_prod:
-        dated = sorted(prod_shas, key=lambda t: (created_for(repo, t) or ""), reverse=True)
-        for t in dated[keep_prod:]:
+        keyed = []
+        for t in prod_shas:
+            ts = pushed_at(repo, t)
+            if ts is None:
+                print(f"  WARN {repo}:{t} has no readable push time; keeping it", flush=True)
+            keyed.append((float("inf") if ts is None else ts, t))
+        keyed.sort(key=lambda kt: kt[0], reverse=True)
+        for _, t in keyed[keep_prod:]:
             to_delete.append((repo, t))
+
+if mode == "report":
+    # Let the caller clamp its starting retention to what actually exists, so
+    # it does not burn tightening rounds decrementing past thin air.
+    print(f"MAX_PROD_SHAS={max_shas}", flush=True)
+    sys.exit(0)
+
+if mode == "list":
+    # Read-only: show the deletion set for the current policy. Deleting a VM
+    # image is only reversible by rebuilding it, so make it inspectable first.
+    for repo, tag in to_delete:
+        ts = pushed_at(repo, tag)
+        when = ("unknown" if ts is None else
+                datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        print(f"  would delete {repo}:{tag} (pushed {when})", flush=True)
+    if not to_delete:
+        print("  nothing would be deleted at this retention", flush=True)
+    sys.exit(0)
 
 # Delete unique manifests (dedupe by digest).
 seen = set()
@@ -108,9 +227,94 @@ for repo, tag in to_delete:
 print(f"  pruned {len(seen)} manifest(s)", flush=True)
 PYEOF
 
+run_prune() {  # $1 = keep count
+  /usr/bin/python3 "${PRUNER}" "${REG}" "$1" "${PRUNE_PR_SHAS}" prune "${REG_DIR}"
+}
+
 # Reclaim the storage freed by the deleted manifests (native binary, run as the
 # registry user so any rewritten files keep consistent ownership).
+run_gc() {
+  local untagged='false'
+  if [ "${DELETE_UNTAGGED}" = "1" ]; then
+    if uploads_in_flight; then
+      log "upload in flight; running GC with --delete-untagged=false this round"
+    else
+      untagged='true'
+    fi
+  fi
+  /usr/bin/su - "<%= $user %>" -c "PATH=/usr/local/bin:\$PATH <%= $bin_path %> garbage-collect --delete-untagged=${untagged} <%= $config_path %>" \
+    || log "WARN garbage-collect returned non-zero"
+}
+
+# --list: read-only preview of the deletion set at the configured retention and
+# at every tightening step it could reach. Nothing is deleted and no GC is run.
+if [ "${1:-}" = "--list" ]; then
+  FREE=$(free_gib)
+  if [ "${FREE}" -lt 0 ]; then
+    log "free space: unknown (could not read ${REG_DIR}), floor ${MIN_FREE_GIB}GiB"
+  else
+    log "free space: ${FREE}GiB (floor ${MIN_FREE_GIB}GiB)"
+  fi
+  K="${KEEP_PROD_SHAS}"
+  while [ "${K}" -ge "${MIN_KEEP_PROD_SHAS}" ]; do
+    echo "-- at keep=${K}:"
+    /usr/bin/python3 "${PRUNER}" "${REG}" "${K}" "${PRUNE_PR_SHAS}" list "${REG_DIR}"
+    K=$((K - 1))
+  done
+  exit 0
+fi
+
+log "=== registry maintenance start ==="
+FREE=$(free_gib)
+if [ "${FREE}" -lt 0 ]; then
+  log "free space before: unknown (could not read ${REG_DIR})"
+else
+  log "free space before: ${FREE}GiB (floor ${MIN_FREE_GIB}GiB)"
+fi
+
+# Pass 1: the configured count-based policy.
+run_prune "${KEEP_PROD_SHAS}"
 log "running native garbage-collect"
-/usr/bin/su - "<%= $user %>" -c "PATH=/usr/local/bin:\$PATH <%= $bin_path %> garbage-collect --delete-untagged=false <%= $config_path %>" || log "WARN garbage-collect returned non-zero"
+run_gc
+
+# Pass 2: space-aware tightening. Clamp the starting point to the number of
+# prod-shas that actually exist so the first round can do real work.
+FREE=$(free_gib)
+if [ "${FREE}" -lt 0 ]; then
+  log "WARN cannot measure free space on ${REG_DIR}; skipping space-aware tightening (count-based retention only)"
+  log "=== registry maintenance done ==="
+  exit 0
+fi
+
+MAX_SHAS=$(/usr/bin/python3 "${PRUNER}" "${REG}" "${KEEP_PROD_SHAS}" "${PRUNE_PR_SHAS}" report "${REG_DIR}" 2>/dev/null | sed -n 's/^MAX_PROD_SHAS=//p')
+case "${MAX_SHAS}" in
+  '' | *[!0-9]*) MAX_SHAS="${KEEP_PROD_SHAS}" ;;
+esac
+KEEP="${KEEP_PROD_SHAS}"
+[ "${MAX_SHAS}" -lt "${KEEP}" ] && KEEP="${MAX_SHAS}"
+ROUNDS=0
+
+while [ "${FREE}" -lt "${MIN_FREE_GIB}" ] \
+   && [ "${KEEP}" -gt "${MIN_KEEP_PROD_SHAS}" ] \
+   && [ "${ROUNDS}" -lt "${MAX_TIGHTEN_ROUNDS}" ]; do
+  KEEP=$((KEEP - 1))
+  ROUNDS=$((ROUNDS + 1))
+  log "free ${FREE}GiB is below the ${MIN_FREE_GIB}GiB floor; tightening retention to keep ${KEEP} prod-sha(s)"
+  run_prune "${KEEP}"
+  run_gc
+  FREE=$(free_gib)
+  if [ "${FREE}" -lt 0 ]; then
+    log "WARN lost the ability to measure ${REG_DIR} mid-run; stopping tightening"
+    break
+  fi
+done
+
+if [ "${FREE}" -lt 0 ]; then
+  log "WARN final free space unknown on ${REG_DIR}"
+elif [ "${FREE}" -lt "${MIN_FREE_GIB}" ]; then
+  log "WARN free ${FREE}GiB is still below the ${MIN_FREE_GIB}GiB floor at keep=${KEEP} (minimum ${MIN_KEEP_PROD_SHAS}); the volume cannot hold the images it is being asked to serve"
+else
+  log "free space after: ${FREE}GiB (floor ${MIN_FREE_GIB}GiB, retention keep=${KEEP})"
+fi
 
 log "=== registry maintenance done ==="
