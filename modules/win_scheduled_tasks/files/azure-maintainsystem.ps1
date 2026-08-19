@@ -463,7 +463,7 @@ function Test-LegacyYDriveRequired {
 
   return ($WorkerPoolId -match '(^|/)win10-64-2009($|-)' -or
     $WorkerPoolId -match '(^|/)win11-64-2009($|-)' -or
-    $WorkerPoolId -match '(^|/)b-win2022($|-)')
+    $WorkerPoolId -match '(^|/)b-win20(22|25)($|-)')
 }
 
 function Set-LegacyYDriveMapping {
