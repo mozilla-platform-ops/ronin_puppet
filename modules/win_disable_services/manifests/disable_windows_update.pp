@@ -66,6 +66,9 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '4',
       }
+      registry_key { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching':
+        ensure => present,
+      }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
         type => dword,
         data => '0',
