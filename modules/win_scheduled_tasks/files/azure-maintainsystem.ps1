@@ -496,6 +496,7 @@ function Test-AzureNvmeTemporaryDriveRequired {
   )
 
   return @(
+    'Standard_D32ads_v7'
     'Standard_F8alds_v7'
     'Standard_F8ads_v7'
   ) -contains $vmSize
