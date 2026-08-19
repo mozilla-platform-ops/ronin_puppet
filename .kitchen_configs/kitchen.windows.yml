@@ -218,10 +218,13 @@ platforms:
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
         winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
-        winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+        winrm set winrm/config '@{MaxTimeoutms="3600000"}'
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
         winrm set winrm/config/service/auth '@{Negotiate="false"}'
+    transport:
+      operation_timeout: 3600
+      receive_timeout: 3610
   - name: win10-64-2009
     driver:
       name: azurerm
