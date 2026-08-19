@@ -100,6 +100,14 @@ reprovision_runner:
     - macmini-m4-237.test.releng.mdc1.mozilla.com
     - macmini-m4-238.test.releng.mdc1.mozilla.com
     - macmini-m4-239.test.releng.mdc1.mozilla.com
+    - macmini-m4-245.test.releng.mdc1.mozilla.com
+    - macmini-m4-246.test.releng.mdc1.mozilla.com
+    - macmini-m4-247.test.releng.mdc1.mozilla.com
+    - macmini-m4-248.test.releng.mdc1.mozilla.com
+    - macmini-m4-249.test.releng.mdc1.mozilla.com
+    - macmini-m4-250.test.releng.mdc1.mozilla.com
+    - macmini-m4-251.test.releng.mdc1.mozilla.com
+    - macmini-m4-252.test.releng.mdc1.mozilla.com
 
 # step-ca root CA fingerprint — pins trust during `step ca bootstrap` (non-secret).
 reprovision_runner::step_renew::ca_fingerprint: f2d8032e35566ecb41b3f1dd5ec7b550fb73f6c8fa855870ca3f35638d777cf6
