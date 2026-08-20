@@ -75,7 +75,18 @@ class roles_profiles::profiles::disable_services {
           ## Can't disable appxsvc on ref hardware as it will affect the task
           ## user's ability to use codecs
           ## Ref: https://bugzilla.mozilla.org/show_bug.cgi?id=2013985
-          if $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref-alpha' and
+          ##
+          ## ...and NEVER during a WIM bake, whatever the pool. disable_appxsvc writes
+          ## AppXSvc Start=4 AND registers the \Hardening\Hard-Disable-AppXSvc at-startup
+          ## task; on a bake both are captured into the golden install.wim. The pool test
+          ## below only makes puppet DECLINE to disable the service at deploy time - it
+          ## never re-enables it - so a baked-in disable silently defeats the exemption:
+          ## the ref/ref-alpha task user then gets no HEVC/AV1/VP9 (the extensions stay
+          ## provisioned but never register per-user) and Firefox falls back to ffvpx.
+          ## Leaving the service alone during the bake lets each pool's deploy-time run
+          ## make the call, which is what the exemption always assumed. RELOPS-2487.
+          if $facts['custom_win_role'] !~ /bake$/ and
+              $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref-alpha' and
               $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref' {
             include win_disable_services::disable_appxsvc
           }
