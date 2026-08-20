@@ -3,11 +3,6 @@
 win-worker:
   function: "tester"
 
-  # Mozilla profile
-  mozilla_profile:
-    source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
-    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
-
   vac:
     version: '45'
     package: 'VBCABLE_Driver_Pack45.zip'
@@ -18,12 +13,3 @@ win-worker:
     trusted_publisher_cat: 'vbaudio_cable64_win10.cat'
     pnp_device_name: 'VB-Audio Virtual Cable'
     service_name: 'VBAudioVACMME'
-
-  # Logging
-  # Logging level options debug, verbose, or restricted.
-  log:
-    level: "restricted"
-
-  ## Use to overwrite values in the Windows yaml file.
-  ## Replace windows. with win-worker.variant.
-  variant:
