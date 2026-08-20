@@ -17,7 +17,7 @@ class roles_profiles::roles::gecko_t_osx_1500_m4_reprovision_runner {
   include roles_profiles::profiles::users
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::vnc
-  include roles_profiles::profiles::macos_run_puppet
+  include macos_run_puppet
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
