@@ -7,7 +7,6 @@ class win_os_settings::error_reporting {
   # of "Windows Error Reporting" (single key with space). The wrong path meant
   # DontShowUI was never applied to the real WER key.
   $error_report_key = 'HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting'
-  $local_dumps_key = "${error_report_key}\\LocalDumps"
 
   $dump_drive = $facts['custom_win_systemdrive']
   $dump_dir = "${dump_drive}\\error-dumps"
@@ -18,9 +17,14 @@ class win_os_settings::error_reporting {
 
   # Using puppetlabs-registry
   registry::value { 'DumpFolder' :
-    key  => $local_dumps_key,
-    type => expand,
+    key  => $error_report_key,
+    type => string,
     data => $dump_dir,
+  }
+  registry::value { 'LocalDumps' :
+    key  => $error_report_key,
+    type => dword,
+    data => '1',
   }
   registry::value { 'DontShowUI' :
     key  => $error_report_key,
