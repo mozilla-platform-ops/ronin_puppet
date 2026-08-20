@@ -15,8 +15,10 @@ class roles_profiles::profiles::network {
           network_category => $net_category,
         }
       }
-      # Skip disabling IPv6 for Windows 24H2+ x64 on Azure (requires IPv6)
-      if !($facts['custom_win_location'] == 'azure' and $facts['custom_win_display_version'] in ['24H2', '25H2'] and $facts['custom_win_os_arch'] == 'x64') {
+      # Skip disabling IPv6 for Windows 11 24H2+ x64 on Azure (requires IPv6)
+      $enable_ipv6 = $facts['custom_win_location'] == 'azure' and $facts['custom_win_os_version'] == 'win_11_2009' and
+        $facts['custom_win_display_version'] in ['24H2', '25H2'] and $facts['custom_win_os_arch'] == 'x64'
+      if !$enable_ipv6 {
         include win_network::disable_ipv6
       }
       if $facts['os']['release']['full'] == '2012 R2' {
