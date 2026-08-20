@@ -131,11 +131,9 @@ function Invoke-WithTimeout {
     }
 }
 
-function Remove-PreinstalledAppxPackages {
-    [CmdletBinding()]
-    param()
-
-    $apps = @{
+# Hoisted to script scope so the work-pending pre-check and the removal pass share ONE
+# list instead of drifting apart.
+$Script:AppxRemovalKeys = @{
         "Bing Search"                     = @{ }
         "Clipchamp.Clipchamp"             = @{ }
         "Microsoft.549981C3F5F10"         = @{ }
@@ -184,17 +182,62 @@ function Remove-PreinstalledAppxPackages {
         "MSTeams"                         = @{ }
         "Microsoft.OneDriveSync"          = @{ }
         "Microsoft.Wallet"                = @{ }
-    }
+}
 
-    # Snapshot current AppX state ONCE so we can tell present-vs-absent per app without
-    # enumerating 48 times. Provisioned = image-level (DISM; works even when AppXSvc is
-    # disabled, e.g. after the bake disabled it). Installed enumeration can fail if AppXSvc
-    # is off - treat that as "none installed" and rely on the provisioned view.
-    $provAll = @(); $instAll = @()
-    try { $provAll = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop) }
+# Snapshot current AppX state ONCE so we can tell present-vs-absent per app without
+# enumerating 48 times. Provisioned = image-level (DISM; works even when AppXSvc is
+# disabled, e.g. on an image the bake disabled it on). Installed enumeration can fail if
+# AppXSvc is off - treat that as "none installed" and rely on the provisioned view.
+function Get-AppxSnapshot {
+    [CmdletBinding()]
+    param()
+
+    $prov = @(); $inst = @()
+    # ProvisionedOk gates the "nothing to do" shortcut in Main. Get-AppxProvisionedPackage is
+    # the image-level (DISM) view and does NOT need AppXSvc, so a failure here means we
+    # genuinely cannot see the image - which must NOT be mistaken for "already debloated".
+    # Get-AppxPackage failing is expected and benign whenever AppXSvc is disabled.
+    $provOk = $false
+    try { $prov = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop); $provOk = $true }
     catch { Write-Log -message ("uninstall_appx_packages :: could not list provisioned packages: {0}" -f $_.Exception.Message) -severity 'WARN' }
-    try { $instAll = @(Get-AppxPackage -AllUsers -ErrorAction Stop) }
+    try { $inst = @(Get-AppxPackage -AllUsers -ErrorAction Stop) }
     catch { Write-Log -message ("uninstall_appx_packages :: could not list installed packages (AppXSvc disabled?): {0}" -f $_.Exception.Message) -severity 'WARN' }
+
+    return @{ Provisioned = $prov; Installed = $inst; ProvisionedOk = $provOk }
+}
+
+# Is there actually anything on the removal list still present?
+#
+# This exists so Main can skip the 600s Wait-AppxIdle on an image the BAKE already
+# debloated - i.e. every node deployed from a golden install.wim. It matters because the
+# bake no longer disables AppXSvc (RELOPS-2487: disabling it in the image stopped the
+# per-task user registering the HEVC/AV1/VP9 media extensions, so Firefox lost WMF
+# hardware decode). With AppXSvc left enabled, wsappx CAN run, so Wait-AppxIdle is no
+# longer instantly-idle and would burn up to 600s per deploy for zero work.
+#
+# On a NON-baked image (the MDT-built win11-24H2-NUC-01-16-2025 still on most of the
+# fleet) at least one key matches, so the wait and the removal run exactly as before.
+# That is why this is a pre-check and NOT a puppet-level reorder of disable_appxsvc
+# ahead of the removal: reordering would silently stop those nodes ever debloating.
+function Test-AppxRemovalWorkPending {
+    [CmdletBinding()]
+    param([hashtable] $Snapshot)
+
+    foreach ($Key in $Script:AppxRemovalKeys.Keys) {
+        $pattern = "*{0}*" -f $Key
+        if (@($Snapshot.Provisioned | Where-Object { $_.PackageName -like $pattern }).Count -gt 0) { return $true }
+        if (@($Snapshot.Installed   | Where-Object { ($_.Name -like $pattern) -or ($_.PackageFullName -like $pattern) }).Count -gt 0) { return $true }
+    }
+    return $false
+}
+
+function Remove-PreinstalledAppxPackages {
+    [CmdletBinding()]
+    param([hashtable] $Snapshot)
+
+    $apps    = $Script:AppxRemovalKeys
+    $provAll = $Snapshot.Provisioned
+    $instAll = $Snapshot.Installed
 
     foreach ($Key in $apps.Keys) {
         # Presence check FIRST: only act (and only log 'removing') when the app is actually
@@ -259,11 +302,23 @@ try {
 try {
     Write-Log -message 'uninstall_appx_packages :: begin' -severity 'DEBUG'
 
+    # Cheap pre-check (two enumerations, no waiting). Nothing on the list present means the
+    # image was already debloated at bake time, so neither the wait nor the removal has
+    # anything to do - skip both rather than blocking up to 600s on every deploy.
+    $preCheck = Get-AppxSnapshot
+    if ($preCheck.ProvisionedOk -and -not (Test-AppxRemovalWorkPending -Snapshot $preCheck)) {
+        Write-Log -message 'uninstall_appx_packages :: nothing on the removal list is present (image already debloated); skipping Wait-AppxIdle and removal' -severity 'DEBUG'
+        Write-Log -message 'uninstall_appx_packages :: complete' -severity 'DEBUG'
+        Stop-TranscriptSafe
+        exit 0
+    }
+
     Write-Log -message 'uninstall_appx_packages :: Wait-AppxIdle' -severity 'DEBUG'
     Wait-AppxIdle -TimeoutSeconds 600 -SleepSeconds 15 | Out-Null
 
+    # Re-snapshot AFTER the wait so removal acts on current state, not on the pre-check's view.
     Write-Log -message 'uninstall_appx_packages :: Remove-PreinstalledAppxPackages' -severity 'DEBUG'
-    Remove-PreinstalledAppxPackages
+    Remove-PreinstalledAppxPackages -Snapshot (Get-AppxSnapshot)
 
     Write-Log -message 'uninstall_appx_packages :: complete' -severity 'DEBUG'
     Stop-TranscriptSafe
