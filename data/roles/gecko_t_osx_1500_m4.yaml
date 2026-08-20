@@ -13,6 +13,25 @@ worker_metadata:
 # Pinned to the current running version -- this is a no-op control move.
 taskcluster_version: '91.0.2'
 
+# Developer-ID-signed worker binaries (Mozilla TeamID 43AQ936H96), as
+# installed-binary-name => sha256 of the signed asset. Only these two assets are
+# signed today; everything else stays on the ad-hoc GitHub release asset.
+#
+# Why: the TCC/PPPC ScreenCapture grants these workers need have to be anchored
+# to the binary, and an ad-hoc binary can only be anchored by cdhash -- which
+# changes on every rebuild, so the MDM profile goes stale constantly. A
+# Developer-ID anchor is stable across rebuilds. Upstream publishing signed
+# builds as release assets is taskcluster/taskcluster#7413; until then the signed
+# builds are mirrored under macos/public/common/signed/ in the ronin package
+# bucket and only pulled by roles that opt in here.
+#
+# These digests pin the exact artifacts verified as Developer-ID-signed, and are
+# what the download path checks -- they must be updated together with
+# taskcluster_version above, since a signed asset exists per version.
+taskcluster_signed_binaries:
+  start-worker: 'c43aaf3361ea356a730d9cdb322364d765a06f77222104ad3ea2d5dc6a8913f5'
+  generic-worker-multiuser: '3e2e5410959c3652f89751be9863a07e050beb6a28beb7522a5122b871fb8487'
+
 worker:
   taskcluster_version: 91.0.2
   provider_type: standalone
@@ -37,7 +56,7 @@ packages_classes:
   - scres
   - telegraf
   - tooltool
-  # - virt_audio_s3  # TODO: re-enable once BlackHole install is fixed on macOS 15
+  - virt_audio_s3
   - virtualenv
   - wget
   - zstandard

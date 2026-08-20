@@ -1,0 +1,313 @@
+#!/usr/bin/env python3
+"""Write local Linux test-host lifecycle events as JSON Lines."""
+
+import argparse
+import datetime
+import fcntl
+import glob
+import gzip
+import hashlib
+import json
+import os
+import socket
+import sys
+import uuid
+
+
+EVENT_LOG_PATH = "/var/log/host-lifecycle/events.jsonl"
+BOOT_ID_PATH = "/proc/sys/kernel/random/boot_id"
+PROC_STAT_PATH = "/proc/stat"
+SYSLOG_PATH = "/var/log/syslog"
+SCHEMA_VERSION = 1
+PARSER_VERSION = 1
+METRICS_PREFIX = "WORKER_METRICS "
+
+EMITTABLE_EVENTS = {
+    "puppet_run_started",
+    "puppet_run_succeeded",
+    "worker_started",
+    "worker_exited",
+    "restart_executed",
+}
+
+METRIC_EVENT_NAMES = {
+    "workerReady": "worker_ready",
+    "taskStart": "task_started",
+    "taskFinish": "task_finished",
+}
+
+
+def utc_timestamp(epoch=None):
+    """Return an RFC 3339 UTC timestamp with millisecond precision."""
+    value = datetime.datetime.fromtimestamp(
+        epoch if epoch is not None else datetime.datetime.now().timestamp(),
+        tz=datetime.timezone.utc,
+    )
+    return value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def read_boot_id(path=BOOT_ID_PATH):
+    with open(path, encoding="utf-8") as boot_id_file:
+        return boot_id_file.read().strip()
+
+
+def read_boot_time(path=PROC_STAT_PATH):
+    with open(path, encoding="utf-8") as proc_stat:
+        for line in proc_stat:
+            name, _, value = line.partition(" ")
+            if name == "btime":
+                return int(value.strip())
+    raise ValueError("could not find btime in /proc/stat")
+
+
+def append_event(event, log_path=EVENT_LOG_PATH):
+    """Append one complete JSON record while holding an exclusive file lock."""
+    encoded = (json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n").encode(
+        "utf-8"
+    )
+    descriptor = os.open(log_path, os.O_RDWR | os.O_APPEND | os.O_CREAT, 0o664)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        size = os.lseek(descriptor, 0, os.SEEK_END)
+        if size and os.pread(descriptor, 1, size - 1) != b"\n":
+            os.write(descriptor, b"\n")
+        os.write(descriptor, encoded)
+    finally:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(descriptor)
+
+
+def append_boot_event_once(event, log_path=EVENT_LOG_PATH):
+    """Append a boot event only when the active log lacks its boot ID."""
+    encoded = (json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n").encode(
+        "utf-8"
+    )
+    descriptor = os.open(log_path, os.O_RDWR | os.O_APPEND | os.O_CREAT, 0o664)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        contents = os.pread(descriptor, os.lseek(descriptor, 0, os.SEEK_END), 0)
+        for line in contents.splitlines():
+            try:
+                existing_event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (
+                existing_event.get("event") == "boot_started"
+                and existing_event.get("boot_id") == event["boot_id"]
+            ):
+                return False
+        if contents and not contents.endswith(b"\n"):
+            os.write(descriptor, b"\n")
+        os.write(descriptor, encoded)
+        return True
+    finally:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(descriptor)
+
+
+def read_events(log_path=EVENT_LOG_PATH):
+    """Yield valid JSON events from the active lifecycle log."""
+    try:
+        with open(log_path, encoding="utf-8") as event_log:
+            for line in event_log:
+                try:
+                    yield json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+    except FileNotFoundError:
+        return
+
+
+def current_boot_started(log_path=EVENT_LOG_PATH, boot_id=None):
+    """Return the current boot's event time, or raise if it is unavailable."""
+    current_boot_id = boot_id or read_boot_id()
+    for event in read_events(log_path):
+        if event.get("event") == "boot_started" and event.get("boot_id") == current_boot_id:
+            try:
+                return datetime.datetime.fromisoformat(event["event_time"].replace("Z", "+00:00")).timestamp()
+            except (KeyError, ValueError):
+                continue
+    raise ValueError("current boot has no boot_started event")
+
+
+def metric_source_record_id(metric):
+    """Return a stable identity for a generic-worker metric record."""
+    identity = {
+        "eventType": metric["eventType"],
+        "timestamp": metric["timestamp"],
+        "workerId": metric["workerId"],
+        "workerPoolId": metric["workerPoolId"],
+        "taskId": metric.get("taskId"),
+        "runId": metric.get("runId"),
+    }
+    payload = json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def lifecycle_event_from_metric(metric, boot_id):
+    """Validate and transform one supported WORKER_METRICS object."""
+    event_name = METRIC_EVENT_NAMES.get(metric.get("eventType"))
+    if event_name is None:
+        return None
+    required = {"eventType": str, "timestamp": int, "workerId": str, "workerPoolId": str}
+    if event_name != "worker_ready":
+        required.update({"taskId": str, "runId": int})
+    if any(type(metric.get(field)) is not value_type for field, value_type in required.items()):
+        return None
+    event = base_event(event_name, boot_id=boot_id)
+    event.update(
+        {
+            "event_time": utc_timestamp(metric["timestamp"]),
+            "source": "generic-worker-log",
+            "parser_version": PARSER_VERSION,
+            "source_record_id": metric_source_record_id(metric),
+            "worker_id": metric["workerId"],
+            "worker_pool_id": metric["workerPoolId"],
+        }
+    )
+    if event_name != "worker_ready":
+        event.update({"task_id": metric["taskId"], "run_id": metric["runId"]})
+    return event
+
+
+def metrics_from_log(path):
+    """Yield supported metric objects from a syslog file, plain or gzip-compressed."""
+    opener = gzip.open if path.endswith(".gz") else open
+    try:
+        with opener(path, "rt", encoding="utf-8", errors="replace") as log_file:
+            for line in log_file:
+                prefix_index = line.find(METRICS_PREFIX)
+                if prefix_index == -1:
+                    continue
+                try:
+                    yield json.loads(line[prefix_index + len(METRICS_PREFIX) :])
+                except json.JSONDecodeError:
+                    continue
+    except FileNotFoundError:
+        return
+
+
+def rotated_syslogs(syslog_path=SYSLOG_PATH):
+    """Return rotated syslogs from newest to oldest."""
+    rotations = glob.glob(syslog_path + ".*")
+
+    def rotation_number(path):
+        suffix = path[len(syslog_path) + 1 :].split(".", 1)[0]
+        try:
+            return int(suffix)
+        except ValueError:
+            return float("inf")
+
+    return sorted(rotations, key=rotation_number)
+
+
+def import_generic_worker(
+    log_path=EVENT_LOG_PATH,
+    syslog_path=SYSLOG_PATH,
+    boot_id=None,
+    import_time=None,
+):
+    """Import current-boot generic-worker lifecycle metrics idempotently."""
+    current_boot_id = boot_id or read_boot_id()
+    boot_started = current_boot_started(log_path, current_boot_id)
+    cutoff = import_time if import_time is not None else datetime.datetime.now().timestamp()
+    existing_ids = {
+        event["source_record_id"]
+        for event in read_events(log_path)
+        if event.get("source") == "generic-worker-log" and "source_record_id" in event
+    }
+    found_types = set()
+    imported = 0
+
+    def import_file(path):
+        nonlocal imported
+        for metric in metrics_from_log(path):
+            event = lifecycle_event_from_metric(metric, current_boot_id)
+            if event is None or not boot_started <= metric["timestamp"] <= cutoff:
+                continue
+            found_types.add(metric["eventType"])
+            if event["source_record_id"] in existing_ids:
+                continue
+            append_event(event, log_path)
+            existing_ids.add(event["source_record_id"])
+            imported += 1
+
+    import_file(syslog_path)
+    missing_types = set(METRIC_EVENT_NAMES) - found_types
+    for rotated_path in rotated_syslogs(syslog_path):
+        if not missing_types or os.path.getmtime(rotated_path) < boot_started:
+            break
+        import_file(rotated_path)
+        missing_types = set(METRIC_EVENT_NAMES) - found_types
+    return imported
+
+
+def base_event(event_name, boot_id=None, recorded_at=None):
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "event": event_name,
+        "recorded_at": recorded_at or utc_timestamp(),
+        "host_id": socket.gethostname(),
+        "boot_id": boot_id or read_boot_id(),
+        "event_id": str(uuid.uuid4()),
+        "source": "lifecycle-wrapper",
+    }
+
+
+def emit(event_name, exit_code=None, trigger=None, log_path=EVENT_LOG_PATH):
+    if event_name not in EMITTABLE_EVENTS:
+        raise ValueError("unsupported emitted event: {}".format(event_name))
+    event = base_event(event_name)
+    if exit_code is not None:
+        event["exit_code"] = exit_code
+    if trigger is not None:
+        event["trigger"] = trigger
+    append_event(event, log_path)
+    return event
+
+
+def observe_boot(log_path=EVENT_LOG_PATH, boot_id=None, boot_time=None):
+    boot_id = boot_id or read_boot_id()
+    event = base_event("boot_started", boot_id=boot_id)
+    event["source"] = "boot-metadata-observer"
+    event["event_time"] = utc_timestamp(boot_time if boot_time is not None else read_boot_time())
+    return append_boot_event_once(event, log_path)
+
+
+def parse_args(arguments):
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    emit_parser = subparsers.add_parser("emit", help="record a wrapper lifecycle event")
+    emit_parser.add_argument("event", choices=sorted(EMITTABLE_EVENTS))
+    emit_parser.add_argument("--exit-code", type=int)
+    emit_parser.add_argument("--trigger")
+
+    subparsers.add_parser("observe-boot", help="idempotently record the current boot")
+    subparsers.add_parser(
+        "import-generic-worker", help="import current-boot generic-worker lifecycle metrics"
+    )
+    return parser.parse_args(arguments)
+
+
+def main(arguments=None):
+    args = parse_args(arguments)
+    if args.command == "emit":
+        emit(args.event, args.exit_code, args.trigger)
+    elif args.command == "observe-boot":
+        observe_boot()
+    else:
+        import_generic_worker()
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except (OSError, ValueError) as error:
+        print("lifecycle-log: {}".format(error), file=sys.stderr)
+        sys.exit(1)

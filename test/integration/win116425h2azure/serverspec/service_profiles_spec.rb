@@ -7,6 +7,53 @@ clipboard_key = 'HKLM:\\SOFTWARE\\Microsoft\\Clipboard'
 task_script_dir = 'C:\\ProgramData\\PuppetLabs\\ronin'
 tester_role = WORKER_FUNCTION == 'tester'
 
+describe file("#{task_script_dir}\\configure_nvme_disk.ps1") do
+  it { should exist }
+end
+
+describe powershell_command(<<~POWERSHELL) do
+  $volume = Get-Volume -DriveLetter D -ErrorAction Stop
+  if ($volume.DriveType -ne 'Fixed' -or $volume.FileSystem -ne 'NTFS') {
+    exit 1
+  }
+  '{0}|{1}' -f $volume.DriveType, $volume.FileSystem
+POWERSHELL
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(/^Fixed\|NTFS\s*$/i) }
+end
+
+describe powershell_command(<<~POWERSHELL) do
+  . '#{task_script_dir}\\maintainsystem.ps1'
+
+  $requiredSizes = @(
+    'Standard_F8alds_v7'
+    'Standard_F8ads_v7'
+  )
+  $existingSizes = @(
+    'Standard_F8s_v2'
+    'Standard_D8ads_v5'
+    'Standard_D8alds_v6'
+    'Standard_E8ads_v6'
+    'Standard_NV12ads_A10_v5'
+    'Standard_E8pds_v5'
+  )
+
+  $missingRequiredSize = $requiredSizes | Where-Object {
+    -not (Test-AzureNvmeTemporaryDriveRequired -vmSize $_)
+  }
+  $selectedExistingSize = $existingSizes | Where-Object {
+    Test-AzureNvmeTemporaryDriveRequired -vmSize $_
+  }
+
+  if ($missingRequiredSize -or $selectedExistingSize) {
+    exit 1
+  }
+  'valid'
+POWERSHELL
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(/^valid\s*$/i) }
+end
+
 {
   'puppet' => {
     'State' => 'Stopped',

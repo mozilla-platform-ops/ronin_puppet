@@ -27,4 +27,7 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker {
       'arm64' => 'be4361d352bd60fd4b728dc5fb97a7c7550a42358437502056fbe31d5cc9e51e',
     },
   }
+
+  require linux_host_lifecycle
+  Class['roles_profiles::profiles::cltbld_user'] -> Class['linux_host_lifecycle']
 }

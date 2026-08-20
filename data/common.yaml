@@ -18,7 +18,6 @@ user_groups:
     - rcurran
   signing:
     - ahalberstadt
-    - amadan
     - bhearsum
     - borivel
     - hneiva
@@ -198,7 +197,7 @@ scriptworker_config:
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
-        scriptworker_scripts_revision: "b87f6cef82c69545f77cc0cc6dd38fda86ebb3d1"
+        scriptworker_scripts_revision: "5459c2c51b0cf801cf733dc947592f21af1a8349"
 
     ff-prod:
         <<: *defaults
@@ -381,9 +380,6 @@ all_users:
 
   ahalberstadt:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDXooSVUUPBiA2IMlxCnrM/n5jNLRJ93lGgXuw9X8qS7 ahalberstadt@mozilla.com
-
-  amadan:
-    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPqNYaktDR6phyNSAfN4VIaK8Ud4Apx7nx8Lb7L1fpL6 amadan@mozilla.com
 
   bhearsum:
     - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOtBhVQFi++zDdhoDzh/eCVrnRwnuUAIzDa5LQr0LBjX bhearsum@mozilla.com

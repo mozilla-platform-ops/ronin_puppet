@@ -29,6 +29,72 @@ else
     rm -rf <%= @task_dir %>/task_*
 fi
 
+# generic-worker's file cache (downloadsDir plus its file-caches.json index) is
+# not bounded: it gains an entry and a file per task artifact fetched, and nothing
+# prunes either. The worker revalidates the whole index on every start, between
+# its "Loaded file file-caches.json" and "All features initialised" log lines, so
+# on hosts that reboot between tasks that cost is paid per task.
+#
+# Observed on gecko-t-osx-1015-r8 (2026-08-05): r8-147 held 20495 files / 20479
+# index entries, r8-226 17203 / 17188, r8-181 21292 / 29 GB. Startup stalled for
+# 294-396s on 14 of 15 boots on r8-147 and 524-585s on 9 of 15 on r8-226, against
+# under 2s on r8-208 which had 3 of each. After purging, both hosts start with no
+# index to load at all and reclaimed 31 GB and 27 GB respectively.
+#
+# The index and the files must be cleared together. Removing only the index
+# strands the downloads -- the worker cannot evict files it has no record of -- and
+# 29 GB was orphaned on r8-181 doing exactly that. This is the file cache only:
+# the named directory caches (pip/uv, ~65 GB) are tracked separately in
+# directory-caches.json and are deliberately left alone.
+#
+# Done here rather than in macos_directory_cleaner's clean_before_reboot.sh so the
+# ordering relative to the start-worker call below is deterministic; both would
+# otherwise run at boot, and org.mozilla.cleanbeforereboot was observed not loaded
+# on at least one host.
+#
+# The delete is detached, and the directory is renamed out of the way first, so
+# worker startup never waits on it. That matters for the first purge on a host that
+# has already accumulated: clearing ~20k files inline took 15 minutes on r8-147 and
+# 2.5 minutes on r8-226, and the worker had not started during that time. A rename
+# is O(1) regardless of how much has piled up. In steady state only a handful of
+# files accumulate per task, so there is normally nothing to do. Renaming rather
+# than globbing also avoids ARG_MAX on the accumulated case.
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    rm -f <%= @gw_root_dir %>/file-caches.json
+else
+    rm -f <%= @data_dir %>/file-caches.json
+fi
+gw_downloads=<%= @data_dir %>/downloads
+if [ -d "$gw_downloads" ]; then
+    gw_purge="${gw_downloads}.purging.$$"
+    if mv "$gw_downloads" "$gw_purge" 2>/dev/null; then
+        mkdir -p "$gw_downloads"
+        ( rm -rf "$gw_purge" >/dev/null 2>&1 & )
+    fi
+fi
+# Sweep any leftovers from an interrupted purge on a previous boot.
+for gw_stale in "${gw_downloads}".purging.*; do
+    [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+done
+<% if @reclaim_free_space_gb -%>
+
+# The file cache above is generic-worker's own. Two OS-owned caches -- the Rosetta
+# 2 AOT cache and CoreSymbolication -- grow unbounded too, are invisible to the
+# worker, and had taken 12 of 26 gecko-t-osx-1500-m-vms slots out of production by
+# 2026-08-13. Run after the purges above so the free-space reading reflects them,
+# and threshold-gated inside the script so it is a no-op where there is headroom.
+# Needs root, hence sudo: see the sudoers rule in
+# roles_profiles::profiles::cltbld_user.
+#
+# Emitted only for roles that set worker.reclaim_free_space_gb. Roles that do not
+# render this file exactly as they did before the reclaim work landed.
+if [ -x /usr/local/bin/reclaim_worker_caches.sh ]; then
+    sudo /usr/local/bin/reclaim_worker_caches.sh <%= @reclaim_free_space_gb %>
+else
+    echo "reclaim_worker_caches.sh not found, skipping OS cache reclaim."
+fi
+<% end -%>
+
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
 # find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
 

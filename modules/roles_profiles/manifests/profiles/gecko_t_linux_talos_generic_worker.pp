@@ -15,4 +15,7 @@ class roles_profiles::profiles::gecko_t_linux_talos_generic_worker {
     livelog_sha256                 => '0513c85b3ad2f289961992ec166ee1e890ad033a1b485c29c69653049c369e23',
     start_worker_sha256            => 'ddf74465e77e2a97a12c87a15dcd9599952127cb38b2e7040bc3177802b1151e',
   }
+
+  require linux_host_lifecycle
+  Class['roles_profiles::profiles::cltbld_user'] -> Class['linux_host_lifecycle']
 }

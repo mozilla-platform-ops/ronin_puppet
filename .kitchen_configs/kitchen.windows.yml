@@ -59,14 +59,20 @@ platforms:
     driver:
       machine_size: 'Standard_F8s_v2'
       spot_instance: true
-      image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-ent:latest
+      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2
+  - name: win11-64-25h2-amd-v7
+    driver:
+      machine_size: 'Standard_F8alds_v7'
+      spot_instance: true
+      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
+      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-amd-v7
   - name: win11-64-25h2-gpu
     driver:
       location: 'East US'
       machine_size: 'Standard_NV12ads_A10_v5'
       spot_instance: true
-      image_urn: MicrosoftWindowsDesktop:windows-11:win11-25h2-ent:latest
+      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-gpu
   - name: win11-a64-25h2-builder
     driver:
@@ -91,6 +97,37 @@ platforms:
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009
+  - name: win10-64-2009-gpu
+    driver:
+      location: 'West US 3'
+      machine_size: 'Standard_NV12ads_A10_v5'
+      image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009-gpu
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['WORKER_POOL_ID'] %>
+    lifecycle:
+      post_converge:
+        - remote: shutdown.exe /r /t 5 /f
+      pre_verify:
+        - local: |
+            reboot_started=false
+            for attempt in $(seq 1 30); do
+              if ! timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
+                reboot_started=true
+                break
+              fi
+              sleep 2
+            done
+            $reboot_started || exit 1
+            for attempt in $(seq 1 60); do
+              if timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
+                exit 0
+              fi
+              sleep 10
+            done
+            exit 1
 
 suites:
   - name: windows
@@ -106,8 +143,10 @@ suites:
     includes:
       - win11-64-24h2
       - win11-64-25h2
+      - win11-64-25h2-amd-v7
       - win11-64-25h2-gpu
       - win11-a64-25h2-builder
       - win11-a64-25h2-tester
       - win2022-64-2009
       - win10-64-2009
+      - win10-64-2009-gpu

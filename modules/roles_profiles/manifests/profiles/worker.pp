@@ -24,8 +24,31 @@ class roles_profiles::profiles::worker {
         default => $role_taskcluster_version,
       }
 
+      # Developer-ID-signed worker binaries, opt-in per role as
+      # installed-binary-name => expected sha256. Mozilla signs only a subset of
+      # the release assets, so this is a map rather than a boolean; an empty map
+      # (the default) keeps every binary on the ad-hoc GitHub release asset.
+      $signed_binaries = lookup('taskcluster_signed_binaries', Hash[String, String], 'first', {})
+
+      # Free-space floor for the between-tasks OS cache reclaim, opt-in per role.
+      # Unset means the feature is absent entirely rather than merely inert, so a
+      # role that does not ask for it gains no script, no sudoers rule and an
+      # unchanged worker-runner.sh. Only the tart VM guests need it: they sit at
+      # ~20 GiB headroom against generic-worker's 20 GiB requirement, where
+      # sampled bare-metal testers have 89-154 GiB free.
+      #
+      # Deliberately a TOP-LEVEL role key, not `worker.reclaim_free_space_gb`.
+      # secrets/vault.yaml is the highest-priority hierarchy level and it owns a
+      # `worker:` hash; for a dotted key hiera resolves the root key from the first
+      # source that has it and then traverses, so vault's hash wins outright and any
+      # sub-key that exists only in role data is invisible. #1329 shipped with the
+      # lookup under `worker.` and silently compiled the whole feature out. Same
+      # reason `taskcluster_version` above is read from the top level.
+      $reclaim_free_space_gb = lookup('reclaim_free_space_gb', Optional[Integer], 'first', undef)
+
       class { 'worker_runner':
         taskcluster_version   => $taskcluster_version,
+        signed_binaries       => $signed_binaries,
         provider_type         => lookup('worker.provider_type'),
         root_url              => 'https://firefox-ci-tc.services.mozilla.com',
         client_id             => lookup('worker.client_id'),
@@ -36,6 +59,7 @@ class roles_profiles::profiles::worker {
         generic_worker_engine => $generic_worker_engine,
         idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
         task_user_password    => $task_user_password,
+        reclaim_free_space_gb => $reclaim_free_space_gb,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc

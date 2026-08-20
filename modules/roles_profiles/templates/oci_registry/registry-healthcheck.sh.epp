@@ -1,16 +1,27 @@
-<%- | Integer $registry_port, String $registry_dir, Integer $disk_threshold, String $alert_email, String $smtp_relay | -%>
+<%- | Integer $registry_port, String $registry_dir, Integer $disk_threshold, Integer $alert_min_free_gib, String $alert_email, String $smtp_relay | -%>
 #!/bin/bash
 # Managed by Puppet (roles_profiles::profiles::oci_registry). Do not edit.
 #
 # Periodic health + disk check for the OCI registry. Writes a JSON status file
 # (/var/log/registry-health.json) for dashboards (Hangar) to scrape, and emails
 # on trouble with a cooldown so a sustained problem does not spam the inbox.
+#
+# Disk is judged on absolute free space as well as percent used. Percent is a
+# poor unit here: a single Tart VM image is ~24GiB, so on a 228GiB volume the
+# 85% mark leaves barely more than one push of headroom -- too late to be an
+# early warning.
 set -uo pipefail
+
+# bash 3.2 (all macOS ships this) errors on "${arr[@]}" for an *empty* array
+# under `set -u`, so every expansion below uses the +"..." guard form. Without
+# it the healthy path emitted "PROBLEMS[@]: unbound variable" on every run,
+# which cost 724KB of log noise on m4-194 and buried real output.
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
 
 PORT=<%= $registry_port %>
 REG_DIR="<%= $registry_dir %>"
 THRESHOLD=<%= $disk_threshold %>
+MIN_FREE_GIB=<%= $alert_min_free_gib %>
 ALERT_EMAIL="<%= $alert_email %>"
 SMTP_RELAY="<%= $smtp_relay %>"
 STATUS_FILE="/var/log/registry-health.json"
@@ -27,20 +38,26 @@ else
   REACHABLE=false
 fi
 
-# disk usage of the storage volume (macOS df: Capacity is field 5, e.g. "73%")
+# disk usage of the storage volume (macOS df: Capacity is field 5, e.g. "73%";
+# Avail is field 4, in 1K blocks)
 DISK_PCT=$(df -k "${REG_DIR}" 2>/dev/null | tail -1 | awk '{print $5}' | tr -d '%')
 [ -z "${DISK_PCT}" ] && DISK_PCT=-1
+DISK_FREE_GIB=$(df -k "${REG_DIR}" 2>/dev/null | tail -1 | awk '{print int($4/1048576)}')
+[ -z "${DISK_FREE_GIB}" ] && DISK_FREE_GIB=-1
 
 PROBLEMS=()
 [ "${REACHABLE}" = "false" ] && PROBLEMS+=("registry /v2/ unreachable on :${PORT}")
 if [ "${DISK_PCT}" -ge "${THRESHOLD}" ] 2>/dev/null; then
   PROBLEMS+=("storage ${DISK_PCT}% >= ${THRESHOLD}% threshold on ${REG_DIR}")
 fi
+if [ "${DISK_FREE_GIB}" -ge 0 ] && [ "${DISK_FREE_GIB}" -lt "${MIN_FREE_GIB}" ] 2>/dev/null; then
+  PROBLEMS+=("only ${DISK_FREE_GIB}GiB free on ${REG_DIR} (floor ${MIN_FREE_GIB}GiB; one VM image push needs ~24GiB)")
+fi
 
 if [ "${#PROBLEMS[@]}" -eq 0 ]; then HEALTHY=true; else HEALTHY=false; fi
 
 cat > "${STATUS_FILE}" <<JSON
-{"host":"${FQDN}","checked":"${NOW}","healthy":${HEALTHY},"reachable":${REACHABLE},"disk_pct":${DISK_PCT},"disk_threshold":${THRESHOLD},"problems":$(printf '%s\n' "${PROBLEMS[@]}" | python3 -c 'import json,sys; print(json.dumps([l for l in sys.stdin.read().splitlines() if l]))')}
+{"host":"${FQDN}","checked":"${NOW}","healthy":${HEALTHY},"reachable":${REACHABLE},"disk_pct":${DISK_PCT},"disk_threshold":${THRESHOLD},"disk_free_gib":${DISK_FREE_GIB},"disk_free_floor_gib":${MIN_FREE_GIB},"problems":$(printf '%s\n' ${PROBLEMS[@]+"${PROBLEMS[@]}"} | python3 -c 'import json,sys; print(json.dumps([l for l in sys.stdin.read().splitlines() if l]))')}
 JSON
 
 [ "${HEALTHY}" = "true" ] && exit 0
@@ -56,7 +73,7 @@ fi
 echo "${EPOCH}" > "${COOLDOWN_FILE}"
 
 BODY="OCI registry health check FAILED on ${FQDN} at ${NOW}:\n\n"
-for p in "${PROBLEMS[@]}"; do BODY="${BODY} - ${p}\n"; done
+for p in ${PROBLEMS[@]+"${PROBLEMS[@]}"}; do BODY="${BODY} - ${p}\n"; done
 
 SMTP_RELAY="${SMTP_RELAY}" ALERT_EMAIL="${ALERT_EMAIL}" FQDN="${FQDN}" BODY="${BODY}" python3 <<'PYEOF'
 import os, smtplib, email.utils, datetime

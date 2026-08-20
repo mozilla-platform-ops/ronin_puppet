@@ -25,6 +25,15 @@ function fail {
     exit 1
 }
 
+# Lifecycle logging is observational only: no failure may interrupt Puppet.
+function lifecycle_log {
+    if [ -x /usr/local/bin/lifecycle-log ]; then
+        if ! /usr/local/bin/lifecycle-log "$@"; then
+            echo "lifecycle-log $* failed; continuing without lifecycle event" >&2
+        fi
+    fi
+}
+
 function extract_username() {
     local url="$1"
     if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
@@ -513,6 +522,9 @@ except Exception as e:
 PYEOF
 }
 
+lifecycle_log observe-boot
+lifecycle_log emit puppet_run_started
+
 show_previous_run_status
 echo ""
 
@@ -521,8 +533,13 @@ configure_git_pat_auth
 
 # block_on_network
 
-# Call the run_puppet function in a endless loop
+# Normal boot/worker execution retries until Puppet converges. Fleetroll
+# requests a bounded operator action by setting FLEETROLL_SINGLE_RUN=1.
 while ! run_puppet; do
+    if [ "${FLEETROLL_SINGLE_RUN:-0}" = "1" ]; then
+        echo -e "${_RED}Puppet run failed; exiting after one Fleetroll-requested attempt${_RESET}"
+        exit 1
+    fi
     echo -e "${_RED}Puppet run failed; re-trying after 10m${_RESET}"
     sleep 600
 done
@@ -543,6 +560,7 @@ if [ -n "$WORKER_TYPE_OVERRIDE" ]; then
 fi
 
 # touch the semaphore to let run-start-worker know it can start start-worker
+lifecycle_log emit puppet_run_succeeded
 if [ "$WRITE_SENTINEL" -eq 1 ]; then
     touch "/tmp/puppet_run_done"
 else
