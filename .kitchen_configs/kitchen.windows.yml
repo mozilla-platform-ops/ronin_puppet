@@ -2,23 +2,6 @@
 driver:
   name: azurerm
   subscription_id: <%= ENV['AZURE_SUBSCRIPTION_ID'] %>
-  location: 'East US 2'
-  use_ephemeral_osdisk: true
-  deployment_timeout_in_minutes: 30
-  username: kitchenadmin
-  password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
-  vm_tags:
-    owner: relops@mozilla.com
-    provisioner: test-kitchen-azurerm
-    worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
-  winrm_powershell_script: |-
-    Set-NetConnectionProfile -NetworkCategory Private
-    winrm quickconfig -q
-    winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
-    winrm set winrm/config '@{MaxTimeoutms="1800000"}'
-    winrm set winrm/config/service '@{AllowUnencrypted="true"}'
-    winrm set winrm/config/service/auth '@{Basic="true"}'
-    winrm set winrm/config/service/auth '@{Negotiate="false"}'
 
 provisioner:
   name: shell
@@ -47,6 +30,25 @@ lifecycle:
 platforms:
   - name: win11-64-24h2
     driver:
+      <<: &windows_driver_defaults
+        name: azurerm
+        location: 'East US 2'
+        use_ephemeral_osdisk: true
+        deployment_timeout_in_minutes: 30
+        username: kitchenadmin
+        password: <%= ENV['KITCHEN_ADMIN_PASSWORD'] %>
+        vm_tags:
+          owner: relops@mozilla.com
+          provisioner: test-kitchen-azurerm
+          worker-pool-id: <%= ENV['PUPPET_ROLE'] %>
+        winrm_powershell_script: |-
+          Set-NetConnectionProfile -NetworkCategory Private
+          winrm quickconfig -q
+          winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+          winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+          winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+          winrm set winrm/config/service/auth '@{Basic="true"}'
+          winrm set winrm/config/service/auth '@{Negotiate="false"}'
       machine_size: 'Standard_F8s_v2'
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-avd:latest
@@ -57,18 +59,21 @@ platforms:
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-24h2
   - name: win11-64-25h2
     driver:
+      <<: *windows_driver_defaults
       machine_size: 'Standard_F8s_v2'
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2
   - name: win11-64-25h2-amd-v7
     driver:
+      <<: *windows_driver_defaults
       machine_size: 'Standard_F8alds_v7'
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-amd-v7
   - name: win11-64-25h2-gpu
     driver:
+      <<: *windows_driver_defaults
       location: 'East US'
       machine_size: 'Standard_NV12ads_A10_v5'
       spot_instance: true
@@ -76,16 +81,19 @@ platforms:
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-gpu
   - name: win11-a64-25h2-builder
     driver:
+      <<: *windows_driver_defaults
       machine_size: 'Standard_E8pds_v5'
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-builder
   - name: win11-a64-25h2-tester
     driver:
+      <<: *windows_driver_defaults
       machine_size: 'Standard_E8pds_v5'
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-tester
   - name: win2022-64-2009
     driver:
+      <<: *windows_driver_defaults
       machine_size: 'Standard_D32ads_v5'
       spot_instance: true
       image_urn: MicrosoftWindowsServer:WindowsServer:2022-datacenter-core-g2:latest
@@ -93,12 +101,14 @@ platforms:
       use_ephemeral_osdisk: false
   - name: win10-64-2009
     driver:
+      <<: *windows_driver_defaults
       machine_size: 'Standard_F8s_v2'
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009
   - name: win10-64-2009-gpu
     driver:
+      <<: *windows_driver_defaults
       location: 'West US 3'
       machine_size: 'Standard_NV12ads_A10_v5'
       image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
