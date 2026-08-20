@@ -29,7 +29,7 @@ class win_disable_services::disable_windows_update {
         data => '1',
       }
     }
-    'win_11_2009', 'win_2022_2009', 'win_10_2009': {
+    'win_11_2009', 'win_2022_2009', 'win_2025_2009', 'win_10_2009': {
       ## wuauserv would not stop even with a timeout.
       ## added a powershell script + additional reg paths
       registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start':
@@ -65,6 +65,9 @@ class win_disable_services::disable_windows_update {
       registry_value { 'HKLM\SYSTEM\CurrentControlSet\Services\DoSvc\Start':
         type => dword,
         data => '4',
+      }
+      registry_key { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching':
+        ensure => present,
       }
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching\SearchOrderConfig':
         type => dword,
