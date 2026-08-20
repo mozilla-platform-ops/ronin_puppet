@@ -516,12 +516,18 @@ If ($bootstrap_stage -eq 'complete') {
     $ready = Wait-ForUserInitReady -TimeoutSeconds 1200 -PollSeconds 3
 
     # Delete the env var either way to avoid it sticking around forever
+    # RELOPS-2464: Commented out for evaluation. This works correctly, but is tied to
+    # the task-user-init UI-hardening gating that adds an incredible amount of
+    # overhead/time on every reboot / new task-user logon. Kept in place (not removed)
+    # while we evaluate removing it.
+    <#
     try {
         [Environment]::SetEnvironmentVariable('MOZ_GW_UI_READY', $null, 'Machine')
         Write-Log -message "MOZ_GW_UI_READY :: cleared (machine)" -severity 'DEBUG'
     } catch {
         Write-Log -message ("MOZ_GW_UI_READY :: failed to clear: {0}" -f $_.Exception.Message) -severity 'WARN'
     }
+    #>
 
     if (-not $ready) {
         # If you prefer fail-closed (PXE) instead, change this behavior.
