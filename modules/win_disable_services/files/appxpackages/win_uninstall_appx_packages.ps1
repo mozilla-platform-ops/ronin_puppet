@@ -23,8 +23,29 @@ function Write-Log {
         default { $entryType = 'Information';  $eventId = 1; break }
     }
 
-    # Always emit to stdout so Puppet logoutput captures it
-    try { Write-Output $message } catch { }
+    $fc = @{
+        'Information'  = 'White'
+        'Error'        = 'Red'
+        'Warning'      = 'DarkYellow'
+        'SuccessAudit' = 'DarkGray'
+    }[$entryType]
+
+    # Always emit to the host so Puppet's logoutput captures it.
+    #
+    # This MUST NOT be Write-Output. Write-Output puts the string on the PIPELINE, so a
+    # Write-Log call inside any function that returns a value silently appends the log line
+    # to that function's return value. That is what broke the first deploy off the
+    # win11-24h2-hw-20260820-235936 WIM: the bake disables AppXSvc again, so Get-AppxPackage
+    # throws, Get-AppxSnapshot's catch logged a WARN, and the function returned
+    # Object[] { '<warning text>', <hashtable> } instead of a hashtable. Binding that to the
+    # [hashtable] $Snapshot parameter threw, the script exited 1, puppet exited 6 and
+    # bootstrap re-imaged the node - on every pass, so it never converged.
+    #
+    # Write-Host goes to the information stream: rendered to stdout for Puppet, captured by
+    # the transcript, and never on the pipeline.
+    try {
+        if ($fc) { Write-Host $message -ForegroundColor $fc } else { Write-Host $message }
+    } catch { }
 
     # Best-effort event log creation
     try {
@@ -40,15 +61,6 @@ function Write-Log {
             -Message $message -ErrorAction SilentlyContinue
     } catch { }
 
-    if ([Environment]::UserInteractive) {
-        $fc = @{
-            'Information'  = 'White'
-            'Error'        = 'Red'
-            'Warning'      = 'DarkYellow'
-            'SuccessAudit' = 'DarkGray'
-        }[$entryType]
-        Write-Host $message -ForegroundColor $fc
-    }
 }
 
 # IMPORTANT: use 'Continue' so normal AppX noise doesn't hard-fail Puppet
