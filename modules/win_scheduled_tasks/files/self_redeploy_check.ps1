@@ -124,7 +124,15 @@ function Get-PXEPendingFlag {
 
 function CompareConfig {
     param (
-        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/main/provisioners/windows/MDC1Windows/pools.yml",
+        # TEMPORARY (RELOPS-2487 canary): drift-check against the nuc-wim-pipeline branch's
+        # pools.yml, NOT main - same reason as CompareConfigBasic in maintainsystem-hw.ps1.
+        # The canary pools (perf-debug, ref-alpha) carry their hash+image on the dev branch;
+        # main only holds the `dev:` trigger and a stale hash, so checking against main is a
+        # permanent false mismatch. This one was MISSED when maintainsystem-hw was repointed,
+        # and it rebooted the canary nodes roughly hourly ("Git Hash MISMATCH!" -> no active
+        # task -> Restart-Computer), and would have Set-PXE'd any node that was running a task.
+        # *** REVERT this URL to main before master. ***
+        [string]$yaml_url = "https://raw.githubusercontent.com/mozilla-platform-ops/worker-images/refs/heads/nuc-wim-pipeline/provisioners/windows/MDC1Windows/pools.yml",
         [string]$PAT
     )
 
