@@ -112,10 +112,27 @@ class roles_profiles::profiles::cltbld_user {
         default => ['/usr/local/bin/reclaim_worker_caches.sh'],
       }
 
+      # Bug 2064340: only grant run-puppet.sh where the task user actually needs
+      # it. worker-runner.sh calls `sudo run-puppet.sh` at worker startup, but on
+      # the multiuser/multiuser-static engines worker-runner is a LaunchDaemon
+      # already running as root (see worker_runner::init), so the sudo there is a
+      # no-op from root and the grant only serves to hand the untrusted task user
+      # a reachable path into a root process. On the `simple` engine
+      # worker-runner is a cltbld LaunchAgent and the grant is load-bearing.
+      #
+      # Resolve the engine the same way profiles::worker does. secrets/vault.yaml
+      # owns the `worker:` hash and outranks role data, so this is the effective
+      # value. Default to granting: an unresolvable engine must not silently
+      # break the worker startup on the `simple` roles.
+      $engine = lookup('worker.generic_worker_engine', Optional[String], 'first', undef)
+      $run_puppet_sudo = $engine =~ /^multiuser/ ? {
+        true    => [],
+        default => ['/usr/local/bin/run-puppet.sh'],
+      }
+
       $sudo_commands = [
         '/sbin/reboot',
-        '/usr/local/bin/run-puppet.sh',
-      ] + $reclaim_sudo_commands
+      ] + $run_puppet_sudo + $reclaim_sudo_commands
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',
