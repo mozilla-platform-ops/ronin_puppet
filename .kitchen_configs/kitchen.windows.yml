@@ -204,7 +204,7 @@ platforms:
       location: 'East US 2'
       machine_size: 'Standard_D32ads_v7'
       spot_instance: true
-      image_urn: MicrosoftWindowsServer:WindowsServer:2025-datacenter-azure-edition-core:latest
+      image_urn: MicrosoftWindowsServer:WindowsServer:2025-datacenter-azure-edition:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win2025-64-24h2
       use_ephemeral_osdisk: false
       deployment_timeout_in_minutes: 30
