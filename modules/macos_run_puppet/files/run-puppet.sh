@@ -12,6 +12,43 @@ set -e
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
+# --- Trusted root environment (Bug 2064340) -------------------------------
+# This script is a passwordless sudo target for the unprivileged task user
+# (see roles_profiles::profiles::cltbld_user), so it can be entered with an
+# environment chosen by that user. macOS sudoers keeps HOME across the
+# privilege boundary, and everything below reads per-user configuration out
+# of $HOME -- git most of all. A task-controlled $HOME/.gitconfig turns the
+# git calls in this script into arbitrary root code execution (via
+# credential.helper, core.pager, core.sshCommand, alias.*, filter.*, or
+# diff.external) and can silently repoint the checkout itself (via
+# url.<base>.insteadOf) so that "git reset --hard" lands attacker code that
+# puppet then applies as root.
+#
+# Pin the environment to root's own before anything reads config. Do this
+# first: no git, ssh, python or puppet invocation may precede it.
+export HOME=/var/root
+export XDG_CONFIG_HOME=/var/root/.config
+# Neutralise user-level git config only. The system config is deliberately
+# left alone: it is root-writable only (so it is not an escalation path) and
+# `puppet apply` inherits this environment -- reprovision_runner's vcsrepo
+# writes safe.directory there with `git config --system`, which would break
+# if it were redirected.
+export GIT_CONFIG_GLOBAL=/dev/null
+export GIT_TERMINAL_PROMPT=0
+export GIT_ASKPASS=/usr/bin/false
+export SSH_ASKPASS=/usr/bin/false
+# env_reset drops most of the caller's environment, but the sudoers env_keep
+# list lets these through and each one steers a tool this script runs.
+unset SSH_AUTH_SOCK EDITOR VISUAL MAIL LC_ALL \
+      GIT_CONFIG GIT_DIR GIT_WORK_TREE GIT_SSH GIT_SSH_COMMAND \
+      GIT_EXEC_PATH GIT_TEMPLATE_DIR GIT_PROXY_COMMAND GIT_ATTR_NOSYSTEM \
+      GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES \
+      GIT_NAMESPACE GIT_CEILING_DIRECTORIES \
+      BASH_ENV ENV CDPATH IFS \
+      PYTHONPATH PYTHONHOME PYTHONSTARTUP PYTHONWARNINGS \
+      DYLD_INSERT_LIBRARIES DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH
+# --------------------------------------------------------------------------
+
 SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
 
 # Optional override settings file
