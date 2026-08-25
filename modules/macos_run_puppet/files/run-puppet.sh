@@ -138,7 +138,7 @@ get_puppet_repo() {
     mkdir -p ./data/secrets
 
     if [ ! -f /var/root/vault.yaml ]; then
-        echo "vault.yaml not found — exiting gracefully."
+        echo "vault.yaml not found -- exiting gracefully."
         exit 0
     fi
 
@@ -185,7 +185,7 @@ run_puppet() {
             sudo shutdown -r now
             exit 0
         else
-            echo "TCC.db exists but was temporarily inaccessible — puppet will retry without rebooting."
+            echo "TCC.db exists but was temporarily inaccessible -- puppet will retry without rebooting."
         fi
     fi
 
