@@ -13,7 +13,6 @@ class roles_profiles::roles::gecko_t_osx_1400_r8 {
   include roles_profiles::profiles::macos_fsmonitor
   include roles_profiles::profiles::macos_gw_checker
   include roles_profiles::profiles::macos_lsdb
-  include roles_profiles::profiles::macos_notification_disabler
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_run_puppet
   include roles_profiles::profiles::macos_tcc_perms
