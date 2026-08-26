@@ -1,33 +1,40 @@
 # install_intel_graphics_software.ps1
-# Installs Intel Graphics Software (the AppUp.IntelArcSoftware MSIX, which is what
-# registers IntelGraphicsSoftwareService) from Intel's graphics installer.
+# Intel Graphics Software - the AppUp.IntelArcSoftware MSIX, which is what registers
+# IntelGraphicsSoftwareService.
 #
-# RELOPS-2487. Production MDT nodes have IntelGraphicsSoftwareService; nodes deployed
-# from the pre-baked WIM do not, because the MU-catalog driver cab carries the DCH INF
-# only. Under DCH the graphics *software* is a separate Store-delivered MSIX that Windows
-# Update fetches as a driver companion app, and our images have WU disabled by design, so
-# it never arrives.
+# RELOPS-2487. Goal is to REPLICATE PRODUCTION, and production is not uniform:
+#   NUC13 (win11-64-24h2-hw)     : HAS IntelGraphicsSoftwareService  -> Ensure present
+#   NUC12 (win11-64-24h2-hw-ref) : does NOT have it                  -> Ensure absent
 #
-# Intel's full installer carries it as Resources/Extras/IntelGraphicsSoftware_<ver>_Release.exe.
-# The existing win_packages::drivers::intel_gfx class passes --noExtras, which is exactly
-# the flag that skips that folder. This script deliberately does NOT pass it.
+# One golden WIM serves both platforms and the bake provisions the MSIX image-wide, so on
+# a pre-baked image "just don't install it" is not available to the NUC12 pools - by the
+# time puppet runs, it is already in the image. They need an ACTIVE removal, exactly like
+# win_disable_services::enable_appxsvc had to actively undo the baked AppXSvc disable.
 #
-# STAGE AT BAKE / INSTALL AT DEPLOY, and note WHY it has to be that way: the installer
-# lives in the 'hardwareimaging' storage account, which is Entra-only (anonymous GET
-# returns 409). The bake BUILD HOST holds a managed identity and can azcopy it in; a
-# deployed NUC has no Azure identity and cannot. So the bake stages the installer into
-# the image and runs it there, and at deploy this script finds the service already
-# present and no-ops.
+# Ensure present:
+#   service already there  -> no-op (start it if stopped). This is the deploy-time case on
+#                             a node built from a WIM that already has it.
+#   service absent         -> run the staged Intel installer. This is the bake-time case.
+# Ensure absent:
+#   remove the provisioned + installed package so no user gets it and the service goes away.
+#
+# It never downloads. The installer lives in hardwareimaging, which is Entra-only (an
+# anonymous GET returns 409): only the bake build host has an identity, so
+# prepare-base-vhdx stages the file to C:\bake\extras during the bake. Note the installer
+# is run WITHOUT --noExtras - that flag is precisely what skips
+# Resources/Extras/IntelGraphicsSoftware_<ver>_Release.exe.
 
 param(
-    # Local path (or glob) the bake stages the Intel installer to.
-    [string] $InstallerPath = 'C:\bake\extras\gfx_win_*.exe',
-    [string] $ServiceName   = 'IntelGraphicsSoftwareService',
+    [ValidateSet('present','absent')]
+    [string] $Ensure         = 'present',
+    [string] $InstallerPath  = 'C:\bake\extras\gfx_win_*.exe',
+    [string] $ServiceName    = 'IntelGraphicsSoftwareService',
+    [string] $PackageMatch   = 'IntelArcSoftware|IntelGraphicsSoftware',
     # Best-effort by default: a missing installer must not fail the whole catalog.
     [switch] $FailIfMissing
 )
 
-$Script:Version = 'install_intel_graphics_software.ps1 2026-08-26 v1'
+$Script:Version = 'install_intel_graphics_software.ps1 2026-08-26 v2'
 
 function Write-Log {
     param (
@@ -55,8 +62,8 @@ function Write-Log {
     }[$entryType]
 
     # Write-Host, never Write-Output: Write-Output puts the string on the PIPELINE, so a
-    # Write-Log call inside a function that returns a value corrupts that return. That
-    # exact bug (Get-AppxSnapshot returning Object[]) PXE-looped the fleet on 2026-08-21.
+    # Write-Log call inside a function that returns a value corrupts that return. That exact
+    # bug (Get-AppxSnapshot returning Object[]) PXE-looped the fleet on 2026-08-21.
     try {
         if ($fc) { Write-Host $message -ForegroundColor $fc } else { Write-Host $message }
     } catch { }
@@ -72,24 +79,69 @@ function Write-Log {
     } catch { }
 }
 
-function Test-GraphicsSoftwarePresent {
+function Get-GraphicsSoftwareService {
     [CmdletBinding()]
     param([string] $Name)
-
-    $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
-    if ($svc) { return $true }
-    return $false
+    return (Get-Service -Name $Name -ErrorAction SilentlyContinue)
 }
 
 $ErrorActionPreference = 'Continue'
-Write-Log -message ("intel_graphics_software :: starting ({0})" -f $Script:Version) -severity 'DEBUG'
+Write-Log -message ("intel_graphics_software :: starting ({0}) Ensure={1}" -f $Script:Version, $Ensure) -severity 'DEBUG'
 
-if (Test-GraphicsSoftwarePresent -Name $ServiceName) {
-    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+# ---------------------------------------------------------------- Ensure absent
+if ($Ensure -eq 'absent') {
+    $svc = Get-GraphicsSoftwareService -Name $ServiceName
+    $removedAny = $false
+
+    try {
+        $prov = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop |
+                  Where-Object { $_.DisplayName -match $PackageMatch })
+        foreach ($p in $prov) {
+            Write-Log -message ("intel_graphics_software :: removing provisioned {0} {1}" -f $p.DisplayName, $p.Version) -severity 'INFO'
+            try {
+                Remove-AppxProvisionedPackage -Online -PackageName $p.PackageName -ErrorAction Stop | Out-Null
+                $removedAny = $true
+            } catch {
+                Write-Log -message ("intel_graphics_software :: provisioned removal failed for {0}: {1}" -f $p.PackageName, $_.Exception.Message) -severity 'WARN'
+            }
+        }
+    } catch {
+        Write-Log -message ("intel_graphics_software :: could not enumerate provisioned packages: {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    try {
+        $inst = @(Get-AppxPackage -AllUsers -ErrorAction Stop | Where-Object { $_.Name -match $PackageMatch })
+        foreach ($p in $inst) {
+            Write-Log -message ("intel_graphics_software :: removing installed {0} {1}" -f $p.Name, $p.Version) -severity 'INFO'
+            try {
+                Remove-AppxPackage -Package $p.PackageFullName -AllUsers -ErrorAction Stop
+                $removedAny = $true
+            } catch {
+                Write-Log -message ("intel_graphics_software :: installed removal failed for {0}: {1}" -f $p.PackageFullName, $_.Exception.Message) -severity 'WARN'
+            }
+        }
+    } catch {
+        # Expected wherever AppXSvc is disabled; the provisioned removal above is the one
+        # that matters for a freshly deployed node with no extra user profiles yet.
+        Write-Log -message ("intel_graphics_software :: could not enumerate installed packages (AppXSvc disabled?): {0}" -f $_.Exception.Message) -severity 'WARN'
+    }
+
+    $svc = Get-GraphicsSoftwareService -Name $ServiceName
+    if ($svc) {
+        Write-Log -message ("intel_graphics_software :: {0} still registered after removal (start={1} status={2}); a reboot usually clears it" -f `
+            $ServiceName, $svc.StartType, $svc.Status) -severity 'WARN'
+    } else {
+        Write-Log -message ("intel_graphics_software :: {0} not present - matches the NUC12 production reference" -f $ServiceName) -severity 'INFO'
+    }
+    Write-Log -message ("intel_graphics_software :: complete (absent, removedAny={0})" -f $removedAny) -severity 'DEBUG'
+    exit 0
+}
+
+# --------------------------------------------------------------- Ensure present
+$svc = Get-GraphicsSoftwareService -Name $ServiceName
+if ($svc) {
     Write-Log -message ("intel_graphics_software :: {0} already present (start={1} status={2}); nothing to do" -f `
         $ServiceName, $svc.StartType, $svc.Status) -severity 'DEBUG'
-
-    # Present but not running is worth correcting - it is Automatic on production.
     if ($svc.Status -ne 'Running') {
         try {
             Start-Service -Name $ServiceName -ErrorAction Stop
@@ -111,31 +163,30 @@ if (-not $installer) {
         Write-Log -message ("{0} :: FAILING as requested" -f $msg) -severity 'ERROR'
         exit 1
     }
-    # Deploy-time on a node whose WIM predates this change, or any node where the bake did
-    # not stage the installer. Not fatal: the node is functional, it just lacks the Intel
-    # software stack. Re-bake to fix.
+    # Deploy-time on a node whose WIM predates this change. Not fatal: the node works, it
+    # just lacks the Intel software stack. Re-bake to fix.
     Write-Log -message ("{0} :: skipping (best-effort). Re-bake to stage it." -f $msg) -severity 'WARN'
     exit 0
 }
 
 Write-Log -message ("intel_graphics_software :: installing from {0} ({1:n0} bytes)" -f $installer.FullName, $installer.Length) -severity 'INFO'
 
-# -s silent, -f force. NOTE: no --noExtras - the Extras folder is precisely where
+# -s silent, -f force. NO --noExtras: the Extras folder is exactly where
 # IntelGraphicsSoftware_<ver>_Release.exe lives.
 $p = Start-Process -FilePath $installer.FullName -ArgumentList '-s', '-f' -Wait -PassThru -ErrorAction SilentlyContinue
 $rc = if ($null -ne $p) { $p.ExitCode } else { -1 }
 Write-Log -message ("intel_graphics_software :: installer exit code {0}" -f $rc) -severity 'INFO'
 
-if (Test-GraphicsSoftwarePresent -Name $ServiceName) {
+if (Get-GraphicsSoftwareService -Name $ServiceName) {
     Write-Log -message "intel_graphics_software :: $ServiceName registered" -severity 'INFO'
 } else {
     Write-Log -message ("intel_graphics_software :: installer finished rc={0} but {1} is still absent" -f $rc, $ServiceName) -severity 'WARN'
 }
 
-# Provisioned (image-level) is what survives sysprep /generalize. Per-user-only install
+# Provisioned (image-level) is what survives sysprep /generalize. A per-user-only install
 # would be stripped from the golden WIM, so surface which one we actually got.
 try {
-    $prov = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop | Where-Object { $_.DisplayName -match 'IntelArcSoftware|IntelGraphicsSoftware' })
+    $prov = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop | Where-Object { $_.DisplayName -match $PackageMatch })
     Write-Log -message ("intel_graphics_software :: provisioned packages matching: {0}" -f $prov.Count) -severity 'INFO'
     foreach ($x in $prov) { Write-Log -message ("intel_graphics_software ::   {0} {1}" -f $x.DisplayName, $x.Version) -severity 'INFO' }
     if ($prov.Count -eq 0) {

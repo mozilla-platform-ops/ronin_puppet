@@ -100,6 +100,8 @@ windows:
     vbs_enabled: true
     hvci_enabled: true
   intel_graphics_software:
+    # Default matches the NUC13 production pools. NUC12 roles override to 'absent'.
+    ensure: 'present'
     installer_path: 'C:\bake\extras\gfx_win_*.exe'
     service_name: 'IntelGraphicsSoftwareService'
     fail_if_missing: false

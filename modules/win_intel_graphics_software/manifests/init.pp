@@ -3,22 +3,26 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 # Intel Graphics Software - the AppUp.IntelArcSoftware MSIX that registers
-# IntelGraphicsSoftwareService. Present on MDT production nodes, absent on nodes built
-# from the pre-baked WIM, because the MU-catalog driver cab carries the DCH INF only and
-# the companion MSIX normally arrives via Windows Update, which is disabled by design.
+# IntelGraphicsSoftwareService.
 #
-# Idempotent and self-selecting, so the same class works in both places:
-#   bake   - service absent + installer staged locally -> installs it into the image
-#   deploy - service already present from the WIM      -> no-op (just starts it if stopped)
+# Replicates production, which is NOT uniform across the hardware:
+#   NUC13 (win11-64-24h2-hw)     has the service  -> ensure present
+#   NUC12 (win11-64-24h2-hw-ref) does not         -> ensure absent
 #
-# It does NOT download. The installer lives in the 'hardwareimaging' account, which is
-# Entra-only (anonymous GET -> 409): the bake build host has a managed identity and can
-# azcopy it in, a deployed NUC has no Azure identity and cannot. Staging it into the image
-# is therefore a worker-images prepare-base-vhdx job, the same route the driver cabs take.
+# One golden WIM serves both platforms and the bake provisions the MSIX image-wide, so the
+# NUC12 pools cannot simply decline to install it - by the time puppet runs it is already
+# in the image. They need an ACTIVE removal, the same shape as
+# win_disable_services::enable_appxsvc actively undoing the baked AppXSvc disable.
+#
+# This class never downloads. The installer lives in the Entra-only 'hardwareimaging'
+# account (anonymous GET -> 409); only the bake build host has an identity, so
+# worker-images prepare-base-vhdx stages it to C:\bake\extras via the config's
+# extras.files list.
 class win_intel_graphics_software (
-  String  $installer_path,
-  String  $service_name,
-  Boolean $fail_if_missing,
+  Enum['present','absent'] $ensure,
+  String                   $installer_path,
+  String                   $service_name,
+  Boolean                  $fail_if_missing,
 ) {
   case $facts['os']['name'] {
     'Windows': {
@@ -30,10 +34,17 @@ class win_intel_graphics_software (
 
       $fail_arg = $fail_if_missing ? { true => ' -FailIfMissing', default => '' }
 
-      exec { 'install_intel_graphics_software':
-        command   => "& '${script}' -InstallerPath '${installer_path}' -ServiceName '${service_name}'${fail_arg}",
+      # The idempotence guard is the mirror image of $ensure: present -> skip when the
+      # service is already there; absent -> skip when it is already gone.
+      $guard = $ensure ? {
+        'present' => "if (Get-Service -Name '${service_name}' -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }",
+        default   => "if (Get-Service -Name '${service_name}' -ErrorAction SilentlyContinue) { exit 1 } else { exit 0 }",
+      }
+
+      exec { 'intel_graphics_software':
+        command   => "& '${script}' -Ensure '${ensure}' -InstallerPath '${installer_path}' -ServiceName '${service_name}'${fail_arg}",
         provider  => powershell,
-        unless    => "if (Get-Service -Name '${service_name}' -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }",
+        unless    => $guard,
         timeout   => 1800,
         logoutput => true,
         require   => File[$script],
