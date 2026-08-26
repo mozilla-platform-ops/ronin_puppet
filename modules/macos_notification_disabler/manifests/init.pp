@@ -114,22 +114,18 @@ class macos_notification_disabler (
         require => File['/Users/cltbld/Library/DoNotDisturb'],
       }
 
-      $dnd_files = [
-        'Assertions.json',
-        'Metrics.json',
-        'Settings.sqlite',
-        'Settings.sqlite-shm',
-      ]
-
-      $dnd_files.each |String $dnd_file| {
-        file { "/Users/cltbld/Library/DoNotDisturb/DB/${dnd_file}":
-          ensure  => 'file',
-          source  => "puppet:///modules/macos_notification_disabler/${dnd_file}",
-          owner   => 'cltbld',
-          group   => 'staff',
-          mode    => '0644',
-          require => File['/Users/cltbld/Library/DoNotDisturb/DB'],
-        }
+      # Only Assertions.json is managed. The module used to ship Metrics.json,
+      # Settings.sqlite and Settings.sqlite-shm as well -- and the checked-in
+      # Settings.sqlite is 0 bytes, so applying this truncated cltbld's real
+      # 110KB Focus database (caught on m4-111). Those are macOS-owned files;
+      # Assertions.json is the only one that actually asserts the DND mode.
+      file { '/Users/cltbld/Library/DoNotDisturb/DB/Assertions.json':
+        ensure  => 'file',
+        source  => 'puppet:///modules/macos_notification_disabler/Assertions.json',
+        owner   => 'cltbld',
+        group   => 'staff',
+        mode    => '0644',
+        require => File['/Users/cltbld/Library/DoNotDisturb/DB'],
       }
     }
 
