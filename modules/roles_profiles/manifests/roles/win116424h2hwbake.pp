@@ -50,6 +50,7 @@ class roles_profiles::roles::win116424h2hwbake {
   # ssh excluded — OpenSSH server + the winaudit SSH key on Administrator are
   # datacenter access/identity; set up at deploy. See header.
   # System
+  include roles_profiles::profiles::device_guard
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
