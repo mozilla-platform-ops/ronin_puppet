@@ -81,9 +81,9 @@ if [ "${cleared}" -eq 0 ]; then
 fi
 
 # usernoted owns the store; NotificationCenter owns the on-screen windows. Both
-# are respawned by launchd. Safe here because puppet runs from
-# org.mozilla.atboot_puppet (LaunchOnlyOnce, before the worker-start sentinel),
-# so this never lands in the middle of a task.
+# are respawned by launchd. Safe here because puppet is invoked by
+# org.mozilla.worker-runner -> worker-runner.sh, which runs run-puppet.sh and
+# only then starts the worker, so this never lands in the middle of a task.
 launchctl asuser "${USER_UID}" killall usernoted >/dev/null 2>&1 || true
 launchctl asuser "${USER_UID}" killall NotificationCenter >/dev/null 2>&1 || true
 

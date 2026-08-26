@@ -10,7 +10,7 @@
 # Catalina and Big Sur ONLY. On Monterey and later DND became a Focus mode whose
 # assertion lives in ~/Library/DoNotDisturb/DB, which is TCC protected. Puppet's
 # ruby is denied kTCCServiceSystemPolicyAllFiles (see macos_tcc_perms), so the
-# atboot puppet run cannot write there: it fails with EPERM on a lock file. It
+# puppet run cannot write there: it fails with EPERM on a lock file. It
 # LOOKS writable if you test by running run-puppet.sh over ssh, because sshd IS
 # granted SystemPolicyAllFiles and the access is attributed to it -- that is how
 # this shipped broken once already. Granting puppet FDA would need an MDM PPPC
