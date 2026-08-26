@@ -26,6 +26,7 @@ describe powershell_command(<<~POWERSHELL) do
   . '#{task_script_dir}\\maintainsystem.ps1'
 
   $requiredSizes = @(
+    'Standard_D32ads_v7'
     'Standard_F8alds_v7'
     'Standard_F8ads_v7'
   )
