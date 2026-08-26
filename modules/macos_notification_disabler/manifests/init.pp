@@ -17,8 +17,9 @@
 # Scope and safety, after the first attempt at this had to be reverted:
 #
 #  * Nothing here writes into a TCC protected location. Puppet's ruby is denied
-#    kTCCServiceSystemPolicyAllFiles (see macos_tcc_perms), so the atboot puppet
-#    run cannot touch ~/Library/DoNotDisturb and friends. The previous version
+#    kTCCServiceSystemPolicyAllFiles (see macos_tcc_perms), so puppet -- invoked
+#    by the org.mozilla.worker-runner LaunchDaemon, as root with no FDA grant --
+#    cannot touch ~/Library/DoNotDisturb and friends. The previous version
 #    managed the Focus assertion files there and failed with EPERM across the
 #    production m4 pool. There is deliberately no DND layer above Big Sur now.
 #

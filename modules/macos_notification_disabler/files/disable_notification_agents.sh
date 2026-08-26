@@ -11,7 +11,8 @@
 # Everything here writes to /var/db and /Library, both of which root can write
 # without a TCC grant. That is deliberate: puppet's ruby is denied
 # kTCCServiceSystemPolicyAllFiles (see macos_tcc_perms), so anything under a
-# protected ~/Library subdirectory is unreachable from the atboot puppet run.
+# protected ~/Library subdirectory is unreachable from the puppet run, which is
+# started by the org.mozilla.worker-runner LaunchDaemon.
 #
 # ALWAYS EXITS 0. run-puppet.sh greps the puppet log for "^Error:" and mails a
 # failure report per host per boot if it finds one; on reboot-per-task pools a
