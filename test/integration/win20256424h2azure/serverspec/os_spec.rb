@@ -7,7 +7,7 @@ current_version_key = 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion'
   'DisplayVersion' => '24H2',
   'ReleaseId' => '2009',
   'CurrentBuild' => '26100',
-  'InstallationType' => 'Server Core'
+  'InstallationType' => 'Server'
 }.each do |property, expected|
   describe registry_value_command(current_version_key, property) do
     its(:exit_status) { should eq 0 }
