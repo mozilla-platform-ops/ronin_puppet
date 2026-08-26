@@ -99,6 +99,10 @@ windows:
   device_guard:
     vbs_enabled: true
     hvci_enabled: true
+  intel_graphics_software:
+    installer_path: 'C:\bake\extras\gfx_win_*.exe'
+    service_name: 'IntelGraphicsSoftwareService'
+    fail_if_missing: false
   driver:
     gfx:
       version: '101.4255'

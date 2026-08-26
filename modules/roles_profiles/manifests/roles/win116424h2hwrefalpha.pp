@@ -5,6 +5,7 @@ class roles_profiles::roles::win116424h2hwrefalpha {
   include roles_profiles::profiles::ssh
   # System
   include roles_profiles::profiles::device_guard
+  include roles_profiles::profiles::intel_graphics_software
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
