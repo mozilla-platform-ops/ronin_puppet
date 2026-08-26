@@ -84,11 +84,16 @@ class macos_notification_disabler (
       # Catalina / Big Sur: Do Not Disturb is a ByHost preference. There is no
       # Focus framework and no ~/Library/DoNotDisturb, so the JSON files used
       # on later releases would simply be ignored.
+      # Must come after the store clear: that also restarts NotificationCenter,
+      # which races the DND write and wins.
       exec { 'enable do not disturb for cltbld':
         command => '/usr/local/bin/enable_do_not_disturb.sh',
         unless  => '/usr/local/bin/enable_do_not_disturb.sh --check',
         path    => $exec_path,
-        require => File['/usr/local/bin/enable_do_not_disturb.sh'],
+        require => [
+          File['/usr/local/bin/enable_do_not_disturb.sh'],
+          Exec['clear banked notifications for cltbld'],
+        ],
       }
     } else {
       # Monterey and later: DND is a Focus mode, asserted by the files in

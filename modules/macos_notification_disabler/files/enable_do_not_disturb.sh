@@ -39,20 +39,34 @@ fi
 
 # Order matters. Writing the pref while NotificationCenter is running silently
 # loses it -- verified on r8-97, where the key read back as 1 and was 0 again a
-# minute later. Stop the owning processes first, write, then flush cfprefsd.
-# launchd respawns both and they pick up the new value.
-launchctl asuser "${USER_UID}" killall NotificationCenter >/dev/null 2>&1 || true
-launchctl asuser "${USER_UID}" killall usernoted >/dev/null 2>&1 || true
-sleep 2
+# minute later. Stop the owning processes first; launchd respawns them and they
+# pick up the new value.
+#
+# Do NOT kill cfprefsd here. `defaults write` hands the change to cfprefsd,
+# which persists it asynchronously; killing it can discard the write that was
+# still in flight. That is how this silently failed on r8-125 while still
+# reporting success to puppet.
+#
+# The write is verified rather than assumed, because the loser of a race with
+# NotificationCenter is the write, and a false success here is invisible.
+for attempt in 1 2 3; do
+  launchctl asuser "${USER_UID}" killall NotificationCenter >/dev/null 2>&1 || true
+  launchctl asuser "${USER_UID}" killall usernoted >/dev/null 2>&1 || true
+  sleep 2
 
-sudo -u "${USER_NAME}" /usr/bin/defaults -currentHost write "${DOMAIN}" \
-  doNotDisturb -bool true
-# Without a date far in the future macOS clears DND at the next day boundary.
-sudo -u "${USER_NAME}" /usr/bin/defaults -currentHost write "${DOMAIN}" \
-  doNotDisturbDate -date "9999-01-01 00:00:00 +0000"
+  sudo -u "${USER_NAME}" /usr/bin/defaults -currentHost write "${DOMAIN}" \
+    doNotDisturb -bool true
+  # Without a date far in the future macOS clears DND at the next day boundary.
+  sudo -u "${USER_NAME}" /usr/bin/defaults -currentHost write "${DOMAIN}" \
+    doNotDisturbDate -date "9999-01-01 00:00:00 +0000"
 
-sudo -u "${USER_NAME}" killall cfprefsd >/dev/null 2>&1 || true
-sleep 3
+  sleep 3
 
-echo "enable_do_not_disturb: ${USER_NAME} (uid ${USER_UID}) doNotDisturb=$(read_dnd)"
-exit 0
+  if [ "$(read_dnd)" = "1" ]; then
+    echo "enable_do_not_disturb: ${USER_NAME} (uid ${USER_UID}) doNotDisturb=1 (attempt ${attempt})"
+    exit 0
+  fi
+done
+
+echo "enable_do_not_disturb: FAILED to set doNotDisturb for ${USER_NAME} (uid ${USER_UID})" >&2
+exit 1
