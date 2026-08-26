@@ -94,12 +94,6 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
         command => '/sbin/tc',
         runas   => 'ALL',
       }
-      sudo::custom { 'allow cltbld to run caddy':
-        user    => 'cltbld',
-        command => '/usr/bin/caddy',
-        runas   => 'ALL',
-      }
-
       # Set MTU for loopback interface
       exec { 'set-lo-mtu':
         command => '/sbin/ip link set dev lo mtu 1500',
