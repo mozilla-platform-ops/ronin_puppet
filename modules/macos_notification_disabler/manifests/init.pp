@@ -19,66 +19,42 @@
 #   3. Do Not Disturb                              -- catches anything else,
 #                                                     including notifications
 #                                                     raised by the tests
-# plus a one-shot clear of the store, so hosts already carrying a stack of
-# alerts recover without a reimage.
+# plus a clear of the store, so hosts already carrying a stack of alerts
+# recover without a reimage.
+#
+# The uid-dependent work is done in shipped scripts rather than built up as
+# strings here. cltbld's uid is NOT fixed across the fleet -- r8-97 and r8-90
+# are 36, r8-107 and r8-125 are 1025 -- and getting it wrong is silent: you
+# write a stray disabled.<uid>.plist for a user that does not exist and the
+# disable does nothing at all.
 class macos_notification_disabler (
   Boolean $enabled = true,
 ) {
   if $enabled {
-    $os_major = Integer($facts['os']['release']['major'])
-
-    # Same split as macos_utils::suppress_keyboard_assistant.
-    if $os_major <= 20 {
-      $cltbld_uid = '36'
-    } else {
-      $cltbld_uid = '555'
-    }
-
+    $os_major  = Integer($facts['os']['release']['major'])
     $exec_path = ['/bin', '/usr/bin', '/sbin', '/usr/sbin']
 
-    # Agents observed posting sticky alerts on the gecko-t macOS pools.
-    $notification_agents = [
-      'com.apple.SoftwareUpdateNotificationManager', # "Updates Available - restart to install"
-      'com.apple.appstoreagent',                     # App Store "Updates Available"
-      'com.apple.commerce',                          # App Store auto-update agent
-      'com.apple.touristd',                          # "Get to Know Your Mac"
-      'com.apple.diskspaced',                        # "Your disk is almost full"
+    $scripts = [
+      'disable_notification_agents.sh',
+      'enable_do_not_disturb.sh',
+      'clear_notification_store.sh',
     ]
 
-    $overrides = "/var/db/com.apple.xpc.launchd/disabled.${cltbld_uid}.plist"
-
-    # Two steps per agent, because `launchctl disable` alone is not enough:
-    # verified on macmini-r8-97, it takes effect immediately (launchctl
-    # print-disabled reports it) but does NOT write $overrides, so it is lost at
-    # the next reboot -- and these hosts reboot once per task. Writing the
-    # override plist ourselves is what makes it stick.
-    #
-    # Only the user/ domain is used. gui/<uid> is rejected with "Unrecognized
-    # domain-target specifier" on hosts where cltbld has no addressable GUI
-    # session (seen on r8-107), and the two domains share the same override
-    # store anyway.
-    $notification_agents.each |String $agent| {
-      exec { "persist notification agent override ${agent}":
-        command => "/usr/bin/defaults write ${overrides} ${agent} -bool true",
-        unless  => "/usr/bin/plutil -p ${overrides} | /usr/bin/grep -q '\"${agent}\" => 1'",
-        path    => $exec_path,
-        notify  => Exec['normalize launchd override permissions'],
-      }
-
-      exec { "disable notification agent ${agent} in the running session":
-        command => "/bin/launchctl disable user/${cltbld_uid}/${agent}",
-        unless  => "/bin/launchctl print-disabled user/${cltbld_uid} | /usr/bin/grep -q '\"${agent}\" => true'",
-        path    => $exec_path,
+    $scripts.each |String $script| {
+      file { "/usr/local/bin/${script}":
+        ensure => file,
+        source => "puppet:///modules/macos_notification_disabler/${script}",
+        owner  => 'root',
+        group  => 'wheel',
+        mode   => '0755',
       }
     }
 
-    # `defaults write` creates the file 0600 when it did not already exist
-    # (r8-107 had no disabled.36.plist at all). Match the 0644 the imaged hosts
-    # carry so nothing is surprised by it later.
-    exec { 'normalize launchd override permissions':
-      command     => "/bin/chmod 644 ${overrides}",
-      refreshonly => true,
-      path        => $exec_path,
+    exec { 'disable notification agents':
+      command => '/usr/local/bin/disable_notification_agents.sh',
+      unless  => '/usr/local/bin/disable_notification_agents.sh --check',
+      path    => $exec_path,
+      require => File['/usr/local/bin/disable_notification_agents.sh'],
     }
 
     # Remove the trigger for the two "Updates Available" alerts. Worker OS
@@ -106,26 +82,13 @@ class macos_notification_disabler (
 
     if $os_major <= 20 {
       # Catalina / Big Sur: Do Not Disturb is a ByHost preference. There is no
-      # Focus framework and no ~/Library/DoNotDisturb, so the JSON files below
-      # would be ignored.
-      # Order matters. Writing the pref while NotificationCenter is running
-      # silently loses it -- verified on r8-97, the key read back as 1 and was
-      # 0 again a minute later. NotificationCenter has to be stopped first and
-      # cfprefsd flushed afterwards; launchd respawns NotificationCenter and it
-      # then picks up the new value.
-      $dnd_domain = 'com.apple.notificationcenterui'
-      $dnd_write  = "/usr/bin/sudo -u cltbld /usr/bin/defaults -currentHost write ${dnd_domain}"
-
+      # Focus framework and no ~/Library/DoNotDisturb, so the JSON files used
+      # on later releases would simply be ignored.
       exec { 'enable do not disturb for cltbld':
-        command => "/bin/launchctl asuser ${cltbld_uid} /usr/bin/killall NotificationCenter; \
-                    /bin/launchctl asuser ${cltbld_uid} /usr/bin/killall usernoted; \
-                    /bin/sleep 2; \
-                    ${dnd_write} doNotDisturb -bool true; \
-                    ${dnd_write} doNotDisturbDate -date '9999-01-01 00:00:00 +0000'; \
-                    /usr/bin/sudo -u cltbld /usr/bin/killall cfprefsd; \
-                    exit 0",
-        unless  => "/usr/bin/sudo -u cltbld /usr/bin/defaults -currentHost read ${dnd_domain} doNotDisturb | /usr/bin/grep -q '^1$'",
+        command => '/usr/local/bin/enable_do_not_disturb.sh',
+        unless  => '/usr/local/bin/enable_do_not_disturb.sh --check',
         path    => $exec_path,
+        require => File['/usr/local/bin/enable_do_not_disturb.sh'],
       }
     } else {
       # Monterey and later: DND is a Focus mode, asserted by the files in
@@ -146,31 +109,23 @@ class macos_notification_disabler (
         require => File['/Users/cltbld/Library/DoNotDisturb'],
       }
 
-      $files = [
+      $dnd_files = [
         'Assertions.json',
         'Metrics.json',
         'Settings.sqlite',
         'Settings.sqlite-shm',
       ]
 
-      $files.each |String $file| {
-        file { "/Users/cltbld/Library/DoNotDisturb/DB/${file}":
+      $dnd_files.each |String $dnd_file| {
+        file { "/Users/cltbld/Library/DoNotDisturb/DB/${dnd_file}":
           ensure  => 'file',
-          source  => "puppet:///modules/macos_notification_disabler/${file}",
+          source  => "puppet:///modules/macos_notification_disabler/${dnd_file}",
           owner   => 'cltbld',
           group   => 'staff',
           mode    => '0644',
           require => File['/Users/cltbld/Library/DoNotDisturb/DB'],
         }
       }
-    }
-
-    file { '/usr/local/bin/clear_notification_store.sh':
-      ensure => file,
-      source => 'puppet:///modules/macos_notification_disabler/clear_notification_store.sh',
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
     }
 
     # Runs on every puppet apply, but only when something is actually banked,
