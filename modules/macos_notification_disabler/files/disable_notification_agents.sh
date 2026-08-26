@@ -40,10 +40,14 @@ OVERRIDES="/var/db/com.apple.xpc.launchd/disabled.${USER_UID}.plist"
 
 if [ "${CHECK_ONLY}" -eq 1 ]; then
   # Exit 0 == already fully configured, so puppet's unless suppresses the run.
+  #
+  # launchctl spells the value differently by release: Catalina prints
+  # "=> true", Sonoma and Sequoia print "=> disabled". Matching only one of
+  # them makes the exec run on every single apply.
   for agent in "${AGENTS[@]}"; do
     plutil -p "${OVERRIDES}" 2>/dev/null | grep -q "\"${agent}\" => 1" || exit 1
     launchctl print-disabled "user/${USER_UID}" 2>/dev/null \
-      | grep -q "\"${agent}\" => true" || exit 1
+      | grep -qE "\"${agent}\" => (true|disabled)" || exit 1
   done
   exit 0
 fi
