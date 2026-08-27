@@ -124,7 +124,7 @@ jobs:
       - name: Mint token for relops-herald
         id: token
         if: steps.entities.outputs.no_entities != 'true'
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.HERALD_APP_ID }}
           private-key: ${{ secrets.HERALD_APP_PRIVATE_KEY }}
