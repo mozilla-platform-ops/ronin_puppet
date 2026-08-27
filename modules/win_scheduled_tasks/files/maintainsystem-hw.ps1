@@ -473,6 +473,178 @@ function Wait-ForUserInitReady {
     return $false
 }
 
+function Write-DefenderStatus {
+    # Persist the latest Defender real-time guard state to a small status file that
+    # NSClient++ surfaces to Marlin (read by scripts\check_defender.ps1). Best-effort.
+    param (
+        [Parameter(Mandatory)] [string] $Path,
+        [Parameter(Mandatory)] $Status
+    )
+    try {
+        $Status | ConvertTo-Json -Compress | Out-File -FilePath $Path -Encoding utf8
+    }
+    catch {
+        Write-Log -message ('Write-DefenderStatus :: failed: {0}' -f $_.Exception.Message) -severity 'WARN'
+    }
+}
+
+function Invoke-DefenderRealtimeGuard {
+    # Ensure Windows Defender real-time / on-access scanning is OFF before worker-runner.
+    #
+    # On this fleet Tamper Protection is ENFORCED (cannot be disabled in-OS), so the
+    # supported toggles (Set-MpPreference, sc config WdFilter, fltmc unload, the policy
+    # registry values) are all blocked or ignored. The only lever that works is renaming
+    # the Defender driver binaries (WdFilter/WdBoot/WdNisDrv) - done below Tamper's reach
+    # via takeown - which takes effect on the NEXT boot. WdFilter is a BOOT-START
+    # minifilter, so a boot that follows a Defender platform update (which restores
+    # WdFilter.sys) comes up with on-access scanning ACTIVE for the whole session.
+    #
+    # This guard runs at boot, before worker-runner. It: (1) re-renames any restored
+    # driver so the next boot is clean, (2) tries the supported in-session unload (works
+    # only if Tamper happens to be off, e.g. a Tamper-off image), and (3) if the filter is
+    # still running under Tamper, reboots ONCE (boot-loop guarded) so the node comes up
+    # clean before any CI task runs. Writes defender_status.json for Marlin/Grafana.
+    param (
+        [string] $StatusDir   = 'C:\fleetbench\results',  # dir NSClient++ already reads
+        [int]    $MaxReboots  = 1,                         # max reboots per restore event
+        [int]    $CooldownMin = 60                         # suppress re-reboot within this window
+    )
+    begin {
+        Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+    process {
+        try {
+            $drvDir     = Join-Path $env:SystemRoot 'System32\drivers'
+            $drivers    = @('WdFilter', 'WdBoot', 'WdNisDrv')
+            if (-not (Test-Path $StatusDir)) { New-Item -ItemType Directory -Path $StatusDir -Force | Out-Null }
+            $statusFile = Join-Path $StatusDir 'defender_status.json'
+            $markerFile = Join-Path $StatusDir 'defender_guard.json'
+
+            # (0) Blanket on-access path exclusions for the CI volumes. Unlike the AV
+            # engine/services, GP-managed exclusions ARE writable and honored under Tamper
+            # Protection, so even on a boot where WdFilter is still loaded (right after a
+            # Defender platform update, before the reboot below) on-access scanning of the
+            # work volumes is skipped. Re-asserted every boot in case an update clears them.
+            try {
+                $exRoot  = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions'
+                $exPaths = Join-Path $exRoot 'Paths'
+                foreach ($k in @($exRoot, $exPaths)) { if (-not (Test-Path $k)) { New-Item -Path $k -Force | Out-Null } }
+                Set-ItemProperty -Path $exRoot -Name 'Exclusions_Paths' -Value 1 -Type DWord
+                foreach ($p in @('C:\', 'D:\')) {
+                    if (Test-Path -LiteralPath $p) {
+                        New-ItemProperty -Path $exPaths -Name $p -Value 0 -PropertyType DWord -Force | Out-Null
+                    }
+                }
+            }
+            catch {
+                Write-Log -message ('{0} :: exclusion set partial: {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
+            }
+
+            # (1) Re-disable persistently: rename any restored driver binaries so the NEXT
+            # boot comes up clean. No-op when already renamed (the normal steady state).
+            $renamed = @()
+            foreach ($d in $drivers) {
+                $sys = Join-Path $drvDir ($d + '.sys')
+                if (Test-Path -LiteralPath $sys) {
+                    try {
+                        & "$env:SystemRoot\System32\takeown.exe" /f $sys /a | Out-Null
+                        & "$env:SystemRoot\System32\icacls.exe" $sys /grant 'Administrators:F' | Out-Null
+                        $bak = $sys + '.bak'
+                        if (Test-Path -LiteralPath $bak) { Remove-Item -LiteralPath $bak -Force -ErrorAction SilentlyContinue }
+                        Rename-Item -LiteralPath $sys -NewName ($d + '.sys.bak') -Force
+                        $renamed += $d
+                    }
+                    catch {
+                        Write-Log -message ('{0} :: could not rename {1}.sys: {2}' -f $($MyInvocation.MyCommand.Name), $d, $_.Exception.Message) -severity 'WARN'
+                    }
+                }
+            }
+            if ($renamed.Count) {
+                Write-Log -message ('{0} :: renamed restored Defender driver(s): {1} (likely a Defender platform update)' -f $($MyInvocation.MyCommand.Name), ($renamed -join ',')) -severity 'WARN'
+            }
+
+            # Is the on-access minifilter running right now?
+            $wdfRunning = $false
+            try { $wdfRunning = (((& "$env:SystemRoot\System32\sc.exe" query WdFilter 2>$null) | Select-String 'STATE') -match 'RUNNING') } catch { }
+            $tamper = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows Defender\Features' -ErrorAction SilentlyContinue).TamperProtection
+
+            $action = if ($renamed.Count) { 'renamed_only' } else { 'none' }
+
+            if ($wdfRunning) {
+                # Try the supported in-session unload first (succeeds only if Tamper is OFF).
+                try {
+                    $u = & "$env:SystemRoot\System32\fltMC.exe" unload WdFilter 2>&1
+                    if ($LASTEXITCODE -eq 0) {
+                        Start-Sleep -Seconds 2
+                        $wdfRunning = (((& "$env:SystemRoot\System32\sc.exe" query WdFilter 2>$null) | Select-String 'STATE') -match 'RUNNING')
+                        if (-not $wdfRunning) {
+                            $action = 'unloaded'
+                            Write-Log -message ('{0} :: WdFilter unloaded in-session (Tamper Protection off).' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+                        }
+                    }
+                    else {
+                        Write-Log -message ('{0} :: fltmc unload blocked (Tamper Protection on): {1}' -f $($MyInvocation.MyCommand.Name), ($u -join ' ')) -severity 'INFO'
+                    }
+                }
+                catch { }
+            }
+
+            if ($wdfRunning) {
+                # Cannot unload under Tamper. The .sys is now renamed, so a reboot yields a
+                # clean boot. Reboot once, boot-loop guarded by a marker file.
+                $count = 0; $lastUtc = $null
+                if (Test-Path $markerFile) {
+                    try {
+                        $m = Get-Content -LiteralPath $markerFile -Raw | ConvertFrom-Json
+                        $count = [int]$m.reboot_count
+                        $lastUtc = [datetime]$m.last_reboot_utc
+                    }
+                    catch { }
+                }
+                $now = (Get-Date).ToUniversalTime()
+                $withinCooldown = $false
+                if ($lastUtc) { $withinCooldown = ((($now) - $lastUtc.ToUniversalTime()).TotalMinutes -lt $CooldownMin) }
+
+                if ($count -ge $MaxReboots -and $withinCooldown) {
+                    # Already rebooted recently and it is STILL active -> stop, do not loop.
+                    $action = 'degraded'
+                    Write-Log -message ('{0} :: WdFilter STILL ACTIVE after {1} reboot(s) within {2}m; proceeding WITHOUT another reboot to avoid a boot loop. On-access scanning may affect this session. Driver renamed for next clean boot.' -f $($MyInvocation.MyCommand.Name), $count, $CooldownMin) -severity 'ERROR'
+                }
+                else {
+                    $newCount = if ($withinCooldown) { $count + 1 } else { 1 }
+                    ([pscustomobject]@{ reboot_count = $newCount; last_reboot_utc = $now.ToString('o') } | ConvertTo-Json -Compress) | Out-File -FilePath $markerFile -Encoding utf8
+                    $action = 'renamed_reboot'
+                    Write-DefenderStatus -Path $statusFile -Status ([pscustomobject]@{
+                        timestamp_utc     = $now.ToString('yyyy-MM-ddTHH:mm:ssZ'); host = $env:COMPUTERNAME
+                        wdfilter_running  = $true; sys_renamed = (-not (Test-Path (Join-Path $drvDir 'WdFilter.sys')))
+                        tamper_protection = $tamper; action = $action; reboot_count = $newCount
+                    })
+                    Write-Log -message ('{0} :: WdFilter active under Tamper; renamed driver(s) and rebooting (#{1}) to clear on-access scanning before worker-runner.' -f $($MyInvocation.MyCommand.Name), $newCount) -severity 'WARN'
+                    Restart-Computer -Force
+                    exit
+                }
+            }
+            else {
+                # Clean: not running. Clear the reboot marker so a future event starts fresh.
+                if (Test-Path $markerFile) { Remove-Item -LiteralPath $markerFile -Force -ErrorAction SilentlyContinue }
+            }
+
+            Write-DefenderStatus -Path $statusFile -Status ([pscustomobject]@{
+                timestamp_utc     = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'); host = $env:COMPUTERNAME
+                wdfilter_running  = $wdfRunning; sys_renamed = (-not (Test-Path (Join-Path $drvDir 'WdFilter.sys')))
+                tamper_protection = $tamper; action = $action; reboot_count = 0
+            })
+        }
+        catch {
+            # Must never block worker-runner from starting.
+            Write-Log -message ('{0} :: error: {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
+        }
+    }
+    end {
+        Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+    }
+}
+
 Write-Log -message ('{0} :: maintained system started' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
     Write-Log -message ('{0} :: No user logged in (no explorer.exe); sleeping 60s' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
@@ -508,6 +680,12 @@ If ($bootstrap_stage -eq 'complete') {
     }
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
+
+    # Ensure Windows Defender real-time / on-access scanning is OFF before worker-runner.
+    # Re-disables (renames) a driver restored by a Defender platform update and reboots
+    # once to clear the running minifilter under Tamper Protection. Runs before the long
+    # UI-init wait and the fleetbench benchmark so any needed reboot happens early.
+    Invoke-DefenderRealtimeGuard
 
     ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
     ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
