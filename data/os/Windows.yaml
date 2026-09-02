@@ -1,4 +1,13 @@
 ---
+lookup_options:
+  win-worker:
+    merge: deep
+
+win-worker:
+  log:
+    # Valid values are debug, verbose, and restricted.
+    level: "restricted"
+
 windows:
 
 # Datacnter resources
