@@ -21,19 +21,11 @@ class { 'windows::autologon':
 }
 ```
 
-### `windows::iis_express`
-
-Downloads and installs [IIS Express 8](http://www.microsoft.com/en-ca/download/details.aspx?id=34679).
-
 ### `windows::java`
 
 Automatically downloads and installs Java from Oracle.  Currently, it uses
 Java 8 Update 60.  Use of this class implies your acceptance of the
 [Oracle Binary Code License Agreement for SE Platform Products](http://www.oracle.com/technetwork/java/javase/terms/license/index.html).
-
-### `windows::nssm`
-
-Downloads and installs the [Non-Sucking Service Manager](http://nssm.cc/).
 
 ### `windows::power_scheme`
 
@@ -51,12 +43,6 @@ Contains an `exec` resource that will refresh the current environment --
 used when modifying system variables and having them be reflected
 without logging off and/or rebooting.   Notify this class after modifying
 any system enviornment variable.
-
-### `windows::update`
-
-Configures automatic windows updates, consult its [source](manifests/update.pp) for
-more information.
-
 
 Windows Defined Types
 ---------------------
@@ -95,11 +81,6 @@ Ensures that the given directory is a part of the Windows `%Path%`, e.g.:
 ```puppet
 windows::path { 'C:\Python27': }
 ```
-
-### `windows::regsvr32`
-
-Registers a DLL (or other control) specificed by the resource's name as
-a component in the registry.
 
 ### `windows::screen_saver`
 
