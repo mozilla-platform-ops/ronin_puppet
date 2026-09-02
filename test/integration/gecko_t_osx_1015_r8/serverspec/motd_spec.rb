@@ -1,1 +1,0 @@
-../../common_test/serverspec/motd_spec.rb

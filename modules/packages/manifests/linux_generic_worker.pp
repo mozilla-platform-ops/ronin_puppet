@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# TODO: move this to linux_packages::generic_worker
 class packages::linux_generic_worker (
   Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
   Variant[String, Hash[String, String]] $generic_worker_sha256,

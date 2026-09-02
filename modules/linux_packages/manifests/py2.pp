@@ -5,7 +5,7 @@
 class linux_packages::py2 {
   # we're not installing py2 anymore, so remove it
   package { 'python':
-    ensure   => absent,
+    ensure => absent,
   }
   package { 'python-pip':
     ensure => absent,

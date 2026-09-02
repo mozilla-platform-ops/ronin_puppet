@@ -4,7 +4,7 @@
 
 class fw::roles::distinguished_puppetmaster {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.mdc1\.mozilla\.com/: {
             include ::fw::profiles::bacula_from_mdc1_bacula_host
 

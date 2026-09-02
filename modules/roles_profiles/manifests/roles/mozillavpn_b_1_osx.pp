@@ -6,11 +6,11 @@ class roles_profiles::roles::mozillavpn_b_1_osx {
   include macos_utils::disable_bluetooth_setup
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::hardware
-  include roles_profiles::profiles::macos_coresimulator_runtime_map
-  include roles_profiles::profiles::macos_disable_firewall
-  include roles_profiles::profiles::macos_people_remover
-  include roles_profiles::profiles::macos_run_puppet
-  include roles_profiles::profiles::macos_xcode_tools
+  include macos_coresimulator_runtime_map
+  include macos_disable_firewall
+  include macos_people_remover
+  include macos_run_puppet
+  include macos_xcode_tools
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
