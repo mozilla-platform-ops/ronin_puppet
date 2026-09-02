@@ -87,9 +87,16 @@ class roles_profiles::profiles::gecko_t_linux_netperf_worker {
 
       # install caddy
       require linux_packages::caddy
+      require linux_packages::netperf_tc
 
-      # cltbld needs to be able to run tc and caddy
-      sudo::custom { 'allow cltbld to run tc':
+      sudo::custom { 'allow cltbld to run netperf tc wrapper':
+        user    => 'cltbld',
+        command => '/usr/local/bin/netperf-tc',
+      }
+
+      # Remove after the Firefox migration to netperf-tc has landed and all
+      # existing `sudo tc` call sites have been retired.
+      sudo::custom { 'allow cltbld to run tc temporarily':
         user    => 'cltbld',
         command => '/sbin/tc',
         runas   => 'ALL',
