@@ -39,9 +39,6 @@ class roles_profiles::profiles::disable_services {
       include win_disable_services::disable_windows_update
       if $facts['custom_win_purpose'] != builder {
         include win_disable_services::disable_wsearch
-        ## WIP for RELOPS-1946
-        ## Not currently working. Leaving n place for ref.
-        #include win_disable_services::disable_sync_from_cloud
         if $facts['custom_win_release_id'] in ['2004', '2009'] {
           ## win11 ref with osdcloud
           include win_disable_services::disable_windows_defender_schtask
@@ -81,10 +78,8 @@ class roles_profiles::profiles::disable_services {
           }
         }
       }
-      # May be needed for non-hardaware
-      # Commented out because this will break the auto restore
-      # include win_disable_services::disable_vss
-      # include win_disable_services::disable_system_restore
+
+      # Do not disable VSS or System Restore. This breaks automatic restore.
     }
     default: {
       fail("${facts['os']['name']} not supported")
