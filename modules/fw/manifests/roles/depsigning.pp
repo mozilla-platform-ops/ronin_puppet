@@ -4,7 +4,7 @@
 
 class fw::roles::depsigning {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.(mdc1|mdc2)\.mozilla\.com/: {
             include ::fw::profiles::ssh_from_rejh_logging
             include ::fw::profiles::dep_signing_from_anywhere

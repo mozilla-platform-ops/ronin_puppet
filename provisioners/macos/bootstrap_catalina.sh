@@ -224,6 +224,6 @@ fi
 screenshot
 
 if [[ $(sw_vers -productVersion) != "${macos_version}" ]]; then
-  fail "Please upgrade to MacOS ${macos_version}."
   echo "https://updates.cdn-apple.com/2019/macos/041-94408-20190801-a9bffb44-63dd-4972-ac53-a76ee3d7924d/macOSUpd10.14.6.dmg"
+  fail "Please upgrade to MacOS ${macos_version}."
 fi

@@ -1,5 +1,1 @@
-require_relative 'spec_helper'
-
-describe package('puppet_agent'), :if => os[:family] == 'Darwin' do
-  it { should be_installed }
-end
+require_relative '../../gecko_t_osx_1015_r8/serverspec/packages_spec'

@@ -4,7 +4,7 @@
 
 class fw::roles::osx_taskcluster_worker_loaner {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.(mdc1|mdc2)\.mozilla\.com/: {
             include ::fw::profiles::nrpe_from_nagios
             include ::fw::profiles::vnc_from_anywhere_logging
