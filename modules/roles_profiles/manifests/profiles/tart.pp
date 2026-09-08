@@ -100,6 +100,38 @@ class roles_profiles::profiles::tart {
   $step_cert_path     = "${step_cert_dir}/tart-client.crt"
   $step_key_path      = "${step_cert_dir}/tart-client.key"
 
+  # Private half of the guest drain-signal key (Bug 2069268). The guest holds the
+  # public half via roles_profiles::profiles::tart_guest_probe; this is what
+  # tart-update-vms.sh authenticates with, replacing the admin/admin password login
+  # it used to send over expect.
+  #
+  # The key itself is placed OUT OF BAND and puppet does not manage its content.
+  # These hosts have none of the brokered-vault plumbing -- no /var/root/.relops-role,
+  # no relops-bootstrap LaunchDaemon, and a 3-byte placeholder /var/root/vault.yaml
+  # (checked on m4-235/236/237) -- which is why tart_worker has no other
+  # vault_secrets lookups: the namespace is empty. Delivering this one key through
+  # the broker would mean standing that whole path up first, including a
+  # vault-tart_worker Secret Manager container and SCEP certs carrying the
+  # tart_worker role. Tracked separately; not a prerequisite for closing 2069268.
+  #
+  # So: puppet owns the DIRECTORY at 0700 root:wheel and nothing else. A private key
+  # inside a root-only directory is protected regardless of its own mode, and this
+  # cannot create an empty placeholder -- which would be worse than nothing, since
+  # tart-update-vms.sh only tests readability and would then fail obscurely inside
+  # ssh instead of logging that the key is missing.
+  #
+  # An absent key is a supported state: guest_reboot_count() returns 1 and the drain
+  # falls back to the Taskcluster listing.
+  $guest_probe_user     = lookup('tart.guest_probe_user',     String, 'first', 'probe')
+  $guest_probe_key_path = lookup('tart.guest_probe_key_path', String, 'first', '/etc/tart/guest_probe_key')
+
+  file { '/etc/tart':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'wheel',
+    mode   => '0700',
+  }
+
   if $step_cert_enabled {
     # No exec_kick: tart-run-vm.sh reads the PEM files fresh on every VM launch,
     # so a renewal needs nothing restarted.
@@ -207,6 +239,8 @@ class roles_profiles::profiles::tart {
       tc_root_url    => $tc_root_url,
       tc_worker_pool => $tc_worker_pool,
       drain_timeout  => $drain_timeout,
+      probe_user     => $guest_probe_user,
+      probe_key_path => $guest_probe_key_path,
     }),
     require => Exec['install_tart'],
   }
