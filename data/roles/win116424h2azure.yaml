@@ -13,3 +13,8 @@ win-worker:
     trusted_publisher_cat: 'vbaudio_cable64_win10.cat'
     pnp_device_name: 'VB-Audio Virtual Cable'
     service_name: 'VBAudioVACMME'
+
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "restricted"

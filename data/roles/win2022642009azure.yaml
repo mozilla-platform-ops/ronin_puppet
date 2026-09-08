@@ -2,3 +2,8 @@
 
 win-worker:
   function: "builder"
+
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "restricted"

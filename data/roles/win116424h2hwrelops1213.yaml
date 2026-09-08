@@ -5,3 +5,8 @@ win-worker:
   # generic-worker
   generic_worker:
     client_id: "project/releng/generic-worker/win11-64-24h2-hw-relops1213"
+
+  # Logging
+  # Logging level options debug, verbose, or restricted.
+  log:
+    level: "restricted"
