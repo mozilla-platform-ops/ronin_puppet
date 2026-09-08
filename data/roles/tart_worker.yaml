@@ -41,7 +41,9 @@ tart:
   # back to the TC listing rather than failing the roll.
   guest_probe_user: 'probe'
   guest_probe_key_path: '/etc/tart/guest_probe_key'
-  guest_probe_key_content: "%{lookup('vault_secrets::tart_guest_probe.data.private_key')}"
+  # The key CONTENT is not set here. profiles::tart reads it from
+  # vault_secrets::tart_guest_probe.data.private_key with a safe default, so a host
+  # without that vault entry simply gets no key file instead of a failed run.
   # Host-mediated worker-vault injection (see profiles::tart). Keep FALSE until
   # the host has a RENEWING client cert (see cert_source / step_cert_* below).
   # When true, the host fetches vault-<vault_role> from the broker over mTLS and

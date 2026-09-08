@@ -107,9 +107,22 @@ class roles_profiles::profiles::tart {
   #
   # Root-owned 0600: tart-update-vms.sh runs as root and drops to tart.user only
   # for `tart` subcommands, so the key never needs to be readable by that user.
-  $guest_probe_user        = lookup('tart.guest_probe_user',        String,           'first', 'probe')
-  $guest_probe_key_path    = lookup('tart.guest_probe_key_path',    String,           'first', '/etc/tart/guest_probe_key')
-  $guest_probe_key_content = lookup('tart.guest_probe_key_content', Optional[String], 'first', undef)
+  # Look the vault entry up as a whole hash with an explicit undef default, and dig
+  # into it here. Do NOT put %{lookup('vault_secrets::...')} in the role data: that
+  # interpolation is evaluated eagerly and RAISES when the key is absent, so a host
+  # whose vault.yaml has no tart_guest_probe entry -- which is every tart host today,
+  # the role has no other vault secrets -- would fail its whole puppet run.
+  #
+  # Absent key is a supported state, not an error: no file is written, and
+  # tart-update-vms.sh falls back to the Taskcluster listing for the drain signal.
+  $guest_probe_user     = lookup('tart.guest_probe_user',     String, 'first', 'probe')
+  $guest_probe_key_path = lookup('tart.guest_probe_key_path', String, 'first', '/etc/tart/guest_probe_key')
+
+  $guest_probe_vault = lookup('vault_secrets::tart_guest_probe', Optional[Hash], 'first', undef)
+  $guest_probe_key_content = $guest_probe_vault ? {
+    undef   => undef,
+    default => dig($guest_probe_vault, 'data', 'private_key'),
+  }
 
   if $guest_probe_key_content {
     file { '/etc/tart':
