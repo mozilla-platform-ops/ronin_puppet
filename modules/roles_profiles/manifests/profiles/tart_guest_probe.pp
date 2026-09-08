@@ -57,14 +57,20 @@ class roles_profiles::profiles::tart_guest_probe {
       # The health agent (relops-bootstrap tart_health_agent) reports which worker
       # a slot registered as, which it reads out of the generic-worker config.
       #
-      # That file also holds worker.access_token, so this rule is pinned to the
-      # exact argv -- sudoers matches arguments literally, so the probe cannot
-      # substitute its own pattern -- and `-o` means the only thing that can ever
-      # reach stdout is the matched `mac-<hex>` worker id, never a token.
+      # That file also holds worker.access_token, so the pattern is a fixed literal
+      # and -m1 stops at the first hit: only the workerId line can reach stdout, and
+      # the access-token line does not contain "workerId".
+      #
+      # The pattern deliberately contains NO glob metacharacters. sudoers matches
+      # command arguments with fnmatch(3), where [...] is a single-character class
+      # and * and ? are wildcards -- so a regex like mac-[0-9a-f]+ in this rule would
+      # match the argument "mac-a+" and NOT the literal string the probe passes, and
+      # sudo would silently deny it. Extracting the id from the line is left to the
+      # caller, unprivileged.
       $worker_conf = lookup('tart_guest_probe.worker_conf', String, 'first', '/opt/worker/generic-worker.conf.yaml')
       sudo::custom { "allow_${probe_user}_worker_id":
         user    => $probe_user,
-        command => "/usr/bin/grep -m1 -oE mac-[0-9a-f]+ ${worker_conf}",
+        command => "/usr/bin/grep -m1 workerId ${worker_conf}",
         require => Users::Single_user[$probe_user],
       }
     }
