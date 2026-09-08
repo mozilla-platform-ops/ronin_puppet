@@ -40,6 +40,22 @@ class roles_profiles::profiles::tart_guest_probe {
         # No groups, no password: deliberately. See the header.
       }
 
+      # A puppet-created macOS user cannot actually SSH in until it is a member of
+      # the SSH service ACL group, even with a valid key. Without this the key
+      # authenticates and the connection is then dropped by
+      #   account required pam_sacl.so sacl_service=ssh
+      # which reads as a mystery: verified on mac-63446b, ssh -vvv reported
+      # "Server accepts key" immediately followed by "Connection closed by ... port 22",
+      # and nothing appears in the guest's sshd log to explain it.
+      #
+      # Same dscl-append convention as profiles::cltbld_user, which is included by
+      # the same role and is what creates this group in the first place.
+      exec { "${probe_user}_group_com.apple.access_ssh":
+        command => "/usr/bin/dscl . -append /Groups/com.apple.access_ssh GroupMembership ${probe_user}",
+        unless  => "/usr/bin/groups ${probe_user} | /usr/bin/grep -q -w com.apple.access_ssh",
+        require => Users::Single_user[$probe_user],
+      }
+
       # The drain signal counts "REBOOT <date>" lines that worker-runner.sh
       # writes immediately before rebooting, AFTER the task resolved and
       # generic-worker exited. The log is 0700 cltbld, hence sudo -- but this is
