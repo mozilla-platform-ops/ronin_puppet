@@ -102,44 +102,34 @@ class roles_profiles::profiles::tart {
 
   # Private half of the guest drain-signal key (Bug 2069268). The guest holds the
   # public half via roles_profiles::profiles::tart_guest_probe; this is what
-  # tart-update-vms.sh authenticates with, replacing the admin/admin password
-  # login it used to send over expect.
+  # tart-update-vms.sh authenticates with, replacing the admin/admin password login
+  # it used to send over expect.
   #
-  # Root-owned 0600: tart-update-vms.sh runs as root and drops to tart.user only
-  # for `tart` subcommands, so the key never needs to be readable by that user.
-  # Look the vault entry up as a whole hash with an explicit undef default, and dig
-  # into it here. Do NOT put %{lookup('vault_secrets::...')} in the role data: that
-  # interpolation is evaluated eagerly and RAISES when the key is absent, so a host
-  # whose vault.yaml has no tart_guest_probe entry -- which is every tart host today,
-  # the role has no other vault secrets -- would fail its whole puppet run.
+  # The key itself is placed OUT OF BAND and puppet does not manage its content.
+  # These hosts have none of the brokered-vault plumbing -- no /var/root/.relops-role,
+  # no relops-bootstrap LaunchDaemon, and a 3-byte placeholder /var/root/vault.yaml
+  # (checked on m4-235/236/237) -- which is why tart_worker has no other
+  # vault_secrets lookups: the namespace is empty. Delivering this one key through
+  # the broker would mean standing that whole path up first, including a
+  # vault-tart_worker Secret Manager container and SCEP certs carrying the
+  # tart_worker role. Tracked separately; not a prerequisite for closing 2069268.
   #
-  # Absent key is a supported state, not an error: no file is written, and
-  # tart-update-vms.sh falls back to the Taskcluster listing for the drain signal.
+  # So: puppet owns the DIRECTORY at 0700 root:wheel and nothing else. A private key
+  # inside a root-only directory is protected regardless of its own mode, and this
+  # cannot create an empty placeholder -- which would be worse than nothing, since
+  # tart-update-vms.sh only tests readability and would then fail obscurely inside
+  # ssh instead of logging that the key is missing.
+  #
+  # An absent key is a supported state: guest_reboot_count() returns 1 and the drain
+  # falls back to the Taskcluster listing.
   $guest_probe_user     = lookup('tart.guest_probe_user',     String, 'first', 'probe')
   $guest_probe_key_path = lookup('tart.guest_probe_key_path', String, 'first', '/etc/tart/guest_probe_key')
 
-  $guest_probe_vault = lookup('vault_secrets::tart_guest_probe', Optional[Hash], 'first', undef)
-  $guest_probe_key_content = $guest_probe_vault ? {
-    undef   => undef,
-    default => dig($guest_probe_vault, 'data', 'private_key'),
-  }
-
-  if $guest_probe_key_content {
-    file { '/etc/tart':
-      ensure => directory,
-      owner  => 'root',
-      group  => 'wheel',
-      mode   => '0755',
-    }
-    file { $guest_probe_key_path:
-      ensure    => file,
-      owner     => 'root',
-      group     => 'wheel',
-      mode      => '0600',
-      content   => $guest_probe_key_content,
-      show_diff => false,
-      require   => File['/etc/tart'],
-    }
+  file { '/etc/tart':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'wheel',
+    mode   => '0700',
   }
 
   if $step_cert_enabled {
