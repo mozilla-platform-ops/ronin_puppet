@@ -32,6 +32,16 @@ tart:
   user: 'admin'
   manage_image: false
   launchd_type: 'daemon'
+  # Private half of the guest drain-signal key (Bug 2069268). Replaces the
+  # admin/admin password login tart-update-vms.sh used to send over expect.
+  # The guest holds the public half via profiles::tart_guest_probe.
+  #
+  # OPERATOR STEP: create the vault secret before applying. While this is unset
+  # puppet writes no key and guest_reboot_count() returns 1, so the drain falls
+  # back to the TC listing rather than failing the roll.
+  guest_probe_user: 'probe'
+  guest_probe_key_path: '/etc/tart/guest_probe_key'
+  guest_probe_key_content: "%{lookup('vault_secrets::tart_guest_probe.data.private_key')}"
   # Host-mediated worker-vault injection (see profiles::tart). Keep FALSE until
   # the host has a RENEWING client cert (see cert_source / step_cert_* below).
   # When true, the host fetches vault-<vault_role> from the broker over mTLS and

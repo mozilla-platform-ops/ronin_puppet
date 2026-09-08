@@ -100,6 +100,35 @@ class roles_profiles::profiles::tart {
   $step_cert_path     = "${step_cert_dir}/tart-client.crt"
   $step_key_path      = "${step_cert_dir}/tart-client.key"
 
+  # Private half of the guest drain-signal key (Bug 2069268). The guest holds the
+  # public half via roles_profiles::profiles::tart_guest_probe; this is what
+  # tart-update-vms.sh authenticates with, replacing the admin/admin password
+  # login it used to send over expect.
+  #
+  # Root-owned 0600: tart-update-vms.sh runs as root and drops to tart.user only
+  # for `tart` subcommands, so the key never needs to be readable by that user.
+  $guest_probe_user        = lookup('tart.guest_probe_user',        String,           'first', 'probe')
+  $guest_probe_key_path    = lookup('tart.guest_probe_key_path',    String,           'first', '/etc/tart/guest_probe_key')
+  $guest_probe_key_content = lookup('tart.guest_probe_key_content', Optional[String], 'first', undef)
+
+  if $guest_probe_key_content {
+    file { '/etc/tart':
+      ensure => directory,
+      owner  => 'root',
+      group  => 'wheel',
+      mode   => '0755',
+    }
+    file { $guest_probe_key_path:
+      ensure    => file,
+      owner     => 'root',
+      group     => 'wheel',
+      mode      => '0600',
+      content   => $guest_probe_key_content,
+      show_diff => false,
+      require   => File['/etc/tart'],
+    }
+  }
+
   if $step_cert_enabled {
     # No exec_kick: tart-run-vm.sh reads the PEM files fresh on every VM launch,
     # so a renewal needs nothing restarted.
@@ -207,6 +236,8 @@ class roles_profiles::profiles::tart {
       tc_root_url    => $tc_root_url,
       tc_worker_pool => $tc_worker_pool,
       drain_timeout  => $drain_timeout,
+      probe_user     => $guest_probe_user,
+      probe_key_path => $guest_probe_key_path,
     }),
     require => Exec['install_tart'],
   }

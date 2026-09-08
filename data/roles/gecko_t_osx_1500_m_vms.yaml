@@ -106,3 +106,18 @@ cltbld_user:
 generic_worker_secrets:
     taskcluster_client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
     taskcluster_access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
+
+# Unprivileged, key-only account the tart host uses to read the drain signal out
+# of this guest (roles_profiles::profiles::tart_guest_probe). It replaces the
+# guest `admin`/`admin` account removed in Bug 2069268.
+#
+# Only the PUBLIC key belongs here. The private half is a host-side secret --
+# see tart.guest_probe_key_content in data/roles/tart_worker.yaml.
+#
+# OPERATOR STEP before this lands: generate the keypair, put the public key
+# below and the private key in vault. Puppet fails the run while ssh_keys is
+# empty, deliberately -- a keyless probe account is worse than none.
+tart_guest_probe:
+    user: 'probe'
+    log_path: '/opt/worker/logs/stdout.log'
+    ssh_keys: []
