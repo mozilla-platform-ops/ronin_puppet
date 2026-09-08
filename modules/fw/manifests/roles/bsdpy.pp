@@ -4,7 +4,7 @@
 
 class fw::roles::bsdpy {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.mdc1\.mozilla\.com/: {
             include ::fw::profiles::ssh_from_rejh_logging
             include ::fw::profiles::nrpe_from_nagios

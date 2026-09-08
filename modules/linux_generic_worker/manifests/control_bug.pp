@@ -22,7 +22,7 @@ class linux_generic_worker::control_bug (
 
         '/usr/local/share/generic-worker/bugzilla-utils.sh':
             ensure  => present,
-            content => template('generic_worker/bugzilla-utils.sh.erb'),
+            content => template('linux_generic_worker/bugzilla-utils.sh.erb'),
             mode    => '0755';
     }
 }

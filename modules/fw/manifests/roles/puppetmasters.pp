@@ -4,7 +4,7 @@
 
 class fw::roles::puppetmasters {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.(mdc1|mdc2)\.mozilla\.com/: {
             include ::fw::profiles::puppetmaster_from_all_releng
             include ::fw::profiles::ssh_from_rejh_logging

@@ -4,7 +4,7 @@
 
 class fw::roles::rejh {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.(mdc1|mdc2)\.mozilla\.com/: {
             include ::fw::profiles::ssh_from_anywhere_logging
             include ::fw::profiles::nrpe_from_nagios

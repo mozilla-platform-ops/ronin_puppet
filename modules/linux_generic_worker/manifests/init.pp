@@ -149,15 +149,4 @@ class linux_generic_worker (
       group  => root,
       mode   => '0644';
   }
-
-  # TODO: cleanup
-  # from build-puppet, seems not needed for modern talos/raptor
-
-  #         host { $taskcluster_host:
-  #             ip => '127.0.0.1'
-  #         }
-
-  #         httpd::config { 'proxy.conf':
-  #             content => template('generic_worker/proxy-httpd.conf.erb'),
-  #         }
 }

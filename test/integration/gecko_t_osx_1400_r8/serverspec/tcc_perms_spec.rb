@@ -1,7 +1,1 @@
-require_relative 'spec_helper'
-
-describe file('/usr/local/bin/tcc_perms.sh') do
-  it { should exist }
-  it { should be_file }
-  it { should be_mode 755 }
-end
+require_relative '../../gecko_t_osx_1015_r8/serverspec/tcc_perms_spec'

@@ -1,7 +1,1 @@
-require_relative 'spec_helper'
-
-describe 'start-worker binary is codesigned' do
-  describe command('codesign --verify /usr/local/bin/start-worker') do
-    its(:exit_status) { should eq 0 }
-  end
-end
+require_relative '../../gecko_t_osx_1400_r8/serverspec/bin_signer_spec'

@@ -4,7 +4,7 @@
 
 class fw::roles::taskcluster_host_secrets {
 
-    case $::fqdn {
+    case $facts['networking']['fqdn'] {
         /.*\.(mdc1|mdc2)\.mozilla\.com/: {
             include ::fw::profiles::taskcluster_host_secrets_from_dc_test
             include ::fw::profiles::ssh_from_rejh_logging

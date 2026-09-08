@@ -49,7 +49,7 @@ class pf {
             owner  => 'root',
             group  => 'wheel',
             notify => Exec['update_pf'],
-            source => "puppet:///modules/pf/pf.conf";
+            source => 'puppet:///modules/pf/pf.conf';
 
         '/Library/LaunchDaemons/org.mozilla.pf.plist':
             ensure => present,
