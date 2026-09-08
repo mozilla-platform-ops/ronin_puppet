@@ -51,7 +51,11 @@ class roles_profiles::roles::win116424h2hwbake {
   # datacenter access/identity; set up at deploy. See header.
   # System
   include roles_profiles::profiles::device_guard
-  include roles_profiles::profiles::intel_graphics_software
+  # intel_graphics_software is DELIBERATELY NOT baked. Intel's installer returns rc=1008 in
+  # the GPU-less Hyper-V build guest (rc=1001 and a running service on real NUC13 hardware),
+  # and the AppUp.IntelArcSoftware MSIX it installs is per-user, so sysprep /generalize
+  # strips it from the WIM regardless. The bake stages the INSTALLER to C:\extras
+  # (worker-images extras.files) and the deploy-time roles run it. See the profile header.
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes

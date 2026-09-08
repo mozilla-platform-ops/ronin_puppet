@@ -15,9 +15,13 @@
 # win_disable_services::enable_appxsvc actively undoing the baked AppXSvc disable.
 #
 # This class never downloads. The installer lives in the Entra-only 'hardwareimaging'
-# account (anonymous GET -> 409); only the bake build host has an identity, so
-# worker-images prepare-base-vhdx stages it to C:\bake\extras via the config's
-# extras.files list.
+# account (anonymous GET -> 409) and a deployed NUC has no Azure identity, so worker-images
+# prepare-base-vhdx stages it INTO THE GOLDEN WIM at C:\extras via the config's
+# extras.files list, and this class runs it here, at deploy time, on real hardware.
+#
+# Deploy time and not bake time on purpose: Intel's installer returns rc=1008 in the
+# GPU-less Hyper-V build guest, and the MSIX is a per-user install that sysprep /generalize
+# strips from the image. So win116424h2hwbake does NOT include this profile.
 class win_intel_graphics_software (
   Enum['present','absent'] $ensure,
   String                   $installer_path,

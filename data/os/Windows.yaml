@@ -102,7 +102,10 @@ windows:
   intel_graphics_software:
     # Default matches the NUC13 production pools. NUC12 roles override to 'absent'.
     ensure: 'present'
-    installer_path: 'C:\bake\extras\gfx_win_*.exe'
+    # Staged into the golden WIM by worker-images prepare-base-vhdx (extras.files), and run
+    # HERE at deploy time on real hardware. Not C:\bake\extras: sysprep deletes C:\bake
+    # before capture, which is why deployed nodes had no installer and no service.
+    installer_path: 'C:\extras\gfx_win_*.exe'
     service_name: 'IntelGraphicsSoftwareService'
     fail_if_missing: false
   driver:

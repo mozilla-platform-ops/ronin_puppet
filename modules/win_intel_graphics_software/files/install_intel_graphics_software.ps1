@@ -12,22 +12,27 @@
 # win_disable_services::enable_appxsvc had to actively undo the baked AppXSvc disable.
 #
 # Ensure present:
-#   service already there  -> no-op (start it if stopped). This is the deploy-time case on
-#                             a node built from a WIM that already has it.
-#   service absent         -> run the staged Intel installer. This is the bake-time case.
+#   service already there  -> no-op (start it if stopped).
+#   service absent         -> run the staged Intel installer. This is the normal case on a
+#                             freshly deployed node: the WIM carries the installer, not the
+#                             installed software (see below).
 # Ensure absent:
 #   remove the provisioned + installed package so no user gets it and the service goes away.
 #
 # It never downloads. The installer lives in hardwareimaging, which is Entra-only (an
-# anonymous GET returns 409): only the bake build host has an identity, so
-# prepare-base-vhdx stages the file to C:\bake\extras during the bake. Note the installer
-# is run WITHOUT --noExtras - that flag is precisely what skips
+# anonymous GET returns 409) and deployed NUCs have no Azure identity, so prepare-base-vhdx
+# stages the file into the golden WIM at C:\extras. Note the installer is run WITHOUT
+# --noExtras - that flag is precisely what skips
 # Resources/Extras/IntelGraphicsSoftware_<ver>_Release.exe.
+#
+# WHY NOT AT BAKE: rc=1008 in the GPU-less Hyper-V build guest (rc=1001 + service Running
+# on real NUC13 hardware), and the MSIX installs per-user, which sysprep /generalize
+# strips. So the WIM ships the installer and the node runs it on first puppet apply.
 
 param(
     [ValidateSet('present','absent')]
     [string] $Ensure         = 'present',
-    [string] $InstallerPath  = 'C:\bake\extras\gfx_win_*.exe',
+    [string] $InstallerPath  = 'C:\extras\gfx_win_*.exe',
     [string] $ServiceName    = 'IntelGraphicsSoftwareService',
     [string] $PackageMatch   = 'IntelArcSoftware|IntelGraphicsSoftware',
     # Best-effort by default: a missing installer must not fail the whole catalog.
@@ -183,15 +188,14 @@ if (Get-GraphicsSoftwareService -Name $ServiceName) {
     Write-Log -message ("intel_graphics_software :: installer finished rc={0} but {1} is still absent" -f $rc, $ServiceName) -severity 'WARN'
 }
 
-# Provisioned (image-level) is what survives sysprep /generalize. A per-user-only install
-# would be stripped from the golden WIM, so surface which one we actually got.
+# Informational only. The SERVICE check above is the success signal - Intel's installer
+# lays the MSIX down per-user, so provisioned-count 0 is EXPECTED here and is not a fault.
+# (It is also exactly why this cannot be baked: sysprep /generalize strips a per-user
+# install, so the WIM ships the installer instead of the installed software.)
 try {
     $prov = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop | Where-Object { $_.DisplayName -match $PackageMatch })
-    Write-Log -message ("intel_graphics_software :: provisioned packages matching: {0}" -f $prov.Count) -severity 'INFO'
+    Write-Log -message ("intel_graphics_software :: provisioned packages matching: {0} (0 is expected; the service is the signal)" -f $prov.Count) -severity 'INFO'
     foreach ($x in $prov) { Write-Log -message ("intel_graphics_software ::   {0} {1}" -f $x.DisplayName, $x.Version) -severity 'INFO' }
-    if ($prov.Count -eq 0) {
-        Write-Log -message 'intel_graphics_software :: NOT provisioned image-level - sysprep /generalize would strip it from the WIM' -severity 'WARN'
-    }
 } catch {
     Write-Log -message ("intel_graphics_software :: could not enumerate provisioned packages: {0}" -f $_.Exception.Message) -severity 'WARN'
 }
