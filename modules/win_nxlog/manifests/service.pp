@@ -12,10 +12,8 @@ class win_nxlog::service {
       File["${win_nxlog::nxlog_dir}\\conf\\nxlog.conf"],
       File["${win_nxlog::nxlog_dir}\\cert\\papertrail-bundle.pem"],
     ],
-    restart   => true,
     #require => Package['NXLog-CE'],
   }
 }
 # Bug List
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1527484
-# This fails on 1st run but is OK on the second run
