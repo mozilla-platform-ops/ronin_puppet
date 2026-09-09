@@ -8,7 +8,7 @@ ROLE_NAME = ENV.fetch('PUPPET_ROLE') { File.basename(File.expand_path('..', __di
 ROLE_DATA = YAML.load_file(File.join(ROOT_DIR, 'data', 'roles', "#{ROLE_NAME}.yaml")).freeze
 WINDOWS_DATA = YAML.load_file(File.join(ROOT_DIR, 'data', 'os', 'Windows.yaml')).fetch('windows').freeze
 ROLE_HIERA = ROLE_DATA.fetch('win-worker').freeze
-VARIANT_DATA = ROLE_HIERA.fetch('variant', {}).freeze
+VARIANT_DATA = (ROLE_HIERA['variant'] || {}).freeze
 WORKER_FUNCTION = ROLE_HIERA.fetch('function').freeze
 
 conn = WinRM::Connection.new(
