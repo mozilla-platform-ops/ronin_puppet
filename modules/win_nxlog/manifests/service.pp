@@ -7,9 +7,12 @@ class win_nxlog::service {
   require win_nxlog::configuration
 
   service { 'nxlog':
-    ensure  => running,
-    #subscribe => File["${win_nxlog::nxlog_dir}\\conf\\nxlog.conf"],
-    restart => true,
+    ensure    => running,
+    subscribe => [
+      File["${win_nxlog::nxlog_dir}\\conf\\nxlog.conf"],
+      File["${win_nxlog::nxlog_dir}\\cert\\papertrail-bundle.pem"],
+    ],
+    restart   => true,
     #require => Package['NXLog-CE'],
   }
 }

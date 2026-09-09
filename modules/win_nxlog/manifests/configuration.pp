@@ -11,4 +11,8 @@ class win_nxlog::configuration {
   file { "${win_nxlog::nxlog_dir}\\conf\\nxlog.conf":
     content => epp("win_nxlog/${conf_file}.epp"),
   }
+
+  file { "${win_nxlog::nxlog_dir}\\cert\\papertrail-bundle.pem":
+    content => file('win_nxlog/papertrail-bundle.pem'),
+  }
 }
