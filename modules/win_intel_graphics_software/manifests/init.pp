@@ -38,20 +38,36 @@ class win_intel_graphics_software (
 
       $fail_arg = $fail_if_missing ? { true => ' -FailIfMissing', default => '' }
 
-      # The idempotence guard is the mirror image of $ensure: present -> skip when the
-      # service is already there; absent -> skip when it is already gone.
-      $guard = $ensure ? {
-        'present' => "if (Get-Service -Name '${service_name}' -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }",
-        default   => "if (Get-Service -Name '${service_name}' -ErrorAction SilentlyContinue) { exit 1 } else { exit 0 }",
-      }
+      # Marker consumed by maintainsystem-hw.ps1. Its content is the installer path, so hiera
+      # stays the single source of truth for it.
+      $marker = "${facts['custom_win_roninprogramdata']}\\install_intel_graphics_software.deferred"
 
-      exec { 'intel_graphics_software':
-        command   => "& '${script}' -Ensure '${ensure}' -InstallerPath '${installer_path}' -ServiceName '${service_name}'${fail_arg}",
-        provider  => powershell,
-        unless    => $guard,
-        timeout   => 1800,
-        logoutput => true,
-        require   => File[$script],
+      if $ensure == 'present' {
+        # DEFERRED ON PURPOSE. Intel's installer takes ~3 min (measured 2m46s-3m03s on
+        # nuc13-074/115/158), which roughly doubled the deploy's ~2.5-3 min puppet phase. Running
+        # it here blocks the node from reporting ready for no reason - nothing else needs the
+        # service. The first maintainsystem run after deploy installs it instead. RELOPS-2487.
+        file { $marker:
+          ensure  => file,
+          content => $installer_path,
+          require => File[$script],
+        }
+      } else {
+        file { $marker:
+          ensure => absent,
+        }
+
+        # Removal is NOT deferred: it is a fast no-op on a node that never had the service, and a
+        # NUC12 pool must never be left carrying it even briefly. Guard is the mirror of $ensure -
+        # skip when it is already gone.
+        exec { 'intel_graphics_software':
+          command   => "& '${script}' -Ensure '${ensure}' -InstallerPath '${installer_path}' -ServiceName '${service_name}'${fail_arg}",
+          provider  => powershell,
+          unless    => "if (Get-Service -Name '${service_name}' -ErrorAction SilentlyContinue) { exit 1 } else { exit 0 }",
+          timeout   => 1800,
+          logoutput => true,
+          require   => File[$script],
+        }
       }
     }
     default: {

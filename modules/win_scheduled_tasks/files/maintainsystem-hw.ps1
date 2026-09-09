@@ -857,6 +857,23 @@ else {
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
 If ($bootstrap_stage -eq 'complete') {
+    ## Intel Graphics Software, deferred out of the deploy puppet run. The installer takes ~3 min and was
+    ## roughly doubling the deploy's puppet phase for no benefit - nothing at deploy time needs the service.
+    ## win_intel_graphics_software drops the marker (NUC13 roles only; NUC12 runs ensure=>absent and never
+    ## gets one) with the installer path as its content. RELOPS-2487.
+    ## Marker is deleted BEFORE the attempt, so a failed or crashed install cannot retry 3 min every boot.
+    $igssDir    = "$env:ProgramData\PuppetLabs\ronin"
+    $igssMarker = Join-Path $igssDir 'install_intel_graphics_software.deferred'
+    $igssScript = Join-Path $igssDir 'install_intel_graphics_software.ps1'
+    if ((Test-Path $igssMarker) -and (Test-Path $igssScript)) {
+        $igssPath = (Get-Content $igssMarker -Raw).Trim()
+        Remove-Item $igssMarker -Force -ErrorAction SilentlyContinue
+        Write-Log -message ('{0} :: installing Intel Graphics Software from {1} (deferred from deploy)' -f $($MyInvocation.MyCommand.Name), $igssPath) -severity 'INFO'
+        & $igssScript -Ensure 'present' -InstallerPath $igssPath
+        $igssSvc = Get-Service -Name 'IntelGraphicsSoftwareService' -ErrorAction SilentlyContinue
+        Write-Log -message ('{0} :: Intel Graphics Software done; service present = {1}' -f $($MyInvocation.MyCommand.Name), [bool]$igssSvc) -severity 'INFO'
+    }
+
     CompareConfigBasic
     Start-Sleep -Seconds 2
     Run-MaintainSystem
