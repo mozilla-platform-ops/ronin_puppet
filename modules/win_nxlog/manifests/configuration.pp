@@ -13,6 +13,6 @@ class win_nxlog::configuration {
   }
 
   file { "${win_nxlog::nxlog_dir}\\cert\\papertrail-bundle.pem":
-    content => file('win_nxlog/papertrail-bundle.pem'),
+    source => 'puppet:///modules/win_nxlog/papertrail-bundle.pem',
   }
 }
