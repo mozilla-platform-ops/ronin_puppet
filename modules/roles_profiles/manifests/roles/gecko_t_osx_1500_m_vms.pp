@@ -17,7 +17,6 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include roles_profiles::profiles::packages_installed
   include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::power_management
-  include roles_profiles::profiles::remove_image_build_admin
   include roles_profiles::profiles::relops_users
   # Disabled on the VM image role: safaridriver's "Allow Remote Automation"
   # enable execs drive osascript in cltbld's GUI session, which a headless VM
@@ -32,9 +31,4 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include roles_profiles::profiles::users
   include roles_profiles::profiles::vnc
   include roles_profiles::profiles::worker
-
-  # Bug 2069268: stand up the replacement drain-signal account before taking the
-  # image's build-time admin away, so a guest is never left with neither.
-  Class['roles_profiles::profiles::tart_guest_probe']
-  -> Class['roles_profiles::profiles::remove_image_build_admin']
 }
