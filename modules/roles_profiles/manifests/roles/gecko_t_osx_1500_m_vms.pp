@@ -7,6 +7,7 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include macos_utils::always_show_scroll_bars
   include macos_utils::suppress_keyboard_assistant
   include roles_profiles::profiles::cltbld_user
+  include roles_profiles::profiles::disable_image_build_admin
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_disable_firewall
   include roles_profiles::profiles::macos_tcc_perms
@@ -31,4 +32,9 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include roles_profiles::profiles::users
   include roles_profiles::profiles::vnc
   include roles_profiles::profiles::worker
+
+  # bug 2069268: stand up the replacement drain-signal account before neutralising
+  # the build-time one, so a guest is never left with neither.
+  Class['roles_profiles::profiles::tart_guest_probe']
+  -> Class['roles_profiles::profiles::disable_image_build_admin']
 }
