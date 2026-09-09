@@ -102,8 +102,8 @@ class roles_profiles::profiles::tart {
 
   # Private half of the guest drain-signal key (Bug 2069268). The guest holds the
   # public half via roles_profiles::profiles::tart_guest_probe; this is what
-  # tart-update-vms.sh authenticates with, replacing the admin/admin password login
-  # it used to send over expect.
+  # tart-update-vms.sh authenticates with, replacing the shared-credential login
+  # it used to send over expect. See bug 2069268.
   #
   # The key itself is placed OUT OF BAND and puppet does not manage its content.
   # These hosts have none of the brokered-vault plumbing -- no /var/root/.relops-role,

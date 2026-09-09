@@ -157,10 +157,7 @@ POLL_INTERVAL=30
 
 # Guest login for the reboot-window signal below.
 #
-# This used to be admin/admin sent over expect. That account was the image
-# default, published in the macos-vms packer configs, and -- because the managed
-# /etc/sudoers grants %admin NOPASSWD: ALL -- it handed passwordless root inside
-# a guest that is persistent and shared across trust levels (Bug 2069268).
+# This used to be a shared credential sent over expect; see bug 2069268.
 #
 # It is now a key-only, non-admin `probe` account whose entire privilege is one
 # sudo command: the log read below. Key is root-owned 0600 on the host, written

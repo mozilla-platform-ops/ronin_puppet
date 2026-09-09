@@ -32,7 +32,7 @@ tart:
   user: 'admin'
   manage_image: false
   launchd_type: 'daemon'
-  # Guest drain-signal key (Bug 2069268). Replaces the admin/admin password login
+  # Guest drain-signal key (bug 2069268). Replaces the shared-credential login
   # tart-update-vms.sh used to send over expect; the guest holds the public half
   # via profiles::tart_guest_probe.
   #

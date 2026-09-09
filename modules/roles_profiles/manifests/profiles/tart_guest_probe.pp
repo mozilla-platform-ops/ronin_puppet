@@ -5,20 +5,16 @@
 # Unprivileged, key-only account the tart HOST uses to read a drain signal out
 # of a tester GUEST.
 #
-# This replaces the guest `admin` account (password `admin`) that used to serve
-# the same purpose. That account was created by the Setup Assistant automation
-# in the macos-vms tester15 image build and never removed, and because the
-# puppet-managed /etc/sudoers grants `%admin ALL=(ALL) NOPASSWD: ALL`, anything
-# that could reach it had passwordless root inside a guest that is persistent
-# and reused across trust levels. See Bug 2069268.
+# This replaces a shared-credential login previously used for the same purpose.
+# Rationale is in bug 2069268 (restricted).
 #
 # The replacement is deliberately narrow:
-#   * not in the admin group, so the %admin NOPASSWD rule does not apply to it
+#   * no privileged group membership, so group-wide sudo rules do not apply to it
 #   * no password at all -- authentication is the injected public key only
-#   * exactly one sudo command, the log read the drain signal actually needs
+#   * exactly two sudo commands, both pinned to literal argv
 #
-# The private half lives on the host (profiles::tart writes it from vault); only
-# the public half is here, which is why it sits in plain role data.
+# The private half lives on the host (profiles::tart); only the public half is
+# here, which is why it sits in plain role data.
 class roles_profiles::profiles::tart_guest_probe {
   case $facts['os']['name'] {
     'Darwin': {
@@ -44,9 +40,8 @@ class roles_profiles::profiles::tart_guest_probe {
       # the SSH service ACL group, even with a valid key. Without this the key
       # authenticates and the connection is then dropped by
       #   account required pam_sacl.so sacl_service=ssh
-      # which reads as a mystery: verified on mac-63446b, ssh -vvv reported
-      # "Server accepts key" immediately followed by "Connection closed by ... port 22",
-      # and nothing appears in the guest's sshd log to explain it.
+      # which reads as a mystery: ssh -vvv reports "Server accepts key" immediately
+      # followed by "Connection closed", and nothing appears in the sshd log.
       #
       # Same dscl-append convention as profiles::cltbld_user, which is included by
       # the same role and is what creates this group in the first place.
@@ -71,11 +66,10 @@ class roles_profiles::profiles::tart_guest_probe {
       }
 
       # The health agent (relops-bootstrap tart_health_agent) reports which worker
-      # a slot registered as, which it reads out of the generic-worker config.
+      # a slot registered as, read out of the generic-worker config.
       #
-      # That file also holds worker.access_token, so the pattern is a fixed literal
-      # and -m1 stops at the first hit: only the workerId line can reach stdout, and
-      # the access-token line does not contain "workerId".
+      # That file also holds a credential, so the pattern is a fixed literal and
+      # -m1 stops at the first hit: only the workerId line can reach stdout.
       #
       # The pattern deliberately contains NO glob metacharacters. sudoers matches
       # command arguments with fnmatch(3), where [...] is a single-character class
