@@ -10,7 +10,7 @@ class macos_safaridriver (
   case $facts['os']['name'] {
     'Darwin': {
       case $facts['os']['release']['major'] {
-        '19','20','21','22','23','24': {
+        '19','20','21','22','23','24','25': {
           $perm_script = '/usr/local/bin/add_tcc_perms.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
@@ -49,15 +49,15 @@ class macos_safaridriver (
 
           # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
           if $facts['running_in_test_kitchen'] != 'true' {
-            if $facts['os']['release']['major'] in ['23', '24'] {
-              # macOS 14/15: SIP is enabled on new hardware (e.g. M4 Mac Mini).
+            if $facts['os']['release']['major'] in ['23', '24', '25'] {
+              # macOS 14/15/26: SIP is enabled on new hardware (e.g. M4 Mac Mini).
               # Running osascript via 'launchctl asuser sudo -u' does not grant full
               # GUI session access for accessibility, and the system TCC database is
               # read-only even to root. Instead, bootstrap a LaunchAgent that runs
               # osascript directly into cltbld's GUI session. The applescript handles
               # its own semaphore so it is idempotent.
               $applescript = '/usr/local/bin/safari-enable-remote-automation.applescript'
-              # macOS 14/15 requires the plist to be in ~/Library/LaunchAgents/ for
+              # macOS 14/15/26 requires the plist to be in ~/Library/LaunchAgents/ for
               # launchctl bootstrap to succeed. The auto-load race (agent loading before
               # TCC entries exist) is mitigated by requiring Exec['execute perms script']
               # before this file is deployed, and by the applescript's semaphore check.
