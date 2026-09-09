@@ -1,1 +1,2 @@
 r10k_modules/** linguist-generated=true
+modules/win_nxlog/files/papertrail-bundle.pem -text
