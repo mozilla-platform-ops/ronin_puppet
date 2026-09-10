@@ -51,11 +51,13 @@ class win_taskcluster::worker_runner (
   if $provider == 'standalone' {
     file { $runner_yml:
       content => epp('win_taskcluster/standalone_runner.yml.epp'),
+      owner   => 'SYSTEM',
     }
   }
   else {
     file { $runner_yml:
       content => epp('win_taskcluster/runner.yml.epp'),
+      owner   => 'SYSTEM',
     }
   }
   # Worker-runner/Go need the config file to have UNIX-style line endings
