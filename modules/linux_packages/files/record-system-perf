@@ -1,0 +1,160 @@
+#!/usr/bin/python3 -I
+"""Record a fixed system-wide profile; close stdin to stop, read data on stdout."""
+
+import fcntl
+import os
+import pwd
+import resource
+import select
+import shutil
+import signal
+import stat
+import subprocess
+import sys
+import tempfile
+import time
+
+STATE_DIR = "/var/lib/record-system-perf"
+MAX_SECONDS = 4200
+MAX_BYTES = 8 * 1024 * 1024 * 1024
+STOP_SECONDS = 30
+ENV = {
+    "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+    "HOME": "/root",
+    "LANG": "C",
+    "PERF_CONFIG": "/dev/null",
+    "PERF_CONFIG_NOSYSTEM": "1",
+    "PERF_CONFIG_NOGLOBAL": "1",
+}
+
+
+def command(output):
+    return [
+        "/usr/bin/timeout",
+        "--signal=INT",
+        "--kill-after=30",
+        str(MAX_SECONDS),
+        "/usr/bin/perf",
+        "record",
+        "-a",
+        "-g",
+        "-k",
+        "mono",
+        "-F",
+        "1000",
+        "--no-buildid-cache",
+        "-o",
+        output,
+    ]
+
+
+def limit_child():
+    resource.setrlimit(resource.RLIMIT_FSIZE, (MAX_BYTES, MAX_BYTES))
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+
+
+def stop_child(child):
+    if child.poll() is None:
+        child.send_signal(signal.SIGINT)
+        try:
+            child.wait(timeout=STOP_SECONDS)
+        except subprocess.TimeoutExpired:
+            os.killpg(child.pid, signal.SIGKILL)
+            child.wait()
+            raise RuntimeError("perf did not finalize within the stop deadline")
+
+
+def collect(output):
+    stopping = False
+
+    def request_stop(signum, frame):
+        nonlocal stopping
+        stopping = True
+
+    previous = {
+        sig: signal.signal(sig, request_stop)
+        for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)
+    }
+    child = None
+    try:
+        child = subprocess.Popen(
+            command(output),
+            stdin=subprocess.DEVNULL,
+            stdout=sys.stderr,
+            stderr=sys.stderr,
+            env=ENV,
+            cwd=STATE_DIR,
+            start_new_session=True,
+            preexec_fn=limit_child,
+        )
+        deadline = time.monotonic() + MAX_SECONDS
+        while not stopping and child.poll() is None:
+            if time.monotonic() >= deadline:
+                raise RuntimeError("recording exceeded maximum duration")
+            readable, _, _ = select.select([sys.stdin], [], [], 0.2)
+            if readable:
+                if os.read(sys.stdin.fileno(), 1):
+                    raise RuntimeError("stdin accepts EOF only")
+                stopping = True
+        stop_child(child)
+        if child.returncode != 0:
+            raise RuntimeError("perf exited with status {}".format(child.returncode))
+    finally:
+        try:
+            if child is not None:
+                stop_child(child)
+        finally:
+            for sig, handler in previous.items():
+                signal.signal(sig, handler)
+
+
+def open_state():
+    descriptor = os.open(STATE_DIR, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    info = os.fstat(descriptor)
+    if info.st_uid != 0 or stat.S_IMODE(info.st_mode) != 0o700:
+        os.close(descriptor)
+        raise RuntimeError("recording directory must be root-owned with mode 0700")
+    return descriptor
+
+
+def main(arguments):
+    if arguments:
+        raise RuntimeError("no arguments accepted; close stdin to stop recording")
+    if os.geteuid() != 0:
+        raise RuntimeError("must be invoked via sudo")
+    account = pwd.getpwnam("cltbld")
+    if os.environ.get("SUDO_UID") != str(account.pw_uid) or account.pw_uid == 0:
+        raise RuntimeError("only cltbld may request recording")
+    os.umask(0o077)
+    os.chdir("/")
+    descriptor = open_state()
+    result = None
+    try:
+        # Lock the protected directory inode; never open a task-supplied lock path.
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with tempfile.TemporaryDirectory(dir=STATE_DIR) as directory:
+            output = os.path.join(directory, "perf.data")
+            collect(output)
+            result = open(output, "rb")
+            info = os.fstat(result.fileno())
+            if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= MAX_BYTES:
+                raise RuntimeError("invalid recording output")
+        # The open result survives unlinking, with no privileged files left behind.
+        os.setgroups([])
+        os.setgid(account.pw_gid)
+        os.setuid(account.pw_uid)
+        shutil.copyfileobj(result, sys.stdout.buffer)
+        sys.stdout.buffer.flush()
+    finally:
+        if result is not None:
+            result.close()
+        os.close(descriptor)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except (OSError, RuntimeError) as error:
+        print("record-system-perf: {}".format(error), file=sys.stderr)
+        sys.exit(1)
