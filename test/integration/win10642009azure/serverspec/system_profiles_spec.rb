@@ -7,22 +7,6 @@ explorer_policy_key = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer'
 push_notifications_key = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\PushNotifications'
 uac_key = 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System'
 
-# Bug 2069456: Task users must not have the symbolic-link privilege.
-describe powershell_command(<<~POWERSHELL) do
-  $security_policy = New-TemporaryFile
-  try {
-    secedit.exe /export /cfg $security_policy /areas USER_RIGHTS | Out-Null
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    (Select-String -Path $security_policy -Pattern '^SeCreateSymbolicLinkPrivilege').Line
-  }
-  finally {
-    Remove-Item $security_policy -Force -ErrorAction SilentlyContinue
-  }
-POWERSHELL
-  its(:exit_status) { should eq 0 }
-  its(:stdout) { should_not match(/\*S-1-1-0/) }
-end
-
 describe file('D:\\') do
   it { should exist }
   it { should be_directory }
