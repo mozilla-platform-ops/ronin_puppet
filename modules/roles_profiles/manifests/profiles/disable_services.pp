@@ -75,8 +75,21 @@ class roles_profiles::profiles::disable_services {
           ## Can't disable appxsvc on ref hardware as it will affect the task
           ## user's ability to use codecs
           ## Ref: https://bugzilla.mozilla.org/show_bug.cgi?id=2013985
-          if $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref-alpha' and
-              $facts['custom_win_worker_pool_id'] != 'win11-64-24h2-hw-ref' {
+          ##
+          ## The bake DOES disable it (deliberately - see below), so declining to disable at
+          ## deploy time is not enough on a pre-baked WIM: the image arrives with AppXSvc
+          ## Start=4 plus the \Hardening\Hard-Disable-AppXSvc startup task, and nothing ever
+          ## undoes them. ref/ref-alpha therefore need an ACTIVE re-enable, not an exemption.
+          ##
+          ## Staging vs registration: the HEVC/AV1/VP9/WebMedia packages are PROVISIONED into
+          ## the image at bake time, which is DISM-level and needs no AppXSvc. Only the
+          ## per-user registration that happens when a task_* user first logs on needs the
+          ## service running. So the split is: stage at bake, register at deploy. RELOPS-2487.
+          if $facts['custom_win_worker_pool_id'] == 'win11-64-24h2-hw-ref-alpha' or
+              $facts['custom_win_worker_pool_id'] == 'win11-64-24h2-hw-ref' {
+            include win_disable_services::enable_appxsvc
+          }
+          else {
             include win_disable_services::disable_appxsvc
           }
         }
