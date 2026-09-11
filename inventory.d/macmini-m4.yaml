@@ -64,8 +64,6 @@ groups:
       - macmini-m4-108.test.releng.mdc1.mozilla.com
       - macmini-m4-109.test.releng.mdc1.mozilla.com
       - macmini-m4-110.test.releng.mdc1.mozilla.com
-      - macmini-m4-130.test.releng.mdc1.mozilla.com
-      - macmini-m4-131.test.releng.mdc1.mozilla.com
       - macmini-m4-132.test.releng.mdc1.mozilla.com
       - macmini-m4-133.test.releng.mdc1.mozilla.com
       - macmini-m4-134.test.releng.mdc1.mozilla.com
@@ -155,6 +153,19 @@ groups:
       - macmini-m4-234.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: gecko_t_osx_1500_m4
+
+  - name: gecko-t-osx-2600-m4-staging
+    targets:
+    # New targets go here
+    facts:
+      puppet_role: gecko_t_osx_2600_m4_staging
+
+  - name: gecko-t-osx-2600-m4
+    targets:
+      - macmini-m4-130.test.releng.mdc1.mozilla.com
+      - macmini-m4-131.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_2600_m4
 
   - name: gecko-1-b-osx-arm64
     targets:

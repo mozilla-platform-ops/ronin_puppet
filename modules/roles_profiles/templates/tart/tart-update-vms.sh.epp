@@ -11,6 +11,8 @@
       String  $tc_root_url,
       String  $tc_worker_pool,
       Integer $drain_timeout,
+      String  $probe_user,
+      String  $probe_key_path,
 | -%>
 #!/bin/bash
 # Rolling, drain-aware VM image update for a tart host.
@@ -153,12 +155,15 @@ start_unit() {  # $1 = slot index
 IDLE_CONFIRMATIONS=2
 POLL_INTERVAL=30
 
-# Guest login for the reboot-window signal below. These images have no key auth, so
-# the password is the only way in; it is the image default and is already in the
-# macos-vms packer configs and in hangar-tart-health-agent, so this is not a secret
-# being newly exposed.
-GUEST_USER=admin
-GUEST_PASS=admin
+# Guest login for the reboot-window signal below.
+#
+# This used to be a shared credential sent over expect; see bug 2069268.
+#
+# It is now a key-only, non-admin `probe` account whose entire privilege is one
+# sudo command: the log read below. Key is root-owned 0600 on the host, written
+# by profiles::tart from vault.
+GUEST_USER=<%= $probe_user %>
+GUEST_KEY=<%= $probe_key_path %>
 
 # workerId a VM registers as = mac-<last 3 MAC octets> (see set_hostname.sh).
 # Non-zero (and no output) when it cannot be determined.
@@ -253,34 +258,35 @@ else:
 # task has resolved and generic-worker has exited — so an increase is proof that nothing
 # is running, observed from inside the guest rather than inferred from a lagging listing.
 #
-# The probe is base64'd and the password matched on its own line with a glob. Both are
-# deliberate: hangar-tart-health-agent had this exact code interpolating a multi-line
-# script into a Tcl double-quoted spawn argument (Tcl ate the $ and [ ]) and matching the
-# prompt with a single-line `-re` form that never sent the password. Neither worked for
-# months. See relops-bootstrap#70.
+# Key auth, so no expect wrapper. The old password form drove ssh through expect and was
+# fragile for exactly the reasons recorded in relops-bootstrap#70 (Tcl ate the $ and [ ]
+# out of an interpolated multi-line probe, and a single-line -re never matched the prompt,
+# so it silently did nothing for months). Passing the command as a single argv element to
+# ssh -i removes both the Tcl layer and the shared password.
 guest_reboot_count() {  # $1 = vm name
-  local vm="$1" ip b64 out
+  local vm="$1" ip out
   ip=$(tart_user ip "${vm}" --wait 5 2>/dev/null | head -1)
   [ -z "${ip}" ] && return 1
-  # sudo, because /opt/worker/logs is 0700 cltbld and the guest login is admin. And NO
-  # `|| echo 0` fallback: a masked failure would report 0 forever, the drain would read
-  # "no reboot yet" for the whole DRAIN_TIMEOUT, and the signal would be silently dead.
-  # Emitting nothing instead makes the function return 1 and the caller fall back to the
-  # listing. (`grep -c` prints 0 and exits 1 on a genuine zero, so real zeros survive.)
-  b64=$(printf '%s' 'sudo -n grep -ac REBOOT /opt/worker/logs/stdout.log 2>/dev/null' | base64)
-  cat > /tmp/.tart_roll_gp.exp <<EXPEOF
-log_user 1
-set timeout 45
-spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR ${GUEST_USER}@${ip} "echo ${b64} | base64 -d | bash"
-expect {
-  "assword:" { send "${GUEST_PASS}\r" }
-  timeout { exit 1 }
-  eof { exit 1 }
-}
-expect eof
-EXPEOF
-  out=$(/usr/bin/expect /tmp/.tart_roll_gp.exp 2>/dev/null | tr -d '\r' | grep -oE '^[0-9]+$' | tail -1)
-  rm -f /tmp/.tart_roll_gp.exp
+  [ -r "${GUEST_KEY}" ] || { log "  probe key ${GUEST_KEY} missing/unreadable"; return 1; }
+  # sudo, because /opt/worker/logs is 0700 cltbld and the probe account is unprivileged.
+  # This exact command is the only thing the probe account may run as root (ronin_puppet
+  # profiles::tart_guest_probe). And NO `|| echo 0` fallback: a masked failure would
+  # report 0 forever, the drain would read "no reboot yet" for the whole DRAIN_TIMEOUT,
+  # and the signal would be silently dead. Emitting nothing instead makes the function
+  # return 1 and the caller fall back to the listing. (`grep -c` prints 0 and exits 1 on
+  # a genuine zero, so real zeros survive.)
+  out=$(/usr/bin/ssh \
+          -i "${GUEST_KEY}" \
+          -o IdentitiesOnly=yes \
+          -o PreferredAuthentications=publickey \
+          -o BatchMode=yes \
+          -o StrictHostKeyChecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          -o LogLevel=ERROR \
+          -o ConnectTimeout=15 \
+          "${GUEST_USER}@${ip}" \
+          'sudo -n /usr/bin/grep -ac REBOOT /opt/worker/logs/stdout.log' 2>/dev/null \
+        | tr -d '\r' | grep -oE '^[0-9]+$' | tail -1)
   [ -z "${out}" ] && return 1
   printf '%s' "${out}"
 }

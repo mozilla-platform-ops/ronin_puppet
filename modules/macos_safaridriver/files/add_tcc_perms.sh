@@ -87,7 +87,7 @@ fi
 # silently fail or `set -e`-abort). On SIP-off hosts (existing pre-PR prod m4
 # fleet) we still write the system-DB entries directly so those workers keep
 # the grants they've always had. User-DB writes happen on every host.
-if [[ "$os_version" == "14."* || "$os_version" == "15."* ]]; then
+if [[ "$os_version" == "14."* || "$os_version" == "15."* || "$os_version" == "26."* ]]; then
     if [ "$SIP_DISABLED" = "true" ]; then
         # System-level entries — only when SIP allows direct writes.
         system_queries=(

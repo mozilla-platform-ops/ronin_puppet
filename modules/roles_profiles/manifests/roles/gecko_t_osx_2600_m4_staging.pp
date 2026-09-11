@@ -2,14 +2,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::gecko_t_osx_1500_m_vms {
+class roles_profiles::roles::gecko_t_osx_2600_m4_staging {
   include macos_utils::disable_bluetooth_setup
   include macos_utils::always_show_scroll_bars
   include macos_utils::suppress_keyboard_assistant
   include roles_profiles::profiles::cltbld_user
-  include roles_profiles::profiles::disable_image_build_admin
   include roles_profiles::profiles::macos_bin_signer
+  include roles_profiles::profiles::macos_directory_cleaner
   include roles_profiles::profiles::macos_disable_firewall
+  include roles_profiles::profiles::macos_gw_checker
+  include roles_profiles::profiles::macos_people_remover
+  include roles_profiles::profiles::macos_run_puppet
+  include roles_profiles::profiles::macos_screenshot_helper
   include roles_profiles::profiles::macos_tcc_perms
   include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::motd
@@ -19,22 +23,11 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include roles_profiles::profiles::pipconf
   include roles_profiles::profiles::power_management
   include roles_profiles::profiles::relops_users
-  # Disabled on the VM image role: safaridriver's "Allow Remote Automation"
-  # enable execs drive osascript in cltbld's GUI session, which a headless VM
-  # image build doesn't have — they hang on the Accessibility/auth prompts and
-  # fail phase-2 puppet non-deterministically. These VMs don't run Safari/perf
-  # tasks, so we skip the profile entirely.
-  # include roles_profiles::profiles::safaridriver
+  include roles_profiles::profiles::safaridriver
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::talos
-  include roles_profiles::profiles::tart_guest_probe
   include roles_profiles::profiles::timezone
   include roles_profiles::profiles::users
   include roles_profiles::profiles::vnc
   include roles_profiles::profiles::worker
-
-  # bug 2069268: stand up the replacement drain-signal account before neutralising
-  # the build-time one, so a guest is never left with neither.
-  Class['roles_profiles::profiles::tart_guest_probe']
-  -> Class['roles_profiles::profiles::disable_image_build_admin']
 }

@@ -26,6 +26,7 @@ describe powershell_command(<<~POWERSHELL) do
   . '#{task_script_dir}\\maintainsystem.ps1'
 
   $requiredSizes = @(
+    'Standard_D32ads_v7'
     'Standard_F8alds_v7'
     'Standard_F8ads_v7'
   )
@@ -145,6 +146,11 @@ end
 
 describe file('C:\\Program Files (x86)\\nxlog\\conf\\nxlog.conf') do
   it { should exist }
+end
+
+describe powershell_command("(Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\\Program Files (x86)\\nxlog\\cert\\papertrail-bundle.pem').Hash") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(/^AE31ECB3C6E9FF3154CB7A55F017090448F88482F0E94AC927C0C67A1F33B9CF\s*$/) }
 end
 
 describe service_property_command('nxlog', 'State') do

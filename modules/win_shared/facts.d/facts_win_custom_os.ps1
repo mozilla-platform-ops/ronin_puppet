@@ -77,6 +77,10 @@ if ($os_caption -like "*windows_10*") {
 } elseif ($os_caption -like "*2022*") {
 	$os_version = (-join( "win_2022_", $release_id))
 	$purpose = 'builder'
+} elseif ($os_caption -like "*2025*") {
+	# The Server 2025 marketplace image reports the legacy ReleaseId 2009.
+	$os_version = (-join( "win_2025_", $release_id))
+	$purpose = 'builder'
 } else {
 	$os_version = $null
 }

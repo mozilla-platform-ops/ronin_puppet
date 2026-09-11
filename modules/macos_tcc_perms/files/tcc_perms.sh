@@ -241,7 +241,7 @@ elif [[ "$macos_major_version" -eq 11 || "$macos_major_version" -eq 12 || "$maco
     for query in "${queries_11_12_13[@]}"; do
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
-elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 ]]; then
+elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 || "$macos_major_version" -eq 26 ]]; then
     wait_for_user_db_or_defer
     for query in "${queries_14_user[@]}"; do
         execute_query "$USER_TCC_DB" "$query"

@@ -66,3 +66,9 @@ repos:
       language: system
       entry: .pre-commit/templated_script_checker.py
       types: [file]
+    - id: kitchen-linux-converge-test
+      name: Test Kitchen Linux converge retries
+      language: system
+      entry: .github/scripts/test_kitchen_linux_converge.sh
+      pass_filenames: false
+      files: '^\.github/(scripts/(test_)?kitchen_linux_converge\.sh|workflows/kitchen-linux\.yml)$'

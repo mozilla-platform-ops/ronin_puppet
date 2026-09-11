@@ -166,8 +166,18 @@ elsif os.family == 'debian' && os.release.start_with?('24.04')
     # it { should be_running }
   end
 
-  # nvidia packages should be absent
-  describe command('dpkg -l | grep nvidia-') do
+  # nvidia packages should be absent -- they conflict with the intel GPU on the
+  # moonshot workers, which is why linux_gui purges them.
+  #
+  # Firmware is excluded deliberately. Ubuntu ships linux-firmware-nvidia-graphics
+  # in the base image; it is a firmware blob, not part of the driver stack, it is
+  # inert on an intel GPU, and puppet neither installs nor removes it. The previous
+  # form of this test was `dpkg -l | grep nvidia-`, which substring-matched the whole
+  # dpkg line and so failed on that package while the role was behaving correctly.
+  #
+  # Everything else that was caught before is still caught, including
+  # xserver-xorg-video-nvidia-*, which does not start with "nvidia-".
+  describe command("dpkg-query -W -f='${Package}\\n' | grep nvidia | grep -v '^linux-firmware-'") do
     its(:stdout) { should eq "" }
   end
 
