@@ -9,6 +9,27 @@ class roles_profiles::profiles::linux_perf_profiling {
 
   require linux_packages::linux_tools
 
+  file { '/usr/local/bin/record-system-perf':
+    ensure => file,
+    source => 'puppet:///modules/linux_packages/record-system-perf',
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+
+  file { '/var/lib/record-system-perf':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0700',
+  }
+
+  sudo::custom { 'allow_cltbld_record_system_perf':
+    user    => 'cltbld',
+    command => '/usr/local/bin/record-system-perf ""',
+  }
+
+  # Remove after Firefox's Raptor callers migrate to record-system-perf (LS-002).
   sudo::custom { 'allow_cltbld_perf':
     user    => 'cltbld',
     command => '/usr/bin/perf',
