@@ -131,6 +131,62 @@ function run_puppet {
     esac
 }
 
+# Fetch /root/vault.yaml from the relops-bootstrap vault-broker via mTLS,
+# using a step-ca-issued client cert that the operator's deliver_linux.sh
+# script staged at /etc/relops-bootstrap/. No-op if /root/vault.yaml is
+# already present (e.g. legacy hand-drop or already-fetched).
+#
+# See https://github.com/mozilla-platform-ops/relops-bootstrap for the
+# broker architecture. Per-role SCEP provisioners on step-ca issue certs
+# with the worker's puppet_role bound into the SPIFFE URI of the cert SAN;
+# the broker enforces that role matches the URL path.
+function fetch_vault_yaml_via_mtls {
+    local cert_dir=/etc/relops-bootstrap
+    local cert=$cert_dir/cert.pem
+    local key=$cert_dir/key.pem
+    local broker_host=forge.relops.mozilla.com
+    local role_file=/etc/puppet_role
+
+    if [ -f /root/vault.yaml ]; then
+        echo "/root/vault.yaml already present, skipping mTLS fetch"
+        return 0
+    fi
+
+    if [ ! -r "$cert" ] || [ ! -r "$key" ]; then
+        echo "no client cert at $cert_dir; skipping mTLS fetch (legacy hand-drop expected)"
+        return 0
+    fi
+
+    if [ ! -r "$role_file" ]; then
+        fail "/etc/puppet_role not set; can't determine role to fetch from broker"
+    fi
+    local role
+    role=$(tr -d '[:space:]' < "$role_file")
+    echo "fetching vault.yaml for role=$role via mTLS from $broker_host"
+
+    local tmp
+    tmp=$(mktemp /root/.vault-yaml.XXXXXX)
+    local http
+    if ! http=$(curl -sS --fail-with-body --max-time 30 \
+                --cert "$cert" --key "$key" \
+                -w '%{http_code}' \
+                -o "$tmp" \
+                "https://${broker_host}/secret/${role}"); then
+        rm -f "$tmp"
+        fail "broker fetch failed: curl exited non-zero"
+    fi
+    if [ "$http" != "200" ]; then
+        cat "$tmp" >&2 || true
+        rm -f "$tmp"
+        fail "broker returned HTTP $http"
+    fi
+
+    chmod 0640 "$tmp"
+    chown root:root "$tmp"
+    mv "$tmp" /root/vault.yaml
+    echo "vault.yaml fetched ($(wc -c < /root/vault.yaml) bytes)"
+}
+
 # If something fails hard, either exit for interactive or hang for non-interactive
 function fail {
     # TODO: emit an critical error event so provisioner knows this node needs to be handled
@@ -176,9 +232,17 @@ if [ "$(uname -s)" != "Linux" ]; then
     exit 1
 fi
 
+# If deliver_linux.sh staged a step-ca client cert at /etc/relops-bootstrap/,
+# fetch /root/vault.yaml from the broker via mTLS. If the cert isn't staged,
+# we fall through to the legacy "vault.yaml must be hand-dropped" check.
+fetch_vault_yaml_via_mtls
+
 # check for /root/vault.yaml
 if [ ! -f /root/vault.yaml ]; then
     echo "Missing /root/vault.yaml, this file is required for the bootstrap script to run."
+    echo "Either operator drops it directly (legacy flow) or operator stages"
+    echo "/etc/relops-bootstrap/{cert,key}.pem so this script can fetch it via mTLS"
+    echo "from forge.relops.mozilla.com."
     exit 1
 fi
 
