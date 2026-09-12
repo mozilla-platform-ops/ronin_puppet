@@ -49,6 +49,23 @@ class roles_profiles::profiles::disable_services {
         case $facts['custom_win_location'] {
           'datacenter': {
             include win_disable_services::disable_optional_services
+            # Disable Windows Defender real-time/on-access scanning on the
+            # datacenter hardware fleet explicitly. Do NOT rely on the
+            # custom_win_release_id in ['2004','2009'] gate above: Win11 freezes
+            # ReleaseId at 2009 (DisplayVersion carries 24H2), so that branch
+            # only fires by coincidence and would silently stop disabling
+            # Defender if the reported ReleaseId ever changed. Including the
+            # class is idempotent, so this is harmless where the gate also fires.
+            # Tamper Protection is enforced on this fleet (TamperProtectionSource=5),
+            # so Set-MpPreference / policy DisableRealtimeMonitoring do not stick;
+            # the schtask renames the WdFilter/WdBoot/WdNisDrv drivers at boot,
+            # which works below Tamper Protection. State is asserted by the
+            # win_nsclient check_defender check.
+            include win_disable_services::disable_windows_defender_schtask
+            # Declare the policy/passive/real-time-off intent. Ignored while Tamper
+            # Protection is on (the schtask rename is what works there), but correct
+            # and immediate on any Tamper-off image.
+            include win_disable_services::disable_windows_defender
           }
           'azure': {
             $apx_uninstall = 'uninstall.ps1'
