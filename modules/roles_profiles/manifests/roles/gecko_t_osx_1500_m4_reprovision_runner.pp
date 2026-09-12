@@ -13,6 +13,7 @@ class roles_profiles::roles::gecko_t_osx_1500_m4_reprovision_runner {
   include macos_utils::suppress_keyboard_assistant
 
   # access + management
+  include roles_profiles::profiles::macos_sbom
   include roles_profiles::profiles::relops_users
   include roles_profiles::profiles::users
   include roles_profiles::profiles::sudo
