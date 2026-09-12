@@ -28,6 +28,32 @@ class roles_profiles::roles::mac_v4_signing_dep_vms {
   #   over SSH as `admin` with a password, so enabling Duo mid-build locks the
   #   remaining provisioners out of the guest. A VM is reached through its Tart
   #   host rather than directly, so the second factor belongs on the host.
+  #
+  # Excluded: roles_profiles::profiles::vault_agent
+  #   It pulls in packages::vault, which installs a June-2021, Intel-only vault
+  #   build from S3 whose code-signing certificate has since been REVOKED:
+  #
+  #     $ spctl -a -vv /usr/local/bin/vault
+  #     /usr/local/bin/vault: CSSMERR_TP_CERT_REVOKED
+  #     $ file /usr/local/bin/vault
+  #     Mach-O 64-bit executable x86_64
+  #
+  #   macOS reports that as malware on sight: a full "vault will damage your
+  #   computer / Report malware to Apple" alert on first GUI login. It comes from
+  #   XProtect scanning the file, so disabling the LaunchDaemon does NOT help
+  #   (measured: the daemon was disabled and the alert still fired). The binary
+  #   cannot execute either — launchctl shows vault-agent never running and
+  #   /var/log/vault-agent.log is never created.
+  #
+  #   vault-agent also cannot function in a credential-free VM image, which has
+  #   no AppRole id/secret. So the profile contributes nothing here except a
+  #   macOS malware alert.
+  #
+  #   Re-add it once a current, notarised, universal vault binary is published to
+  #   S3 and packages::vault::version is bumped. NB this likely affects the
+  #   bare-metal signers too: on fx-mac-v4-signing01 /etc/vault_approle_secret is
+  #   zero bytes and /etc/vault_token does not exist — exactly what a vault-agent
+  #   that has never started looks like.
   include roles_profiles::profiles::gui
   include fw::roles::mac_signing
   include roles_profiles::profiles::macos_people_remover
@@ -43,6 +69,5 @@ class roles_profiles::roles::mac_v4_signing_dep_vms {
   include roles_profiles::profiles::sudo
   include roles_profiles::profiles::timezone
   include roles_profiles::profiles::users
-  include roles_profiles::profiles::vault_agent
   include roles_profiles::profiles::vnc
 }
