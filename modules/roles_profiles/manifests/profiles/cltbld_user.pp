@@ -130,9 +130,21 @@ class roles_profiles::profiles::cltbld_user {
         default => ['/usr/local/bin/run-puppet.sh'],
       }
 
+      # Per-task reversion (bug 2071007) halts the guest instead of rebooting, so
+      # cltbld needs sudo for the poweroff on those roles. Gated to roles that set
+      # post_task_action: halt (the tart VM guests); every other role keeps only
+      # /sbin/reboot. The args are pinned exactly ('-h now', no glob metacharacters)
+      # so this does not widen cltbld to an arbitrary shutdown. Must stay in step
+      # with the lookup in profiles::worker.
+      $post_task_action = lookup('post_task_action', Enum['reboot', 'halt'], 'first', 'reboot')
+      $halt_sudo = $post_task_action ? {
+        'halt'  => ['/sbin/shutdown -h now'],
+        default => [],
+      }
+
       $sudo_commands = [
         '/sbin/reboot',
-      ] + $run_puppet_sudo + $reclaim_sudo_commands
+      ] + $run_puppet_sudo + $reclaim_sudo_commands + $halt_sudo
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',

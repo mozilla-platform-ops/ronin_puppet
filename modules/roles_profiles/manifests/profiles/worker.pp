@@ -46,6 +46,14 @@ class roles_profiles::profiles::worker {
       # reason `taskcluster_version` above is read from the top level.
       $reclaim_free_space_gb = lookup('reclaim_free_space_gb', Optional[Integer], 'first', undef)
 
+      # End-of-task action. 'halt' powers the guest off after each task so the
+      # host's tartworker daemon reclones a fresh VM (per-task reversion, bug
+      # 2071007); it is safe ONLY on the tart VM guests. Every other role must
+      # keep the default 'reboot'. Top-level role key for the same reason as
+      # reclaim_free_space_gb above: a `worker.` sub-key would be shadowed by
+      # vault's `worker:` hash and silently ignored.
+      $post_task_action = lookup('post_task_action', Enum['reboot', 'halt'], 'first', 'reboot')
+
       class { 'worker_runner':
         taskcluster_version   => $taskcluster_version,
         signed_binaries       => $signed_binaries,
@@ -60,6 +68,7 @@ class roles_profiles::profiles::worker {
         idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
         task_user_password    => $task_user_password,
         reclaim_free_space_gb => $reclaim_free_space_gb,
+        post_task_action      => $post_task_action,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc

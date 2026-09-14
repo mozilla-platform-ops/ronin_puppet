@@ -161,8 +161,17 @@ else
     sleep 30
 fi
 
+<% if @post_task_action == 'halt' -%>
+# Per-task reversion (bug 2071007): power the guest OFF instead of rebooting. A
+# guest reboot keeps `tart run` alive on the host, so the host would never
+# reclone; halting exits `tart run`, and the host's tartworker KeepAlive daemon
+# relaunches the wrapper, which clones a fresh guest before the next boot.
+echo "HALT $(date)  (per-task reversion: host reclones a fresh guest)"
+/usr/bin/sudo /sbin/shutdown -h now
+<% else -%>
 echo "REBOOT $(date)"
 /usr/bin/sudo /sbin/reboot
+<% end -%>
 # Sleep to prevent this script from terminating naturally, and launchd restarting
 # it. Instead, the shutdown should cause this script to terminate (so it won't
 # really sleep for 2 mins). If shutdown doesn't kick in within 2 mins, it is sane

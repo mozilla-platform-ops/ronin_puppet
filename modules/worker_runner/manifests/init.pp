@@ -40,6 +40,18 @@ class worker_runner (
     # a ~74 GB image baseline leaves ~20 GiB headroom, where sampled bare-metal
     # testers sit at 89-154 GiB free with caches of 1-3 GB rather than 12-29 GB.
     Optional[Integer] $reclaim_free_space_gb                                = undef,
+    # End-of-task action for the worker-runner wrapper. 'reboot' (the default) is
+    # correct for every physical host and Windows role: they reboot in place
+    # between tasks. 'halt' is for tart VM GUESTS ONLY, doing per-task reversion
+    # (bug 2071007): the guest powers OFF after each task so the HOST's tartworker
+    # KeepAlive daemon relaunches its wrapper, which reclones a fresh guest before
+    # the next `tart run`. An in-guest reboot would restart the guest OS without
+    # `tart run` ever exiting, so it would never trigger the host-side reclone --
+    # halt is what makes the VM power off and the wrapper fire.
+    #
+    # NEVER set 'halt' on a physical host: it would power the machine off with
+    # nothing to turn it back on. Gated to the guest role only; default reboot.
+    Enum['reboot', 'halt'] $post_task_action                                = 'reboot',
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
