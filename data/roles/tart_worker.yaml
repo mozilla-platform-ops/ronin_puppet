@@ -25,13 +25,22 @@ tart:
   registry_host: '10.49.56.161'
   registry_port: 5000
   oci_image: 'sequoia-tester'
-  oci_tag: 'prod-latest'
+  # CANARY (bug 2071007): point at the canary image, which bakes PUPPET_BRANCH ->
+  # canary-2071007-multiuser-static so its guests come up multiuser-static + halt.
+  # Set this to the tag actually published by the canary build before applying to
+  # the canary host. Other hosts stay on prod-latest (they run puppet from master,
+  # manually, so this branch does not reach them).
+  oci_tag: 'canary-2071007'
   vm_name_prefix: 'sequoia-tester'
   worker_count: 2
   insecure: true
   user: 'admin'
   manage_image: false
   launchd_type: 'daemon'
+  # CANARY (bug 2071007): reclone a fresh guest before each `tart run`, preserving
+  # the slot MAC so the workerId is stable. Pairs with post_task_action: halt in
+  # the guest role. Canary-branch only; do NOT merge to master until validated.
+  revert_after_task: true
   # Guest drain-signal key (bug 2069268). Replaces the shared-credential login
   # tart-update-vms.sh used to send over expect; the guest holds the public half
   # via profiles::tart_guest_probe.

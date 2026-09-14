@@ -50,6 +50,25 @@ worker:
 # script, no sudoers grant and no call in worker-runner.sh.
 reclaim_free_space_gb: 30
 
+# CANARY (bug 2071007 + engine modernization). Both are TOP-LEVEL keys, NOT under
+# the `worker:` hash above: secrets/vault.yaml owns a `worker:` hash that shadows
+# any nested sub-key, so these only resolve from the top level (same reason as
+# reclaim_free_space_gb). profiles::worker prefers a top-level generic_worker_engine
+# over the vault value (the engine-control migration), so this flips the engine
+# without a vault edit.
+#
+# generic_worker_engine: multiuser-static -- current supported engine; enables
+#   chain-of-trust and moving profile generation off bare metal.
+# post_task_action: halt -- power the guest off after each task so the host
+#   tartworker wrapper reclones a fresh guest (per-task reversion). Requires the
+#   host to run with tart.revert_after_task: true (data/roles/tart_worker.yaml).
+#
+# This lives on the canary branch only; a canary image baked with
+# PUPPET_BRANCH pointing here applies it on ONE host. Do NOT merge to master until
+# validated -- merging flips the whole pool live on next guest boot.
+generic_worker_engine: multiuser-static
+post_task_action: halt
+
 packages_classes:
   - mercurial
   - nodejs
