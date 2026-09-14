@@ -37,14 +37,29 @@
 class roles_profiles::profiles::disable_image_build_admin {
   case $facts['os']['name'] {
     'Darwin': {
-      $build_user = lookup('image_build_admin.user', String, 'first', 'admin')
-      $paths      = ['/usr/bin', '/usr/sbin', '/bin', '/sbin']
+      $build_user   = lookup('image_build_admin.user', String, 'first', 'admin')
+      $build_marker = lookup('image_build_admin.build_marker', String, 'first', '/var/root/.image-build-in-progress')
+      $paths        = ['/usr/bin', '/usr/sbin', '/bin', '/sbin']
+
+      # Do nothing while an image build is in progress.
+      #
+      # The packer build provisions THROUGH this account -- every phase connects
+      # as it, and packer's own graceful shutdown sudos as it. But the build also
+      # runs run-puppet.sh in phase 1, which applies this whole role. Without this
+      # guard the account is neutralised two phases early and the build wedges at
+      # "Gracefully shutting down the VM" with "sudo: no password was provided".
+      #
+      # The build drops this marker before its first puppet run and removes it as
+      # its last act, at which point it neutralises the account itself. So the
+      # image ships in the same end state, just reached by the build rather than
+      # by puppet mid-build.
 
       # `grep -w` on the group list, not a substring match: the account name also
       # appears inside unrelated group names such as _appserveradm.
       exec { 'demote_image_build_admin':
         command => "/usr/sbin/dseditgroup -o edit -d ${build_user} -t user admin",
         onlyif  => "/usr/bin/id -Gn ${build_user} | /usr/bin/grep -qw admin",
+        unless  => "/bin/test -f ${build_marker}",
         path    => $paths,
       }
 
@@ -54,7 +69,10 @@ class roles_profiles::profiles::disable_image_build_admin {
       exec { 'disable_image_build_admin':
         command => "/usr/bin/pwpolicy -u ${build_user} -disableuser",
         onlyif  => "/usr/bin/id -u ${build_user}",
-        unless  => "/usr/bin/id -Gn ${build_user} | /usr/bin/grep -qw com.apple.access_disabled",
+        unless  => [
+          "/usr/bin/id -Gn ${build_user} | /usr/bin/grep -qw com.apple.access_disabled",
+          "/bin/test -f ${build_marker}",
+        ],
         path    => $paths,
         require => Exec['demote_image_build_admin'],
       }

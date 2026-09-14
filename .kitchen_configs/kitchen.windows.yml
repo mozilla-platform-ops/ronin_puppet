@@ -60,17 +60,10 @@ platforms:
   - name: win11-64-25h2
     driver:
       <<: *windows_driver_defaults
-      machine_size: 'Standard_F8s_v2'
-      spot_instance: true
-      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
-      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2
-  - name: win11-64-25h2-amd-v7
-    driver:
-      <<: *windows_driver_defaults
       machine_size: 'Standard_F8alds_v7'
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
-      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-amd-v7
+      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2
   - name: win11-64-25h2-gpu
     driver:
       <<: *windows_driver_defaults
@@ -172,7 +165,6 @@ suites:
     includes:
       - win11-64-24h2
       - win11-64-25h2
-      - win11-64-25h2-amd-v7
       - win11-64-25h2-gpu
       - win11-a64-25h2-builder
       - win11-a64-25h2-tester

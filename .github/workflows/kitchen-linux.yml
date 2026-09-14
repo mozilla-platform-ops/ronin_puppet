@@ -59,7 +59,7 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: bundle exec kitchen converge ${{ matrix.kitchen_target }}
+        run: .github/scripts/kitchen_linux_converge.sh ${{ matrix.kitchen_target }}
 
       - name: Kitchen verify
         run: bundle exec kitchen verify ${{ matrix.kitchen_target }}
