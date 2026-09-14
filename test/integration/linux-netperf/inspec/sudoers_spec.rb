@@ -9,5 +9,5 @@ end
 describe file('/usr/local/bin/netperf-tc') do
   it { should exist }
   it { should be_owned_by 'root' }
-  it { should be_mode 755 }
+  its('mode') { should cmp '0755' }
 end

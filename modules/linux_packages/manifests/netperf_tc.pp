@@ -3,7 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class linux_packages::netperf_tc {
-  package { ['iproute2', 'python3']:
+  require linux_packages::py3
+
+  package { 'iproute2':
     ensure => installed,
   }
 
