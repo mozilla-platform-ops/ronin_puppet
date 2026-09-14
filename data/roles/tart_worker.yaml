@@ -27,10 +27,10 @@ tart:
   oci_image: 'sequoia-tester'
   # CANARY (bug 2071007): point at the canary image, which bakes PUPPET_BRANCH ->
   # canary-2071007-multiuser-static so its guests come up multiuser-static + halt.
-  # Set this to the tag actually published by the canary build before applying to
-  # the canary host. Other hosts stay on prod-latest (they run puppet from master,
-  # manually, so this branch does not reach them).
-  oci_tag: 'canary-2071007'
+  # This is the tag the non-main macos-vms build publishes for the canary-2071007
+  # branch (ALIAS_TAG=pr-<slug>-latest). Other hosts stay on prod-latest (they run
+  # puppet from master, manually, so this branch does not reach them).
+  oci_tag: 'pr-canary-2071007-latest'
   vm_name_prefix: 'sequoia-tester'
   worker_count: 2
   insecure: true
