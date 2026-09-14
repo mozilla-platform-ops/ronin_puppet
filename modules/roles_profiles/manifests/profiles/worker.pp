@@ -5,7 +5,21 @@
 class roles_profiles::profiles::worker {
   case $facts['os']['name'] {
     'Darwin': {
-      $generic_worker_engine = lookup('worker.generic_worker_engine')
+      # Engine precedence -- moving control out of vault, the same pattern as
+      # taskcluster_version below. Prefer a role-owned TOP-LEVEL
+      # `generic_worker_engine` (managed here in ronin role data) so flipping the
+      # engine is a puppet change workers pick up on their next run, and so it can
+      # be canaried on one role/host. Fall back to the legacy vault-provided
+      # `worker.generic_worker_engine` for roles not yet migrated. The fallback is
+      # lazy (only evaluated when the role key is unset) so it won't error once
+      # vault's value is retired. NOTE: a `generic_worker_engine` nested under a
+      # role's `worker:` hash does NOT count -- vault's `worker:` hash shadows it
+      # (see the gecko_t_osx_1500_m_vms role data); it must be a top-level key.
+      $role_generic_worker_engine = lookup('generic_worker_engine', Optional[String], 'first', undef)
+      $generic_worker_engine = $role_generic_worker_engine ? {
+        undef   => lookup('worker.generic_worker_engine'),
+        default => $role_generic_worker_engine,
+      }
       $task_user_password = $generic_worker_engine ? {
         'multiuser-static' => lookup('cltbld_user.unhashedpassword'),
         default            => undef,

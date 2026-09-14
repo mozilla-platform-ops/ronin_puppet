@@ -120,11 +120,16 @@ class roles_profiles::profiles::cltbld_user {
       # a reachable path into a root process. On the `simple` engine
       # worker-runner is a cltbld LaunchAgent and the grant is load-bearing.
       #
-      # Resolve the engine the same way profiles::worker does. secrets/vault.yaml
-      # owns the `worker:` hash and outranks role data, so this is the effective
-      # value. Default to granting: an unresolvable engine must not silently
-      # break the worker startup on the `simple` roles.
-      $engine = lookup('worker.generic_worker_engine', Optional[String], 'first', undef)
+      # Resolve the engine the same way profiles::worker does: prefer a top-level
+      # role key, fall back to the vault-provided value. Must stay in step with
+      # profiles::worker so the sudo grant matches the actual engine. Default to
+      # granting: an unresolvable engine must not silently break worker startup on
+      # the `simple` roles.
+      $role_engine = lookup('generic_worker_engine', Optional[String], 'first', undef)
+      $engine = $role_engine ? {
+        undef   => lookup('worker.generic_worker_engine', Optional[String], 'first', undef),
+        default => $role_engine,
+      }
       $run_puppet_sudo = $engine =~ /^multiuser/ ? {
         true    => [],
         default => ['/usr/local/bin/run-puppet.sh'],
