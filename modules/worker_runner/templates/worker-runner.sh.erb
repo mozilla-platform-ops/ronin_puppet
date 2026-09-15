@@ -222,8 +222,38 @@ else
     sleep 30
 fi
 
+<% if @post_task_action == 'halt' -%>
+# Per-task reversion (bug 2071007). HALT (so the host's tartworker KeepAlive daemon
+# reclones a clean guest) ONLY when a task actually resolved this cycle. On any
+# other exit -- first boot before creds are injected, quarantine, idle timeout,
+# worker error -- REBOOT instead. A guest reboot keeps `tart run` alive (no
+# reclone), so the guest gets to finish first-boot and register. Halting on every
+# exit would power a fresh guest off ~90s into first boot, before it can register,
+# and the daemon would reclone forever (the loop this gate fixes).
+#
+# generic-worker writes tasks-resolved-count.txt (removed at the top of this
+# script each cycle); a value >= 1 means a real task completed. multiuser* keeps
+# it under <%= @gw_root_dir %>, the simple engine under <%= @data_dir %>.
+<% if @generic_worker_engine == 'multiuser-static' -%>
+resolved_count_file=<%= @gw_root_dir %>/tasks-resolved-count.txt
+<% else -%>
+resolved_count_file=<%= @data_dir %>/tasks-resolved-count.txt
+<% end -%>
+resolved=0
+if [ -f "$resolved_count_file" ]; then
+    resolved=$(tr -dc '0-9' < "$resolved_count_file" 2>/dev/null)
+fi
+if [ "${resolved:-0}" -ge 1 ]; then
+    echo "HALT $(date)  (task resolved=${resolved}; per-task reversion: host reclones a fresh guest)"
+    /usr/bin/sudo /sbin/shutdown -h now
+else
+    echo "REBOOT $(date)  (no task resolved this cycle; rebooting to stabilize, NOT recloning)"
+    /usr/bin/sudo /sbin/reboot
+fi
+<% else -%>
 echo "REBOOT $(date)"
 /usr/bin/sudo /sbin/reboot
+<% end -%>
 # Sleep to prevent this script from terminating naturally, and launchd restarting
 # it. Instead, the shutdown should cause this script to terminate (so it won't
 # really sleep for 2 mins). If shutdown doesn't kick in within 2 mins, it is sane
