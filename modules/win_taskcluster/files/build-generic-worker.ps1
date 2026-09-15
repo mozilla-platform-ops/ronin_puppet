@@ -59,13 +59,8 @@ try {
     $env:GOARCH = $Architecture
     $env:CGO_ENABLED = '0'
     $binary = Join-Path $buildDir 'generic-worker.exe'
-    Push-Location $checkout[0].FullName
-    try {
-        & $go build -tags multiuser -buildvcs=false -o $binary ./workers/generic-worker
-        if ($LASTEXITCODE -ne 0) { throw "go build failed: $LASTEXITCODE" }
-    } finally {
-        Pop-Location
-    }
+    & $go -C $checkout[0].FullName build -tags multiuser -buildvcs=false -o $binary ./workers/generic-worker
+    if ($LASTEXITCODE -ne 0) { throw "go build failed: $LASTEXITCODE" }
     # Keep the installed worker until the build succeeds. A locked file fails the Puppet run.
     Copy-Item -LiteralPath $binary -Destination $Destination -Force
     @{

@@ -43,18 +43,21 @@ try {
     # A failed download must leave the installed worker and receipt intact.
     Set-Content -LiteralPath $binary -Value 'existing released worker'
     $receiptHash = (Get-FileHash -LiteralPath $receiptPath).Hash
+    function Assert-BuildFailure([string]$Expected) {
+        try {
+            & $script -Repository 'taskcluster/taskcluster' -Revision ('a' * 40) `
+                -GoVersion '1.27.1' -Architecture amd64 -Destination $binary
+            throw 'Expected build failure'
+        } catch {
+            if ($_.Exception.Message -ne $Expected) { throw }
+        }
+        if ((Get-FileHash -LiteralPath $binary).Hash -ne $originalHash -or
+            (Get-FileHash -LiteralPath $receiptPath).Hash -ne $receiptHash) {
+            throw 'Failed build changed the installed worker or receipt'
+        }
+    }
     function Invoke-RestMethod { throw 'Injected download failure' }
-    try {
-        & $script -Repository 'taskcluster/taskcluster' -Revision ('a' * 40) `
-            -GoVersion '1.27.1' -Architecture amd64 -Destination $binary
-        throw 'Expected download failure'
-    } catch {
-        if ($_.Exception.Message -ne 'Injected download failure') { throw }
-    }
-    if ((Get-FileHash -LiteralPath $binary).Hash -ne $originalHash -or
-        (Get-FileHash -LiteralPath $receiptPath).Hash -ne $receiptHash) {
-        throw 'Failed build changed the installed worker or receipt'
-    }
+    Assert-BuildFailure 'Injected download failure'
     function Invoke-RestMethod {
         return @{ version = 'go1.27.1'; files = @(@{
             os = 'windows'; arch = 'amd64'; kind = 'archive'
@@ -64,17 +67,7 @@ try {
     function Invoke-WebRequest($Uri, $OutFile, [switch]$UseBasicParsing) {
         Set-Content -LiteralPath $OutFile -Value 'invalid archive'
     }
-    try {
-        & $script -Repository 'taskcluster/taskcluster' -Revision ('a' * 40) `
-            -GoVersion '1.27.1' -Architecture amd64 -Destination $binary
-        throw 'Expected checksum failure'
-    } catch {
-        if ($_.Exception.Message -ne 'Go archive checksum mismatch') { throw }
-    }
-    if ((Get-FileHash -LiteralPath $binary).Hash -ne $originalHash -or
-        (Get-FileHash -LiteralPath $receiptPath).Hash -ne $receiptHash) {
-        throw 'Checksum failure changed the installed worker or receipt'
-    }
+    Assert-BuildFailure 'Go archive checksum mismatch'
     Write-Output 'Source-build guard, download failure, and checksum tests passed.'
 } finally {
     Remove-Item -LiteralPath $root -Recurse -Force
