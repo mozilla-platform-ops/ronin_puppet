@@ -134,6 +134,7 @@ class roles_profiles::profiles::windows_worker_runner {
         gw_exe_source      => "${ext_pkg_src_loc}${desired_gw_version}/${gw_name}",
         init_file          => $init,
         gw_exe_path        => $gw_exe_path,
+        source_build       => lookup('windows.taskcluster.generic-worker.source_build', { 'default_value' => undef }),
       }
       class { 'win_taskcluster::proxy':
         generic_worker_dir => $generic_worker_dir,

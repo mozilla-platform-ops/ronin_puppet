@@ -6,19 +6,46 @@ class win_taskcluster::generic_worker (
   String $generic_worker_dir,
   String $gw_exe_source,
   String $gw_exe_path,
-  String $init_file
+  String $init_file,
+  Optional[Struct[{
+    'repository' => Pattern[/\A[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\z/],
+    'revision'   => Pattern[/\A[0-9a-f]{40}\z/],
+    'go_version' => Pattern[/\A[0-9]+\.[0-9]+\.[0-9]+\z/],
+  }]] $source_build = undef,
 ) {
   $ed25519private = "${generic_worker_dir}\\ed25519-private.key"
 
   file { $generic_worker_dir:
     ensure => directory,
   }
-  file { $gw_exe_path:
-    source => $gw_exe_source,
+  if $source_build {
+    $architecture = $facts['custom_win_os_arch'] ? {
+      'aarch64' => 'arm64',
+      default   => 'amd64',
+    }
+    $build_script = "${generic_worker_dir}\\build-generic-worker.ps1"
+    file { $build_script:
+      source => 'puppet:///modules/win_taskcluster/build-generic-worker.ps1',
+    }
+    $build_command = "& '${build_script}' -Repository '${source_build['repository']}' -Revision '${source_build['revision']}' -GoVersion '${source_build['go_version']}' -Architecture '${architecture}' -Destination '${gw_exe_path}'"
+    exec { 'build_generic_worker':
+      command  => $build_command,
+      unless   => "${build_command} -Check",
+      provider => powershell,
+      timeout  => 1800,
+      require  => File[$build_script],
+    }
+    $gw_exe_dependency = Exec['build_generic_worker']
+  } else {
+    file { $gw_exe_path:
+      source => $gw_exe_source,
+    }
+    $gw_exe_dependency = File[$gw_exe_path]
   }
   exec { 'generate_ed25519_keypair':
     command => "${gw_exe_path} new-ed25519-keypair --file ${ed25519private}",
     creates => $ed25519private,
+    require => $gw_exe_dependency,
   }
   file { "${generic_worker_dir}\\task-user-init.cmd":
     content => file("win_taskcluster/${init_file}"),
