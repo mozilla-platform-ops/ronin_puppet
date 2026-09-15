@@ -52,6 +52,16 @@ class worker_runner (
     # NEVER set 'halt' on a physical host: it would power the machine off with
     # nothing to turn it back on. Gated to the guest role only; default reboot.
     Enum['reboot', 'halt'] $post_task_action                                = 'reboot',
+    # Clear Firefox's Metal shader caches out of the task user's Darwin cache dir
+    # at every worker start. Loading a populated Metal cache costs ~500ms on the
+    # first shader compile, which shows up as cold-pageload regressions on canvas
+    # pages (bug 2072152). Only the Intel 14.70 testers exhibit it -- the arm64
+    # 15.x testers do not -- and clearing a cache that is not slow to load only
+    # throws away work, so this is opt-in per role rather than a fleet default.
+    #
+    # false (the default) renders worker-runner.sh exactly as it did before this
+    # landed.
+    Boolean $purge_metal_shader_cache                                      = false,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -151,6 +161,19 @@ class worker_runner (
             $unknown_signed = $signed_binaries.keys - $taskcluster_binaries.keys
             unless empty($unknown_signed) {
                 fail("[${module_name}] signed_binaries names no such taskcluster binary: ${unknown_signed.join(', ')}")
+            }
+
+            # The purge targets one specific user's cache dir, so it only means
+            # something where that user persists across tasks: the simple engine
+            # (script and task are both ${task_user}) and multiuser-static (static
+            # ${task_user}, resolved via sudo). The plain multiuser engine builds a
+            # fresh task user per task, so its cache dir is new every time and there
+            # is nothing stale to clear. Opting in there would silently do nothing,
+            # which is the failure mode #1329 shipped with and that the hiera
+            # comments here and in profiles::worker exist to prevent -- so say so
+            # instead of quietly rendering a no-op.
+            if $purge_metal_shader_cache and $generic_worker_engine == 'multiuser' {
+                fail("[${module_name}] purge_metal_shader_cache needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Metal cache is already empty")
             }
 
             # Install binaries directly from GitHub releases, except any the role

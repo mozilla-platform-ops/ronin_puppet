@@ -68,21 +68,34 @@ class roles_profiles::profiles::worker {
       # vault's `worker:` hash and silently ignored.
       $post_task_action = lookup('post_task_action', Enum['reboot', 'halt'], 'first', 'reboot')
 
+      # Clear Firefox's Metal shader caches between tasks, opt-in per role. A warm
+      # Metal cache costs ~500ms on the first shader compile and lands as
+      # cold-pageload regressions on canvas pages (bug 2072152); only the Intel
+      # 14.70 testers show it, so this is not a fleet default.
+      #
+      # TOP-LEVEL role key, not `worker.purge_metal_shader_cache`, for the same
+      # reason as the two lookups above: secrets/vault.yaml is the highest-priority
+      # hierarchy level and owns a `worker:` hash, and for a dotted key hiera
+      # resolves the root key from the first source that has it and then traverses,
+      # so vault's hash wins and a sub-key present only in role data is invisible.
+      $purge_metal_shader_cache = lookup('purge_metal_shader_cache', Boolean, 'first', false)
+
       class { 'worker_runner':
-        taskcluster_version   => $taskcluster_version,
-        signed_binaries       => $signed_binaries,
-        provider_type         => lookup('worker.provider_type'),
-        root_url              => 'https://firefox-ci-tc.services.mozilla.com',
-        client_id             => lookup('worker.client_id'),
-        access_token          => lookup('worker.access_token'),
-        worker_pool_id        => lookup('worker.worker_pool_id'),
-        worker_group          => lookup('worker.worker_group'),
-        worker_id             => lookup('worker.worker_id'),
-        generic_worker_engine => $generic_worker_engine,
-        idle_timeout_secs     => lookup('worker.idle_timeout_secs'),
-        task_user_password    => $task_user_password,
-        reclaim_free_space_gb => $reclaim_free_space_gb,
-        post_task_action      => $post_task_action,
+        taskcluster_version      => $taskcluster_version,
+        signed_binaries          => $signed_binaries,
+        provider_type            => lookup('worker.provider_type'),
+        root_url                 => 'https://firefox-ci-tc.services.mozilla.com',
+        client_id                => lookup('worker.client_id'),
+        access_token             => lookup('worker.access_token'),
+        worker_pool_id           => lookup('worker.worker_pool_id'),
+        worker_group             => lookup('worker.worker_group'),
+        worker_id                => lookup('worker.worker_id'),
+        generic_worker_engine    => $generic_worker_engine,
+        idle_timeout_secs        => lookup('worker.idle_timeout_secs'),
+        task_user_password       => $task_user_password,
+        reclaim_free_space_gb    => $reclaim_free_space_gb,
+        post_task_action         => $post_task_action,
+        purge_metal_shader_cache => $purge_metal_shader_cache,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc
