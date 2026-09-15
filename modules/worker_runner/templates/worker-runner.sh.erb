@@ -95,8 +95,69 @@ else
 fi
 <% end -%>
 
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
-# find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
+<% if @purge_metal_shader_cache -%>
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2072152 (and 1927416 before it)
+# Metal keeps a compiled-shader cache per app bundle under the task user's Darwin
+# cache dir, and loading a populated one is not free. On the Intel 14.70 testers the
+# first shader compile of a run stalled ~500ms behind a warm cache, which lands
+# straight in cold-pageload numbers for any test whose page holds a canvas: enabling
+# Metal ANGLE for WebGL showed up as medium-to-large regressions across the cold
+# suites until the cache was cleared, after which the same compile takes a few
+# milliseconds. The arm64 15.x testers do not show it, so this is opt-in per role
+# rather than fleet-wide -- see worker_runner::purge_metal_shader_cache.
+#
+# Scope is deliberately narrow: only com.apple.metal inside Firefox's own cache
+# dirs, matching the harness-side purge that bug 2072152 verified by perfcompare.
+# The rest of each org.mozilla.* dir, and every other app's Metal cache, is left
+# alone. The org.mozilla.* glob is load-bearing rather than tidy -- ANGLE compiles
+# in the GPU process, whose cache dir is org.mozilla.firefox-gpu-helper, not
+# org.mozilla.firefox.
+#
+# This cleanup has been attempted twice before and both attempts dictate the shape
+# of this one. #775 ran `find /private/var/folders/ -path '*/C/org.mozilla.*'` as
+# the non-admin task user: that walks every user's cache dir, so it logged
+# `Permission denied` for each one the task user does not own and slowed worker
+# startup, and #922 removed it. Asking getconf for the cache dir instead names the
+# single directory we already own and traverses no one else's, so there is nothing
+# to be denied and no scan to pay for.
+#
+# Runs inline, not detached like the downloads purge above: the point is that the
+# cache is gone before start-worker claims a task, and a handful of shader-cache
+# dirs is a cheap rm rather than the ~20k-file backlog that made detaching
+# necessary there.
+#
+# Not in macos_directory_cleaner's clean_before_reboot.sh, which is the other place
+# path cleanup lives, for three reasons. It runs as root (`su - root -c` in
+# org.mozilla.cleanbeforereboot.plist), so getconf there resolves root's cache dir
+# rather than the task user's -- reintroducing the wrong-user mistake this rewrite
+# exists to avoid. It is a RunAtLoad LaunchDaemon, so it is unordered against
+# start-worker, and a purge that races the task it is meant to precede buys nothing;
+# the same plist was already observed not loaded on at least one host, which for a
+# perf fix means regressions quietly come back with no signal. And directory_cleaner
+# is an age-and-config-driven retention tool, where what is wanted here is an
+# unconditional rm of one known directory before every task.
+<% if @generic_worker_engine == 'multiuser-static' -%>
+# DARWIN_USER_CACHE_DIR is per-uid, and on multiuser-static this script is a root
+# LaunchDaemon while tasks run as <%= @task_user %>, so ask for that user's dir
+# rather than root's.
+metal_cache_root=$(/usr/bin/sudo -u <%= @task_user %> /usr/bin/getconf DARWIN_USER_CACHE_DIR 2>/dev/null)
+<% else -%>
+# DARWIN_USER_CACHE_DIR is per-uid, and on the simple engine this script already
+# runs as <%= @task_user %> -- the same user the task runs as -- so our own cache
+# dir is the one the task will use.
+metal_cache_root=$(/usr/bin/getconf DARWIN_USER_CACHE_DIR 2>/dev/null)
+<% end -%>
+if [ -n "$metal_cache_root" ] && [ -d "$metal_cache_root" ]; then
+    # getconf returns the path with a trailing slash.
+    for metal_cache in "${metal_cache_root%/}"/org.mozilla.*/com.apple.metal; do
+        [ -d "$metal_cache" ] || continue
+        echo "Clearing Metal shader cache: $metal_cache"
+        rm -rf "$metal_cache"
+    done
+else
+    echo "Could not resolve DARWIN_USER_CACHE_DIR, skipping Metal shader cache purge."
+fi
+<% end -%>
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then
