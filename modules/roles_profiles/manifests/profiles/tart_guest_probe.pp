@@ -83,6 +83,18 @@ class roles_profiles::profiles::tart_guest_probe {
         command => "/usr/bin/grep -m1 workerId ${worker_conf}",
         require => Users::Single_user[$probe_user],
       }
+      # TEMP CANARY DIAGNOSTIC (bug 2071007, do not merge): read worker logs to see
+      # why the multiuser-static worker exits fast under the daemon.
+      sudo::custom { "allow_${probe_user}_readlog":
+        user    => $probe_user,
+        command => "/bin/cat ${log_path}",
+        require => Users::Single_user[$probe_user],
+      }
+      sudo::custom { "allow_${probe_user}_readerr":
+        user    => $probe_user,
+        command => '/bin/cat /opt/worker/logs/stderr.log',
+        require => Users::Single_user[$probe_user],
+      }
     }
     default: {
       fail("${facts['os']['name']} not supported")
