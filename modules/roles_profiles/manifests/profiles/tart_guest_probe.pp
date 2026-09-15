@@ -93,6 +93,11 @@ class roles_profiles::profiles::tart_guest_probe {
         command => "/bin/cat ${log_path}",
         require => Users::Single_user[$probe_user],
       }
+      sudo::custom { "allow_${probe_user}_readerr":
+        user    => $probe_user,
+        command => '/bin/cat /opt/worker/logs/stderr.log',
+        require => Users::Single_user[$probe_user],
+      }
     }
     default: {
       fail("${facts['os']['name']} not supported")
