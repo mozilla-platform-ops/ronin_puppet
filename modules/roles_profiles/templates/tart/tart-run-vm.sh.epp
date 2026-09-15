@@ -58,13 +58,19 @@ log() {
 # `tart run` and lands us back here. Before starting the next guest we reclone a
 # fresh one from the pinned image, so every task gets a clean VM.
 #
-# IDENTITY: the guest's Taskcluster workerId derives from its MAC, and tart has
-# no explicit-MAC option, so we preserve identity by hand -- read macAddress from
-# the slot's config.json BEFORE deleting and write the SAME value back AFTER
-# cloning. A stable MAC means a stable workerId across reclones (no phantom VMs).
-# If the MAC cannot be read we do NOT reclone (a random MAC would churn the
-# workerId); we log and fall through to running the existing guest, preferring an
-# unreverted-but-identifiable slot over a churned one.
+# IDENTITY: workerId derives from the guest MAC and tart has no explicit-MAC
+# option, so we preserve it by hand. The MAC is persisted to a per-slot SIDECAR
+# file so it SURVIVES the delete: if a clone fails after the delete, config.json
+# is gone, and the next attempt must still know the original MAC to restore it.
+# If the MAC is genuinely unknown (first boot, or the sidecar is lost) we clone
+# fresh and record the new MAC, rather than loop -- a stable-from-now workerId
+# beats a bricked slot.
+#
+# PULL THEN CLONE: `tart clone` of an image not already in the local cache is
+# unreliable and fails as "The Internet connection appears to be offline" even
+# with --insecure (tart 2.30.0). Pulling first is reliable; then the clone hits
+# the local cache. This is the pattern tart-update-vms.sh already uses. Verified
+# on m4-235 2026-09-15: direct clone of a fresh tag failed, pull then clone worked.
 REG="<%= $registry_host %>:<%= $registry_port %>"
 IMG="<%= $oci_image %>:<%= $oci_tag %>"
 <% if $insecure { -%>
@@ -73,12 +79,14 @@ INSECURE="--insecure"
 INSECURE=""
 <% } -%>
 CFG="$HOME/.tart/vms/${VM}/config.json"
+SIDECAR="$HOME/.tart/.macaddr-${VM}"
 mac_of() { /usr/bin/python3 -c "import json,sys;print(json.load(open(sys.argv[1])).get('macAddress',''))" "$1" 2>/dev/null; }
+valid_mac() { printf '%s' "$1" | /usr/bin/grep -qiE '^([0-9a-f]{2}:){5}[0-9a-f]{2}$'; }
 
 # Crash-loop guard: a healthy cycle is minutes (boot + task + halt). A relaunch
 # only seconds after the last one means the guest failed to boot or the worker
 # died before taking a task; recloning full-throttle would hammer the registry
-# and mask the fault. Throttle, then still reclone (a fresh guest may recover).
+# and mask the fault. Throttle, then still proceed (a fresh guest may recover).
 GUARD="$HOME/.tart/.revert-${VM}.last"
 if [ -f "$GUARD" ]; then
   since=$(( $(/bin/date +%s) - $(/usr/bin/stat -f %m "$GUARD" 2>/dev/null || echo 0) ))
@@ -89,30 +97,46 @@ if [ -f "$GUARD" ]; then
 fi
 /usr/bin/touch "$GUARD"
 
+# Determine the MAC to preserve: prefer the live config, else the sidecar.
 SAVED_MAC="$(mac_of "$CFG")"
-if printf '%s' "$SAVED_MAC" | /usr/bin/grep -qiE '^([0-9a-f]{2}:){5}[0-9a-f]{2}$'; then
+if ! valid_mac "$SAVED_MAC" && [ -s "$SIDECAR" ]; then SAVED_MAC="$(cat "$SIDECAR" 2>/dev/null)"; fi
+if valid_mac "$SAVED_MAC"; then
+  printf '%s\n' "$SAVED_MAC" > "$SIDECAR"    # persist so it survives the delete
   log "reverting slot: preserving MAC ${SAVED_MAC}"
-  "$BIN" stop "$VM" 2>/dev/null || true
-  if "$BIN" delete "$VM" 2>/dev/null && "$BIN" clone $INSECURE "${REG}/${IMG}" "$VM"; then
-    "$BIN" set "$VM" --random-serial 2>/dev/null || true
-    /usr/bin/python3 - "$CFG" "$SAVED_MAC" <<'PY' || log "WARN could not write MAC back into config"
+else
+  SAVED_MAC=""
+  log "WARN no known MAC for ${VM} (first boot or lost sidecar); will clone fresh and record"
+fi
+
+"$BIN" stop "$VM" 2>/dev/null || true
+"$BIN" delete "$VM" 2>/dev/null || true
+# Pull first (reliable), then clone from the local cache.
+if ! "$BIN" pull $INSECURE "${REG}/${IMG}"; then
+  log "WARN pull ${IMG} failed; attempting clone from cache anyway"
+fi
+if ! "$BIN" clone $INSECURE "${REG}/${IMG}" "$VM"; then
+  log "ERROR clone failed; ${VM} is absent -- exiting so launchd retries (NOT running a missing VM)"
+  exit 1
+fi
+"$BIN" set "$VM" --random-serial 2>/dev/null || true
+if [ -n "$SAVED_MAC" ]; then
+  /usr/bin/python3 - "$CFG" "$SAVED_MAC" <<'PY' || log "WARN could not write MAC into config"
 import json,sys
 cfg,mac=sys.argv[1],sys.argv[2]
 d=json.load(open(cfg)); d["macAddress"]=mac
 json.dump(d,open(cfg,"w"),indent=2)
 PY
-    got="$(mac_of "$CFG")"
-    if [ "$got" = "$SAVED_MAC" ]; then
-      log "reverted to fresh ${IMG}; MAC preserved (${got})"
-    else
-      log "ERROR MAC not preserved (wanted ${SAVED_MAC}, got ${got:-none}); workerId will churn this cycle"
-    fi
+  got="$(mac_of "$CFG")"
+  if [ "$got" = "$SAVED_MAC" ]; then
+    log "reverted to fresh ${IMG}; MAC preserved (${got})"
   else
-    log "ERROR reclone failed (delete/clone); slot may be empty -- launchd will retry"
-    exit 1
+    log "ERROR MAC not preserved (wanted ${SAVED_MAC}, got ${got:-none}); workerId will churn this cycle"
   fi
 else
-  log "WARN could not read a valid MAC from ${CFG} (got '${SAVED_MAC}'); NOT recloning, running existing guest"
+  # First-ever or lost sidecar: record the freshly-cloned MAC so it is stable henceforth.
+  got="$(mac_of "$CFG")"
+  valid_mac "$got" && printf '%s\n' "$got" > "$SIDECAR"
+  log "reverted to fresh ${IMG}; recorded new MAC ${got:-unknown}"
 fi
 # --- end per-task reversion ----------------------------------------------
 <% } -%>
