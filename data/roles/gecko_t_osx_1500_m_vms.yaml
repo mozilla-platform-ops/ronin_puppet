@@ -50,6 +50,19 @@ worker:
 # script, no sudoers grant and no call in worker-runner.sh.
 reclaim_free_space_gb: 30
 
+# --- ACTIVATION (bug 2071007) -------------------------------------------------
+# TOP-LEVEL keys (NOT under `worker:` -- the vault's `worker:` hash shadows nested
+# keys; profiles::worker prefers these top-level role keys over the vault). These
+# move the guests to the multiuser-static engine + per-task reversion.
+#   generic_worker_engine: multiuser-static -- CoT-capable, current supported engine
+#   taskcluster_version: 91.0.2 -- multiuser-static needs gw >= 86.0.0; the vault's
+#     nested worker.taskcluster_version (60.3.4) is too old and exits 69
+#   post_task_action: halt -- guest powers off after a RESOLVED task so the host
+#     reclones a clean guest (paired with tart.revert_after_task on the host role)
+generic_worker_engine: multiuser-static
+taskcluster_version: 91.0.2
+post_task_action: halt
+
 packages_classes:
   - mercurial
   - nodejs

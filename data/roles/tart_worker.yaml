@@ -32,6 +32,11 @@ tart:
   user: 'admin'
   manage_image: false
   launchd_type: 'daemon'
+  # ACTIVATION (bug 2071007): reclone a fresh guest before each `tart run`,
+  # preserving the slot MAC (stable workerId). Pairs with post_task_action: halt in
+  # the guest role. Requires prod-latest to be a multiuser-static/gw-91.0.2 image
+  # FIRST (see PR ordering note) or guests reconfigure at runtime and churn.
+  revert_after_task: true
   # Guest drain-signal key (bug 2069268). Replaces the shared-credential login
   # tart-update-vms.sh used to send over expect; the guest holds the public half
   # via profiles::tart_guest_probe.
