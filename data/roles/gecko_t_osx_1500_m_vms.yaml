@@ -68,6 +68,13 @@ reclaim_free_space_gb: 30
 # validated -- merging flips the whole pool live on next guest boot.
 generic_worker_engine: multiuser-static
 post_task_action: halt
+# TOP-LEVEL taskcluster_version so the profiles::worker migration overrides the
+# vault's nested worker.taskcluster_version (60.3.4). The role's own 91.0.2 is
+# nested under worker: above and is shadowed by the vault, which is why the guest
+# was installing gw 60.3.4 -- too old for multiuser-static's static task user
+# (next-task-user.json needs >= 86.0.0), causing exit 69
+# "interactive username cltbld does not match task user task_*".
+taskcluster_version: 91.0.2
 
 packages_classes:
   - mercurial
