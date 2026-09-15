@@ -83,21 +83,6 @@ class roles_profiles::profiles::tart_guest_probe {
         command => "/usr/bin/grep -m1 workerId ${worker_conf}",
         require => Users::Single_user[$probe_user],
       }
-
-      # TEMPORARY CANARY DIAGNOSTIC (bug 2071007) -- DO NOT MERGE.
-      # Lets the probe read the whole worker log to see why start-worker exits on
-      # the multiuser-static guest (it halts before registering). Pinned literal
-      # path, no glob metacharacters. Remove before this reaches master.
-      sudo::custom { "allow_${probe_user}_readlog":
-        user    => $probe_user,
-        command => "/bin/cat ${log_path}",
-        require => Users::Single_user[$probe_user],
-      }
-      sudo::custom { "allow_${probe_user}_readerr":
-        user    => $probe_user,
-        command => '/bin/cat /opt/worker/logs/stderr.log',
-        require => Users::Single_user[$probe_user],
-      }
     }
     default: {
       fail("${facts['os']['name']} not supported")

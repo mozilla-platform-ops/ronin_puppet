@@ -59,7 +59,7 @@ reclaim_free_space_gb: 30
 #
 # generic_worker_engine: multiuser-static -- current supported engine; enables
 #   chain-of-trust and moving profile generation off bare metal.
-# post_task_action: reboot  # TEMP CANARY DIAGNOSTIC (bug 2071007): keep guest up to read worker log; revert to halt -- power the guest off after each task so the host
+# post_task_action: halt -- power the guest off after each task so the host
 #   tartworker wrapper reclones a fresh guest (per-task reversion). Requires the
 #   host to run with tart.revert_after_task: true (data/roles/tart_worker.yaml).
 #
@@ -67,7 +67,7 @@ reclaim_free_space_gb: 30
 # PUPPET_BRANCH pointing here applies it on ONE host. Do NOT merge to master until
 # validated -- merging flips the whole pool live on next guest boot.
 generic_worker_engine: multiuser-static
-post_task_action: reboot  # TEMP CANARY DIAGNOSTIC (bug 2071007): keep guest up to read worker log; revert to halt
+post_task_action: halt
 
 packages_classes:
   - mercurial
