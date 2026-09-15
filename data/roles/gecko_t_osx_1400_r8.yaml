@@ -24,6 +24,22 @@ worker:
   generic_worker_engine: simple
   idle_timeout_secs: 21600 # 6 hours
 
+# Clear Firefox's Metal shader caches from the task user's Darwin cache dir at every
+# worker start (these hosts run one task per boot, so that is once per task). Set
+# only for the Intel 14.70 testers: a warm Metal cache stalls the first shader
+# compile ~500ms, which lands directly in cold-pageload numbers for any test whose
+# page holds a canvas, and made Metal ANGLE for WebGL a medium-to-large regression
+# across the cold suites (bug 2072152). The arm64 15.x testers do not show it, and
+# throwing away a cache that loads quickly only costs recompiles, so this is not a
+# fleet default.
+#
+# Deliberately top-level and NOT inside the `worker:` hash above. secrets/vault.yaml
+# is the highest-priority hiera level and owns its own `worker:` hash; for a dotted
+# key hiera resolves the root key from the first source that has it and then
+# traverses, so vault's hash wins and a sub-key present only here never resolves --
+# which is exactly how #1329 silently compiled out the cache reclaim feature.
+purge_metal_shader_cache: true
+
 packages_classes:
   - git
   - mercurial
