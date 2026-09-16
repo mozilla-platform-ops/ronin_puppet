@@ -110,6 +110,9 @@ class RecorderTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "status 1"):
             self.run_collect(exit_code=1)
 
+    def test_sigint_after_requested_stop_is_accepted(self):
+        self.run_collect(exit_code=-signal.SIGINT)
+
     def test_stuck_collector_kills_owned_process_group(self):
         child = mock.Mock(pid=1234)
         child.poll.return_value = None

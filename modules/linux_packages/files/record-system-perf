@@ -97,7 +97,9 @@ def collect(output):
                     raise RuntimeError("stdin accepts EOF only")
                 stopping = True
         stop_child(child)
-        if child.returncode != 0:
+        if child.returncode != 0 and not (
+            stopping and child.returncode == -signal.SIGINT
+        ):
             raise RuntimeError("perf exited with status {}".format(child.returncode))
     finally:
         try:

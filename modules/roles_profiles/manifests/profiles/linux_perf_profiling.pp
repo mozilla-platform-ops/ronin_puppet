@@ -29,6 +29,10 @@ class roles_profiles::profiles::linux_perf_profiling {
     command => '/usr/local/bin/record-system-perf ""',
   }
 
+  sudo::customfile { 'record_system_perf_no_pty':
+    content => "Defaults!/usr/local/bin/record-system-perf !use_pty\n",
+  }
+
   # Remove after Firefox's Raptor callers migrate to record-system-perf (LS-002).
   sudo::custom { 'allow_cltbld_perf':
     user    => 'cltbld',
