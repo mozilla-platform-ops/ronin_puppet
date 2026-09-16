@@ -164,8 +164,8 @@ switch ($os_version) {
             }
         }
 
-        ## set git config
-        ## set git config
+        ## Copied task repositories can keep their original owner.
+        ## Mark them as safe so that Git can use them.
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
         # if ($location -eq "azure") {
@@ -193,7 +193,8 @@ switch ($os_version) {
             }
         }
 
-        ## set git config
+        ## Copied task repositories can keep their original owner.
+        ## Mark them as safe so that Git can use them.
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
         # if ($location -eq "azure") {

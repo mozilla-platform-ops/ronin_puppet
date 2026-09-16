@@ -15,16 +15,7 @@ class roles_profiles::profiles::ssh {
       class { 'win_users::administrator::authorized_keys':
         relops_key => $relops_key,
       }
-      case $facts['custom_win_os_version'] {
-        'win_10_2009': {
-          #include  win_openssh::schd_task
-          include win_openssh::service
-        }
-        default: {
-          #include win_openssh::add_openssh
-          include win_openssh::service
-        }
-      }
+      include win_openssh::service
       windows_firewall::exception { "allow_${firewall_rule_name}_mdc1":
         ensure       => present,
         direction    => 'in',
