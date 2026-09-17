@@ -7,7 +7,7 @@ gem 'test-kitchen', '>= 3.3.2'
 gem 'kitchen-inspec', '>= 3.1.0'
 gem 'rubocop'
 gem 'train', '~> 3.16.1'
-gem 'train-core', '= 3.16.1'
+gem 'train-core', '3.16.3'
 gem 'train-winrm', '~> 0.4.3'
 gem 'net-ssh', '>= 7.3', '< 8'
 gem 'chef-winrm', '~> 2.5.0'
@@ -35,7 +35,7 @@ gem 'vault'
 gem 'rspec_junit_formatter'
 gem 'erb'
 
-gem "puppet-strings", "~> 5.0", :group => :dev
+gem "puppet-strings", "~> 5.1", :group => :dev
 
 # ruby 3.4 drops base64 support, add back
 gem 'base64'
@@ -43,4 +43,4 @@ gem 'mutex_m'
 gem 'bigdecimal'
 gem 'csv'
 # ruby 3.3+ requires explicit minitar for r10k/puppet_forge
-gem 'minitar', '~> 0.9'
+gem 'minitar', '~> 1.1'
