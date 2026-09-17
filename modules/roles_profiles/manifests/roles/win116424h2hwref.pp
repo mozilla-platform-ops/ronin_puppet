@@ -4,6 +4,10 @@ class roles_profiles::roles::win116424h2hwref {
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
+  include roles_profiles::profiles::device_guard
+  class { 'roles_profiles::profiles::intel_graphics_software':
+    ensure => 'absent',
+  }
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
