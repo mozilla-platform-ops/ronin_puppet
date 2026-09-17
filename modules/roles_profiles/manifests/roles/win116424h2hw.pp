@@ -5,11 +5,6 @@ class roles_profiles::roles::win116424h2hw {
   include roles_profiles::profiles::ssh
   # System
   include roles_profiles::profiles::device_guard
-  # NUC13 hardware: production runs IntelGraphicsSoftwareService, and the golden WIM cannot
-  # carry it (Intel's installer returns rc=1008 in the GPU-less bake guest, and the MSIX
-  # installs per-user so sysprep /generalize strips it). The WIM ships the installer at
-  # C:\extras instead and this profile runs it here, on real hardware. Matches the pool's
-  # canary, win116424h2hwperfdebug.
   include roles_profiles::profiles::intel_graphics_software
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
