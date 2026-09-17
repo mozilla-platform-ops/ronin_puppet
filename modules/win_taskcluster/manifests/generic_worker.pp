@@ -19,6 +19,26 @@ class win_taskcluster::generic_worker (
     ensure => directory,
   }
   if $source_build {
+    # Test branch only. The stamp prevents Puppet from restoring a consumed seed.
+    file { 'C:\cache-seeds':
+      ensure => directory,
+    }
+    acl { 'C:\cache-seeds':
+      owner                      => 'SYSTEM',
+      purge                      => true,
+      inherit_parent_permissions => false,
+      permissions                => [
+        { 'identity' => 'SYSTEM', 'rights' => ['full'] },
+        { 'identity' => 'Administrators', 'rights' => ['full'] },
+      ],
+      require                    => File['C:\cache-seeds'],
+    }
+    exec { 'create_preloaded_cache_smoke_seed':
+      command  => file('win_taskcluster/create-cache-smoke-seed.ps1'),
+      creates  => 'C:\cache-seeds\relops-8809-smoke-20260917.created',
+      provider => powershell,
+      require  => Acl['C:\cache-seeds'],
+    }
     $architecture = $facts['custom_win_os_arch'] ? {
       'aarch64' => 'arm64',
       default   => 'amd64',

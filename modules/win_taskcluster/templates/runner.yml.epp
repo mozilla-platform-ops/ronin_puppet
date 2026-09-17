@@ -6,3 +6,10 @@ worker:
     protocolPipe: \\.\pipe\generic-worker
     configPath: <%= $win_taskcluster::worker_runner::config_file %>
 cacheOverRestarts: true
+<% if $win_taskcluster::generic_worker::source_build { -%>
+# Test branch only: validate Taskcluster PR #9162 on each new alpha worker.
+workerConfig:
+    preloadedDirectoryCaches:
+        - cacheName: relops-8809-smoke-20260917
+          location: 'C:\cache-seeds\relops-8809-smoke-20260917'
+<% } -%>

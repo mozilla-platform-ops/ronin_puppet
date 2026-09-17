@@ -64,7 +64,7 @@ windows:
       # Test branch only: Taskcluster PR #9162. Do not merge these settings to master.
       source_build:
         repository: jwmossmoz/taskcluster
-        revision: 52807e9424f62f822e347025736e21bc519b4ce3
+        revision: 78da8f5807fb6f033039394ad9c196ed81bc8de2
         go_version: 1.27.1
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
