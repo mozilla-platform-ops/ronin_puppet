@@ -188,8 +188,16 @@ if ($install_ok -and $after) {
     ## Record WHICH build we installed so later boots skip the download until Google
     ## actually rotates the artifact. Written only after a successful install, so a
     ## failed run retries next boot instead of marking itself done.
-    if (-not (Test-Path $ronin_key)) { New-Item -Path $ronin_key -Force | Out-Null }
-    Set-ItemProperty -Path $ronin_key -Name $fp_value -Value $fingerprint
+    ## Only when we actually have one. A null fingerprint (HEAD failed but the GET
+    ## succeeded) writes an empty value that can never match, which would re-download
+    ## 167 MB on every boot - the bug this whole mechanism exists to prevent.
+    if ($fingerprint) {
+        if (-not (Test-Path $ronin_key)) { New-Item -Path $ronin_key -Force | Out-Null }
+        Set-ItemProperty -Path $ronin_key -Name $fp_value -Value $fingerprint
+    }
+    else {
+        Write-Log -message 'Update-GoogleChrome :: installed, but could not fingerprint the MSI (HEAD failed); re-checking next boot' -severity 'WARN'
+    }
     if ($after -eq $installed) {
         Write-Log -message ('Update-GoogleChrome :: Chrome {0} reinstalled from the current MSI ({1} attempt(s))' -f $after, $attempts) -severity 'DEBUG'
     }
