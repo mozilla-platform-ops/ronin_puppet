@@ -39,6 +39,21 @@ class win_taskcluster::generic_worker (
       provider => powershell,
       require  => Acl['C:\cache-seeds'],
     }
+    file { 'C:\hg-shared':
+      ensure => directory,
+    }
+    acl { 'gecko_seed_shared_store':
+      target      => 'C:\hg-shared',
+      permissions => [{ 'identity' => 'Users', 'rights' => ['full'] }],
+      require     => File['C:\hg-shared'],
+    }
+    exec { 'create_preloaded_gecko_seed':
+      command  => file('win_taskcluster/create-gecko-cache-seed.ps1'),
+      creates  => 'C:\cache-seeds\gecko.created',
+      provider => powershell,
+      timeout  => 7200,
+      require  => [Acl['C:\cache-seeds'], Acl['gecko_seed_shared_store'], Class['win_packages::mercurial']],
+    }
     $architecture = $facts['custom_win_os_arch'] ? {
       'aarch64' => 'arm64',
       default   => 'amd64',
@@ -53,7 +68,7 @@ class win_taskcluster::generic_worker (
       unless   => "${build_command} -Check",
       provider => powershell,
       timeout  => 1800,
-      require  => File[$build_script],
+      require  => [File[$build_script], File['C:\worker-runner']],
     }
     $gw_exe_dependency = Exec['build_generic_worker']
   } else {

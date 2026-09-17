@@ -13,6 +13,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $receiptPath = "$Destination.source-build.json"
+$runnerPath = 'C:\worker-runner\start-worker.exe'
 $scriptHash = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash
 if ($Check) {
     try {
@@ -20,7 +21,8 @@ if ($Check) {
         if ($receipt.repository -eq $Repository -and $receipt.revision -eq $Revision -and
             $receipt.go_version -eq $GoVersion -and $receipt.architecture -eq $Architecture -and
             $receipt.script_hash -eq $scriptHash -and
-            $receipt.binary_hash -eq (Get-FileHash -LiteralPath $Destination -Algorithm SHA256).Hash) {
+            $receipt.binary_hash -eq (Get-FileHash -LiteralPath $Destination -Algorithm SHA256).Hash -and
+            $receipt.runner_hash -eq (Get-FileHash -LiteralPath $runnerPath -Algorithm SHA256).Hash) {
             exit 0
         }
     } catch {
@@ -61,6 +63,10 @@ try {
     $binary = Join-Path $buildDir 'generic-worker.exe'
     & $go -C $checkout[0].FullName build -tags multiuser -buildvcs=false -o $binary ./workers/generic-worker
     if ($LASTEXITCODE -ne 0) { throw "go build failed: $LASTEXITCODE" }
+    $runnerBinary = Join-Path $buildDir 'start-worker.exe'
+    & $go -C $checkout[0].FullName build -buildvcs=false -o $runnerBinary ./tools/worker-runner/cmd/start-worker
+    if ($LASTEXITCODE -ne 0) { throw "runner build failed: $LASTEXITCODE" }
+    Copy-Item -LiteralPath $runnerBinary -Destination $runnerPath -Force
     # Keep the installed worker until the build succeeds. A locked file fails the Puppet run.
     Copy-Item -LiteralPath $binary -Destination $Destination -Force
     @{
@@ -69,6 +75,7 @@ try {
         go_version = $GoVersion
         architecture = $Architecture
         script_hash = $scriptHash
+        runner_hash = (Get-FileHash -LiteralPath $runnerPath -Algorithm SHA256).Hash
         binary_hash = (Get-FileHash -LiteralPath $Destination -Algorithm SHA256).Hash
     } | ConvertTo-Json | Set-Content -LiteralPath $receiptPath -Encoding ASCII
     Write-Output "Installed generic-worker from $Repository at $Revision ($Architecture)"

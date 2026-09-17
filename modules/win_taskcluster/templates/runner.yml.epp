@@ -12,4 +12,6 @@ workerConfig:
     preloadedDirectoryCaches:
         - cacheName: relops-8809-smoke-20260917
           location: 'C:\cache-seeds\relops-8809-smoke-20260917'
+        - cacheName: gecko-level-1-checkouts
+          location: 'C:\cache-seeds\gecko'
 <% } -%>
