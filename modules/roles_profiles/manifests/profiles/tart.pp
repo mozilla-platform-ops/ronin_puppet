@@ -60,6 +60,16 @@ class roles_profiles::profiles::tart {
   $tc_worker_pool = lookup('tart.tc_worker_pool', String,  'first', '')
   $drain_timeout  = lookup('tart.drain_timeout',  Integer, 'first', 3600)
 
+  # Per-task reversion (bug 2071007). When true, tart-run-vm.sh reclones a fresh
+  # guest from the pinned image on every launch, BEFORE `tart run` -- so each time
+  # the guest halts after a task (post_task_action: halt in the guest role) and
+  # KeepAlive relaunches the wrapper, the next task gets a clean VM. The reclone
+  # PRESERVES the slot's MAC (read from config.json before delete, written back
+  # after clone) so the Taskcluster workerId is stable across reclones and the
+  # pool does not appear to gain phantom VMs. Only meaningful on the daemon path.
+  # Default false: the wrapper execs `tart run` on the existing guest unchanged.
+  $revert_after_task = lookup('tart.revert_after_task', Boolean, 'first', false)
+
   # Which client identity tart-run-vm.sh authenticates to the broker with.
   #
   #   'keychain' - the MDM/SCEP identity in the System keychain, found by issuer
@@ -284,16 +294,22 @@ class roles_profiles::profiles::tart {
       group   => 'wheel',
       mode    => '0755',
       content => epp('roles_profiles/tart/tart-run-vm.sh.epp', {
-        user           => $user,
-        bin_path       => $bin_path,
-        inject_vault   => $inject_vault,
-        vault_role     => $vault_role,
-        broker_host    => $broker_host,
-        scep_issuer_cn => $scep_issuer_cn,
-        vault_dir_base => $vault_dir_base,
-        cert_source    => $cert_source,
-        cert_path      => $step_cert_path,
-        key_path       => $step_key_path,
+        user              => $user,
+        bin_path          => $bin_path,
+        inject_vault      => $inject_vault,
+        vault_role        => $vault_role,
+        broker_host       => $broker_host,
+        scep_issuer_cn    => $scep_issuer_cn,
+        vault_dir_base    => $vault_dir_base,
+        cert_source       => $cert_source,
+        cert_path         => $step_cert_path,
+        key_path          => $step_key_path,
+        revert_after_task => $revert_after_task,
+        registry_host     => $registry_host,
+        registry_port     => $registry_port,
+        oci_image         => $oci_image,
+        oci_tag           => $oci_tag,
+        insecure          => $insecure,
       }),
       require => Exec['install_tart'],
     }

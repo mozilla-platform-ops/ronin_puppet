@@ -120,19 +120,36 @@ class roles_profiles::profiles::cltbld_user {
       # a reachable path into a root process. On the `simple` engine
       # worker-runner is a cltbld LaunchAgent and the grant is load-bearing.
       #
-      # Resolve the engine the same way profiles::worker does. secrets/vault.yaml
-      # owns the `worker:` hash and outranks role data, so this is the effective
-      # value. Default to granting: an unresolvable engine must not silently
-      # break the worker startup on the `simple` roles.
-      $engine = lookup('worker.generic_worker_engine', Optional[String], 'first', undef)
+      # Resolve the engine the same way profiles::worker does: prefer a top-level
+      # role key, fall back to the vault-provided value. Must stay in step with
+      # profiles::worker so the sudo grant matches the actual engine. Default to
+      # granting: an unresolvable engine must not silently break worker startup on
+      # the `simple` roles.
+      $role_engine = lookup('generic_worker_engine', Optional[String], 'first', undef)
+      $engine = $role_engine ? {
+        undef   => lookup('worker.generic_worker_engine', Optional[String], 'first', undef),
+        default => $role_engine,
+      }
       $run_puppet_sudo = $engine =~ /^multiuser/ ? {
         true    => [],
         default => ['/usr/local/bin/run-puppet.sh'],
       }
 
+      # Per-task reversion (bug 2071007) halts the guest instead of rebooting, so
+      # cltbld needs sudo for the poweroff on those roles. Gated to roles that set
+      # post_task_action: halt (the tart VM guests); every other role keeps only
+      # /sbin/reboot. The args are pinned exactly ('-h now', no glob metacharacters)
+      # so this does not widen cltbld to an arbitrary shutdown. Must stay in step
+      # with the lookup in profiles::worker.
+      $post_task_action = lookup('post_task_action', Enum['reboot', 'halt'], 'first', 'reboot')
+      $halt_sudo = $post_task_action ? {
+        'halt'  => ['/sbin/shutdown -h now'],
+        default => [],
+      }
+
       $sudo_commands = [
         '/sbin/reboot',
-      ] + $run_puppet_sudo + $reclaim_sudo_commands
+      ] + $run_puppet_sudo + $reclaim_sudo_commands + $halt_sudo
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',

@@ -328,6 +328,4 @@ In addition to custom modules in the r10k modules directory are modules download
 
 [puppetlabs-acl](https://forge.puppet.com/puppetlabs/acl)
 
-[ipcrm-registry_acl](https://forge.puppet.com/ipcrm/registry_acl)
-
 [puppetlabs-scheduled_task]( https://forge.puppet.com/puppetlabs/scheduled_task)

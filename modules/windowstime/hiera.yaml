@@ -3,9 +3,8 @@ version: 5
 
 defaults:
   data_hash: yaml_data
-  #datadir: data
+  datadir: data
 
 hierarchy:
   - name: "common"
     path: "common.yaml"
-#backend: yaml

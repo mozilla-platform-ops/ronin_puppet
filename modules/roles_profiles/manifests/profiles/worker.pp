@@ -5,7 +5,21 @@
 class roles_profiles::profiles::worker {
   case $facts['os']['name'] {
     'Darwin': {
-      $generic_worker_engine = lookup('worker.generic_worker_engine')
+      # Engine precedence -- moving control out of vault, the same pattern as
+      # taskcluster_version below. Prefer a role-owned TOP-LEVEL
+      # `generic_worker_engine` (managed here in ronin role data) so flipping the
+      # engine is a puppet change workers pick up on their next run, and so it can
+      # be canaried on one role/host. Fall back to the legacy vault-provided
+      # `worker.generic_worker_engine` for roles not yet migrated. The fallback is
+      # lazy (only evaluated when the role key is unset) so it won't error once
+      # vault's value is retired. NOTE: a `generic_worker_engine` nested under a
+      # role's `worker:` hash does NOT count -- vault's `worker:` hash shadows it
+      # (see the gecko_t_osx_1500_m_vms role data); it must be a top-level key.
+      $role_generic_worker_engine = lookup('generic_worker_engine', Optional[String], 'first', undef)
+      $generic_worker_engine = $role_generic_worker_engine ? {
+        undef   => lookup('worker.generic_worker_engine'),
+        default => $role_generic_worker_engine,
+      }
       $task_user_password = $generic_worker_engine ? {
         'multiuser-static' => lookup('cltbld_user.unhashedpassword'),
         default            => undef,
@@ -46,6 +60,14 @@ class roles_profiles::profiles::worker {
       # reason `taskcluster_version` above is read from the top level.
       $reclaim_free_space_gb = lookup('reclaim_free_space_gb', Optional[Integer], 'first', undef)
 
+      # End-of-task action. 'halt' powers the guest off after each task so the
+      # host's tartworker daemon reclones a fresh VM (per-task reversion, bug
+      # 2071007); it is safe ONLY on the tart VM guests. Every other role must
+      # keep the default 'reboot'. Top-level role key for the same reason as
+      # reclaim_free_space_gb above: a `worker.` sub-key would be shadowed by
+      # vault's `worker:` hash and silently ignored.
+      $post_task_action = lookup('post_task_action', Enum['reboot', 'halt'], 'first', 'reboot')
+
       # Clear Firefox's Metal shader caches between tasks, opt-in per role. A warm
       # Metal cache costs ~500ms on the first shader compile and lands as
       # cold-pageload regressions on canvas pages (bug 2072152); only the Intel
@@ -72,6 +94,7 @@ class roles_profiles::profiles::worker {
         idle_timeout_secs        => lookup('worker.idle_timeout_secs'),
         task_user_password       => $task_user_password,
         reclaim_free_space_gb    => $reclaim_free_space_gb,
+        post_task_action         => $post_task_action,
         purge_metal_shader_cache => $purge_metal_shader_cache,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
