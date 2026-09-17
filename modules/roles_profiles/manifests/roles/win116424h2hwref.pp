@@ -4,6 +4,7 @@ class roles_profiles::roles::win116424h2hwref {
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
+  include roles_profiles::profiles::device_guard
   # NUC12 hardware: this pool does NOT run IntelGraphicsSoftwareService. Declared
   # explicitly so the role states it rather than relying on the image not having it.
   # Matches the pool's canary, win116424h2hwrefalpha.

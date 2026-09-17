@@ -4,6 +4,11 @@ class roles_profiles::roles::win116424h2hwperfsheriff {
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
+  include roles_profiles::profiles::device_guard
+  # NUC13 hardware: runs IntelGraphicsSoftwareService. The golden WIM cannot carry it (rc=1008
+  # in the GPU-less bake guest, and the per-user MSIX is stripped by sysprep /generalize), so it
+  # ships the installer at C:\extras and this profile runs it here, on real hardware.
+  include roles_profiles::profiles::intel_graphics_software
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
