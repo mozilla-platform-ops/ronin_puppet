@@ -4,6 +4,12 @@ class roles_profiles::roles::win116424h2hwrefalpha {
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
+  include roles_profiles::profiles::device_guard
+  # NUC12 hardware: production's NUC12 reference pool (win11-64-24h2-hw-ref) does NOT
+  # have IntelGraphicsSoftwareService, so remove what the shared golden WIM bakes in.
+  class { 'roles_profiles::profiles::intel_graphics_software':
+    ensure => 'absent',
+  }
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes

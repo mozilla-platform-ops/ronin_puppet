@@ -120,8 +120,53 @@ function CompareConfigBasic {
         $yaml = $null
         $yamlHash = $null
 
-        # === Use local computer name (no IP/DNS lookup) ===
-        $worker_node_name = ($env:COMPUTERNAME).Trim().ToLower()
+        # === Resolve this node's name (no IP/DNS lookup) ===
+        #
+        # $env:COMPUTERNAME reads ActiveComputerName, which is NOT trustworthy on the first boot
+        # of a DISM-applied generalized image. OS-deploy.ps1 offline-sets ComputerName,
+        # ActiveComputerName, Tcpip\Hostname and NV Hostname before the OS ever boots, but the
+        # first-boot SPECIALIZE pass regenerates a random WIN-xxxxxxxx into ActiveComputerName
+        # (the unattend's <ComputerName> does not take effect on this image - see the comment at
+        # OS-deploy.ps1:806). The PERSISTENT ComputerName survives correctly.
+        #
+        # Observed 2026-08-20 on nuc13-158: ComputerName=NUC13-158 but ActiveComputerName=
+        # WIN-D81J5HC82S0. Looking the node up under the WIN- name missed, which used to mean
+        # Set-PXE -> re-image -> a brand-new random WIN- name -> an unbreakable reimage loop.
+        # Prefer the persistent name, and when the two disagree take an ORDINARY reboot (which
+        # activates the pending name) instead of ever PXE-ing over it.
+        $activeName     = "$($env:COMPUTERNAME)".Trim()
+        $persistentName = ''
+        try {
+            $persistentName = "$((Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName' -ErrorAction Stop).ComputerName)".Trim()
+        }
+        catch {
+            Write-Log -message ('{0} :: could not read persistent ComputerName: {1}' -f $MyInvocation.MyCommand.Name, $_.Exception.Message) -severity 'WARN'
+        }
+
+        if ($persistentName -and ($activeName -ne $persistentName)) {
+            # A rename is staged but not active. One ordinary reboot activates it. Bound the
+            # retries so a name that never activates degrades into "leave it alone and shout",
+            # not an endless reboot cycle - and never into a re-image.
+            $syncKey      = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
+            $syncAttempts = 0
+            try { $syncAttempts = [int](Get-ItemProperty -Path $syncKey -Name 'name_sync_attempts' -ErrorAction Stop).name_sync_attempts } catch { }
+
+            if ($syncAttempts -lt 2) {
+                Write-Log -message ('{0} :: name not active yet (active={1}, persistent={2}); ordinary reboot {3}/2 to activate it. NOT PXE-ing.' -f $MyInvocation.MyCommand.Name, $activeName, $persistentName, ($syncAttempts + 1)) -severity 'WARN'
+                New-ItemProperty -Path $syncKey -Name 'name_sync_attempts' -Value ($syncAttempts + 1) -PropertyType DWord -Force | Out-Null
+                Start-Sleep -Seconds 30
+                Restart-Computer -Force
+                return
+            }
+
+            Write-Log -message ('{0} :: name STILL not active after 2 reboots (active={1}, persistent={2}). Continuing with the persistent name; NOT PXE-ing - a stale ActiveComputerName is not a reason to destroy the node.' -f $MyInvocation.MyCommand.Name, $activeName, $persistentName) -severity 'ERROR'
+        }
+        elseif ($persistentName) {
+            # Names agree - clear any counter left over from a previous boot.
+            try { Remove-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name 'name_sync_attempts' -ErrorAction SilentlyContinue } catch { }
+        }
+
+        $worker_node_name = $(if ($persistentName) { $persistentName } else { $activeName }).Trim().ToLower()
         if ([string]::IsNullOrWhiteSpace($worker_node_name)) {
             Write-Log -message ('{0} :: COMPUTERNAME is empty; cannot continue.' -f $MyInvocation.MyCommand.Name) -severity 'ERROR'
             Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
@@ -195,6 +240,13 @@ function CompareConfigBasic {
         }
 
         if (-not $found) {
+            # A still-generalized name means "we do not know who this node is yet", NOT "this node
+            # is misconfigured". Re-imaging over it just mints another random WIN- name and loops
+            # forever (RELOPS-2487, 2026-08-20). Bail out quietly and let the next run retry.
+            if ($worker_node_name -match '^win-') {
+                Write-Log -message ('{0} :: Node name "{1}" is still the generalized image name; identity not established yet. EXITING without PXE.' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'ERROR'
+                return
+            }
             Write-Log -message ('{0} :: Node "{1}" not found in YAML. PXE rebooting.' -f $MyInvocation.MyCommand.Name, $worker_node_name) -severity 'ERROR'
             Set-PXE
             Write-Log -message ('{0} :: Sleeping 30s before reboot to allow logs to flush.' -f $MyInvocation.MyCommand.Name) -severity 'WARN'
@@ -479,14 +531,31 @@ if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
     Start-Sleep -Seconds 60
 }
 ## Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1910123
-## The bug tracks when we reimaged a machine and the machine had a different refresh rate (64hz vs 60hz)
-## This next line will check if the refresh rate is not 60hz and trigger a reimage if so
+## Original heuristic reimaged when CurrentRefreshRate != 60. That is a fragile proxy: these NUCs run
+## through a Raritan KVM whose EDID advertises 64 Hz, so a HEALTHY node reports 64 (not 60), while a
+## BAD node (Intel GPU driver not loaded -> Microsoft Basic Display Adapter) reports the sentinel 1.
+## The REAL signal is the ADAPTER: a node still on the generic Microsoft Basic Display Adapter has no
+## working Intel GPU driver and is a bad environment. Check that directly instead of the refresh number.
+## This is also KVM-independent - the Intel driver binds the iGPU whether or not a Raritan session is
+## open (the KVM is closed during test runs), so the adapter check holds headless; the refresh rate would
+## not. 60-vs-64 is intentionally NOT considered - only "is the real Intel GPU in use".
 $hardware = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Manufacturer, Model
 $model = $hardware.Model
+$videoControllers = @(Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name)
 $refresh_rate = (Get-WmiObject win32_videocontroller).CurrentRefreshRate
-if ($refresh_rate -ne "60") {
-    Write-Log -message ('{0} :: Refresh rate is {1}. Reimaging {2}' -f $($MyInvocation.MyCommand.Name), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
+## "Real" GPU = any present controller that isn't the generic Microsoft fallback (Basic Display Adapter /
+## Basic Render) or the Hyper-V ghost. If none, the Intel driver never bound.
+$realGpu = $videoControllers | Where-Object { $_ -notmatch 'Basic Display Adapter|Basic Render|Hyper-V Video' }
+if (-not $realGpu) {
+    ## The node fell back to the generic Microsoft adapter = the Intel GPU driver never bound = a bad
+    ## environment. The golden WIM bakes in the Intel graphics driver (RELOPS-2487, proven on nuc13-160:
+    ## Intel Iris Xe @ 60), so a healthy node comes up on the real Intel adapter; a generic-adapter node
+    ## should reimage to recover.
+    Write-Log -message ('{0} :: Display on GENERIC adapter ({1}); Intel GPU driver not loaded (refresh {2}). Reimaging {3}' -f $($MyInvocation.MyCommand.Name), ($videoControllers -join ', '), $refresh_rate, $ENV:COMPUTERNAME) -severity 'DEBUG'
     Set-PXE
+}
+else {
+    Write-Log -message ('{0} :: Display driver OK ({1}), refresh rate {2}' -f $($MyInvocation.MyCommand.Name), ($realGpu -join ', '), $refresh_rate) -severity 'DEBUG'
 }
 
 $bootstrap_stage = (Get-ItemProperty -path "HKLM:\SOFTWARE\Mozilla\ronin_puppet").bootstrap_stage
