@@ -51,7 +51,11 @@ windows:
   # Fleetbench - fleet hardware-health benchmarking collector (RELOPS-2402)
   # Collector binary is pulled from GitHub releases; pin the version here.
   fleetbench:
-    version: '0.4.0'
+    version: '0.4.6'
+    # From the release's own SHA256SUMS. Bump together with version - archive verifies it,
+    # so a truncated download fails loudly instead of leaving a partial exe that satisfies
+    # the `creates` guard forever.
+    sha256: '8b98f0e72a8d1fff1756a4bc2c806a0fbc9583381218fed0c9d633446c7f07b4'
     download_url: "https://github.com/mozilla-platform-ops/fleetbench/releases/download"
     install_dir: "%{facts.custom_win_systemdrive}\\fleetbench"
     results_dir: "%{facts.custom_win_systemdrive}\\fleetbench\\results"

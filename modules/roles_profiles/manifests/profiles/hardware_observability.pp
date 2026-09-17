@@ -14,6 +14,7 @@ class roles_profiles::profiles::hardware_observability {
             download_url => lookup('windows.fleetbench.download_url'),
             install_dir  => lookup('windows.fleetbench.install_dir'),
             results_dir  => lookup('windows.fleetbench.results_dir'),
+            sha256       => lookup('windows.fleetbench.sha256'),
         }
     }
     default: {

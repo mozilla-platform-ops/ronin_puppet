@@ -11,6 +11,7 @@ class win_fleetbench::init (
   String $download_url,
   String $install_dir,
   String $results_dir,
+  String $sha256,
 ) {
   $pkg       = "fleetbench-v${version}-windows-x86_64.exe"
   $url       = "${download_url}/v${version}/${pkg}"
@@ -31,13 +32,16 @@ class win_fleetbench::init (
   # Pull the pinned collector binary from GitHub releases. The on-disk name is
   # version-stamped so a hiera version bump triggers a fresh download.
   archive { 'fleetbench-collector':
-    ensure  => present,
-    source  => $url,
-    path    => $binary,
-    creates => $binary,
-    cleanup => false,
-    extract => false,
-    require => File[$install_dir],
+    ensure          => present,
+    source          => $url,
+    path            => $binary,
+    creates         => $binary,
+    cleanup         => false,
+    extract         => false,
+    checksum        => $sha256,
+    checksum_type   => 'sha256',
+    checksum_verify => true,
+    require         => File[$install_dir],
   }
 
   # Wrapper that invokes the collector and writes results to $results_dir.
