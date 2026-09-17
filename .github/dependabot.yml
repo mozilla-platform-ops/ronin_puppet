@@ -1,66 +1,48 @@
 version: 2
-updates:
-
-
-  # Ruby dependencies (Gemfile) - root
-  - package-ecosystem: "bundler"
-    directory: "/"
+multi-ecosystem-groups:
+  ci-dependencies:
     schedule:
       interval: "weekly"
       day: "monday"
       time: "11:00"
-    open-pull-requests-limit: 5
     target-branch: "master"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+updates:
+  # Ruby dependencies, including module Gemfiles
+  - package-ecosystem: "bundler"
+    directories: ["/**"]
+    exclude-paths:
+      - "**/r10k_modules/**"
+      - "**/vendor/**"
+    patterns: ["*"]
+    multi-ecosystem-group: "ci-dependencies"
     labels:
       - "dependencies"
       - "ruby"
-    commit-message:
-      prefix: "ruby"
-      include: "scope"
 
-  # Python dependencies (.dev-requirements.txt) - root only
+  # Python dependencies
   - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "11:00"
-    open-pull-requests-limit: 5
-    target-branch: "master"
+    directories: ["/**"]
+    exclude-paths:
+      - "**/r10k_modules/**"
+      - "**/vendor/**"
+    patterns: ["*"]
+    multi-ecosystem-group: "ci-dependencies"
     labels:
       - "dependencies"
       - "python"
-    commit-message:
-      prefix: "python"
-      include: "scope"
 
-  # GitHub Actions workflows (if any are added in the future)
+  # GitHub Actions workflows
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "12:00"
-    open-pull-requests-limit: 5
-    target-branch: "master"
+    exclude-paths:
+      - "**/r10k_modules/**"
+      - "**/vendor/**"
+    patterns: ["*"]
+    multi-ecosystem-group: "ci-dependencies"
     labels:
       - "dependencies"
       - "github-actions"
-    commit-message:
-      prefix: "ci"
-      include: "scope"
-
-  # Individual module Gemfiles in modules/ directory
-  - package-ecosystem: "bundler"
-    directory: "/modules"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 5
-    target-branch: "master"
-    labels:
-      - "dependencies"
-      - "ruby"
-      - "module"
-    commit-message:
-      prefix: "ruby"
-      include: "scope"
