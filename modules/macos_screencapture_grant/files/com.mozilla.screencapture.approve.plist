@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mozilla.screencapture.approve</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/osascript</string>
+        <string>/usr/local/bin/approve-screencapture.applescript</string>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/tmp/screencapture-grant.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/screencapture-grant.err</string>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
