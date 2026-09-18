@@ -71,28 +71,59 @@ class macos_screencapture_grant (
             # hence the collector.
             Packages::Macos_taskcluster_binary <| |> -> Exec['grant screen recording to worker binaries']
 
-            # The semaphore is deleted first so the real TCC state in
-            # `unless` is the only thing that decides whether this runs. Without
-            # that, a grant cleared out of band (tccutil reset, a reprovision)
-            # would leave the applescript short-circuiting on a stale semaphore
-            # while the host quietly went on failing every capture.
+            # This exec MUST NOT fail, ever. worker-runner.sh calls
+            # run-puppet.sh synchronously before it starts the worker, and
+            # run-puppet.sh retries the whole apply every 60s while any
+            # "^Error:" is present -- so a failing resource here does not
+            # degrade to "no screen capture", it degrades to "this host never
+            # takes another task". Reproduced on macmini-m4-111: the grant
+            # could not be obtained at boot, the exec returned 1, and the host
+            # sat in the retry loop with no worker until the branch was
+            # reverted. This is the same wedge macos_tcc_perms' deferral was
+            # added for in #1323 (macmini-m4-84, dead 2026-04-15 to 08-11).
             #
-            # The wait is on the semaphore, not on the TCC state, even though the
-            # TCC state is what we actually care about. The applescript writes the
-            # semaphore as its very last act, after it has closed System Settings;
-            # the grant lands several seconds earlier. Waiting on the grant
-            # therefore returns with a System Settings window still on screen --
-            # measured at ~10s on macmini-m4-111 -- and these hosts start taking
-            # screen-pixel tests the moment puppet is done. So: wait for the
-            # semaphore (script fully finished and tidied up), then let
-            # ${check_script} decide success from the real TCC rows rather than
-            # trusting the semaphore's word for it.
+            # So the command always exits 0 and merely warns. That is safe
+            # because `unless` reads the real TCC rows: a run that failed to
+            # obtain the grant leaves those rows unchanged, so the next puppet
+            # run simply tries again. Nothing is recorded as done that is not.
+            #
+            # The GUI precondition is checked first and bails out fast. The
+            # approval needs cltbld's console session, which at boot may not
+            # exist yet; without this check every such boot would burn the full
+            # wait before starting the worker.
+            #
+            # The wait is on the semaphore rather than on the TCC rows because
+            # the applescript writes the semaphore last, after closing System
+            # Settings -- the grant lands several seconds earlier, so waiting on
+            # the grant returns with a settings window still on screen, and
+            # these hosts start screen-pixel tests as soon as puppet is done.
+            $approve_cmd = [
+              "if [ \"$(/usr/bin/stat -f%Su /dev/console)\" != \"${user}\" ]; then",
+              "  echo \"WARNING: ${user} is not the console user; skipping Screen Recording approval this run.\" >&2;",
+              "  echo \"WARNING: no semaphore written, so the next puppet run retries. Not failing --\" >&2;",
+              "  echo \"WARNING: failing here would block worker startup (see worker-runner.sh).\" >&2;",
+              '  exit 0;',
+              'fi;',
+              "rm -f ${semaphore_file};",
+              "if /bin/launchctl print gui/${user_uid}/com.mozilla.screencapture.approve > /dev/null 2>&1; then",
+              "  /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.screencapture.approve;",
+              'else',
+              "  /bin/launchctl bootstrap gui/${user_uid} ${launchagent};",
+              'fi;',
+              'count=0;',
+              "while [ \$count -lt 90 ] && ! /bin/bash -c \"test -f ${semaphore_file} && grep -q 1 ${semaphore_file}\"; do sleep 2; count=\$((count+2)); done;",
+              "if ! ${check_script}; then",
+              "  echo \"WARNING: Screen Recording still not granted after \${count}s; will retry next puppet run.\" >&2;",
+              'fi;',
+              'exit 0',
+            ].join(' ')
+
             exec { 'grant screen recording to worker binaries':
-              command => "/bin/bash -c 'rm -f ${semaphore_file}; if /bin/launchctl print gui/${user_uid}/com.mozilla.screencapture.approve > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.screencapture.approve; else /bin/launchctl bootstrap gui/${user_uid} ${launchagent}; fi; count=0; while [ \$count -lt 150 ] && ! /bin/bash -c \"test -f ${semaphore_file} && grep -q 1 ${semaphore_file}\"; do sleep 2; count=\$((count+2)); done; ${check_script}'",
+              command => "/bin/bash -c '${approve_cmd}'",
               unless  => $check_script,
               require => [File[$applescript], File[$check_script], File[$launchagent]],
               cwd     => "/Users/${user}",
-              timeout => 240,
+              timeout => 180,
             }
           }
         }
