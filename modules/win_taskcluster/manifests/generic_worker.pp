@@ -19,7 +19,8 @@ class win_taskcluster::generic_worker (
     ensure => directory,
   }
   if $source_build {
-    # Test branch only. The stamp prevents Puppet from restoring a consumed seed.
+    # Test branch only. Stamps prevent Puppet from restoring purged caches.
+    require win_mozilla_build::install
     file { 'C:\cache-seeds':
       ensure => directory,
     }
@@ -35,7 +36,7 @@ class win_taskcluster::generic_worker (
     }
     exec { 'create_preloaded_cache_smoke_seed':
       command  => file('win_taskcluster/create-cache-smoke-seed.ps1'),
-      creates  => 'C:\cache-seeds\relops-8809-smoke-20260917.created',
+      creates  => 'C:\cache-seeds\relops-8809-smoke-20260918.created',
       provider => powershell,
       require  => Acl['C:\cache-seeds'],
     }
@@ -53,6 +54,13 @@ class win_taskcluster::generic_worker (
       provider => powershell,
       timeout  => 7200,
       require  => [Acl['C:\cache-seeds'], Acl['gecko_seed_shared_store'], Class['win_packages::mercurial']],
+    }
+    exec { 'create_preloaded_pip_seed':
+      command  => file('win_taskcluster/create-pip-cache-seed.ps1'),
+      creates  => 'C:\cache-seeds\pip.created',
+      provider => powershell,
+      timeout  => 600,
+      require  => [Acl['C:\cache-seeds'], Class['win_mozilla_build::install']],
     }
     $architecture = $facts['custom_win_os_arch'] ? {
       'aarch64' => 'arm64',
