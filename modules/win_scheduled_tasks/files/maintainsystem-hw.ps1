@@ -378,52 +378,6 @@ function Get-LoggedInUser {
     @(((query user) -replace '\s{20,39}', ',,') -replace '\s{2,}', ',' | ConvertFrom-Csv)
 }
 
-function Get-LatestGoogleChrome {
-    [CmdletBinding()]
-    param (
-        [String]
-        $Package = "googlechrome"
-    )
-
-    ## Current version of google chrome
-    $current_version = choco list --exact $Package --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion'
-
-    ## Use chocolatey with outdated
-    $choco_packages = choco outdated --limit-output | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'CurrentVersion', 'AvailableVersion', 'Pinned'
-
-    ## Check if Google Chrome is present
-    $pkg = $choco_packages | Where-Object { $_.Name -eq $Package }
-
-    ## There is no google chrome update, so output the current version
-    if ([String]::IsNullOrEmpty($pkg)) {
-        Write-Log -message ('{0} :: Google Chrome version installed is {1}' -f $($MyInvocation.MyCommand.Name), $current_version.CurrentVersion) -severity 'DEBUG'
-    }
-    else {
-        ## Chrome is installed and needs to be updated
-        if ($pkg.CurrentVersion -ne $pkg.AvailableVersion) {
-            ## run choco upgrade
-            Write-Log -message ('{0} :: Updating Google Chrome from current: {1} to available: {2}' -f $($MyInvocation.MyCommand.Name), $pkg.currentVersion, $pkg.availableVersion) -severity 'DEBUG'
-            choco upgrade $Package -y "--ignore-checksums" "--ignore-package-exit-codes" "--log-file" $env:systemdrive\logs\googlechrome.log
-            if ($LASTEXITCODE -ne 0) {
-                ## output to papertrail
-                Write-Log -message ('{0} :: choco upgrade googlechrome failed with {1}' -f $($MyInvocation.MyCommand.Name), $LASTEXITCODE) -severity 'DEBUG'
-                ## output chocolatey logs to papertrail
-                Get-Content $env:systemdrive\logs\googlechrome.log | ForEach-Object { Write-Log -message $_ -severity 'DEBUG' }
-                ## Sending the logs to papertrail, wait 30 seconds
-                Start-Sleep -Seconds 60
-                ## PXE Boot
-                Set-PXE
-            }
-            else {
-                ## Need to reboot in order to complete the upgrade
-                Write-Log -message ('{0} :: Google Chrome needs to reboot to complete upgrade. Rebooting..' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-                Start-Sleep -Seconds 10
-                Restart-Computer -Force
-            }
-        }
-    }
-}
-
 function Set-PXE {
     param (
     )
@@ -871,9 +825,19 @@ If ($bootstrap_stage -eq 'complete') {
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
 
-    ## Let's check for the latest install of google chrome using chocolatey before starting worker runner
-    ## Instead of querying chocolatey each time this runs, let's query chrome json endoint and check locally installed version
-    Get-LatestGoogleChrome
+    ## RELOPS-2575: make sure Chrome is the current stable build before worker-runner
+    ## claims a task. Asks versionhistory.googleapis.com what is current and installs
+    ## Google's enterprise MSI directly - no chocolatey community feed involved.
+    ## The exit code is deliberately IGNORED and there is no Set-PXE here: a failed
+    ## refresh must not re-image a healthy worker. Re-imaging cannot fix a remote
+    ## rate limit or outage, the fresh node just makes the identical request.
+    $chrome_script = Join-Path $PSScriptRoot 'Update-GoogleChrome.ps1'
+    if (Test-Path $chrome_script) {
+        & $chrome_script
+    }
+    else {
+        Write-Log -message ('{0} :: Update-GoogleChrome.ps1 not found at {1}' -f $($MyInvocation.MyCommand.Name), $chrome_script) -severity 'WARN'
+    }
     # Wait for task-user-init (Win11 UI hardening) to complete before starting worker-runner
     $ready = Wait-ForUserInitReady -TimeoutSeconds 1200 -PollSeconds 3
 
