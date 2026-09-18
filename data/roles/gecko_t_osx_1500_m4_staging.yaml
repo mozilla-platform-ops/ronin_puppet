@@ -10,8 +10,28 @@ worker_metadata:
 
 # Role-owned Taskcluster worker version (read by profiles::worker; takes
 # precedence over the legacy vault-sourced worker.taskcluster_version below).
-# Pinned to the current effective version -- this is a no-op control move.
-taskcluster_version: '100.5.0'
+#
+# TEMPORARILY pinned back from 100.5.0 to 91.0.2 to validate bug 2073303. The
+# Developer-ID-signed assets below only exist for 91.0.2, and signing is a hard
+# prerequisite for the SIP-on ScreenCapture grant: on a SIP-on host the csreq
+# comes from the MDM PPPC profile and is anchored on identifier + TeamID, which
+# an ad-hoc binary (Identifier=a.out, no TeamIdentifier) can never satisfy. With
+# the stock ad-hoc staging binaries TCC stores the grant and then rejects the
+# caller at evaluation time, so staging could not exercise the fix at all.
+#
+# REVERT THIS (and taskcluster_signed_binaries below) once validation is done --
+# this key is what the monthly worker-version bump-bot drives, and staging is
+# the only pool that exercises new worker versions. Leaving it pinned silently
+# removes that coverage.
+taskcluster_version: '91.0.2'
+
+# Developer-ID-signed worker binaries (Mozilla TeamID 43AQ936H96), as
+# installed-binary-name => sha256 of the signed asset. Digests verified against
+# the signed/ prefix of the ronin package bucket and identical to the ones the
+# prod gecko_t_osx_1500_m4 role pins. See the note above before changing.
+taskcluster_signed_binaries:
+  start-worker: 'c43aaf3361ea356a730d9cdb322364d765a06f77222104ad3ea2d5dc6a8913f5'
+  generic-worker-multiuser: '3e2e5410959c3652f89751be9863a07e050beb6a28beb7522a5122b871fb8487'
 
 worker:
   taskcluster_version: 95.0.3
