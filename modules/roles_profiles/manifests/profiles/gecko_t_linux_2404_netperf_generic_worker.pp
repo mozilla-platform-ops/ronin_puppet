@@ -95,13 +95,6 @@ class roles_profiles::profiles::gecko_t_linux_2404_netperf_generic_worker {
         command => '/usr/local/bin/netperf-tc',
       }
 
-      # Remove after the Firefox migration to netperf-tc has landed and all
-      # existing `sudo tc` call sites have been retired.
-      sudo::custom { 'allow cltbld to run tc temporarily':
-        user    => 'cltbld',
-        command => '/sbin/tc',
-        runas   => 'ALL',
-      }
       # Set MTU for loopback interface
       exec { 'set-lo-mtu':
         command => '/sbin/ip link set dev lo mtu 1500',
