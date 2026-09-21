@@ -75,8 +75,19 @@ export GIT_BRANCH="$PUPPET_BRANCH"
 ### 2. Function Definitions
 ### ---------------------------------------------
 
+# Stage label for the failure record, set before each fail() that has a
+# meaningful stage. Defaults to "unknown" for the ones that do not.
+FAIL_STAGE="unknown"
+
 fail() {
     echo "${@}"
+    # Leave a machine-readable trace that this boot never reached an apply.
+    # Without it a stuck host is invisible: the worker starts regardless, so it
+    # keeps taking production tasks and last_run_metadata.json simply stops
+    # advancing, which nothing alerts on.
+    if type write_puppet_failure >/dev/null 2>&1; then
+        write_puppet_failure "$FAIL_STAGE" "${*}" "/opt/puppet_environments/last_run_error.json"
+    fi
     exit 1
 }
 
@@ -245,6 +256,11 @@ run_puppet() {
     else
         echo "WARNING: write_puppet_state function not available, skipping state file write" >&2
     fi
+
+    # The run reached an apply, so any earlier failure record is stale.
+    if type clear_puppet_failure >/dev/null 2>&1; then
+        clear_puppet_failure "/opt/puppet_environments/last_run_error.json"
+    fi
     # ==============================================================================
 
     case $retval in
@@ -303,9 +319,11 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
         cd ..
         rm -rf "$LOCAL_PUPPET_REPO"
         echo "Cloning new Puppet repository..."
-        git_net_retry clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+        FAIL_STAGE=git-clone
+    git_net_retry clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
     else
         echo "Checking for updates in Puppet repository..."
+        FAIL_STAGE=git-fetch
         git_net_retry fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
 
         LOCAL_COMMIT=$(git rev-parse HEAD)
@@ -321,6 +339,7 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
 else
     echo "Cloning fresh Puppet repository..."
     mkdir -p "$(dirname "$LOCAL_PUPPET_REPO")"
+    FAIL_STAGE=git-clone
     git_net_retry clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
 fi
 
@@ -338,7 +357,8 @@ while true; do
     echo "Puppet apply failed. Checking for updates before retrying..."
 
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to enter Puppet repository directory"
-    git_net_retry fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+    FAIL_STAGE=git-fetch
+        git_net_retry fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
 
     LOCAL_COMMIT=$(git rev-parse HEAD)
     REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
