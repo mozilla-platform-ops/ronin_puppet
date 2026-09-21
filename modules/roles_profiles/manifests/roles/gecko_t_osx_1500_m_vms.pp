@@ -6,10 +6,12 @@ class roles_profiles::roles::gecko_t_osx_1500_m_vms {
   include macos_utils::disable_bluetooth_setup
   include macos_utils::always_show_scroll_bars
   include macos_utils::suppress_keyboard_assistant
+  include macos_utils::prevent_idle_lock
   include roles_profiles::profiles::cltbld_user
   include roles_profiles::profiles::disable_image_build_admin
   include roles_profiles::profiles::macos_bin_signer
   include roles_profiles::profiles::macos_disable_firewall
+  include roles_profiles::profiles::macos_screenshot_helper
   include roles_profiles::profiles::macos_tcc_perms
   include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::motd
