@@ -62,6 +62,8 @@ windows:
 
   # Taskcluster resources
   taskcluster:
+    # Alpha cache test branch: keep tasks on the image volume.
+    task_drive: 'C:'
     root_url: "https://firefox-ci-tc.services.mozilla.com"
     wstaudience: "firefoxcitc"
     wstserverurl: "https://firefoxci-websocktunnel.services.mozilla.com"

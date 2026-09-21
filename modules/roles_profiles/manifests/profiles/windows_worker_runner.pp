@@ -155,6 +155,7 @@ class roles_profiles::profiles::windows_worker_runner {
         runner_log            => $runner_log,
         nssm_exe              => $nssm_exe,
         # Runner yaml file
+        task_drive            => lookup('windows.taskcluster.task_drive', { 'default_value' => undef }),
         provider              => $provider,
         implementation        => $implementation,
         # GW config
