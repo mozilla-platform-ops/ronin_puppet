@@ -6,3 +6,9 @@ worker:
     protocolPipe: \\.\pipe\generic-worker
     configPath: <%= $win_taskcluster::worker_runner::config_file %>
 cacheOverRestarts: true
+<% if $win_taskcluster::worker_runner::task_drive { -%>
+workerConfig:
+    tasksDir: '<%= $win_taskcluster::worker_runner::task_drive %>\tasks'
+    cachesDir: '<%= $win_taskcluster::worker_runner::task_drive %>\caches'
+    downloadsDir: '<%= $win_taskcluster::worker_runner::task_drive %>\downloads'
+<% } -%>

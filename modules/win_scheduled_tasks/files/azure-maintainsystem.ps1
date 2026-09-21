@@ -463,12 +463,13 @@ function Test-LegacyYDriveRequired {
 
   return ($WorkerPoolId -match '(^|/)win10-64-2009($|-)' -or
     $WorkerPoolId -match '(^|/)win11-64-2009($|-)' -or
-    $WorkerPoolId -match '(^|/)b-win20(22|25)($|-)')
+    $WorkerPoolId -match '(^|/)b-win2022($|-)')
 }
 
 function Set-LegacyYDriveMapping {
   param (
-    [string] $WorkerPoolId
+    [string] $WorkerPoolId,
+    [ValidateSet('C:', 'D:')][string] $TaskDrive = 'D:'
   )
 
   begin {
@@ -480,9 +481,9 @@ function Set-LegacyYDriveMapping {
       return
     }
 
-    if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
-      subst Y: D:\
-      Write-Log -message ('{0} :: mapped Y: to D: for legacy worker pool: {1}' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'INFO'
+    if ((Test-VolumeExists -DriveLetter $TaskDrive.TrimEnd(':')) -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
+      subst Y: "$TaskDrive\"
+      Write-Log -message ('{0} :: mapped Y: to {1} for legacy worker pool: {2}' -f $($MyInvocation.MyCommand.Name), $TaskDrive, $WorkerPoolId) -severity 'INFO'
     }
   }
   end {
@@ -492,8 +493,13 @@ function Set-LegacyYDriveMapping {
 
 function Test-AzureNvmeTemporaryDriveRequired {
   param (
-    [string] $vmSize
+    [string] $vmSize,
+    [string] $TaskDrive = 'D:'
   )
+
+  if ($TaskDrive -eq 'C:') {
+    return $false
+  }
 
   return @(
     'Standard_D32ads_v7'
@@ -505,6 +511,7 @@ function Test-AzureNvmeTemporaryDriveRequired {
 function Ensure-AzureNvmeTemporaryDrive {
   param (
     [string] $vmSize,
+    [string] $TaskDrive = 'D:',
     [string] $scriptPath = "$env:programdata\PuppetLabs\ronin\configure_nvme_disk.ps1"
   )
 
@@ -512,7 +519,7 @@ function Ensure-AzureNvmeTemporaryDrive {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if (-not (Test-AzureNvmeTemporaryDriveRequired -vmSize $vmSize)) {
+    if (-not (Test-AzureNvmeTemporaryDriveRequired -vmSize $vmSize -TaskDrive $TaskDrive)) {
       Write-Log -message ('{0} :: skipped for VM size {1}' -f $($MyInvocation.MyCommand.Name), $vmSize) -severity 'DEBUG'
       return
     }
@@ -568,10 +575,12 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Set-AzVMName
   $vm_size = (Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "compute").vmSize
   ## NVMe v7 workers must create D: from the unused local disk before Puppet reads drive facts.
-  Ensure-AzureNvmeTemporaryDrive -vmSize $vm_size
+  $task_drive = (Get-ItemProperty -Path $ronin_key -Name task_drive -ErrorAction SilentlyContinue).task_drive
+  if ([string]::IsNullOrEmpty($task_drive)) { $task_drive = 'D:' }
+  Ensure-AzureNvmeTemporaryDrive -vmSize $vm_size -TaskDrive $task_drive
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
-  Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id
+  Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id -TaskDrive $task_drive
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
   }
