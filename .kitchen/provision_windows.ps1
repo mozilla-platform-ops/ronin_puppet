@@ -248,6 +248,7 @@ foreach ($stage in @('image', 'worker')) {
         $taskDrive = (Get-ItemProperty $roninKey -Name task_drive -ErrorAction SilentlyContinue).task_drive
         if ($taskDrive -ne 'C:') { break }
         Set-ItemProperty $roninKey -Name worker_pool_id -Value "gecko-t/$workerPoolId"
+        Set-ItemProperty $roninKey -Name bootstrap_stage -Value 'complete'
     }
     Write-Host "Running puppet apply for role $env:PUPPET_ROLE ($stage)..."
     & "$puppetBin\puppet" apply `
