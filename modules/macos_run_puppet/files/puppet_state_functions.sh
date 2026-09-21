@@ -200,5 +200,83 @@ EOF
     }
 }
 
+# write_puppet_failure
+# Records that a puppet run did not get as far as applying a catalog.
+#
+# This deliberately writes a SEPARATE file rather than last_run_metadata.json.
+# Consumers treat the timestamp in last_run_metadata.json as "when this host
+# last converged"; stamping a failure into it would give a frozen host a fresh
+# timestamp and make it look healthy, which is the exact blindness this is meant
+# to remove. Semantics here:
+#
+#   last_run_error.json present -> the most recent attempt did not complete
+#   last_run_error.json absent  -> the most recent attempt completed
+#
+# Parameters:
+#   stage       - short machine-readable label, e.g. git-fetch, vault, role
+#   message     - human-readable reason
+#   error_file  - optional output path (default: /etc/puppet/last_run_error.json)
+#
+# CRITICAL: like write_puppet_state, this must NEVER fail the puppet run.
+write_puppet_failure() {
+    {
+        local stage="${1:-unknown}"
+        local message="${2:-}"
+        local error_file="${3:-/etc/puppet/last_run_error.json}"
+        local temp_file="${error_file}.tmp"
+
+        local ts
+        ts=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "null")
+
+        local host
+        host=$(hostname -f 2>/dev/null || hostname 2>/dev/null || echo "unknown")
+
+        # Escape for JSON
+        local stage_escaped message_escaped
+        stage_escaped=$(printf '%s' "$stage" | sed 's/\\/\\\\/g; s/"/\\"/g')
+        message_escaped=$(printf '%s' "$message" | tr -d '\n\r' | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+        local json
+        json=$(cat <<EOF
+{
+  "schema_version": 1,
+  "ts": "$ts",
+  "host": "$host",
+  "stage": "$stage_escaped",
+  "message": "$message_escaped"
+}
+EOF
+        )
+
+        if echo "$json" > "$temp_file" 2>/dev/null; then
+            chmod 0644 "$temp_file" 2>/dev/null || true
+            if mv "$temp_file" "$error_file" 2>/dev/null; then
+                echo "Puppet failure recorded in $error_file (stage: $stage)" >&2
+            else
+                rm -f "$temp_file" 2>/dev/null || true
+            fi
+        else
+            rm -f "$temp_file" 2>/dev/null || true
+        fi
+
+        return 0
+    } || {
+        echo "ERROR: write_puppet_failure: Unexpected error occurred" >&2
+        return 0
+    }
+}
+
+# clear_puppet_failure
+# Removes the failure record after a run completes, so a stale error file does
+# not outlive the condition that caused it.
+#
+#   error_file - optional path (default: /etc/puppet/last_run_error.json)
+clear_puppet_failure() {
+    rm -f "${1:-/etc/puppet/last_run_error.json}" 2>/dev/null || true
+    return 0
+}
+
 # Export function for use in other scripts
 export -f write_puppet_state 2>/dev/null || true
+export -f write_puppet_failure 2>/dev/null || true
+export -f clear_puppet_failure 2>/dev/null || true
