@@ -1,6 +1,11 @@
 require_relative 'spec_helper'
 
 if TASK_DRIVE == 'C:'
+  describe registry_value_command('HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment', 'HG_CACHE') do
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^C:\\hg-cache\s*$/) }
+  end
+
   describe registry_value_command('HKLM:\\SOFTWARE\\Mozilla\\ronin_puppet', 'task_drive') do
     its(:exit_status) { should eq 0 }
     its(:stdout) { should match(/^C:\s*$/) }
