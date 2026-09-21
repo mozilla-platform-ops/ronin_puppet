@@ -18,7 +18,7 @@ class packages::linux_generic_worker (
   # `multiuser-static` is a deployment mode built on the upstream multiuser
   # binary. The caller remains responsible for supplying the checksum that
   # matches the selected binary and version.
-  Enum['insecure', 'multiuser-static'] $generic_worker_engine = 'insecure',
+  Enum['simple', 'multiuser-static'] $generic_worker_engine = 'simple',
 ) {
   $threshold_version = '63.0.0'
   $gw_version_without_v = regsubst($generic_worker_version, 'v', '')
@@ -76,7 +76,7 @@ class packages::linux_generic_worker (
     notice('g-w: using simple g-w')
   } else {
     $generic_worker_asset = 'generic-worker-insecure'
-    notice('g-w: using insecure g-w')
+    notice('g-w: using simple g-w')
   }
 
   if $taskcluster_binary_source == 'github' {

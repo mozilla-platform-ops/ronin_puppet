@@ -27,11 +27,11 @@ class linux_generic_worker (
   Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
   String $quarantine_worker_sha256,
   Enum['s3', 'github'] $taskcluster_binary_source = 's3',
-  # The default retains the existing Linux insecure-worker deployment. A later
+  # The default retains the existing Linux simple-worker deployment. A later
   # canary may opt into multiuser-static, which selects the upstream
   # generic-worker-multiuser asset but does not itself change startup identity
   # or task-user assignment.
-  Enum['insecure', 'multiuser-static'] $generic_worker_engine = 'insecure',
+  Enum['simple', 'multiuser-static'] $generic_worker_engine = 'simple',
   String $taskcluster_host = 'taskcluster',
 ) {
   # include httpd
@@ -217,6 +217,17 @@ class linux_generic_worker (
     refreshonly => true,
   }
 
+  # This non-secret marker records the engine selected for this host. It makes
+  # the rendered mode independently observable to diagnostics and integration
+  # tests without exposing worker credentials.
+  file { '/etc/taskcluster-worker-engine':
+    ensure  => file,
+    content => "${generic_worker_engine}\n",
+    owner   => root,
+    group   => root,
+    mode    => '0644',
+  }
+
   if $generic_worker_engine == 'multiuser-static' {
     # The root service is the Worker Runner and credential control plane. The
     # Generic Worker multiuser binary waits for GDM to provide an interactive
@@ -243,8 +254,15 @@ class linux_generic_worker (
       notify  => Exec['reload linux generic worker systemd'],
     }
 
+    # Kitchen has neither a GDM session nor usable worker credentials. Retain
+    # its structural test coverage without starting the controller there.
+    $generic_worker_service_ensure = $facts['running_in_test_kitchen'] ? {
+      true    => stopped,
+      default => running,
+    }
+
     service { 'generic-worker.service':
-      ensure   => running,
+      ensure   => $generic_worker_service_ensure,
       enable   => true,
       provider => systemd,
       require  => [

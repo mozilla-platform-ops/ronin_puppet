@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Linux Taskcluster workers currently use the Generic Worker `insecure` engine.
+Linux Taskcluster workers currently use the Generic Worker `simple` engine.
 The worker supervisor and every task run as the shared `cltbld` user. This
 document records how the macOS `multiuser-static` deployment differs and
 outlines a safe Linux migration path.
@@ -142,16 +142,16 @@ subcommand. The controller can launch the task command directly as `cltbld`.
 
 | Phase | Status | Notes |
 |---|---|---|
-| 1. Ubuntu 24.04 X11 canary | Not started | Needs a dedicated role or worker-pool decision. |
-| 2. Engine selection | Complete | Commit `1b6524f0` adds an inert `insecure` / `multiuser-static` selection path. No role opts in. |
+| 1. Ubuntu 24.04 X11 canary | In progress | This branch selects static mode for the existing 24.04 X11 role; hosts must be pointed at the branch and assigned to the intended canary worker pool. |
+| 2. Engine selection | Complete | Commit `1b6524f0` adds an inert selectable-engine path. No role opts in. |
 | 3. Root-owned control-plane directory | Complete | Commit `0fc7bc6e` adds root-only static-mode state. No role opts in. |
-| 4. Root systemd service | Complete | Commit `0fc7bc6e` adds the root-owned service, removes GNOME autostart in static mode, and performs the inverse cleanup in insecure mode. |
+| 4. Root systemd service | Complete | Commit `0fc7bc6e` adds the root-owned service, removes GNOME autostart in static mode, and performs the inverse cleanup in simple mode. |
 | 5. Root-safe wrapper | Complete | Commit `0fc7bc6e` adds a separate root-only wrapper and root-owned lifecycle state, rather than the legacy `cltbld`-state wrapper. |
 | 6. Desktop/device validation | Not started | A canary gate, not a post-rollout check. |
-| 7. Kitchen and on-host test coverage | Not started | Add rendered-file tests plus real-host smoke tasks. |
+| 7. Kitchen and on-host test coverage | In progress | The shared linux-perf suite reads a root-owned engine marker and validates the corresponding layout; real-host smoke tasks remain. |
 
 Current state: the static engine's control plane and startup path are ready,
-but no Linux worker is configured to use it. The existing insecure-worker
+but no Linux worker is configured to use it. The existing simple-worker
 deployment remains the default.
 
 ### 1. Start with a dedicated Ubuntu 24.04 X11 canary
@@ -164,7 +164,7 @@ existing production pool.
 ### 2. Make the Linux worker engine selectable
 
 Extend `linux_generic_worker` and `packages::linux_generic_worker` with an
-explicit engine choice, initially `insecure` or `multiuser-static`.
+explicit engine choice, initially `simple` or `multiuser-static`.
 
 For `multiuser-static`:
 
@@ -238,7 +238,7 @@ The wrapper should preserve the operational behaviors that remain wanted:
 
 ### 6. Validate GUI and device behavior on the canary
 
-The current insecure worker inherits a GNOME terminal's session environment.
+The current simple worker inherits a GNOME terminal's session environment.
 The multiuser controller instead constructs the task environment. Validate:
 
 - Firefox/X11 startup and screenshot capture.
