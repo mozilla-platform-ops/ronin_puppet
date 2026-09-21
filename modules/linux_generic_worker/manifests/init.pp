@@ -27,6 +27,11 @@ class linux_generic_worker (
   Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
   String $quarantine_worker_sha256,
   Enum['s3', 'github'] $taskcluster_binary_source = 's3',
+  # The default retains the existing Linux insecure-worker deployment. A later
+  # canary may opt into multiuser-static, which selects the upstream
+  # generic-worker-multiuser asset but does not itself change startup identity
+  # or task-user assignment.
+  Enum['insecure', 'multiuser-static'] $generic_worker_engine = 'insecure',
   String $taskcluster_host = 'taskcluster',
 ) {
   # include httpd
@@ -47,6 +52,7 @@ class linux_generic_worker (
     quarantine_worker_version => $quarantine_worker_version,
     quarantine_worker_sha256  => $quarantine_worker_sha256,
     taskcluster_binary_source => $taskcluster_binary_source,
+    generic_worker_engine     => $generic_worker_engine,
   }
 
   class { 'linux_generic_worker::control_bug':

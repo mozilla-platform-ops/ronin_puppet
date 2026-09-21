@@ -153,6 +153,11 @@ explicit engine choice, initially `insecure` or `multiuser-static`.
 For `multiuser-static`:
 
 - Download the `generic-worker-multiuser` asset and pin its checksum.
+- For the existing v88.0.2 Ubuntu 24.04 worker version, the release checksums
+  are `83a5f621963c29be086a41393295bf3f2591b50b137969f0fd9eff880a3cae6b`
+  (amd64) and
+  `12cd60202541b36a14513ffb5f7f6084ed1e858a6425c712a65b9082e6df2329`
+  (arm64).
 - It is acceptable to continue installing it as
   `/usr/local/bin/generic-worker`; this avoids unnecessary changes to health
   checks and wrapper scripts.

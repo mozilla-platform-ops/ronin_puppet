@@ -15,6 +15,10 @@ class packages::linux_generic_worker (
   Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
   String                      $quarantine_worker_sha256,
   Enum['s3', 'github']        $taskcluster_binary_source = 's3',
+  # `multiuser-static` is a deployment mode built on the upstream multiuser
+  # binary. The caller remains responsible for supplying the checksum that
+  # matches the selected binary and version.
+  Enum['insecure', 'multiuser-static'] $generic_worker_engine = 'insecure',
 ) {
   $threshold_version = '63.0.0'
   $gw_version_without_v = regsubst($generic_worker_version, 'v', '')
@@ -59,7 +63,15 @@ class packages::linux_generic_worker (
     $start_worker_checksum = $start_worker_sha256
   }
 
-  if versioncmp($gw_version_without_v, $threshold_version) < 0 {
+  if $generic_worker_engine == 'multiuser-static' {
+    # The legacy package bucket has not been verified to carry the multiuser
+    # assets. Require the GitHub release path until that is explicitly done.
+    if $taskcluster_binary_source != 'github' {
+      fail('g-w: multiuser-static requires taskcluster_binary_source => github')
+    }
+    $generic_worker_asset = 'generic-worker-multiuser'
+    notice('g-w: using multiuser g-w for multiuser-static deployment')
+  } elsif versioncmp($gw_version_without_v, $threshold_version) < 0 {
     $generic_worker_asset = 'generic-worker-simple'
     notice('g-w: using simple g-w')
   } else {
