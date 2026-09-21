@@ -73,6 +73,11 @@ windows:
     hw_version: "110.0.0"
 
     generic-worker:
+      # Test branch only: Taskcluster PR #9162. Do not merge these settings to master.
+      source_build:
+        repository: jwmossmoz/taskcluster
+        revision: e29a4639fd4402431b7a01cb9982b145c3077aa9
+        go_version: 1.27.1
       name:
         amd64: "generic-worker-multiuser-windows-amd64"
         arm64: "generic-worker-multiuser-windows-arm64"

@@ -45,8 +45,10 @@ class win_taskcluster::worker_runner (
   file { $worker_runner_dir:
     ensure => directory,
   }
-  file { $runner_exe_path:
-    source => $runner_exe_source,
+  if !$win_taskcluster::generic_worker::source_build {
+    file { $runner_exe_path:
+      source => $runner_exe_source,
+    }
   }
   if $provider == 'standalone' {
     file { $runner_yml:
