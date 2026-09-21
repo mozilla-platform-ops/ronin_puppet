@@ -138,6 +138,22 @@ subcommand. The controller can launch the task command directly as `cltbld`.
 
 ## Linux migration plan
 
+### Implementation status
+
+| Phase | Status | Notes |
+|---|---|---|
+| 1. Ubuntu 24.04 X11 canary | Not started | Needs a dedicated role or worker-pool decision. |
+| 2. Engine selection | Complete | Commit `1b6524f0` adds an inert `insecure` / `multiuser-static` selection path. No role opts in. |
+| 3. Root-owned control-plane directory | Complete | Commit `0fc7bc6e` adds root-only static-mode state. No role opts in. |
+| 4. Root systemd service | Complete | Commit `0fc7bc6e` adds the root-owned service, removes GNOME autostart in static mode, and performs the inverse cleanup in insecure mode. |
+| 5. Root-safe wrapper | Complete | Commit `0fc7bc6e` adds a separate root-only wrapper and root-owned lifecycle state, rather than the legacy `cltbld`-state wrapper. |
+| 6. Desktop/device validation | Not started | A canary gate, not a post-rollout check. |
+| 7. Kitchen and on-host test coverage | Not started | Add rendered-file tests plus real-host smoke tasks. |
+
+Current state: the static engine's control plane and startup path are ready,
+but no Linux worker is configured to use it. The existing insecure-worker
+deployment remains the default.
+
 ### 1. Start with a dedicated Ubuntu 24.04 X11 canary
 
 Do not begin with the legacy 18.04, Wayland, or Netperf roles. Ubuntu 24.04
