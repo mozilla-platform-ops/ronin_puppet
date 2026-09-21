@@ -5,7 +5,7 @@
 class roles_profiles::profiles::files_system_managment {
   case $facts['os']['name'] {
     'Windows': {
-      $task_drive = lookup('windows_task_drive', { 'default_value' => undef })
+      $task_drive = lookup('windows_task_drive', { 'default_value' => $facts['custom_win_task_drive'] })
       if $task_drive {
         $cache_drive = $task_drive
       } elsif $facts['custom_win_d_drive'] == 'exists' {

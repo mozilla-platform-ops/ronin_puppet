@@ -114,3 +114,9 @@ write-host "custom_win_gpu=$gpu"
 write-host "custom_win_purpose=$purpose"
 write-host "custom_win_Ddrive_present=$DDriveExists"
 write-host "custom_win_os_arch=$custom_win_os_arch"
+
+# Keep the image's task drive when startup changes the worker pool ID.
+$task_drive = (Get-ItemProperty 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name task_drive -ErrorAction SilentlyContinue).task_drive
+if ($task_drive -in @('C:', 'D:')) {
+    Write-Host "custom_win_task_drive=$task_drive"
+}
