@@ -65,16 +65,74 @@ class linux_generic_worker (
   $task_dir            = "${user_homedir}/tasks"
   $caches_dir          = "${user_homedir}/caches"
   $downloads_dir       = "${user_homedir}/downloads"
-  $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
+  $worker_state_dir = $generic_worker_engine ? {
+    'multiuser-static' => '/var/lib/generic-worker',
+    default            => $user_homedir,
+  }
+  $generic_worker_config_path = "${worker_state_dir}/generic-worker.config"
+  $ed25519_signing_key        = "${worker_state_dir}/generic-worker.ed25519.signing.key"
+  $worker_runner_config_mode = $generic_worker_engine ? {
+    'multiuser-static' => '0600',
+    default            => '0644',
+  }
+  $worker_process_user = $generic_worker_engine ? {
+    'multiuser-static' => root,
+    default            => $user,
+  }
+  $signing_key_require = $generic_worker_engine ? {
+    'multiuser-static' => [Class['packages::linux_generic_worker'], File[$worker_state_dir]],
+    default            => Class['packages::linux_generic_worker'],
+  }
+
+  if $generic_worker_engine == 'multiuser-static' {
+    # This directory is the root-owned control plane for a later root Worker
+    # Runner service. Task files, caches, and downloads deliberately stay under
+    # the static task user's home directory.
+    file { $worker_state_dir:
+      ensure => directory,
+      owner  => root,
+      group  => root,
+      mode   => '0700',
+    }
+
+    # Generic Worker reads this file relative to its working directory. Linux
+    # uses the already-active GDM session for the selected account, so retaining
+    # the account password here is unnecessary and would widen secret exposure.
+    file { "${worker_state_dir}/next-task-user.json":
+      ensure  => file,
+      content => template('linux_generic_worker/next-task-user.json.erb'),
+      owner   => root,
+      group   => root,
+      mode    => '0600',
+      require => File[$worker_state_dir],
+    }
+  } else {
+    # Keep the static worker identity for a possible later rollback, but remove
+    # its task-user selection file so inactive static state cannot be mistaken
+    # for an active control plane.
+    file { '/var/lib/generic-worker/next-task-user.json':
+      ensure => absent,
+    }
+  }
 
   exec {
     'create ed25519 signing key':
       path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
-      user    => $user,
-      cwd     => $user_homedir,
+      user    => $worker_process_user,
+      cwd     => $worker_state_dir,
       command => "generic-worker new-ed25519-keypair --file ${ed25519_signing_key}",
       unless  => "test -f ${ed25519_signing_key}",
-      require => Class['packages::linux_generic_worker'];
+      require => $signing_key_require;
+  }
+
+  if $generic_worker_engine == 'multiuser-static' {
+    file { $ed25519_signing_key:
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => '0600',
+      require => Exec['create ed25519 signing key'],
+    }
   }
 
   # According to bug 1501936, https://bugzilla.mozilla.org/show_bug.cgi?id=1501936,Linux machines stuck at reboot process.
@@ -102,8 +160,6 @@ class linux_generic_worker (
     ["${user_homedir}/.config",
     "${user_homedir}/.config/autostart"]:
       ensure => directory;
-    "${user_homedir}/.config/autostart/gnome-terminal.desktop":
-      content => template('linux_generic_worker/gnome-terminal.desktop.erb');
 
     ["${user_homedir}/tasks", "${user_homedir}/downloads"]:
       ensure => directory;
@@ -127,7 +183,7 @@ class linux_generic_worker (
       content => template('linux_generic_worker/worker-runner-config.yml.erb'),
       owner   => root,
       group   => root,
-      mode    => '0644';
+      mode    => $worker_runner_config_mode;
 
     '/var/log/genericworker':
       ensure => directory,
@@ -154,6 +210,77 @@ class linux_generic_worker (
       owner  => root,
       group  => root,
       mode   => '0644';
+  }
+
+  exec { 'reload linux generic worker systemd':
+    command     => '/bin/systemctl daemon-reload',
+    refreshonly => true,
+  }
+
+  if $generic_worker_engine == 'multiuser-static' {
+    # The root service is the Worker Runner and credential control plane. The
+    # Generic Worker multiuser binary waits for GDM to provide an interactive
+    # session for $user before it launches a task under that account.
+    file { "${user_homedir}/.config/autostart/gnome-terminal.desktop":
+      ensure => absent,
+    }
+
+    file { '/usr/local/bin/run-generic-worker-root.sh':
+      ensure  => file,
+      content => template('linux_generic_worker/run-generic-worker-root.sh.erb'),
+      owner   => root,
+      group   => root,
+      mode    => '0700',
+      require => File[$worker_state_dir],
+    }
+
+    file { '/etc/systemd/system/generic-worker.service':
+      ensure  => file,
+      content => template('linux_generic_worker/generic-worker.service.erb'),
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      notify  => Exec['reload linux generic worker systemd'],
+    }
+
+    service { 'generic-worker.service':
+      ensure   => running,
+      enable   => true,
+      provider => systemd,
+      require  => [
+        Exec['reload linux generic worker systemd'],
+        File['/etc/start-worker.yml'],
+        File['/usr/local/bin/run-generic-worker-root.sh'],
+        File["${user_homedir}/.config/autostart/gnome-terminal.desktop"],
+      ],
+    }
+  } else {
+    # Explicitly undo static-mode startup state before restoring the legacy
+    # per-user GNOME launcher. /var/lib/generic-worker is intentionally kept:
+    # its signing key is the static worker identity and deleting it on a mode
+    # change would be an unexpected destructive operation.
+    service { 'generic-worker.service':
+      ensure   => stopped,
+      enable   => false,
+      provider => systemd,
+      before   => File['/etc/systemd/system/generic-worker.service'],
+    }
+
+    file { '/etc/systemd/system/generic-worker.service':
+      ensure  => absent,
+      notify  => Exec['reload linux generic worker systemd'],
+      require => Service['generic-worker.service'],
+    }
+
+    file { '/usr/local/bin/run-generic-worker-root.sh':
+      ensure => absent,
+    }
+
+    file { "${user_homedir}/.config/autostart/gnome-terminal.desktop":
+      ensure  => file,
+      content => template('linux_generic_worker/gnome-terminal.desktop.erb'),
+      require => File["${user_homedir}/.config/autostart"],
+    }
   }
 
   # TODO: cleanup
