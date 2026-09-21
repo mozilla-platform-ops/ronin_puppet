@@ -80,6 +80,38 @@ fail() {
     exit 1
 }
 
+# Retry a git network operation before giving up.
+#
+# worker-runner's LaunchAgent can start before the host has DNS, so the first
+# git operation after a reboot may fail with "Could not resolve host:
+# github.com". The old behaviour was to call fail() on the spot, which exits
+# before the apply -- but worker-runner.sh starts the worker regardless, so the
+# host goes on claiming production tasks with frozen config and nothing reports
+# it. macmini-r8-60 sat 40 days behind master that way, and macmini-r8-143 18
+# days, while both looked healthy in Taskcluster.
+git_net_retry() {
+    local attempt=1
+    local delay="${GIT_NET_RETRY_DELAY:-10}"
+    local max="${GIT_NET_RETRIES:-5}"
+
+    while true; do
+        if git "$@"; then
+            return 0
+        fi
+
+        if [ "$attempt" -ge "$max" ]; then
+            echo "git $1 failed after ${max} attempts."
+            return 1
+        fi
+
+        echo "git $1 failed (attempt ${attempt}/${max}); retrying in ${delay}s..."
+        sleep "$delay"
+        attempt=$((attempt + 1))
+        delay=$((delay * 2))
+        [ "$delay" -gt 60 ] && delay=60
+    done
+}
+
 email_report() {
     local ERR_SUBJECT="$1"
     local ERR_MSG="$2"
@@ -271,10 +303,10 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
         cd ..
         rm -rf "$LOCAL_PUPPET_REPO"
         echo "Cloning new Puppet repository..."
-        git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+        git_net_retry clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
     else
         echo "Checking for updates in Puppet repository..."
-        git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+        git_net_retry fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
 
         LOCAL_COMMIT=$(git rev-parse HEAD)
         REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
@@ -289,7 +321,7 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
 else
     echo "Cloning fresh Puppet repository..."
     mkdir -p "$(dirname "$LOCAL_PUPPET_REPO")"
-    git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+    git_net_retry clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
 fi
 
 # Retry Puppet Until Success, Checking for Updates Before Each Retry
@@ -306,7 +338,7 @@ while true; do
     echo "Puppet apply failed. Checking for updates before retrying..."
 
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to enter Puppet repository directory"
-    git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+    git_net_retry fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
 
     LOCAL_COMMIT=$(git rev-parse HEAD)
     REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
