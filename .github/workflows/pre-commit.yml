@@ -11,6 +11,17 @@ permissions:
   contents: read
 
 jobs:
+  windows-maintenance:
+    runs-on: windows-2022
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Test Windows maintenance script
+      shell: powershell
+      run: powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File test/disable_windows_defender.ps1
+
   pre-commit:
     runs-on: ubuntu-latest
     steps:

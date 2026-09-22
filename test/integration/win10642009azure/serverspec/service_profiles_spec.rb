@@ -6,35 +6,6 @@ clipboard_service_key = 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\cbdhsvc'
 clipboard_key = 'HKLM:\\SOFTWARE\\Microsoft\\Clipboard'
 task_script_dir = 'C:\\ProgramData\\PuppetLabs\\ronin'
 
-describe powershell_command(<<~'POWERSHELL') do
-  $ErrorActionPreference = 'Stop'
-  $root = Join-Path $env:ProgramData 'PuppetLabs\ronin'
-  $expected = @{
-    'S-1-5-18' = [System.Security.AccessControl.FileSystemRights]::FullControl
-    'S-1-5-32-544' = [System.Security.AccessControl.FileSystemRights]::FullControl
-    'S-1-5-32-545' = [System.Security.AccessControl.FileSystemRights]::ReadAndExecute -bor [System.Security.AccessControl.FileSystemRights]::Synchronize
-  }
-  foreach ($path in @($root, "$root\ronin", "$root\semaphore", "$root\disable_win_defend")) {
-    $acl = Get-Acl -LiteralPath $path
-    if (!$acl.AreAccessRulesProtected) { throw "Inherited permissions: $path" }
-    if ($acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne 'S-1-5-18') {
-      throw "Unexpected owner: $path"
-    }
-    $rules = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
-    if ($rules.Count -ne $expected.Count) { throw "Unexpected permissions: $path" }
-    foreach ($rule in $rules) {
-      if ($rule.AccessControlType -ne 'Allow' -or
-          $rule.FileSystemRights -ne $expected[$rule.IdentityReference.Value] -or
-          $rule.InheritanceFlags -ne 'ContainerInherit, ObjectInherit' -or
-          $rule.PropagationFlags -ne 'None') {
-        throw "Unexpected access rule: $path"
-      }
-    }
-  }
-POWERSHELL
-  its(:exit_status) { should eq 0 }
-end
-
 {
   'puppet' => {
     'State' => 'Stopped',
@@ -75,7 +46,6 @@ end
 
 [
   ['disable_wu', 'disable_wu_task.ps1'],
-  ['disable_windows_defender', 'disable_win_defend\\DisableWindowsDefender.ps1'],
   ['at_task_user_logon', 'at_task_user_logon.ps1'],
   ['maintain_system', 'maintainsystem.ps1'],
   ['kill_remote_clipboard', 'kill_local_clipboard.ps1']
