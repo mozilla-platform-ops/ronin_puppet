@@ -121,7 +121,9 @@ define signing_worker (
   # base interpreter that has been deleted out from under the venv: in each case
   # the venv is rebuilt rather than left stale, which is what lets a python bump
   # be a one-line hiera change.
-  $venv_python_matches = "${virtualenv_dir}/bin/python -V | grep -qFx 'Python ${python_version}'"
+  # Absolute /usr/bin/grep: this string is the guard for two execs whose $path
+  # arrays differ, and the venv one does not carry /usr/bin.
+  $venv_python_matches = "${virtualenv_dir}/bin/python -V | /usr/bin/grep -qFx 'Python ${python_version}'"
 
   # launchd has to let go of the venv before it is replaced. The daemon is
   # KeepAlive, so stopping scriptworker any other way just has launchd restart it
