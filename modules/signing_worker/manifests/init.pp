@@ -121,9 +121,16 @@ define signing_worker (
   # base interpreter that has been deleted out from under the venv: in each case
   # the venv is rebuilt rather than left stale, which is what lets a python bump
   # be a one-line hiera change.
-  # Absolute /usr/bin/grep: this string is the guard for two execs whose $path
+  # The /bin/test -x prefix is load-bearing, not defensive. Puppet's posix exec
+  # provider resolves the first token of a guard and fails the whole resource
+  # with "Could not find command" when that token is an absolute path that does
+  # not exist - so leading with ${virtualenv_dir}/bin/python errors out in
+  # exactly the two states this is meant to detect: no venv yet on a fresh
+  # signer, and a venv whose interpreter symlink is dangling. Leading with a
+  # binary that always exists lets the guard return false and the rebuild run.
+  # Absolute /usr/bin/grep because this string guards two execs whose $path
   # arrays differ, and the venv one does not carry /usr/bin.
-  $venv_python_matches = "${virtualenv_dir}/bin/python -V | /usr/bin/grep -qFx 'Python ${python_version}'"
+  $venv_python_matches = "/bin/test -x ${virtualenv_dir}/bin/python && ${virtualenv_dir}/bin/python -V | /usr/bin/grep -qFx 'Python ${python_version}'"
 
   # launchd has to let go of the venv before it is replaced. The daemon is
   # KeepAlive, so stopping scriptworker any other way just has launchd restart it
