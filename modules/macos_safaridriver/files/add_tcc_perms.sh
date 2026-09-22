@@ -35,6 +35,44 @@ run_query() {
     sudo sqlite3 "$1" "$2"
 }
 
+# The user TCC database lives under /Users/cltbld -- a tree owned and writable
+# by cltbld, the account untrusted CI task payloads run as. Root opening a
+# path with an attacker-controlled component means sqlite3 follows whatever
+# symlink cltbld planted: it will create or overwrite the target with SQLite
+# page data (corrupting a root-owned file), and it will parse whatever
+# database it lands on as root. Walk the path and refuse if any component is
+# a symlink.
+#
+# Residual, deliberately not fixed here: a plain (non-symlink) TCC.db that
+# cltbld has crafted is still parsed by root's sqlite3, and there is a TOCTOU
+# window between this check and sqlite3's open. Closing those means moving the
+# user-DB grants into the org.mozilla.ci-tcc-pppc MDM profile, the direction
+# the system-DB grants already took on SIP-on hosts.
+USER_TCC_DB="/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db"
+
+# $1 = trusted root prefix (root-owned, not attacker-writable); $2 = full path.
+# Only the components below the trusted root are checked -- those are the ones
+# cltbld can replace.
+assert_no_symlinked_components() {
+    local trusted_root="$1"
+    local path="$2"
+    local current="$path"
+
+    while [ "$current" != "$trusted_root" ]; do
+        if [ "$current" = "/" ] || [ "$current" = "." ]; then
+            echo "$0: ${path} is not under ${trusted_root}" >&2
+            return 1
+        fi
+        if [ -L "$current" ]; then
+            echo "$0: refusing to touch ${path}: ${current} is a symlink" >&2
+            return 1
+        fi
+        current="$(/usr/bin/dirname "$current")"
+    done
+
+    return 0
+}
+
 # macOS 10.15
 if [[ "$os_version" == "10.15"* ]]; then
     # kTCCServiceAccessibility, in system TCC DB
@@ -43,7 +81,8 @@ if [[ "$os_version" == "10.15"* ]]; then
 
     # kTCCServiceAppleEvents, in user TCC DB
     query="REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,1,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1666043382);"
-    run_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
+    assert_no_symlinked_components /Users "$USER_TCC_DB"
+    run_query "$USER_TCC_DB" "$query"
 fi
 
 # macOS 11, 12, or 13
@@ -113,8 +152,9 @@ if [[ "$os_version" == "14."* || "$os_version" == "15."* || "$os_version" == "26
         "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/bin/osascript',1,2,3,1,X'fade0c000000003000000001000000060000000200000013636f6d2e6170706c652e6f73617363726970740000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1712861877,NULL,NULL,'UNUSED',1712861877);"
         "REPLACE INTO access VALUES('kTCCServicePostEvent','/usr/bin/osascript',1,2,3,1,X'fade0c000000003000000001000000060000000200000013636f6d2e6170706c652e6f73617363726970740000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',1712861877);"
     )
+    assert_no_symlinked_components /Users "$USER_TCC_DB"
     for query in "${user_queries[@]}"; do
-        run_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
+        run_query "$USER_TCC_DB" "$query"
     done
     mkdir -p /var/tmp/semaphore
     touch /var/tmp/semaphore/safari-tcc-perms-applied
