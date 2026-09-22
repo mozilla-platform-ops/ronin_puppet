@@ -19,28 +19,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # NOTE: every value that originates outside this repo (comment body, PR
+      # head ref, PR head clone URL) is passed to run: steps through env: and
+      # referenced as a quoted shell variable. Never interpolate one with
+      # ${{ }} inside a run: script -- expression interpolation is textual
+      # substitution performed before the shell parses the script, so a fork
+      # PR branch named fix$(payload) would execute payload in a job that
+      # holds SIMPLEMDM_API_KEY.
       - name: Verify commenter has repo write access
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENTER: ${{ github.event.comment.user.login }}
         run: |
-          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${{ github.event.comment.user.login }}/permission" \
+          PERMISSION=$(gh api "repos/${REPO}/collaborators/${COMMENTER}/permission" \
             --jq '.permission' 2>/dev/null || echo "none")
           if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "maintain" && "$PERMISSION" != "write" ]]; then
-            echo "User ${{ github.event.comment.user.login }} does not have write access. Aborting."
+            echo "User ${COMMENTER} does not have write access. Aborting."
             exit 1
           fi
 
       - name: Parse pool from comment
         id: parse
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          COMMENT="${{ github.event.comment.body }}"
-          if [[ "$COMMENT" == "/try-mac 1400"* ]]; then
+          if [[ "$COMMENT_BODY" == "/try-mac 1400"* ]]; then
             echo "pool=1400" >> "$GITHUB_OUTPUT"
             echo "group_id=132158" >> "$GITHUB_OUTPUT"
-          elif [[ "$COMMENT" == "/try-mac 1500"* ]]; then
+          elif [[ "$COMMENT_BODY" == "/try-mac 1500"* ]]; then
             echo "pool=1500" >> "$GITHUB_OUTPUT"
             echo "group_id=151249" >> "$GITHUB_OUTPUT"
-          elif [[ "$COMMENT" == "/try-mac 1015"* ]]; then
+          elif [[ "$COMMENT_BODY" == "/try-mac 1015"* ]]; then
             echo "pool=1015" >> "$GITHUB_OUTPUT"
             echo "group_id=127888" >> "$GITHUB_OUTPUT"
           fi
@@ -49,17 +59,55 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
         run: |
-          PR_DATA=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}")
-          echo "branch=$(echo "$PR_DATA" | jq -r '.head.ref')" >> "$GITHUB_OUTPUT"
-          echo "repo=$(echo "$PR_DATA" | jq -r '.head.repo.clone_url')" >> "$GITHUB_OUTPUT"
+          PR_DATA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+          BRANCH=$(echo "$PR_DATA" | jq -r '.head.ref')
+          CLONE_URL=$(echo "$PR_DATA" | jq -r '.head.repo.clone_url')
+
+          # Both values are fully attacker-controlled on a fork PR, and both
+          # end up inside shell text twice over: in this job, and in the
+          # /opt/puppet_environments/ronin_settings file that run-puppet.sh
+          # sources AS ROOT on every Mac in the target SimpleMDM group. Git
+          # ref names permit $ ( ) ; | & quotes and backticks, so validate
+          # against a conservative allowlist rather than trying to quote.
+          #
+          # Use case globs, not grep: grep is line-oriented, so an anchored
+          # pattern still matches a value whose first line is benign.
+          case "$BRANCH" in
+            ''|*[!A-Za-z0-9._/-]*)
+              echo "Refusing PR head ref with unexpected characters."
+              exit 1
+              ;;
+          esac
+          case "$CLONE_URL" in
+            https://github.com/*) : ;;
+            *)
+              echo "Refusing PR head clone URL that is not an https github.com URL."
+              exit 1
+              ;;
+          esac
+          case "$CLONE_URL" in
+            *[!A-Za-z0-9._/:-]*)
+              echo "Refusing PR head clone URL with unexpected characters."
+              exit 1
+              ;;
+          esac
+
+          echo "branch=${BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "repo=${CLONE_URL}" >> "$GITHUB_OUTPUT"
 
       - name: Post starting comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          POOL: ${{ steps.parse.outputs.pool }}
+          BRANCH: ${{ steps.pr.outputs.branch }}
         run: |
-          gh api "repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments" \
-            -f body="Setting mac${{ steps.parse.outputs.pool }} staging override to \`${{ steps.pr.outputs.branch }}\` and triggering puppet..."
+          gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+            -f body="Setting mac${POOL} staging override to \`${BRANCH}\` and triggering puppet..."
 
       - name: Build and upload puppet override script
         id: script
@@ -68,6 +116,10 @@ jobs:
           PUPPET_REPO: ${{ steps.pr.outputs.repo }}
           PUPPET_BRANCH: ${{ steps.pr.outputs.branch }}
         run: |
+          # The single quotes below are load-bearing: run-puppet.sh sources
+          # this file as root. They are only safe because the allowlist in
+          # "Get PR branch and repo" has already rejected quotes and shell
+          # metacharacters in both values.
           {
             echo '#!/bin/bash'
             echo 'set -e'
@@ -94,20 +146,23 @@ jobs:
       - name: Run script on device group
         env:
           SIMPLEMDM_API_KEY: ${{ secrets.SIMPLEMDM_API_KEY }}
+          SCRIPT_ID: ${{ steps.script.outputs.script_id }}
+          GROUP_ID: ${{ steps.parse.outputs.group_id }}
         run: |
           curl -sf -X POST \
             -u "${SIMPLEMDM_API_KEY}:" \
-            -F "script_id=${{ steps.script.outputs.script_id }}" \
-            -F "group_ids=${{ steps.parse.outputs.group_id }}" \
+            -F "script_id=${SCRIPT_ID}" \
+            -F "group_ids=${GROUP_ID}" \
             https://a.simplemdm.com/api/v1/script_jobs
 
       - name: Post completion comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          POOL: ${{ steps.parse.outputs.pool }}
+          BRANCH: ${{ steps.pr.outputs.branch }}
         run: |
-          POOL="${{ steps.parse.outputs.pool }}"
-          BRANCH="${{ steps.pr.outputs.branch }}"
-
           if [ "$POOL" = "1400" ]; then
             TRY_CMD="./mach try fuzzy --all-tasks --worker-override t-osx-1400-r8=releng-hardware/gecko-t-osx-1400-r8-staging -q \"'test-macosx1470-64/opt 'cppunittest\""
           elif [ "$POOL" = "1015" ]; then
@@ -119,4 +174,4 @@ jobs:
           printf 'Puppet triggered on `gecko-t-osx-%s-staging` with branch `%s`. Allow ~5 min for puppet to complete, then from your gecko checkout:\n\n```\n%s\n```' \
             "$POOL" "$BRANCH" "$TRY_CMD" | \
             jq -Rs '{"body": .}' | \
-            gh api "repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments" --input -
+            gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --input -
