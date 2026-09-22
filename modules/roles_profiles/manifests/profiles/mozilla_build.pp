@@ -4,17 +4,18 @@
 
 # Installs mozilla build
 class roles_profiles::profiles::mozilla_build {
+  class { 'win_mozilla_build::hg_files':
+    task_drive => lookup('windows_task_drive', { 'default_value' => undef }),
+  }
   case $facts['custom_win_bootstrap_stage'] {
     'complete': {
       include win_mozilla_build::pip
-      include win_mozilla_build::hg_files
     }
     default: {
       include win_mozilla_build::install
       include win_mozilla_build::modifications
       include win_mozilla_build::install_py3_certs
       include win_mozilla_build::tooltool
-      include win_mozilla_build::hg_files
       include win_mozilla_build::grant_symlink_access
       include win_mozilla_build::install_psutil
       include win_mozilla_build::install_zstandard

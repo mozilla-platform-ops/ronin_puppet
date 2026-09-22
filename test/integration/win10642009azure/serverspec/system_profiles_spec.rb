@@ -7,7 +7,7 @@ explorer_policy_key = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer'
 push_notifications_key = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\PushNotifications'
 uac_key = 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System'
 
-describe file('D:\\') do
+describe file("#{TASK_DRIVE}\\") do
   it { should exist }
   it { should be_directory }
 end

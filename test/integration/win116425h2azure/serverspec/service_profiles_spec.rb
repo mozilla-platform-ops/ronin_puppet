@@ -12,7 +12,7 @@ describe file("#{task_script_dir}\\configure_nvme_disk.ps1") do
 end
 
 describe powershell_command(<<~POWERSHELL) do
-  $volume = Get-Volume -DriveLetter D -ErrorAction Stop
+  $volume = Get-Volume -DriveLetter '#{TASK_DRIVE[0]}' -ErrorAction Stop
   if ($volume.DriveType -ne 'Fixed' -or $volume.FileSystem -ne 'NTFS') {
     exit 1
   }

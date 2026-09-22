@@ -1,5 +1,7 @@
 ---
 
+windows_task_drive: 'C:'
+
 win-worker:
   function: "builder"
 

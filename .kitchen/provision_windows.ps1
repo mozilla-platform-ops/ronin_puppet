@@ -242,36 +242,29 @@ if ($env:PATH -notlike "*$chocoInstallDir\bin*") {
 $env:FACTER_custom_win_role = $env:PUPPET_ROLE
 $env:FACTER_running_in_test_kitchen = 'true'
 
-# Run puppet apply
-# r10k_modules is committed to the repo, so no separate `r10k puppetfile install` is needed.
-Write-Host "Running puppet apply for role $env:PUPPET_ROLE..."
-& "$puppetBin\puppet" apply `
-    -e "include roles_profiles::roles::$env:PUPPET_ROLE" `
-    '--modulepath=modules;r10k_modules' `
-    '--hiera_config=hiera.yaml' `
-    '--onetime' `
-    '--verbose' `
-    '--no-daemonize' `
-    '--no-usecacheonfailure' `
-    '--detailed-exitcodes' `
-    '--no-splay' `
-    '--show_diff'
-
-$exitCode = $LASTEXITCODE
-
-# Handle exit codes the same way as Start-AzRoninPuppet.ps1
-# 0 or 2 = success, 1/4/6 = failure
-switch ($exitCode) {
-    { $_ -in 0, 2 } {
-        Write-Host "Puppet apply succeeded (exit code $exitCode)."
-        exit 0
+# Apply the image settings, then check that they survive the runtime pool ID.
+foreach ($stage in @('image', 'worker')) {
+    if ($stage -eq 'worker') {
+        $taskDrive = (Get-ItemProperty $roninKey -Name task_drive -ErrorAction SilentlyContinue).task_drive
+        if ($taskDrive -ne 'C:') { break }
+        Set-ItemProperty $roninKey -Name worker_pool_id -Value "gecko-t/$workerPoolId"
+        Set-ItemProperty $roninKey -Name bootstrap_stage -Value 'complete'
     }
-    { $_ -in 1, 4, 6 } {
-        Write-Host "Puppet apply failed (exit code $exitCode)."
+    Write-Host "Running puppet apply for role $env:PUPPET_ROLE ($stage)..."
+    & "$puppetBin\puppet" apply `
+        -e "include roles_profiles::roles::$env:PUPPET_ROLE" `
+        '--modulepath=modules;r10k_modules' `
+        '--hiera_config=hiera.yaml' `
+        '--onetime' `
+        '--verbose' `
+        '--no-daemonize' `
+        '--no-usecacheonfailure' `
+        '--detailed-exitcodes' `
+        '--no-splay' `
+        '--show_diff'
+    if ($LASTEXITCODE -notin @(0, 2)) {
+        Write-Host "Puppet apply failed (exit code $LASTEXITCODE)."
         exit 1
     }
-    default {
-        Write-Host "Puppet apply exited with unexpected code $exitCode."
-        exit $exitCode
-    }
 }
+exit 0

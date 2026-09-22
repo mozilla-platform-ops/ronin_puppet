@@ -10,6 +10,7 @@ WINDOWS_DATA = YAML.load_file(File.join(ROOT_DIR, 'data', 'os', 'Windows.yaml'))
 ROLE_HIERA = ROLE_DATA.fetch('win-worker').freeze
 VARIANT_DATA = (ROLE_HIERA['variant'] || {}).freeze
 WORKER_FUNCTION = ROLE_HIERA.fetch('function').freeze
+TASK_DRIVE = ROLE_DATA.fetch('windows_task_drive', 'D:').freeze
 
 conn = WinRM::Connection.new(
   endpoint: "http://#{ENV.fetch('KITCHEN_HOSTNAME')}:5985/wsman",

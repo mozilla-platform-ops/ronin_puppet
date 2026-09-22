@@ -8,6 +8,11 @@ on:
     branches: [master]
     types: [opened, synchronize, reopened, ready_for_review]
 
+# Kitchen uses fixed Azure resource groups; runs must not overlap.
+concurrency:
+  group: kitchen-windows
+  cancel-in-progress: false
+
 jobs:
   windows:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
@@ -18,13 +23,13 @@ jobs:
       matrix:
         include:
           - role: win116425h2azure
-            worker_pool_id: win11-64-25h2-alpha
+            worker_pool_id: win11-64-25h2
             kitchen_instance: windows-win11-64-25h2
           - role: win116425h2azure
             worker_pool_id: win11-64-25h2-gpu-alpha
             kitchen_instance: windows-win11-64-25h2-gpu
           - role: win116424h2azure
-            worker_pool_id: win11-64-24h2-alpha
+            worker_pool_id: win11-64-24h2
             kitchen_instance: windows-win11-64-24h2
           - role: win11a6425h2azurebuilder
             worker_pool_id: win11-a64-25h2-builder

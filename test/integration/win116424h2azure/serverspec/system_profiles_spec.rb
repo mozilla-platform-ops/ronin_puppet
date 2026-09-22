@@ -10,7 +10,7 @@ oobe_key = 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\OOBE'
 x64_tester = %w[win116424h2azure win116425h2azure].include?(ROLE_NAME)
 aarch64_role = ROLE_NAME.include?('a64')
 
-describe file('D:\\') do
+describe file("#{TASK_DRIVE}\\") do
   it { should exist }
   it { should be_directory }
 end

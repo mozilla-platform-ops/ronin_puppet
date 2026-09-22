@@ -13,6 +13,7 @@ class win_taskcluster::worker_runner (
   String $runner_service_start = 'SERVICE_DEMAND_START',
   String $runner_service_type = 'SERVICE_WIN32_OWN_PROCESS',
   String $runner_app_exit = 'Default Exit',
+  Optional[Enum['C:', 'D:']] $task_drive = undef,
   $implementation = undef,
   $gw_exe_path    = undef,
   # GW config
