@@ -57,6 +57,20 @@ class RecorderTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "root-owned"):
                     recorder.open_state()
 
+    def test_recording_output_never_follows_a_symlink(self):
+        output = mock.Mock()
+        output.fileno.return_value = 42
+        info = SimpleNamespace(st_mode=0o100600, st_size=1)
+        with (
+            mock.patch.object(recorder.os, "open", return_value=42) as open_file,
+            mock.patch.object(recorder.os, "fdopen", return_value=output),
+            mock.patch.object(recorder.os, "fstat", return_value=info),
+        ):
+            self.assertIs(recorder.open_recording("/protected/perf.data"), output)
+        open_file.assert_called_once_with(
+            "/protected/perf.data", recorder.os.O_RDONLY | recorder.os.O_NOFOLLOW
+        )
+
     def run_collect(self, control=b"", exit_code=0):
         child = mock.Mock(returncode=exit_code)
         child.poll.side_effect = [None, None, exit_code]

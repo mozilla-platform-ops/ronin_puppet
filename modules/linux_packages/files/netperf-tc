@@ -17,6 +17,13 @@ from decimal import Decimal, InvalidOperation, ROUND_UP
 
 
 TC = "/sbin/tc"
+# `tc` is run as root.  Do not let caller-controlled environment settings alter
+# its behavior, even though no shell is involved below.
+ENV = {
+    "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+    "HOME": "/root",
+    "LANG": "C",
+}
 # Percentages from 0 through 100; 100 may have only a zero-valued fraction.
 LOSS_RE = re.compile(r"(?:0|[1-9][0-9]?)(?:\.[0-9]+)?|100(?:\.0+)?")
 # Decimal ports from 1 through 99,999; the 65,535 ceiling is checked below.
@@ -35,7 +42,7 @@ def usage():
 
 
 def tc(*args):
-    subprocess.run([TC, *args], check=True)
+    subprocess.run([TC, *args], check=True, env=ENV, cwd="/")
 
 
 def reset():
@@ -44,6 +51,8 @@ def reset():
         check=False,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
+        env=ENV,
+        cwd="/",
     )
 
 

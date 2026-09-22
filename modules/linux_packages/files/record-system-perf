@@ -83,7 +83,7 @@ def collect(output):
             stdout=sys.stderr,
             stderr=sys.stderr,
             env=ENV,
-            cwd=STATE_DIR,
+            cwd="/",
             start_new_session=True,
             preexec_fn=limit_child,
         )
@@ -119,6 +119,23 @@ def open_state():
     return descriptor
 
 
+def state_directory_path(descriptor):
+    # Linux resolves this through the open directory descriptor.  Keep the
+    # pathname fallback for the unit tests and non-Linux development hosts;
+    # Puppet installs this wrapper only on Linux.
+    descriptor_path = f"/proc/self/fd/{descriptor}"
+    return descriptor_path if os.path.isdir(descriptor_path) else STATE_DIR
+
+
+def open_recording(output):
+    result = os.fdopen(os.open(output, os.O_RDONLY | os.O_NOFOLLOW), "rb")
+    info = os.fstat(result.fileno())
+    if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= MAX_BYTES:
+        result.close()
+        raise RuntimeError("invalid recording output")
+    return result
+
+
 def main(arguments):
     if arguments:
         raise RuntimeError("no arguments accepted; close stdin to stop recording")
@@ -134,13 +151,13 @@ def main(arguments):
     try:
         # Lock the protected directory inode; never open a task-supplied lock path.
         fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        with tempfile.TemporaryDirectory(dir=STATE_DIR) as directory:
+        # Use the verified directory descriptor rather than resolving STATE_DIR
+        # a second time.  This remains safe if an administrator replaces the
+        # path while a recording is in progress.
+        with tempfile.TemporaryDirectory(dir=state_directory_path(descriptor)) as directory:
             output = os.path.join(directory, "perf.data")
             collect(output)
-            result = open(output, "rb")
-            info = os.fstat(result.fileno())
-            if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= MAX_BYTES:
-                raise RuntimeError("invalid recording output")
+            result = open_recording(output)
         # The open result survives unlinking, with no privileged files left behind.
         os.setgroups([])
         os.setgid(account.pw_gid)
