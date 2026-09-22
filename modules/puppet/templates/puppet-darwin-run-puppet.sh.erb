@@ -27,8 +27,41 @@ function fail {
 mkdir -p "${WORKING_DIR}" || fail
 cd "${WORKING_DIR}" || fail
 
-# Make dir world writable for puppet homebrew bug workaround
-chmod 777 .
+# The converge root is the tree root re-applies from every 15 minutes, so it
+# must not be writable by anyone but root. It used to be `chmod 777 .` as a
+# puppet/homebrew workaround; 0755 keeps the tree traversable and readable
+# (which is all that workaround needed -- nothing outside root writes here)
+# while removing the escalation. With 777 and no sticky bit, any local user
+# could rename or replace top-level entries, including .git: git honours
+# core.fsmonitor, core.hooksPath and remote.origin.url from the checkout's own
+# config, all of which give root code execution at the next converge, and
+# swapping data/ for a tree whose secrets/vault.yaml is a symlink makes root's
+# cp write the whole Vault secrets file somewhere the attacker can read.
+chown root:wheel . || fail "Failed to set ownership on ${WORKING_DIR}"
+chmod 0755 . || fail "Failed to set mode on ${WORKING_DIR}"
+
+# Refuse to run git, or copy secrets, into a tree a non-root user could have
+# tampered with.
+function assert_root_only_writable {
+    local target="$1"
+    local owner mode
+
+    [ -e "${target}" ] || return 0
+
+    owner=$(stat -f '%u' "${target}") || return 1
+    mode=$(stat -f '%Lp' "${target}") || return 1
+
+    if [ "${owner}" != "0" ]; then
+        echo "${target} is owned by uid ${owner}, not root"
+        return 1
+    fi
+    if [ $(( 8#${mode} & 8#022 )) -ne 0 ]; then
+        echo "${target} is group- or world-writable (mode ${mode})"
+        return 1
+    fi
+
+    return 0
+}
 
 # Set role or fail if file not found
 if [ -f "${ROLE_FILE}" ]; then
@@ -108,6 +141,17 @@ function notify_telegraf {
 }
 
 function update_puppet {
+    # root is about to run git here and copy /var/root/vault.yaml in. Both are
+    # unsafe if anything below is attacker-writable.
+    if ! assert_root_only_writable "${WORKING_DIR}"; then
+        echo "Refusing to converge: ${WORKING_DIR} is not root-only-writable"
+        return 1
+    fi
+    if ! assert_root_only_writable "${WORKING_DIR}/.git"; then
+        echo "Refusing to converge: ${WORKING_DIR}/.git is not root-only-writable"
+        return 1
+    fi
+
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
         git init || return 1
@@ -124,8 +168,14 @@ function update_puppet {
       git checkout --force "origin/${PUPPET_BRANCH}"
     ) || return 1
 
-    # Copy secrets
+    # Copy secrets. Recreate the directory from scratch: if secrets/vault.yaml
+    # were a symlink, cp would write the whole Vault secrets file to its target
+    # and the chmod 0600 below would only chmod that target -- which the
+    # attacker already owns. data/secrets is gitignored and rebuilt every run,
+    # so removing it loses nothing.
+    rm -rf "${WORKING_DIR}/data/secrets"
     mkdir -p "${WORKING_DIR}/data/secrets"
+    chmod 0700 "${WORKING_DIR}/data/secrets"
     cp /var/root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
     chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
 
@@ -197,9 +247,17 @@ for i in `seq $MAX_PUPPET_ATTEMPTS`; do
     fi
 done
 
-# Touch the semaphore to allow launchd to start generic worker (if applicable)
+# Touch the semaphore to allow launchd to start generic worker (if applicable).
+# Root-owned and root-writable only: at 0777 any local user could pre-create
+# the sentinel (starting the worker before the converge finished) or delete it.
+# /var/tmp is sticky and world-writable, so check for a planted symlink before
+# mkdir -p, which would silently succeed on one and send the chown through it.
+if [ -L "/var/tmp/semaphore" ]; then
+    fail "/var/tmp/semaphore is a symlink; refusing to write the worker sentinel"
+fi
 mkdir -p "/var/tmp/semaphore"
-chmod 0777 "/var/tmp/semaphore"
+chown root:wheel "/var/tmp/semaphore"
+chmod 0755 "/var/tmp/semaphore"
 touch "/var/tmp/semaphore/run-buildbot"
 
 exit 0
