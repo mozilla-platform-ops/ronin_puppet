@@ -7,7 +7,7 @@ goto :eof
     setlocal EnableDelayedExpansion
 
     rem Check if Windows Defender is running.
-    tasklist /fi "imageName eq "MsMpEng.exe"" | find /i "MsMpEng.exe" > nul 2> nul
+    "%SystemRoot%\System32\tasklist.exe" /fi "imageName eq "MsMpEng.exe"" | "%SystemRoot%\System32\find.exe" /i "MsMpEng.exe" > nul 2> nul
     if %errorLevel% equ 0 (
         rem Windows Defender is running.
         echo Windows Defender is running.
@@ -29,7 +29,7 @@ goto :eof
 
         rem Disable Windows Defender objects.
         echo Disabling Windows Defender objects...
-        call :importRegistry "DisableWindowsDefenderobjects.reg"
+        call :importRegistry "%~dp0DisableWindowsDefenderobjects.reg"
 
         rem Require restart to unload Windows Defender drivers and objects.
         echo.
@@ -41,10 +41,10 @@ goto :eof
         rem Performable operations while Windows Defender is not running.
         rem Disable Windows Defender features.
         echo Disabling Windows Defender features...
-        call :importRegistry "DisableWindowsDefenderfeatures.reg"
+        call :importRegistry "%~dp0DisableWindowsDefenderfeatures.reg"
         rem Disable Windows Defender services.
         echo Disabling Windows Defender services...
-        call :importRegistry "DisableWindowsDefenderservices.reg"
+        call :importRegistry "%~dp0DisableWindowsDefenderservices.reg"
 
         rem Disable Windows Defender files.
         echo Disabling Windows Defender files...
@@ -60,8 +60,8 @@ goto :eof
     setlocal
     set "filePath=%~1"
     set "user=%~2"
-    takeown /f "%filePath%" /a
-    icacls "%filePath%" /grant "%user%:F"
+    "%SystemRoot%\System32\takeown.exe" /f "%filePath%" /a
+    "%SystemRoot%\System32\icacls.exe" "%filePath%" /grant "%user%:F"
     endlocal
     goto :eof
 
@@ -76,8 +76,8 @@ goto :eof
 :importRegistry
     setlocal
     set "filePath=%~1"
-    call OwnRegistryKeys.bat "%filePath%"
+    call "%~dp0OwnRegistryKeys.bat" "%filePath%"
     @echo off
-    regedit /s "%filePath%"
+    "%SystemRoot%\regedit.exe" /s "%filePath%"
     endlocal
     goto :eof

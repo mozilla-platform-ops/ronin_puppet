@@ -5,11 +5,24 @@
 #
 
 class win_disable_services::disable_windows_defender_schtask {
+  require win_shared::win_ronin_dirs
+
   $script_dir = "${facts['custom_win_roninprogramdata']}\\disable_win_defend"
   $main_bat = "${script_dir}\\DisableWindowsDefender.bat"
 
   file { $script_dir:
     ensure => directory,
+  }
+  acl { $script_dir:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => File[$script_dir],
   }
   file { "${script_dir}\\OwnRegistryKeys.bat":
     ensure  => file,
@@ -46,11 +59,13 @@ class win_disable_services::disable_windows_defender_schtask {
         'minutes_duration' => '0'
     }],
     user        => 'system',
+    require     => Acl[$script_dir],
   }
   exec { 'disable_windows_defender_1st_run':
     command     => "${facts['custom_win_system32']}\\cmd.exe /c ${$main_bat}",
     cwd         => $script_dir,
     refreshonly => true,
     subscribe   => File[$main_bat],
+    require     => Acl[$script_dir],
   }
 }
