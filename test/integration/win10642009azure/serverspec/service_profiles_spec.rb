@@ -75,6 +75,7 @@ end
 
 [
   ['disable_wu', 'disable_wu_task.ps1'],
+  ['disable_windows_defender', 'disable_win_defend\\DisableWindowsDefender.ps1'],
   ['at_task_user_logon', 'at_task_user_logon.ps1'],
   ['maintain_system', 'maintainsystem.ps1'],
   ['kill_remote_clipboard', 'kill_local_clipboard.ps1']
