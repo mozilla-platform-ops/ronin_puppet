@@ -256,9 +256,13 @@ class linux_generic_worker (
 
     # Kitchen has neither a GDM session nor usable worker credentials. Retain
     # its structural test coverage without starting the controller there.
-    $generic_worker_service_ensure = $facts['running_in_test_kitchen'] ? {
-      true    => stopped,
-      default => running,
+    case $facts['running_in_test_kitchen'] {
+      true, 'true': {
+        $generic_worker_service_ensure = stopped
+      }
+      default: {
+        $generic_worker_service_ensure = running
+      }
     }
 
     service { 'generic-worker.service':
