@@ -5,7 +5,7 @@
 # Installs mozilla build
 class roles_profiles::profiles::mozilla_build {
   class { 'win_mozilla_build::hg_files':
-    task_drive => lookup('windows_task_drive', { 'default_value' => $facts['custom_win_task_drive'] }),
+    task_drive => lookup('windows_task_drive', { 'default_value' => undef }),
   }
   case $facts['custom_win_bootstrap_stage'] {
     'complete': {

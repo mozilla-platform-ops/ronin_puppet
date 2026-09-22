@@ -23,28 +23,28 @@ jobs:
       matrix:
         include:
           - role: win116425h2azure
-            worker_pool_id: win11-64-25h2-alpha
+            worker_pool_id: win11-64-25h2
             kitchen_instance: windows-win11-64-25h2
           - role: win116425h2azure
             worker_pool_id: win11-64-25h2-gpu-alpha
             kitchen_instance: windows-win11-64-25h2-gpu
           - role: win116424h2azure
-            worker_pool_id: win11-64-24h2-alpha
+            worker_pool_id: win11-64-24h2
             kitchen_instance: windows-win11-64-24h2
           - role: win11a6425h2azurebuilder
-            worker_pool_id: win11-a64-25h2-builder-alpha
+            worker_pool_id: win11-a64-25h2-builder
             kitchen_instance: windows-win11-a64-25h2-builder
           - role: win11a6425h2azuretester
-            worker_pool_id: win11-a64-25h2-tester-alpha
+            worker_pool_id: win11-a64-25h2-tester
             kitchen_instance: windows-win11-a64-25h2-tester
           - role: win2022642009azure
-            worker_pool_id: win2022-64-2009-alpha
+            worker_pool_id: b-win2022
             kitchen_instance: windows-win2022-64-2009
           - role: win20256424h2azure
-            worker_pool_id: win2025-64-24h2-alpha
+            worker_pool_id: b-win2025
             kitchen_instance: windows-win2025-64-24h2
           - role: win10642009azure
-            worker_pool_id: win10-64-2009-alpha
+            worker_pool_id: win10-64-2009
             kitchen_instance: windows-win10-64-2009
           - role: win10642009azure
             worker_pool_id: win10-64-2009-gpu-alpha

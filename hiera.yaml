@@ -9,9 +9,6 @@ hierarchy:
   - name: "Secrets generated from Vault"
     path: "secrets/vault.yaml"
 
-  - name: "Per Windows image worker pool"
-    path: "windows-pools/%{facts.custom_win_worker_pool_id}.yaml"
-
     # It is acceptable for dot notation facts (eg. %{facts.some_fact}) to not exist
     # since they will simply return an empty string
   - name: "Per-role data"

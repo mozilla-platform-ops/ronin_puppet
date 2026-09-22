@@ -10,17 +10,7 @@ WINDOWS_DATA = YAML.load_file(File.join(ROOT_DIR, 'data', 'os', 'Windows.yaml'))
 ROLE_HIERA = ROLE_DATA.fetch('win-worker').freeze
 VARIANT_DATA = (ROLE_HIERA['variant'] || {}).freeze
 WORKER_FUNCTION = ROLE_HIERA.fetch('function').freeze
-TASK_DRIVE = %w[
-  win10-64-2009-alpha
-  win10-64-2009-gpu-alpha
-  win11-64-24h2-alpha
-  win11-64-25h2-alpha
-  win11-64-25h2-gpu-alpha
-  win11-a64-25h2-builder-alpha
-  win11-a64-25h2-tester-alpha
-  win2022-64-2009-alpha
-  win2025-64-24h2-alpha
-].include?(ENV['WORKER_POOL_ID']) ? 'C:' : 'D:'
+TASK_DRIVE = ROLE_DATA.fetch('windows_task_drive', 'D:').freeze
 
 conn = WinRM::Connection.new(
   endpoint: "http://#{ENV.fetch('KITCHEN_HOSTNAME')}:5985/wsman",
