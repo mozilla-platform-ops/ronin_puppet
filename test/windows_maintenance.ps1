@@ -53,9 +53,7 @@ else {
     if ($triggers.Count -ne 1 -or $triggers[0].CimClass.CimClassName -ne 'MSFT_TaskBootTrigger' -or !$triggers[0].Enabled) {
         throw 'The Defender task must run at boot.'
     }
-    foreach ($name in @('DisableWindowsDefender.ps1', 'OwnRegistryKeys.ps1',
-                       'DisableWindowsDefenderfeatures.reg', 'DisableWindowsDefenderobjects.reg',
-                       'DisableWindowsDefenderservices.reg')) {
+    foreach ($name in @('DisableWindowsDefender.ps1', 'OwnRegistryKeys.ps1')) {
         $path = "$root\disable_win_defend\$name"
         if (!(Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing file: $path" }
         $acl = Get-Acl -LiteralPath $path

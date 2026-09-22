@@ -14,9 +14,6 @@ class win_disable_services::disable_windows_defender_schtask {
   $script_names = [
     'DisableWindowsDefender.ps1',
     'OwnRegistryKeys.ps1',
-    'DisableWindowsDefenderfeatures.reg',
-    'DisableWindowsDefenderobjects.reg',
-    'DisableWindowsDefenderservices.reg',
   ]
   $script_files = $script_names.map |$name| { "${script_dir}\\${name}" }
 
