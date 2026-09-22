@@ -49,6 +49,81 @@ describe file('/etc/start-worker.yml') do
   it { should exist }
 end
 
+worker_engine = file('/etc/taskcluster-worker-engine').content.strip
+
+describe file('/etc/taskcluster-worker-engine') do
+  it { should exist }
+  it { should be_owned_by 'root' }
+  it { should be_grouped_into 'root' }
+  its('mode') { should cmp '0644' }
+  its('content') { should match /\A(simple|multiuser-static)\n\z/ }
+end
+
+if worker_engine == 'multiuser-static'
+  describe file('/etc/systemd/system/generic-worker.service') do
+    it { should exist }
+    it { should be_owned_by 'root' }
+    it { should be_grouped_into 'root' }
+    its('mode') { should cmp '0644' }
+    its('content') { should match %r{WorkingDirectory=/var/lib/generic-worker} }
+    its('content') { should match %r{ExecStart=/usr/local/bin/run-generic-worker-root\.sh /etc/start-worker\.yml} }
+  end
+
+  describe service('generic-worker.service') do
+    it { should be_enabled }
+  end
+
+  describe file('/usr/local/bin/run-generic-worker-root.sh') do
+    it { should exist }
+    it { should be_owned_by 'root' }
+    it { should be_grouped_into 'root' }
+    its('mode') { should cmp '0700' }
+  end
+
+  describe file('/var/lib/generic-worker') do
+    it { should be_directory }
+    it { should be_owned_by 'root' }
+    it { should be_grouped_into 'root' }
+    its('mode') { should cmp '0700' }
+  end
+
+  describe file('/var/lib/generic-worker/next-task-user.json') do
+    it { should exist }
+    it { should be_owned_by 'root' }
+    it { should be_grouped_into 'root' }
+    its('mode') { should cmp '0600' }
+    its('content') { should match /"name": "cltbld"/ }
+  end
+
+  describe file('/home/cltbld/.config/autostart/gnome-terminal.desktop') do
+    it { should_not exist }
+  end
+
+  describe file('/etc/start-worker.yml') do
+    it { should be_owned_by 'root' }
+    it { should be_grouped_into 'root' }
+    its('mode') { should cmp '0600' }
+    its('content') { should match %r{configPath: /var/lib/generic-worker/generic-worker\.config} }
+  end
+elsif worker_engine == 'simple'
+  describe file('/etc/systemd/system/generic-worker.service') do
+    it { should_not exist }
+  end
+
+  describe file('/usr/local/bin/run-generic-worker-root.sh') do
+    it { should_not exist }
+  end
+
+  describe file('/home/cltbld/.config/autostart/gnome-terminal.desktop') do
+    it { should exist }
+  end
+
+  describe file('/etc/start-worker.yml') do
+    its('mode') { should cmp '0644' }
+    its('content') { should match %r{configPath: /home/cltbld/generic-worker\.config} }
+  end
+end
+
 # check_gw
 #
 

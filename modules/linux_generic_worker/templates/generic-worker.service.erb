@@ -1,0 +1,15 @@
+[Unit]
+Description=Taskcluster Generic Worker (multiuser static)
+Wants=network-online.target
+After=network-online.target graphical.target display-manager.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=<%= @worker_state_dir %>
+ExecStart=/usr/local/bin/run-generic-worker-root.sh /etc/start-worker.yml
+Restart=no
+KillMode=mixed
+
+[Install]
+WantedBy=graphical.target

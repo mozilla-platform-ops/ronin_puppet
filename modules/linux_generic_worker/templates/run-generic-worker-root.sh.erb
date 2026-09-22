@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+
+set -e
+
+# This is the root-owned Worker Runner lifecycle wrapper for the Linux
+# multiuser-static engine. It must never read task-user-writable control files.
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
+
+worker_state_dir='<%= @worker_state_dir %>'
+hold_semaphore_file="${worker_state_dir}/operator_hold"
+quarantine_semaphore_file="${worker_state_dir}/quarantined"
+bug_json_file="${worker_state_dir}/bug.json"
+bug_id_file="${worker_state_dir}/bug_id"
+puppet_run_done_file='/tmp/puppet_run_done'
+
+function lifecycle_log {
+    if [ ! -x /usr/local/bin/lifecycle-log ]; then
+        return 0
+    fi
+    if ! /usr/local/bin/lifecycle-log "$@"; then
+        echo "lifecycle-log $* failed; continuing without lifecycle event" >&2
+    fi
+}
+
+function create_bug_self_failure {
+    local bugzilla_api_key='<%= @bugzilla_api_key %>'
+    local bugzilla_url='https://bugzilla.mozilla.org'
+    local summary='Generic worker on host <%= @fqdn %> returned exit code 69'
+    local description='Error code 69 means that generic-worker encountered an internal error. See the generic-worker logs for details.'
+
+    cat > "$bug_json_file" <<EOF
+{
+  "api_key": "${bugzilla_api_key}",
+  "product": "Infrastructure & Operations",
+  "component": "CIDuty",
+  "version": "unspecified",
+  "summary": "${summary}",
+  "description": "${description}"
+}
+EOF
+    /usr/bin/curl --fail --silent --show-error -X POST \
+        -H 'Content-Type: application/json' -H 'Accept: application/json' \
+        -d @"$bug_json_file" "$bugzilla_url/rest/bug" > "$bug_id_file"
+    /usr/bin/sed -i -e 's/}//g' "$bug_id_file"
+}
+
+function resolve_bug_self_failure {
+    local bugzilla_api_key='<%= @bugzilla_api_key %>'
+    local bug_id
+
+    bug_id=$(/usr/bin/awk -F: '{print $2}' "$bug_id_file")
+    cat > "$bug_json_file" <<EOF
+{
+  "api_key": "${bugzilla_api_key}",
+  "status": "RESOLVED",
+  "resolution": "FIXED",
+  "comment": {
+    "body": "The worker is now in working state",
+    "is_private": false
+  }
+}
+EOF
+    /usr/bin/curl --fail --silent --show-error -X PUT \
+        -H 'Content-Type: application/json' -H 'Accept: application/json' \
+        -d @"$bug_json_file" "https://bugzilla.mozilla.org/rest/bug/${bug_id}"
+}
+
+rm -f tasks-resolved-count.txt
+
+if [ -f "$hold_semaphore_file" ]; then
+    echo 'Worker is in operator hold mode. Waiting to start...'
+    while [ -f "$hold_semaphore_file" ]; do
+        sleep 15
+    done
+    echo 'Operator hold mode cleared. Starting...'
+fi
+
+if [ ! -f "$puppet_run_done_file" ]; then
+    echo -n 'Waiting for puppet to finish... '
+    while [ ! -f "$puppet_run_done_file" ]; do
+        sleep 5
+        echo -n '.'
+    done
+    echo ' done.'
+fi
+
+lifecycle_log emit worker_started
+/usr/local/bin/start-worker "$@" 2>&1 | /usr/bin/logger -t generic-worker
+exitstatus="${PIPESTATUS[0]}"
+lifecycle_log import-generic-worker
+lifecycle_log emit worker_exited --exit-code "$exitstatus"
+
+if [ -f "$hold_semaphore_file" ]; then
+    echo 'Worker is in operator hold mode. Exiting...'
+    exit 0
+fi
+
+export TASKCLUSTER_CLIENT_ID='<%= @quarantine_client_id %>'
+export TASKCLUSTER_ACCESS_TOKEN='<%= @quarantine_access_token %>'
+
+if [ "$exitstatus" -eq 69 ]; then
+    if [ -f "$quarantine_semaphore_file" ]; then
+        echo 'Worker is quarantined'
+    else
+        echo 'Quarantine worker'
+        /usr/local/bin/quarantine-worker releng-hardware '<%= @worker_type %>' '<%= @worker_group %>' '<%= @hostname %>' 720h5s
+        echo 'quarantined worker' > "$quarantine_semaphore_file"
+        create_bug_self_failure
+    fi
+else
+    if [ -f "$quarantine_semaphore_file" ]; then
+        /bin/rm -f "$quarantine_semaphore_file"
+    fi
+    if [ -f "$bug_id_file" ]; then
+        resolve_bug_self_failure
+        /bin/rm -f "$bug_id_file"
+    fi
+    lifecycle_log emit restart_executed --trigger post_task
+    /sbin/reboot --force
+    /bin/sleep 120
+fi
