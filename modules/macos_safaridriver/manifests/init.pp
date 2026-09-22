@@ -15,6 +15,12 @@ class macos_safaridriver (
           $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
           $safari_update_script = '/usr/local/bin/install_safari_softwareupdate_updates.py'
+          # LaunchAgent plists are staged root-owned here and copied into the
+          # user's ~/Library/LaunchAgents as that user. Root must never write
+          # (or chown) through /Users/cltbld, which cltbld controls -- see the
+          # comment block in install_user_launchagent.sh.
+          $launchagent_installer = '/usr/local/bin/install_user_launchagent.sh'
+          $launchagent_staging_dir = '/var/db/ronin-launchagents'
 
           file { $perm_script:
             content => file('macos_safaridriver/add_tcc_perms.sh'),
@@ -29,6 +35,20 @@ class macos_safaridriver (
           file { $safari_update_script:
             content => file('macos_safaridriver/install_safari_softwareupdate_updates.py'),
             mode    => '0755',
+          }
+
+          file { $launchagent_installer:
+            content => file('macos_safaridriver/install_user_launchagent.sh'),
+            owner   => 'root',
+            group   => 'wheel',
+            mode    => '0755',
+          }
+
+          file { $launchagent_staging_dir:
+            ensure => directory,
+            owner  => 'root',
+            group  => 'wheel',
+            mode   => '0755',
           }
 
           $semaphore_file = "/Users/${user_running_safari}/Library/Preferences/semaphore/safari-enable-remote-automation-has-run"
@@ -62,24 +82,40 @@ class macos_safaridriver (
               # TCC entries exist) is mitigated by requiring Exec['execute perms script']
               # before this file is deployed, and by the applescript's semaphore check.
               $launchagent_plist = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari.enableautomation.plist"
+              $staged_launchagent_plist = "${launchagent_staging_dir}/com.mozilla.safari.enableautomation.plist"
 
               file { $applescript:
                 content => file('macos_safaridriver/safari-enable-remote-automation.applescript'),
                 mode    => '0755',
               }
 
-              file { $launchagent_plist:
+              file { $staged_launchagent_plist:
                 ensure  => file,
-                owner   => $user_running_safari,
-                group   => 'staff',
+                owner   => 'root',
+                group   => 'wheel',
                 mode    => '0644',
                 content => file('macos_safaridriver/com.mozilla.safari.enableautomation.plist'),
-                require => [File[$applescript], Exec['execute perms script']],
+                require => File[$launchagent_staging_dir],
+              }
+
+              exec { 'install safari enableautomation launchagent':
+                command => "${launchagent_installer} ${user_running_safari} ${staged_launchagent_plist}",
+                unless  => "/usr/bin/sudo -u ${user_running_safari} /usr/bin/cmp -s ${staged_launchagent_plist} ${launchagent_plist}",
+                require => [
+                  File[$applescript],
+                  File[$launchagent_installer],
+                  File[$staged_launchagent_plist],
+                  Exec['execute perms script'],
+                ],
               }
 
               exec { 'execute enable remote automation script':
                 command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${launchagent_plist}; fi; count=0; while [ \$count -lt 120 ] && ! /bin/bash -c \"test -f ${semaphore_file} && grep -q 1 ${semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${semaphore_file}'",
-                require => [File[$applescript], File[$launchagent_plist], Exec['execute perms script']],
+                require => [
+                  File[$applescript],
+                  Exec['install safari enableautomation launchagent'],
+                  Exec['execute perms script'],
+                ],
                 cwd     => "/Users/${user_running_safari}",
                 unless  => "/bin/bash -c 'test -f ${semaphore_file} && grep -q 1 ${semaphore_file}'",
                 timeout => 180,
@@ -98,6 +134,7 @@ class macos_safaridriver (
               # than a failure. The next puppet run picks it up.
               $tp_applescript = '/usr/local/bin/safari-tp-enable-remote-automation.applescript'
               $tp_launchagent_plist = "/Users/${user_running_safari}/Library/LaunchAgents/com.mozilla.safari-tp.enableautomation.plist"
+              $staged_tp_launchagent_plist = "${launchagent_staging_dir}/com.mozilla.safari-tp.enableautomation.plist"
               $tp_semaphore_file = "/Users/${user_running_safari}/Library/Preferences/semaphore/safari-tech-preview-enable-remote-automation-has-run"
 
               file { $tp_applescript:
@@ -105,18 +142,33 @@ class macos_safaridriver (
                 mode    => '0755',
               }
 
-              file { $tp_launchagent_plist:
+              file { $staged_tp_launchagent_plist:
                 ensure  => file,
-                owner   => $user_running_safari,
-                group   => 'staff',
+                owner   => 'root',
+                group   => 'wheel',
                 mode    => '0644',
                 content => file('macos_safaridriver/com.mozilla.safari-tp.enableautomation.plist'),
-                require => [File[$tp_applescript], Exec['execute perms script']],
+                require => File[$launchagent_staging_dir],
+              }
+
+              exec { 'install safari-tp enableautomation launchagent':
+                command => "${launchagent_installer} ${user_running_safari} ${staged_tp_launchagent_plist}",
+                unless  => "/usr/bin/sudo -u ${user_running_safari} /usr/bin/cmp -s ${staged_tp_launchagent_plist} ${tp_launchagent_plist}",
+                require => [
+                  File[$tp_applescript],
+                  File[$launchagent_installer],
+                  File[$staged_tp_launchagent_plist],
+                  Exec['execute perms script'],
+                ],
               }
 
               exec { 'execute enable remote automation script (Safari TP)':
                 command => "/bin/bash -c 'if /bin/launchctl print gui/${user_uid}/com.mozilla.safari-tp.enableautomation > /dev/null 2>&1; then /bin/launchctl kickstart -k gui/${user_uid}/com.mozilla.safari-tp.enableautomation; else /bin/launchctl bootstrap gui/${user_uid} ${tp_launchagent_plist}; fi; count=0; while [ \$count -lt 120 ] && ! /bin/bash -c \"test -f ${tp_semaphore_file} && grep -q 1 ${tp_semaphore_file}\"; do sleep 2; count=\$((count+2)); done; grep -q 1 ${tp_semaphore_file}'",
-                require => [File[$tp_applescript], File[$tp_launchagent_plist], Exec['execute perms script']],
+                require => [
+                  File[$tp_applescript],
+                  Exec['install safari-tp enableautomation launchagent'],
+                  Exec['execute perms script'],
+                ],
                 cwd     => "/Users/${user_running_safari}",
                 onlyif  => '/bin/test -d "/Applications/Safari Technology Preview.app"',
                 unless  => "/bin/bash -c 'test -f ${tp_semaphore_file} && grep -q 1 ${tp_semaphore_file}'",
