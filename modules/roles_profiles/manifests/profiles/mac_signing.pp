@@ -95,6 +95,10 @@ class roles_profiles::profiles::mac_signing {
           role_config         => $role_config,
           python_version      => $python_version,
           ed_key_filename     => $user_data['ed_key_filename'],
+          # If the uv-managed interpreter fails to install, skip the worker
+          # outright. Without this edge the worker's stop exec still runs and
+          # takes the signer down for a venv rebuild that cannot succeed.
+          require             => Class['scriptworker_prereqs'],
         }
       }
 

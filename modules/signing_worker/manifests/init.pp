@@ -182,6 +182,28 @@ define signing_worker (
     subscribe   => $ss_deps,
     require     => $ss_deps,
     path        => ['/usr/local/bin', '/bin', '/usr/sbin'],
+    timeout     => 900,
+  }
+
+  # Repairs a venv that has no scriptworker in it. A run interrupted between
+  # `uv venv --clear` and a completed sync leaves exactly that, and the venv
+  # rebuild's version guard treats it as finished, so nothing else ever notices.
+  #
+  # It has to be a second exec. The sync above is refreshonly because a revision
+  # bump must re-sync even when scriptworker is already installed, and puppet's
+  # refresh honours unless - so one guarded exec would skip that bump.
+  exec { "repair ${scriptworker_base} iscript":
+    command     => 'uv sync --active --locked --inexact --package iscript --extra scriptworker',
+    cwd         => $scriptworker_scripts_clone_dir,
+    environment => [
+      "VIRTUAL_ENV=${scriptworker_base}/.venv",
+    ],
+    user        => $user,
+    group       => $group,
+    unless      => "/bin/test -x ${virtualenv_dir}/bin/scriptworker",
+    path        => ['/usr/local/bin', '/bin', '/usr/sbin'],
+    timeout     => 900,
+    require     => Exec["install ${scriptworker_base} iscript"],
   }
 
   if $widevine_filename {
@@ -286,6 +308,30 @@ define signing_worker (
       File[$launchctl_wrapper],
       File[$scriptworker_config_file],
       File[$scriptworker_wrapper],
+    ],
+  }
+
+  # Loads the daemon whenever an enabled worker has a scriptworker to run but is
+  # not listed. Every other route back up from the unload goes through
+  # refreshonly edges, so this is the one that converges rather than reacting.
+  #
+  # Without it, a run that dies between the unload and a completed sync stops
+  # the signer for good: on the next run the stop exec's onlyif is false
+  # (already unloaded) and the venv guard is true (already rebuilt), so nothing
+  # fires and puppet reports green over an offline host.
+  #
+  # onlyif tests the binary, so a half-built venv is never loaded into a
+  # KeepAlive crash loop.
+  exec { "ensure scriptworker loaded ${scriptworker_base}":
+    command => "/bin/bash ${launchctl_wrapper}",
+    onlyif  => "/bin/test -f ${scriptworker_base}/.enabled && /bin/test -x ${virtualenv_dir}/bin/scriptworker",
+    unless  => "/bin/launchctl list | /usr/bin/grep -qwF ${launchd_script_name}",
+    path    => ['/bin', '/usr/bin'],
+    require => [
+      File[$launchctl_wrapper],
+      File[$launchd_script],
+      Exec["repair ${scriptworker_base} iscript"],
+      Exec["${user}_launchctl_load"],
     ],
   }
 }
