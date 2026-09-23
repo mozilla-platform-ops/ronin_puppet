@@ -32,9 +32,7 @@ class roles_profiles::profiles::files_system_managment {
           max_size => 8192,
         }
       }
-      if $facts['custom_win_purpose'] in ['tester', 'builder'] {
-        include win_os_settings::enable_long_paths
-      }
+      include win_os_settings::enable_long_paths
     }
     default: {
       fail("${$facts['os']['name']} not supported")
