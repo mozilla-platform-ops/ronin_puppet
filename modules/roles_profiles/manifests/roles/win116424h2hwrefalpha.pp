@@ -15,7 +15,10 @@ class roles_profiles::roles::win116424h2hwrefalpha {
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
   include roles_profiles::profiles::firewall
-  include roles_profiles::profiles::hardware_observability
+  # RELOPS-2584: hardware_observability pulls in nsclient and fleetbench. Commented
+  # out on the alpha pools so the deployment hardening work is validated without
+  # fleetbench running alongside it.
+  #include roles_profiles::profiles::hardware_observability
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::power_management
