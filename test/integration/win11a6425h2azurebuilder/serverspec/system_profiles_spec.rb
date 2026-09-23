@@ -44,11 +44,9 @@ end
   end
 end
 
-if WORKER_FUNCTION == 'tester'
-  describe registry_value_command(file_system_key, 'LongPathsEnabled') do
-    its(:exit_status) { should eq 0 }
-    its(:stdout) { should match(/^1\s*$/) }
-  end
+describe registry_value_command(file_system_key, 'LongPathsEnabled') do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(/^1\s*$/) }
 end
 
 describe powershell_command("(Get-NetConnectionProfile -ErrorAction Stop | Select-Object -ExpandProperty NetworkCategory -Unique) -join ','") do

@@ -32,6 +32,7 @@ end
 end
 
 {
+  'LongPathsEnabled' => '1',
   'NtfsDisable8dot3NameCreation' => '1',
   'NtfsDisableLastAccessUpdate' => '2147483649'
 }.each do |name, expected|

@@ -32,9 +32,7 @@ class roles_profiles::profiles::files_system_managment {
           max_size => 8192,
         }
       }
-      ## If tester then enable long path
-      ## Limit long paths on hardware to rule out problem with tests failing
-      if ($facts['custom_win_purpose'] == 'tester') {
+      if $facts['custom_win_purpose'] in ['tester', 'builder'] {
         include win_os_settings::enable_long_paths
       }
     }
