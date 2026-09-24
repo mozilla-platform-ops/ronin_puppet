@@ -154,18 +154,19 @@ groups:
     facts:
       puppet_role: gecko_t_osx_1500_m4
 
-  - name: gecko-t-osx-2600-m4-staging
-    targets:
-    # New targets go here
+  - name: gecko-t-osx-2700-m4-staging
+    # Explicit empty list, not a bare `targets:` -- that parses to None and
+    # has broken the Hangar puppet sync before (hangar #138).
+    targets: []
     facts:
-      puppet_role: gecko_t_osx_2600_m4_staging
+      puppet_role: gecko_t_osx_2700_m4_staging
 
-  - name: gecko-t-osx-2600-m4
+  - name: gecko-t-osx-2700-m4
     targets:
       - macmini-m4-130.test.releng.mdc1.mozilla.com
       - macmini-m4-131.test.releng.mdc1.mozilla.com
     facts:
-      puppet_role: gecko_t_osx_2600_m4
+      puppet_role: gecko_t_osx_2700_m4
 
   - name: gecko-1-b-osx-arm64
     targets:
