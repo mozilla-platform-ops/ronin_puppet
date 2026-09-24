@@ -5,7 +5,6 @@
 class roles_profiles::roles::win20256424h2azure {
   case $facts['custom_win_bootstrap_stage'] {
     'complete': {
-      include roles_profiles::profiles::azure_vm_file_system
       include roles_profiles::profiles::error_reporting
       include roles_profiles::profiles::files_system_managment
       include roles_profiles::profiles::logging
@@ -14,7 +13,6 @@ class roles_profiles::roles::win20256424h2azure {
       include roles_profiles::profiles::ntp
     }
     default: {
-      include roles_profiles::profiles::azure_vm_file_system
       include roles_profiles::profiles::microsoft_tools
       include roles_profiles::profiles::disable_services
       include roles_profiles::profiles::error_reporting
