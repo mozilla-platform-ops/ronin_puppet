@@ -49,7 +49,48 @@ class macos_safaridriver (
 
           # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
           if $facts['running_in_test_kitchen'] != 'true' {
-            if $facts['os']['release']['major'] in ['23', '24', '25', '27'] {
+            if $facts['os']['release']['major'] == '27' {
+              # Safari 27 (macOS 27) made "Allow remote automation and external agents" a
+              # secure preference: a synthetic System Events click trips "Safari detected an
+              # app or service that interfered with a click" plus a password sheet, so the
+              # AppleScript path below cannot work there. The state now lives in a plain
+              # per-user plist that Safari reads on launch, and a file it did not write itself
+              # is honoured -- verified on macmini-m4-130/131 with a real WebDriver session
+              # (no plist: "You must enable 'Allow remote automation'"; this plist: session OK).
+              $webdriver_dir = "/Users/${user_running_safari}/Library/WebDriver"
+
+              file { $webdriver_dir:
+                ensure => directory,
+                owner  => $user_running_safari,
+                group  => 'staff',
+                mode   => '0755',
+              }
+
+              file { ["${webdriver_dir}/com.apple.Safari.plist",
+                "${webdriver_dir}/com.apple.SafariTechnologyPreview.plist"]:
+                ensure  => file,
+                owner   => $user_running_safari,
+                group   => 'staff',
+                mode    => '0644',
+                content => file('macos_safaridriver/webdriver-allow-remote-automation.plist'),
+                require => File[$webdriver_dir],
+              }
+
+              # Remove the AppleScript enable agents a host may carry from macOS 14/15/26.
+              # They fire every few hours; on 27 each attempt fails the secure-preference
+              # check and its error path leaves Safari open, and a Safari that is already
+              # running makes the next task's safaridriver time out connecting to it.
+              ['com.mozilla.safari.enableautomation', 'com.mozilla.safari-tp.enableautomation'].each |String $agent| {
+                exec { "bootout ${agent}":
+                  command => "/bin/launchctl bootout gui/${user_uid}/${agent}",
+                  onlyif  => "/bin/launchctl print gui/${user_uid}/${agent}",
+                }
+                file { "/Users/${user_running_safari}/Library/LaunchAgents/${agent}.plist":
+                  ensure  => absent,
+                  require => Exec["bootout ${agent}"],
+                }
+              }
+            } elsif $facts['os']['release']['major'] in ['23', '24', '25'] {
               # macOS 14/15/26/27: SIP is enabled on new hardware (e.g. M4 Mac Mini).
               # Running osascript via 'launchctl asuser sudo -u' does not grant full
               # GUI session access for accessibility, and the system TCC database is
