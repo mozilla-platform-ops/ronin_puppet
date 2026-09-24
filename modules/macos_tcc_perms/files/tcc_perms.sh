@@ -29,8 +29,29 @@ execute_query() {
 }
 
 SEMAPHORE_FILE="/var/tmp/semaphore/tcc-perms-applied"
+
+# cltbld's per-user TCC database. macOS 27 moved it out of ~/Library into a
+# containermanagerd data container that tccd owns, e.g.
+#   /private/var/containers/Data/ProtectedSystem/<UUID>/Data/Library/Application Support/com.apple.TCC/TCC.db
+# and migrates the old DB there on first boot; the legacy path is never
+# recreated. Prefer the container whenever it exists -- a leftover legacy file
+# on 27 would accept writes that tccd ignores -- and fall back to the legacy
+# path on 14/15/26.
+resolve_user_tcc_db() {
+    local legacy="/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db"
+    local container
+    container=$(find /private/var/containers/Data/ProtectedSystem \
+        -path "*/Data/Library/Application Support/com.apple.TCC/TCC.db" \
+        -user cltbld 2>/dev/null | head -n 1)
+    if [ -n "$container" ]; then
+        echo "$container"
+    else
+        echo "$legacy"
+    fi
+}
+
 # Overridable so the defer path can be exercised without a SIP-on host.
-: "${USER_TCC_DB:=/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db}"
+: "${USER_TCC_DB:=$(resolve_user_tcc_db)}"
 
 # How long to wait for cltbld's user TCC database to become writable before
 # giving up and deferring to a later puppet run.

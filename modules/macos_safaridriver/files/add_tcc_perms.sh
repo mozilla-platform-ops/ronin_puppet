@@ -35,6 +35,26 @@ run_query() {
     sudo sqlite3 "$1" "$2"
 }
 
+# cltbld's per-user TCC database. macOS 27 moved it out of ~/Library into a
+# containermanagerd data container that tccd owns, e.g.
+#   /private/var/containers/Data/ProtectedSystem/<UUID>/Data/Library/Application Support/com.apple.TCC/TCC.db
+# and migrates the old DB there on first boot; the legacy path is never
+# recreated. Prefer the container whenever it exists -- a leftover legacy file
+# on 27 would accept writes that tccd ignores -- and fall back to the legacy
+# path on 14/15/26.
+resolve_user_tcc_db() {
+    local legacy="/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db"
+    local container
+    container=$(find /private/var/containers/Data/ProtectedSystem \
+        -path "*/Data/Library/Application Support/com.apple.TCC/TCC.db" \
+        -user cltbld 2>/dev/null | head -n 1)
+    if [ -n "$container" ]; then
+        echo "$container"
+    else
+        echo "$legacy"
+    fi
+}
+
 # macOS 10.15
 if [[ "$os_version" == "10.15"* ]]; then
     # kTCCServiceAccessibility, in system TCC DB
@@ -113,8 +133,9 @@ if [[ "$os_version" == "14."* || "$os_version" == "15."* || "$os_version" == "26
         "REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceAppleEvents','/usr/bin/osascript',1,2,3,1,X'fade0c000000003000000001000000060000000200000013636f6d2e6170706c652e6f73617363726970740000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1712861877,NULL,NULL,'UNUSED',1712861877);"
         "REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServicePostEvent','/usr/bin/osascript',1,2,3,1,X'fade0c000000003000000001000000060000000200000013636f6d2e6170706c652e6f73617363726970740000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',1712861877);"
     )
+    user_tcc_db=$(resolve_user_tcc_db)
     for query in "${user_queries[@]}"; do
-        run_query "/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db" "$query"
+        run_query "$user_tcc_db" "$query"
     done
     mkdir -p /var/tmp/semaphore
     touch /var/tmp/semaphore/safari-tcc-perms-applied
