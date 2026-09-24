@@ -51,10 +51,12 @@ class win_taskcluster::worker_runner (
     ensure => directory,
   }
   if $provider == 'standalone' and $preloaded_caches != [] {
+    # Seed only a new worker state file. Generic Worker owns and updates this
+    # file after tasks, so reimage alpha workers after adding cache names.
     # Generic Worker uses its working directory for directory-caches.json.
-    # Worker Runner uses this directory as its AppDirectory and passes it to
-    # Generic Worker. Keep the initial seed state after Generic Worker writes
-    # its live state at the end of the first task.
+    # Worker Runner uses this as its AppDirectory. The Generic Worker process
+    # inherits that working directory. Keep the initial seed state after its
+    # first task writes the live state.
     $directory_cache_state = $preloaded_caches.reduce({}) |$state, $cache| {
       $state + {
         $cache['cacheName'] => [
