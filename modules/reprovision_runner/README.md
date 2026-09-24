@@ -17,7 +17,10 @@ See also: `relops-bootstrap/orchestrator/orchestrator/runner.py` and
 - A clone of relops-bootstrap + a venv with the orchestrator editable-installed
   (`/opt/reprovision-runner`)
 - A **LaunchDaemon** (`com.mozilla.reprovision-runner`, `RunAtLoad` + `KeepAlive`)
-  that survives reboots and disconnects — no more foreground ssh session
+  that survives reboots and disconnects — no more foreground ssh session. Its
+  `ExitTimeOut` (`runner_exit_timeout`, default 3600) lets the runner drain on
+  SIGTERM (relops-bootstrap#79): a cert-renewal or reload restart waits for
+  in-flight jobs instead of killing a reprovision mid-EACS
 - A root-only (`0600`) env file the daemon sources: `HANGAR_API_URL`, `RUNNER_*`,
   and the `REPROVISION_*` creds
 - The mTLS client cert (see cert modes below)

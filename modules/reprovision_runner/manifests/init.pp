@@ -69,6 +69,10 @@
 # @param self_update_interval
 #   Seconds between periodic run-puppet.sh runs, skipped while a reprovision job is in
 #   flight. Without it relops-bootstrap merges only reach the runner at boot. 0 disables.
+# @param runner_exit_timeout
+#   Seconds launchd waits after SIGTERM before SIGKILL (ExitTimeOut). The runner drains on
+#   SIGTERM -- no new claims, finish in-flight jobs -- so this must cover a whole
+#   reprovision, or a cert-renewal restart kills a job's `reprovision` mid-EACS.
 class reprovision_runner (
   Boolean                          $enabled        = false,
   String[1]                        $hangar_api_url = 'https://hangar.relops.mozilla.com/api',
@@ -90,6 +94,7 @@ class reprovision_runner (
   Integer[60]                      $tart_health_interval = 600,
   Boolean                          $tart_health_guests   = false,
   Integer[0]                       $self_update_interval = 3600,
+  Integer[20]                      $runner_exit_timeout  = 3600,
 ) {
   if $enabled {
     $short_python  = split(String($python_version), '[.]')[0, 2].join('.')
@@ -331,10 +336,11 @@ class reprovision_runner (
       group   => 'wheel',
       mode    => '0644',
       content => epp("${module_name}/com.mozilla.reprovision-runner.plist.epp", {
-        label    => $plist_label,
-        wrapper  => $wrapper,
-        log_dir  => $log_dir,
-        log_name => 'runner',
+        label        => $plist_label,
+        wrapper      => $wrapper,
+        log_dir      => $log_dir,
+        log_name     => 'runner',
+        exit_timeout => $runner_exit_timeout,
       }),
       require => [File[$wrapper], File[$env_file]],
       notify  => Exec['reprovision_runner_reload'],
