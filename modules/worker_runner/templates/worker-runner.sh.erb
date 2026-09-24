@@ -177,6 +177,43 @@ if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
     cd <%= @gw_root_dir %>
 fi
 
+# Quit any Safari or Safari Technology Preview already open for the task user
+# before the worker claims a task. safaridriver launches its own instance; if a
+# normal (non-automation) one is already running it asks that one for an
+# automation session instead, which never answers, and every browsertime Safari
+# task fails after exhausting its retries with:
+#   Could not create a session: The session timed out while connecting to a
+#   Safari instance.
+# On macOS 27 this became a loop: a task ends with Safari open, the host reboots,
+# macOS Resume (loginwindow's TAL launch) reopens it at login, and the next task
+# times out and reboots with it still open. clean_appstate_13_plus's empty,
+# root-owned ByHost loginwindow plist stops the relaunch on 14/15 but not on 27,
+# and TALLogoutSavesState=false does not stop it either (both verified on
+# macmini-m4-130, 2026-09-24). Harmless where Safari is not running.
+#
+# Resume relaunches when the task user's session comes up, so wait for that
+# session (its Dock) first -- but only on hosts that autologin as the task user,
+# so headless roles sharing this script are not delayed.
+# Anchored to the start of the command line so it matches the Safari executables
+# only: raptor and browsertime pass the Safari binary path as an argument, and an
+# unanchored pgrep -f matches the test harness too.
+safari_pattern='^/[^ ]*/Safari\.app/Contents/MacOS/Safari( |$)|^/Applications/Safari Technology Preview\.app/Contents/MacOS/Safari Technology Preview( |$)'
+if [ "$(/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null)" = "<%= @task_user %>" ]; then
+    for _ in $(seq 1 60); do
+        /usr/bin/pgrep -u <%= @task_user %> -x Dock >/dev/null && break
+        sleep 2
+    done
+    sleep 5
+fi
+for _ in 1 2 3; do
+    /usr/bin/pgrep -u <%= @task_user %> -f "$safari_pattern" >/dev/null || break
+    echo "Quitting Safari left open for <%= @task_user %> before starting the worker"
+    /usr/bin/pkill -TERM -u <%= @task_user %> -f "$safari_pattern"
+    sleep 3
+    /usr/bin/pkill -KILL -u <%= @task_user %> -f "$safari_pattern"
+    sleep 2
+done
+
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/start-worker "$@"
