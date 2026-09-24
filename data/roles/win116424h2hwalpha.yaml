@@ -1,15 +1,14 @@
 ---
 
-windows.taskcluster.preloaded_directory_caches:
-  - cacheName: gecko-level-1-pip
-    location: 'C:\cache-seeds\gecko-level-1-pip'
-  - cacheName: gecko-level-3-pip
-    location: 'C:\cache-seeds\gecko-level-3-pip'
-
 win-worker:
   function: "tester"
   generic_worker:
     client_id: "project/releng/generic-worker/win11-64-24h2-hw-alpha"
+    preloaded_directory_caches:
+      - cacheName: gecko-level-1-pip
+        location: 'C:\cache-seeds\gecko-level-1-pip'
+      - cacheName: gecko-level-3-pip
+        location: 'C:\cache-seeds\gecko-level-3-pip'
 
   # Logging
   # Logging level options debug, verbose, or restricted.

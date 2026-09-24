@@ -90,7 +90,7 @@ class roles_profiles::profiles::windows_worker_runner {
           $location              = $facts['custom_win_location']
           $provisioner           = 'releng-hardware'
           $preloaded_caches = lookup(
-            'windows.taskcluster.preloaded_directory_caches',
+            'win-worker.generic_worker.preloaded_directory_caches',
             { 'default_value' => [] },
           )
           $root_url              = lookup('windows.taskcluster.root_url')
