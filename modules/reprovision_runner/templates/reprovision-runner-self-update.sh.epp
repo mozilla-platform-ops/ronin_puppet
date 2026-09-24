@@ -53,6 +53,8 @@ puppet_pid=$!
 watchdog=$!
 wait "$puppet_pid"
 rc=$?
+# The watchdog's sleep is its child: kill it too, or it lingers for max_seconds.
+/usr/bin/pkill -P "$watchdog" 2>/dev/null
 kill "$watchdog" 2>/dev/null
 wait "$watchdog" 2>/dev/null
 log "run-puppet.sh exited ${rc}"
