@@ -5,40 +5,44 @@
 #
 
 class win_disable_services::disable_windows_defender_schtask {
+  require win_shared::win_ronin_dirs
+
   $script_dir = "${facts['custom_win_roninprogramdata']}\\disable_win_defend"
-  $main_bat = "${script_dir}\\DisableWindowsDefender.bat"
+  $main_script = "${script_dir}\\DisableWindowsDefender.ps1"
+  $powershell = "${facts['custom_win_system32']}\\WindowsPowerShell\\v1.0\\powershell.exe"
+  $arguments = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"${main_script}\""
+  $script_names = [
+    'DisableWindowsDefender.ps1',
+    'OwnRegistryKeys.ps1',
+  ]
+  $script_files = $script_names.map |$name| { "${script_dir}\\${name}" }
 
   file { $script_dir:
     ensure => directory,
   }
-  file { "${script_dir}\\OwnRegistryKeys.bat":
-    ensure  => file,
-    content => file('win_disable_services/windows_defender/OwnRegistryKeys.bat'),
+  acl { $script_dir:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => File[$script_dir],
   }
-  file { "${script_dir}\\OwnRegistryKeys.ps1":
-    ensure  => file,
-    content => file('win_disable_services/windows_defender/OwnRegistryKeys.ps1'),
-  }
-  file { $main_bat:
-    ensure  => file,
-    content => file('win_disable_services/windows_defender/DisableWindowsDefender.bat'),
-  }
-  file { "${script_dir}\\DisableWindowsDefenderfeatures.reg":
-    ensure  => file,
-    content => file('win_disable_services/windows_defender/DisableWindowsDefenderfeatures.reg'),
-  }
-  file { "${script_dir}\\DisableWindowsDefenderobjects.reg":
-    ensure  => file,
-    content => file('win_disable_services/windows_defender/DisableWindowsDefenderobjects.reg'),
-  }
-  file { "${script_dir}\\DisableWindowsDefenderservices.reg":
-    ensure  => file,
-    content => file('win_disable_services/windows_defender/DisableWindowsDefenderservices.reg'),
+  $script_names.each |$name| {
+    file { "${script_dir}\\${name}":
+      ensure  => file,
+      content => file("win_disable_services/windows_defender/${name}"),
+      require => Acl[$script_dir],
+    }
   }
   scheduled_task { 'disable_windows_defender':
     ensure      => 'present',
-    command     => $main_bat,
-    working_dir => $script_dir,
+    command     => $powershell,
+    arguments   => $arguments,
+    working_dir => $facts['custom_win_system32'],
     enabled     => true,
     trigger     => [{
         'schedule'         => 'boot',
@@ -46,11 +50,13 @@ class win_disable_services::disable_windows_defender_schtask {
         'minutes_duration' => '0'
     }],
     user        => 'system',
+    require     => File[$script_files],
   }
   exec { 'disable_windows_defender_1st_run':
-    command     => "${facts['custom_win_system32']}\\cmd.exe /c ${$main_bat}",
-    cwd         => $script_dir,
+    command     => "\"${powershell}\" ${arguments}",
+    cwd         => $facts['custom_win_system32'],
     refreshonly => true,
-    subscribe   => File[$main_bat],
+    subscribe   => File[$script_files],
+    require     => Scheduled_task['disable_windows_defender'],
   }
 }
