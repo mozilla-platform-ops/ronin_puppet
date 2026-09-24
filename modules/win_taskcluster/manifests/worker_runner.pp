@@ -35,10 +35,6 @@ class win_taskcluster::worker_runner (
   $worker_id             = undef,
   $worker_group          = undef,
   $worker_pool_id        = undef,
-  Array[Struct[{
-    'cacheName' => String,
-    'location'  => String,
-  }]] $preloaded_caches = [],
   $wstaudience           = undef,
   $wstserverurl          = undef
 ) {
@@ -49,31 +45,6 @@ class win_taskcluster::worker_runner (
 
   file { $worker_runner_dir:
     ensure => directory,
-  }
-  if $provider == 'standalone' and $preloaded_caches != [] {
-    # Seed only a new worker state file. Generic Worker owns and updates this
-    # file after tasks, so reimage alpha workers after adding cache names.
-    # Generic Worker uses its working directory for directory-caches.json.
-    # Worker Runner uses this as its AppDirectory. The Generic Worker process
-    # inherits that working directory. Keep the initial seed state after its
-    # first task writes the live state.
-    $directory_cache_state = $preloaded_caches.reduce({}) |$state, $cache| {
-      $state + {
-        $cache['cacheName'] => [
-          {
-            'key'      => $cache['cacheName'],
-            'location' => $cache['location'],
-          },
-        ],
-      }
-    }
-    file { "${worker_runner_dir}\\directory-caches.json":
-      ensure  => file,
-      content => to_json($directory_cache_state),
-      owner   => 'SYSTEM',
-      replace => false,
-      require => File[$worker_runner_dir],
-    }
   }
   file { $runner_exe_path:
     source => $runner_exe_source,
