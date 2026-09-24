@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# Report whether the Taskcluster worker binaries hold an effective Screen Recording
-# (kTCCServiceScreenCapture) grant. Read-only: this never changes TCC state.
+# Report whether the Taskcluster worker binaries and the failure-screenshot helper
+# (/bin/bash) hold an effective Screen Recording (kTCCServiceScreenCapture) grant.
+# Read-only: this never changes TCC state.
 #
 #   exit 0  every binary is granted
 #   exit 1  at least one is not (or the state could not be read)
@@ -37,9 +38,13 @@ set -u
 TCC_DB="/Library/Application Support/com.apple.TCC/TCC.db"
 STATUS_FILE="${SCREENCAPTURE_STATUS_FILE:-/var/tmp/screencapture-grant-status.json}"
 
+# /bin/bash is the failure-screenshot LaunchAgent (macos_screenshot_helper runs a
+# bash script, so TCC attributes its captures to bash). Without its grant every
+# failure screenshot is wallpaper-only, with no error anywhere (RELOPS-2454).
 CLIENTS=(
     /usr/local/bin/generic-worker-multiuser
     /usr/local/bin/start-worker
+    /bin/bash
 )
 
 sip="enabled"
