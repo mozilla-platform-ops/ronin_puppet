@@ -690,11 +690,20 @@ function Invoke-FleetbenchCheck {
     }
     process {
         try {
-            # Resolve the version-stamped collector binary installed by win_fleetbench.
-            $exe = Get-ChildItem -Path (Join-Path $InstallDir 'fleetbench*.exe') -ErrorAction SilentlyContinue |
-                Sort-Object LastWriteTime -Descending | Select-Object -First 1
-            if (-not $exe) {
-                Write-Log -message ('{0} :: fleetbench binary not found in {1}; skipping benchmark.' -f $($MyInvocation.MyCommand.Name), $InstallDir) -severity 'WARN'
+            # The pin is written by Puppet under HKLM, outside task-writable storage.
+            $pin = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Mozilla\fleetbench' -ErrorAction Stop
+            $version = [string]$pin.version
+            $sha256 = [string]$pin.sha256
+            if ($version -notmatch '^[0-9A-Za-z][0-9A-Za-z._-]*$' -or $sha256 -notmatch '^[0-9a-fA-F]{64}$') {
+                throw 'Invalid fleetbench version or SHA-256 pin.'
+            }
+            $exePath = Join-Path $InstallDir "fleetbench-$version.exe"
+            if (-not (Test-Path -LiteralPath $exePath -PathType Leaf)) {
+                Write-Log -message ('{0} :: pinned fleetbench binary not found: {1}; skipping benchmark.' -f $($MyInvocation.MyCommand.Name), $exePath) -severity 'WARN'
+                return
+            }
+            if ((Get-FileHash -LiteralPath $exePath -Algorithm SHA256).Hash -ne $sha256) {
+                Write-Log -message ('{0} :: pinned fleetbench binary failed SHA-256 verification: {1}; skipping benchmark.' -f $($MyInvocation.MyCommand.Name), $exePath) -severity 'ERROR'
                 return
             }
 
@@ -736,7 +745,7 @@ function Invoke-FleetbenchCheck {
             [Environment]::SetEnvironmentVariable('MOZ_FLEETBENCH_RUNNING', (Get-Date).ToUniversalTime().ToString('o'), 'Machine')
             Write-Log -message ('{0} :: MOZ_FLEETBENCH_RUNNING set (machine)' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
             try {
-                $json = & $exe.FullName cpu --mode $Mode --duration $Duration --json 2>$null | Out-String
+                $json = & $exePath cpu --mode $Mode --duration $Duration --json 2>$null | Out-String
             }
             finally {
                 [Environment]::SetEnvironmentVariable('MOZ_FLEETBENCH_RUNNING', $null, 'Machine')

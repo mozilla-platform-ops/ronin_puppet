@@ -7,7 +7,9 @@ class win_packages::drivers::nvidia_grid (
   String $display_name,
   String $srcloc
 ) {
-  $driver_exe   = "${facts['custom_win_temp_dir']}\\${driver_name}.exe"
+  include win_packages::staging
+  $pkg          = "${driver_name}.exe"
+  $driver_exe   = "${win_packages::staging::path}\\${pkg}"
 
   archive { $driver_name:
     ensure  => 'present',
@@ -16,6 +18,19 @@ class win_packages::drivers::nvidia_grid (
     creates => $driver_exe,
     cleanup => false,
     extract => false,
+    require => Class['win_packages::staging'],
+  }
+
+  acl { $driver_exe:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => Archive[$driver_name],
   }
 
   if $facts['custom_win_gpu'] == 'yes' {
@@ -23,7 +38,7 @@ class win_packages::drivers::nvidia_grid (
       ensure          => 'present',
       source          => $driver_exe,
       install_options => ['-s','-noreboot'],
-      require         => Archive[$driver_name],
+      require         => Acl[$driver_exe],
     }
   }
 }

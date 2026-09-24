@@ -7,28 +7,44 @@ define win_packages::win_msi_pkg (
   Array $install_options,
   String $package=$title
 ) {
-  $pkgdir = $facts['custom_win_temp_dir']
+  include win_packages::staging
+  $pkgdir = $win_packages::staging::path
 
   $srcloc = lookup('windows.ext_pkg_src')
 
 
 
   $url         = "${srcloc}/${pkg}"
+  $pkgpath     = "${pkgdir}\\${pkg}"
 
   # Use https://github.com/voxpupuli/puppet-archive instead of built-in file resource type to download files
   archive { $title:
     ensure  => 'present',
     source  => $url,
-    path    => "${pkgdir}\\${pkg}",
-    creates => "${pkgdir}\\${pkg}",
+    path    => $pkgpath,
+    creates => $pkgpath,
     cleanup => false,
     extract => false,
+    require => Class['win_packages::staging'],
+  }
+
+  acl { $pkgpath:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => Archive[$title],
   }
 
   package { $title :
     ensure          => installed,
-    source          => "${pkgdir}\\${pkg}",
+    source          => $pkgpath,
     install_options => $install_options,
+    require         => Acl[$pkgpath],
   }
 }
 

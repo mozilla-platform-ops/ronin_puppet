@@ -3,17 +3,30 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_mozilla_maintenance_service::install {
-  $local_exe = "${facts['custom_win_temp_dir']}\\maintenanceservice.exe"
+  include win_packages::staging
+  $local_exe = "${win_packages::staging::path}\\maintenanceservice.exe"
 
   file { $local_exe:
-    source => $win_mozilla_maintenance_service::source_exe,
+    source  => $win_mozilla_maintenance_service::source_exe,
+    require => Class['win_packages::staging'],
+  }
+  acl { $local_exe:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => File[$local_exe],
   }
 
   win_packages::win_exe_pkg { 'mozilla_maintenance_service':
     pkg                    => 'maintenanceservice_installer.exe',
     install_options_string => '/S',
     creates                => "${facts['custom_win_programfilesx86']}\\Mozilla Maintenance Service\\uninstall.exe",
-    require                => File[$local_exe],
+    require                => Acl[$local_exe],
   }
 
   ## Puppet functions fails to apply without a reboot, hence the powershell exec step below

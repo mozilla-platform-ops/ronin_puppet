@@ -9,22 +9,37 @@ define win_packages::win_zip_pkg (
   String $package=$title
 ) {
   require win_packages::sevenzip
+  include win_packages::staging
 
   $srcloc = lookup('windows.ext_pkg_src')
 
-  $pkgdir      = $facts['custom_win_temp_dir']
+  $pkgdir      = $win_packages::staging::path
+  $pkgpath     = "${pkgdir}\\${pkg}"
   $seven_zip   = "\"${facts['custom_win_programfiles']}\\7-Zip\\7z.exe\""
-  $source      = "\"${pkgdir}\\${pkg}\""
+  $source      = "\"${pkgpath}\""
   $url         = "${srcloc}/${pkg}"
 
   # Use https://github.com/voxpupuli/puppet-archive instead of built-in file resource type to download files
   archive { $title:
     ensure  => 'present',
     source  => $url,
-    path    => "${pkgdir}\\${pkg}",
-    creates => "${pkgdir}\\${pkg}",
+    path    => $pkgpath,
+    creates => $pkgpath,
     cleanup => false,
     extract => false,
+    require => Class['win_packages::staging'],
+  }
+
+  acl { $pkgpath:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => Archive[$title],
   }
 
   file { $destination:
@@ -36,6 +51,7 @@ define win_packages::win_zip_pkg (
   exec { $pkg:
     command => "${seven_zip} x ${source} -o${destination} -y",
     creates => $creates,
+    require => [Acl[$pkgpath], File[$destination]],
   }
 }
 
