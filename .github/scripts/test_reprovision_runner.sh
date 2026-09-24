@@ -135,6 +135,17 @@ else
 fi
 rmdir "$work/lock"
 
+# A stale lock (older than 2 x max_seconds, i.e. left by a killed run) is cleared,
+# or one crash would block every later update until the next boot.
+mkdir "$work/lock"
+python3 -c 'import os, sys, time; t = time.time() - 3600; os.utime(sys.argv[1], (t, t))' "$work/lock"
+run_self_update
+if [[ $out == *"removing stale lock"* && $out == *"runner idle; running puppet"* && -e $marker && ! -d $work/lock ]]; then
+  pass "clears a stale lock and proceeds"
+else
+  fail "stale lock: expected it cleared and puppet run; got: $out"
+fi
+
 # A hung apply is stopped at max_seconds (2 here) rather than holding the lock forever.
 start=$(date +%s)
 run_self_update hang self-update-short
