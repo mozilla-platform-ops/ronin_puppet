@@ -1,0 +1,59 @@
+<%- | String $runner_bin,
+      Integer $max_seconds,
+| -%>
+#!/bin/bash
+#
+# Periodic puppet run for the reprovision-runner host.
+#
+# run-puppet.sh otherwise only runs at boot, and this host is rarely rebooted, so
+# relops-bootstrap merges never reached the runner: on 2026-09-24 it was still on
+# a checkout from 2026-08-19, 76 days into its uptime, silently running a
+# reprovision flow without the Screen Recording grant step.
+#
+# Skips while a job is in flight. Puppet restarts the runner when the
+# relops-bootstrap checkout moves, and launchd takes the job's `reprovision`
+# subprocess down with it -- mid-EACS, that strands the host. Each job is a child
+# process of the runner, so "the runner has children" is the in-flight test. A
+# job claimed in the few seconds between that check and the restart is killed at
+# its first step (quarantine), which is safe to re-run.
+
+set -u
+
+RUNNER_BIN="<%= $runner_bin %>"
+MAX_SECONDS=<%= $max_seconds %>
+LOCK_DIR=/var/run/reprovision-runner-self-update.lock
+
+log() { echo "$(/bin/date -u +%Y-%m-%dT%H:%M:%SZ) $*"; }
+
+# A lock left by a killed run would otherwise block every later one. /var/run is
+# cleared at boot, so this only matters within one uptime.
+if [ -d "$LOCK_DIR" ] && \
+   [ $(( $(/bin/date +%s) - $(/usr/bin/stat -f %m "$LOCK_DIR") )) -gt $(( MAX_SECONDS * 2 )) ]; then
+    log "removing stale lock"
+    /bin/rmdir "$LOCK_DIR"
+fi
+/bin/mkdir "$LOCK_DIR" 2>/dev/null || { log "previous update still running; skipping"; exit 0; }
+trap '/bin/rmdir "$LOCK_DIR"' EXIT
+
+runner_pid=$(/usr/bin/pgrep -f "$RUNNER_BIN" | /usr/bin/head -1)
+if [ -n "$runner_pid" ] && /usr/bin/pgrep -P "$runner_pid" >/dev/null; then
+    log "reprovision job in flight (runner pid ${runner_pid} has children); skipping"
+    exit 0
+fi
+
+# run-puppet.sh retries a failed apply every 60s forever, so bound it: a broken
+# apply must not hold the lock (and block every later update) indefinitely.
+log "runner idle; running puppet"
+/usr/local/bin/run-puppet.sh &
+puppet_pid=$!
+( /bin/sleep "$MAX_SECONDS"
+  log "run-puppet.sh exceeded ${MAX_SECONDS}s; stopping it"
+  /usr/bin/pkill -TERM -P "$puppet_pid"
+  kill -TERM "$puppet_pid" ) 2>/dev/null &
+watchdog=$!
+wait "$puppet_pid"
+rc=$?
+kill "$watchdog" 2>/dev/null
+wait "$watchdog" 2>/dev/null
+log "run-puppet.sh exited ${rc}"
+exit 0
