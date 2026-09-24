@@ -31,6 +31,10 @@ describe file('/usr/local/bin/check-screencapture-grant.sh') do
   # flags 12 is an MDM-managed row that TCC ignores; treating it as granted would
   # report a broken host as healthy.
   its(:content) { should match(/2\/12/) }
+  # /bin/bash is the failure-screenshot LaunchAgent. Without its grant every
+  # screenshot is wallpaper-only and nothing errors, so it must be checked like the
+  # worker binaries (RELOPS-2454).
+  its(:content) { should match(%r{^CLIENTS=\([^)]*^\s*/bin/bash\s*$[^)]*\)}m) }
 end
 
 # Running it is read-only and safe on any host, including under test-kitchen where
@@ -42,4 +46,13 @@ end
 describe command('/usr/bin/python3 -c "import json;d=json.load(open(\'/tmp/sc-grant-spec.json\'));print(d[\'schema\'],d[\'status\'])"') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match(/^1 (granted|not-granted)$/) }
+end
+
+# The status file must report /bin/bash alongside the worker binaries, so a host
+# whose screenshots are blank shows up in the JSON rather than reading healthy.
+describe command('/usr/bin/python3 -c "import json;print(\' \'.join(c[\'client\'] for c in json.load(open(\'/tmp/sc-grant-spec.json\'))[\'clients\']))"') do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match(%r{/usr/local/bin/generic-worker-multiuser}) }
+  its(:stdout) { should match(%r{/usr/local/bin/start-worker}) }
+  its(:stdout) { should match(%r{/bin/bash}) }
 end
