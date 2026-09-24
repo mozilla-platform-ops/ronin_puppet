@@ -66,6 +66,9 @@
 #   Also probe inside each VM (disk headroom, clock skew, worker identity). Needs an
 #   `expect` password login per VM and is much slower, hence opt-in — but these are the
 #   checks that catch a crash-looping guest under a healthy host.
+# @param self_update_interval
+#   Seconds between periodic run-puppet.sh runs, skipped while a reprovision job is in
+#   flight. Without it relops-bootstrap merges only reach the runner at boot. 0 disables.
 class reprovision_runner (
   Boolean                          $enabled        = false,
   String[1]                        $hangar_api_url = 'https://hangar.relops.mozilla.com/api',
@@ -86,6 +89,7 @@ class reprovision_runner (
   Array[Stdlib::Fqdn]              $tart_health_hosts    = [],
   Integer[60]                      $tart_health_interval = 600,
   Boolean                          $tart_health_guests   = false,
+  Integer[0]                       $self_update_interval = 3600,
 ) {
   if $enabled {
     $short_python  = split(String($python_version), '[.]')[0, 2].join('.')
@@ -460,6 +464,56 @@ class reprovision_runner (
         path        => ['/bin', '/usr/bin'],
         refreshonly => true,
         require     => [File[$tart_plist_path], Exec['reprovision_runner_pip_install']],
+      }
+    }
+
+    # ---- periodic self-update (run-puppet.sh, skipped while a job is in flight) ----
+    $update_label  = 'com.mozilla.reprovision-runner-self-update'
+    $update_plist  = "/Library/LaunchDaemons/${update_label}.plist"
+    $update_script = '/usr/local/bin/reprovision-runner-self-update.sh'
+
+    if $self_update_interval > 0 {
+      file { $update_script:
+        ensure  => file,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0755',
+        content => epp("${module_name}/reprovision-runner-self-update.sh.epp", {
+          runner_bin  => $runner_bin,
+          max_seconds => 1200,
+        }),
+      }
+
+      file { $update_plist:
+        ensure  => file,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0644',
+        content => epp("${module_name}/com.mozilla.reprovision-runner-self-update.plist.epp", {
+          label    => $update_label,
+          script   => $update_script,
+          interval => $self_update_interval,
+          log_dir  => $log_dir,
+        }),
+        require => [File[$update_script], File[$log_dir]],
+      }
+
+      # Load only when not already loaded. This daemon runs puppet, so a bootout
+      # during its own apply would kill that apply half-way; a changed interval
+      # therefore takes effect at the next boot (or a manual bootout/bootstrap).
+      exec { 'reprovision_runner_self_update_load':
+        command => "/bin/launchctl bootstrap system ${update_plist}",
+        unless  => "/bin/launchctl print system/${update_label}",
+        require => File[$update_plist],
+      }
+    } else {
+      exec { 'reprovision_runner_self_update_unload':
+        command => "/bin/launchctl bootout system/${update_label}",
+        onlyif  => "/bin/launchctl print system/${update_label}",
+      }
+      file { [$update_plist, $update_script]:
+        ensure  => absent,
+        require => Exec['reprovision_runner_self_update_unload'],
       }
     }
   }

@@ -21,6 +21,12 @@ See also: `relops-bootstrap/orchestrator/orchestrator/runner.py` and
 - A root-only (`0600`) env file the daemon sources: `HANGAR_API_URL`, `RUNNER_*`,
   and the `REPROVISION_*` creds
 - The mTLS client cert (see cert modes below)
+- A **self-update LaunchDaemon** (`com.mozilla.reprovision-runner-self-update`)
+  that runs `run-puppet.sh` every `self_update_interval` seconds (default 3600;
+  `0` disables), skipping any run while a reprovision job is in flight. Without
+  it the runner only picks up relops-bootstrap merges at boot. A changed interval
+  takes effect at the next boot, because reloading the daemon mid-apply would
+  kill its own puppet run.
 
 ## Cert modes
 
@@ -95,4 +101,4 @@ template used elsewhere).
 
 ## Logs
 
-`/var/log/reprovision-runner/{runner,certrenew}.{out,err}`
+`/var/log/reprovision-runner/{runner,certrenew}.{out,err}`, plus `self-update.log`
