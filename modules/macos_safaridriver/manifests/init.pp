@@ -10,7 +10,7 @@ class macos_safaridriver (
   case $facts['os']['name'] {
     'Darwin': {
       case $facts['os']['release']['major'] {
-        '19','20','21','22','23','24','25','26': {
+        '19','20','21','22','23','24','25','27': {
           $perm_script = '/usr/local/bin/add_tcc_perms.sh'
           $enable_script = '/usr/local/bin/safari-enable-remote-automation.sh'
           $tcc_script = '/usr/local/bin/tccutil.py'
@@ -49,7 +49,7 @@ class macos_safaridriver (
 
           # needs to be logged in as the user, doesn't work in CI (haven't rebooted yet)
           if $facts['running_in_test_kitchen'] != 'true' {
-            if $facts['os']['release']['major'] in ['23', '24', '25', '26'] {
+            if $facts['os']['release']['major'] in ['23', '24', '25', '27'] {
               # macOS 14/15/26/27: SIP is enabled on new hardware (e.g. M4 Mac Mini).
               # Running osascript via 'launchctl asuser sudo -u' does not grant full
               # GUI session access for accessibility, and the system TCC database is

@@ -32,9 +32,9 @@ class macos_screencapture_check (
 ) {
   if $enabled and $facts['os']['name'] == 'Darwin' {
     case $facts['os']['release']['major'] {
-      # Darwin 23/24/25/26 == macOS 14/15/26/27. Earlier releases predate both the
+      # Darwin 23/24/25/27 == macOS 14/15/26/27 (Darwin jumped to 27 with macOS 27). Earlier releases predate both the
       # SIP-on CI hardware and the Developer-ID-signed worker binaries.
-      '23', '24', '25', '26': {
+      '23', '24', '25', '27': {
         $check_script = '/usr/local/bin/check-screencapture-grant.sh'
 
         file { $check_script:
