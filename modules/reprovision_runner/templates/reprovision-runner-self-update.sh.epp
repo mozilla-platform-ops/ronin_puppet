@@ -54,5 +54,6 @@ watchdog=$!
 wait "$puppet_pid"
 rc=$?
 kill "$watchdog" 2>/dev/null
+wait "$watchdog" 2>/dev/null
 log "run-puppet.sh exited ${rc}"
 exit 0
