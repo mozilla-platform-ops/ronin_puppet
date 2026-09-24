@@ -50,6 +50,29 @@ class win_taskcluster::worker_runner (
   file { $worker_runner_dir:
     ensure => directory,
   }
+  if $provider == 'standalone' and $preloaded_caches != [] {
+    # Generic Worker uses its working directory for directory-caches.json.
+    # Worker Runner uses this directory as its AppDirectory and passes it to
+    # Generic Worker. Keep the initial seed state after Generic Worker writes
+    # its live state at the end of the first task.
+    $directory_cache_state = $preloaded_caches.reduce({}) |$state, $cache| {
+      $state + {
+        $cache['cacheName'] => [
+          {
+            'key'      => $cache['cacheName'],
+            'location' => $cache['location'],
+          },
+        ],
+      }
+    }
+    file { "${worker_runner_dir}\\directory-caches.json":
+      ensure  => file,
+      content => to_json($directory_cache_state),
+      owner   => 'SYSTEM',
+      replace => false,
+      require => File[$worker_runner_dir],
+    }
+  }
   file { $runner_exe_path:
     source => $runner_exe_source,
   }
