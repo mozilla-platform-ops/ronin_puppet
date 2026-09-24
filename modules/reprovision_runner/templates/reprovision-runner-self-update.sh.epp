@@ -27,8 +27,13 @@ log() { echo "$(/bin/date -u +%Y-%m-%dT%H:%M:%SZ) $*"; }
 
 # A lock left by a killed run would otherwise block every later one. /var/run is
 # cleared at boot, so this only matters within one uptime.
-# BSD stat on the host; GNU stat keeps the test in pre-commit CI working.
-lock_mtime() { /usr/bin/stat -f %m "$1" 2>/dev/null || /usr/bin/stat -c %Y "$1"; }
+# GNU `stat -c` first: BSD stat (the host) rejects -c, while GNU `stat -f` does not
+# fail but prints a filesystem report. GNU keeps the test in pre-commit CI working.
+lock_mtime() {
+    local m
+    m=$(/usr/bin/stat -c %Y "$1" 2>/dev/null) || m=$(/usr/bin/stat -f %m "$1" 2>/dev/null)
+    case "$m" in ''|*[!0-9]*) /bin/date +%s ;; *) echo "$m" ;; esac
+}
 if [ -d "$LOCK_DIR" ] && \
    [ $(( $(/bin/date +%s) - $(lock_mtime "$LOCK_DIR") )) -gt $(( MAX_SECONDS * 2 )) ]; then
     log "removing stale lock"
