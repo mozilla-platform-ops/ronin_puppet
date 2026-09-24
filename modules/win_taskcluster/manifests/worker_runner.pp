@@ -35,6 +35,10 @@ class win_taskcluster::worker_runner (
   $worker_id             = undef,
   $worker_group          = undef,
   $worker_pool_id        = undef,
+  Array[Struct[{
+    'cacheName' => String,
+    'location'  => String,
+  }]] $preloaded_caches = [],
   $wstaudience           = undef,
   $wstserverurl          = undef
 ) {

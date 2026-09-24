@@ -15,6 +15,13 @@ worker:
     configPath: <%= $win_taskcluster::worker_runner::config_file %>
 workerConfig:
   cachesDir: "<%= $win_taskcluster::worker_runner::cache_dir %>"
+<% if $win_taskcluster::worker_runner::preloaded_caches != [] { -%>
+  preloadedDirectoryCaches:
+<% $win_taskcluster::worker_runner::preloaded_caches.each |$cache| { -%>
+    - cacheName: <%= $cache['cacheName'] %>
+      location: '<%= $cache['location'] %>'
+<% } -%>
+<% } -%>
   cleanUpTaskDirs: true
   disableReboots: false
   disableOOMProtection: true

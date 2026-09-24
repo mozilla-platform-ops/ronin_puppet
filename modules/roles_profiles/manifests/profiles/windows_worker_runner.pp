@@ -89,6 +89,10 @@ class roles_profiles::profiles::windows_worker_runner {
           $livelog_exe           = "${facts['custom_win_systemdrive']}\\\\generic-worker\\\\livelog.exe"
           $location              = $facts['custom_win_location']
           $provisioner           = 'releng-hardware'
+          $preloaded_caches = lookup(
+            'windows.taskcluster.preloaded_directory_caches',
+            { 'default_value' => [] },
+          )
           $root_url              = lookup('windows.taskcluster.root_url')
           $task_dir              = "${facts['custom_win_systemdrive']}\\\\"
           $task_user_init_cmd    = "${generic_worker_dir}\\\\task-user-init.cmd"
@@ -110,6 +114,7 @@ class roles_profiles::profiles::windows_worker_runner {
           $livelog_exe           = undef
           $location              = undef
           $provisioner           = undef
+          $preloaded_caches = []
           $root_url              = undef
           $task_dir              = undef
           $task_user_init_cmd    = undef
@@ -176,6 +181,7 @@ class roles_profiles::profiles::windows_worker_runner {
         worker_id             => $worker_id,
         worker_group          => $worker_group,
         worker_pool_id        => $worker_pool_id,
+        preloaded_caches      => $preloaded_caches,
         wstaudience           => $wstaudience,
         wstserverurl          => $wstserverurl,
       }
