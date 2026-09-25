@@ -1,0 +1,33 @@
+Windows Registry Editor Version 5.00
+
+; Disable "Windows Defender" services.
+[HKEY_LOCAL_MACHINE\System\ControlSet001\Services\WinDefend]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet002\Services\WinDefend]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WinDefend]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet001\Services\WdBoot]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet002\Services\WdBoot]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WdBoot]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet001\Services\WdFilter]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet002\Services\WdFilter]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WdFilter]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet001\Services\WdNisDrv]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet002\Services\WdNisDrv]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WdNisDrv]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet001\Services\WdNisSvc]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\ControlSet002\Services\WdNisSvc]
+"Start"=dword:00000004
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WdNisSvc]
+"Start"=dword:00000004

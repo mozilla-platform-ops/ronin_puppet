@@ -138,6 +138,15 @@ public class AdjustPrivilege {
     $type[0]::EnablePrivilege($processHandle, $privilege, $disable)
 }
 
+function getKeyNames {
+    param(
+        [parameter(mandatory = $true)]
+        [string[]] $filePaths = $null
+    )
+
+    return (get-content $filePaths | select-string -pattern "\[\-?(.*)\]" -allMatches | forEach-object {$_.matches.groups[1].value} | get-unique)
+}
+
 function splitKeyName {
     param(
         [parameter(mandatory = $true)]
@@ -245,3 +254,17 @@ function requestPrivileges {
         exit 1
     }
 }
+
+function main {
+    param(
+        [parameter(mandatory = $true)]
+        [string[]] $filePaths = $null
+    )
+
+    requestPrivileges
+
+    $keyNames = getKeyNames -filePaths $filePaths
+    ownRegistryKeys -keyNames $keyNames
+}
+
+main $args
