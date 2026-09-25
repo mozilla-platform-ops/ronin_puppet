@@ -29,8 +29,29 @@ execute_query() {
 }
 
 SEMAPHORE_FILE="/var/tmp/semaphore/tcc-perms-applied"
+
+# cltbld's per-user TCC database. macOS 27 moved it out of ~/Library into a
+# containermanagerd data container that tccd owns, e.g.
+#   /private/var/containers/Data/ProtectedSystem/<UUID>/Data/Library/Application Support/com.apple.TCC/TCC.db
+# and migrates the old DB there on first boot; the legacy path is never
+# recreated. Prefer the container whenever it exists -- a leftover legacy file
+# on 27 would accept writes that tccd ignores -- and fall back to the legacy
+# path on 14/15/26.
+resolve_user_tcc_db() {
+    local legacy="/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db"
+    local container
+    container=$(find /private/var/containers/Data/ProtectedSystem \
+        -path "*/Data/Library/Application Support/com.apple.TCC/TCC.db" \
+        -user cltbld 2>/dev/null | head -n 1)
+    if [ -n "$container" ]; then
+        echo "$container"
+    else
+        echo "$legacy"
+    fi
+}
+
 # Overridable so the defer path can be exercised without a SIP-on host.
-: "${USER_TCC_DB:=/Users/cltbld/Library/Application Support/com.apple.TCC/TCC.db}"
+: "${USER_TCC_DB:=$(resolve_user_tcc_db)}"
 
 # How long to wait for cltbld's user TCC database to become writable before
 # giving up and deferring to a later puppet run.
@@ -186,7 +207,7 @@ queries_11_12_13=(
 # macOS 14/15 user-DB entries — written on every host. Root can always
 # write user TCC DBs in cltbld's home regardless of SIP state.
 queries_14_user=(
-    "REPLACE INTO access VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
+    "REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceAppleEvents','/usr/libexec/sshd-keygen-wrapper',1,2,3,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'com.apple.systemevents',X'fade0c000000003400000001000000060000000200000016636f6d2e6170706c652e73797374656d6576656e7473000000000003',NULL,1724935189,NULL,NULL,'UNUSED',1724935189);"
 )
 
 # macOS 14/15 system-DB entries — written ONLY when SIP is disabled.
@@ -195,10 +216,10 @@ queries_14_user=(
 # sshd-keygen-wrapper). ScreenCapture cannot be expressed in PPPC on
 # macOS 15 (ErrorCode 22), so it stays SIP-off-only here.
 queries_14_system=(
-    "REPLACE INTO access VALUES('kTCCServiceScreenCapture','/bin/bash',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e62617368000000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',0);"
-    "REPLACE INTO access VALUES('kTCCServiceScreenCapture','com.apple.Terminal',0,2,4,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'UNUSED',NULL,0,1712861890,NULL,NULL,'UNUSED',0);"
-    "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355061,NULL,NULL,'UNUSED',1710355061);"
-    "REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/usr/sbin/sshd',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e73736864000000000003',NULL,0,'UNUSED',NULL,0,1712862105,NULL,NULL,'UNUSED',0);"
+    "REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceScreenCapture','/bin/bash',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e62617368000000000003',NULL,0,'UNUSED',NULL,0,1712861877,NULL,NULL,'UNUSED',0);"
+    "REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceScreenCapture','com.apple.Terminal',0,2,4,1,X'fade0c000000003000000001000000060000000200000012636f6d2e6170706c652e5465726d696e616c000000000003',NULL,0,'UNUSED',NULL,0,1712861890,NULL,NULL,'UNUSED',0);"
+    "REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceSystemPolicyAllFiles','/usr/libexec/sshd-keygen-wrapper',1,2,4,1,X'fade0c000000003c0000000100000006000000020000001d636f6d2e6170706c652e737368642d6b657967656e2d7772617070657200000000000003',NULL,0,'UNUSED',NULL,0,1710355061,NULL,NULL,'UNUSED',1710355061);"
+    "REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceSystemPolicyAllFiles','/usr/sbin/sshd',1,2,4,1,X'fade0c000000002c0000000100000006000000020000000e636f6d2e6170706c652e73736864000000000003',NULL,0,'UNUSED',NULL,0,1712862105,NULL,NULL,'UNUSED',0);"
 )
 
 # Dynamically-csreq'd entries for ad-hoc-signed worker binaries. Microphone
@@ -211,20 +232,20 @@ start_worker_csreq=$(csreq_for_binary /usr/local/bin/start-worker)
 gw_multiuser_csreq=$(csreq_for_binary /usr/local/bin/generic-worker-multiuser)
 
 if [ -n "$start_worker_csreq" ]; then
-    queries_14_user+=("REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,${start_worker_csreq},NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);")
+    queries_14_user+=("REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceMicrophone','/usr/local/bin/start-worker',1,2,2,1,${start_worker_csreq},NULL,NULL,'UNUSED',NULL,0,1733939621,NULL,NULL,'UNUSED',0);")
     if [ "$SIP_DISABLED" = "true" ]; then
-        queries_14_system+=("REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/start-worker',1,2,4,1,${start_worker_csreq},NULL,0,'UNUSED',NULL,0,1733939636,NULL,NULL,'UNUSED',0);")
+        queries_14_system+=("REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceScreenCapture','/usr/local/bin/start-worker',1,2,4,1,${start_worker_csreq},NULL,0,'UNUSED',NULL,0,1733939636,NULL,NULL,'UNUSED',0);")
     else
-        queries_14_user+=("REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/start-worker',1,2,4,1,${start_worker_csreq},NULL,0,'UNUSED',NULL,0,1733939636,NULL,NULL,'UNUSED',0);")
+        queries_14_user+=("REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceScreenCapture','/usr/local/bin/start-worker',1,2,4,1,${start_worker_csreq},NULL,0,'UNUSED',NULL,0,1733939636,NULL,NULL,'UNUSED',0);")
     fi
 fi
 
 if [ -n "$gw_multiuser_csreq" ]; then
-    queries_14_user+=("REPLACE INTO access VALUES('kTCCServiceMicrophone','/usr/local/bin/generic-worker-multiuser',1,2,2,1,${gw_multiuser_csreq},NULL,NULL,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
+    queries_14_user+=("REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceMicrophone','/usr/local/bin/generic-worker-multiuser',1,2,2,1,${gw_multiuser_csreq},NULL,NULL,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
     if [ "$SIP_DISABLED" = "true" ]; then
-        queries_14_system+=("REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/generic-worker-multiuser',1,2,4,1,${gw_multiuser_csreq},NULL,0,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
+        queries_14_system+=("REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceScreenCapture','/usr/local/bin/generic-worker-multiuser',1,2,4,1,${gw_multiuser_csreq},NULL,0,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
     else
-        queries_14_user+=("REPLACE INTO access VALUES('kTCCServiceScreenCapture','/usr/local/bin/generic-worker-multiuser',1,2,4,1,${gw_multiuser_csreq},NULL,0,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
+        queries_14_user+=("REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES('kTCCServiceScreenCapture','/usr/local/bin/generic-worker-multiuser',1,2,4,1,${gw_multiuser_csreq},NULL,0,'UNUSED',NULL,0,1776863417,NULL,NULL,'UNUSED',0);")
     fi
 fi
 
@@ -241,7 +262,7 @@ elif [[ "$macos_major_version" -eq 11 || "$macos_major_version" -eq 12 || "$maco
     for query in "${queries_11_12_13[@]}"; do
         execute_query "/Library/Application Support/com.apple.TCC/TCC.db" "$query"
     done
-elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 || "$macos_major_version" -eq 26 ]]; then
+elif [[ "$macos_major_version" -eq 14 || "$macos_major_version" -eq 15 || "$macos_major_version" -eq 26 || "$macos_major_version" -eq 27 ]]; then
     wait_for_user_db_or_defer
     for query in "${queries_14_user[@]}"; do
         execute_query "$USER_TCC_DB" "$query"

@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class roles_profiles::roles::gecko_t_osx_2600_m4 {
+class roles_profiles::roles::gecko_t_osx_2700_m4 {
   include macos_utils::disable_bluetooth_setup
   include macos_utils::always_show_scroll_bars
   include macos_utils::suppress_keyboard_assistant
