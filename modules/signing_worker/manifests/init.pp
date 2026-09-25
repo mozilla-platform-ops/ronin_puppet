@@ -14,6 +14,7 @@ define signing_worker (
   String $keychain_filename,
   Hash $worker_config,
   Hash $role_config,
+  String $python_version,
   Variant[String, Undef] $widevine_user = undef,
   Variant[String, Undef] $widevine_key = undef,
   Variant[String, Undef] $widevine_filename = undef,
@@ -30,6 +31,8 @@ define signing_worker (
   $scriptworker_wrapper     = "${scriptworker_base}/scriptworker_wrapper.sh"
   $launchctl_wrapper        = "${scriptworker_base}/launchctl_wrapper.sh"
   $enable_scriptworker      = "${scriptworker_base}/enable_scriptworker.sh"
+  $launchd_script_name      = "org.mozilla.scriptworker.${user}"
+  $launchd_script           = "/Library/LaunchDaemons/${launchd_script_name}.plist"
 
   # TODO: $worker_{id,type,group} only works with newer signers
   # Dep workers have a non-deterministic suffix
@@ -112,13 +115,46 @@ define signing_worker (
   # 3) Install iscript and its dependencies
   $scriptworker_scripts_clone_dir = "${scriptworker_base}/scriptworker-scripts"
 
+  # uv resolves the interpreter when it builds a venv, recording the
+  # patch-specific prefix rather than the /usr/local/bin/python3 symlink that
+  # points at it. So this one check covers a python upgrade, a downgrade, and a
+  # base interpreter that has been deleted out from under the venv: in each case
+  # the venv is rebuilt rather than left stale, which is what lets a python bump
+  # be a one-line hiera change.
+  # The /bin/test -x prefix is load-bearing, not defensive. Puppet's posix exec
+  # provider resolves the first token of a guard and fails the whole resource
+  # with "Could not find command" when that token is an absolute path that does
+  # not exist - so leading with ${virtualenv_dir}/bin/python errors out in
+  # exactly the two states this is meant to detect: no venv yet on a fresh
+  # signer, and a venv whose interpreter symlink is dangling. Leading with a
+  # binary that always exists lets the guard return false and the rebuild run.
+  # Absolute /usr/bin/grep because this string guards two execs whose $path
+  # arrays differ, and the venv one does not carry /usr/bin.
+  $venv_python_matches = "/bin/test -x ${virtualenv_dir}/bin/python && ${virtualenv_dir}/bin/python -V | /usr/bin/grep -qFx 'Python ${python_version}'"
+
+  # launchd has to let go of the venv before it is replaced. The daemon is
+  # KeepAlive, so stopping scriptworker any other way just has launchd restart it
+  # on a venv that is being rebuilt underneath it. Runs as root, because the
+  # daemon is in the system domain and $user cannot unload it.
+  exec { "stop scriptworker ${scriptworker_base}":
+    command => "/bin/launchctl unload ${launchd_script}",
+    onlyif  => "/bin/launchctl list | grep -qwF ${launchd_script_name}",
+    unless  => $venv_python_matches,
+    path    => ['/bin', '/usr/bin'],
+  }
+
+  # --clear rebuilds in place, so this covers both the first install and a
+  # replacement. --no-python-downloads stops uv from quietly fetching its own
+  # copy of $python_version into the worker's home when the pinned interpreter is
+  # not installed: it fails the run instead, and leaves the existing venv alone.
   exec { "install ${scriptworker_base} virtualenv":
-    command => 'uv venv',
+    command => "uv venv --python ${python_version} --no-python-downloads --clear",
     cwd     => $scriptworker_base,
     user    => $user,
     group   => $group,
-    onlyif  => 'test ! -f .venv/bin/activate',
+    unless  => $venv_python_matches,
     path    => ['/usr/local/bin', '/bin', '/usr/sbin'],
+    require => [File[$scriptworker_base], Exec["stop scriptworker ${scriptworker_base}"]],
   }
 
   vcsrepo { $scriptworker_scripts_clone_dir:
@@ -146,6 +182,28 @@ define signing_worker (
     subscribe   => $ss_deps,
     require     => $ss_deps,
     path        => ['/usr/local/bin', '/bin', '/usr/sbin'],
+    timeout     => 900,
+  }
+
+  # Repairs a venv that has no scriptworker in it. A run interrupted between
+  # `uv venv --clear` and a completed sync leaves exactly that, and the venv
+  # rebuild's version guard treats it as finished, so nothing else ever notices.
+  #
+  # It has to be a second exec. The sync above is refreshonly because a revision
+  # bump must re-sync even when scriptworker is already installed, and puppet's
+  # refresh honours unless - so one guarded exec would skip that bump.
+  exec { "repair ${scriptworker_base} iscript":
+    command     => 'uv sync --active --locked --inexact --package iscript --extra scriptworker',
+    cwd         => $scriptworker_scripts_clone_dir,
+    environment => [
+      "VIRTUAL_ENV=${scriptworker_base}/.venv",
+    ],
+    user        => $user,
+    group       => $group,
+    unless      => "/bin/test -x ${virtualenv_dir}/bin/scriptworker",
+    path        => ['/usr/local/bin', '/bin', '/usr/sbin'],
+    timeout     => 900,
+    require     => Exec["install ${scriptworker_base} iscript"],
   }
 
   if $widevine_filename {
@@ -225,8 +283,6 @@ define signing_worker (
     group   => $group,
   }
 
-  $launchd_script_name = "org.mozilla.scriptworker.${user}"
-  $launchd_script = "/Library/LaunchDaemons/${launchd_script_name}.plist"
   file { $launchd_script:
     content => template('signing_worker/org.mozilla.scriptworker.plist.erb'),
     mode    => '0644',
@@ -252,6 +308,30 @@ define signing_worker (
       File[$launchctl_wrapper],
       File[$scriptworker_config_file],
       File[$scriptworker_wrapper],
+    ],
+  }
+
+  # Loads the daemon whenever an enabled worker has a scriptworker to run but is
+  # not listed. Every other route back up from the unload goes through
+  # refreshonly edges, so this is the one that converges rather than reacting.
+  #
+  # Without it, a run that dies between the unload and a completed sync stops
+  # the signer for good: on the next run the stop exec's onlyif is false
+  # (already unloaded) and the venv guard is true (already rebuilt), so nothing
+  # fires and puppet reports green over an offline host.
+  #
+  # onlyif tests the binary, so a half-built venv is never loaded into a
+  # KeepAlive crash loop.
+  exec { "ensure scriptworker loaded ${scriptworker_base}":
+    command => "/bin/bash ${launchctl_wrapper}",
+    onlyif  => "/bin/test -f ${scriptworker_base}/.enabled && /bin/test -x ${virtualenv_dir}/bin/scriptworker",
+    unless  => "/bin/launchctl list | /usr/bin/grep -qwF ${launchd_script_name}",
+    path    => ['/bin', '/usr/bin'],
+    require => [
+      File[$launchctl_wrapper],
+      File[$launchd_script],
+      Exec["repair ${scriptworker_base} iscript"],
+      Exec["${user}_launchctl_load"],
     ],
   }
 }
