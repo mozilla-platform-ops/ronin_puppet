@@ -52,6 +52,7 @@ packages_classes:
   - python3_pyobjc
   - python3_yaml
   - python3_zstandard
+  - rosetta_2
   - safari_preview
   - scres
   - telegraf
