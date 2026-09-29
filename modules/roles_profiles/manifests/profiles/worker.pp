@@ -80,22 +80,28 @@ class roles_profiles::profiles::worker {
       # so vault's hash wins and a sub-key present only in role data is invisible.
       $purge_metal_shader_cache = lookup('purge_metal_shader_cache', Boolean, 'first', false)
 
+      # Clear the task user's Firefox Application Support between tasks, opt-in per
+      # role (bug 2046807). Top-level role key for the same reason as the lookups
+      # above.
+      $purge_firefox_app_support = lookup('purge_firefox_app_support', Boolean, 'first', false)
+
       class { 'worker_runner':
-        taskcluster_version      => $taskcluster_version,
-        signed_binaries          => $signed_binaries,
-        provider_type            => lookup('worker.provider_type'),
-        root_url                 => 'https://firefox-ci-tc.services.mozilla.com',
-        client_id                => lookup('worker.client_id'),
-        access_token             => lookup('worker.access_token'),
-        worker_pool_id           => lookup('worker.worker_pool_id'),
-        worker_group             => lookup('worker.worker_group'),
-        worker_id                => lookup('worker.worker_id'),
-        generic_worker_engine    => $generic_worker_engine,
-        idle_timeout_secs        => lookup('worker.idle_timeout_secs'),
-        task_user_password       => $task_user_password,
-        reclaim_free_space_gb    => $reclaim_free_space_gb,
-        post_task_action         => $post_task_action,
-        purge_metal_shader_cache => $purge_metal_shader_cache,
+        taskcluster_version       => $taskcluster_version,
+        signed_binaries           => $signed_binaries,
+        provider_type             => lookup('worker.provider_type'),
+        root_url                  => 'https://firefox-ci-tc.services.mozilla.com',
+        client_id                 => lookup('worker.client_id'),
+        access_token              => lookup('worker.access_token'),
+        worker_pool_id            => lookup('worker.worker_pool_id'),
+        worker_group              => lookup('worker.worker_group'),
+        worker_id                 => lookup('worker.worker_id'),
+        generic_worker_engine     => $generic_worker_engine,
+        idle_timeout_secs         => lookup('worker.idle_timeout_secs'),
+        task_user_password        => $task_user_password,
+        reclaim_free_space_gb     => $reclaim_free_space_gb,
+        post_task_action          => $post_task_action,
+        purge_metal_shader_cache  => $purge_metal_shader_cache,
+        purge_firefox_app_support => $purge_firefox_app_support,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc

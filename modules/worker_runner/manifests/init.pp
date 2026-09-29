@@ -62,6 +62,14 @@ class worker_runner (
     # false (the default) renders worker-runner.sh exactly as it did before this
     # landed.
     Boolean $purge_metal_shader_cache                                      = false,
+    # Remove the task user's ~/Library/Application Support/Firefox at every worker
+    # start. With a task user that persists across tasks it accumulates profiles,
+    # and background task profiles stamped by a version-bump try push make every
+    # later task on the host fail downgrade protection (bug 2046807).
+    #
+    # false (the default) renders worker-runner.sh exactly as it did before this
+    # landed.
+    Boolean $purge_firefox_app_support                                     = false,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -174,6 +182,9 @@ class worker_runner (
             # instead of quietly rendering a no-op.
             if $purge_metal_shader_cache and $generic_worker_engine == 'multiuser' {
                 fail("[${module_name}] purge_metal_shader_cache needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Metal cache is already empty")
+            }
+            if $purge_firefox_app_support and $generic_worker_engine == 'multiuser' {
+                fail("[${module_name}] purge_firefox_app_support needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Application Support is already empty")
             }
 
             # Install binaries directly from GitHub releases, except any the role

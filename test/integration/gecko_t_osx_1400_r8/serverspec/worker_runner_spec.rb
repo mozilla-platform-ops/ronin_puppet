@@ -50,3 +50,10 @@ describe "#{WORKER_RUNNER_SH} executable lines" do
     expect(code).not_to match(%r{find\s+/private/var/folders})
   end
 end
+
+# Bug 2046807: the task user's Firefox Application Support is cleared before every
+# task. Opted in via the top-level `purge_firefox_app_support` key, so this also
+# catches the key being shadowed by vault's `worker:` hash.
+describe file(WORKER_RUNNER_SH) do
+  its(:content) { should match(%r{^ff_app_support="/Users/cltbld/Library/Application Support/Firefox"$}) }
+end
