@@ -8,7 +8,6 @@ class roles_profiles::roles::win20256424h2azure {
       include roles_profiles::profiles::azure_vm_file_system
       include roles_profiles::profiles::error_reporting
       include roles_profiles::profiles::files_system_managment
-      ## Installs the NVIDIA GRID driver only on pools with gpu in the name
       include roles_profiles::profiles::gpu_drivers
       include roles_profiles::profiles::logging
       include roles_profiles::profiles::mozbuild_post_boostrap
@@ -28,7 +27,6 @@ class roles_profiles::roles::win20256424h2azure {
       include roles_profiles::profiles::power_management
       include roles_profiles::profiles::scheduled_tasks
       include roles_profiles::profiles::azure_vm_agent
-      ## Caches the NVIDIA GRID driver installer in the image
       include roles_profiles::profiles::gpu_drivers
       include roles_profiles::profiles::logging
       include roles_profiles::profiles::mercurial
