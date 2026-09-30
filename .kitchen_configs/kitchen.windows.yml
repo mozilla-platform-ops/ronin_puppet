@@ -93,7 +93,7 @@ platforms:
       azure_resource_group_name: ronin-puppet-test-kitchen-win2022-64-2009
       use_ephemeral_osdisk: false
   - name: win2025-64-24h2
-    driver:
+    driver: &win2025_driver
       <<: *windows_driver_defaults
       machine_size: 'Standard_D32ads_v7'
       spot_instance: true
@@ -108,7 +108,7 @@ platforms:
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
         winrm set winrm/config/service/auth '@{Negotiate="false"}'
-    transport:
+    transport: &win2025_transport
       operation_timeout: 3600
       receive_timeout: 3610
   - name: win10-64-2009
@@ -129,7 +129,7 @@ platforms:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
         worker-pool-id: <%= ENV['WORKER_POOL_ID'] %>
-    lifecycle:
+    lifecycle: &gpu_reboot_lifecycle
       post_converge:
         - remote: shutdown.exe /r /t 5 /f
       pre_verify:
@@ -150,6 +150,19 @@ platforms:
               sleep 10
             done
             exit 1
+  - name: win2025-64-24h2-gpu
+    driver:
+      <<: *win2025_driver
+      location: 'West US 3'
+      machine_size: 'Standard_NV12ads_A10_v5'
+      spot_instance: false
+      azure_resource_group_name: ronin-puppet-test-kitchen-win2025-64-24h2-gpu
+      vm_tags:
+        owner: relops@mozilla.com
+        provisioner: test-kitchen-azurerm
+        worker-pool-id: <%= ENV['WORKER_POOL_ID'] %>
+    transport: *win2025_transport
+    lifecycle: *gpu_reboot_lifecycle
 
 suites:
   - name: windows
@@ -170,5 +183,6 @@ suites:
       - win11-a64-25h2-tester
       - win2022-64-2009
       - win2025-64-24h2
+      - win2025-64-24h2-gpu
       - win10-64-2009
       - win10-64-2009-gpu
