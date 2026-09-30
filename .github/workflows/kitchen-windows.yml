@@ -43,6 +43,9 @@ jobs:
           - role: win20256424h2azure
             worker_pool_id: b-win2025
             kitchen_instance: windows-win2025-64-24h2
+          - role: win20256424h2azure
+            worker_pool_id: b-win2025-gpu
+            kitchen_instance: windows-win2025-64-24h2-gpu
           - role: win10642009azure
             worker_pool_id: win10-64-2009
             kitchen_instance: windows-win10-64-2009
