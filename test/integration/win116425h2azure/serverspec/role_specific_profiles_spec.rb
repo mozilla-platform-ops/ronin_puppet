@@ -4,7 +4,7 @@ x64_virtual_audio_role = %w[win116424h2azure win116425h2azure].include?(ROLE_NAM
 
 if WORKER_FUNCTION == 'tester'
   driver_name = expected_hiera_value('gpu', 'name')
-  driver_installer = "C:\\Windows\\Temp\\#{driver_name}.exe"
+  driver_installer = "C:\\RoninPackages\\#{driver_name}.exe"
 
   describe file(driver_installer) do
     it { should exist }
@@ -19,13 +19,13 @@ if WORKER_FUNCTION == 'tester'
 
   describe powershell_command(<<~POWERSHELL) do
     $driverName = 'ronin_puppet_offline_nvidia_grid_test'
-    $driverPath = "C:\\Windows\\Temp\\$driverName.exe"
+    $driverPath = "$env:SystemDrive\\RoninPackages\\$driverName.exe"
     $manifestPath = "C:\\Windows\\Temp\\$driverName.pp"
     $puppetLog = "C:\\Windows\\Temp\\$driverName.log"
     Set-Content -Path $driverPath -Value 'preseeded installer' -NoNewline -Encoding ASCII
     try {
       $env:FACTER_custom_win_gpu = 'no'
-      $env:FACTER_custom_win_temp_dir = 'C:\\Windows\\Temp'
+      $env:FACTER_custom_win_systemdrive = $env:SystemDrive
       $env:NO_COLOR = '1'
       $puppet = Join-Path ${env:ProgramFiles} 'Puppet Labs\\Puppet\\bin\\puppet.bat'
       if (-not (Test-Path $puppet)) {
@@ -50,6 +50,9 @@ class { 'win_packages::drivers::nvidia_grid':
           $puppetOutput -replace "$([char]27)\[[0-9;]*[A-Za-z]", '' | Write-Output
         }
         exit $puppetExitCode
+      }
+      if ((Get-Content -LiteralPath $driverPath -Raw) -ne 'preseeded installer') {
+        throw 'Cached NVIDIA installer was not preserved.'
       }
     }
     finally {

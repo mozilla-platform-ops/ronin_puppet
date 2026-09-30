@@ -5,7 +5,7 @@ x64_virtual_audio_role = %w[win116424h2azure win116425h2azure].include?(ROLE_NAM
 if WORKER_FUNCTION == 'tester'
   driver_name = expected_hiera_value('gpu', 'name')
 
-  describe file("C:\\Windows\\Temp\\#{driver_name}.exe") do
+  describe file("C:\\RoninPackages\\#{driver_name}.exe") do
     it { should exist }
   end
 end

@@ -6,11 +6,7 @@ class win_packages::staging {
   $path = "${facts['custom_win_systemdrive']}\\RoninPackages"
 
   file { $path:
-    ensure  => directory,
-    recurse => true,
-    purge   => true,
-    force   => true,
-    backup  => false,
+    ensure => directory,
   }
   acl { $path:
     owner                      => 'S-1-5-18',
