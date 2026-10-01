@@ -85,6 +85,10 @@ class roles_profiles::profiles::worker {
       # above.
       $purge_firefox_app_support = lookup('purge_firefox_app_support', Boolean, 'first', false)
 
+      # Turn off live logs, opt-in per role (set on the level 3 roles). TOP-LEVEL
+      # role key for the same reason as the lookups above.
+      $disable_livelog = lookup('disable_livelog', Boolean, 'first', false)
+
       class { 'worker_runner':
         taskcluster_version       => $taskcluster_version,
         signed_binaries           => $signed_binaries,
@@ -102,6 +106,7 @@ class roles_profiles::profiles::worker {
         post_task_action          => $post_task_action,
         purge_metal_shader_cache  => $purge_metal_shader_cache,
         purge_firefox_app_support => $purge_firefox_app_support,
+        disable_livelog           => $disable_livelog,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc

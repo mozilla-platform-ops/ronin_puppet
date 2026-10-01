@@ -70,6 +70,13 @@ class worker_runner (
     # false (the default) renders worker-runner.sh exactly as it did before this
     # landed.
     Boolean $purge_firefox_app_support                                     = false,
+    # Point generic-worker's livelog at /bin/false so no live log is served.
+    # Level 3 workers shouldn't expose live logs; this matches the
+    # linux-d2g-trusted pools in fxci-config. generic-worker treats livelog as
+    # best effort, so tasks still run and upload live_backing.log as usual. Used
+    # instead of enableLiveLog because that key only exists from v77.0.0 and
+    # older generic-workers reject unknown config keys.
+    Boolean $disable_livelog                                               = false,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
