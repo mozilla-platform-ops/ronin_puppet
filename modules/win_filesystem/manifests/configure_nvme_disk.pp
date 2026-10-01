@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_filesystem::configure_nvme_disk {
+class win_filesystem::configure_nvme_disk (
+  Boolean $work_volume = false,
+) {
   include win_shared::win_ronin_dirs
 
   $configure_nvme_disk_ps1 = sprintf('%s\\configure_nvme_disk.ps1', $facts['custom_win_roninprogramdata'])
@@ -13,9 +15,17 @@ class win_filesystem::configure_nvme_disk {
     require => Class['win_shared::win_ronin_dirs'],
   }
 
-  exec { 'configure_nvme_disk':
-    command  => sprintf("& '%s'", $configure_nvme_disk_ps1),
-    provider => powershell,
-    require  => File[$configure_nvme_disk_ps1],
+  if $work_volume {
+    file { "${facts['custom_win_roninprogramdata']}\\configure_work_volume.ps1":
+      ensure  => file,
+      content => file('win_filesystem/configure_work_volume.ps1'),
+      require => Class['win_shared::win_ronin_dirs'],
+    }
+  } else {
+    exec { 'configure_nvme_disk':
+      command  => sprintf("& '%s'", $configure_nvme_disk_ps1),
+      provider => powershell,
+      require  => File[$configure_nvme_disk_ps1],
+    }
   }
 }

@@ -17,7 +17,7 @@ if TASK_DRIVE == 'C:'
     its(:stdout) { should_not match(/D:\\/i) }
   end
 
-  { 'tasks' => 'Users', 'caches' => 'caches', 'downloads' => 'downloads' }.each do |setting, directory|
+  { 'tasks' => (ROLE_DATA.fetch('windows_work_volume', false) ? 'tasks' : 'Users'), 'caches' => 'caches', 'downloads' => 'downloads' }.each do |setting, directory|
     describe file('C:\\worker-runner\\runner.yml') do
       its(:content) { should match(/^\s+#{setting}Dir: 'C:\\#{directory}'\s*$/) }
     end

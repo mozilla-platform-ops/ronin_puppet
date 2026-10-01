@@ -7,10 +7,13 @@ worker:
     configPath: <%= $win_taskcluster::worker_runner::config_file %>
 cacheOverRestarts: true
 <% if $win_taskcluster::worker_runner::task_drive { -%>
-<% # Keep AppData inside the user profile on C: (bug 1338602).
-  $tasks_dir = $win_taskcluster::worker_runner::task_drive ? {
-    'C:'    => 'C:\Users',
-    default => 'D:\tasks',
+<% if $win_taskcluster::worker_runner::work_volume {
+    $tasks_dir = 'C:\tasks'
+  } else {
+    $tasks_dir = $win_taskcluster::worker_runner::task_drive ? {
+      'C:'    => 'C:\Users',
+      default => 'D:\tasks',
+    }
   }
 -%>
 workerConfig:
