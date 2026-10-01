@@ -47,6 +47,7 @@ class win_mozilla_build::hg_files (
   # Resource from puppetlabs-acl
   acl { "${cache_drive}\\hg-shared":
     target      => "${cache_drive}\\hg-shared",
+    owner       => 'SYSTEM',
     permissions => {
       identity                   => 'everyone',
       rights                     => ['full'],

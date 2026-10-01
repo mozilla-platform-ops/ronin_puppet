@@ -27,4 +27,19 @@ if TASK_DRIVE == 'C:'
     it { should be_directory }
   end
 
+  describe powershell_command(<<~POWERSHELL) do
+    $acl = Get-Acl -LiteralPath 'C:\\hg-shared' -ErrorAction Stop
+    $acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value
+    $acl.Access | Where-Object {
+      $_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value -eq 'S-1-1-0' -and
+      $_.AccessControlType -eq 'Allow' -and
+      ($_.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::FullControl) -eq [System.Security.AccessControl.FileSystemRights]::FullControl -and
+      ($_.InheritanceFlags -band 3) -eq 3
+    } | ForEach-Object { 'task-users-inherit-full-control' }
+  POWERSHELL
+    its(:exit_status) { should eq 0 }
+    its(:stdout) { should match(/^S-1-5-18\s*$/) }
+    its(:stdout) { should match(/^task-users-inherit-full-control\s*$/) }
+  end
+
 end

@@ -5,7 +5,6 @@
 class roles_profiles::roles::win11a64h2azure (
   Boolean $tester,
 ) {
-  include roles_profiles::profiles::azure_vm_file_system
   include roles_profiles::profiles::error_reporting
 
   # The cache drive can differ between Packer and worker-manager provisioning.

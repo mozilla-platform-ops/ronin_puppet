@@ -16,6 +16,7 @@ class win_filesystem::grant_cache_access (
   # Resource from puppetlabs-acl
   acl { "${_cache_drive}\\hg-shared":
     target      => "${_cache_drive}\\hg-shared",
+    owner       => 'SYSTEM',
     permissions => {
       identity                   => 'everyone',
       rights                     => ['full'],
