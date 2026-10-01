@@ -7,13 +7,13 @@ $volume = @(Get-Volume -FileSystemLabel 'Task Work Volume' -ErrorAction Silently
 if ($volume.Count -gt 1) { throw 'More than one task work volume was found.' }
 
 if ($volume.Count -eq 0) {
-    $disk = Get-VirtualDisk -FriendlyName 'NVMeTemporary' -ErrorAction SilentlyContinue | Get-Disk
+    $disk = Get-VirtualDisk -FriendlyName $virtualDiskName -ErrorAction SilentlyContinue | Get-Disk
     if (-not $disk) {
         $dataDisks = @(Wait-AzureNvmeDataDisks -WaitSeconds 30 -RetrySeconds 5)
         if ($dataDisks.Count -eq 1) {
             $disk = $dataDisks[0]
         } elseif ($dataDisks.Count -gt 1) {
-            $disk = New-AzureNvmeStoragePool -DataDisks $dataDisks -PoolName 'NVMePool' -VirtualDiskName 'NVMeTemporary' | Get-Disk
+            $disk = New-AzureNvmeStoragePool -DataDisks $dataDisks -PoolName $poolName -VirtualDiskName $virtualDiskName | Get-Disk
         }
     }
 
@@ -53,8 +53,7 @@ if ($volume.Count -eq 1) {
     }
 } else {
     # Older Azure SKUs have an NTFS temporary disk. Single-NVMe SKUs use C:.
-    $temporary = Get-ReadyTemporaryVolume -DriveLetter D
-    if ($temporary) {
+    if (Get-ReadyTemporaryVolume -DriveLetter $driveLetter) {
         $mountPath = 'D:\work-volume'
     }
     New-Item -ItemType Directory -Path $mountPath -Force | Out-Null
