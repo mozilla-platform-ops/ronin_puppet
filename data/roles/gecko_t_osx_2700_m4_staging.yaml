@@ -13,6 +13,11 @@ worker_metadata:
 # Pinned to the current effective version -- this is a no-op control move.
 taskcluster_version: '100.5.0'
 
+# Loop worker-runner.sh between tasks instead of rebooting; it still reboots
+# after a failed task or every max_tasks_between_reboots tasks.
+skip_reboot_between_tasks: true
+max_tasks_between_reboots: 10
+
 worker:
   taskcluster_version: 95.0.3
   provider_type: standalone

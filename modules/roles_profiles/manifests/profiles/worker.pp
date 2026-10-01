@@ -80,22 +80,29 @@ class roles_profiles::profiles::worker {
       # so vault's hash wins and a sub-key present only in role data is invisible.
       $purge_metal_shader_cache = lookup('purge_metal_shader_cache', Boolean, 'first', false)
 
+      # Loop the worker between tasks instead of rebooting, opt-in per role.
+      # Top-level role keys for the same vault `worker:` shadowing reason as above.
+      $skip_reboot_between_tasks = lookup('skip_reboot_between_tasks', Boolean, 'first', false)
+      $max_tasks_between_reboots = lookup('max_tasks_between_reboots', Integer[1], 'first', 10)
+
       class { 'worker_runner':
-        taskcluster_version      => $taskcluster_version,
-        signed_binaries          => $signed_binaries,
-        provider_type            => lookup('worker.provider_type'),
-        root_url                 => 'https://firefox-ci-tc.services.mozilla.com',
-        client_id                => lookup('worker.client_id'),
-        access_token             => lookup('worker.access_token'),
-        worker_pool_id           => lookup('worker.worker_pool_id'),
-        worker_group             => lookup('worker.worker_group'),
-        worker_id                => lookup('worker.worker_id'),
-        generic_worker_engine    => $generic_worker_engine,
-        idle_timeout_secs        => lookup('worker.idle_timeout_secs'),
-        task_user_password       => $task_user_password,
-        reclaim_free_space_gb    => $reclaim_free_space_gb,
-        post_task_action         => $post_task_action,
-        purge_metal_shader_cache => $purge_metal_shader_cache,
+        taskcluster_version       => $taskcluster_version,
+        signed_binaries           => $signed_binaries,
+        provider_type             => lookup('worker.provider_type'),
+        root_url                  => 'https://firefox-ci-tc.services.mozilla.com',
+        client_id                 => lookup('worker.client_id'),
+        access_token              => lookup('worker.access_token'),
+        worker_pool_id            => lookup('worker.worker_pool_id'),
+        worker_group              => lookup('worker.worker_group'),
+        worker_id                 => lookup('worker.worker_id'),
+        generic_worker_engine     => $generic_worker_engine,
+        idle_timeout_secs         => lookup('worker.idle_timeout_secs'),
+        task_user_password        => $task_user_password,
+        reclaim_free_space_gb     => $reclaim_free_space_gb,
+        post_task_action          => $post_task_action,
+        purge_metal_shader_cache  => $purge_metal_shader_cache,
+        skip_reboot_between_tasks => $skip_reboot_between_tasks,
+        max_tasks_between_reboots => $max_tasks_between_reboots,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc

@@ -11,6 +11,85 @@ date > $last_premature_end
 
 # This is a wrapper script for calling worker runner, such that when the worker
 # exits, this script will reboot the machine.
+<% if @skip_reboot_between_tasks -%>
+#
+# skip_reboot_between_tasks: instead of rebooting after every task, loop back
+# and run the same pre-task cleanup again. The reboot used to clear two things
+# no script did -- processes the task left running and the task's temp files --
+# so those are handled after each task below. Any cycle that is not a clean
+# success (failed task, non-zero worker exit, unkillable leftover process) or
+# that reaches <%= @max_tasks_between_reboots %> tasks still reboots.
+#
+# State lives in this shell, not in files the task user could edit, so it
+# resets with the reboot that ends the loop.
+tasks_since_boot=0
+iteration_marker=<%= @data_dir %>/iteration_started
+proc_list=<%= @data_dir %>/task_user_processes
+baseline_procs=""
+
+# "pid comm" for every <%= @task_user %> process. Read from a file, not a
+# pipe, so the loop runs in this shell and the listing sees no subshell of ours.
+list_task_processes() {
+    ps -U <%= @task_user %> -o pid=,ppid=,comm= | sed -E 's/^ +//' > "$proc_list"
+}
+
+# Sets $strays to <%= @task_user %> processes that were not running before the
+# first task of this boot. Apple's own launchd services and generic-worker's
+# launch agent are left alone; launchd owns their lifecycle.
+find_strays() {
+    local pid ppid comm
+    strays=""
+    list_task_processes
+    while read -r pid ppid comm; do
+        [ -n "$pid" ] || continue
+        [ "$pid" = "$$" ] && continue
+        [ "$ppid" = "$$" ] && continue
+        case "$comm" in
+            /System/*|/usr/libexec/*|/usr/sbin/*|/sbin/*|/Library/Apple/*|/usr/local/bin/generic-worker*) continue ;;
+        esac
+        printf '%s\n' "$baseline_procs" | grep -qxF "$pid $comm" && continue
+        strays="${strays}${pid} ${comm}"$'\n'
+    done < "$proc_list"
+}
+
+reap_strays() {
+    local sig
+    for sig in TERM KILL; do
+        find_strays
+        [ -z "$strays" ] && return 0
+        echo "Sending SIG${sig} to leftover <%= @task_user %> processes:"
+        printf '%s' "$strays"
+        printf '%s' "$strays" | awk '{print $1}' | xargs kill -"$sig" 2>/dev/null
+        sleep 3
+    done
+    find_strays
+    [ -z "$strays" ]
+}
+
+# Remove what the task left in the task user's temp dirs. Only entries changed
+# since the task started are touched, and com.apple.* / TemporaryItems are
+# skipped, because the login session's own agents keep state there.
+clean_task_temp() {
+    local tmpdir
+<% if @generic_worker_engine == 'multiuser-static' -%>
+    tmpdir=$(/usr/bin/sudo -u <%= @task_user %> /usr/bin/getconf DARWIN_USER_TEMP_DIR 2>/dev/null)
+<% else -%>
+    tmpdir=$(/usr/bin/getconf DARWIN_USER_TEMP_DIR 2>/dev/null)
+<% end -%>
+    tmpdir=${tmpdir%/}
+    if [ -n "$tmpdir" ] && [ -d "$tmpdir" ] && [ ! -L "$tmpdir" ]; then
+        find "$tmpdir" -mindepth 1 -maxdepth 1 -newer "$iteration_marker" \
+            ! -name 'com.apple.*' ! -name 'TemporaryItems' -exec rm -rf {} + 2>/dev/null
+    fi
+    find /private/tmp -mindepth 1 -maxdepth 1 -user <%= @task_user %> -newer "$iteration_marker" \
+        ! -name 'com.apple.*' -exec rm -rf {} + 2>/dev/null
+}
+
+# The loop body below is deliberately not re-indented, so that roles without
+# skip_reboot_between_tasks render this script unchanged.
+while true; do
+date > $last_premature_end
+<% end -%>
 
 # TODO: Add only find and delete orpan files if running in multiuser mode
 #(find /private/var/folders/ -nouser -delete; echo "Finished clearing old cache files" ) &
@@ -165,6 +244,20 @@ if [ -x  /usr/local/bin/lsdb.py ]; then
 else
     echo "lsdb.py not found, skipping launch services cleanup."
 fi
+<% if @skip_reboot_between_tasks -%>
+
+# The task-user paths macos_directory_cleaner's clean_before_reboot.sh empties at
+# boot. That only runs once per boot, so do it here every cycle too. Its root-only
+# paths (oah, coresymbolicationd) are still left to it and the periodic reboot.
+for user_dir in "/Users/<%= @task_user %>/Library/Caches/Mozilla/updates" \
+                "/Users/<%= @task_user %>/Downloads" \
+                "/Users/<%= @task_user %>/Desktop" \
+                "/Users/<%= @task_user %>/Library/Application Support/Firefox/Crash Reports"; do
+    if [ -d "$user_dir" ] && [ ! -L "$user_dir" ]; then
+        find "$user_dir" -mindepth 1 -delete 2>/dev/null
+    fi
+done
+<% end -%>
 
 if [ -x /usr/local/bin/run-puppet.sh ]; then
     sudo /usr/local/bin/run-puppet.sh
@@ -198,7 +291,7 @@ fi
 # only: raptor and browsertime pass the Safari binary path as an argument, and an
 # unanchored pgrep -f matches the test harness too.
 safari_pattern='^/[^ ]*/Safari\.app/Contents/MacOS/Safari( |$)|^/Applications/Safari Technology Preview\.app/Contents/MacOS/Safari Technology Preview( |$)'
-if [ "$(/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null)" = "<%= @task_user %>" ]; then
+if [ "$(/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null)" = "<%= @task_user %>" ]<% if @skip_reboot_between_tasks %> && [ "$tasks_since_boot" -eq 0 ]<% end %>; then
     for _ in $(seq 1 60); do
         /usr/bin/pgrep -u <%= @task_user %> -x Dock >/dev/null && break
         sleep 2
@@ -213,6 +306,20 @@ for _ in 1 2 3; do
     /usr/bin/pkill -KILL -u <%= @task_user %> -f "$safari_pattern"
     sleep 2
 done
+<% if @skip_reboot_between_tasks -%>
+
+# Everything the task user is running before the first task of this boot is the
+# login session; anything new after a task is the task's.
+if [ -z "$baseline_procs" ]; then
+    list_task_processes
+    while read -r pid ppid comm; do
+        baseline_procs="${baseline_procs}${pid} ${comm}"$'\n'
+    done < "$proc_list"
+fi
+touch "$iteration_marker"
+worker_log=<%= @log_dir %>/stderr.log
+worker_log_offset=$(stat -f%z "$worker_log" 2>/dev/null || echo 0)
+<% end -%>
 
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
@@ -258,6 +365,46 @@ else
     echo "Started less than 60s ago. Sleeping 30s"
     sleep 30
 fi
+<% if @skip_reboot_between_tasks -%>
+
+<% if @generic_worker_engine == 'multiuser-static' -%>
+resolved_count_file=<%= @gw_root_dir %>/tasks-resolved-count.txt
+<% else -%>
+resolved_count_file=<%= @data_dir %>/tasks-resolved-count.txt
+<% end -%>
+resolved=0
+if [ -f "$resolved_count_file" ]; then
+    resolved=$(tr -dc '0-9' < "$resolved_count_file" 2>/dev/null)
+fi
+
+# Only a clean success loops. A failed or excepted task is the likeliest to have
+# left a mess, and failures are rare enough that rebooting after them costs little.
+# generic-worker logs "Task <id> finished successfully!" only for a passing task.
+reboot_reason=""
+if [ "$exitstatus" -ne 0 ]; then
+    reboot_reason="worker exited ${exitstatus}"
+elif [ "${resolved:-0}" -lt 1 ]; then
+    reboot_reason="no task resolved this cycle"
+elif ! tail -c +$((worker_log_offset + 1)) "$worker_log" 2>/dev/null | grep -aq 'finished successfully!'; then
+    reboot_reason="task did not finish successfully"
+else
+    tasks_since_boot=$((tasks_since_boot + 1))
+    if [ "$tasks_since_boot" -ge <%= @max_tasks_between_reboots %> ]; then
+        reboot_reason="${tasks_since_boot} tasks since boot"
+    elif ! reap_strays; then
+        reboot_reason="leftover <%= @task_user %> processes survived SIGKILL"
+    fi
+fi
+
+if [ -z "$reboot_reason" ]; then
+    clean_task_temp
+    echo "NO REBOOT $(date)  (tasks since boot: ${tasks_since_boot})"
+    continue
+fi
+echo "Rebooting: ${reboot_reason}"
+break
+done
+<% end -%>
 
 <% if @post_task_action == 'halt' -%>
 # Per-task reversion (bug 2071007). HALT (so the host's tartworker KeepAlive daemon

@@ -62,6 +62,15 @@ class worker_runner (
     # false (the default) renders worker-runner.sh exactly as it did before this
     # landed.
     Boolean $purge_metal_shader_cache                                      = false,
+    # Loop worker-runner.sh instead of rebooting after every task. Between tasks
+    # it reaps processes the task user left behind and clears the task's temp
+    # files, and it still reboots after a failed task, a non-zero worker exit, a
+    # process that will not die, or $max_tasks_between_reboots tasks.
+    #
+    # false (the default) renders worker-runner.sh exactly as it did before this
+    # landed. Not compatible with post_task_action 'halt'.
+    Boolean $skip_reboot_between_tasks                                     = false,
+    Integer[1] $max_tasks_between_reboots                                  = 10,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -109,6 +118,10 @@ class worker_runner (
         if ! $worker_pool_id or ! $worker_group or ! $worker_id {
             fail("[${module_name}] provider type standalone or static require worker_pool_id, worker_group, and worker_id")
         }
+    }
+
+    if $skip_reboot_between_tasks and $post_task_action == 'halt' {
+        fail("[${module_name}] skip_reboot_between_tasks cannot be combined with post_task_action 'halt'")
     }
 
     $task_dir                = "${data_dir}/tasks"
