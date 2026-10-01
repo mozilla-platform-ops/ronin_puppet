@@ -50,3 +50,6 @@ cltbld_user:
 generic_worker_secrets:
     taskcluster_client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
     taskcluster_access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
+
+# Level 3: no live logs
+disable_livelog: true

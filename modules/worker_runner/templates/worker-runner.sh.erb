@@ -237,6 +237,36 @@ else
     echo "Could not resolve DARWIN_USER_CACHE_DIR, skipping Metal shader cache purge."
 fi
 <% end -%>
+<% if @purge_firefox_app_support -%>
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2046807
+# The task user persists across tasks here, so Firefox's per-user data directory
+# does too, and every task inherits what the previous ones left in it. Background
+# task profiles are the visible casualty: they are keyed by install path, which is
+# the same for every task on a host, and a try push that bumps the version stamps
+# them with a future major. Every later task on that host then trips downgrade
+# protection, and the background task exits 0 instead of running, until central
+# catches up. macmini-m4-100 had 68 of these back to 2025, plus 1,228 Profiles,
+# 4,544 Profile Groups and a 41 KB profiles.ini indexing all of them.
+#
+# The whole directory goes, not just Background Tasks Profiles: profiles.ini
+# indexes the background task profiles too, and leaving it would point at
+# directories that no longer exist. Nothing in it is meant to outlive a task --
+# a fresh task user, as the multiuser engine gives every task, starts without it.
+#
+# Renamed out of the way and deleted detached, like the downloads purge above, so
+# the first purge of an accumulated directory does not hold up worker start.
+ff_app_support="/Users/<%= @task_user %>/Library/Application Support/Firefox"
+if [ -d "$ff_app_support" ]; then
+    ff_purge="${ff_app_support}.purging.$$"
+    if mv "$ff_app_support" "$ff_purge" 2>/dev/null; then
+        ( rm -rf "$ff_purge" >/dev/null 2>&1 & )
+    fi
+fi
+for ff_stale in "${ff_app_support}".purging.*; do
+    [ -e "$ff_stale" ] && ( rm -rf "$ff_stale" >/dev/null 2>&1 & )
+done
+<% end -%>
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then

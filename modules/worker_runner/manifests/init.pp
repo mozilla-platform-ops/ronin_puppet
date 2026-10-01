@@ -71,6 +71,21 @@ class worker_runner (
     # landed. Not compatible with post_task_action 'halt'.
     Boolean $skip_reboot_between_tasks                                     = false,
     Integer[1] $max_tasks_between_reboots                                  = 10,
+    # Remove the task user's ~/Library/Application Support/Firefox at every worker
+    # start. With a task user that persists across tasks it accumulates profiles,
+    # and background task profiles stamped by a version-bump try push make every
+    # later task on the host fail downgrade protection (bug 2046807).
+    #
+    # false (the default) renders worker-runner.sh exactly as it did before this
+    # landed.
+    Boolean $purge_firefox_app_support                                     = false,
+    # Point generic-worker's livelog at /bin/false so no live log is served.
+    # Level 3 workers shouldn't expose live logs; this matches the
+    # linux-d2g-trusted pools in fxci-config. generic-worker treats livelog as
+    # best effort, so tasks still run and upload live_backing.log as usual. Used
+    # instead of enableLiveLog because that key only exists from v77.0.0 and
+    # older generic-workers reject unknown config keys.
+    Boolean $disable_livelog                                               = false,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -187,6 +202,9 @@ class worker_runner (
             # instead of quietly rendering a no-op.
             if $purge_metal_shader_cache and $generic_worker_engine == 'multiuser' {
                 fail("[${module_name}] purge_metal_shader_cache needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Metal cache is already empty")
+            }
+            if $purge_firefox_app_support and $generic_worker_engine == 'multiuser' {
+                fail("[${module_name}] purge_firefox_app_support needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Application Support is already empty")
             }
 
             # Install binaries directly from GitHub releases, except any the role
