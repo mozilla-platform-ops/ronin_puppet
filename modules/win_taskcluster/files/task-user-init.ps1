@@ -134,6 +134,13 @@ else {
 # Generic Worker runs this hook as the task user after creating it.
 # Keep temporary task files on the same volume as the task directory.
 if ((Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name work_volume -ErrorAction SilentlyContinue).work_volume -eq 1) {
+    # Keep the Windows folder path available to later task processes.
+    if (-not $env:APPDATA) {
+        $appData = [Environment]::GetFolderPath('ApplicationData')
+        if (-not $appData) { throw 'Windows did not provide the task AppData directory.' }
+        [Environment]::SetEnvironmentVariable('APPDATA', $appData, 'User')
+        $env:APPDATA = $appData
+    }
     $taskTemp = Join-Path $PWD.Path 'AppData\Local\Temp'
     New-Item -ItemType Directory -Path $taskTemp -Force -ErrorAction Stop | Out-Null
     foreach ($name in @('TEMP', 'TMP')) {
@@ -143,20 +150,6 @@ if ((Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name work_vol
 }
 
 Write-Log -Message ("{0} :: Executing task-user-init as $currentuser - {1:o}" -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-
-try {
-    $localuser = (Get-Content "C:\worker-runner\current-task-user.json" | ConvertFrom-Json -ErrorAction Stop).name
-    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Found current-task-user $localuser", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-}
-catch {
-    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Unable to find current task user", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    exit 1
-}
-
-while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
-    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Waiting for $localuser to be created", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    Start-Sleep -Seconds 5
-}
 
 switch ($os_version) {
     "win_11_2009" {

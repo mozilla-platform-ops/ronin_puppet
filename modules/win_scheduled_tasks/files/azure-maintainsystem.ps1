@@ -588,7 +588,7 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
     Puppet-Run
   }
   if ($work_volume -eq 1) {
-    # Run after Puppet so it cannot replace the junctions. Fail before taking tasks.
+    # Set up task storage after Puppet and before taking tasks.
     $ErrorActionPreference = 'Stop'
     try {
       & "$env:programdata\PuppetLabs\ronin\configure_work_volume.ps1"
