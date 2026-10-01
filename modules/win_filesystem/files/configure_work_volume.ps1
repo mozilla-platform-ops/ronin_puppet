@@ -48,8 +48,12 @@ if ($volume.Count -eq 1) {
         Add-PartitionAccessPath -InputObject $partition -AccessPath "$mountPath\"
     }
     if ($volume[0].FileSystem -eq 'ReFS') {
-        fsutil.exe devdrv trust $mountPath
-        if ($LASTEXITCODE -ne 0) { throw 'Cannot trust the task Dev Drive.' }
+        $devDrive = fsutil.exe devdrv query $mountPath
+        if ($LASTEXITCODE -ne 0) { throw 'Cannot query the task Dev Drive.' }
+        if ($devDrive -notcontains 'This is a trusted developer volume.') {
+            fsutil.exe devdrv trust $mountPath
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot trust the task Dev Drive.' }
+        }
     }
 } else {
     # Older Azure SKUs have an NTFS temporary disk. Single-NVMe SKUs use C:.

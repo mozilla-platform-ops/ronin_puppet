@@ -20,8 +20,10 @@ try {
     $volume = Get-Volume -FileSystemLabel 'Task Work Volume' -ErrorAction SilentlyContinue
     if ($volume -and [Environment]::OSVersion.Version.Build -ge 26100) {
         if ($volume.FileSystem -ne 'ReFS') { throw 'The work volume is not ReFS.' }
-        fsutil.exe devdrv query 'C:\work-volume'
-        if ($LASTEXITCODE -ne 0) { throw 'The work volume is not a Dev Drive.' }
+        $devDrive = fsutil.exe devdrv query 'C:\work-volume'
+        if ($LASTEXITCODE -ne 0 -or $devDrive -notcontains 'This is a trusted developer volume.') {
+            throw 'The work volume is not a trusted Dev Drive.'
+        }
     }
     Write-Output 'PASS: repeated work-volume setup and cache-to-task rename'
 } finally {
