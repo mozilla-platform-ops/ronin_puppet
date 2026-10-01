@@ -590,7 +590,12 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   if ($work_volume -eq 1) {
     # Run after Puppet so it cannot replace the junctions. Fail before taking tasks.
     $ErrorActionPreference = 'Stop'
-    & "$env:programdata\PuppetLabs\ronin\configure_work_volume.ps1"
+    try {
+      & "$env:programdata\PuppetLabs\ronin\configure_work_volume.ps1"
+    } catch {
+      Write-Log -message "Task storage setup failed: $_" -severity 'ERROR'
+      throw
+    }
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner

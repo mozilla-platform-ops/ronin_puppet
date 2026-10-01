@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\configure_nvme_disk.ps1"
 
-$mountPath = 'C:\work-volume'
+$workDrive = 'C:'
 $volume = @(Get-Volume -FileSystemLabel 'Task Work Volume' -ErrorAction SilentlyContinue)
 if ($volume.Count -gt 1) { throw 'More than one task work volume was found.' }
 
@@ -43,49 +43,39 @@ if ($volume.Count -eq 0) {
 
 if ($volume.Count -eq 1) {
     $partition = $volume[0] | Get-Partition
-    if ($partition.AccessPaths -notcontains "$mountPath\") {
-        New-Item -ItemType Directory -Path $mountPath -Force | Out-Null
-        Add-PartitionAccessPath -InputObject $partition -AccessPath "$mountPath\"
+    Move-CdRomFromTemporaryDrive -DriveLetter $driveLetter
+    if ($partition.DriveLetter -ne $driveLetter) {
+        Set-Partition -InputObject $partition -NewDriveLetter $driveLetter
     }
+    $workDrive = "${driveLetter}:"
     if ($volume[0].FileSystem -eq 'ReFS') {
-        $devDrive = fsutil.exe devdrv query $mountPath
+        $devDrive = fsutil.exe devdrv query $workDrive
         if ($LASTEXITCODE -ne 0) { throw 'Cannot query the task Dev Drive.' }
         if ($devDrive -notcontains 'This is a trusted developer volume.') {
-            fsutil.exe devdrv trust $mountPath
+            fsutil.exe devdrv trust $workDrive
             if ($LASTEXITCODE -ne 0) { throw 'Cannot trust the task Dev Drive.' }
         }
     }
-} else {
-    # Older Azure SKUs have an NTFS temporary disk. Single-NVMe SKUs use C:.
-    if (Get-ReadyTemporaryVolume -DriveLetter $driveLetter) {
-        $mountPath = 'D:\work-volume'
-    }
-    New-Item -ItemType Directory -Path $mountPath -Force | Out-Null
+} elseif (Get-ReadyTemporaryVolume -DriveLetter $driveLetter) {
+    # Older Azure SKUs already have an NTFS temporary disk.
+    $workDrive = "${driveLetter}:"
 }
 
-foreach ($name in @('tasks', 'caches', 'downloads', 'hg-shared')) {
-    $target = Join-Path $mountPath $name
-    $path = "C:\$name"
-    New-Item -ItemType Directory -Path $target -Force | Out-Null
+foreach ($name in @('tasks', 'caches', 'downloads')) {
+    $path = "$workDrive\$name"
     $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
     if ($item -and ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
-        if ($item.LinkType -ne 'Junction' -or $item.Target -ne $target) {
-            throw "Unexpected link at $path."
-        }
-    } else {
-        if ($item) {
-            # Image seeds need a separate import step. Do not discard their data.
-            if (Get-ChildItem -LiteralPath $path -Force | Select-Object -First 1) {
-                throw "Cannot replace nonempty directory $path with a junction."
-            }
-            Remove-Item -LiteralPath $path -Force
-        }
-        New-Item -ItemType Junction -Path $path -Target $target | Out-Null
+        throw "Task storage must be a real directory: $path."
     }
+    New-Item -ItemType Directory -Path $path -Force | Out-Null
 }
 
-# Task users need the shared Mercurial store. generic-worker sets task/cache ACLs.
-icacls.exe 'C:\hg-shared' /grant '*S-1-1-0:(OI)(CI)F'
-if ($LASTEXITCODE -ne 0) { throw 'Cannot set Mercurial store permissions.' }
-[Environment]::SetEnvironmentVariable('HG_CACHE', 'C:\hg-cache', 'Machine')
-Write-Output "Task storage is ready at $mountPath."
+# Keep the local defaults consistent with the pool configuration from fxci-config.
+$runner = 'C:\worker-runner\runner.yml'
+$config = Get-Content -LiteralPath $runner -Raw
+foreach ($name in @('tasks', 'caches', 'downloads')) {
+    $config = $config -replace "(?m)^(\s+${name}Dir:) .*$", "`$1 '$workDrive\$name'"
+}
+Set-Content -LiteralPath $runner -Value $config -Encoding UTF8
+Set-ItemProperty 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name work_volume_drive -Value $workDrive
+Write-Output "Task storage is ready on $workDrive."

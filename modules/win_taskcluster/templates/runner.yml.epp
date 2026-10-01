@@ -8,8 +8,10 @@ worker:
 cacheOverRestarts: true
 <% if $win_taskcluster::worker_runner::task_drive { -%>
 <% if $win_taskcluster::worker_runner::work_volume {
-    $tasks_dir = 'C:\tasks'
+    $storage_drive = 'D:'
+    $tasks_dir = 'D:\tasks'
   } else {
+    $storage_drive = $win_taskcluster::worker_runner::task_drive
     $tasks_dir = $win_taskcluster::worker_runner::task_drive ? {
       'C:'    => 'C:\Users',
       default => 'D:\tasks',
@@ -18,6 +20,6 @@ cacheOverRestarts: true
 -%>
 workerConfig:
     tasksDir: '<%= $tasks_dir %>'
-    cachesDir: '<%= $win_taskcluster::worker_runner::task_drive %>\caches'
-    downloadsDir: '<%= $win_taskcluster::worker_runner::task_drive %>\downloads'
+    cachesDir: '<%= $storage_drive %>\caches'
+    downloadsDir: '<%= $storage_drive %>\downloads'
 <% } -%>
