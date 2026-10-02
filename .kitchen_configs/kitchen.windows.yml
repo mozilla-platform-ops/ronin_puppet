@@ -72,6 +72,27 @@ platforms:
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-gpu
+    lifecycle: &gpu_reboot_lifecycle
+      post_converge:
+        - remote: shutdown.exe /r /t 5 /f
+      pre_verify:
+        - local: |
+            reboot_started=false
+            for attempt in $(seq 1 30); do
+              if ! timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
+                reboot_started=true
+                break
+              fi
+              sleep 2
+            done
+            $reboot_started || exit 1
+            for attempt in $(seq 1 60); do
+              if timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
+                exit 0
+              fi
+              sleep 10
+            done
+            exit 1
   - name: win11-a64-25h2-builder
     driver:
       <<: *windows_driver_defaults
@@ -129,27 +150,7 @@ platforms:
         owner: relops@mozilla.com
         provisioner: test-kitchen-azurerm
         worker-pool-id: <%= ENV['WORKER_POOL_ID'] %>
-    lifecycle: &gpu_reboot_lifecycle
-      post_converge:
-        - remote: shutdown.exe /r /t 5 /f
-      pre_verify:
-        - local: |
-            reboot_started=false
-            for attempt in $(seq 1 30); do
-              if ! timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
-                reboot_started=true
-                break
-              fi
-              sleep 2
-            done
-            $reboot_started || exit 1
-            for attempt in $(seq 1 60); do
-              if timeout 1 bash -c "</dev/tcp/$KITCHEN_INSTANCE_HOSTNAME/5985" 2>/dev/null; then
-                exit 0
-              fi
-              sleep 10
-            done
-            exit 1
+    lifecycle: *gpu_reboot_lifecycle
   - name: win2025-64-24h2-gpu
     driver:
       <<: *win2025_driver
