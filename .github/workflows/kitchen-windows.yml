@@ -14,6 +14,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  powershell-lint:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Check PowerShell tests
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
+          $path = 'test/integration/windows/pester'
+          $settings = "$path/PSScriptAnalyzerSettings.psd1"
+          $issues = @(Invoke-ScriptAnalyzer -Path $path -Recurse -Settings $settings)
+          $issues | Format-Table -AutoSize
+          if ($issues.Count) { throw 'PSScriptAnalyzer found issues.' }
+          Get-ChildItem $path -Recurse -Include *.ps1,*.psd1 | ForEach-Object {
+              $source = Get-Content $_.FullName -Raw
+              if ((Invoke-Formatter -ScriptDefinition $source -Settings $settings) -cne $source) {
+                  throw "Run Invoke-Formatter on $($_.Name)."
+              }
+          }
+
   windows:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     name: ${{ matrix.role }} (${{ matrix.worker_pool_id }})
@@ -110,7 +133,7 @@ jobs:
             # became unreachable. Puppet convergence failures need a code or
             # dependency fix; a new VM will reproduce them.
             grep -Eqi \
-              'execution expired|WinRM::WinRMHTTPTransportError|Errno::(ECONNREFUSED|ECONNRESET|ETIMEDOUT)|OperationPreempted|evict(ed|ion)?|AllocationFailed|OverconstrainedAllocationRequest|SkuNotAvailable|InternalServerError' \
+              'execution expired|WinRM::WinRMHTTPTransportError|Errno::(ECONNREFUSED|ECONNRESET|ETIMEDOUT)|OperationPreempted|\bevicted\b|AllocationFailed|OverconstrainedAllocationRequest|SkuNotAvailable|InternalServerError' \
               "$log_file"
           }
 
@@ -139,8 +162,16 @@ jobs:
           echo "::error::All $max_attempts attempts failed"
           exit 1
 
+      - name: Upload Pester results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pester-${{ matrix.kitchen_instance }}
+          path: test-results/
+          if-no-files-found: warn
+
       - name: Refresh Azure login
-        if: always() && matrix.role == 'win20256424h2azure'
+        if: always()
         uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
