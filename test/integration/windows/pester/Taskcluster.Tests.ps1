@@ -11,7 +11,7 @@ Describe 'Taskcluster' -Tag IntegrationTests {
             'C:\Windows', 'C:\Program Files\Puppet Labs\Puppet', 'C:\generic-worker', 'C:\worker-runner'
         ) { Test-Path $_ -PathType Container | Should-BeTrue }
         It 'has NSSM' {
-            Test-Path "C:\nssm\nssm-$(Get-ExpectedValue nssm, version)\win64\nssm.exe" | Should-BeTrue
+            Test-Path "C:\nssm\nssm-$(Get-HieraValue 'windows.nssm.version')\win64\nssm.exe" | Should-BeTrue
         }
         It 'has the worker-runner service' { (Get-Service worker-runner).Name | Should-BeString 'worker-runner' }
         It 'has the configured version of <_>' -ForEach @(
@@ -24,7 +24,7 @@ Describe 'Taskcluster' -Tag IntegrationTests {
             # ARM binaries write startup diagnostics to stderr. Redirect before PowerShell 5.1 sees them.
             $version = cmd.exe /c "`"$_`" --short-version 2>nul"
             $LASTEXITCODE | Should-Be 0
-            $version | Should-BeString (Get-ExpectedValue taskcluster, version)
+            $version | Should-BeString (Get-HieraValue 'win-worker.variant.taskcluster.version', 'windows.taskcluster.version')
         }
     }
 }

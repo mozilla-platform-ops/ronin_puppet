@@ -11,7 +11,7 @@ Describe 'MozillaBuild and caches' -Tag IntegrationTests {
         'C:\mozilla-build\python3\Lib\site-packages\psutil\__init__.py'
     ) { Test-Path $_ | Should-BeTrue }
     It 'has the configured MozillaBuild version' {
-        (Get-Content 'C:\mozilla-build\VERSION' -Raw).Trim() | Should-BeString (Get-ExpectedValue mozilla_build, version)
+        (Get-Content 'C:\mozilla-build\VERSION' -Raw).Trim() | Should-BeString (Get-HieraValue 'windows.mozilla_build.version')
     }
     It 'has the configured <Package> version' -ForEach @(
         @{ Package = 'psutil'; Key = 'psutil_version' }
@@ -21,7 +21,7 @@ Describe 'MozillaBuild and caches' -Tag IntegrationTests {
         $output = & 'C:\mozilla-build\python3\python.exe' -m pip show $Package
         $LASTEXITCODE | Should-Be 0
         $version = $output | Select-String '^Version:' | ForEach-Object { $_.ToString().Split(':', 2)[1].Trim() }
-        $version | Should-BeString (Get-ExpectedValue mozilla_build, $Key)
+        $version | Should-BeString (Get-HieraValue "windows.mozilla_build.$Key")
     }
     It 'sets TOOLTOOL_CACHE' {
         [Environment]::GetEnvironmentVariable('TOOLTOOL_CACHE', 'Machine') | Should-BeString 'C:\builds\tooltool_cache'

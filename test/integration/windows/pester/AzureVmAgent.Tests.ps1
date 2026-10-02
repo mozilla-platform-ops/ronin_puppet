@@ -10,6 +10,6 @@ Describe 'AzureVmAgent' -Tag IntegrationTests {
 
     It 'has the configured Azure VM Agent' {
         $agent = $Software | Where-Object DisplayName -Like 'Windows Azure VM Agent*' | Select-Object -First 1
-        $agent.DisplayVersion | Should-BeString ((Get-ExpectedValue azure, vm_agent, version).Split('_')[0])
+        $agent.DisplayVersion | Should-BeString ((Get-HieraValue 'windows.azure.vm_agent.version').Split('_')[0])
     }
 }

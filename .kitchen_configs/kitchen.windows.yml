@@ -1,4 +1,4 @@
-# <% require 'json'; require 'yaml' %>
+# <% require 'json' %>
 ---
 driver:
   name: azurerm
@@ -26,8 +26,6 @@ verifier:
   environment:
     PUPPET_ROLE: <%= ENV.fetch('PUPPET_ROLE').to_json %>
     WORKER_POOL_ID: <%= ENV.fetch('WORKER_POOL_ID', '').to_json %>
-    RONIN_TEST_DATA: >-
-      <%= { Role: YAML.load_file("data/roles/#{ENV.fetch('PUPPET_ROLE')}.yaml"), Windows: YAML.load_file('data/os/Windows.yaml').fetch('windows') }.to_json %>
   pester_configuration:
     Run:
       RepoRoot: .

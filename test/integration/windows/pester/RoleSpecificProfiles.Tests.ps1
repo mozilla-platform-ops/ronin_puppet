@@ -4,14 +4,14 @@ Describe 'Drivers' -Tag IntegrationTests {
 
     if ($Tester -or $Server25) {
         It 'caches the GPU installer' {
-            $installer = "C:\Windows\Temp\$(Get-ExpectedValue gpu, name).exe"
+            $installer = "C:\Windows\Temp\$(Get-HieraValue 'windows.gpu.name').exe"
             Test-Path $installer | Should-BeTrue
             if ($Win25) { (Get-Item $installer).Length | Should-BeGreaterThan 100000000 }
         }
     }
     if (($Win10 -or $Server25) -and $env:WORKER_POOL_ID -like '*gpu*') {
         It 'runs the configured NVIDIA A10-8Q driver' {
-            $version = (Get-ExpectedValue gpu, name).Split('_')[0]
+            $version = (Get-HieraValue 'windows.gpu.name').Split('_')[0]
             $output = nvidia-smi.exe --query-gpu=name, driver_version --format=csv, noheader
             $LASTEXITCODE | Should-Be 0
             $output | Should-MatchString "^NVIDIA A10-8Q,\s*$([regex]::Escape($version))\s*$"
@@ -19,10 +19,11 @@ Describe 'Drivers' -Tag IntegrationTests {
     }
     if ($Tester -and -not $Arm) {
         It 'installs Virtual Audio Cable' {
-            Test-Path "C:\VAC\$(Get-ExpectedValue vac, package_dir)" -PathType Container | Should-BeTrue
-            $name = Get-ExpectedValue vac, service_name
+            $packageDir = Get-HieraValue 'win-worker.variant.vac.package_dir', 'win-worker.vac.package_dir', 'windows.vac.package_dir'
+            Test-Path "C:\VAC\$packageDir" -PathType Container | Should-BeTrue
+            $name = Get-HieraValue 'win-worker.variant.vac.service_name', 'win-worker.vac.service_name', 'windows.vac.service_name'
             (Get-CimInstance Win32_SystemDriver -Filter "Name='$name'").Name | Should-BeString $name
-            $device = Get-ExpectedValue vac, pnp_device_name
+            $device = Get-HieraValue 'win-worker.variant.vac.pnp_device_name', 'win-worker.vac.pnp_device_name', 'windows.vac.pnp_device_name'
             (Get-PnpDevice -Class MEDIA | Where-Object FriendlyName -EQ $device | Select-Object -First 1).FriendlyName |
                 Should-BeString $device
         }
