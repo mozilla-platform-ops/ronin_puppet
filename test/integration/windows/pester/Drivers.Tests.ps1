@@ -5,7 +5,7 @@ Describe 'Drivers' -Tag IntegrationTests {
         if (($Win10 -or $Server25) -and $env:WORKER_POOL_ID -like '*gpu*') {
             It 'runs the configured NVIDIA A10-8Q driver' {
                 $version = (Get-HieraValue 'windows.gpu.name').Split('_')[0]
-                $output = nvidia-smi.exe --query-gpu=name, driver_version --format=csv, noheader
+                $output = nvidia-smi.exe '--query-gpu=name,driver_version' '--format=csv,noheader'
                 $LASTEXITCODE | Should-Be 0
                 $output | Should-MatchString "^NVIDIA A10-8Q,\s*$([regex]::Escape($version))\s*$"
             }
