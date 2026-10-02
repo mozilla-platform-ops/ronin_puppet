@@ -24,10 +24,11 @@ end
 ## Windows
 
 Windows Kitchen uses `kitchen-pester` 1.2.2 and Pester 6.2.0. The tests are in
-`windows/pester/`, in separate files for each profile or component. For example,
-`MicrosoftTools.Tests.ps1` checks Microsoft tools, `SystemProfiles.Tests.ps1`
-checks system settings, and `ServiceProfiles.Tests.ps1` checks services and
-scheduled tasks. Role conditions select checks within these shared files.
+`windows/pester/`, grouped by Windows resource type: programs, registry,
+services, scheduled tasks, files, environment variables, drivers, certificates,
+network, storage, and system settings. Each file uses application or feature
+contexts. The offline NVIDIA install has a separate behavior test. Role
+conditions select checks within these shared files.
 Linux and macOS keep their existing verifiers.
 
 Run the Windows suite with the role and pool ID from the Windows CI matrix:
