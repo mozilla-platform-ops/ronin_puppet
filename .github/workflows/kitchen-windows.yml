@@ -139,6 +139,14 @@ jobs:
           echo "::error::All $max_attempts attempts failed"
           exit 1
 
+      - name: Upload Pester results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pester-${{ matrix.kitchen_instance }}
+          path: test-results/
+          if-no-files-found: warn
+
       - name: Refresh Azure login
         if: always() && matrix.role == 'win20256424h2azure'
         uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43

@@ -1,3 +1,4 @@
+# <% require 'json'; require 'yaml' %>
 ---
 driver:
   name: azurerm
@@ -8,9 +9,37 @@ provisioner:
   script: .kitchen/provision_windows.ps1
 
 verifier:
-  name: serverspec
-  remote_exec: false
-  color: <%= !ENV.include?('CI') %>
+  name: pester
+  test_folder: test
+  pester_install:
+    RequiredVersion: '6.2.0'
+    SkipPublisherCheck: true
+    Force: true
+    ErrorAction: Stop
+  bootstrap:
+    repository_url: https://www.powershellgallery.com/api/v2
+    modules:
+      - Name: PackageManagement
+        Version: '1.4.8.1'
+      - Name: PowerShellGet
+        Version: '2.2.5'
+  environment:
+    PUPPET_ROLE: <%= ENV.fetch('PUPPET_ROLE').to_json %>
+    WORKER_POOL_ID: <%= ENV.fetch('WORKER_POOL_ID', '').to_json %>
+    RONIN_TEST_DATA: >-
+      <%= { Role: YAML.load_file("data/roles/#{ENV.fetch('PUPPET_ROLE')}.yaml"), Windows: YAML.load_file('data/os/Windows.yaml').fetch('windows') }.to_json %>
+  pester_configuration:
+    Run:
+      PassThru: true
+      Exit: true
+    TestResult:
+      Enabled: true
+      OutputFormat: JUnitXml
+    Output:
+      Verbosity: Detailed
+  downloads:
+    PesterTestResults.xml: 'test-results/%{instance_name}/'
+    kitchen_cmd.ps1: 'test-results/%{instance_name}/'
 
 transport:
   name: winrm
@@ -166,15 +195,6 @@ platforms:
 
 suites:
   - name: windows
-    verifier:
-      patterns:
-        - test/integration/windows/serverspec/*_spec.rb
-# <% if %w[win10642009azure win116424h2azure win116425h2azure win11a6425h2azurebuilder win11a6425h2azuretester win2022642009azure].include?(ENV['PUPPET_ROLE']) %>
-        - test/integration/windows_full/serverspec/*_spec.rb
-# <% end %>
-        - test/integration/<%= ENV['PUPPET_ROLE'] %>/serverspec/*_spec.rb
-      default_pattern: false
-      extra_flags: --format RspecJunitFormatter -o <%= File.join(Dir.pwd, 'test-results', 'rspec.xml') %>
     includes:
       - win11-64-24h2
       - win11-64-25h2
