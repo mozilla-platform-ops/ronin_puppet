@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\configure_nvme_disk.ps1"
 
-$workDrive = 'C:'
+$workDrive = 'D:'
 $volume = @(Get-Volume -FileSystemLabel 'Task Work Volume' -ErrorAction SilentlyContinue)
 if ($volume.Count -gt 1) { throw 'More than one task work volume was found.' }
 
@@ -47,7 +47,6 @@ if ($volume.Count -eq 1) {
     if ($partition.DriveLetter -ne $driveLetter) {
         Set-Partition -InputObject $partition -NewDriveLetter $driveLetter
     }
-    $workDrive = "${driveLetter}:"
     if ($volume[0].FileSystem -eq 'ReFS') {
         $devDrive = fsutil.exe devdrv query $workDrive
         if ($LASTEXITCODE -ne 0) { throw 'Cannot query the task Dev Drive.' }
@@ -56,9 +55,16 @@ if ($volume.Count -eq 1) {
             if ($LASTEXITCODE -ne 0) { throw 'Cannot trust the task Dev Drive.' }
         }
     }
-} elseif (Get-ReadyTemporaryVolume -DriveLetter $driveLetter) {
-    # Older Azure SKUs already have an NTFS temporary disk.
-    $workDrive = "${driveLetter}:"
+}
+
+# Older Azure SKUs can keep their existing NTFS temporary volume.
+$ready = Get-ReadyTemporaryVolume -DriveLetter $driveLetter
+if (-not $ready -or $ready.FileSystem -notin @('NTFS', 'ReFS')) {
+    throw 'Task storage requires a fixed NTFS or ReFS volume on D:.'
+}
+$workDisk = Get-Partition -DriveLetter $driveLetter | Get-Disk
+if (-not $workDisk -or $workDisk.IsBoot -or $workDisk.IsSystem) {
+    throw 'Task storage on D: must be on a data disk.'
 }
 
 foreach ($name in @('tasks', 'caches', 'downloads')) {
@@ -70,12 +76,4 @@ foreach ($name in @('tasks', 'caches', 'downloads')) {
     New-Item -ItemType Directory -Path $path -Force | Out-Null
 }
 
-# Keep the local defaults consistent with the pool configuration from fxci-config.
-$runner = 'C:\worker-runner\runner.yml'
-$config = Get-Content -LiteralPath $runner -Raw
-foreach ($name in @('tasks', 'caches', 'downloads')) {
-    $config = $config -replace "(?m)^(\s+${name}Dir:) .*$", "`$1 '$workDrive\$name'"
-}
-Set-Content -LiteralPath $runner -Value $config -Encoding UTF8
-Set-ItemProperty 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name work_volume_drive -Value $workDrive
 Write-Output "Task storage is ready on $workDrive."

@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 $setup = "$env:ProgramData\PuppetLabs\ronin\configure_work_volume.ps1"
 & $setup
-$drive = (Get-ItemProperty 'HKLM:\SOFTWARE\Mozilla\ronin_puppet').work_volume_drive
+$drive = 'D:'
 $probe = 'work-volume-check-' + [guid]::NewGuid().ToString('N')
 $source = "$drive\caches\$probe"
 $destination = "$drive\tasks\$probe"
