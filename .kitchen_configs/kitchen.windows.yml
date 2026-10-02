@@ -30,6 +30,7 @@ verifier:
       <%= { Role: YAML.load_file("data/roles/#{ENV.fetch('PUPPET_ROLE')}.yaml"), Windows: YAML.load_file('data/os/Windows.yaml').fetch('windows') }.to_json %>
   pester_configuration:
     Run:
+      RepoRoot: .
       PassThru: true
       Exit: true
     TestResult:

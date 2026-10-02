@@ -1,9 +1,6 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
-BeforeDiscovery { . "$PSScriptRoot/Settings.ps1" }
-
 Describe 'System settings' -Tag IntegrationTests {
-    BeforeAll { . "$PSScriptRoot/Settings.ps1" }
 
     BeforeDiscovery {
         $wer = 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting'

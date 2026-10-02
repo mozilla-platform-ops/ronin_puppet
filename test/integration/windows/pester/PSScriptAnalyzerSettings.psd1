@@ -1,6 +1,6 @@
 @{
     IncludeDefaultRules = $true
-    # Pester setup and dot-sourced settings define variables read in other scopes.
+    # Pester setup defines variables read in other test scopes.
     ExcludeRules        = @('PSUseDeclaredVarsMoreThanAssignments')
     Rules               = @{
         PSUseCompatibleSyntax      = @{

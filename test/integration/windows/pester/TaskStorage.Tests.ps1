@@ -1,9 +1,6 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
-BeforeDiscovery { . "$PSScriptRoot/Settings.ps1" }
-
 Describe 'Task storage' -Tag IntegrationTests {
-    BeforeAll { . "$PSScriptRoot/Settings.ps1" }
 
     It 'has the task drive' { Test-Path "$TaskDrive\" -PathType Container | Should-BeTrue }
     if ($Arm) {

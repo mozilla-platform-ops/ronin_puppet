@@ -1,9 +1,6 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
-BeforeDiscovery { . "$PSScriptRoot/Settings.ps1" }
-
 Describe 'MozillaBuild and caches' -Tag IntegrationTests {
-    BeforeAll { . "$PSScriptRoot/Settings.ps1" }
 
     It 'has directory <_>' -ForEach @('C:\mozilla-build', 'C:\builds\tooltool_cache') {
         Test-Path $_ -PathType Container | Should-BeTrue

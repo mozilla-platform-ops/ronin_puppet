@@ -47,6 +47,11 @@ Kitchen sends the role data and Windows defaults from the local checkout as
 not read expected values from the configured VM. Shared checks run once per VM;
 role conditions select the remaining checks.
 
+Pester 6.2 loads `Pester.BeforeContainer.ps1` automatically for each test file.
+It supplies shared settings during discovery and execution. Tests do not need
+to import a settings file. `Run.RepoRoot` is set to the verifier directory so
+this also works in Kitchen's copied suite, which has no Git checkout.
+
 The verifier installs Pester on the test VM and runs PowerShell there. It returns
 JUnit XML and the generated command script to `test-results/<instance>/`,
 including after test failures. The Windows CI job uploads these files as an
@@ -69,4 +74,4 @@ The layout follows [dbatools' test structure](https://github.com/dataplat/dbatoo
 separate files, setup in `BeforeAll`, named `Context` blocks where needed, and
 short assertions. These tests use Pester 6 assertions. The analyzer checks syntax
 for Windows PowerShell 5.1 and PowerShell 7.4. Its settings exclude unused-variable
-warnings because Pester setup and dot-sourced settings pass variables between scopes.
+warnings because Pester setup passes variables between test scopes.

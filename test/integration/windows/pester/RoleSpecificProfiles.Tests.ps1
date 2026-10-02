@@ -1,9 +1,6 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
-BeforeDiscovery { . "$PSScriptRoot/Settings.ps1" }
-
 Describe 'Drivers' -Tag IntegrationTests {
-    BeforeAll { . "$PSScriptRoot/Settings.ps1" }
 
     if ($Tester -or $Server25) {
         It 'caches the GPU installer' {

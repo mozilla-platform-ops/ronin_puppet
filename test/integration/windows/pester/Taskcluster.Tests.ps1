@@ -1,9 +1,6 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
-BeforeDiscovery { . "$PSScriptRoot/Settings.ps1" }
-
 Describe 'Taskcluster' -Tag IntegrationTests {
-    BeforeAll { . "$PSScriptRoot/Settings.ps1" }
 
     It 'owns runner.yml as SYSTEM' {
         (Get-Acl 'C:\worker-runner\runner.yml').GetOwner([System.Security.Principal.SecurityIdentifier]).Value |

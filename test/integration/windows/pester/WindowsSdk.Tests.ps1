@@ -1,6 +1,5 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
-BeforeDiscovery { . "$PSScriptRoot/Settings.ps1" }
 Describe 'Windows SDK' -Tag IntegrationTests -Skip:($Role -notin @('win116424h2azure', 'win116425h2azure')) {
     BeforeAll {
         $Software = Get-ItemProperty -Path @(
