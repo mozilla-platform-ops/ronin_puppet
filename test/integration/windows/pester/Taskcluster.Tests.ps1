@@ -21,7 +21,8 @@ Describe 'Taskcluster' -Tag IntegrationTests {
             'C:\generic-worker\livelog.exe'
         ) {
             Test-Path $_ | Should-BeTrue
-            $version = & $_ --short-version
+            # ARM binaries write startup diagnostics to stderr. Redirect before PowerShell 5.1 sees them.
+            $version = cmd.exe /c "`"$_`" --short-version 2>nul"
             $LASTEXITCODE | Should-Be 0
             $version | Should-BeString (Get-ExpectedValue taskcluster, version)
         }
