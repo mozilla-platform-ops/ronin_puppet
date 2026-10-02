@@ -72,7 +72,7 @@ platforms:
         winrm_powershell_script: |-
           Set-NetConnectionProfile -NetworkCategory Private
           winrm quickconfig -q
-          winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+          winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="2048"}'
           winrm set winrm/config '@{MaxTimeoutms="1800000"}'
           winrm set winrm/config/service '@{AllowUnencrypted="true"}'
           winrm set winrm/config/service/auth '@{Basic="true"}'
@@ -131,7 +131,7 @@ platforms:
       winrm_powershell_script: |-
         Set-NetConnectionProfile -NetworkCategory Private
         winrm quickconfig -q
-        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="512"}'
+        winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="2048"}'
         winrm set winrm/config '@{MaxTimeoutms="3600000"}'
         winrm set winrm/config/service '@{AllowUnencrypted="true"}'
         winrm set winrm/config/service/auth '@{Basic="true"}'
