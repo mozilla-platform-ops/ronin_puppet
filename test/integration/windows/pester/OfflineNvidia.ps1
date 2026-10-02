@@ -20,7 +20,7 @@ class { 'win_packages::drivers::nvidia_grid':
 }
 "@ | Set-Content -Path $manifestPath -NoNewline -Encoding ASCII
     # Redirect native output before PowerShell 5.1 can turn warnings into errors.
-    cmd.exe /d /s /c "`"`"$puppet`" apply --color=false --modulepath=C:\ronin_puppet\modules;C:\ronin_puppet\r10k_modules --detailed-exitcodes `"$manifestPath`" > `"$puppetLog`" 2>&1`""
+    cmd.exe /d /c "`"$puppet`" apply --color=false --modulepath=C:\ronin_puppet\modules;C:\ronin_puppet\r10k_modules --detailed-exitcodes `"$manifestPath`" > `"$puppetLog`" 2>&1"
     $puppetExitCode = $LASTEXITCODE
     if ($puppetExitCode -notin 0, 2) {
         $puppetOutput = Get-Content -Path $puppetLog -Raw -ErrorAction SilentlyContinue
