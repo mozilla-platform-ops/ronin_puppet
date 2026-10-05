@@ -2,12 +2,18 @@
 
 Describe 'Storage' -Tag IntegrationTests {
     Context 'Task storage' {
-        if ($Win25) {
+        if ($Tester) {
+            It 'keeps testers on the Windows profile storage layout' {
+                (Get-ItemPropertyValue 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' 'work_volume') | Should-Be 0
+                $TaskDrive | Should-BeString 'C:'
+            }
             It 'uses a fixed NTFS task volume' {
                 $volume = Get-Volume -DriveLetter $TaskDrive[0]
                 $volume.DriveType.ToString() | Should-BeString 'Fixed'
                 $volume.FileSystem | Should-BeString 'NTFS'
             }
+        }
+        if ($Win25) {
             It 'selects the Azure VM sizes that require NVMe setup' {
                 . "$Ronin\maintainsystem.ps1"
                 foreach ($size in @('Standard_D32ads_v7', 'Standard_F8alds_v7', 'Standard_F8ads_v7')) {

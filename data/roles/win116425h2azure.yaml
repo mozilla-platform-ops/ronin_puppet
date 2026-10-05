@@ -1,7 +1,6 @@
 ---
 
 windows_task_drive: 'C:'
-windows_work_volume: true
 
 win-worker:
   function: "tester"
