@@ -77,13 +77,16 @@ Describe 'Files' -Tag IntegrationTests {
             It 'has the ARM temporary drive' { Test-Path 'D:\' -PathType Container | Should-BeTrue }
         }
         if ($TaskDrive -eq 'C:') {
-            It 'sets the <Setting> directory' -ForEach @(
-                @{ Setting = 'tasks'; Directory = 'Users' }
-                @{ Setting = 'caches'; Directory = 'caches' }
-                @{ Setting = 'downloads'; Directory = 'downloads' }
-            ) {
-                Get-Content 'C:\worker-runner\runner.yml' -Raw |
-                    Should-MatchString "(?m)^\s+${Setting}Dir: 'C:\\$Directory'\s*$"
+            # The provisioner's work-volume check verifies the runtime paths.
+            if ((Get-HieraValue 'windows_work_volume' -Default 'false') -ne $true) {
+                It 'sets the <Setting> directory' -ForEach @(
+                    @{ Setting = 'tasks'; Directory = 'Users' }
+                    @{ Setting = 'caches'; Directory = 'caches' }
+                    @{ Setting = 'downloads'; Directory = 'downloads' }
+                ) {
+                    Get-Content 'C:\worker-runner\runner.yml' -Raw |
+                        Should-MatchString "(?m)^\s+${Setting}Dir: 'C:\\$Directory'\s*$"
+                }
             }
             It 'has the shared Mercurial directory' { Test-Path 'C:\hg-shared' -PathType Container | Should-BeTrue }
         }

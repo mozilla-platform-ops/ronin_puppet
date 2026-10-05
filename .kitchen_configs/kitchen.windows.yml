@@ -77,7 +77,7 @@ platforms:
           winrm set winrm/config/service '@{AllowUnencrypted="true"}'
           winrm set winrm/config/service/auth '@{Basic="true"}'
           winrm set winrm/config/service/auth '@{Negotiate="false"}'
-      machine_size: 'Standard_F8s_v2'
+      machine_size: 'Standard_F8alds_v7'
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-avd:latest
       # Each platform has a unique resource group name to prevent collisions when
@@ -103,13 +103,15 @@ platforms:
   - name: win11-a64-25h2-builder
     driver:
       <<: *windows_driver_defaults
-      machine_size: 'Standard_E8pds_v5'
+      machine_size: 'Standard_D16pds_v6'
+      spot_instance: true
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-builder
   - name: win11-a64-25h2-tester
     driver:
       <<: *windows_driver_defaults
-      machine_size: 'Standard_E8pds_v5'
+      machine_size: 'Standard_D16pds_v6'
+      spot_instance: true
       image_urn: MicrosoftWindowsDesktop:windows11preview-arm64:win11-25h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-a64-25h2-tester
   - name: win2022-64-2009
@@ -142,7 +144,7 @@ platforms:
   - name: win10-64-2009
     driver:
       <<: *windows_driver_defaults
-      machine_size: 'Standard_F8s_v2'
+      machine_size: 'Standard_F8alds_v7'
       spot_instance: true
       image_urn: MicrosoftWindowsDesktop:Windows-10:win10-22h2-avd-g2:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win10-64-2009

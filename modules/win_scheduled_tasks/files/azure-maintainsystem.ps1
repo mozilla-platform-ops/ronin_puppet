@@ -577,12 +577,25 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   ## NVMe v7 workers must create D: from the unused local disk before Puppet reads drive facts.
   $task_drive = (Get-ItemProperty -Path $ronin_key -Name task_drive -ErrorAction SilentlyContinue).task_drive
   if ([string]::IsNullOrEmpty($task_drive)) { $task_drive = 'D:' }
-  Ensure-AzureNvmeTemporaryDrive -vmSize $vm_size -TaskDrive $task_drive
+  $work_volume = (Get-ItemProperty -Path $ronin_key -Name work_volume -ErrorAction SilentlyContinue).work_volume
+  if ($work_volume -ne 1) {
+    Ensure-AzureNvmeTemporaryDrive -vmSize $vm_size -TaskDrive $task_drive
+  }
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
   Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id -TaskDrive $task_drive
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
+  }
+  if ($work_volume -eq 1) {
+    # Set up task storage after Puppet and before taking tasks.
+    $ErrorActionPreference = 'Stop'
+    try {
+      & "$env:programdata\PuppetLabs\ronin\configure_work_volume.ps1"
+    } catch {
+      Write-Log -message "Task storage setup failed: $_" -severity 'ERROR'
+      throw
+    }
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner
