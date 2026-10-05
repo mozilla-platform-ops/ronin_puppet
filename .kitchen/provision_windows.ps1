@@ -267,7 +267,7 @@ foreach ($stage in @('image', 'worker')) {
         exit 1
     }
 }
-# Exercise the boot layout after Puppet convergence, before Serverspec checks.
+# Exercise the boot layout after Puppet convergence, before Pester checks.
 if ((Get-ItemProperty $roninKey).work_volume -eq 1) {
     & C:\ronin_puppet\test\powershell\work_volume.ps1
 }
