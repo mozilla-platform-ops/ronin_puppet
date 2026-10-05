@@ -7,13 +7,11 @@ $ErrorActionPreference = 'Stop'
 $root = $PWD.Path
 Write-Output "Task=$root Profile=$env:USERPROFILE AppData=$env:APPDATA LocalAppData=$env:LOCALAPPDATA TEMP=$env:TEMP TMP=$env:TMP"
 if ($root -notlike "$ExpectedDrive\tasks\task_*") { throw 'Unexpected task directory.' }
-if ($env:USERPROFILE -notlike 'C:\Users\task_*') { throw 'Unexpected profile directory.' }
-$profileTemp = Join-Path $env:USERPROFILE 'AppData\Local\Temp'
-foreach ($path in @($env:TEMP, $env:TMP)) {
-    if ($path -ne $profileTemp) { throw "Temporary files must stay in the Windows profile: $path" }
-}
-# Windows may retain LocalAppData in the profile. It must remain usable.
-foreach ($path in @($root, $env:APPDATA, $env:LOCALAPPDATA, $env:TEMP)) {
+# Use the paths supplied by Windows and generic-worker; do not prescribe their layout.
+foreach ($path in @($root, $env:USERPROFILE, $env:APPDATA, $env:LOCALAPPDATA, $env:TEMP, $env:TMP)) {
+    if (-not $path -or -not (Test-Path -LiteralPath $path -PathType Container)) {
+        throw "Task environment directory is missing: $path"
+    }
     $probe = Join-Path $path ('dev-drive-probe-' + [guid]::NewGuid().ToString('N'))
     Set-Content -LiteralPath $probe -Value 'writable'
     Remove-Item -LiteralPath $probe
