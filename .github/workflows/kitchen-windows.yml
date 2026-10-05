@@ -131,9 +131,10 @@ jobs:
 
             # Retry only failures that indicate the Azure VM was evicted or
             # became unreachable. Puppet convergence failures need a code or
-            # dependency fix; a new VM will reproduce them.
+            # dependency fix; a new VM will reproduce them. kitchen-pester's
+            # PowerShell Gallery bootstrap download is also retried.
             grep -Eqi \
-              'execution expired|WinRM::WinRMHTTPTransportError|Errno::(ECONNREFUSED|ECONNRESET|ETIMEDOUT)|OperationPreempted|\bevicted\b|AllocationFailed|OverconstrainedAllocationRequest|SkuNotAvailable|InternalServerError' \
+              'execution expired|WinRM::WinRMHTTPTransportError|Errno::(ECONNREFUSED|ECONNRESET|ETIMEDOUT)|OperationPreempted|\bevicted\b|AllocationFailed|OverconstrainedAllocationRequest|SkuNotAvailable|InternalServerError|Error trying to download nupkg' \
               "$log_file"
           }
 
