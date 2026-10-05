@@ -158,6 +158,36 @@ else
     echo "Could not resolve DARWIN_USER_CACHE_DIR, skipping Metal shader cache purge."
 fi
 <% end -%>
+<% if @purge_firefox_app_support -%>
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2046807
+# The task user persists across tasks here, so Firefox's per-user data directory
+# does too, and every task inherits what the previous ones left in it. Background
+# task profiles are the visible casualty: they are keyed by install path, which is
+# the same for every task on a host, and a try push that bumps the version stamps
+# them with a future major. Every later task on that host then trips downgrade
+# protection, and the background task exits 0 instead of running, until central
+# catches up. macmini-m4-100 had 68 of these back to 2025, plus 1,228 Profiles,
+# 4,544 Profile Groups and a 41 KB profiles.ini indexing all of them.
+#
+# The whole directory goes, not just Background Tasks Profiles: profiles.ini
+# indexes the background task profiles too, and leaving it would point at
+# directories that no longer exist. Nothing in it is meant to outlive a task --
+# a fresh task user, as the multiuser engine gives every task, starts without it.
+#
+# Renamed out of the way and deleted detached, like the downloads purge above, so
+# the first purge of an accumulated directory does not hold up worker start.
+ff_app_support="/Users/<%= @task_user %>/Library/Application Support/Firefox"
+if [ -d "$ff_app_support" ]; then
+    ff_purge="${ff_app_support}.purging.$$"
+    if mv "$ff_app_support" "$ff_purge" 2>/dev/null; then
+        ( rm -rf "$ff_purge" >/dev/null 2>&1 & )
+    fi
+fi
+for ff_stale in "${ff_app_support}".purging.*; do
+    [ -e "$ff_stale" ] && ( rm -rf "$ff_stale" >/dev/null 2>&1 & )
+done
+<% end -%>
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then
@@ -176,6 +206,43 @@ if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
     # Run worker from <%= @gw_root_dir %> when in multiuser-static mode
     cd <%= @gw_root_dir %>
 fi
+
+# Quit any Safari or Safari Technology Preview already open for the task user
+# before the worker claims a task. safaridriver launches its own instance; if a
+# normal (non-automation) one is already running it asks that one for an
+# automation session instead, which never answers, and every browsertime Safari
+# task fails after exhausting its retries with:
+#   Could not create a session: The session timed out while connecting to a
+#   Safari instance.
+# On macOS 27 this became a loop: a task ends with Safari open, the host reboots,
+# macOS Resume (loginwindow's TAL launch) reopens it at login, and the next task
+# times out and reboots with it still open. clean_appstate_13_plus's empty,
+# root-owned ByHost loginwindow plist stops the relaunch on 14/15 but not on 27,
+# and TALLogoutSavesState=false does not stop it either (both verified on
+# macmini-m4-130, 2026-09-24). Harmless where Safari is not running.
+#
+# Resume relaunches when the task user's session comes up, so wait for that
+# session (its Dock) first -- but only on hosts that autologin as the task user,
+# so headless roles sharing this script are not delayed.
+# Anchored to the start of the command line so it matches the Safari executables
+# only: raptor and browsertime pass the Safari binary path as an argument, and an
+# unanchored pgrep -f matches the test harness too.
+safari_pattern='^/[^ ]*/Safari\.app/Contents/MacOS/Safari( |$)|^/Applications/Safari Technology Preview\.app/Contents/MacOS/Safari Technology Preview( |$)'
+if [ "$(/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null)" = "<%= @task_user %>" ]; then
+    for _ in $(seq 1 60); do
+        /usr/bin/pgrep -u <%= @task_user %> -x Dock >/dev/null && break
+        sleep 2
+    done
+    sleep 5
+fi
+for _ in 1 2 3; do
+    /usr/bin/pgrep -u <%= @task_user %> -f "$safari_pattern" >/dev/null || break
+    echo "Quitting Safari left open for <%= @task_user %> before starting the worker"
+    /usr/bin/pkill -TERM -u <%= @task_user %> -f "$safari_pattern"
+    sleep 3
+    /usr/bin/pkill -KILL -u <%= @task_user %> -f "$safari_pattern"
+    sleep 2
+done
 
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...

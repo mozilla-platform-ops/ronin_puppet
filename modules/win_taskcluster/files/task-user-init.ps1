@@ -132,6 +132,23 @@ else {
 }
 
 # Generic Worker runs this hook as the task user after creating it.
+# Keep temporary task files on the same volume as the task directory.
+if ((Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -Name work_volume -ErrorAction SilentlyContinue).work_volume -eq 1) {
+    # Keep the Windows folder path available to later task processes.
+    if (-not $env:APPDATA) {
+        $appData = [Environment]::GetFolderPath('ApplicationData')
+        if (-not $appData) { throw 'Windows did not provide the task AppData directory.' }
+        [Environment]::SetEnvironmentVariable('APPDATA', $appData, 'User')
+        $env:APPDATA = $appData
+    }
+    $taskTemp = Join-Path $PWD.Path 'AppData\Local\Temp'
+    New-Item -ItemType Directory -Path $taskTemp -Force -ErrorAction Stop | Out-Null
+    foreach ($name in @('TEMP', 'TMP')) {
+        [Environment]::SetEnvironmentVariable($name, $taskTemp, 'User')
+        [Environment]::SetEnvironmentVariable($name, $taskTemp, 'Process')
+    }
+}
+
 Write-Log -Message ("{0} :: Executing task-user-init as $currentuser - {1:o}" -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
 
 switch ($os_version) {

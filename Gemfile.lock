@@ -228,6 +228,8 @@ GEM
       inspec-core (>= 2.2.64, < 8.0)
       test-kitchen (>= 2.7, < 5)
       train
+    kitchen-pester (1.2.2)
+      test-kitchen (>= 3.6, < 5)
     kitchen-puppet (3.7.0)
       librarian-puppet (>= 3.0)
       net-ssh (>= 3)
@@ -607,6 +609,7 @@ DEPENDENCIES
   kitchen-azurerm!
   kitchen-docker!
   kitchen-inspec (>= 3.1.0)
+  kitchen-pester (= 1.2.2)
   kitchen-puppet
   kitchen-sync
   kitchen-vagrant

@@ -50,7 +50,7 @@ class packages::openssl_legacy_cellar (
   # point the opt symlinks at the restored Cellar version (matching the older
   # fleet). The .bak / symlink guards keep this safe to re-run.
   exec { 'install_openssl_legacy_cellar':
-    command => "/bin/sh -c 'mkdir -p /usr/local/Cellar/openssl@1.1 && tar -xzf ${tmp_tar} -C /usr/local/Cellar/openssl@1.1 && { [ -L /usr/local/opt/openssl@1.1 ] || [ -e /usr/local/opt/openssl@1.1.bak ] || mv /usr/local/opt/openssl@1.1 /usr/local/opt/openssl@1.1.bak; } && ln -sfn ../Cellar/openssl@1.1/${version} /usr/local/opt/openssl@1.1 && ln -sfn openssl@1.1 /usr/local/opt/openssl'",
+    command => "/bin/sh -c 'mkdir -p /usr/local/Cellar/openssl@1.1 && tar -xzf ${tmp_tar} -C /usr/local/Cellar/openssl@1.1 && { [ ! -e /usr/local/opt/openssl@1.1 ] || [ -L /usr/local/opt/openssl@1.1 ] || [ -e /usr/local/opt/openssl@1.1.bak ] || mv /usr/local/opt/openssl@1.1 /usr/local/opt/openssl@1.1.bak; } && ln -sfn ../Cellar/openssl@1.1/${version} /usr/local/opt/openssl@1.1 && ln -sfn openssl@1.1 /usr/local/opt/openssl'",
     path    => ['/usr/bin', '/bin'],
     unless  => $already_ok,
     require => Exec['verify_openssl_legacy_cellar'],
