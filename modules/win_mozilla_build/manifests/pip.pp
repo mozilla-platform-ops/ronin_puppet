@@ -10,9 +10,16 @@ class win_mozilla_build::pip {
     content => epp('win_mozilla_build/pip.conf.epp'),
   }
 
-  file { ['C:\\pip-cache', 'D:\\pip-cache']:
+  file { 'C:\\pip-cache':
     ensure => absent,
     force  => true,
+  }
+
+  if $facts['custom_win_d_drive'] == 'exists' {
+    file { 'D:\\pip-cache':
+      ensure => absent,
+      force  => true,
+    }
   }
 
   windows::environment { 'PIP_DOWNLOAD_CACHE':
