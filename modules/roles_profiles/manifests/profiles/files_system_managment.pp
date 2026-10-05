@@ -18,6 +18,10 @@ class roles_profiles::profiles::files_system_managment {
         type => string,
         data => $startup_task_drive,
       }
+      registry_value { 'HKLM\SOFTWARE\Mozilla\ronin_puppet\work_volume':
+        type => dword,
+        data => lookup('windows_work_volume', { 'default_value' => false }) ? { true => 1, default => 0 },
+      }
       include win_filesystem::disable8dot3
       include win_filesystem::disablelastaccess
       if ($facts['custom_win_location'] == 'azure') and ($facts['custom_win_bootstrap_stage'] == 'complete') {
