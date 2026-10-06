@@ -76,6 +76,31 @@ fi
 for gw_stale in "${gw_downloads}".purging.*; do
     [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
 done
+
+# Directory caches that directory-caches.json no longer references are invisible
+# to the worker: it cannot evict them, reports "nothing left to delete", and
+# exits 69 below its free-space floor. r8-199/200 (gecko-3-b-osx-1015) each held
+# four ~14 GB gecko checkout caches against an empty index. Same rename-then-
+# detached-delete as the file cache above.
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    gw_dir_caches_json=<%= @gw_root_dir %>/directory-caches.json
+else
+    gw_dir_caches_json=<%= @data_dir %>/directory-caches.json
+fi
+gw_caches=<%= @data_dir %>/cache
+for gw_cache in "$gw_caches"/*; do
+    [ -d "$gw_cache" ] || continue
+    gw_cache_name=$(basename "$gw_cache")
+    grep -qF "/${gw_cache_name}\"" "$gw_dir_caches_json" 2>/dev/null && continue
+    gw_orphan="${gw_caches}.orphan.${gw_cache_name}"
+    if mv "$gw_cache" "$gw_orphan" 2>/dev/null; then
+        echo "Removing unreferenced directory cache ${gw_cache_name}"
+        ( rm -rf "$gw_orphan" >/dev/null 2>&1 & )
+    fi
+done
+for gw_stale in "${gw_caches}".orphan.*; do
+    [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+done
 <% if @reclaim_free_space_gb -%>
 
 # The file cache above is generic-worker's own. Two OS-owned caches -- the Rosetta

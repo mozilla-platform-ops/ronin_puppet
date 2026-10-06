@@ -108,6 +108,8 @@ class roles_profiles::profiles::worker {
         purge_firefox_app_support => $purge_firefox_app_support,
         disable_livelog           => $disable_livelog,
       }
+
+      include vault_agent::absent
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc
       include mercurial::ext::robustcheckout
