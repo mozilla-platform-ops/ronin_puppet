@@ -18,6 +18,10 @@ taskcluster_version: '100.5.0'
 # shadow it.
 purge_firefox_app_support: true
 
+# Role-owned generic-worker engine (read by profiles::worker; takes precedence
+# over vault's worker.generic_worker_engine, which shadows the nested key below).
+generic_worker_engine: multiuser-static
+
 worker:
   taskcluster_version: 60.3.4
   provider_type: standalone
@@ -26,7 +30,7 @@ worker:
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
-  generic_worker_engine: simple
+  generic_worker_engine: multiuser-static
   idle_timeout_secs: 21600 # 6 hours
 
 # Clear Firefox's Metal shader caches from the task user's Darwin cache dir at every

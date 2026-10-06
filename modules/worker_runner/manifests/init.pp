@@ -142,10 +142,12 @@ class worker_runner (
                 $owner        = 'root'
                 $group        = 'wheel'
                 $launch_plist = '/Library/LaunchDaemons/org.mozilla.worker-runner.plist'
+                $stale_launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
             } else {
                 $owner        = $task_user
                 $group        = 'staff'
                 $launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
+                $stale_launch_plist = '/Library/LaunchDaemons/org.mozilla.worker-runner.plist'
             }
 
             # Determine architecture
@@ -289,6 +291,12 @@ class worker_runner (
                 mode    => '0644',
                 owner   => $owner,
                 group   => $group,
+            }
+
+            # Remove the plist for the other engine, so a host that switches between
+            # simple and multiuser* doesn't start a second worker-runner.
+            file { $stale_launch_plist:
+                ensure => absent,
             }
 
             # Generic Worker multiuser-static requirements
