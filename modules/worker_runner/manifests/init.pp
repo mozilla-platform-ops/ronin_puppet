@@ -256,12 +256,13 @@ class worker_runner (
                 group  => $group,
             }
 
-            # Generate an ed25519 key
+            # Generate an ed25519 key. -s, not -f: some hosts have a zero-byte key
+            # that the simple engine ignored but multiuser exits 69 on.
             $gw_binary = regsubst($generic_worker_engine, '-static$', '')
             exec { 'create ed25519 signing key':
                 cwd     => $data_dir,
                 command => "/usr/local/bin/generic-worker-${gw_binary} new-ed25519-keypair --file ${ed25519_signing_key}",
-                unless  => "/bin/test -f ${ed25519_signing_key}",
+                unless  => "/bin/test -s ${ed25519_signing_key}",
             }
 
             # Set permissions on ed25519 key
