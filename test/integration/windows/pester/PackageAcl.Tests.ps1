@@ -15,22 +15,22 @@ Describe 'Package ACLs' -Tag IntegrationTests {
         $items += @(Get-ChildItem -LiteralPath $path -File)
         $vacRoot = [Environment]::ExpandEnvironmentVariables($vac_dir)
         if (Test-Path -LiteralPath $vacRoot) {
-          $vacWork = Join-Path $vacRoot $vac_package_dir
-          $items += @(Get-Item -LiteralPath $vacRoot, $vacWork, (Join-Path $vacWork $vac_installer) -ErrorAction Stop)
+            $vacWork = Join-Path $vacRoot $vac_package_dir
+            $items += @(Get-Item -LiteralPath $vacRoot, $vacWork, (Join-Path $vacWork $vac_installer) -ErrorAction Stop)
         }
         $expected = @('S-1-5-18', 'S-1-5-32-544', 'S-1-5-32-545')
         foreach ($item in $items) {
-          $acl = Get-Acl -LiteralPath $item.FullName -ErrorAction Stop
-          if (!$acl.AreAccessRulesProtected) { throw "Inherited package staging ACL: $($item.FullName)" }
-          $rules = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
-          if ($rules.Count -ne $expected.Count) { throw "Unexpected package staging ACL: $($item.FullName)" }
-          foreach ($rule in $rules) {
-            $sid = $rule.IdentityReference.Value
-            if ($sid -notin $expected -or $rule.AccessControlType -ne 'Allow') { throw "Unexpected package staging ACE: $rule" }
-            if ($sid -eq 'S-1-5-32-545' -and ($rule.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::Write)) {
-              throw "Users can write to $($item.FullName)"
+            $acl = Get-Acl -LiteralPath $item.FullName -ErrorAction Stop
+            if (!$acl.AreAccessRulesProtected) { throw "Inherited package staging ACL: $($item.FullName)" }
+            $rules = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
+            if ($rules.Count -ne $expected.Count) { throw "Unexpected package staging ACL: $($item.FullName)" }
+            foreach ($rule in $rules) {
+                $sid = $rule.IdentityReference.Value
+                if ($sid -notin $expected -or $rule.AccessControlType -ne 'Allow') { throw "Unexpected package staging ACE: $rule" }
+                if ($sid -eq 'S-1-5-32-545' -and ($rule.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::Write)) {
+                    throw "Users can write to $($item.FullName)"
+                }
             }
-          }
         }
         'Package and extraction ACLs passed'
     }
