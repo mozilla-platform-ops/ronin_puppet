@@ -37,7 +37,6 @@ groups:
       - macmini-m4-81.test.releng.mdc1.mozilla.com
       - macmini-m4-82.test.releng.mdc1.mozilla.com
       - macmini-m4-83.test.releng.mdc1.mozilla.com
-      - macmini-m4-84.test.releng.mdc1.mozilla.com
       - macmini-m4-85.test.releng.mdc1.mozilla.com
       - macmini-m4-86.test.releng.mdc1.mozilla.com
       - macmini-m4-87.test.releng.mdc1.mozilla.com
