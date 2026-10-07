@@ -89,6 +89,10 @@ class roles_profiles::profiles::worker {
       # role key for the same reason as the lookups above.
       $disable_livelog = lookup('disable_livelog', Boolean, 'first', false)
 
+      # generic-worker's free-space floor before claiming a task, raised on the
+      # builder roles. TOP-LEVEL role key for the same reason as the lookups above.
+      $required_disk_space_mb = lookup('required_disk_space_mb', Integer, 'first', 20480)
+
       class { 'worker_runner':
         taskcluster_version       => $taskcluster_version,
         signed_binaries           => $signed_binaries,
@@ -107,6 +111,7 @@ class roles_profiles::profiles::worker {
         purge_metal_shader_cache  => $purge_metal_shader_cache,
         purge_firefox_app_support => $purge_firefox_app_support,
         disable_livelog           => $disable_livelog,
+        required_disk_space_mb    => $required_disk_space_mb,
       }
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc
