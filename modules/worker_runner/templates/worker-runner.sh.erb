@@ -73,7 +73,7 @@ if [ -d "$gw_downloads" ]; then
     fi
 fi
 # Sweep any leftovers from an interrupted purge on a previous boot.
-for gw_stale in "${gw_downloads}".purging.*; do
+for gw_stale in "${gw_downloads}".purging.* <%= @data_dir %>/cache.purging.*; do
     [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
 done
 <% if @reclaim_free_space_gb -%>
