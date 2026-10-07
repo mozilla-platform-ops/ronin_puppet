@@ -11,7 +11,7 @@ provider:
 worker:
     implementation: generic-worker
     path: /usr/local/bin/generic-worker
-    configPath: /home/cltbld/generic-worker.config
+    configPath: <%= @generic_worker_config_path %>
 workerConfig:
     cachesDir:                        "<%= @caches_dir %>"
     certificate:                      ""

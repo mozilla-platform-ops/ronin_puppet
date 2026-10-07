@@ -74,9 +74,10 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker {
         taskcluster_binary_source => 'github',
         generic_worker_version    => 'v88.0.2',
         generic_worker_sha256     => {
-          'amd64' => '0fcbdb1f7462e0b36f0d89a6bf92ec1e70a1356d6149e01c462f53380771e662',
-          'arm64' => '664c2aeb0f713ffe68534c6540fda26f073a0e00839b9b2fb657861ca4863d52',
+          'amd64' => '83a5f621963c29be086a41393295bf3f2591b50b137969f0fd9eff880a3cae6b',
+          'arm64' => '12cd60202541b36a14513ffb5f7f6084ed1e858a6425c712a65b9082e6df2329',
         },
+        generic_worker_engine     => 'multiuser-static',
         taskcluster_proxy_version => 'v88.0.2',
         taskcluster_proxy_sha256  => {
           'amd64' => 'e238eaec6cd283de3a77a4fe8fff504bff819ac28cba92adec3502fe99066850',
