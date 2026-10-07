@@ -11,7 +11,9 @@ class roles_profiles::roles::win116424h2hwalpha {
   include roles_profiles::profiles::suppress_dialog_boxes
   include roles_profiles::profiles::files_system_managment
   include roles_profiles::profiles::firewall
-  include roles_profiles::profiles::hardware_observability
+  ## TEST ONLY (RELOPS-2575) - REVERT BEFORE MERGE. fleetbench blocks worker-runner
+  ## for up to 900s on every boot, which slows each Chrome test iteration on alpha.
+  #include roles_profiles::profiles::hardware_observability
   include roles_profiles::profiles::network
   include roles_profiles::profiles::ntp
   include roles_profiles::profiles::power_management
