@@ -14,6 +14,5 @@ end
 describe file('/etc/sudoers') do
   its(:content) { should match /cltbld\sALL=\(root\)\sNOPASSWD:\s\/usr\/local\/bin\/record-system-perf ""/ }
   its(:content) { should match /Defaults!\/usr\/local\/bin\/record-system-perf !use_pty/ }
-  # Retained until the Raptor caller migration is deployed.
-  its(:content) { should match /cltbld\sALL=\(root\)\sNOPASSWD:\s\/usr\/bin\/perf/ }
+  its(:content) { should_not match /cltbld\sALL=\(root\)\sNOPASSWD:\s\/usr\/bin\/perf/ }
 end
