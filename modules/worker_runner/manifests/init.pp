@@ -228,9 +228,13 @@ class worker_runner (
             # The cache dirs go too: without their index the worker can't see
             # them to evict, and they were ~100 GiB of orphans on 1400 r8s,
             # enough for the worker to panic on its 20 GiB free-space check.
+            # Deleting that inline blows the exec timeout, so the dir is renamed
+            # aside here (the file resource below recreates it) and
+            # worker-runner.sh deletes it in the background.
             exec { 'purge-stale-gw-cache-state-on-version-change':
-                command     => "/bin/sh -c '/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json; [ ! -d ${cache_dir} ] || /usr/bin/find ${cache_dir} -mindepth 1 -maxdepth 1 -exec /bin/rm -rf {} +'",
+                command     => "/bin/sh -c '/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json; [ ! -d ${cache_dir} ] || /bin/mv ${cache_dir} ${cache_dir}.purging.\$(/bin/date +%s)'",
                 refreshonly => true,
+                before      => File[$cache_dir],
                 subscribe   => [
                     File['/usr/local/bin/generic-worker-multiuser'],
                     File['/usr/local/bin/generic-worker-simple'],
