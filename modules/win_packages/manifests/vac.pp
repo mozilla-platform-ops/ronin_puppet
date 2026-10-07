@@ -12,22 +12,58 @@ class win_packages::vac (
     String $vac_dir,
     String $work_dir
 ) {
+    include win_packages::staging
 
     $exe_name = "${work_dir}\\${installer}"
-    $pkgdir   = $facts['custom_win_temp_dir']
+    $pkgdir   = $win_packages::staging::path
     $src_file = "\"${pkgdir}\\${package}\""
 
 
     file { $vac_dir:
         ensure => directory,
     }
-    file {  "${pkgdir}\\${package}":
-        source => "${srcloc}/${package}"
+    acl { $vac_dir:
+        owner                      => 'S-1-5-18',
+        inherit_parent_permissions => false,
+        purge                      => true,
+        permissions                => [
+            { identity => 'S-1-5-18', rights => ['full'] },
+            { identity => 'S-1-5-32-544', rights => ['full'] },
+            { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+        ],
+        require                    => File[$vac_dir],
+    }
+    file { "${pkgdir}\\${package}":
+        source  => "${srcloc}/${package}",
+        require => Class['win_packages::staging'],
+    }
+    acl { "${pkgdir}\\${package}":
+        owner                      => 'S-1-5-18',
+        inherit_parent_permissions => false,
+        purge                      => true,
+        permissions                => [
+            { identity => 'S-1-5-18', rights => ['full'] },
+            { identity => 'S-1-5-32-544', rights => ['full'] },
+            { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+        ],
+        require                    => File["${pkgdir}\\${package}"],
     }
     exec {  'vac_unzip':
         command  => "Expand-Archive -Path ${src_file} -DestinationPath ${vac_dir}\\",
         creates  => $exe_name,
         provider => powershell,
+        require  => [Acl["${pkgdir}\\${package}"], Acl[$vac_dir]],
+    }
+    acl { [$work_dir, $exe_name]:
+        owner                      => 'S-1-5-18',
+        inherit_parent_permissions => false,
+        purge                      => true,
+        permissions                => [
+            { identity => 'S-1-5-18', rights => ['full'] },
+            { identity => 'S-1-5-32-544', rights => ['full'] },
+            { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+        ],
+        require                    => Exec['vac_unzip'],
     }
 
     if $trusted_publisher_cat != '' {
@@ -36,6 +72,7 @@ class win_packages::vac (
             provider    => powershell,
             subscribe   => Exec['vac_unzip'],
             refreshonly => true,
+            require     => Acl[$work_dir],
         }
 
         Exec['vac_trust_publisher'] -> Exec['vac_install']
@@ -48,5 +85,6 @@ class win_packages::vac (
         subscribe   => Exec['vac_unzip'],
         timeout     => $install_timeout,
         refreshonly => true,
+        require     => Acl[$exe_name],
     }
 }
