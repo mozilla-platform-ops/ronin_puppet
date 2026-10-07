@@ -220,16 +220,21 @@ class worker_runner (
             # binary. These workers reboot themselves between tasks, so there is
             # no reliable manual window to clear this after a bump -- it must
             # land in the same catalog that swaps the binary, before the worker
-            # next starts. Fires only when a binary actually changes
-            # (refreshonly + subscribe). rm -f is idempotent and engine-agnostic:
-            # multiuser* runs from ${gw_root_dir}, the simple engine from
-            # ${data_dir}. The files regenerate on the next clean start.
+            # next starts. Fires only when a binary actually changes, or the
+            # launchd plist does (an engine switch, which moves the cache-state
+            # files from ${data_dir} to ${gw_root_dir}). rm is idempotent and
+            # engine-agnostic.
+            #
+            # The cache dirs go too: without their index the worker can't see
+            # them to evict, and they were ~100 GiB of orphans on 1400 r8s,
+            # enough for the worker to panic on its 20 GiB free-space check.
             exec { 'purge-stale-gw-cache-state-on-version-change':
-                command     => "/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json",
+                command     => "/bin/sh -c '/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json; [ ! -d ${cache_dir} ] || /usr/bin/find ${cache_dir} -mindepth 1 -maxdepth 1 -exec /bin/rm -rf {} +'",
                 refreshonly => true,
                 subscribe   => [
                     File['/usr/local/bin/generic-worker-multiuser'],
                     File['/usr/local/bin/generic-worker-simple'],
+                    File[$launch_plist],
                 ],
             }
 
