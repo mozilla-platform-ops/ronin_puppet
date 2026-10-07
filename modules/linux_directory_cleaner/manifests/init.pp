@@ -2,12 +2,22 @@ class linux_directory_cleaner (
   Boolean $enabled = true,
 ) {
   if $enabled {
+    $directory_cleaner_source = 'https://codeload.github.com/aerickson/directory_cleaner/legacy.tar.gz/2416839a2fc8c6be38947d129e98d51ce021e3e1#sha256=030502a06667d3a493863822b91a972dc156d0d854ce832d084e714de55d891e'
     # create the directory_cleaner directory
     file { '/opt/directory_cleaner':
       ensure => directory,
       owner  => 'root',
       group  => 'admin',
       mode   => '0755',
+    }
+
+    # Use the original build backend so pyproject.toml remains in the wheel.
+    file { '/opt/directory_cleaner/build-constraints.txt':
+      content => "poetry-core==1.9.0\n",
+      owner   => 'root',
+      group   => 'admin',
+      mode    => '0644',
+      require => File['/opt/directory_cleaner'],
     }
 
     # block checking for ubuntu, then ubuntu 18.04, 20.04, 22.04. 24.04 should be a separate case.
@@ -28,10 +38,14 @@ class linux_directory_cleaner (
 
             # install the directory_cleaner package into the venv
             exec { 'install_directory_cleaner':
-              command => '/opt/directory_cleaner/venv/bin/pip install directory_cleaner',
-              path    => ['/usr/bin', '/bin', '/opt/directory_cleaner/venv/bin'],
-              creates => '/opt/directory_cleaner/venv/lib/python3.10/site-packages/directory_cleaner',
-              require => Exec['create_directory_cleaner_venv'],
+              command     => "/opt/directory_cleaner/venv/bin/pip install '${directory_cleaner_source}'",
+              path        => ['/usr/bin', '/bin', '/opt/directory_cleaner/venv/bin'],
+              unless      => '/opt/directory_cleaner/venv/bin/pip show directory_cleaner | grep "Version: 0.2.0"',
+              environment => [
+                'PIP_CONSTRAINT=/opt/directory_cleaner/build-constraints.txt',
+                'PIP_BUILD_CONSTRAINT=/opt/directory_cleaner/build-constraints.txt',
+              ],
+              require     => [Exec['create_directory_cleaner_venv'], File['/opt/directory_cleaner/build-constraints.txt']],
             }
 
             # create a symlink to /usr/local/bin/directory_cleaner
@@ -44,11 +58,15 @@ class linux_directory_cleaner (
           '18.04', '22.04': {
             # install into the system Python3 environment
 
-            package { 'python3-directory_cleaner':
-              ensure   => '0.2.0',
-              name     => 'directory_cleaner',
-              provider => pip3,
-              require  => Class['linux_packages::py3', 'linux_python'],
+            exec { 'install_directory_cleaner':
+              command     => "pip3 install '${directory_cleaner_source}'",
+              unless      => 'pip3 show directory_cleaner | grep "Version: 0.2.0"',
+              path        => ['/usr/local/bin', '/usr/bin', '/bin'],
+              environment => [
+                'PIP_CONSTRAINT=/opt/directory_cleaner/build-constraints.txt',
+                'PIP_BUILD_CONSTRAINT=/opt/directory_cleaner/build-constraints.txt',
+              ],
+              require     => [Class['linux_packages::py3', 'linux_python'], File['/opt/directory_cleaner/build-constraints.txt']],
             }
           }
           default: {

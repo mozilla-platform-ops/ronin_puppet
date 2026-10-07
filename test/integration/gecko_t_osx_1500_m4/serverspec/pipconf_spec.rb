@@ -12,6 +12,7 @@ describe file('/Library/Application Support/pip/pip.conf') do
   it { should be_readable.by('owner') }
 
   # Check the contents of the file
-  its(:content) { should match /\[install\]\nno-index = true\ndisable-pip-version-check = true\nfind-links =\n    https:\/\/pypi\.pub\.build\.mozilla\.org\/pub\/\ntrusted-host =\n    pypi\.pub\.build\.mozilla\.org\n/ }
+  its(:content) { should match /\[install\]\ndisable-pip-version-check = true/ }
+  its(:content) { should_not match /^(no-index|find-links|trusted-host)\s*=|pypi\.pub\.build\.mozilla\.org/ }
   its(:content) { should match /\[global\]\ndisable-pip-version-check = true/ }
 end
