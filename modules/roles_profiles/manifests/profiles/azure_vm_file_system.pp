@@ -4,11 +4,10 @@
 
 class roles_profiles::profiles::azure_vm_file_system {
   case lookup('win-worker.function') {
-    'builder': {
-      include win_filesystem::configure_nvme_disk
-    }
-    'tester': {
-      include win_filesystem::configure_nvme_disk
+    'builder', 'tester': {
+      class { 'win_filesystem::configure_nvme_disk':
+        work_volume => lookup('windows_work_volume', { 'default_value' => false }),
+      }
     }
     default: {
       # No special file system configuration needed for this VM function.

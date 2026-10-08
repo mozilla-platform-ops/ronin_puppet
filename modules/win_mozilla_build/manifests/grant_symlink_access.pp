@@ -4,10 +4,6 @@
 
 class win_mozilla_build::grant_symlink_access {
   $module_dir = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules"
-  # This a temporary work around to subscribe to file in a temp dir since
-  # we are unable to susbscribe the windows::unzip resource
-  $pkgdir = $facts['custom_win_temp_dir']
-
   # Original source https://github.com/webmd-health-services/Carbon
   # Repackaged into a zip file that can be extracted directly into Powershell module directory
   win_packages::win_zip_pkg { 'carbon':

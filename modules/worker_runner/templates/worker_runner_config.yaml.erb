@@ -20,10 +20,10 @@ workerConfig:
   downloadsDir: "<%= @data_dir %>/downloads"
   ed25519SigningKeyLocation: "<%= @ed25519_signing_key %>"
   idleTimeoutSecs: <%= @idle_timeout_secs %>
-  livelogExecutable: "/usr/local/bin/livelog"
+  livelogExecutable: "<%= @disable_livelog ? '/bin/false' : '/usr/local/bin/livelog' %>"
   numberOfTasksToRun: 1
   publicIP: "<%= @facts['networking']['ip'] %>"
-  requiredDiskSpaceMegabytes: 20480
+  requiredDiskSpaceMegabytes: <%= @required_disk_space_mb %>
   sentryProject: "generic-worker"
   shutdownMachineOnIdle: false
   shutdownMachineOnInternalError: false

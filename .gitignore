@@ -57,3 +57,4 @@ doc/
 
 # node stuff
 node_modules
+/test-results/

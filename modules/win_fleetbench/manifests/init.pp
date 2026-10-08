@@ -11,22 +11,45 @@ class win_fleetbench::init (
   String $download_url,
   String $install_dir,
   String $results_dir,
-  String $sha256,
+  Pattern[/^[0-9a-fA-F]{64}$/] $sha256,
 ) {
   $pkg       = "fleetbench-v${version}-windows-x86_64.exe"
   $url       = "${download_url}/v${version}/${pkg}"
   $binary    = "${install_dir}\\fleetbench-${version}.exe"
   $wrapper   = "${install_dir}\\run_fleetbench.ps1"
   $baselines = "${install_dir}\\fleetbench_baselines.json"
+  $pin_key   = 'HKLM\SOFTWARE\Mozilla\fleetbench'
 
   file { $install_dir:
     ensure => directory,
+  }
+  acl { $install_dir:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => File[$install_dir],
   }
 
   # Known location where benchmark result envelopes are written.
   file { $results_dir:
     ensure  => directory,
-    require => File[$install_dir],
+    require => Acl[$install_dir],
+  }
+  acl { $results_dir:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => File[$results_dir],
   }
 
   # Pull the pinned collector binary from GitHub releases. The on-disk name is
@@ -41,14 +64,41 @@ class win_fleetbench::init (
     checksum        => $sha256,
     checksum_type   => 'sha256',
     checksum_verify => true,
-    require         => File[$install_dir],
+    require         => Acl[$install_dir],
+  }
+  acl { $binary:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => Archive['fleetbench-collector'],
+  }
+
+  registry_key { $pin_key:
+    ensure => present,
+  }
+  registry_value { "${pin_key}\\version":
+    ensure  => present,
+    type    => string,
+    data    => $version,
+    require => [Registry_key[$pin_key], Acl[$binary]],
+  }
+  registry_value { "${pin_key}\\sha256":
+    ensure  => present,
+    type    => string,
+    data    => $sha256,
+    require => [Registry_key[$pin_key], Acl[$binary]],
   }
 
   # Wrapper that invokes the collector and writes results to $results_dir.
   file { $wrapper:
     ensure  => file,
     content => file('win_fleetbench/run_fleetbench.ps1'),
-    require => File[$install_dir],
+    require => Acl[$install_dir],
   }
 
   # Known-good per-hardware-type baselines, co-located with the collector. The
@@ -56,6 +106,6 @@ class win_fleetbench::init (
   file { $baselines:
     ensure  => file,
     content => file('win_fleetbench/fleetbench_baselines.json'),
-    require => File[$install_dir],
+    require => Acl[$install_dir],
   }
 }

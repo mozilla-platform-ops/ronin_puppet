@@ -20,3 +20,60 @@ else
   end
 end
 ```
+
+## Windows
+
+Windows Kitchen uses `kitchen-pester` 1.2.2 and Pester 6.2.0. The tests are in
+`windows/pester/`, grouped by Windows resource type: programs, registry,
+services, scheduled tasks, files, environment variables, drivers, certificates,
+network, storage, and system settings. Each file uses application or feature
+contexts. The offline NVIDIA install has a separate behavior test. Role
+conditions select checks within these shared files.
+Linux and macOS keep their existing verifiers.
+
+Run the Windows suite with the role and pool ID from the Windows CI matrix:
+
+```sh
+export KITCHEN_YAML=.kitchen_configs/kitchen.windows.yml
+export PUPPET_ROLE=win116425h2azure
+export WORKER_POOL_ID=win11-64-25h2
+bundle exec kitchen test windows-win11-64-25h2
+```
+
+The existing Azure credentials, `KITCHEN_ADMIN_PASSWORD`, and `RONIN_REF` are
+also required. The Windows GitHub Actions workflow sets these values.
+
+Tests read expected settings with `puppet lookup` through `Get-HieraValue`.
+The command uses `C:/ronin_puppet/hiera.yaml`, from the `RONIN_REF` checkout used
+for provisioning, and the selected role's `custom_win_role` fact. Tests specify
+the Hiera keys and fallback keys used by their Puppet profiles. Shared checks
+run once per VM; role conditions select the remaining checks.
+
+Pester 6.2 loads `Pester.BeforeContainer.ps1` automatically for each test file.
+It supplies shared settings during discovery and execution. Tests do not need
+to import a settings file. `Run.RepoRoot` is set to the verifier directory so
+this also works in Kitchen's copied suite, which has no Git checkout.
+
+The verifier installs Pester on the test VM and runs PowerShell there. It returns
+JUnit XML and the generated command script to `test-results/<instance>/`,
+including after test failures. The Windows CI job uploads these files as an
+artifact. Test failures and discovery errors fail the Kitchen command.
+
+Use PSScriptAnalyzer 1.25.0 to check and format the PowerShell files. The Windows
+workflow checks both lint and formatting. From PowerShell at the repository root:
+
+```powershell
+$path = 'test/integration/windows/pester'
+$settings = "$path/PSScriptAnalyzerSettings.psd1"
+Invoke-ScriptAnalyzer -Path $path -Recurse -Settings $settings
+Get-ChildItem $path -Recurse -Include *.ps1,*.psd1 | ForEach-Object {
+    $formatted = Invoke-Formatter -ScriptDefinition (Get-Content $_.FullName -Raw) -Settings $settings
+    [System.IO.File]::WriteAllText($_.FullName, $formatted)
+}
+```
+
+The layout follows [dbatools' test structure](https://github.com/dataplat/dbatools/tree/development/tests):
+separate files, setup in `BeforeAll`, named `Context` blocks where needed, and
+short assertions. These tests use Pester 6 assertions. The analyzer checks syntax
+for Windows PowerShell 5.1 and PowerShell 7.4. Its settings exclude unused-variable
+warnings because Pester setup passes variables between test scopes.
