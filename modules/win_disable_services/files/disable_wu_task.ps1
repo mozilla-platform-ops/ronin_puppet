@@ -10,12 +10,15 @@ $servicesToDisable = @(
     'DoSvc'
 ) | Get-Service -ErrorAction SilentlyContinue
 
-# Disable every update service before a stop can delay the boot task.
-$servicesToDisable | Set-Service -StartupType Disabled
+## Disable each service. Stop if they're still running
 foreach ($s in $servicesToDisable) {
     if ($s.Status -ne "Stopped") {
         Stop-Service $s -Force
-        $s.WaitForStatus('Stopped', "00:02:00")
+        $servicesToDisable.WaitForStatus('Stopped', "00:02:00")
+        $servicesToDisable | Set-Service -StartupType Disabled
+    }
+    else {
+        $s | Set-Service -StartupType Disabled
     }
 }
 
