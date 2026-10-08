@@ -37,5 +37,14 @@ class macos_run_puppet (
       group  => 'wheel',
       mode   => '0755',
     }
+
+    # The 2020 git-osx-installer system config includes ~/.gitcinclude. Under
+    # launchd there is no HOME, so every /usr/local/bin/git call fails with
+    # "bad config line 44" and run-puppet.sh exits before applying. The
+    # bootstrap scripts already delete it; hosts provisioned earlier never
+    # converge again (app-services r8 builders, 2026-10-08).
+    file { '/usr/local/git/etc/gitconfig':
+      ensure => absent,
+    }
   }
 }
