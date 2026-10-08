@@ -25,7 +25,7 @@ tart:
   registry_host: '10.49.56.161'
   registry_port: 5000
   oci_image: 'sequoia-tester'
-  oci_tag: 'prod-latest'
+  oci_tag: 'pr-tester-display-1920x1080-26ca7b6f5a7cd0184bb6c77ca059001d746dc874'
   vm_name_prefix: 'sequoia-tester'
   worker_count: 2
   insecure: true
