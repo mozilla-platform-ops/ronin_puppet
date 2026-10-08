@@ -73,7 +73,7 @@ if [ -d "$gw_downloads" ]; then
     fi
 fi
 # Sweep any leftovers from an interrupted purge on a previous boot.
-for gw_stale in "${gw_downloads}".purging.*; do
+for gw_stale in "${gw_downloads}".purging.* <%= @data_dir %>/cache.purging.*; do
     [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
 done
 <% if @reclaim_free_space_gb -%>
@@ -191,7 +191,15 @@ done
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then
+<% if @generic_worker_engine =~ /^multiuser/ -%>
+    # This script runs as root here. Clean the task user's database, not
+    # root's: root's holds tens of thousands of stale task-dir apps that
+    # lsregister -u can't remove, so scanning it stalls the worker start by
+    # over an hour on every boot.
+    launchctl asuser "$(id -u <%= @task_user %>)" sudo -u <%= @task_user %> python3 /usr/local/bin/lsdb.py --delete-stale
+<% else -%>
     python3 /usr/local/bin/lsdb.py --delete-stale
+<% end -%>
 else
     echo "lsdb.py not found, skipping launch services cleanup."
 fi

@@ -150,10 +150,12 @@ class worker_runner (
                 $owner        = 'root'
                 $group        = 'wheel'
                 $launch_plist = '/Library/LaunchDaemons/org.mozilla.worker-runner.plist'
+                $stale_launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
             } else {
                 $owner        = $task_user
                 $group        = 'staff'
                 $launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
+                $stale_launch_plist = '/Library/LaunchDaemons/org.mozilla.worker-runner.plist'
             }
 
             # Determine architecture
@@ -226,16 +228,25 @@ class worker_runner (
             # binary. These workers reboot themselves between tasks, so there is
             # no reliable manual window to clear this after a bump -- it must
             # land in the same catalog that swaps the binary, before the worker
-            # next starts. Fires only when a binary actually changes
-            # (refreshonly + subscribe). rm -f is idempotent and engine-agnostic:
-            # multiuser* runs from ${gw_root_dir}, the simple engine from
-            # ${data_dir}. The files regenerate on the next clean start.
+            # next starts. Fires only when a binary actually changes, or the
+            # launchd plist does (an engine switch, which moves the cache-state
+            # files from ${data_dir} to ${gw_root_dir}). rm is idempotent and
+            # engine-agnostic.
+            #
+            # The cache dirs go too: without their index the worker can't see
+            # them to evict, and they were ~100 GiB of orphans on 1400 r8s,
+            # enough for the worker to panic on its 20 GiB free-space check.
+            # Deleting that inline blows the exec timeout, so the dir is renamed
+            # aside here (the file resource below recreates it) and
+            # worker-runner.sh deletes it in the background.
             exec { 'purge-stale-gw-cache-state-on-version-change':
-                command     => "/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json",
+                command     => "/bin/sh -c '/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json; [ ! -d ${cache_dir} ] || /bin/mv ${cache_dir} ${cache_dir}.purging.\$(/bin/date +%s)'",
                 refreshonly => true,
+                before      => File[$cache_dir],
                 subscribe   => [
                     File['/usr/local/bin/generic-worker-multiuser'],
                     File['/usr/local/bin/generic-worker-simple'],
+                    File[$launch_plist],
                 ],
             }
 
@@ -262,12 +273,13 @@ class worker_runner (
                 group  => $group,
             }
 
-            # Generate an ed25519 key
+            # Generate an ed25519 key. -s, not -f: some hosts have a zero-byte key
+            # that the simple engine ignored but multiuser exits 69 on.
             $gw_binary = regsubst($generic_worker_engine, '-static$', '')
             exec { 'create ed25519 signing key':
                 cwd     => $data_dir,
                 command => "/usr/local/bin/generic-worker-${gw_binary} new-ed25519-keypair --file ${ed25519_signing_key}",
-                unless  => "/bin/test -f ${ed25519_signing_key}",
+                unless  => "/bin/test -s ${ed25519_signing_key}",
             }
 
             # Set permissions on ed25519 key
@@ -297,6 +309,12 @@ class worker_runner (
                 mode    => '0644',
                 owner   => $owner,
                 group   => $group,
+            }
+
+            # Remove the plist for the other engine, so a host that switches between
+            # simple and multiuser* doesn't start a second worker-runner.
+            file { $stale_launch_plist:
+                ensure => absent,
             }
 
             # Generic Worker multiuser-static requirements
