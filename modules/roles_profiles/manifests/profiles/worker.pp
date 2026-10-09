@@ -113,6 +113,8 @@ class roles_profiles::profiles::worker {
         disable_livelog           => $disable_livelog,
         required_disk_space_mb    => $required_disk_space_mb,
       }
+
+      include vault_agent::absent
       # TODO: don't assume these are need with all workers. break out into another profile?
       include mercurial::system_hgrc
       include mercurial::ext::robustcheckout
