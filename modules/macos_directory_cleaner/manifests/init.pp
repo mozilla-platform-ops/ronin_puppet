@@ -4,11 +4,26 @@ class macos_directory_cleaner (
   require packages::python3  # try to fix ordering in kitchen
   require roles_profiles::profiles::pipconf  # Ensures pipconf runs first
 
+  $directory_cleaner_source = 'https://codeload.github.com/aerickson/directory_cleaner/legacy.tar.gz/2416839a2fc8c6be38947d129e98d51ce021e3e1#sha256=030502a06667d3a493863822b91a972dc156d0d854ce832d084e714de55d891e'
+
+  # Use the original build backend so pyproject.toml remains in the wheel.
+  file { '/opt/directory_cleaner/build-constraints.txt':
+    content => "poetry-core==1.9.0\n",
+    owner   => 'root',
+    group   => 'wheel',
+    mode    => '0644',
+    require => File['/opt/directory_cleaner'],
+  }
+
   # Install the directory_cleaner package using pip3
   exec { 'install_directory_cleaner':
-    command => '/Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 install directory_cleaner==0.2.0',
-    unless  => '/Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 show directory_cleaner | grep "Version: 0.2.0"',
-    require => Class['roles_profiles::profiles::pipconf'],  # Ensure pipconf runs first
+    command     => "/Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 install '${directory_cleaner_source}'",
+    unless      => '/Library/Frameworks/Python.framework/Versions/3.11/bin/pip3 show directory_cleaner | grep "Version: 0.2.0"',
+    environment => [
+      'PIP_CONSTRAINT=/opt/directory_cleaner/build-constraints.txt',
+      'PIP_BUILD_CONSTRAINT=/opt/directory_cleaner/build-constraints.txt',
+    ],
+    require     => [Class['roles_profiles::profiles::pipconf'], File['/opt/directory_cleaner/build-constraints.txt']],
   }
 
   # Create necessary directories if they do not exist
