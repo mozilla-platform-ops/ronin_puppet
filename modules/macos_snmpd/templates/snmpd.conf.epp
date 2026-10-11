@@ -1,0 +1,18 @@
+<%- | String $snmpd_ro_secret | -%>
+# mozilla relops snmpd.conf template (macOS)
+# v1.0 - 2026-05-15
+
+agentAddress udp:161
+
+sysLocation    "MDC1"
+sysContact     "relops@mozilla.com"
+
+# create 'all' view and include all of .1
+view   all         included   .1
+# set a SNMPv1/v2c read-only community (default source) and tie to 'all' view
+rocommunity <%= $snmpd_ro_secret %> default -V all
+
+# expose generic-worker process status and worker pool ID to marlin via
+# NET-SNMP-EXTEND-MIB::nsExtendOutputFull."<token>"
+extend gw_status       /usr/local/bin/snmp_check_gw.sh
+extend worker_pool_id  /usr/local/bin/snmp_worker_pool_id.sh
