@@ -231,18 +231,11 @@ class worker_runner (
             # next starts. Fires only when a binary actually changes, or the
             # launchd plist does (an engine switch, which moves the cache-state
             # files from ${data_dir} to ${gw_root_dir}). rm is idempotent and
-            # engine-agnostic.
-            #
-            # The cache dirs go too: without their index the worker can't see
-            # them to evict, and they were ~100 GiB of orphans on 1400 r8s,
-            # enough for the worker to panic on its 20 GiB free-space check.
-            # Deleting that inline blows the exec timeout, so the dir is renamed
-            # aside here (the file resource below recreates it) and
-            # worker-runner.sh deletes it in the background.
+            # engine-agnostic. The cache dirs this orphans are removed by the
+            # unreferenced-cache sweep in worker-runner.sh on the next start.
             exec { 'purge-stale-gw-cache-state-on-version-change':
-                command     => "/bin/sh -c '/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json; [ ! -d ${cache_dir} ] || /bin/mv ${cache_dir} ${cache_dir}.purging.\$(/bin/date +%s)'",
+                command     => "/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json",
                 refreshonly => true,
-                before      => File[$cache_dir],
                 subscribe   => [
                     File['/usr/local/bin/generic-worker-multiuser'],
                     File['/usr/local/bin/generic-worker-simple'],

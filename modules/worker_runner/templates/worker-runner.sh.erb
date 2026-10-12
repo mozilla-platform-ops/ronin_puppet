@@ -73,7 +73,7 @@ if [ -d "$gw_downloads" ]; then
     fi
 fi
 # Sweep any leftovers from an interrupted purge on a previous boot.
-for gw_stale in "${gw_downloads}".purging.* <%= @data_dir %>/cache.purging.*; do
+for gw_stale in "${gw_downloads}".purging.*; do
     [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
 done
 
@@ -296,15 +296,22 @@ for _ in 1 2 3; do
     sleep 2
 done
 
-# A version change or engine switch renames the old caches aside (see the purge
-# exec in worker_runner's init.pp). On a host short of space the worker's 20 GiB
-# free-space check fails until they're gone, and it fails after claiming a task,
-# so wait for the delete (up to 30 min) instead of losing that task.
+# The purges above (unreferenced caches, the uv cache, downloads) delete in the
+# background. On a host short of space generic-worker's free-space check fails
+# until they finish, and it fails after claiming a task, so wait for them (up to
+# 30 min) instead of losing that task. Done once free space clears the worker's
+# floor plus 10 GB.
+gw_need_gb=$(( <%= @required_disk_space_mb %> / 1024 + 10 ))
+gw_purges="<%= @data_dir %>/cache.orphan.* <%= @data_dir %>/downloads.purging.* /Users/task_*/.cache/uv.purging.*"
+gw_purge_pending() {
+    for gw_p in $gw_purges; do [ -e "$gw_p" ] && return 0; done
+    return 1
+}
 for _ in $(seq 1 180); do
-    ls -d <%= @data_dir %>/cache.purging.* >/dev/null 2>&1 || break
-    [ "$(df -g <%= @data_dir %> | awk 'NR==2{print $4}')" -ge 30 ] && break
-    if ! pgrep -f "rm -rf <%= @data_dir %>/cache.purging" >/dev/null; then
-        for gw_stale in <%= @data_dir %>/cache.purging.*; do
+    gw_purge_pending || break
+    [ "$(df -g <%= @data_dir %> | awk 'NR==2{print $4}')" -ge "$gw_need_gb" ] && break
+    if ! pgrep -f "rm -rf .*\.(orphan|purging)\." >/dev/null; then
+        for gw_stale in $gw_purges; do
             [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
         done
     fi
