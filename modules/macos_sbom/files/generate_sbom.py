@@ -40,6 +40,7 @@ import hashlib
 import json
 import os
 import plistlib
+import re
 import stat
 import subprocess
 import sys
@@ -47,7 +48,7 @@ import time
 import uuid
 
 GENERATOR_NAME = "ronin-puppet-macos-sbom"
-GENERATOR_VERSION = "2.1.0"
+GENERATOR_VERSION = "2.2.0"
 
 SBOM_DIR = "/var/sbom"
 CDX_PATH = os.path.join(SBOM_DIR, "sbom.cdx.json")
@@ -230,6 +231,35 @@ def os_component(facts):
     }]
 
 
+# Receipts that record how a host was built rather than what it runs. Two hosts
+# with identical software on disk can differ in all of these (a reprovisioned host
+# vs one from the original munki build, or two factory batches), so they stay in
+# the document but are left out of the fingerprint. Each entry: (pattern, reason).
+FINGERPRINT_EXCLUDED_RECEIPTS = [
+    (re.compile(r"^com\.github\.munki\.pkg\.p_role_"), "provisioning history (munki)"),
+    (re.compile(r"^com\.mozilla\.relops\.m4-bootstrap$"), "provisioning path"),
+    (re.compile(r"^com\.apple\.(pkg|cdm\.pkg)\.(Keynote|Numbers|Pages|iMovie|GarageBand)"), "bundled with the Mac"),
+    # puppet's packages::virt_audio_s3 installs BlackHole by hand with no receipt
+    # (its postinstall fails under SIP), so only older hosts carry one. The driver
+    # itself is recorded from /Library/Audio/Plug-Ins/HAL instead.
+    (re.compile(r"^audio\.existential\.BlackHole"), "install method; see HAL drivers"),
+]
+FINGERPRINT_PROPERTY = "relops:fingerprint"
+
+# This generator and its wrapper live in /usr/local/bin. Counting them would make
+# every generator upgrade change every host's hash at once, and split the fleet
+# for the length of a rollout, so the tool doesn't describe itself.
+SELF_FILES = ("generate_sbom.py", "run_sbom.sh")
+HAL_DIR = "/Library/Audio/Plug-Ins/HAL"
+
+
+def excluded_reason(identifier):
+    for pattern, reason in FINGERPRINT_EXCLUDED_RECEIPTS:
+        if pattern.search(identifier):
+            return reason
+    return None
+
+
 def receipt_components():
     """Installer receipts: the authoritative record of what was installed."""
     components = []
@@ -252,6 +282,9 @@ def receipt_components():
         prefix = receipt.get("InstallPrefixPath")
         if prefix:
             props.append(prop("macos:install_prefix", prefix))
+        reason = excluded_reason(identifier)
+        if reason:
+            props.append(prop(FINGERPRINT_PROPERTY, "excluded: %s" % reason))
 
         components.append({
             "type": "application",
@@ -262,6 +295,32 @@ def receipt_components():
             "properties": props,
         })
     log("receipts: %d packages" % len(components))
+    return components
+
+
+def hal_driver_components():
+    """Audio drivers by what is installed, not by how (see FINGERPRINT_EXCLUDED_RECEIPTS)."""
+    components = []
+    for path in sorted(glob.glob(os.path.join(HAL_DIR, "*.driver"))):
+        info = os.path.join(path, "Contents", "Info.plist")
+        try:
+            with open(info, "rb") as handle:
+                plist = plistlib.load(handle)
+        except (OSError, ValueError):
+            plist = {}
+        name = os.path.basename(path)
+        version = str(plist.get("CFBundleShortVersionString") or plist.get("CFBundleVersion") or "unknown")
+        components.append({
+            "type": "application",
+            "bom-ref": "hal:%s" % name,
+            "name": name,
+            "version": version,
+            "properties": [p for p in [
+                prop("macos:hal_driver", path),
+                prop("macos:bundle_id", plist["CFBundleIdentifier"]) if plist.get("CFBundleIdentifier") else None,
+            ] if p],
+        })
+    log("%s: %d drivers" % (HAL_DIR, len(components)))
     return components
 
 
@@ -384,6 +443,8 @@ def local_bin_components():
             version = probed[key]
         if version:
             component["version"] = version
+        if entry in SELF_FILES:
+            props.append(prop(FINGERPRINT_PROPERTY, "excluded: the SBOM generator itself"))
         if digest and build_probe and version:
             props.append(prop("file:sha256_host_built", digest))
         elif digest:
@@ -470,6 +531,8 @@ def fingerprint(components):
     """
     identities = []
     for component in components:
+        if any(p.get("name") == FINGERPRINT_PROPERTY for p in component.get("properties", []) or []):
+            continue
         digest = ""
         for entry in component.get("hashes", []):
             if entry.get("alg") == "SHA-256":
@@ -557,6 +620,7 @@ def main():
     for name, collector in (
         ("os", lambda: os_component(facts)),
         ("receipts", receipt_components),
+        ("hal_drivers", hal_driver_components),
         ("xcode", xcode_components),
         ("pip", pip_components),
         ("local_bin", local_bin_components),
