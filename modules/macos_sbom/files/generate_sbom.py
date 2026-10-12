@@ -47,7 +47,7 @@ import time
 import uuid
 
 GENERATOR_NAME = "ronin-puppet-macos-sbom"
-GENERATOR_VERSION = "2.0.0"
+GENERATOR_VERSION = "2.1.0"
 
 SBOM_DIR = "/var/sbom"
 CDX_PATH = os.path.join(SBOM_DIR, "sbom.cdx.json")
@@ -85,6 +85,29 @@ VERSION_COMMANDS = {
     "generic-worker": ["--version"],
     "taskcluster": ["version"],
 }
+
+# Binaries puppet compiles on each host (packages::git builds git from source).
+# A local build is not byte-reproducible, so the same version hashes differently
+# on every host and would split a role into one "state" per machine. These are
+# identified by version instead; the host's hash is kept as a property for
+# forensics but left out of the fingerprint. Each maps to the argv that reports
+# the version of the build it belongs to.
+HOST_BUILT = {
+    "git": ["/usr/local/bin/git", "--version"],
+    "scalar": ["/usr/local/bin/git", "--version"],
+}
+HOST_BUILT_PREFIXES = {
+    "git-": ["/usr/local/bin/git", "--version"],
+}
+
+
+def host_built_probe(entry):
+    if entry in HOST_BUILT:
+        return HOST_BUILT[entry]
+    for prefix, argv in HOST_BUILT_PREFIXES.items():
+        if entry.startswith(prefix):
+            return argv
+    return None
 
 MACHO_MAGIC = (
     b"\xcf\xfa\xed\xfe",  # 64-bit little endian
@@ -316,6 +339,7 @@ def local_bin_components():
         log("no %s" % LOCAL_BIN)
         return components
 
+    probed = {}
     for entry in entries:
         path = os.path.join(LOCAL_BIN, entry)
         try:
@@ -349,10 +373,20 @@ def local_bin_components():
             "name": path,
             "properties": props,
         }
+        digest = sha256_file(path)
+        build_probe = host_built_probe(entry)
+        if build_probe:
+            key = tuple(build_probe)
+            if key not in probed:
+                stdout, _ = run(build_probe, timeout=5)
+                line = stdout.strip().splitlines()[0].strip() if stdout.strip() else ""
+                probed[key] = line if plausible_version(line) else ""
+            version = probed[key]
         if version:
             component["version"] = version
-        digest = sha256_file(path)
-        if digest:
+        if digest and build_probe and version:
+            props.append(prop("file:sha256_host_built", digest))
+        elif digest:
             component["hashes"] = [{"alg": "SHA-256", "content": digest}]
         components.append(component)
 
