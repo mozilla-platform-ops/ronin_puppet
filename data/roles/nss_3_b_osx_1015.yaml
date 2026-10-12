@@ -46,3 +46,6 @@ generic_worker_secrets:
 
 # Level 3: no live logs
 disable_livelog: true
+
+# Evict checkout caches before a large build needs the space (worker_runner).
+required_disk_space_mb: 61440

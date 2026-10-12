@@ -23,7 +23,7 @@ Describe 'Files' -Tag IntegrationTests {
     Context 'GPU and audio drivers' {
         if ($Tester -or $Server25) {
             It 'caches the GPU installer' {
-                $installer = "C:\Windows\Temp\$(Get-HieraValue 'windows.gpu.name').exe"
+                $installer = "C:\RoninPackages\$(Get-HieraValue 'windows.gpu.name').exe"
                 Test-Path $installer | Should-BeTrue
                 if ($Win25) { (Get-Item $installer).Length | Should-BeGreaterThan 100000000 }
             }

@@ -1,12 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $driverName = 'ronin_puppet_offline_nvidia_grid_test'
-$driverPath = "C:\Windows\Temp\$driverName.exe"
+$driverPath = "C:\RoninPackages\$driverName.exe"
 $manifestPath = "C:\Windows\Temp\$driverName.pp"
 $puppetLog = "C:\Windows\Temp\$driverName.log"
 Set-Content -Path $driverPath -Value 'preseeded installer' -NoNewline -Encoding ASCII
 try {
     $env:FACTER_custom_win_gpu = 'no'
-    $env:FACTER_custom_win_temp_dir = 'C:\Windows\Temp'
+    $env:FACTER_custom_win_temp_dir = 'C:\RoninPackages'
     $env:NO_COLOR = '1'
     $puppet = Join-Path ${env:ProgramFiles} 'Puppet Labs\Puppet\bin\puppet.bat'
     if (-not (Test-Path $puppet)) {

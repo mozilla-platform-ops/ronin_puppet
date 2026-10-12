@@ -75,3 +75,6 @@ generic_worker_secrets:
 telegraf:
   user: "%{lookup('vault_secrets::telegraf.data.user')}"
   password: "%{lookup('vault_secrets::telegraf.data.password')}"
+
+# Evict checkout caches before a large build needs the space (worker_runner).
+required_disk_space_mb: 61440
