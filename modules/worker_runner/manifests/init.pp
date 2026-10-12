@@ -27,6 +27,64 @@ class worker_runner (
     # assets, as installed-binary-name => expected sha256. Opt-in per role;
     # anything not listed keeps the normal ad-hoc GitHub release path.
     Hash[String, String] $signed_binaries                                  = {},
+    # Free space on / in whole GB below which reclaim_worker_caches.sh purges the
+    # Rosetta and CoreSymbolication caches between tasks. Must stay above
+    # generic-worker's requiredDiskSpaceMegabytes (20480, i.e. 20 GiB) with room
+    # for a task's own footprint, or the worker still hits exit 69 before the
+    # reclaim gets a chance to run. Purging is not free -- see the script -- so
+    # this is a floor to stay off, not a target to sit at.
+    #
+    # undef (the default) disables the feature outright: no script is installed,
+    # no sudoers rule is granted, and worker-runner.sh renders without the call.
+    # Opt in per role. Only the tart VM guests need it -- their 87 GiB volume over
+    # a ~74 GB image baseline leaves ~20 GiB headroom, where sampled bare-metal
+    # testers sit at 89-154 GiB free with caches of 1-3 GB rather than 12-29 GB.
+    Optional[Integer] $reclaim_free_space_gb                                = undef,
+    # End-of-task action for the worker-runner wrapper. 'reboot' (the default) is
+    # correct for every physical host and Windows role: they reboot in place
+    # between tasks. 'halt' is for tart VM GUESTS ONLY, doing per-task reversion
+    # (bug 2071007): the guest powers OFF after each task so the HOST's tartworker
+    # KeepAlive daemon relaunches its wrapper, which reclones a fresh guest before
+    # the next `tart run`. An in-guest reboot would restart the guest OS without
+    # `tart run` ever exiting, so it would never trigger the host-side reclone --
+    # halt is what makes the VM power off and the wrapper fire.
+    #
+    # NEVER set 'halt' on a physical host: it would power the machine off with
+    # nothing to turn it back on. Gated to the guest role only; default reboot.
+    Enum['reboot', 'halt'] $post_task_action                                = 'reboot',
+    # Clear Firefox's Metal shader caches out of the task user's Darwin cache dir
+    # at every worker start. Loading a populated Metal cache costs ~500ms on the
+    # first shader compile, which shows up as cold-pageload regressions on canvas
+    # pages (bug 2072152). Only the Intel 14.70 testers exhibit it -- the arm64
+    # 15.x testers do not -- and clearing a cache that is not slow to load only
+    # throws away work, so this is opt-in per role rather than a fleet default.
+    #
+    # false (the default) renders worker-runner.sh exactly as it did before this
+    # landed.
+    Boolean $purge_metal_shader_cache                                      = false,
+    # Remove the task user's ~/Library/Application Support/Firefox at every worker
+    # start. With a task user that persists across tasks it accumulates profiles,
+    # and background task profiles stamped by a version-bump try push make every
+    # later task on the host fail downgrade protection (bug 2046807).
+    #
+    # false (the default) renders worker-runner.sh exactly as it did before this
+    # landed.
+    Boolean $purge_firefox_app_support                                     = false,
+    # Point generic-worker's livelog at /bin/false so no live log is served.
+    # Level 3 workers shouldn't expose live logs; this matches the
+    # linux-d2g-trusted pools in fxci-config. generic-worker treats livelog as
+    # best effort, so tasks still run and upload live_backing.log as usual. Used
+    # instead of enableLiveLog because that key only exists from v77.0.0 and
+    # older generic-workers reject unknown config keys.
+    Boolean $disable_livelog                                               = false,
+    # generic-worker's requiredDiskSpaceMegabytes: free space it must see before
+    # claiming a task, evicting directory caches to get there. Builders raise it
+    # because 20 GiB is less than a large build writes: m4-122 kept ~93 GB of
+    # checkout caches, started tasks with ~36 GB free so nothing was ever
+    # evicted, and custom-car/plain builds died with "No space left on device".
+    # Every host must be able to reach the floor by evicting caches alone, or
+    # it exits 69 with "nothing left to delete".
+    Integer $required_disk_space_mb                                        = 20480,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -126,6 +184,22 @@ class worker_runner (
             $unknown_signed = $signed_binaries.keys - $taskcluster_binaries.keys
             unless empty($unknown_signed) {
                 fail("[${module_name}] signed_binaries names no such taskcluster binary: ${unknown_signed.join(', ')}")
+            }
+
+            # The purge targets one specific user's cache dir, so it only means
+            # something where that user persists across tasks: the simple engine
+            # (script and task are both ${task_user}) and multiuser-static (static
+            # ${task_user}, resolved via sudo). The plain multiuser engine builds a
+            # fresh task user per task, so its cache dir is new every time and there
+            # is nothing stale to clear. Opting in there would silently do nothing,
+            # which is the failure mode #1329 shipped with and that the hiera
+            # comments here and in profiles::worker exist to prevent -- so say so
+            # instead of quietly rendering a no-op.
+            if $purge_metal_shader_cache and $generic_worker_engine == 'multiuser' {
+                fail("[${module_name}] purge_metal_shader_cache needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Metal cache is already empty")
+            }
+            if $purge_firefox_app_support and $generic_worker_engine == 'multiuser' {
+                fail("[${module_name}] purge_firefox_app_support needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Application Support is already empty")
             }
 
             # Install binaries directly from GitHub releases, except any the role
@@ -255,6 +329,21 @@ class worker_runner (
                 ensure  => present,
                 content => template("${module_name}/worker-runner.sh.erb"),
                 mode    => '0755',
+            }
+
+            # Opt-in per role; absent entirely where $reclaim_free_space_gb is
+            # undef, so roles that do not need it gain no resource at all. Runs as
+            # root via a NOPASSWD sudoers rule (see
+            # roles_profiles::profiles::cltbld_user), so it must not be writable
+            # by the task user that can invoke it.
+            if $reclaim_free_space_gb {
+                file { '/usr/local/bin/reclaim_worker_caches.sh':
+                    ensure => present,
+                    source => "puppet:///modules/${module_name}/reclaim_worker_caches.sh",
+                    owner  => 'root',
+                    group  => 'wheel',
+                    mode   => '0755',
+                }
             }
 
             # Add taskcluster host entry

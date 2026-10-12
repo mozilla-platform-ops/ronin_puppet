@@ -48,6 +48,18 @@ windows:
   ext_pkg_src: "https://roninpuppetassets.blob.core.windows.net/binaries"
   ext_gpg_src: "https://roninpuppetassets.blob.core.windows.net/binaries/gpg"
 
+  # Fleetbench - fleet hardware-health benchmarking collector (RELOPS-2402)
+  # Collector binary is pulled from GitHub releases; pin the version here.
+  fleetbench:
+    version: '0.4.6'
+    # From the release's own SHA256SUMS. Bump together with version - archive verifies it,
+    # so a truncated download fails loudly instead of leaving a partial exe that satisfies
+    # the `creates` guard forever.
+    sha256: '8b98f0e72a8d1fff1756a4bc2c806a0fbc9583381218fed0c9d633446c7f07b4'
+    download_url: "https://github.com/mozilla-platform-ops/fleetbench/releases/download"
+    install_dir: "%{facts.custom_win_systemdrive}\\fleetbench"
+    results_dir: "%{facts.custom_win_systemdrive}\\fleetbench\\results"
+
   # Taskcluster resources
   taskcluster:
     root_url: "https://firefox-ci-tc.services.mozilla.com"
@@ -57,8 +69,8 @@ windows:
     relops_az: "https://roninpuppetassets.blob.core.windows.net/binaries/taskcluster"
     relops_s3: "https://s3-us-west-2.amazonaws.com/ronin-puppet-package-repo/Windows/taskcluster"
     download_url: "https://github.com/taskcluster/taskcluster/releases/download"
-    version: "99.2.0"
-    hw_version: "96.2.2"
+    version: "110.1.0"
+    hw_version: "110.0.0"
 
     generic-worker:
       name:
@@ -88,17 +100,32 @@ windows:
     py3_pip_version: '23.3.2'
     zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
+  device_guard:
+    vbs_enabled: true
+    hvci_enabled: true
+  intel_graphics_software:
+    # Default matches the NUC13 production pools. NUC12 roles override to 'absent'.
+    ensure: 'present'
+    # Staged into the golden WIM by worker-images prepare-base-vhdx (extras.files), and run
+    # HERE at deploy time on real hardware. Not C:\bake\extras: sysprep deletes C:\bake
+    # before capture, which is why deployed nodes had no installer and no service.
+    installer_path: 'C:\extras\gfx_win_*.exe'
+    service_name: 'IntelGraphicsSoftwareService'
+    fail_if_missing: false
   driver:
     gfx:
-      version: '101.4255'
+      # Target for win_packages::drivers::intel_gfx (driver only, --noExtras).
+      # Moving the NUC12 reference pool up from the 31.0.101.3729 its MDT image shipped, to
+      # match the 32.0.101.70xx the baked WIM carries - otherwise ref and ref-alpha are a
+      # major driver version apart and not comparable.
+      # REQUIRES gfx_win_101.7088.exe on the PUBLIC roninpuppetassets mirror; only
+      # gfx_win_101.4255.exe is there today (7085/7088 both 404).
+      version: '101.7088'
   git:
     version: '2.49.0'
   googlechrome:
     version: 'latest'
   gpu:
-    name: "538.15_grid_win10_win11_server2019_server2022_dch_64bit_international_azure_swl"
-    display_name: "NVIDIA Graphics Driver 538.15"
-  gpu_a10:
     name: "573.96_grid_win10_win11_server2022_server2025_dch_64bit_international_azure_swl"
     display_name: "NVIDIA Graphics Driver 573.96"
   hg:

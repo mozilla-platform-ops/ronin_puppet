@@ -6,3 +6,20 @@ worker:
     protocolPipe: \\.\pipe\generic-worker
     configPath: <%= $win_taskcluster::worker_runner::config_file %>
 cacheOverRestarts: true
+<% if $win_taskcluster::worker_runner::task_drive { -%>
+<% if $win_taskcluster::worker_runner::work_volume {
+    $storage_drive = 'D:'
+    $tasks_dir = 'D:\tasks'
+  } else {
+    $storage_drive = $win_taskcluster::worker_runner::task_drive
+    $tasks_dir = $win_taskcluster::worker_runner::task_drive ? {
+      'C:'    => 'C:\Users',
+      default => 'D:\tasks',
+    }
+  }
+-%>
+workerConfig:
+    tasksDir: '<%= $tasks_dir %>'
+    cachesDir: '<%= $storage_drive %>\caches'
+    downloadsDir: '<%= $storage_drive %>\downloads'
+<% } -%>

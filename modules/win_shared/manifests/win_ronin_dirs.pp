@@ -24,6 +24,18 @@ class win_shared::win_ronin_dirs {
       file { $logdir:
         ensure => directory,
       }
+
+      acl { [$roninprogramdata, "${roninprogramdata}\\ronin", $semaphoredir]:
+        owner                      => 'S-1-5-18',
+        inherit_parent_permissions => false,
+        purge                      => true,
+        permissions                => [
+          { identity => 'S-1-5-18', rights => ['full'] },
+          { identity => 'S-1-5-32-544', rights => ['full'] },
+          { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+        ],
+        require                    => File[$roninprogramdata, "${roninprogramdata}\\ronin", $semaphoredir],
+      }
     }
     default: {
       fail("${module_name} does not support ${$facts['os']['name']}")

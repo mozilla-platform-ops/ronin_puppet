@@ -86,7 +86,7 @@ class win_disable_services::disable_uac (
         data => '0',
       }
     }
-    'win_2022_2009':{
+    'win_2022_2009', 'win_2025_2009':{
       registry_value { 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA':
         type => dword,
         data => '0',

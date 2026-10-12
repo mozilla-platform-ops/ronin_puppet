@@ -9,6 +9,13 @@ class roles_profiles::profiles::hardware_observability {
             server    => lookup('windows.datacenter.marlin.ip'),
             server_pw => lookup('marlin_pw')
         }
+        class { win_fleetbench::init:
+            version      => lookup('windows.fleetbench.version'),
+            download_url => lookup('windows.fleetbench.download_url'),
+            install_dir  => lookup('windows.fleetbench.install_dir'),
+            results_dir  => lookup('windows.fleetbench.results_dir'),
+            sha256       => lookup('windows.fleetbench.sha256'),
+        }
     }
     default: {
       fail("${$facts['os']['name']} not supported")

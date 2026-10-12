@@ -16,8 +16,52 @@ worker:
   worker_id: "%{facts.networking.hostname}"
   client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
   access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
-  generic_worker_engine: multiuser-static
+  # NOTE: this value is currently INERT for this role, and #1330's rationale for
+  # setting it was wrong. secrets/vault.yaml is the highest-priority hiera level and
+  # its `worker:` hash carries its own generic_worker_engine, so
+  # lookup('worker.generic_worker_engine') always resolves from vault and never from
+  # here. Verified 2026-08-13 with `puppet lookup worker.generic_worker_engine`
+  # against a vault stand-in: returns `simple` while this file said multiuser-static.
+  # That is also why every tester image has rendered `if [[ "simple" == ... ]]` since
+  # #964 set this role to multiuser-static on 2026-01-12 -- the role value was never
+  # read, so no rebuild was ever going to flip the engine.
+  #
+  # Kept as `simple` rather than reverted to multiuser-static so that if the vault
+  # key is ever retired (as `worker.taskcluster_version` is being), this role does not
+  # silently flip engine on the next rebuild. Moving the guests to multiuser-static
+  # means changing the vault data, not this line, and wants validating on one or two
+  # slots on its own.
+  generic_worker_engine: simple
   idle_timeout_secs: 21600 # 6 hours
+
+# Purge the Rosetta and CoreSymbolication caches between tasks when free space on /
+# drops below this. Set only for this role: the guests run on an 87 GiB volume over a
+# ~74 GB image baseline, leaving ~20 GiB against generic-worker's 20 GiB
+# requiredDiskSpaceMegabytes, so the two caches can and did push 12 of 26 slots into
+# an exit-69 reboot loop. Sampled bare-metal testers have 89-154 GiB free with caches
+# of 1-3 GB and do not need it.
+#
+# Deliberately top-level and NOT inside the `worker:` hash above. secrets/vault.yaml
+# is the highest-priority hiera level and owns its own `worker:` hash; for a dotted
+# key hiera resolves the root key from the first source that has it and then
+# traverses, so vault's hash wins outright and a sub-key present only here never
+# resolves. #1329 shipped it under `worker:` and the feature compiled out silently --
+# the 2026-08-13 tester image built with the role opted in and still had no reclaim
+# script, no sudoers grant and no call in worker-runner.sh.
+reclaim_free_space_gb: 30
+
+# --- ACTIVATION (bug 2071007) -------------------------------------------------
+# TOP-LEVEL keys (NOT under `worker:` -- the vault's `worker:` hash shadows nested
+# keys; profiles::worker prefers these top-level role keys over the vault). These
+# move the guests to the multiuser-static engine + per-task reversion.
+#   generic_worker_engine: multiuser-static -- CoT-capable, current supported engine
+#   taskcluster_version: 91.0.2 -- multiuser-static needs gw >= 86.0.0; the vault's
+#     nested worker.taskcluster_version (60.3.4) is too old and exits 69
+#   post_task_action: halt -- guest powers off after a RESOLVED task so the host
+#     reclones a clean guest (paired with tart.revert_after_task on the host role)
+generic_worker_engine: multiuser-static
+taskcluster_version: 91.0.2
+post_task_action: halt
 
 packages_classes:
   - mercurial
@@ -75,3 +119,19 @@ cltbld_user:
 generic_worker_secrets:
     taskcluster_client_id: "%{lookup('vault_secrets::generic_worker.data.taskcluster_client_id')}"
     taskcluster_access_token: "%{lookup('vault_secrets::generic_worker.data.taskcluster_access_token')}"
+
+# Unprivileged, key-only account the tart host uses to read the drain signal out
+# of this guest (roles_profiles::profiles::tart_guest_probe). It replaces the
+# guest `admin`/`admin` account removed in Bug 2069268.
+#
+# Only the PUBLIC key belongs here. The private half is a host-side secret --
+# see tart.guest_probe_key_content in data/roles/tart_worker.yaml.
+#
+# The private half is in vault as tart_guest_probe.data.private_key; profiles::tart
+# writes it to /etc/tart/guest_probe_key on the host. Puppet fails the run while
+# ssh_keys is empty, deliberately -- a keyless probe account is worse than none.
+tart_guest_probe:
+    user: 'probe'
+    log_path: '/opt/worker/logs/stdout.log'
+    ssh_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDHO41LUqx6she/T1KVw2/G6VYxfQjGlLwFJ89sL368i tart-guest-probe (bug 2069268)

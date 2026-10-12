@@ -131,22 +131,7 @@ else {
     $os_version = $null
 }
 
-## Get the user that is to be provisioned
 Write-Log -Message ("{0} :: Executing task-user-init as $currentuser - {1:o}" -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-
-try {
-    $localuser = (Get-Content "C:\worker-runner\current-task-user.json" | ConvertFrom-Json -ErrorAction Stop).name
-    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Found current-task-user $localuser", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-}
-catch {
-    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Unable to find current task user", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    exit 1
-}
-
-while (-not (Get-LocalUser -Name $localuser -ErrorAction SilentlyContinue)) {
-    Write-Log -Message ('{0} :: {1} - {2:o}' -f $($MyInvocation.MyCommand.Name), "Waiting for $localuser to be created", (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-    Start-Sleep -Seconds 5
-}
 
 switch ($os_version) {
     "win_11_2009" {
@@ -164,8 +149,8 @@ switch ($os_version) {
             }
         }
 
-        ## set git config
-        ## set git config
+        ## Copied task repositories can keep their original owner.
+        ## Mark them as safe so that Git can use them.
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
         # if ($location -eq "azure") {
@@ -193,7 +178,8 @@ switch ($os_version) {
             }
         }
 
-        ## set git config
+        ## Copied task repositories can keep their original owner.
+        ## Mark them as safe so that Git can use them.
         git config --global core.longpaths true
         git config --global --add safe.directory '*'
         # if ($location -eq "azure") {

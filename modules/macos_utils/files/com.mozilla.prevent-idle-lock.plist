@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.mozilla.prevent-idle-lock</string>
+  <!--
+    bug 2073762. Hold a PreventUserIdleDisplaySleep assertion for the whole life
+    of the task user's GUI session.
+
+    Nothing in a headless worker session ever generates HID input, so
+    IOHIDSystem's HIDIdleTime climbs monotonically from console login and is NOT
+    reset by task activity (measured on a live m-vms guest: 264 -> 935s while the
+    slot was serving tasks). At com.apple.screensaver's default idleTime of 1200s
+    the screen saver starts and the session locks; loginwindow becomes frontmost,
+    Services.focus.activeWindow goes null, and any harness that waits on a focus
+    event hangs until its no-output timeout.
+
+    `pmset displaysleep 0` does NOT cover this -- it stops display sleep, not the
+    screen saver. Measured on a guest with displaysleep 0:
+    PreventUserIdleDisplaySleep was 0, i.e. no assertion held at all.
+
+    caffeinate is the belt half of belt-and-braces; the braces are the
+    -currentHost idleTime 0 write in prevent_idle_lock.pp. The assertion is the
+    more reliable of the two because it does not depend on which preference
+    domain a given macOS release reads, and -currentHost writes are keyed to the
+    hardware UUID (which is what made the image-build write in macos-vms miss).
+
+    -d prevent display idle sleep (this is what suppresses the screen saver)
+    -i prevent system idle sleep
+    KeepAlive so the assertion is re-established if caffeinate is ever killed.
+  -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string>
+    <string>-d</string>
+    <string>-i</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+</dict>
+</plist>

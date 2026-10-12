@@ -1,12 +1,10 @@
 ---
 
+windows_task_drive: 'C:'
+windows_work_volume: true
+
 win-worker:
   function: "builder"
-
-  # Mozilla profile
-  mozilla_profile:
-    source: "https://roninpuppetassets.blob.core.windows.net/binaries/mozilla/mozprofilerprobe.mof"
-    local:  "%{facts.custom_win_roninprogramdata}\\mozprofilerprobe.mof"
 
   # Logging
   # Logging level options debug, verbose, or restricted.

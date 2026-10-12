@@ -533,8 +533,13 @@ configure_git_pat_auth
 
 # block_on_network
 
-# Call the run_puppet function in a endless loop
+# Normal boot/worker execution retries until Puppet converges. Fleetroll
+# requests a bounded operator action by setting FLEETROLL_SINGLE_RUN=1.
 while ! run_puppet; do
+    if [ "${FLEETROLL_SINGLE_RUN:-0}" = "1" ]; then
+        echo -e "${_RED}Puppet run failed; exiting after one Fleetroll-requested attempt${_RESET}"
+        exit 1
+    fi
     echo -e "${_RED}Puppet run failed; re-trying after 10m${_RESET}"
     sleep 600
 done

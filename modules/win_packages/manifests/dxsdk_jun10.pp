@@ -3,10 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::dxsdk_jun10 {
-  # The ARM64 builder only runs profile generation and does not need the
-  # legacy DirectX SDK. Its NetFx3 payload is not available on Azure ARM64
-  # desktop images, so skip both NetFx3 and DXSDK there.
-  if $facts['custom_win_os_arch'] != 'aarch64' {
+  if $facts['custom_win_os_arch'] != 'aarch64' and $facts['custom_win_os_version'] != 'win_2025_2009' {
     $prog86x = $facts['custom_win_programfilesx86']
     $sdk_dir = 'Microsoft DirectX SDK (June 2010)'
     $file    = 'DXSDK_Jun10.exe'

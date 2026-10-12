@@ -20,12 +20,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # macOS 14 is retiring; use the closest supported OS on Intel.
           - role: gecko_t_osx_1400_r8
-            runner: macos-14
+            runner: macos-15-intel
             suite: default-localhost
           - role: gecko_t_osx_1500_m4
             runner: macos-15
             suite: default-localhost
+          # Catalina is unavailable; use the oldest supported Intel image.
           - role: gecko_t_osx_1015_r8
             runner: macos-15-intel
             suite: default-localhost
@@ -37,12 +39,12 @@ jobs:
       PIP_BREAK_SYSTEM_PACKAGES: '1'
     steps:
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           bundler-cache: false
 
@@ -56,7 +58,7 @@ jobs:
           echo "${GEM_HOME}/bin" >> "$GITHUB_PATH"
 
       - name: Cache gems
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.gem
           key: v1-gems-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.ruby-version', 'Gemfile.lock') }}
@@ -106,7 +108,7 @@ jobs:
           done
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
 
       - name: Seed Vault with test data
         run: |

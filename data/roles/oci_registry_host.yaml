@@ -24,12 +24,32 @@ oci_registry:
   # Daily maintenance retention: keep the newest N prod-<sha> images, prune
   # transient PR build tags (pr-<n>-<sha>); "*-latest" moving tags always kept.
   # maintenance_hour is the local hour (0-23) the GC job runs.
-  keep_prod_shas: 10
+  #
+  # keep_prod_shas was 10, which cannot fit: this volume is 228GiB and a Tart VM
+  # image is 20-24GiB, so 10 shas across sequoia-tester + sonoma-signer-dep asks
+  # for 400GiB+. Nothing was ever eligible, so GC reported "0 blobs eligible"
+  # while the volume filled -- it hit 6GiB free on 2026-08-13 and broke both
+  # tester and signer pushes. 3 is what the disk can actually hold; min_free_gib
+  # is the real guardrail and tightens retention further when needed.
+  keep_prod_shas: 3
+  min_keep_prod_shas: 1
+  min_free_gib: 60
   prune_pr_shas: true
+  # Collect manifests that no tag points at any more. Each image promote leaves
+  # the previous prod-latest manifest untagged but still on disk, pinning its
+  # blobs forever with the old --delete-untagged=false (31 stale revisions vs 4
+  # live tags on sequoia-tester, 2026-08-17). Suppressed automatically while an
+  # upload is in flight, since it can collect a pushed-but-not-yet-tagged image.
+  delete_untagged: true
+  # An _uploads dir touched within this many minutes counts as a live push.
+  upload_inflight_minutes: 60
   maintenance_hour: 9
   # Health check: alert when the storage volume is at/above this percent full,
-  # or /v2/ is unreachable. health_interval is the poll cadence (seconds).
+  # has less than alert_min_free_gib free, or /v2/ is unreachable. Percent alone
+  # is too coarse -- 85% of 228GiB still leaves only ~34GiB, barely more than one
+  # image push. health_interval is the poll cadence (seconds).
   disk_threshold_pct: 85
+  alert_min_free_gib: 50
   health_interval: 300
   alert_email: releng-ci-alerts@mozilla.com
   smtp_relay: smtp1.mail.mdc1.mozilla.com

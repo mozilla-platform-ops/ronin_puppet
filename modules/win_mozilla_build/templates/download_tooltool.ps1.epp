@@ -55,9 +55,15 @@ function Invoke-DownloadWithRetryGithub {
         try {
             $attemptStartTime = Get-Date
             $webClient = New-Object System.Net.WebClient
-            $webClient.Headers.Add("Accept", "application/vnd.github+json")
-            $webClient.Headers.Add("Authorization", "Bearer $($PAT)")
-            $webClient.Headers.Add("X-GitHub-Api-Version", "2022-11-28")
+            # Only send GitHub API auth headers when a PAT is actually provided. For a
+            # public raw.githubusercontent.com file with an EMPTY Bearer token, GitHub
+            # returns 404 (not 401) — which is why an unauthenticated download works but
+            # an empty-PAT one 404s (e.g. the bake, which has no custom_win_github_pat).
+            if (-not [string]::IsNullOrEmpty($PAT)) {
+                $webClient.Headers.Add("Accept", "application/vnd.github+json")
+                $webClient.Headers.Add("Authorization", "Bearer $($PAT)")
+                $webClient.Headers.Add("X-GitHub-Api-Version", "2022-11-28")
+            }
             $webClient.DownloadFile($Url, $Path)
             $attemptSeconds = [math]::Round(($(Get-Date) - $attemptStartTime).TotalSeconds, 2)
             Write-Host "Package downloaded in $attemptSeconds seconds"

@@ -77,8 +77,161 @@ for gw_stale in "${gw_downloads}".purging.*; do
     [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
 done
 
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1927416
-# find /private/var/folders/ -depth -path '*/C/org.mozilla.*' -type d -exec rm -rf {} +
+# Directory caches that directory-caches.json no longer references are invisible
+# to the worker: it cannot evict them, reports "nothing left to delete", and
+# exits 69 below its free-space floor. r8-199/200 (gecko-3-b-osx-1015) each held
+# four ~14 GB gecko checkout caches against an empty index. Same rename-then-
+# detached-delete as the file cache above.
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    gw_dir_caches_json=<%= @gw_root_dir %>/directory-caches.json
+else
+    gw_dir_caches_json=<%= @data_dir %>/directory-caches.json
+fi
+gw_caches=<%= @data_dir %>/cache
+for gw_cache in "$gw_caches"/*; do
+    [ -d "$gw_cache" ] || continue
+    gw_cache_name=$(basename "$gw_cache")
+    grep -qF "/${gw_cache_name}\"" "$gw_dir_caches_json" 2>/dev/null && continue
+    gw_orphan="${gw_caches}.orphan.${gw_cache_name}"
+    if mv "$gw_cache" "$gw_orphan" 2>/dev/null; then
+        echo "Removing unreferenced directory cache ${gw_cache_name}"
+        ( rm -rf "$gw_orphan" >/dev/null 2>&1 & )
+    fi
+done
+for gw_stale in "${gw_caches}".orphan.*; do
+    [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+done
+
+# Builders reuse one task user for the host's life (bug 1952130), so its uv
+# cache never resets: 35-36 GB on r8-139/198/199. Sizing it takes ~2 min, so
+# gate on free space instead and drop it when the volume runs low, well before
+# generic-worker's 20 GiB floor. uv refetches on the next task.
+gw_free_gb=$(df -g <%= @data_dir %> | awk 'NR==2 {print $4}')
+if [ -n "$gw_free_gb" ] && [ "$gw_free_gb" -lt 40 ]; then
+    for uv_cache in /Users/task_*/.cache/uv; do
+        [ -d "$uv_cache" ] || continue
+        uv_purge="${uv_cache}.purging.$$"
+        if mv "$uv_cache" "$uv_purge" 2>/dev/null; then
+            echo "Low disk (${gw_free_gb} GB free), removing ${uv_cache}"
+            ( rm -rf "$uv_purge" >/dev/null 2>&1 & )
+        fi
+    done
+fi
+for uv_stale in /Users/task_*/.cache/uv.purging.*; do
+    [ -e "$uv_stale" ] && ( rm -rf "$uv_stale" >/dev/null 2>&1 & )
+done
+<% if @reclaim_free_space_gb -%>
+
+# The file cache above is generic-worker's own. Two OS-owned caches -- the Rosetta
+# 2 AOT cache and CoreSymbolication -- grow unbounded too, are invisible to the
+# worker, and had taken 12 of 26 gecko-t-osx-1500-m-vms slots out of production by
+# 2026-08-13. Run after the purges above so the free-space reading reflects them,
+# and threshold-gated inside the script so it is a no-op where there is headroom.
+# Needs root, hence sudo: see the sudoers rule in
+# roles_profiles::profiles::cltbld_user.
+#
+# Emitted only for roles that set worker.reclaim_free_space_gb. Roles that do not
+# render this file exactly as they did before the reclaim work landed.
+if [ -x /usr/local/bin/reclaim_worker_caches.sh ]; then
+    sudo /usr/local/bin/reclaim_worker_caches.sh <%= @reclaim_free_space_gb %>
+else
+    echo "reclaim_worker_caches.sh not found, skipping OS cache reclaim."
+fi
+<% end -%>
+
+<% if @purge_metal_shader_cache -%>
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2072152 (and 1927416 before it)
+# Metal keeps a compiled-shader cache per app bundle under the task user's Darwin
+# cache dir, and loading a populated one is not free. On the Intel 14.70 testers the
+# first shader compile of a run stalled ~500ms behind a warm cache, which lands
+# straight in cold-pageload numbers for any test whose page holds a canvas: enabling
+# Metal ANGLE for WebGL showed up as medium-to-large regressions across the cold
+# suites until the cache was cleared, after which the same compile takes a few
+# milliseconds. The arm64 15.x testers do not show it, so this is opt-in per role
+# rather than fleet-wide -- see worker_runner::purge_metal_shader_cache.
+#
+# Scope is deliberately narrow: only com.apple.metal inside Firefox's own cache
+# dirs, matching the harness-side purge that bug 2072152 verified by perfcompare.
+# The rest of each org.mozilla.* dir, and every other app's Metal cache, is left
+# alone. The org.mozilla.* glob is load-bearing rather than tidy -- ANGLE compiles
+# in the GPU process, whose cache dir is org.mozilla.firefox-gpu-helper, not
+# org.mozilla.firefox.
+#
+# This cleanup has been attempted twice before and both attempts dictate the shape
+# of this one. #775 ran `find /private/var/folders/ -path '*/C/org.mozilla.*'` as
+# the non-admin task user: that walks every user's cache dir, so it logged
+# `Permission denied` for each one the task user does not own and slowed worker
+# startup, and #922 removed it. Asking getconf for the cache dir instead names the
+# single directory we already own and traverses no one else's, so there is nothing
+# to be denied and no scan to pay for.
+#
+# Runs inline, not detached like the downloads purge above: the point is that the
+# cache is gone before start-worker claims a task, and a handful of shader-cache
+# dirs is a cheap rm rather than the ~20k-file backlog that made detaching
+# necessary there.
+#
+# Not in macos_directory_cleaner's clean_before_reboot.sh, which is the other place
+# path cleanup lives, for three reasons. It runs as root (`su - root -c` in
+# org.mozilla.cleanbeforereboot.plist), so getconf there resolves root's cache dir
+# rather than the task user's -- reintroducing the wrong-user mistake this rewrite
+# exists to avoid. It is a RunAtLoad LaunchDaemon, so it is unordered against
+# start-worker, and a purge that races the task it is meant to precede buys nothing;
+# the same plist was already observed not loaded on at least one host, which for a
+# perf fix means regressions quietly come back with no signal. And directory_cleaner
+# is an age-and-config-driven retention tool, where what is wanted here is an
+# unconditional rm of one known directory before every task.
+<% if @generic_worker_engine == 'multiuser-static' -%>
+# DARWIN_USER_CACHE_DIR is per-uid, and on multiuser-static this script is a root
+# LaunchDaemon while tasks run as <%= @task_user %>, so ask for that user's dir
+# rather than root's.
+metal_cache_root=$(/usr/bin/sudo -u <%= @task_user %> /usr/bin/getconf DARWIN_USER_CACHE_DIR 2>/dev/null)
+<% else -%>
+# DARWIN_USER_CACHE_DIR is per-uid, and on the simple engine this script already
+# runs as <%= @task_user %> -- the same user the task runs as -- so our own cache
+# dir is the one the task will use.
+metal_cache_root=$(/usr/bin/getconf DARWIN_USER_CACHE_DIR 2>/dev/null)
+<% end -%>
+if [ -n "$metal_cache_root" ] && [ -d "$metal_cache_root" ]; then
+    # getconf returns the path with a trailing slash.
+    for metal_cache in "${metal_cache_root%/}"/org.mozilla.*/com.apple.metal; do
+        [ -d "$metal_cache" ] || continue
+        echo "Clearing Metal shader cache: $metal_cache"
+        rm -rf "$metal_cache"
+    done
+else
+    echo "Could not resolve DARWIN_USER_CACHE_DIR, skipping Metal shader cache purge."
+fi
+<% end -%>
+<% if @purge_firefox_app_support -%>
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2046807
+# The task user persists across tasks here, so Firefox's per-user data directory
+# does too, and every task inherits what the previous ones left in it. Background
+# task profiles are the visible casualty: they are keyed by install path, which is
+# the same for every task on a host, and a try push that bumps the version stamps
+# them with a future major. Every later task on that host then trips downgrade
+# protection, and the background task exits 0 instead of running, until central
+# catches up. macmini-m4-100 had 68 of these back to 2025, plus 1,228 Profiles,
+# 4,544 Profile Groups and a 41 KB profiles.ini indexing all of them.
+#
+# The whole directory goes, not just Background Tasks Profiles: profiles.ini
+# indexes the background task profiles too, and leaving it would point at
+# directories that no longer exist. Nothing in it is meant to outlive a task --
+# a fresh task user, as the multiuser engine gives every task, starts without it.
+#
+# Renamed out of the way and deleted detached, like the downloads purge above, so
+# the first purge of an accumulated directory does not hold up worker start.
+ff_app_support="/Users/<%= @task_user %>/Library/Application Support/Firefox"
+if [ -d "$ff_app_support" ]; then
+    ff_purge="${ff_app_support}.purging.$$"
+    if mv "$ff_app_support" "$ff_purge" 2>/dev/null; then
+        ( rm -rf "$ff_purge" >/dev/null 2>&1 & )
+    fi
+fi
+for ff_stale in "${ff_app_support}".purging.*; do
+    [ -e "$ff_stale" ] && ( rm -rf "$ff_stale" >/dev/null 2>&1 & )
+done
+<% end -%>
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then
@@ -97,6 +250,43 @@ if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
     # Run worker from <%= @gw_root_dir %> when in multiuser-static mode
     cd <%= @gw_root_dir %>
 fi
+
+# Quit any Safari or Safari Technology Preview already open for the task user
+# before the worker claims a task. safaridriver launches its own instance; if a
+# normal (non-automation) one is already running it asks that one for an
+# automation session instead, which never answers, and every browsertime Safari
+# task fails after exhausting its retries with:
+#   Could not create a session: The session timed out while connecting to a
+#   Safari instance.
+# On macOS 27 this became a loop: a task ends with Safari open, the host reboots,
+# macOS Resume (loginwindow's TAL launch) reopens it at login, and the next task
+# times out and reboots with it still open. clean_appstate_13_plus's empty,
+# root-owned ByHost loginwindow plist stops the relaunch on 14/15 but not on 27,
+# and TALLogoutSavesState=false does not stop it either (both verified on
+# macmini-m4-130, 2026-09-24). Harmless where Safari is not running.
+#
+# Resume relaunches when the task user's session comes up, so wait for that
+# session (its Dock) first -- but only on hosts that autologin as the task user,
+# so headless roles sharing this script are not delayed.
+# Anchored to the start of the command line so it matches the Safari executables
+# only: raptor and browsertime pass the Safari binary path as an argument, and an
+# unanchored pgrep -f matches the test harness too.
+safari_pattern='^/[^ ]*/Safari\.app/Contents/MacOS/Safari( |$)|^/Applications/Safari Technology Preview\.app/Contents/MacOS/Safari Technology Preview( |$)'
+if [ "$(/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null)" = "<%= @task_user %>" ]; then
+    for _ in $(seq 1 60); do
+        /usr/bin/pgrep -u <%= @task_user %> -x Dock >/dev/null && break
+        sleep 2
+    done
+    sleep 5
+fi
+for _ in 1 2 3; do
+    /usr/bin/pgrep -u <%= @task_user %> -f "$safari_pattern" >/dev/null || break
+    echo "Quitting Safari left open for <%= @task_user %> before starting the worker"
+    /usr/bin/pkill -TERM -u <%= @task_user %> -f "$safari_pattern"
+    sleep 3
+    /usr/bin/pkill -KILL -u <%= @task_user %> -f "$safari_pattern"
+    sleep 2
+done
 
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
@@ -143,8 +333,38 @@ else
     sleep 30
 fi
 
+<% if @post_task_action == 'halt' -%>
+# Per-task reversion (bug 2071007). HALT (so the host's tartworker KeepAlive daemon
+# reclones a clean guest) ONLY when a task actually resolved this cycle. On any
+# other exit -- first boot before creds are injected, quarantine, idle timeout,
+# worker error -- REBOOT instead. A guest reboot keeps `tart run` alive (no
+# reclone), so the guest gets to finish first-boot and register. Halting on every
+# exit would power a fresh guest off ~90s into first boot, before it can register,
+# and the daemon would reclone forever (the loop this gate fixes).
+#
+# generic-worker writes tasks-resolved-count.txt (removed at the top of this
+# script each cycle); a value >= 1 means a real task completed. multiuser* keeps
+# it under <%= @gw_root_dir %>, the simple engine under <%= @data_dir %>.
+<% if @generic_worker_engine == 'multiuser-static' -%>
+resolved_count_file=<%= @gw_root_dir %>/tasks-resolved-count.txt
+<% else -%>
+resolved_count_file=<%= @data_dir %>/tasks-resolved-count.txt
+<% end -%>
+resolved=0
+if [ -f "$resolved_count_file" ]; then
+    resolved=$(tr -dc '0-9' < "$resolved_count_file" 2>/dev/null)
+fi
+if [ "${resolved:-0}" -ge 1 ]; then
+    echo "HALT $(date)  (task resolved=${resolved}; per-task reversion: host reclones a fresh guest)"
+    /usr/bin/sudo /sbin/shutdown -h now
+else
+    echo "REBOOT $(date)  (no task resolved this cycle; rebooting to stabilize, NOT recloning)"
+    /usr/bin/sudo /sbin/reboot
+fi
+<% else -%>
 echo "REBOOT $(date)"
 /usr/bin/sudo /sbin/reboot
+<% end -%>
 # Sleep to prevent this script from terminating naturally, and launchd restarting
 # it. Instead, the shutdown should cause this script to terminate (so it won't
 # really sleep for 2 mins). If shutdown doesn't kick in within 2 mins, it is sane

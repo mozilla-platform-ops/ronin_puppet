@@ -70,7 +70,7 @@ class roles_profiles::profiles::windows_worker_runner {
         'win_10_2004': {
           $init = 'task-user-init-win10.cmd'
         }
-        'win_2022_2009': {
+        'win_2022_2009', 'win_2025_2009': {
           $init = 'task-user-init-win2012.cmd'
         }
         default: {
@@ -154,6 +154,8 @@ class roles_profiles::profiles::windows_worker_runner {
         runner_log            => $runner_log,
         nssm_exe              => $nssm_exe,
         # Runner yaml file
+        task_drive            => lookup('windows_task_drive', { 'default_value' => undef }),
+        work_volume           => lookup('windows_work_volume', { 'default_value' => false }),
         provider              => $provider,
         implementation        => $implementation,
         # GW config

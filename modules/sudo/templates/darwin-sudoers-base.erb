@@ -14,7 +14,16 @@ Defaults        env_keep += "SSH_AUTH_SOCK"
 Defaults        env_keep += "TZ"
 Defaults        env_keep += "DISPLAY XAUTHORIZATION XAUTHORITY"
 Defaults        env_keep += "EDITOR VISUAL"
-Defaults        env_keep += "HOME MAIL"
+Defaults        env_keep += "MAIL"
+
+# Bug 2064340: HOME must NOT be inherited across the privilege boundary.
+# cltbld (the untrusted Firefox CI task user) has passwordless sudo for
+# /usr/local/bin/run-puppet.sh, and a caller-controlled $HOME makes root
+# read the task's ~/.gitconfig -- arbitrary root code execution via a git
+# credential helper. always_set_home forces HOME to the target user's home
+# for every sudo invocation, which is also the behaviour on our Linux
+# workers (whose sudoers has never kept HOME).
+Defaults        always_set_home
 
 Defaults        secure_path="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 

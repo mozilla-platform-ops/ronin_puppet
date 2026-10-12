@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class win_mozilla_build::hg_files {
+class win_mozilla_build::hg_files (
+  Optional[Enum['C:', 'D:']] $task_drive = undef,
+) {
   require win_mozilla_build::install
 
   $mozbld      = "${facts['custom_win_systemdrive']}\\mozilla-build"
@@ -12,7 +14,9 @@ class win_mozilla_build::hg_files {
 
   case $facts['custom_win_location'] {
     'azure': {
-      if $facts['custom_win_d_drive'] == 'exists' {
+      if $task_drive {
+        $cache_drive = $task_drive
+      } elsif $facts['custom_win_d_drive'] == 'exists' {
         $cache_drive = 'D:'
       } else {
         $cache_drive = 'C:'

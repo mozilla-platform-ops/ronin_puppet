@@ -37,7 +37,6 @@ groups:
       - macmini-m4-81.test.releng.mdc1.mozilla.com
       - macmini-m4-82.test.releng.mdc1.mozilla.com
       - macmini-m4-83.test.releng.mdc1.mozilla.com
-      - macmini-m4-84.test.releng.mdc1.mozilla.com
       - macmini-m4-85.test.releng.mdc1.mozilla.com
       - macmini-m4-86.test.releng.mdc1.mozilla.com
       - macmini-m4-87.test.releng.mdc1.mozilla.com
@@ -64,8 +63,6 @@ groups:
       - macmini-m4-108.test.releng.mdc1.mozilla.com
       - macmini-m4-109.test.releng.mdc1.mozilla.com
       - macmini-m4-110.test.releng.mdc1.mozilla.com
-      - macmini-m4-130.test.releng.mdc1.mozilla.com
-      - macmini-m4-131.test.releng.mdc1.mozilla.com
       - macmini-m4-132.test.releng.mdc1.mozilla.com
       - macmini-m4-133.test.releng.mdc1.mozilla.com
       - macmini-m4-134.test.releng.mdc1.mozilla.com
@@ -156,6 +153,20 @@ groups:
     facts:
       puppet_role: gecko_t_osx_1500_m4
 
+  - name: gecko-t-osx-2700-m4-staging
+    # Explicit empty list, not a bare `targets:` -- that parses to None and
+    # has broken the Hangar puppet sync before (hangar #138).
+    targets: []
+    facts:
+      puppet_role: gecko_t_osx_2700_m4_staging
+
+  - name: gecko-t-osx-2700-m4
+    targets:
+      - macmini-m4-130.test.releng.mdc1.mozilla.com
+      - macmini-m4-131.test.releng.mdc1.mozilla.com
+    facts:
+      puppet_role: gecko_t_osx_2700_m4
+
   - name: gecko-1-b-osx-arm64
     targets:
       - macmini-m4-121.test.releng.mdc1.mozilla.com
@@ -168,6 +179,7 @@ groups:
       - macmini-m4-120.test.releng.mdc1.mozilla.com
       - macmini-m4-123.test.releng.mdc1.mozilla.com
       - macmini-m4-124.test.releng.mdc1.mozilla.com
+      - macmini-m4-173.test.releng.mdc1.mozilla.com
       - macmini-m4-193.test.releng.mdc1.mozilla.com
       - macmini-m4-195.test.releng.mdc1.mozilla.com
       - macmini-m4-196.test.releng.mdc1.mozilla.com
@@ -183,12 +195,5 @@ groups:
   - name: enterprise-3-b-osx-arm64
     targets:
       - macmini-m4-172.test.releng.mdc1.mozilla.com
-      - macmini-m4-173.test.releng.mdc1.mozilla.com
     facts:
       puppet_role: enterprise_3_b_osx_arm64
-
-  - name: gecko-1-b-osx-arm64-vms-host
-    targets:
-      - macmini-m4-117.test.releng.mdc1.mozilla.com
-    facts:
-      puppet_role: gecko_1_b_osx_arm64_vms_host

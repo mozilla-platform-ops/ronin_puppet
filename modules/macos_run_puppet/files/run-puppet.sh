@@ -12,6 +12,43 @@ set -e
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
+# --- Trusted root environment (Bug 2064340) -------------------------------
+# This script is a passwordless sudo target for the unprivileged task user
+# (see roles_profiles::profiles::cltbld_user), so it can be entered with an
+# environment chosen by that user. macOS sudoers keeps HOME across the
+# privilege boundary, and everything below reads per-user configuration out
+# of $HOME -- git most of all. A task-controlled $HOME/.gitconfig turns the
+# git calls in this script into arbitrary root code execution (via
+# credential.helper, core.pager, core.sshCommand, alias.*, filter.*, or
+# diff.external) and can silently repoint the checkout itself (via
+# url.<base>.insteadOf) so that "git reset --hard" lands attacker code that
+# puppet then applies as root.
+#
+# Pin the environment to root's own before anything reads config. Do this
+# first: no git, ssh, python or puppet invocation may precede it.
+export HOME=/var/root
+export XDG_CONFIG_HOME=/var/root/.config
+# Neutralise user-level git config only. The system config is deliberately
+# left alone: it is root-writable only (so it is not an escalation path) and
+# `puppet apply` inherits this environment -- reprovision_runner's vcsrepo
+# writes safe.directory there with `git config --system`, which would break
+# if it were redirected.
+export GIT_CONFIG_GLOBAL=/dev/null
+export GIT_TERMINAL_PROMPT=0
+export GIT_ASKPASS=/usr/bin/false
+export SSH_ASKPASS=/usr/bin/false
+# env_reset drops most of the caller's environment, but the sudoers env_keep
+# list lets these through and each one steers a tool this script runs.
+unset SSH_AUTH_SOCK EDITOR VISUAL MAIL LC_ALL \
+      GIT_CONFIG GIT_DIR GIT_WORK_TREE GIT_SSH GIT_SSH_COMMAND \
+      GIT_EXEC_PATH GIT_TEMPLATE_DIR GIT_PROXY_COMMAND GIT_ATTR_NOSYSTEM \
+      GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES \
+      GIT_NAMESPACE GIT_CEILING_DIRECTORIES \
+      BASH_ENV ENV CDPATH IFS \
+      PYTHONPATH PYTHONHOME PYTHONSTARTUP PYTHONWARNINGS \
+      DYLD_INSERT_LIBRARIES DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH
+# --------------------------------------------------------------------------
+
 SETTINGS_FILE="/opt/puppet_environments/ronin_settings"
 
 # Optional override settings file
@@ -38,9 +75,52 @@ export GIT_BRANCH="$PUPPET_BRANCH"
 ### 2. Function Definitions
 ### ---------------------------------------------
 
+# Stage label for the failure record, set before each fail() that has a
+# meaningful stage. Defaults to "unknown" for the ones that do not.
+FAIL_STAGE="unknown"
+
 fail() {
     echo "${@}"
+    # Leave a machine-readable trace that this boot never reached an apply.
+    # Without it a stuck host is invisible: the worker starts regardless, so it
+    # keeps taking production tasks and last_run_metadata.json simply stops
+    # advancing, which nothing alerts on.
+    if type write_puppet_failure >/dev/null 2>&1; then
+        write_puppet_failure "$FAIL_STAGE" "${*}" "/opt/puppet_environments/last_run_error.json"
+    fi
     exit 1
+}
+
+# Retry a git network operation before giving up.
+#
+# worker-runner's LaunchAgent can start before the host has DNS, so the first
+# git operation after a reboot may fail with "Could not resolve host:
+# github.com". The old behaviour was to call fail() on the spot, which exits
+# before the apply -- but worker-runner.sh starts the worker regardless, so the
+# host goes on claiming production tasks with frozen config and nothing reports
+# it. macmini-r8-60 sat 40 days behind master that way, and macmini-r8-143 18
+# days, while both looked healthy in Taskcluster.
+git_net_retry() {
+    local attempt=1
+    local delay="${GIT_NET_RETRY_DELAY:-10}"
+    local max="${GIT_NET_RETRIES:-5}"
+
+    while true; do
+        if git "$@"; then
+            return 0
+        fi
+
+        if [ "$attempt" -ge "$max" ]; then
+            echo "git $1 failed after ${max} attempts."
+            return 1
+        fi
+
+        echo "git $1 failed (attempt ${attempt}/${max}); retrying in ${delay}s..."
+        sleep "$delay"
+        attempt=$((attempt + 1))
+        delay=$((delay * 2))
+        [ "$delay" -gt 60 ] && delay=60
+    done
 }
 
 email_report() {
@@ -101,7 +181,7 @@ get_puppet_repo() {
     mkdir -p ./data/secrets
 
     if [ ! -f /var/root/vault.yaml ]; then
-        echo "vault.yaml not found — exiting gracefully."
+        echo "vault.yaml not found -- exiting gracefully."
         exit 0
     fi
 
@@ -148,7 +228,7 @@ run_puppet() {
             sudo shutdown -r now
             exit 0
         else
-            echo "TCC.db exists but was temporarily inaccessible — puppet will retry without rebooting."
+            echo "TCC.db exists but was temporarily inaccessible -- puppet will retry without rebooting."
         fi
     fi
 
@@ -175,6 +255,11 @@ run_puppet() {
             "/opt/puppet_environments/ronin_settings" "/var/root/vault.yaml" "/opt/puppet_environments/last_run_metadata.json"
     else
         echo "WARNING: write_puppet_state function not available, skipping state file write" >&2
+    fi
+
+    # The run reached an apply, so any earlier failure record is stale.
+    if type clear_puppet_failure >/dev/null 2>&1; then
+        clear_puppet_failure "/opt/puppet_environments/last_run_error.json"
     fi
     # ==============================================================================
 
@@ -234,10 +319,12 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
         cd ..
         rm -rf "$LOCAL_PUPPET_REPO"
         echo "Cloning new Puppet repository..."
-        git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+        FAIL_STAGE=git-clone
+    git_net_retry clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
     else
         echo "Checking for updates in Puppet repository..."
-        git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+        FAIL_STAGE=git-fetch
+        git_net_retry fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
 
         LOCAL_COMMIT=$(git rev-parse HEAD)
         REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")
@@ -252,7 +339,8 @@ if [ -d "$LOCAL_PUPPET_REPO/.git" ]; then
 else
     echo "Cloning fresh Puppet repository..."
     mkdir -p "$(dirname "$LOCAL_PUPPET_REPO")"
-    git clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
+    FAIL_STAGE=git-clone
+    git_net_retry clone --branch "$GIT_BRANCH" "$GIT_REPO_URL" "$LOCAL_PUPPET_REPO" || fail "Failed to clone Puppet repository"
 fi
 
 # Retry Puppet Until Success, Checking for Updates Before Each Retry
@@ -269,7 +357,8 @@ while true; do
     echo "Puppet apply failed. Checking for updates before retrying..."
 
     cd "$LOCAL_PUPPET_REPO" || fail "Failed to enter Puppet repository directory"
-    git fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
+    FAIL_STAGE=git-fetch
+        git_net_retry fetch origin "$GIT_BRANCH" || fail "Failed to fetch latest changes"
 
     LOCAL_COMMIT=$(git rev-parse HEAD)
     REMOTE_COMMIT=$(git rev-parse "origin/$GIT_BRANCH")

@@ -556,8 +556,8 @@ elseif ($os_caption -like "*windows_11*") {
 elseif ($os_caption -like "*2012*") {
     $os_version = "win_2012"
 }
-elseif ($os_caption -like "*2022*") {
-    $os_version = "win_2022"
+elseif ($os_caption -match '20(22|25)') {
+    $os_version = "win_server"
 }
 else {
     $os_version = $null
@@ -640,7 +640,7 @@ switch ($os_version) {
             Write-Log -message ("MOZ_GW_UI_READY :: failed to set 1: {0}" -f $_.Exception.Message) -severity 'WARN'
         }
     }
-    "win_2022" {
+    "win_server" {
         ## Disable Server Manager Dashboard
         Get-ScheduledTask -TaskName ServerManager | Disable-ScheduledTask -Verbose
     }

@@ -35,7 +35,7 @@ class roles_profiles::profiles::cltbld_user {
             ensure => directory,
           }
         }
-        '20','21','22', '23', '24': {
+        '20','21','22', '23', '24', '25', '27': {
           exec { 'create_macos_user':
             command => "/usr/sbin/sysadminctl -addUser ${account_username} -UID 555 -password '${password_hash}'",
             unless  => "/usr/bin/dscl . -read /Users/${account_username}",
@@ -76,11 +76,11 @@ class roles_profiles::profiles::cltbld_user {
         }
       }
       # Ensure the AuthenticationAuthority hash is set.  Puppet does not set this when creating a user.  Needed for GUI/VNC access.
-      # macOS 14/15 (Darwin 23/24): AuthenticationAuthority key does not exist in the
+      # macOS 14/15/26/27 (Darwin 23/24/25/27): AuthenticationAuthority key does not exist in the
       # directory record and dscl -create returns eDSPermissionError. Authentication
       # works without it on these versions, so skip the exec.
       $auth_key_hash = '\';ShadowHash;HASHLIST:<SALTED-SHA512-PBKDF2,SRP-RFC5054-4096-SHA512-PBKDF2,SMB-NT>\''
-      unless $facts['os']['release']['major'] in ['23', '24'] {
+      unless $facts['os']['release']['major'] in ['23', '24', '25', '27'] {
         exec { 'cltbld_auth_key':
           command => "/usr/bin/dscl . -create /Users/cltbld AuthenticationAuthority ${auth_key_hash}",
           unless  => "/usr/bin/dscl . -read /Users/cltbld AuthenticationAuthority| grep -q -w ${auth_key_hash}",
@@ -97,10 +97,59 @@ class roles_profiles::profiles::cltbld_user {
         # require => User['cltbld'],
       }
 
+      # Granted only to roles that opt into the between-tasks OS cache reclaim by
+      # setting the top-level `reclaim_free_space_gb`. Roles that do not get their
+      # existing sudoers content unchanged. The script takes only a numeric
+      # free-space floor and operates on fixed paths, so granting it does not widen
+      # what cltbld can reach.
+      #
+      # Top-level, not `worker.reclaim_free_space_gb`: secrets/vault.yaml outranks
+      # role data and owns the `worker:` hash, so a sub-key present only in role data
+      # never resolves. Must stay in step with the lookup in profiles::worker.
+      $reclaim_free_space_gb = lookup('reclaim_free_space_gb', Optional[Integer], 'first', undef)
+      $reclaim_sudo_commands = $reclaim_free_space_gb ? {
+        undef   => [],
+        default => ['/usr/local/bin/reclaim_worker_caches.sh'],
+      }
+
+      # Bug 2064340: only grant run-puppet.sh where the task user actually needs
+      # it. worker-runner.sh calls `sudo run-puppet.sh` at worker startup, but on
+      # the multiuser/multiuser-static engines worker-runner is a LaunchDaemon
+      # already running as root (see worker_runner::init), so the sudo there is a
+      # no-op from root and the grant only serves to hand the untrusted task user
+      # a reachable path into a root process. On the `simple` engine
+      # worker-runner is a cltbld LaunchAgent and the grant is load-bearing.
+      #
+      # Resolve the engine the same way profiles::worker does: prefer a top-level
+      # role key, fall back to the vault-provided value. Must stay in step with
+      # profiles::worker so the sudo grant matches the actual engine. Default to
+      # granting: an unresolvable engine must not silently break worker startup on
+      # the `simple` roles.
+      $role_engine = lookup('generic_worker_engine', Optional[String], 'first', undef)
+      $engine = $role_engine ? {
+        undef   => lookup('worker.generic_worker_engine', Optional[String], 'first', undef),
+        default => $role_engine,
+      }
+      $run_puppet_sudo = $engine =~ /^multiuser/ ? {
+        true    => [],
+        default => ['/usr/local/bin/run-puppet.sh'],
+      }
+
+      # Per-task reversion (bug 2071007) halts the guest instead of rebooting, so
+      # cltbld needs sudo for the poweroff on those roles. Gated to roles that set
+      # post_task_action: halt (the tart VM guests); every other role keeps only
+      # /sbin/reboot. The args are pinned exactly ('-h now', no glob metacharacters)
+      # so this does not widen cltbld to an arbitrary shutdown. Must stay in step
+      # with the lookup in profiles::worker.
+      $post_task_action = lookup('post_task_action', Enum['reboot', 'halt'], 'first', 'reboot')
+      $halt_sudo = $post_task_action ? {
+        'halt'  => ['/sbin/shutdown -h now'],
+        default => [],
+      }
+
       $sudo_commands = [
         '/sbin/reboot',
-        '/usr/local/bin/run-puppet.sh',
-      ]
+      ] + $run_puppet_sudo + $reclaim_sudo_commands + $halt_sudo
       $sudo_commands.each |String $command| {
         sudo::custom { "allow_cltbld_${command}":
           user    => 'cltbld',

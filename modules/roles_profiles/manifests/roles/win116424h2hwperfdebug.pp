@@ -4,6 +4,8 @@ class roles_profiles::roles::win116424h2hwperfdebug {
   include roles_profiles::profiles::microsoft_tools
   include roles_profiles::profiles::ssh
   # System
+  include roles_profiles::profiles::device_guard
+  include roles_profiles::profiles::intel_graphics_software
   include roles_profiles::profiles::disable_services
   include roles_profiles::profiles::error_reporting
   include roles_profiles::profiles::suppress_dialog_boxes
@@ -15,7 +17,6 @@ class roles_profiles::roles::win116424h2hwperfdebug {
   include roles_profiles::profiles::power_management
   include roles_profiles::profiles::scheduled_tasks
   include roles_profiles::profiles::hardware
-  #include roles_profiles::profiles::intel_drivers
   include roles_profiles::profiles::virtual_drivers
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::microsoft_kms
@@ -33,6 +34,5 @@ class roles_profiles::roles::win116424h2hwperfdebug {
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_datacenter_administrator
   include roles_profiles::profiles::google_chrome
-  #include roles_profiles::profiles::windows_generic_worker_standalone
   include roles_profiles::profiles::windows_worker_runner
 }

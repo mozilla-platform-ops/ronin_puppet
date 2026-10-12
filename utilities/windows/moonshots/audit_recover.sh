@@ -125,7 +125,7 @@ function get_status() {
 
   echo "Starting first round of Windows Moonshots audit $(date '+%d/%m/%Y %H:%M:%S')"
 
-  for i in $(seq $s $e); do
+  for i in $(seq "$s" "$e"); do
     ip=10.49.40.$i
     timeout 15 ssh -o ConnectTimeout=5  -o StrictHostKeyChecking=no administrator@"$ip" "powershell if (!(test-path $remote_audit_script)) {exit 97}; powershell -executionpolicy bypass -file $remote_audit_script $production_workertype" 2>/dev/null
     result=$?

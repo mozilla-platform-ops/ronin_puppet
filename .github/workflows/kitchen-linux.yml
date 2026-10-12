@@ -28,17 +28,17 @@ jobs:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml
     steps:
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1.314.0
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           bundler-cache: false
 
       - name: Cache gems
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.gem
           key: v1-gems-${{ runner.os }}-${{ hashFiles('.ruby-version', 'Gemfile.lock') }}
@@ -59,7 +59,7 @@ jobs:
 
       - name: Kitchen converge
         timeout-minutes: 30
-        run: bundle exec kitchen converge ${{ matrix.kitchen_target }}
+        run: .github/scripts/kitchen_linux_converge.sh ${{ matrix.kitchen_target }}
 
       - name: Kitchen verify
         run: bundle exec kitchen verify ${{ matrix.kitchen_target }}
