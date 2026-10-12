@@ -9,24 +9,40 @@ define win_packages::win_exe_pkg (
   String $package=$title,
   $returns=undef
 ) {
-  $pkgdir       = $facts['custom_win_temp_dir']
+  include win_packages::staging
+  $pkgdir       = $win_packages::staging::path
   $srcloc       = lookup('windows.ext_pkg_src')
   $url         = "${srcloc}/${pkg}"
+  $pkgpath     = "${pkgdir}\\${pkg}"
 
   archive { $title:
     ensure  => 'present',
     source  => $url,
-    path    => "${pkgdir}\\${pkg}",
-    creates => "${pkgdir}\\${pkg}",
+    path    => $pkgpath,
+    creates => $pkgpath,
     cleanup => false,
     extract => false,
+    require => Class['win_packages::staging'],
+  }
+
+  acl { $pkgpath:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+      { identity => 'S-1-5-32-545', rights => ['read', 'execute'] },
+    ],
+    require                    => Archive[$title],
   }
 
   exec { "${title}install":
-    command => "${pkgdir}\\${pkg} ${install_options_string}",
+    command => "${pkgpath} ${install_options_string}",
     creates => $creates,
     timeout => 600,
     returns => $returns,
+    require => Acl[$pkgpath],
   }
 }
 

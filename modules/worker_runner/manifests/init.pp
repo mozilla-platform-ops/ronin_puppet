@@ -77,6 +77,14 @@ class worker_runner (
     # instead of enableLiveLog because that key only exists from v77.0.0 and
     # older generic-workers reject unknown config keys.
     Boolean $disable_livelog                                               = false,
+    # generic-worker's requiredDiskSpaceMegabytes: free space it must see before
+    # claiming a task, evicting directory caches to get there. Builders raise it
+    # because 20 GiB is less than a large build writes: m4-122 kept ~93 GB of
+    # checkout caches, started tasks with ~36 GB free so nothing was ever
+    # evicted, and custom-car/plain builds died with "No space left on device".
+    # Every host must be able to reach the floor by evicting caches alone, or
+    # it exits 69 with "nothing left to delete".
+    Integer $required_disk_space_mb                                        = 20480,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,

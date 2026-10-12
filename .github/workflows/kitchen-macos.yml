@@ -20,12 +20,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # macOS 14 is retiring; use the closest supported OS on Intel.
           - role: gecko_t_osx_1400_r8
-            runner: macos-14
+            runner: macos-15-intel
             suite: default-localhost
           - role: gecko_t_osx_1500_m4
             runner: macos-15
             suite: default-localhost
+          # Catalina is unavailable; use the oldest supported Intel image.
           - role: gecko_t_osx_1015_r8
             runner: macos-15-intel
             suite: default-localhost
