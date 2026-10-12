@@ -57,6 +57,9 @@ class roles_profiles::profiles::reprovision_runner {
       tart_health_hosts    => pick_default($rr['tart_health_hosts'], []),
       tart_health_interval => pick_default($rr['tart_health_interval'], 600),
       tart_health_guests   => pick_default($rr['tart_health_guests'], false),
+      # macOS fleet SBOM collector (hangar-sbom-agent).
+      sbom_enabled         => pick_default($rr['sbom_enabled'], false),
+      sbom_interval        => pick_default($rr['sbom_interval'], 3600),
     }
   }
 }
