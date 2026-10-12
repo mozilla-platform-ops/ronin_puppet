@@ -252,6 +252,21 @@ for _ in 1 2 3; do
     sleep 2
 done
 
+# A version change or engine switch renames the old caches aside (see the purge
+# exec in worker_runner's init.pp). On a host short of space the worker's 20 GiB
+# free-space check fails until they're gone, and it fails after claiming a task,
+# so wait for the delete (up to 30 min) instead of losing that task.
+for _ in $(seq 1 180); do
+    ls -d <%= @data_dir %>/cache.purging.* >/dev/null 2>&1 || break
+    [ "$(df -g <%= @data_dir %> | awk 'NR==2{print $4}')" -ge 30 ] && break
+    if ! pgrep -f "rm -rf <%= @data_dir %>/cache.purging" >/dev/null; then
+        for gw_stale in <%= @data_dir %>/cache.purging.*; do
+            [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+        done
+    fi
+    sleep 10
+done
+
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
 /usr/local/bin/start-worker "$@"
