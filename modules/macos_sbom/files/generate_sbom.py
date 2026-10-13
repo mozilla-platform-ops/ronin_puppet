@@ -48,7 +48,7 @@ import time
 import uuid
 
 GENERATOR_NAME = "ronin-puppet-macos-sbom"
-GENERATOR_VERSION = "2.2.0"
+GENERATOR_VERSION = "2.3.0"
 
 SBOM_DIR = "/var/sbom"
 CDX_PATH = os.path.join(SBOM_DIR, "sbom.cdx.json")
@@ -57,6 +57,11 @@ LOG_PATH = os.path.join(SBOM_DIR, "generate_sbom.log")
 
 RECEIPTS_DIR = "/var/db/receipts"
 ROLE_FILE = "/etc/puppet_role"
+# Where run-puppet.sh reads a host's branch override. Absent means master.
+# last_run_metadata.json's git_branch is not usable here: it reads "master" on
+# hosts that are pinned to a branch.
+RONIN_SETTINGS = "/opt/puppet_environments/ronin_settings"
+LAST_RUN_METADATA = "/opt/puppet_environments/last_run_metadata.json"
 LOCAL_BIN = "/usr/local/bin"
 BREW_PREFIXES = ("/opt/homebrew", "/usr/local")
 
@@ -189,6 +194,30 @@ def read_first_line(path):
         return ""
 
 
+def puppet_source():
+    """(branch, sha) of the puppet checkout this host converges from.
+
+    Recorded so Hangar can compare a host with others on the same branch: a
+    deliberate override cohort (a staged rollout) is not drift.
+    """
+    branch = "master"
+    try:
+        with open(RONIN_SETTINGS) as handle:
+            for line in handle:
+                key, _, value = line.strip().partition("=")
+                if key == "PUPPET_BRANCH" and value.strip():
+                    branch = value.strip().strip("\"'")
+    except OSError:
+        pass
+    sha = ""
+    try:
+        with open(LAST_RUN_METADATA) as handle:
+            sha = str(json.load(handle).get("git_sha") or "")
+    except (OSError, ValueError):
+        pass
+    return branch, sha
+
+
 def host_facts():
     """Identity and security posture of the host itself."""
     product, _ = run(["/usr/bin/sw_vers", "-productName"])
@@ -200,6 +229,7 @@ def host_facts():
     sip, _ = run(["/usr/bin/csrutil", "status"])
 
     model = model.strip()
+    branch, sha = puppet_source()
     return {
         "hostname": os.uname().nodename,
         "product": product.strip() or "macOS",
@@ -211,6 +241,8 @@ def host_facts():
         "is_vm": model.startswith("VirtualMac"),
         "sip": sip.strip().replace("System Integrity Protection status: ", "").rstrip("."),
         "role": read_first_line(ROLE_FILE),
+        "puppet_branch": branch,
+        "puppet_sha": sha,
     }
 
 
@@ -236,7 +268,11 @@ def os_component(facts):
 # vs one from the original munki build, or two factory batches), so they stay in
 # the document but are left out of the fingerprint. Each entry: (pattern, reason).
 FINGERPRINT_EXCLUDED_RECEIPTS = [
-    (re.compile(r"^com\.github\.munki\.pkg\.p_role_"), "provisioning history (munki)"),
+    (re.compile(r"^com\.github\.munki\.pkg\."), "provisioning history (munki)"),
+    (re.compile(r"com\.twocanoes\.mds\."), "provisioning history (twocanoes)"),
+    (re.compile(r"^(com\.mozilla\.pkg\.Sudoers|org\.mozilla\.relops_user)$"), "provisioning history (original build)"),
+    (re.compile(r"^com\.github\.disable_"), "provisioning history (munki-built preference)"),
+    (re.compile(r"^com\.apple\.pkg\.MobileAssets$"), "left by OS update history"),
     (re.compile(r"^com\.mozilla\.relops\.m4-bootstrap$"), "provisioning path"),
     (re.compile(r"^com\.apple\.(pkg|cdm\.pkg)\.(Keynote|Numbers|Pages|iMovie|GarageBand)"), "bundled with the Mac"),
     # puppet's packages::virt_audio_s3 installs BlackHole by hand with no receipt
@@ -572,6 +608,7 @@ def build_document(facts, components, sbom_sha):
                 "version": facts["version"],
                 "properties": [p for p in [
                     prop("relops:puppet_role", facts["role"]),
+                    prop("relops:puppet_branch", facts["puppet_branch"]),
                     prop("relops:hw_model", facts["model"]),
                     prop("relops:is_vm", "true" if facts["is_vm"] else "false"),
                     prop("relops:sip", facts["sip"]),
@@ -653,6 +690,8 @@ def main():
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "hostname": facts["hostname"],
         "puppet_role": facts["role"],
+        "puppet_branch": facts["puppet_branch"],
+        "puppet_sha": facts["puppet_sha"],
         "macos_version": facts["version"],
         "macos_build": facts["build"],
         "arch": facts["arch"],
