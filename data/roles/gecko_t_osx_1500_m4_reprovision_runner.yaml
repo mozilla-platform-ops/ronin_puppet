@@ -33,6 +33,13 @@ reprovision_runner:
   hangar_api_url: https://hangar-runner.relops.mozilla.com/api
   # step_ca_url uses the module default.
 
+  # ---- macOS fleet SBOM (hangar-sbom-agent) ----
+  # Reads /var/sbom/fingerprint.json (macos_sbom) on every macOS host Hangar knows and
+  # pushes it to /api/sbom; fetches the full CycloneDX document only for hashes Hangar
+  # doesn't hold yet. Hourly keeps it inside Hangar's 3h staleness window.
+  sbom_enabled: true
+  sbom_interval: 3600
+
   # ---- tart VM slot health sweep (hangar-tart-health-agent) ----
   # Pushes per-slot health for gecko-t-osx-1500-m-vms to Hangar's /api/tart-health,
   # which the Tart VMs page renders. Runs here because Cloud Run cannot reach MDC1 and
