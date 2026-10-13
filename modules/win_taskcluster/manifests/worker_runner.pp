@@ -14,6 +14,7 @@ class win_taskcluster::worker_runner (
   String $runner_service_type = 'SERVICE_WIN32_OWN_PROCESS',
   String $runner_app_exit = 'Default Exit',
   Optional[Enum['C:', 'D:']] $task_drive = undef,
+  Boolean $work_volume = false,
   $implementation = undef,
   $gw_exe_path    = undef,
   # GW config
@@ -46,19 +47,32 @@ class win_taskcluster::worker_runner (
   file { $worker_runner_dir:
     ensure => directory,
   }
+  acl { $worker_runner_dir:
+    owner                      => 'S-1-5-18',
+    inherit_parent_permissions => false,
+    purge                      => true,
+    permissions                => [
+      { identity => 'S-1-5-18', rights => ['full'] },
+      { identity => 'S-1-5-32-544', rights => ['full'] },
+    ],
+    require                    => File[$worker_runner_dir],
+  }
   file { $runner_exe_path:
-    source => $runner_exe_source,
+    source  => $runner_exe_source,
+    require => Acl[$worker_runner_dir],
   }
   if $provider == 'standalone' {
     file { $runner_yml:
       content => epp('win_taskcluster/standalone_runner.yml.epp'),
       owner   => 'SYSTEM',
+      require => Acl[$worker_runner_dir],
     }
   }
   else {
     file { $runner_yml:
       content => epp('win_taskcluster/runner.yml.epp'),
       owner   => 'SYSTEM',
+      require => Acl[$worker_runner_dir],
     }
   }
   # Worker-runner/Go need the config file to have UNIX-style line endings

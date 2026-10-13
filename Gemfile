@@ -15,6 +15,7 @@ gem 'chef-winrm-fs', '~> 1.4.2'
 gem 'chef-winrm-elevated', '~> 1.2.5'
 
 gem 'kitchen-verifier-serverspec'
+gem 'kitchen-pester', '= 1.2.2'
 # gem 'kitchen-docker', git: 'https://github.com/test-kitchen/kitchen-docker.git', branch: 'main'
 gem 'kitchen-docker', git: 'https://github.com/test-kitchen/kitchen-docker.git', ref: '511e4ad'  # Last working commit before gemspec bug
 # gem 'kitchen-docker'
