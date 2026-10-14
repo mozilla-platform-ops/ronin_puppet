@@ -78,3 +78,6 @@ telegraf:
 
 # Evict checkout caches before a large build needs the space (worker_runner).
 required_disk_space_mb: 61440
+
+# Prebuilt Duo pkg: nothing is compiled or installed into /usr/local
+duo_install_method: pkg

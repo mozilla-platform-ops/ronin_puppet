@@ -15,6 +15,9 @@ class duo::duo_unix (
     String $autopush          = 'no',
     String $prompts           = '3',
     String $accept_env_factor = 'no',
+    Enum['source', 'pkg'] $install_method = 'source',
+    String $pkg_version       = '2.3.0',
+    String $pkg_checksum      = 'ae673a3737fa4301aabeda5b20f61bdc58dd9480ea8916b2c9f80ddc620d5b4f',
 ) {
     if $enabled {
         # Sanity Check
@@ -26,7 +29,41 @@ class duo::duo_unix (
     # Determine macOS version
     $mac_version = $facts['os']['release']['major']
 
-    if $mac_version == '18' or $mac_version == '19' {
+    if $install_method == 'pkg' {
+        # Prebuilt universal pkg from tools/build_duo_unix_pkg.sh. OpenSSL is
+        # linked in statically and the payload is only pam_duo.so.
+        include packages::setup
+
+        $pkg     = "duo_unix-${pkg_version}-universal.pkg"
+        $tmp_pkg = "/tmp/${pkg}"
+        $url     = "https://${packages::setup::default_s3_domain}/${packages::setup::default_bucket}/macos/public/common/${pkg}"
+
+        # A missing pam_duo.so with `auth required` in pam.d/sshd blocks all SSH
+        $installed = "/bin/sh -c 'pkgutil --pkg-info org.mozilla.relops.duo_unix 2>/dev/null | grep -qx \"version: ${pkg_version}\" && test -f /usr/local/lib/pam/pam_duo.so'"
+
+        exec { 'fetch_duo_unix_pkg':
+            command => "/usr/bin/curl -fL -o ${tmp_pkg} ${url}",
+            path    => ['/usr/sbin', '/usr/bin', '/bin'],
+            unless  => $installed,
+            timeout => 120,
+        }
+
+        exec { 'verify_duo_unix_pkg':
+            command => "/bin/sh -c 'echo \"${pkg_checksum}  ${tmp_pkg}\" | /usr/bin/shasum -a 256 -c -'",
+            path    => ['/usr/sbin', '/usr/bin', '/bin'],
+            unless  => $installed,
+            require => Exec['fetch_duo_unix_pkg'],
+        }
+
+        exec { 'install_duo_unix_pkg':
+            command => "/usr/sbin/installer -pkg ${tmp_pkg} -target /",
+            path    => ['/usr/sbin', '/usr/bin', '/bin'],
+            unless  => $installed,
+            require => Exec['verify_duo_unix_pkg'],
+        }
+
+        $duo_require = Exec['install_duo_unix_pkg']
+    } elsif $mac_version == '18' or $mac_version == '19' {
         # macOS 10.14 and 10.15
         include packages::openssl
         include packages::duo_unix
