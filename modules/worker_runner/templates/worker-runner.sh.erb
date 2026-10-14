@@ -235,7 +235,15 @@ done
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then
+<% if @generic_worker_engine =~ /^multiuser/ -%>
+    # This script runs as root here. Clean the task user's database, not
+    # root's: root's holds tens of thousands of stale task-dir apps that
+    # lsregister -u can't remove, so scanning it stalls the worker start by
+    # over an hour on every boot.
+    launchctl asuser "$(id -u <%= @task_user %>)" sudo -u <%= @task_user %> python3 /usr/local/bin/lsdb.py --delete-stale
+<% else -%>
     python3 /usr/local/bin/lsdb.py --delete-stale
+<% end -%>
 else
     echo "lsdb.py not found, skipping launch services cleanup."
 fi
@@ -286,6 +294,28 @@ for _ in 1 2 3; do
     sleep 3
     /usr/bin/pkill -KILL -u <%= @task_user %> -f "$safari_pattern"
     sleep 2
+done
+
+# The purges above (unreferenced caches, the uv cache, downloads) delete in the
+# background. On a host short of space generic-worker's free-space check fails
+# until they finish, and it fails after claiming a task, so wait for them (up to
+# 30 min) instead of losing that task. Done once free space clears the worker's
+# floor plus 10 GB.
+gw_need_gb=$(( <%= @required_disk_space_mb %> / 1024 + 10 ))
+gw_purges="<%= @data_dir %>/cache.orphan.* <%= @data_dir %>/downloads.purging.* /Users/task_*/.cache/uv.purging.*"
+gw_purge_pending() {
+    for gw_p in $gw_purges; do [ -e "$gw_p" ] && return 0; done
+    return 1
+}
+for _ in $(seq 1 180); do
+    gw_purge_pending || break
+    [ "$(df -g <%= @data_dir %> | awk 'NR==2{print $4}')" -ge "$gw_need_gb" ] && break
+    if ! pgrep -f "rm -rf .*\.(orphan|purging)\." >/dev/null; then
+        for gw_stale in $gw_purges; do
+            [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+        done
+    fi
+    sleep 10
 done
 
 # First run worker runner, passing through any arguments handed to this
