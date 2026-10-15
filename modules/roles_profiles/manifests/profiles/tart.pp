@@ -216,6 +216,34 @@ class roles_profiles::profiles::tart {
     require => Exec['create_usr_local_bin'],
   }
 
+  # Local Network privacy exemption for the registry (tart.local_network_allow).
+  #
+  # On SIP-enabled hosts, macOS Local Network privacy blocks `tart pull` from the
+  # tartworker daemon ("unsatisfied (Local network prohibited)" in the unified log,
+  # surfacing as "The Internet connection appears to be offline"). tart-run-vm.sh
+  # then falls back to its cached image, so a new image never reaches the slot.
+  # MDM can't configure local network privacy (Apple TN3179), and the per-app
+  # switch in System Settings is per-user GUI state that a reprovision loses.
+  #
+  # The supported fix is the system-wide allowlist in com.apple.network.local-network:
+  # every program may reach an allowlisted network regardless of its Local Network
+  # privilege. It debuted in macOS 15.5, so this is a no-op below that, and it only
+  # takes effect after a restart -- puppet does not reboot a host with live VMs.
+  $local_network_allow = lookup('tart.local_network_allow', Array[String], 'first', [])
+  if !empty($local_network_allow) and versioncmp($facts['os']['macosx']['version']['full'], '15.5') >= 0 {
+    $lna_domain   = 'com.apple.network.local-network'
+    $lna_key      = 'AllowedEthernetLocalNetworkAddresses'
+    $lna_args     = $local_network_allow.map |$n| { "'${n}'" }.join(' ')
+    $lna_expected = $local_network_allow.join(',')
+    exec { 'tart_local_network_allow':
+      command   => "/usr/bin/defaults write ${lna_domain} ${lna_key} -array ${lna_args} && echo 'tart.local_network_allow updated; REBOOT REQUIRED for it to take effect'",
+      unless    => "/bin/test \"\$(/usr/bin/defaults read ${lna_domain} ${lna_key} 2>/dev/null | /usr/bin/tr -d ' \\n\"()')\" = '${lna_expected}'",
+      provider  => shell,
+      user      => 'root',
+      logoutput => true,
+    }
+  }
+
   file { '/usr/local/bin/tart-pull-image.sh':
     ensure  => file,
     mode    => '0755',
