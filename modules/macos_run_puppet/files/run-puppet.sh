@@ -204,7 +204,13 @@ run_puppet() {
     get_puppet_repo
     echo "Running puppet apply"
 
+    # Match the node definition written above; a stale certname in puppet.conf
+    # otherwise falls through to the empty default node.
+    local FQDN
+    FQDN=$("$FACTER_BIN" networking.fqdn)
+
     PUPPET_OPTIONS=(
+        "--certname=$FQDN"
         "--modulepath=./modules:./r10k_modules:/etc/puppetlabs/code/environments/production/modules"
         "--hiera_config=./hiera.yaml"
         "--logdest=console"
