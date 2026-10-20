@@ -29,6 +29,24 @@ else
     rm -rf <%= @task_dir %>/task_*
 fi
 
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2079855
+# A task that dies mid-`git checkout` leaves .git/index.lock behind, and
+# generic-worker still saves the checkout cache, lock included. Every later task
+# that mounts the cache then fails in seconds with "index.lock: File exists" until
+# someone quarantines the host and removes the lock by hand. It happened on
+# macmini-m4-120 twice: a cancel on 2026-10-08 (11 failed tasks) and a
+# deadline-exceeded on 2026-10-17 (20 failed tasks). generic-worker only notices an
+# abort at its next reclaim, so it kills git whenever that comes, at any point.
+#
+# Nothing is running yet at this point, so any git lock in a cache is stale. Only
+# the lock files in each cached repo's .git dir and refs are removed; the cache is
+# kept and the next `git checkout -f` repairs the worktree.
+for gw_git_dir in <%= @data_dir %>/cache/*/*/.git; do
+    [ -d "$gw_git_dir" ] || continue
+    find "$gw_git_dir" -maxdepth 1 -type f -name '*.lock' -print -delete 2>/dev/null
+    [ -d "$gw_git_dir/refs" ] && find "$gw_git_dir/refs" -type f -name '*.lock' -print -delete 2>/dev/null
+done | sed 's/^/Removed stale git lock: /'
+
 # generic-worker's file cache (downloadsDir plus its file-caches.json index) is
 # not bounded: it gains an entry and a file per task artifact fetched, and nothing
 # prunes either. The worker revalidates the whole index on every start, between
