@@ -25,11 +25,6 @@ fi
 # Clear up previous task dirs
 if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
     rm -rf <%= @task_dir %>/<%= @task_user %>
-    # generic-worker >= ~101 (taskcluster#8859) probes the task user's launch
-    # agent with the task dir as cwd before it creates that dir, so with the
-    # dir gone it never becomes ready. Recreate it the way older workers did.
-    mkdir -m 0700 <%= @task_dir %>/<%= @task_user %>
-    chown <%= @task_user %>:staff <%= @task_dir %>/<%= @task_user %>
 else
     rm -rf <%= @task_dir %>/task_*
 fi
@@ -340,6 +335,16 @@ for _ in $(seq 1 180); do
     fi
     sleep 10
 done
+
+# generic-worker >= ~101 (taskcluster#8859) probes the task user's launch agent
+# with the task dir as cwd before it creates that dir, so without it the worker
+# never becomes ready. Recreate it here, last thing before the worker starts:
+# the boot-time clean_before_reboot.sh removes empty dirs under the tasks dir,
+# and it races everything above.
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    mkdir -p -m 0700 <%= @task_dir %>/<%= @task_user %>
+    chown <%= @task_user %>:staff <%= @task_dir %>/<%= @task_user %>
+fi
 
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...
