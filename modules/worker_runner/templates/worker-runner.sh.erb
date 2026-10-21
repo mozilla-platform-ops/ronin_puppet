@@ -25,6 +25,11 @@ fi
 # Clear up previous task dirs
 if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
     rm -rf <%= @task_dir %>/<%= @task_user %>
+    # generic-worker >= ~101 (taskcluster#8859) probes the task user's launch
+    # agent with the task dir as cwd before it creates that dir, so with the
+    # dir gone it never becomes ready. Recreate it the way older workers did.
+    mkdir -m 0700 <%= @task_dir %>/<%= @task_user %>
+    chown <%= @task_user %>:staff <%= @task_dir %>/<%= @task_user %>
 else
     rm -rf <%= @task_dir %>/task_*
 fi
