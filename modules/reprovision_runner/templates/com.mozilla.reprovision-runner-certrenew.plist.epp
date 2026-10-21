@@ -3,7 +3,6 @@
       String $step_path,
       String $cert_path,
       String $key_path,
-      String $exec_kick,
 | -%>
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -17,8 +16,6 @@
         <string>ca</string>
         <string>renew</string>
         <string>--daemon</string>
-        <string>--exec</string>
-        <string><%= $exec_kick %></string>
         <string><%= $cert_path %></string>
         <string><%= $key_path %></string>
     </array>
