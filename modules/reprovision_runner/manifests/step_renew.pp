@@ -38,7 +38,6 @@ class reprovision_runner::step_renew (
   $step_ca_ip  = $reprovision_runner::step_ca_ip
   $step_ver    = $reprovision_runner::step_version
   $runner_id   = $reprovision_runner::runner_id
-  $plist_label = $reprovision_runner::plist_label
 
   # step-ca lives in GCP and is only reachable from MDC1 by IP; its hostname isn't in MDC1 DNS.
   # When $step_ca_ip is set, pin it in /etc/hosts so `step ca bootstrap`/`renew` resolve the
@@ -109,7 +108,10 @@ class reprovision_runner::step_renew (
     }
   }
 
-  # ---- renew daemon: refresh at ~2/3 lifetime, kick the runner on renewal ----
+  # ---- renew daemon: refresh at ~2/3 lifetime ----
+  # No --exec restart: the runner and screen agent re-read the cert files when they change
+  # (relops-bootstrap _ReloadingClient). The old `kickstart -k` restarted the runner every ~15h
+  # whatever it was doing, and on 2026-10-20 that killed m4-191's tart-host-update mid-verify.
   # `step ca renew --daemon` no-ops until a cert exists, so this is safe to load
   # before the initial enrollment; KeepAlive + ThrottleInterval back it off.
   file { $renew_plist:
@@ -123,7 +125,6 @@ class reprovision_runner::step_renew (
       step_path => $step_path,
       cert_path => $cert_path,
       key_path  => $key_path,
-      exec_kick => "/bin/launchctl kickstart -k system/${plist_label}",
     }),
     require => Exec['install_step_cli'],
     notify  => Exec['reprovision_runner_certrenew_reload'],
