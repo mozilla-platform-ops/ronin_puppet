@@ -15,7 +15,7 @@ class roles_profiles::profiles::gecko_t_linux_2404_netperf_generic_worker {
       class { 'roles_profiles::profiles::logging_papertrail':
         papertrail_host    => lookup({ 'name' => 'papertrail.host', 'default_value' => '' }),
         papertrail_port    => lookup({ 'name' => 'papertrail.port', 'default_value' => -1 }),
-        systemd_units      => ['check_gw', 'run-puppet', 'ssh'],
+        systemd_units      => ['run-puppet', 'ssh'],
         syslog_identifiers => ['generic-worker', 'run-start-worker', 'sudo'],
       }
 
@@ -37,13 +37,17 @@ class roles_profiles::profiles::gecko_t_linux_2404_netperf_generic_worker {
       require linux_directory_cleaner
       require linux_cltbld_and_apt_cleaner
 
+      $puppet_repo                  = 'https://github.com/mozilla-platform-ops/ronin_puppet.git'
+      $github                       = lookup('github', Hash, 'first', {})
+
       class { 'puppet::atboot':
-        telegraf_user     => lookup('telegraf.user'),
-        telegraf_password => lookup('telegraf.password'),
-        puppet_repo       => 'https://github.com/mozilla-platform-ops/ronin_puppet.git',
-        puppet_branch     => 'master',
+        telegraf_user      => lookup('telegraf.user'),
+        telegraf_password  => lookup('telegraf.password'),
+        puppet_repo        => $puppet_repo,
+        puppet_branch      => 'master',
+        github_deploy_keys => dig($github, 'deploy_keys'),
         # Note the camelCase key names
-        meta_data         => {
+        meta_data          => {
           workerType    => $worker_type,
           workerGroup   => $worker_group,
           provisionerId => 'releng-hardware',
@@ -54,9 +58,6 @@ class roles_profiles::profiles::gecko_t_linux_2404_netperf_generic_worker {
       $taskcluster_client_id    = lookup("generic_worker.${worker_type_under}.taskcluster_client_id")
       $taskcluster_access_token = lookup("generic_worker.${worker_type_under}.taskcluster_access_token")
       $livelog_secret           = lookup("generic_worker.${worker_type_under}.livelog_secret")
-      $quarantine_client_id     = lookup("generic_worker.${worker_type_under}.quarantine_client_id")
-      $quarantine_access_token  = lookup("generic_worker.${worker_type_under}.quarantine_access_token")
-      $bugzilla_api_key         = lookup("generic_worker.${worker_type_under}.bugzilla_api_key")
 
       class { 'linux_generic_worker':
         taskcluster_client_id     => $taskcluster_client_id,
@@ -64,9 +65,6 @@ class roles_profiles::profiles::gecko_t_linux_2404_netperf_generic_worker {
         livelog_secret            => $livelog_secret,
         worker_group              => $worker_group,
         worker_type               => $worker_type,
-        quarantine_client_id      => $quarantine_client_id,
-        quarantine_access_token   => $quarantine_access_token,
-        bugzilla_api_key          => $bugzilla_api_key,
         generic_worker_version    => 'v88.0.2',
         generic_worker_sha256     => '0fcbdb1f7462e0b36f0d89a6bf92ec1e70a1356d6149e01c462f53380771e662',
         taskcluster_proxy_version => 'v88.0.2',
@@ -75,8 +73,6 @@ class roles_profiles::profiles::gecko_t_linux_2404_netperf_generic_worker {
         livelog_sha256            => 'ee06ad486098942d3180182cd91f3b40822f045f6bd1f606c868ae0ddcdc5389',
         start_worker_version      => 'v88.0.2',
         start_worker_sha256       => '12c44a7e6f4fc4cd561ca172f3c4521962b45340bd4500384348087a19dc9483',
-        quarantine_worker_version => 'v1.0.0',
-        quarantine_worker_sha256  => '42ea9e9df5dce6370750cf5141a400c07f781d3e28953a5f6d5066d4967a144c',
         user                      => 'cltbld',
         user_homedir              => '/home/cltbld',
       }

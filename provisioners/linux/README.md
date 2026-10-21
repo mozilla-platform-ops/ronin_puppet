@@ -48,6 +48,17 @@ The script copies `bootstrap_linux.sh`, `vault.yaml`, and (optionally) a `ronin_
 file to the remote host and sets the role file. It then prints the SSH commands to run the
 bootstrap.
 
+Role arguments must start with a lowercase letter and contain only lowercase
+letters, digits, or underscores. The scripts reject invalid roles before remote
+actions or secrets transfer and send valid roles as stdin data to a fixed remote
+write command. This checks syntax, not whether a role exists in the target
+checkout. `update_linux.sh` still accepts an omitted role and requires `force`
+to change an existing role.
+
+`deliver_linux.sh` still replaces the saved SSH host key with `ssh-keyscan`
+output. Role validation does not authenticate that key; host-key verification
+remains separate work.
+
 ### `update_linux.sh`
 
 Updates `vault.yaml` (hiera secrets) on an already-bootstrapped host. Can optionally

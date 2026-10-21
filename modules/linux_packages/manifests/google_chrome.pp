@@ -25,6 +25,9 @@ class linux_packages::google_chrome () {
 
             # ordering
             Exec['install_repo'] -> Exec['apt_update'] -> Package['google-chrome-stable']
+            # Xvfb has a separate apt-get update; the Chrome key must be ready
+            # before it runs when both classes are present.
+            Exec['install_repo'] -> Exec <| title == 'apt-update-xvfb' |>
 
             # send the install script to the host
             file { $dest_install_script_path:
@@ -35,13 +38,13 @@ class linux_packages::google_chrome () {
               mode    => '0700',
             }
 
-            # exec the script if the apt repo is not already present
-            # TODO: is this reentrant? perhaps always run it (since it does more than just install the repo)?
+            # Reinstall the repo key if an earlier bootstrap left it unreadable
+            # by _apt, even when the source list already exists.
             exec { 'install_repo':
               command => $dest_install_script_path,
               path    => ['/usr/local/sbin', '/bin', '/usr/bin'],
               require => File[$dest_install_script_path],
-              unless  => 'test -f /etc/apt/sources.list.d/google-chrome.list',
+              unless  => 'test -f /etc/apt/sources.list.d/google-chrome.list && test "$(stat -c %a /etc/apt/trusted.gpg.d/google-chrome.gpg 2>/dev/null)" = 644',
             }
 
             # Install Google Chrome stable version

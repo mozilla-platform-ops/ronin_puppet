@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import socket
+import stat
 import sys
 import uuid
 
@@ -60,12 +61,42 @@ def read_boot_time(path=PROC_STAT_PATH):
     raise ValueError("could not find btime in /proc/stat")
 
 
+def open_event_log(log_path, flags):
+    """Open an existing log through a protected directory without following links."""
+    directory, filename = os.path.split(os.path.abspath(log_path))
+    directory_fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        directory_stat = os.fstat(directory_fd)
+        if directory_stat.st_uid != 0 or directory_stat.st_mode & 0o022:
+            raise ValueError("lifecycle log directory must be root-owned and not writable by group or other")
+        # No O_CREAT: Puppet/logrotate create the root-owned, cltbld-writable file.
+        # O_NONBLOCK lets us reject FIFOs without blocking before fstat.
+        descriptor = os.open(
+            filename, flags | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory_fd
+        )
+        try:
+            file_stat = os.fstat(descriptor)
+            if (
+                not stat.S_ISREG(file_stat.st_mode)
+                or file_stat.st_uid != 0
+                or file_stat.st_nlink != 1
+                or file_stat.st_mode & 0o002
+            ):
+                raise ValueError("lifecycle log must be a regular root-owned file with one link and no other-write permission")
+        except BaseException:
+            os.close(descriptor)
+            raise
+        return descriptor
+    finally:
+        os.close(directory_fd)
+
+
 def append_event(event, log_path=EVENT_LOG_PATH):
     """Append one complete JSON record while holding an exclusive file lock."""
     encoded = (json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n").encode(
         "utf-8"
     )
-    descriptor = os.open(log_path, os.O_RDWR | os.O_APPEND | os.O_CREAT, 0o664)
+    descriptor = open_event_log(log_path, os.O_RDWR | os.O_APPEND)
     try:
         fcntl.flock(descriptor, fcntl.LOCK_EX)
         size = os.lseek(descriptor, 0, os.SEEK_END)
@@ -79,19 +110,27 @@ def append_event(event, log_path=EVENT_LOG_PATH):
             os.close(descriptor)
 
 
+def parse_event_record(line):
+    """Read one UTF-8 JSON object, ignoring corrupt or non-object records."""
+    try:
+        event = json.loads(line.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return event if isinstance(event, dict) else None
+
+
 def append_boot_event_once(event, log_path=EVENT_LOG_PATH):
     """Append a boot event only when the active log lacks its boot ID."""
     encoded = (json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n").encode(
         "utf-8"
     )
-    descriptor = os.open(log_path, os.O_RDWR | os.O_APPEND | os.O_CREAT, 0o664)
+    descriptor = open_event_log(log_path, os.O_RDWR | os.O_APPEND)
     try:
         fcntl.flock(descriptor, fcntl.LOCK_EX)
         contents = os.pread(descriptor, os.lseek(descriptor, 0, os.SEEK_END), 0)
         for line in contents.splitlines():
-            try:
-                existing_event = json.loads(line)
-            except json.JSONDecodeError:
+            existing_event = parse_event_record(line)
+            if existing_event is None:
                 continue
             if (
                 existing_event.get("event") == "boot_started"
@@ -112,12 +151,12 @@ def append_boot_event_once(event, log_path=EVENT_LOG_PATH):
 def read_events(log_path=EVENT_LOG_PATH):
     """Yield valid JSON events from the active lifecycle log."""
     try:
-        with open(log_path, encoding="utf-8") as event_log:
+        descriptor = open_event_log(log_path, os.O_RDONLY)
+        with os.fdopen(descriptor, "rb") as event_log:
             for line in event_log:
-                try:
-                    yield json.loads(line)
-                except json.JSONDecodeError:
-                    continue
+                event = parse_event_record(line)
+                if event is not None:
+                    yield event
     except FileNotFoundError:
         return
 

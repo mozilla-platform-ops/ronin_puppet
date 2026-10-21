@@ -32,7 +32,16 @@ class linux_vnc (
     '18.04', '22.04', '24.04': {
       file {
         '/lib/systemd/system/x11vnc.service':
-          content => template("${module_name}/x11vnc.service.erb");
+          ensure  => file,
+          owner   => root,
+          group   => root,
+          mode    => '0644',
+          content => template("${module_name}/x11vnc.service.erb"),
+          notify  => Exec['reload systemd for x11vnc'];
+      }
+      exec { 'reload systemd for x11vnc':
+        command     => '/bin/systemctl daemon-reload',
+        refreshonly => true,
       }
     }
     default: {

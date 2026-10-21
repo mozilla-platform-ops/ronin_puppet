@@ -21,11 +21,11 @@ class linux_host_lifecycle {
 
     '/var/log/host-lifecycle':
       ensure => directory,
-      group  => 'cltbld',
-      mode   => '0775';
+      mode   => '0755';
 
     '/var/log/host-lifecycle/events.jsonl':
       ensure  => file,
+      links   => 'manage',
       group   => 'cltbld',
       mode    => '0664',
       require => File['/var/log/host-lifecycle'];

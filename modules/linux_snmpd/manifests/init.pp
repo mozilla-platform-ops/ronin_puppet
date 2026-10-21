@@ -33,10 +33,15 @@ class linux_snmpd {
                 default: * => $shared::file_defaults;
 
                 '/etc/snmp/snmpd.conf':
-                  ensure  => file,
-                  content => template('linux_snmpd/snmpd.conf.erb'),
-                  mode    => '0644',
-                  notify  => Service['snmpd'];
+                  ensure    => file,
+                  content   => template('linux_snmpd/snmpd.conf.erb'),
+                  # Reload reads the config after snmpd drops privileges.
+                  owner     => 'root',
+                  group     => 'Debian-snmp',
+                  mode      => '0640',
+                  show_diff => false,
+                  require   => Class['linux_packages::snmpd'],
+                  notify    => Service['snmpd'];
 
                 '/usr/local/bin/snmp_check_gw.sh':
                   ensure => file,

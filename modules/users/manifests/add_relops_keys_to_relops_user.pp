@@ -34,6 +34,11 @@ class users::add_relops_keys_to_relops_user {
         owner   => 'relops',
         content => template("${module_name}/ssh_authorized_keys_relops.erb"),
       }
+
+      # These virtual resources belong to users::all_users, not the profile
+      # that realizes them. Order their contained homes and SSH keys directly
+      # before replacing installer access with the shared relops key.
+      Users::Single_user[$relops] -> File['/home/relops/.ssh/authorized_keys']
     }
     default: {
       fail("${facts['os']['name']} not supported")
