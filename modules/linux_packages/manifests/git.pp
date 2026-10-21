@@ -33,9 +33,9 @@ class linux_packages::git {
           }
         }
         '24.04': {
-          # the system git is 2.43, so use that
+          # Ubuntu 24.04 provides Git 2.43; use it without pinning the Ubuntu package revision.
           package { 'git':
-            ensure => '1:2.43.0-1ubuntu7.3',
+            ensure => installed,
           }
         }
         default: {
