@@ -18,6 +18,8 @@ class duo::duo_unix (
     Enum['source', 'pkg'] $install_method = 'source',
     String $pkg_version       = '2.3.0',
     String $pkg_checksum      = 'ae673a3737fa4301aabeda5b20f61bdc58dd9480ea8916b2c9f80ddc620d5b4f',
+    String $automation_user   = 'relops',
+    Array[Stdlib::IP::Address::V4::Nosubnet] $automation_exempt_addresses = [],
 ) {
     if $enabled {
         # Sanity Check
@@ -131,7 +133,7 @@ class duo::duo_unix (
         owner   => 'root',
         group   => 'wheel',
         mode    => '0644',
-        source  => 'puppet:///modules/duo/sshd_config',
+        content => template('duo/sshd_config.erb'),
         require => $duo_require,
     }
 

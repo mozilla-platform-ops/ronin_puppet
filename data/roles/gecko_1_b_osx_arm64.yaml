@@ -74,3 +74,6 @@ required_disk_space_mb: 61440
 
 # Prebuilt Duo pkg: nothing is compiled or installed into /usr/local
 duo_install_method: pkg
+# macmini-m4-81: reprovision runner + Hangar agents (builder-upgrade, sbom), as relops
+duo_automation_exempt_addresses:
+  - 10.49.56.48
