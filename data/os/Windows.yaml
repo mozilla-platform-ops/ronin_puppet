@@ -98,7 +98,6 @@ windows:
     version: '4.1'
     hg_version: '6.2.1'
     py3_pip_version: '26.2.2'
-    certifi_version: '2026.10.19'
     zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
   device_guard:
