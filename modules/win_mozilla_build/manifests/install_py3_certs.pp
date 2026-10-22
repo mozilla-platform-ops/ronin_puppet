@@ -9,14 +9,20 @@
 class win_mozilla_build::install_py3_certs {
   require win_mozilla_build::install
 
-  $py      = "& 'C:\\mozilla-build\\python3\\python3.exe'"
-  $pip     = lookup('windows.mozilla_build.py3_pip_version')
-  $certifi = lookup('windows.mozilla_build.certifi_version')
-  $pip_whl = 'https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70'
+  $python   = 'C:\\mozilla-build\\python3\\python3.exe'
+  $packages = 'C:\\mozilla-build\\python3\\Lib\\site-packages'
+  $pip      = lookup('windows.mozilla_build.py3_pip_version')
+  $certifi  = lookup('windows.mozilla_build.certifi_version')
+  $pip_whl  = 'https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70'
+
+  exec { 'install_py3_pip':
+    command => "${python} -m pip install ${pip_whl}",
+    creates => "${packages}\\pip-${pip}.dist-info",
+  }
 
   exec { 'install_py3_certi':
-    command  => "${py} -m pip install 'pip @ ${pip_whl}'; if (\$LASTEXITCODE) { exit \$LASTEXITCODE }; ${py} -m pip install certifi==${certifi}; exit \$LASTEXITCODE",
-    unless   => "if (((${py} -m pip show pip certifi | Select-String '^Version:' | % { \"\$_\".Split()[1] }) -join ',') -eq '${pip},${certifi}') { exit 0 } else { exit 1 }",
-    provider => powershell,
+    command => "${python} -m pip install certifi==${certifi}",
+    creates => "${packages}\\certifi-${certifi}.dist-info",
+    require => Exec['install_py3_pip'],
   }
 }
