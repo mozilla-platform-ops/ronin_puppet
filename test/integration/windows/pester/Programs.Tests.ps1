@@ -67,6 +67,7 @@ Describe 'Programs' -Tag IntegrationTests {
             @{ Package = 'psutil'; Key = 'psutil_version' }
             @{ Package = 'zstandard'; Key = 'zstandard_version' }
             @{ Package = 'pip'; Key = 'py3_pip_version' }
+            @{ Package = 'certifi'; Key = 'certifi_version' }
         ) {
             $output = & 'C:\mozilla-build\python3\python.exe' -m pip show $Package
             $LASTEXITCODE | Should-Be 0

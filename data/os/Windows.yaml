@@ -97,7 +97,14 @@ windows:
   mozilla_build:
     version: '4.1'
     hg_version: '6.2.1'
-    py3_pip_version: '23.3.2'
+    # pip and certifi ship CA bundles. Older releases trust the removed emSign ECC Root CA - G3:
+    # https://discuss.python.org/t/information-for-python-users-regarding-emudhra-emsign-ca-certificate-security-incident/109576
+    py3_pip_version: '26.2.2'
+    py3_pip_url: 'https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl'
+    py3_pip_sha256: 'fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70'
+    certifi_version: '2026.10.19'
+    certifi_url: 'https://files.pythonhosted.org/packages/c4/51/29046e48f693c54e5b7412216d447a1d8362c9653148d98c02cdf65fa733/certifi-2026.10.19-py3-none-any.whl'
+    certifi_sha256: '42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b'
     zstandard_version: '0.19.0'
     psutil_version: '5.9.4'
   device_guard:
