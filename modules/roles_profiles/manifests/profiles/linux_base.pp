@@ -28,6 +28,7 @@ class roles_profiles::profiles::linux_base {
       if $facts['os']['release']['full'] == '24.04' {
         require linux_packages::ca_certificates
         require linux_packages::xz_utils
+        require linux_packages::openssh
       }
 
       # should be requires above, but fight that battle another day
