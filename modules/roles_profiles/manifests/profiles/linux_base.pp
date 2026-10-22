@@ -25,6 +25,10 @@ class roles_profiles::profiles::linux_base {
       # fix for ubuntu packaging bug
       require linux_packages::testresources
 
+      if $facts['os']['release']['full'] == '24.04' {
+        require linux_packages::ca_certificates
+      }
+
       # should be requires above, but fight that battle another day
       include linux_snmpd
 
