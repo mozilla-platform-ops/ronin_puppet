@@ -4,6 +4,7 @@
 
 class roles_profiles::roles::mozillavpn_b_3_osx {
   include macos_utils::disable_bluetooth_setup
+  include roles_profiles::profiles::duo
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::hardware
   include roles_profiles::profiles::macos_coresimulator_runtime_map

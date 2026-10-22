@@ -1,0 +1,21 @@
+AuthorizedKeysFile .ssh/authorized_keys
+PubkeyAuthentication yes
+PasswordAuthentication no
+AuthenticationMethods publickey,keyboard-interactive:pam
+
+UsePAM yes
+ChallengeResponseAuthentication yes
+UseDNS no
+
+# pass locale information
+AcceptEnv LANG LC_*
+
+# override default of no subsystems
+Subsystem       sftp    /usr/libexec/sftp-server
+<% unless @automation_exempt_addresses.empty? -%>
+
+# Automation logs in as <%= @automation_user %> with the shared key and can't answer a Duo push.
+# Exempt it only from the hosts it runs on; people use their own accounts, which get Duo.
+Match User <%= @automation_user %> Address <%= @automation_exempt_addresses.join(',') %>
+    AuthenticationMethods publickey
+<% end -%>
