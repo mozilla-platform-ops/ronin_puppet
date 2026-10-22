@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Old pip and certifi trust the compromised emSign ECC Root CA - G3, so upgrade
-# pip first, then upgrade certifi to the latest release (see bug 1662170).
+# pip first, then install certifi (see bug 1662170).
 class win_mozilla_build::install_py3_certs (
   String $pip,
 ) {
@@ -18,7 +18,7 @@ class win_mozilla_build::install_py3_certs (
   }
 
   exec { 'install_py3_certi':
-    command => "${python} -m pip install --upgrade certifi",
+    command => "${python} -m pip install certifi",
     require => Exec['install_py3_pip'],
   }
 }
