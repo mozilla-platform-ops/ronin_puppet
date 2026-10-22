@@ -80,6 +80,11 @@ class roles_profiles::profiles::worker {
       # so vault's hash wins and a sub-key present only in role data is invisible.
       $purge_metal_shader_cache = lookup('purge_metal_shader_cache', Boolean, 'first', false)
 
+      # Loop the worker between tasks instead of rebooting, opt-in per role.
+      # Top-level role keys for the same vault `worker:` shadowing reason as above.
+      $skip_reboot_between_tasks = lookup('skip_reboot_between_tasks', Boolean, 'first', false)
+      $max_tasks_between_reboots = lookup('max_tasks_between_reboots', Integer[1], 'first', 10)
+
       # Clear the task user's Firefox Application Support between tasks, opt-in per
       # role (bug 2046807). Top-level role key for the same reason as the lookups
       # above.
@@ -109,6 +114,8 @@ class roles_profiles::profiles::worker {
         reclaim_free_space_gb     => $reclaim_free_space_gb,
         post_task_action          => $post_task_action,
         purge_metal_shader_cache  => $purge_metal_shader_cache,
+        skip_reboot_between_tasks => $skip_reboot_between_tasks,
+        max_tasks_between_reboots => $max_tasks_between_reboots,
         purge_firefox_app_support => $purge_firefox_app_support,
         disable_livelog           => $disable_livelog,
         required_disk_space_mb    => $required_disk_space_mb,
