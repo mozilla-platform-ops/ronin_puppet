@@ -10,8 +10,7 @@ worker_metadata:
 
 # Role-owned Taskcluster worker version (read by profiles::worker; takes
 # precedence over the legacy vault-sourced worker.taskcluster_version below).
-# Pinned to the current running version -- this is a no-op control move.
-taskcluster_version: '91.0.2'
+taskcluster_version: '113.1.3'
 
 # Developer-ID-signed worker binaries (Mozilla TeamID 43AQ936H96), as
 # installed-binary-name => sha256 of the signed asset. Only these two assets are
@@ -29,8 +28,8 @@ taskcluster_version: '91.0.2'
 # what the download path checks -- they must be updated together with
 # taskcluster_version above, since a signed asset exists per version.
 taskcluster_signed_binaries:
-  start-worker: 'c43aaf3361ea356a730d9cdb322364d765a06f77222104ad3ea2d5dc6a8913f5'
-  generic-worker-multiuser: '3e2e5410959c3652f89751be9863a07e050beb6a28beb7522a5122b871fb8487'
+  start-worker: '492b9e62e88c9fa55f16f231513faa0cd376f7747b86a30963d6bdfa4797e73e'
+  generic-worker-multiuser: '5a6546e1e7c97f34d222df172954897ca26e52350b6c493c0a6f35107652d14e'
 
 # Clear the task user's ~/Library/Application Support/Firefox before every task
 # (bug 2046807). Top-level, not under `worker:`, so vault's `worker:` hash cannot
