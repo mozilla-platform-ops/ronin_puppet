@@ -18,7 +18,7 @@ class win_mozilla_build::install_py3_certs (
   }
 
   exec { 'install_py3_certi':
-    command => "${python} -m pip install certifi",
+    command => "${python} -m pip install --upgrade certifi",
     require => Exec['install_py3_pip'],
   }
 }
