@@ -78,6 +78,14 @@ class win_nsclient::init (
     notify  => Service['nscp'],
   }
 
+  # Asserts Windows Defender real-time/on-access scanning is disabled (WdFilter
+  # minifilter not loaded). Catches a Defender platform update re-arming it.
+  file { "${scripts_dir}\\check_defender.ps1":
+    content => file('win_nsclient/check_defender.ps1'),
+    require => File[$scripts_dir],
+    notify  => Service['nscp'],
+  }
+
   service { 'nscp':
     ensure  => running,
     enable  => true,
