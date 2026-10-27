@@ -20,11 +20,48 @@ function fail {
     exit 1
 }
 
-mkdir -p "${WORKING_DIR}" || fail
-cd "${WORKING_DIR}" || fail
+# This checkout is fetched and applied by root. Keep it root-owned and
+# inaccessible for modification by task users.
+function require_root_owned_directory {
+    local path="$1"
+    local owner group mode
 
-# Make dir world writable for puppet homebrew bug workaround
-chmod 777 .
+    [ -d "${path}" ] && [ ! -L "${path}" ] || fail "Unsafe directory: ${path}"
+    owner=$(stat -c '%u' "${path}") || fail "Unable to stat ${path}"
+    group=$(stat -c '%g' "${path}") || fail "Unable to stat ${path}"
+    mode=$(stat -c '%a' "${path}") || fail "Unable to stat ${path}"
+    [ "${owner}" = '0' ] && [ "${group}" = '0' ] || fail "Directory is not root:root: ${path}"
+    (( (8#${mode} & 8#022) == 0 )) || fail "Directory is writable by group or other: ${path}"
+}
+
+function require_secure_working_dir {
+    local unsafe_path
+
+    require_root_owned_directory "${WORKING_DIR}"
+
+    # A .git file can redirect Git to an arbitrary directory, so only accept a
+    # root-owned directory. Git checkout also leaves untracked files intact.
+    if [ -e "${WORKING_DIR}/.git" ] || [ -L "${WORKING_DIR}/.git" ]; then
+        require_root_owned_directory "${WORKING_DIR}/.git"
+    fi
+    unsafe_path=$(find "${WORKING_DIR}" -xdev \( -type l -o ! -user root -o ! -group root -o -perm /022 \) -print -quit) || fail "Unable to validate Puppet checkout: ${WORKING_DIR}"
+    [ -z "${unsafe_path}" ] || fail "Puppet checkout contains unsafe files: ${unsafe_path}"
+}
+
+function remove_staged_vault_secrets {
+    local secrets_dir="${WORKING_DIR}/data/secrets"
+
+    # The Linux Hiera config reads /root/vault.yaml directly. This removes a
+    # legacy copy only after require_secure_working_dir has validated the tree.
+    rm -f -- "${secrets_dir}/vault.yaml" || return 1
+    rmdir "${secrets_dir}" 2>/dev/null || true
+}
+
+if [ ! -e "${WORKING_DIR}" ] && [ ! -L "${WORKING_DIR}" ]; then
+    install -d -o root -g root -m 0755 "${WORKING_DIR}" || fail
+fi
+require_secure_working_dir
+cd "${WORKING_DIR}" || fail
 
 # Set role or fail if file not found
 if [ -f "${ROLE_FILE}" ]; then
@@ -36,6 +73,8 @@ fi
 [ -f '/root/vault.yaml' ] || fail "Secrets file not found"
 
 function update_puppet {
+    require_secure_working_dir
+
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
         git init || return 1
@@ -52,10 +91,8 @@ function update_puppet {
       git checkout --force "origin/${PUPPET_BRANCH}"
     ) || return 1
 
-    # Copy secrets
-    mkdir -p "${WORKING_DIR}/data/secrets"
-    cp /root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
-    chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
+    require_secure_working_dir
+    remove_staged_vault_secrets || return 1
 
     cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
 node '${FQDN}' {
@@ -123,7 +160,7 @@ function run_puppet {
     TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
 
-    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera-linux.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     PUPPET_RUN_DURATION=$SECONDS

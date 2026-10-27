@@ -25,24 +25,100 @@ function fail {
     exit 1
 }
 
+# This checkout is fetched and applied by root. Keep it root-owned and
+# inaccessible for modification by task users.
+function require_root_owned_directory {
+    local path="$1"
+    local owner group mode
+
+    [ -d "${path}" ] && [ ! -L "${path}" ] || fail "Unsafe directory: ${path}"
+    owner=$(stat -c '%u' "${path}") || fail "Unable to stat ${path}"
+    group=$(stat -c '%g' "${path}") || fail "Unable to stat ${path}"
+    mode=$(stat -c '%a' "${path}") || fail "Unable to stat ${path}"
+    [ "${owner}" = '0' ] && [ "${group}" = '0' ] || fail "Directory is not root:root: ${path}"
+    (( (8#${mode} & 8#022) == 0 )) || fail "Directory is writable by group or other: ${path}"
+}
+
+function protect_git_metadata {
+    local config="${WORKING_DIR}/.git/config"
+    local owner group mode links
+
+    require_root_owned_directory "${WORKING_DIR}/.git"
+    chmod 0700 "${WORKING_DIR}/.git" || fail "Unable to protect Git metadata"
+    if [ -e "$config" ] || [ -L "$config" ]; then
+        [ -f "$config" ] && [ ! -L "$config" ] || fail "Unsafe Git config"
+        owner=$(stat -c '%u' "$config") || fail "Unable to validate Git config"
+        group=$(stat -c '%g' "$config") || fail "Unable to validate Git config"
+        mode=$(stat -c '%a' "$config") || fail "Unable to validate Git config"
+        links=$(stat -c '%h' "$config") || fail "Unable to validate Git config"
+        [ "$owner" = 0 ] && [ "$group" = 0 ] && [ "$links" = 1 ] \
+          || fail "Unsafe Git config ownership or link count"
+        (( (8#${mode} & 8#022) == 0 )) || fail "Git config is writable by group or other"
+        chmod 0600 "$config" || fail "Unable to protect Git config"
+    fi
+}
+
+function clear_git_pat_auth {
+    local result
+    GIT_PAT_HEADER=''
+    export -n GIT_PAT_HEADER
+    if [ -e "${WORKING_DIR}/.git" ] || [ -L "${WORKING_DIR}/.git" ]; then
+        protect_git_metadata
+        if [ -f "${WORKING_DIR}/.git/config" ]; then
+            # Restrict legacy credentials before Git rewrites the config. Code
+            # 5 means the header is absent; every other failure is significant.
+            if (umask 077; git config --local --unset-all http.https://github.com/.extraHeader) 2>/dev/null; then
+                result=0
+            else
+                result=$?
+            fi
+            [ "$result" = 0 ] || [ "$result" = 5 ] || fail "Unable to remove legacy Git authentication"
+            protect_git_metadata
+        fi
+    fi
+}
+
+function require_secure_working_dir {
+    local unsafe_path link_path relative_path link_owner link_group
+
+    require_root_owned_directory "${WORKING_DIR}"
+
+    # A .git file can redirect Git to an arbitrary directory, so only accept a
+    # root-owned directory. Git checkout also leaves untracked files intact.
+    if [ -e "${WORKING_DIR}/.git" ] || [ -L "${WORKING_DIR}/.git" ]; then
+        protect_git_metadata
+    fi
+    unsafe_path=$(find "${WORKING_DIR}" -xdev ! -type l \( ! -user root -o ! -group root -o -perm /022 \) -print -quit) || fail "Unable to validate Puppet checkout: ${WORKING_DIR}"
+    [ -z "${unsafe_path}" ] || fail "Puppet checkout contains unsafe files: ${unsafe_path}"
+
+    # The repository deliberately tracks test-fixture symlinks.  Accept only
+    # tracked root-owned links; untracked links still fail closed.
+    while IFS= read -r -d '' link_path; do
+        relative_path="${link_path#"${WORKING_DIR}/"}"
+        link_owner=$(stat -c '%u' "${link_path}") || fail "Unable to stat symlink: ${link_path}"
+        link_group=$(stat -c '%g' "${link_path}") || fail "Unable to stat symlink: ${link_path}"
+        [ "${link_owner}" = '0' ] && [ "${link_group}" = '0' ] \
+          || fail "Puppet checkout contains unsafe symlink: ${link_path}"
+        git -C "${WORKING_DIR}" ls-files --error-unmatch -- "${relative_path}" >/dev/null 2>&1 \
+          || fail "Puppet checkout contains untracked symlink: ${link_path}"
+    done < <(find "${WORKING_DIR}" -xdev -type l -print0)
+}
+
+function remove_staged_vault_secrets {
+    local secrets_dir="${WORKING_DIR}/data/secrets"
+
+    # The Linux Hiera config reads /root/vault.yaml directly. This removes a
+    # legacy copy only after require_secure_working_dir has validated the tree.
+    rm -f -- "${secrets_dir}/vault.yaml" || return 1
+    rmdir "${secrets_dir}" 2>/dev/null || true
+}
+
 # Lifecycle logging is observational only: no failure may interrupt Puppet.
 function lifecycle_log {
     if [ -x /usr/local/bin/lifecycle-log ]; then
         if ! /usr/local/bin/lifecycle-log "$@"; then
             echo "lifecycle-log $* failed; continuing without lifecycle event" >&2
         fi
-    fi
-}
-
-function extract_username() {
-    local url="$1"
-    if [[ "$url" =~ git@github.com:([^/]+)/.* ]]; then
-        echo "${BASH_REMATCH[1]}"
-    elif [[ "$url" =~ https://github.com/([^/]+)/.* ]]; then
-        echo "${BASH_REMATCH[1]}"
-    else
-        echo "Invalid URL format"
-        exit 1
     fi
 }
 
@@ -81,47 +157,48 @@ function block_on_network {
 }
 
 function email_report {
-    ERR_SUBJECT=$1
-    ERR_MSG=$2
+    (
+        # Keep large, untrusted Puppet logs out of Python source and environment.
+        umask 077
+        report_dir=$(mktemp -d /root/puppet-email.XXXXXX) || return 1
+        trap 'rm -rf -- "${report_dir}"' EXIT
+        trap 'exit 1' HUP INT TERM
+        printf '%s' "$2" > "${report_dir}/body" || return 1
 
-    SENDER="root@${FQDN}"
-    RECEIVER="${PUPPET_MAIL}"
-    $PYTHON_BIN <<EOF
+        REPORT_SENDER="root@${FQDN}" REPORT_RECEIVER="${PUPPET_MAIL}" \
+          REPORT_SUBJECT="$1" \
+          REPORT_SMTP_HOST=<%= require 'shellwords'; Shellwords.escape(@smtp_relay_host) %> \
+          "${PYTHON_BIN}" - "${report_dir}/body" <<'PYEOF'
+import os
 import smtplib
-
-msg = """From: ${SENDER}
-To: ${RECEIVER}
-Subject: ${ERR_SUBJECT}
-
-${ERR_MSG}
-"""
+import sys
+from email.message import EmailMessage
 
 try:
-   smtpObj = smtplib.SMTP('<%= @smtp_relay_host %>')
-   smtpObj.sendmail("${SENDER}", "${RECEIVER}", msg)
-   print("Successfully sent email")
-except smtplib.SMTPException as e:
-   print("Error: unable to send email")
-   print(e)
-EOF
-}
-
-# TODO: remove notify_telegraf and all telegraf-related code.
-# Telegraf metrics were posted to https://telegraf.relops.mozops.net/write?db=relops
-# using InfluxDB line protocol. ERB vars involved: @telegraf_user, @telegraf_password,
-# @meta_data (loop generating key=value tags). All notify_telegraf call sites are
-# already commented out (search for "notify_telegraf"). Once removed, @telegraf_user,
-# @telegraf_password, and @meta_data can be dropped from the puppet::atboot class too.
-function notify_telegraf {
-    TELEGRAF_TABLE=$1
-    TELEGRAF_VALUE=$2
-    META_DATA="<% @meta_data.each do |key,value| -%>,<%= key -%>=<%= value -%><% end -%>"
-    CURL_OPTIONS=('--user' '<%= @telegraf_user -%>:<%= @telegraf_password -%>' '-i' '-XPOST' "https://telegraf.relops.mozops.net/write?db=relops" '--data-binary' "${TELEGRAF_TABLE}${META_DATA} value=${TELEGRAF_VALUE}")
-    # Print the metrics post output only if there is an error.
-    out=$(curl --fail --silent --show-error "${CURL_OPTIONS[@]}" 2>&1) || echo "${out}"
+    msg = EmailMessage()
+    msg["From"] = os.environ["REPORT_SENDER"]
+    msg["To"] = os.environ["REPORT_RECEIVER"]
+    msg["Subject"] = os.environ["REPORT_SUBJECT"]
+    with open(sys.argv[1], encoding="utf-8", errors="replace") as report:
+        msg.set_content(report.read())
+    with smtplib.SMTP(os.environ["REPORT_SMTP_HOST"]) as smtp:
+        smtp.send_message(
+            msg, from_addr=os.environ["REPORT_SENDER"],
+            to_addrs=[os.environ["REPORT_RECEIVER"]],
+        )
+    print("Successfully sent email")
+except (smtplib.SMTPException, OSError, ValueError) as error:
+    print("Error: unable to send email")
+    print(error)
+    sys.exit(1)
+PYEOF
+    )
 }
 
 function configure_git_pat_auth {
+    local GH_PAT GH_PAT_USER b64
+    export -n GH_PAT GH_PAT_USER b64
+    clear_git_pat_auth
     # GH PAT auth defaults to enabled
     GH_PAT_AUTH=1
     # if YQ_PRESENT=0, disable GH PAT auth
@@ -135,8 +212,6 @@ function configure_git_pat_auth {
         echo "SKIP_GH_PAT_AUTH is set to 1, skipping GH PAT auth configuration"
         # disable gh pat auth
         GH_PAT_AUTH=0
-        # for this repo, unset any existing git config for extraHeader
-        git config --unset-all http.https://github.com/.extraHeader 2>/dev/null
     fi
     # if GH_PAT_AUTH=1, proceed with configuring GH PAT auth
     if [ "$GH_PAT_AUTH" = "1" ]; then
@@ -148,14 +223,157 @@ function configure_git_pat_auth {
         if [ -n "$GH_PAT" ] && [ -n "$GH_PAT_USER" ]; then
             # base64 encode the credentials
             b64=$(printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64 -w0 2>/dev/null || printf '%s:%s' "$GH_PAT_USER" "$GH_PAT" | base64)
-            # for this repo, set the git config for extraHeader
-            git config http.https://github.com/.extraHeader "Authorization: Basic $b64"
+            # Keep this shell variable unexported. Only the fetch subprocess
+            # receives it; credentials never become Git config or argv.
+            GIT_PAT_HEADER="Authorization: Basic ${b64//$'\n'/}"
             echo "GitHub PAT authentication is enabled."
         else
             echo "GitHub PAT or PAT_USER is empty; skipping GH PAT auth configuration"
-            # unset header if present (just this repo) (exit code 5 if not found)
-            git config --unset-all http.https://github.com/.extraHeader 2>/dev/null || echo "No existing GitHub PAT auth header to unset"
         fi
+    fi
+}
+
+function root_owned_file_has_mode {
+    local path="$1"
+    local permitted_mode="$2"
+    local owner group mode
+
+    [ -f "${path}" ] && [ ! -L "${path}" ] || return 1
+    owner=$(stat -c '%u' "${path}") || return 1
+    group=$(stat -c '%g' "${path}") || return 1
+    mode=$(stat -c '%a' "${path}") || return 1
+    [ "${owner}" = '0' ] && [ "${group}" = '0' ] || return 1
+    (( (8#${mode} & ~8#${permitted_mode}) == 0 )) || return 1
+}
+
+function select_puppet_repository_profile {
+    case "${PUPPET_REPO}" in
+        'https://github.com/mozilla-platform-ops/ronin_puppet.git' | \
+        'https://github.com/aerickson/ronin_puppet-private.git' | \
+        'https://github.com/mozilla-platform-ops/ronin_puppet-private.git')
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+
+    PUPPET_REPOSITORY_SLUG="${PUPPET_REPO#https://github.com/}"
+    PUPPET_REPOSITORY_SLUG="${PUPPET_REPOSITORY_SLUG%.git}"
+    WORKING_DIR="/etc/puppet/environments/${PUPPET_REPOSITORY_SLUG}/code"
+    GITHUB_DEPLOY_KEY_NAME="${PUPPET_REPOSITORY_SLUG//\//_}"
+    GITHUB_DEPLOY_KEY_NAME="${GITHUB_DEPLOY_KEY_NAME//-/_}"
+    GITHUB_DEPLOY_KEY_PATH="/root/.ssh/${GITHUB_DEPLOY_KEY_NAME}_deploy_key"
+    GIT_REMOTE_URL="ssh://git@ssh.github.com:443/${PUPPET_REPOSITORY_SLUG}.git"
+}
+
+function deploy_key_is_available {
+    select_puppet_repository_profile \
+      && [ -s "${GITHUB_DEPLOY_KEY_PATH}" ] \
+      && root_owned_file_has_mode "${GITHUB_DEPLOY_KEY_PATH}" 0600 \
+      && [ -s "${GITHUB_KNOWN_HOSTS_PATH}" ] \
+      && root_owned_file_has_mode "${GITHUB_KNOWN_HOSTS_PATH}" 0644
+}
+
+function configure_deploy_key_auth {
+    deploy_key_is_available || return 1
+
+    export GIT_SSH_COMMAND="ssh -F /dev/null -i ${GITHUB_DEPLOY_KEY_PATH} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=${GITHUB_KNOWN_HOSTS_PATH} -o GlobalKnownHostsFile=/dev/null"
+    GIT_AUTH_MODE_SELECTED='deploy-key'
+    clear_git_pat_auth
+}
+
+function configure_pat_auth {
+    GIT_REMOTE_URL="${PUPPET_REPO}"
+    unset GIT_SSH_COMMAND
+    GIT_AUTH_MODE_SELECTED='pat'
+    configure_git_pat_auth
+}
+
+function configure_public_anonymous_auth {
+    [ "${PUPPET_REPO}" = 'https://github.com/mozilla-platform-ops/ronin_puppet.git' ] \
+      || return 1
+
+    GIT_REMOTE_URL="${PUPPET_REPO}"
+    unset GIT_SSH_COMMAND
+    GIT_AUTH_MODE_SELECTED='anonymous'
+    clear_git_pat_auth
+    configure_git_remote
+}
+
+function fetch_puppet_remote {
+    if [ "${GIT_AUTH_MODE_SELECTED}" = 'anonymous' ]; then
+        # Do not inherit a credential helper or GitHub auth header from a
+        # system/global config when using the public, unauthenticated path.
+        GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=/bin/false git -c credential.helper= \
+          -c http.https://github.com/.extraHeader= fetch --prune origin
+    elif [ "${GIT_AUTH_MODE_SELECTED}" = pat ] && [ -n "${GIT_PAT_HEADER:-}" ]; then
+        (
+            # GIT_CONFIG_PARAMETERS is also supported by Ubuntu 18.04's Git.
+            # Its single-quoted value is safe because Basic credentials are
+            # base64. Disable diagnostic traces that could expose HTTP headers.
+            unset GIT_TRACE GIT_TRACE_PACKET GIT_TRACE_CURL GIT_CURL_VERBOSE
+            unset GIT_TRACE_SETUP GIT_TRACE2 GIT_TRACE2_EVENT GIT_TRACE2_PERF
+            GIT_CONFIG_PARAMETERS="'http.https://github.com/.extraHeader=' 'http.https://github.com/.extraHeader=${GIT_PAT_HEADER}'" \
+              GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=/bin/false \
+              git -c credential.helper= fetch --all --prune
+        )
+    else
+        git fetch --all --prune
+    fi
+}
+
+function configure_git_remote {
+    if git rev-parse --git-dir >/dev/null 2>&1 \
+      && git remote get-url origin >/dev/null 2>&1; then
+        git remote set-url origin "${GIT_REMOTE_URL}" || return 1
+    fi
+}
+
+function configure_git_auth {
+    local requested_mode="${RUN_PUPPET_GIT_AUTH_MODE:-auto}"
+
+    case "${requested_mode}" in
+        auto)
+            if deploy_key_is_available; then
+                configure_deploy_key_auth || return 1
+            else
+                configure_pat_auth
+            fi
+            ;;
+        pat)
+            configure_pat_auth
+            ;;
+        deploy-key)
+            configure_deploy_key_auth || {
+                echo "Deploy-key authentication was requested but is not ready" >&2
+                return 1
+            }
+            ;;
+        anonymous)
+            configure_public_anonymous_auth || {
+                echo "Anonymous authentication is only supported for the public mozilla-platform-ops/ronin_puppet repository" >&2
+                return 1
+            }
+            ;;
+        *)
+            echo "Invalid RUN_PUPPET_GIT_AUTH_MODE: ${requested_mode}" >&2
+            return 1
+            ;;
+    esac
+
+    configure_git_remote || return 1
+    echo "Git authentication: ${GIT_AUTH_MODE_SELECTED}"
+    if [ "${GIT_AUTH_MODE_SELECTED}" = 'deploy-key' ]; then
+        echo "  key: ${GITHUB_DEPLOY_KEY_PATH}"
+    fi
+}
+
+function init_git_working_dir {
+    (umask 077; git init) || return 1
+    protect_git_metadata
+    git remote add origin "${GIT_REMOTE_URL}" || return 1
+    if [ "${GIT_AUTH_MODE_SELECTED}" = pat ]; then
+        configure_git_pat_auth || return 1
     fi
 }
 
@@ -163,17 +381,16 @@ function reinit_working_dir {
     echo "Re-initializing git repo from scratch..."
     # Remove contents but stay in the directory (shell cwd)
     rm -rf "${WORKING_DIR:?}"/* "${WORKING_DIR}"/.[!.]*
-    git init || return 1
-    git remote add origin "${PUPPET_REPO}" || return 1
-    configure_git_pat_auth
+    init_git_working_dir
 }
 
 function update_puppet {
+    require_secure_working_dir
+    echo -e "${_GREEN}Checkout security: root-owned and validated${_RESET}"
+
     # Initialize working dir if dir is empty
     if [ ! "$(find "$WORKING_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]; then
-        git init || return 1
-        git remote add origin "${PUPPET_REPO}" || return 1
-        configure_git_pat_auth
+        init_git_working_dir || return 1
     fi
 
     # TODO: authenticate the remote actions
@@ -188,11 +405,11 @@ function update_puppet {
     fi
 
     # Fetch and checkout production branch
-    echo -e "Syncing ronin-puppet client (environment: ${puppet_env})..."
+    echo -e "Syncing ronin-puppet client (repository: ${PUPPET_REPOSITORY_SLUG})..."
     echo -e "  dir: ${WORKING_DIR}"
     echo ""
     _head_before=$(git rev-parse --verify HEAD 2>/dev/null || true)
-    _fetch_out=$(git fetch --all --prune 2>&1)
+    _fetch_out=$(fetch_puppet_remote 2>&1)
     _fetch_exit=$?
     if [[ -n "$_fetch_out" ]]; then
         echo "$_fetch_out" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
@@ -200,9 +417,27 @@ function update_puppet {
         echo -e "  ${_DIM}(no output)${_RESET}"
     fi
     if [[ $_fetch_exit -ne 0 ]]; then
+        if [ "${RUN_PUPPET_GIT_AUTH_MODE:-auto}" = 'auto' ] \
+          && { [ "${GIT_AUTH_MODE_SELECTED}" = 'deploy-key' ] \
+            || [ "${GIT_AUTH_MODE_SELECTED}" = 'pat' ]; } \
+          && [ "${PUPPET_REPO}" = 'https://github.com/mozilla-platform-ops/ronin_puppet.git' ]; then
+            echo -e "${_YELLOW}[WARN] ${GIT_AUTH_MODE_SELECTED} fetch failed; trying unauthenticated HTTPS for the public repository${_RESET}"
+            configure_public_anonymous_auth || return 1
+            _fetch_out=$(fetch_puppet_remote 2>&1)
+            _fetch_exit=$?
+            [[ -n "$_fetch_out" ]] && echo "$_fetch_out" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
+            if [[ $_fetch_exit -eq 0 ]]; then
+                echo -e "${_YELLOW}[WARN] Public repository fetch succeeded without authentication; investigate the selected Git authentication${_RESET}"
+            else
+                echo "Unauthenticated public repository fetch also failed; leaving the checkout intact" >&2
+                return 1
+            fi
+        fi
+    fi
+    if [[ $_fetch_exit -ne 0 ]]; then
         echo "git fetch failed; re-cloning..."
         reinit_working_dir || return 1
-        _fetch_out=$(git fetch --all --prune 2>&1)
+        _fetch_out=$(fetch_puppet_remote 2>&1)
         _fetch_exit=$?
         [[ -n "$_fetch_out" ]] && echo "$_fetch_out" | while IFS= read -r line; do echo -e "  ${_DIM}${line}${_RESET}"; done
         [[ $_fetch_exit -eq 0 ]] || return 1
@@ -211,7 +446,7 @@ function update_puppet {
       || (
       git remote rm upstream
       git remote rename origin upstream
-      git remote add origin "${PUPPET_REPO}"
+      git remote add origin "${GIT_REMOTE_URL}"
       git checkout --quiet --force "origin/${PUPPET_BRANCH}"
     ) || return 1
     _head_after=$(git rev-parse --verify HEAD 2>/dev/null || true)
@@ -224,10 +459,8 @@ function update_puppet {
       echo -e "${_CYAN}  HEAD: (same, up to date)${_RESET}"
     fi
 
-    # Copy secrets
-    mkdir -p "${WORKING_DIR}/data/secrets"
-    cp /root/vault.yaml "${WORKING_DIR}/data/secrets/vault.yaml"
-    chmod 0600 "${WORKING_DIR}/data/secrets/vault.yaml"
+    require_secure_working_dir
+    remove_staged_vault_secrets || return 1
 
     cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
 node '${FQDN}' {
@@ -297,7 +530,7 @@ function run_puppet {
     TMP_LOG=$(mktemp /tmp/puppet-output.XXXXXX)
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
 
-    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    PUPPET_OPTIONS=("--modulepath=${WORKING_DIR}/modules:${WORKING_DIR}/r10k_modules" '--hiera_config=./hiera-linux.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     SECONDS=0
 
     PUPPET_CMD="${PUPPET_BIN} apply ${PUPPET_OPTIONS[*]}"
@@ -354,13 +587,9 @@ function run_puppet {
 
     case $retval in
         0|2)
-            # notify_telegraf "puppet_ronin_apply_success" "1"
-            # If puppet run is successful, report puppet run duration metric
-            # notify_telegraf "puppet_ronin_apply_durations" $PUPPET_RUN_DURATION
             return 0
             ;;
         *)
-            # notify_telegraf "puppet_ronin_apply_failure" "1"
             email_report "Puppet apply failed on ${FQDN}" "${LOG_OUT}"
             return 1
             ;;
@@ -372,9 +601,9 @@ function run_puppet {
 
 # Color helpers — only when stdout is a TTY (suppresses codes in journal/pipes)
 if [ -t 1 ]; then
-    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _CYAN="\033[36m"; _RESET="\033[0m"
+    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _YELLOW="\033[33m"; _CYAN="\033[36m"; _RESET="\033[0m"
 else
-    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _CYAN=""; _RESET=""
+    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _YELLOW=""; _CYAN=""; _RESET=""
 fi
 
 WRITE_SENTINEL=1
@@ -440,26 +669,31 @@ EOF
     echo -e "  PUPPET_BRANCH:         ${_DIM}$PUPPET_BRANCH${_RESET}"
     echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
     echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
-    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}$WORKER_TYPE_OVERRIDE${_RESET}"
+    if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
+        echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
+    else
+        echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}${WORKER_TYPE_OVERRIDE}${_RESET}"
+    fi
 fi
 
-# Extract username from puppet_repo
-puppet_env=$(extract_username "${PUPPET_REPO}")
-
-WORKING_DIR="/etc/puppet/environments/${puppet_env}/code"
 ROLE_FILE='/etc/puppet_role'
 PUPPET_BIN='/opt/puppetlabs/bin/puppet'
 FACTER_BIN='/opt/puppetlabs/bin/facter'
+GITHUB_KNOWN_HOSTS_PATH='/root/.ssh/known_hosts'
 FQDN=$(${FACTER_BIN} networking.fqdn)
+
+select_puppet_repository_profile \
+  || fail "PUPPET_REPO is not an allowlisted repository"
 
 export LANG=en_US.UTF-8
 
-# Create working dir if it doesn't exist and cd into it
-mkdir -p "${WORKING_DIR}" || fail
+# Create the root-owned checkout directory. Do not repair an existing unsafe
+# checkout in place: it may already contain attacker-controlled Git metadata.
+if [ ! -e "${WORKING_DIR}" ] && [ ! -L "${WORKING_DIR}" ]; then
+    install -d -o root -g root -m 0755 "${WORKING_DIR}" || fail
+fi
+require_secure_working_dir
 cd "${WORKING_DIR}" || fail
-
-# Make dir world writable for puppet homebrew bug workaround
-chmod 777 .
 
 # Set role or fail if file not found
 if [ -f "${ROLE_FILE}" ]; then
@@ -528,8 +762,9 @@ lifecycle_log emit puppet_run_started
 show_previous_run_status
 echo ""
 
-# GitHub PAT authentication setup
-configure_git_pat_auth
+# GitHub authentication setup
+require_secure_working_dir
+configure_git_auth || fail "Failed to configure Git authentication"
 
 # block_on_network
 
@@ -542,6 +777,9 @@ while ! run_puppet; do
     fi
     echo -e "${_RED}Puppet run failed; re-trying after 10m${_RESET}"
     sleep 600
+    # A public HTTPS fallback applies only to one fetch attempt. Re-select
+    # credentials before retrying so the preferred method is tried again.
+    configure_git_auth || fail "Failed to configure Git authentication"
 done
 
 # Touch the semaphore to allow launchd to start generic worker (if applicable)
@@ -551,8 +789,7 @@ done
 
 # override worker type with value defined in /etc/puppet/ronin_settings
 if [ -n "$WORKER_TYPE_OVERRIDE" ]; then
-    # mention that we're overriding the worker type
-    echo "Overriding worker type with value from /etc/puppet/ronin_settings"
+    echo -e "${_YELLOW}[WARN] Worker type override from /etc/puppet/ronin_settings${_RESET}"
     echo "  WORKER_TYPE_OVERRIDE: $WORKER_TYPE_OVERRIDE"
 
     # rewrite the config
@@ -562,7 +799,7 @@ fi
 # touch the semaphore to let run-start-worker know it can start start-worker
 lifecycle_log emit puppet_run_succeeded
 if [ "$WRITE_SENTINEL" -eq 1 ]; then
-    touch "/tmp/puppet_run_done"
+    /usr/local/bin/puppet-run-marker publish || fail "Failed to publish Puppet completion marker"
 else
     echo "Skipping sentinel (--no-sentinel)"
 fi

@@ -4,10 +4,12 @@
 
 class roles_profiles::roles::gecko_1_b_osx_1500 {
   include macos_utils::disable_bluetooth_setup
+  include macos_utils::fseventsd_no_log
   include roles_profiles::profiles::duo
   include roles_profiles::profiles::macos_disable_firewall
   include roles_profiles::profiles::macos_people_remover
   include roles_profiles::profiles::macos_run_puppet
+  include roles_profiles::profiles::macos_sbom
   include roles_profiles::profiles::macos_xcode_tools
   include roles_profiles::profiles::motd
   include roles_profiles::profiles::network

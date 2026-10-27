@@ -12,8 +12,6 @@ class packages::linux_generic_worker (
   Variant[String, Hash[String, String]] $livelog_sha256,
   Pattern[/^v\d+\.\d+\.\d+$/] $start_worker_version,
   Variant[String, Hash[String, String]] $start_worker_sha256,
-  Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
-  String                      $quarantine_worker_sha256,
   Enum['s3', 'github']        $taskcluster_binary_source = 's3',
 ) {
   $threshold_version = '63.0.0'
@@ -126,11 +124,4 @@ class packages::linux_generic_worker (
     }
   }
 
-  packages::linux_package_from_s3 { "quarantine-worker-linux-amd64-${quarantine_worker_version}":
-    private             => false,
-    os_version_specific => false,
-    type                => 'bin',
-    file_destination    => '/usr/local/bin/quarantine-worker',
-    checksum            => $quarantine_worker_sha256,
-  }
 }

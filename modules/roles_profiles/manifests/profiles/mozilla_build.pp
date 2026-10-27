@@ -14,7 +14,9 @@ class roles_profiles::profiles::mozilla_build {
     default: {
       include win_mozilla_build::install
       include win_mozilla_build::modifications
-      include win_mozilla_build::install_py3_certs
+      class { 'win_mozilla_build::install_py3_certs':
+        pip => lookup('windows.mozilla_build.py3_pip_version'),
+      }
       include win_mozilla_build::tooltool
       include win_mozilla_build::grant_symlink_access
       include win_mozilla_build::install_psutil

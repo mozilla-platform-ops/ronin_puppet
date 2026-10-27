@@ -11,9 +11,6 @@ class linux_generic_worker (
   String $livelog_secret,  # TODO: remove, not needed any longer
   String $worker_group,
   String $worker_type,
-  String $quarantine_client_id,
-  String $quarantine_access_token,
-  String $bugzilla_api_key,
   String $user,
   String $user_homedir,
   Pattern[/^v\d+\.\d+\.\d+$/] $generic_worker_version,
@@ -24,8 +21,6 @@ class linux_generic_worker (
   Variant[String, Hash[String, String]] $livelog_sha256,
   Pattern[/^v\d+\.\d+\.\d+$/] $start_worker_version,
   Variant[String, Hash[String, String]] $start_worker_sha256,
-  Pattern[/^v\d+\.\d+\.\d+$/] $quarantine_worker_version,
-  String $quarantine_worker_sha256,
   Enum['s3', 'github'] $taskcluster_binary_source = 's3',
   String $taskcluster_host = 'taskcluster',
 ) {
@@ -44,14 +39,26 @@ class linux_generic_worker (
     livelog_sha256            => $livelog_sha256,
     start_worker_version      => $start_worker_version,
     start_worker_sha256       => $start_worker_sha256,
-    quarantine_worker_version => $quarantine_worker_version,
-    quarantine_worker_sha256  => $quarantine_worker_sha256,
     taskcluster_binary_source => $taskcluster_binary_source,
   }
 
-  class { 'linux_generic_worker::control_bug':
-    user_homedir     => $user_homedir,
-    bugzilla_api_key => $bugzilla_api_key,
+  # Remove the retired Bugzilla helper, which contains an embedded API key on
+  # workers where an earlier catalog installed it.
+  file { '/usr/local/share/generic-worker/bugzilla-utils.sh':
+    ensure  => absent,
+    require => File['/usr/local/bin/run-start-worker.sh'],
+  }
+
+  file { '/usr/local/bin/quarantine-worker':
+    ensure  => absent,
+    require => Class['packages::linux_generic_worker'],
+  }
+
+  # Old Linux wrappers also contained the quarantine token. The current
+  # worker uses run-start-worker.sh, so remove any leftover legacy copy.
+  file { '/usr/local/bin/run-generic-worker.sh':
+    ensure  => absent,
+    require => File['/usr/local/bin/run-start-worker.sh'],
   }
 
   $livelog_certificate = "${user_homedir}/livelog.crt"

@@ -38,8 +38,11 @@ Describe 'Files' -Tag IntegrationTests {
         }
         It 'has the NXLog configuration and certificate bundle' {
             Test-Path 'C:\Program Files (x86)\nxlog\conf\nxlog.conf' | Should-BeTrue
-            (Get-FileHash 'C:\Program Files (x86)\nxlog\cert\papertrail-bundle.pem' -Algorithm SHA256).Hash |
-                Should-BeString 'AE31ECB3C6E9FF3154CB7A55F017090448F88482F0E94AC927C0C67A1F33B9CF'
+            $validHashes = @(
+                '50F79F98DAC192B20DBF73F35C56F0B0C557AB267FF5199D1117CC1180B70785' # LF
+                '188AE83F98B8ADB53B0FF3380CE9F8725B945923ACAB8AA22F66363485390FF7' # CRLF
+            )
+            $validHashes | Should-ContainCollection (Get-FileHash 'C:\Program Files (x86)\nxlog\cert\papertrail-bundle.pem' -Algorithm SHA256).Hash
         }
     }
 

@@ -106,6 +106,14 @@ def parse_args(arguments):
     return parser.parse_args(arguments)
 
 
+def terminal_text(value):
+    """Keep printable text; display controls and invisible Unicode as escapes."""
+    return "".join(
+        character if character.isprintable() else character.encode("unicode_escape").decode("ascii")
+        for character in str(value)
+    )
+
+
 def main(arguments=None):
     args = parse_args(arguments)
     snapshot_directory = create_snapshot(args.output_directory)
@@ -113,9 +121,9 @@ def main(arguments=None):
     for host in args.hosts:
         try:
             destination = collect_host(host, snapshot_directory)
-            print("collected {} -> {}".format(host, destination))
+            print("collected {} -> {}".format(terminal_text(host), terminal_text(destination)))
         except (CollectionError, ValueError) as error:
-            print("collection failed: {}".format(error), file=sys.stderr)
+            print("collection failed: {}".format(terminal_text(error)), file=sys.stderr)
             failures.append(host)
     if failures:
         return 1

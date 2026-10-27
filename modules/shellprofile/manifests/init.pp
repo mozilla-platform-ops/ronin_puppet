@@ -13,6 +13,7 @@ class shellprofile {
 
         $shellprofile::settings::profile_puppet_d:
           ensure  => directory,
+          mode    => '0755',
           purge   => true,
           recurse => true,
           force   => true;

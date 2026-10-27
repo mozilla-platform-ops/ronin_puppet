@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Purpose: bootstrap a macos mojave host from post install (or image) to a complete puppet run
+# Purpose: bootstrap a Linux host from post install (or image) to a complete puppet run
 # This script it intend to be run either run by hand or from an init system after a host has been
 # provisioned or re-imaged
 
@@ -26,7 +26,7 @@ set -x
 export DEBIAN_FRONTEND=noninteractive
 export APT_ARGS='-o Dpkg::Options::=--force-confold'
 
-# Set LANG to UTF-8 otherwise puppet has trouble interperting MacOs tool output eg. dscl
+# Set LANG to UTF-8 for Puppet and command output.
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
 
@@ -45,11 +45,16 @@ OPTIND=1
 
 # Download puppet repository and extract
 function get_puppet_repo {
+    # Start retries from a fresh checkout inside the private bootstrap directory.
+    cd "${BOOTSTRAP_DIR}" || fail "Failed to change to bootstrap dir"
+    rm -rf -- "${TMP_PUPPET_DIR}"
+    mkdir -m 0755 "${TMP_PUPPET_DIR}" || fail "Failed to create puppet working dir"
+
     # if PUPPET_BRANCH is master, grab the tarball, otherwise clone
     if [ "$PUPPET_BRANCH" = "master" ]; then
         echo "Puppet branch is master, downloading tarball"
 
-        TMP_DL_DIR=$(mktemp -d -t puppet_download.XXXXXXX)
+        TMP_DL_DIR=$(mktemp -d "${BOOTSTRAP_DIR}/download.XXXXXXX")
         [ -d "${TMP_DL_DIR}" ] || fail "Failed to mktemp download dir"
 
         # Download the puppet repo tarball directly from github
@@ -66,7 +71,7 @@ function get_puppet_repo {
             fi
         done
         # Extract the puppet repo tarball
-        tar -zxf "${TMP_DL_DIR}/puppet.tar.gz" --strip 1 -C "${TMP_PUPPET_DIR}" || fail "Failed to extract puppet tar.gz"
+        tar -zxf "${TMP_DL_DIR}/puppet.tar.gz" --no-same-permissions --strip 1 -C "${TMP_PUPPET_DIR}" || fail "Failed to extract puppet tar.gz"
         # Clean up the download dir
         rm -rf "${TMP_DL_DIR}"
     else
@@ -84,11 +89,8 @@ function get_puppet_repo {
 
     # Change to puppet dir
     cd "$TMP_PUPPET_DIR" || fail "Failed to change dir"
-    chmod 777 .
-
-    # Inject hiera secrets
-    mkdir -p ./data/secrets
-    cp /root/vault.yaml ./data/secrets/vault.yaml
+    # Hiera reads Vault directly from /root; never stage secrets in the checkout.
+    [ -f ./hiera-linux.yaml ] || fail "Puppet repository is missing hiera-linux.yaml"
 
     # Get fqdn from facter
     FQDN=$(${FACTER_BIN} networking.fqdn)
@@ -110,12 +112,12 @@ function run_puppet {
     # this includes:
     # FACTER_PUPPETIZING so that the manifests know this is a first run of puppet
     # TODO: send logs to syslog? send a puppet report to puppetdb?
-    PUPPET_OPTIONS=('--modulepath=./modules:./r10k_modules' '--hiera_config=./hiera.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
+    PUPPET_OPTIONS=('--modulepath=./modules:./r10k_modules' '--hiera_config=./hiera-linux.yaml' '--logdest=console' '--color=false' '--detailed-exitcodes' './manifests/')
     export FACTER_PUPPETIZING=true
 
     # check for 'Error:' in the output; this catches errors even
     # when the puppet exit status is incorrect.
-    TMP_LOG=$(mktemp /tmp/puppet-outputXXXXXX)
+    TMP_LOG=$(mktemp "${BOOTSTRAP_DIR}/puppet-output.XXXXXX")
     [ -f "${TMP_LOG}" ] || fail "Failed to mktemp puppet log file"
     $PUPPET_BIN apply "${PUPPET_OPTIONS[@]}" 2>&1 | tee "${TMP_LOG}"
     retval=$?
@@ -176,6 +178,18 @@ if [ "$(uname -s)" != "Linux" ]; then
     exit 1
 fi
 
+[ "${EUID}" -eq 0 ] || fail "This bootstrap script must run as root."
+
+# Keep downloads, package payloads, logs, and executable Puppet code inaccessible
+# to task users. Preserve normal creation modes for Puppet-managed resources.
+umask 022
+BOOTSTRAP_DIR=$(mktemp -d /root/puppet-bootstrap.XXXXXX)
+[ -d "${BOOTSTRAP_DIR}" ] || fail "Failed to mktemp bootstrap dir"
+chmod 0700 "${BOOTSTRAP_DIR}"
+trap 'rm -rf -- "${BOOTSTRAP_DIR}"' EXIT
+trap 'exit 1' HUP INT TERM
+TMP_PUPPET_DIR="${BOOTSTRAP_DIR}/code"
+
 # check for /root/vault.yaml
 if [ ! -f /root/vault.yaml ]; then
     echo "Missing /root/vault.yaml, this file is required for the bootstrap script to run."
@@ -190,7 +204,7 @@ else
     exit 1
 fi
 
-TEMP_DEB_NAME="bootstrap_temp.deb"
+TEMP_DEB_PATH="${BOOTSTRAP_DIR}/bootstrap_temp.deb"
 # noble, bionic, etc (VERSION_CODENAME) and 18.04, 24.04, etc (VERSION_ID)
 # are sourced from /etc/os-release above
 
@@ -211,9 +225,9 @@ INSTALL_URL_DEB="openvox8-release-ubuntu${VERSION_ID}.deb"
 if [ "$VERSION_ID" = "24.04" ]; then
     echo "Installing Openvox 8..."
 
-    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O /tmp/${TEMP_DEB_NAME}
+    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O "${TEMP_DEB_PATH}"
     # install puppet release deb for the version we've selected
-    dpkg -i /tmp/${TEMP_DEB_NAME}
+    dpkg -i "${TEMP_DEB_PATH}"
     # update apt and install puppet-agent and ntp
     apt-get update
     # shellcheck disable=SC2090
@@ -234,9 +248,9 @@ if [ "$VERSION_ID" = "24.04" ]; then
 elif [ "$VERSION_ID" = "18.04" ]; then
     echo "Installing Openvox 8..."
 
-    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O /tmp/${TEMP_DEB_NAME}
+    wget "${INSTALL_URL_BASE}/${INSTALL_URL_DEB}" -O "${TEMP_DEB_PATH}"
     # install puppet release deb for the version we've selected
-    dpkg -i /tmp/${TEMP_DEB_NAME}
+    dpkg -i "${TEMP_DEB_PATH}"
     # update apt and install puppet-agent and ntp
     apt-get update
     # shellcheck disable=SC2090
@@ -300,10 +314,6 @@ fi
 # https://stackoverflow.com/questions/36908041/git-could-not-expand-include-path-gitcinclude-fatal-bad-config-file-line
 rm -rf /usr/local/git/etc/gitconfig
 
-# Create a temp dir for executing puppet
-TMP_PUPPET_DIR=$(mktemp -d /tmp/puppet_working.XXXXXX)
-[ -d "${TMP_PUPPET_DIR}" ] || fail "Failed to mktemp puppet working dir"
-
 # Call the run_puppet function in a endless loop
 while ! run_puppet; do
     echo "Puppet run failed; re-trying after 10m"
@@ -311,15 +321,13 @@ while ! run_puppet; do
 done
 
 # Remove the temp working puppet dir
-rm -rf "$TMP_PUPPET_DIR"
+cd / || fail "Failed to leave bootstrap checkout"
+rm -rf -- "${BOOTSTRAP_DIR}"
 
 # record the installation date (note that this won't appear anywhere on Darwin)
 echo "System Installed: $(date)" >>/etc/issue
 
 echo "Success. Rebooting..."
-
-# Success! Let's reboot
-/sbin/reboot --force &>/dev/null &
 
 set +x
 echo "   _____                                __"
@@ -327,6 +335,8 @@ echo "  / ___/__  _______________  __________/ /"
 echo "  \__ \/ / / / ___/ ___/ _ \/ ___/ ___/ /"
 echo " ___/ / /_/ / /__/ /__/  __(__  |__  )_/"
 echo "/____/\__,_/\___/\___/\___/____/____(_)"
-echo ""
 
-exit 0
+# Request an orderly reboot in the foreground. A background child can be
+# killed when a systemd service's main bootstrap process exits. Keep errors
+# visible and propagate a rejected reboot request to the caller.
+exec /sbin/reboot

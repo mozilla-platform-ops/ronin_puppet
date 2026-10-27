@@ -4,6 +4,9 @@
 
 class packages::python3 (
   Pattern[/^\d+\.\d+\.\d+_?\d*$/] $version = '3.7.4',
+  String $certifi_version = '2026.10.19',
+  String $certifi_wheel_url = 'https://files.pythonhosted.org/packages/c4/51/29046e48f693c54e5b7412216d447a1d8362c9653148d98c02cdf65fa733/certifi-2026.10.19-py3-none-any.whl',
+  String $certifi_sha256 = '42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b',
 ) {
 #    # As of puppet 7.0.0, facts.os.architecture still reports the M1 arm64 hardware as x86_64
 #    # therfore, we check the mac model instead
@@ -30,5 +33,20 @@ class packages::python3 (
       path    => ['/usr/bin', '/usr/sbin', '/bin'],
       unless  => "test -L /Library/Frameworks/Python.framework/Versions/${short_version}/etc/openssl/cert.pem",
       require => Packages::Macos_package_from_s3[$pkg_name],
+  }
+
+  # The certs command above only runs once, so the framework's openssl
+  # cert.pem stays at whatever certifi was current at provision time.
+  # Pin certifi so CA removals actually reach the fleet. The internal
+  # mirror in the global pip.conf lags PyPI, so skip pip config and
+  # install the hash-pinned wheel directly.
+  $framework_bin = "/Library/Frameworks/Python.framework/Versions/${short_version}/bin"
+  exec { 'pin python3 certifi':
+    command     => "${framework_bin}/python3 -m pip install --disable-pip-version-check '${certifi_wheel_url}#sha256=${certifi_sha256}'",
+    unless      => "${framework_bin}/python3 -c 'import certifi; assert certifi.__version__ == \"${certifi_version}\"'",
+    environment => ['PIP_CONFIG_FILE=/dev/null'],
+    path        => [$framework_bin, '/usr/bin', '/bin'],
+    timeout     => 300,
+    require     => Exec['install python3 certs'],
   }
 }

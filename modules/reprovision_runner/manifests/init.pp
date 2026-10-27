@@ -62,6 +62,12 @@
 # @param tart_health_interval
 #   Seconds between sweeps. Must stay under Hangar's 30 minute staleness window or every
 #   row ages to `unknown` between sweeps.
+# @param sbom_enabled
+#   Run hangar-sbom-agent, which reads each macOS host's /var/sbom fingerprint
+#   (ronin_puppet macos_sbom) and pushes it to Hangar's /api/sbom. The host list
+#   comes from Hangar, so there is no hosts file to maintain.
+# @param sbom_interval
+#   Seconds between SBOM sweeps. Must stay under Hangar's 3 hour staleness window.
 # @param tart_health_guests
 #   Also probe inside each VM (disk headroom, clock skew, worker identity). Needs an
 #   `expect` password login per VM and is much slower, hence opt-in — but these are the
@@ -93,6 +99,8 @@ class reprovision_runner (
   Array[Stdlib::Fqdn]              $tart_health_hosts    = [],
   Integer[60]                      $tart_health_interval = 600,
   Boolean                          $tart_health_guests   = false,
+  Boolean                          $sbom_enabled         = false,
+  Integer[600]                     $sbom_interval        = 3600,
   Integer[0]                       $self_update_interval = 3600,
   Integer[20]                      $runner_exit_timeout  = 3600,
 ) {
@@ -128,30 +136,43 @@ class reprovision_runner (
     $tart_plist_path     = "/Library/LaunchDaemons/${tart_plist_label}.plist"
     $tart_hosts_file     = "${conf_dir}/tart-hosts.txt"
 
+    # Companion: hangar-sbom-agent (macOS SBOM fingerprints, pushed to /api/sbom).
+    # Fourth daemon on the same venv/env file/cert. No hosts file: Hangar supplies it.
+    $sbom_bin            = "${venv_dir}/bin/hangar-sbom-agent"
+    $sbom_wrapper        = '/usr/local/bin/hangar-sbom-agent.sh'
+    $sbom_plist_label    = 'com.mozilla.hangar-sbom-agent'
+    $sbom_plist_path     = "/Library/LaunchDaemons/${sbom_plist_label}.plist"
+
     # Every console script pyproject declares. The pip install is guarded on ALL of
-    # them (see below), not just the newest one.
-    $console_bins        = [$runner_bin, $screen_bin, $tart_bin]
+    # them (see below), not just the newest one. The SBOM agent only joins when it is
+    # enabled: a host pinned to a relops-bootstrap revision that predates it would
+    # otherwise fail the guard forever, reinstalling and restarting every daemon
+    # (the reprovision runner included) on every puppet run.
+    $console_bins        = [$runner_bin, $screen_bin, $tart_bin] + ($sbom_enabled ? {
+      true    => [$sbom_bin],
+      default => [],
+    })
 
     # Every daemon that runs code out of the editable install. A repo advance changes
     # the code these processes are executing, and a long-lived Python process does not
     # reload source, so each one must be restarted when the working copy moves. Used by
     # both Vcsrepo and Exec[reprovision_runner_pip_install] below.
     #
-    # tart_reload only exists when $tart_health_enabled, so it can't be referenced
-    # unconditionally -- Puppet would fail on a dangling resource reference.
-    $daemon_reloads = $tart_health_enabled ? {
-      true    => [
-        Exec['reprovision_runner_reload'],
-        Exec['reprovision_runner_screen_reload'],
-        Exec['reprovision_runner_tart_reload'],
-      ],
-      default => [
-        Exec['reprovision_runner_reload'],
-        Exec['reprovision_runner_screen_reload'],
-      ],
-    }
+    # tart_reload and sbom_reload only exist when their agent is enabled, so they can't
+    # be referenced unconditionally -- Puppet would fail on a dangling resource reference.
+    $daemon_reloads = [
+      Exec['reprovision_runner_reload'],
+      Exec['reprovision_runner_screen_reload'],
+    ] + ($tart_health_enabled ? {
+      true    => [Exec['reprovision_runner_tart_reload']],
+      default => [],
+    }) + ($sbom_enabled ? {
+      true    => [Exec['reprovision_runner_sbom_reload']],
+      default => [],
+    })
 
     # ---- python 3.11 (framework build, same source as scriptworker_prereqs) ----
+    # TODO: python install moved to UV - investigate if this needs to be updated
     class { 'packages::python3':
       version => $python_version,
     }
@@ -470,6 +491,47 @@ class reprovision_runner (
         path        => ['/bin', '/usr/bin'],
         refreshonly => true,
         require     => [File[$tart_plist_path], Exec['reprovision_runner_pip_install']],
+      }
+    }
+
+    # ---- companion: hangar-sbom-agent (macOS fleet SBOM fingerprints) ----
+    # Fourth daemon on the same venv, env file and mTLS cert. Opt-in per host like the
+    # tart agent: one collector is enough, and Hangar hands it the host list.
+    if $sbom_enabled {
+      file { $sbom_wrapper:
+        ensure  => file,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0755',
+        content => epp("${module_name}/reprovision-runner.sh.epp", {
+          env_file   => $env_file,
+          runner_bin => $sbom_bin,
+          args       => ['--loop', '--interval', String($sbom_interval)],
+        }),
+        require => Exec['reprovision_runner_pip_install'],
+        notify  => Exec['reprovision_runner_sbom_reload'],
+      }
+
+      file { $sbom_plist_path:
+        ensure  => file,
+        owner   => 'root',
+        group   => 'wheel',
+        mode    => '0644',
+        content => epp("${module_name}/com.mozilla.reprovision-runner.plist.epp", {
+          label    => $sbom_plist_label,
+          wrapper  => $sbom_wrapper,
+          log_dir  => $log_dir,
+          log_name => 'sbom-agent',
+        }),
+        require => [File[$sbom_wrapper], File[$env_file]],
+        notify  => Exec['reprovision_runner_sbom_reload'],
+      }
+
+      exec { 'reprovision_runner_sbom_reload':
+        command     => "/bin/bash -c 'launchctl bootout system ${sbom_plist_path} 2>/dev/null || true; launchctl bootstrap system ${sbom_plist_path}'",
+        path        => ['/bin', '/usr/bin'],
+        refreshonly => true,
+        require     => [File[$sbom_plist_path], Exec['reprovision_runner_pip_install']],
       }
     }
 

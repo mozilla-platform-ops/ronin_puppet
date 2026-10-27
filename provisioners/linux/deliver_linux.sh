@@ -39,13 +39,31 @@ REMOTE_SSH_USER=""
 
 # local files
 BOOTSTRAP_FILE="bootstrap_linux.sh"
-SECRETS_FILE="vault.yaml"
+SECRETS_FILE="$HOME/vault.yaml"
 RONIN_SETTINGS="ronin_settings"
 
 # remote files
 ROLE_FILE_REMOTE="/etc/puppet_role"
-SECRETS_FILE_REMOTE="/root/vault.yaml"
 RONIN_SETTINGS_REMOTE="/etc/puppet/ronin_settings"
+
+install_vault() {
+  local ssh_target="$1"
+
+  # Stream directly to a root-owned temporary file, then atomically replace the
+  # active Vault file. Never stage secrets in a task-writable directory.
+  # shellcheck disable=SC2029 # The quoted script intentionally runs on the remote host.
+  ssh "$ssh_target" "sudo /bin/sh -c 'set -eu
+umask 077
+vault_tmp=\$(mktemp /root/.vault.yaml.XXXXXX)
+cleanup() { rm -f -- \"\$vault_tmp\"; }
+trap cleanup EXIT HUP INT TERM
+cat > \"\$vault_tmp\"
+chown root:root \"\$vault_tmp\"
+chmod 0640 \"\$vault_tmp\"
+mv -f -- \"\$vault_tmp\" /root/vault.yaml
+trap - EXIT HUP INT TERM
+'" < "$SECRETS_FILE"
+}
 BOOTSTRAP_FILE_REMOTE="/tmp/bootstrap.sh"
 
 
@@ -64,8 +82,8 @@ fi
 
 # check args
 
-export THE_HOST="$1"
-export THE_ROLE="$2"
+export THE_HOST="${1:-}"
+export THE_ROLE="${2:-}"
 
 if [ -z "$THE_HOST" ]; then
   echo "ERROR: Please provide a host to bootstrap (like devicepool-0.relops.mozops.net)"
@@ -74,6 +92,11 @@ fi
 
 if [ -z "$THE_ROLE" ]; then
   echo "ERROR: Please provide the role to assign to the host (like gecko_t_linux_talos)"
+  exit 1
+fi
+
+if ! [[ "$THE_ROLE" =~ ^[a-z][a-z0-9_]*$ ]]; then
+  echo "ERROR: Role must start with a lowercase letter and contain only lowercase letters, digits, or underscores."
   exit 1
 fi
 
@@ -126,15 +149,10 @@ ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 755 $BOOTSTRAP_FILE_REMOTE"
 
 # place secrets
 # TODO: generate vault.yml with vault data
-scp "$SECRETS_FILE" "$REMOTE_SSH_USER"@"$THE_HOST":/tmp/vault.yaml
-# shellcheck disable=SC2029
-ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo mv /tmp/vault.yaml $SECRETS_FILE_REMOTE"
-# shellcheck disable=SC2029
-ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo chmod 640 $SECRETS_FILE_REMOTE"
+install_vault "$REMOTE_SSH_USER@$THE_HOST"
 
 # finally, place role
-# shellcheck disable=SC2029
-ssh "$REMOTE_SSH_USER"@"$THE_HOST" "sudo sh -c 'echo $THE_ROLE > $ROLE_FILE_REMOTE'"
+printf '%s\n' "$THE_ROLE" | ssh "$REMOTE_SSH_USER"@"$THE_HOST" 'sudo /usr/bin/tee /etc/puppet_role >/dev/null'
 
 # if the ronin_settings file exists, copy it into place
 RONIN_SETTINGS_PRESENT=0

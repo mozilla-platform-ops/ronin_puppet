@@ -11,8 +11,16 @@ class puppet::atboot (
   String $puppet_notify_email  = 'puppet-ronin-reports@mozilla.com',
   String $smtp_relay_host      = lookup({ 'name' => 'smtp_relay_host', 'default_value' => 'localhost' }),
   Hash $meta_data              = {},
+  Optional[Hash] $github_deploy_keys = undef,
 ) {
   include puppet::setup
+
+  # Keep managing the legacy owner-only checkout during the transition.  This
+  # lets the last legacy-wrapper run restore safe permissions before the new
+  # wrapper starts using its repository-specific checkout on the next boot.
+  $puppet_repo_owner = regsubst($puppet_repo, '^https?://[^/]+/([^/]+)/.*$', '\1')
+  $puppet_owner_dir  = "/etc/puppet/environments/${puppet_repo_owner}"
+  $working_dir       = "${puppet_owner_dir}/code"
 
   case $facts['os']['name'] {
     'Darwin': {
@@ -44,16 +52,78 @@ class puppet::atboot (
             group  => 'root',
             mode   => '0755',
           }
+          file { '/etc/puppet/environments':
+            ensure  => directory,
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0755',
+            require => File['/etc/puppet'],
+          }
+          file { $puppet_owner_dir:
+            ensure  => directory,
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0755',
+            require => File['/etc/puppet/environments'],
+          }
           file { '/etc/puppet/lib':
             ensure => directory,
             owner  => 'root',
             group  => 'root',
             mode   => '0755',
           }
+          file {
+            '/root/.ssh':
+              ensure => directory,
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0700';
+            '/root/.ssh/known_hosts':
+              ensure  => file,
+              owner   => 'root',
+              group   => 'root',
+              mode    => '0644',
+              source  => "puppet:///modules/${module_name}/github_known_hosts",
+              require => File['/root/.ssh'];
+          }
+
+          # Install every supported repository's available key before an operator
+          # switches repositories. Remove keys whose Vault entries were revoked.
+          [
+            'mozilla-platform-ops/ronin_puppet',
+            'aerickson/ronin_puppet-private',
+            'mozilla-platform-ops/ronin_puppet-private',
+          ].each |String $github_deploy_key_slug| {
+            $github_deploy_key_name = regsubst($github_deploy_key_slug, '[-/]', '_', 'G')
+            $github_deploy_key_path = "/root/.ssh/${github_deploy_key_name}_deploy_key"
+            $github_deploy_key      = dig($github_deploy_keys, $github_deploy_key_slug, 'private_key')
+
+            if $github_deploy_key =~ String and $github_deploy_key != '' {
+              file { $github_deploy_key_path:
+                ensure    => file,
+                owner     => 'root',
+                group     => 'root',
+                mode      => '0600',
+                content   => Sensitive($github_deploy_key),
+                show_diff => false,
+                require   => File['/root/.ssh'];
+              }
+            } else {
+              file { $github_deploy_key_path:
+                ensure => absent,
+              }
+            }
+          }
 
           # On Ubuntu 18.04 and 22.04 puppet runs by systemd and on successful result
           # notifies dependent services
           file {
+            $working_dir:
+              ensure  => directory,
+              owner   => 'root',
+              group   => 'root',
+              mode    => '0755',
+              require => File[$puppet_owner_dir];
             '/etc/puppet/lib/puppet_state_functions.sh':
               owner  => 'root',
               group  => 'root',
@@ -64,6 +134,12 @@ class puppet::atboot (
               group  => 'root',
               mode   => '0755',
               source => "puppet:///modules/${module_name}/change_workertype.py";
+            '/usr/local/bin/puppet-run-marker':
+              ensure => file,
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0755',
+              source => "puppet:///modules/${module_name}/puppet-run-marker";
             '/etc/puppet/ronin_settings.example':
               owner  => 'root',
               group  => 'root',

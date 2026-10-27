@@ -11,12 +11,30 @@ class puppet::run_script (
   # - the barebones run-puppet script has no email or telegraf telemetry
   # puppet is assumed present
   # - caller should include setup or other module if installation is desired
+  $working_dir = "/etc/puppet/environments/${puppet_env}/code"
 
   case $facts['os']['name'] {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
         '18.04', '22.04': {
+          file { ['/etc/puppet', '/etc/puppet/environments', "/etc/puppet/environments/${puppet_env}"]:
+            ensure => directory,
+            owner  => 'root',
+            group  => 'root',
+            mode   => '0755',
+          }
+
+          File['/etc/puppet']
+            -> File['/etc/puppet/environments']
+            -> File["/etc/puppet/environments/${puppet_env}"]
+            -> File[$working_dir]
+
           file {
+            $working_dir:
+              ensure => directory,
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0755';
             '/usr/local/bin/run-puppet.sh':
               owner   => 'root',
               group   => 'root',

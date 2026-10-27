@@ -13,9 +13,9 @@ validated event model later.
 Implementation belongs in a small `linux_host_lifecycle` Puppet module. That
 module owns the logger executable, storage directory, sudoers rule, and
 logrotate policy. The existing `puppet` and `linux_generic_worker` modules
-only invoke the logger at their lifecycle hooks. The same module contains the
-offline pilot analyzer in a non-deployed `tools/` directory, alongside the
-logger's implementation and tests.
+only invoke the logger at their lifecycle hooks. The operator collector and
+offline analyzer live in the repository-level `tools/` directory, with their
+tests in `tools/tests/`.
 
 `lifecycle-log` is a Python 3 program using only the standard library.
 Parser tests use small synthetic or sanitized syslog fixtures containing only
@@ -24,6 +24,8 @@ they may include task environment and credential material.
 Tests use Python's built-in `unittest` runner, avoiding an additional test
 dependency. They cover JSONL append behavior, duplicate metric imports,
 current-boot filtering, rotated-log fallback, and report aggregation.
+See [Running tests](../tools/README.md#running-tests) for the commands to run
+the collector and analyzer suites from the repository root.
 
 ## Approach
 
@@ -180,9 +182,19 @@ extracts only the required structured metric fields.
 ## Local Storage
 
 The initial JSONL log lives at `/var/log/host-lifecycle/events.jsonl`.
-Its directory is owned by `root:cltbld` and writable by that group, so both
-root's `run-puppet.sh` hooks and the `cltbld` worker wrapper can append events
-without a privileged logging daemon.
+Its directory is owned by `root:root` with mode `0755`; tasks cannot replace
+its entries. The event file is `root:cltbld 0664`, so both root's
+`run-puppet.sh` hooks and the `cltbld` worker wrapper can append events without
+a privileged logging daemon. Tasks can still modify log contents; these events
+are observational telemetry, not trusted evidence of task behavior.
+
+All active-log reads and writes open through a directory descriptor and reject
+symlinks, group/other-writable directories, and non-root ownership. The opened
+file must be regular, root-owned, have exactly one hard link, and deny writes
+to other users. Nonblocking opens prevent a planted FIFO from hanging the
+privileged logger. Puppet and logrotate create the file; the logger does not
+create it. A missing file or unsafe target makes the logging call fail, and
+worker/Puppet wrappers continue without the event.
 
 Use standard size-based `logrotate`: rotate at 1 MB, retain 39 rotated files,
 and compress old files. This bounds raw, uncompressed-equivalent retention at
@@ -224,7 +236,14 @@ material.
 
 At the beginning of `run-puppet.sh`, call `observe-boot` and then emit
 `puppet_run_started`. After Puppet has succeeded and immediately before the
-worker-start sentinel is created, emit `puppet_run_succeeded`.
+worker-start sentinel is created, emit `puppet_run_succeeded`. Linux publishes
+`/run/puppet/run_done` through the root-owned `puppet-run-marker` helper. Worker
+startup and the health checker use its `check` action to validate root ownership,
+protected directories, a regular file without symlinks or extra hard links, and
+the current boot ID. The legacy `/tmp/puppet_run_done` is never honored. A later
+failed run does not revoke an earlier same-boot success, and `--no-sentinel`
+does not publish a new marker. Reboot clears `/run`; boot-ID validation also
+rejects stale markers if runtime state is retained unexpectedly.
 
 In `run-start-worker.sh`, emit `worker_started` immediately before invoking
 `start-worker`. When it returns, first import the current boot's

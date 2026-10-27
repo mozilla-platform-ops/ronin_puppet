@@ -11,6 +11,11 @@
 set -e
 export LANG=en_US.UTF-8
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/puppetlabs/bin"
+# Apple's curl (and git through it) defaults to LibreSSL with
+# /etc/ssl/cert.pem, which never checks revocation and still trusts the
+# compromised eMudhra chains (bug 2083449). SecureTransport verifies via
+# trustd, which does.
+export CURL_SSL_BACKEND=securetransport
 
 # --- Trusted root environment (Bug 2064340) -------------------------------
 # This script is a passwordless sudo target for the unprivileged task user
@@ -204,7 +209,13 @@ run_puppet() {
     get_puppet_repo
     echo "Running puppet apply"
 
+    # Match the node definition written above; a stale certname in puppet.conf
+    # otherwise falls through to the empty default node.
+    local FQDN
+    FQDN=$("$FACTER_BIN" networking.fqdn)
+
     PUPPET_OPTIONS=(
+        "--certname=$FQDN"
         "--modulepath=./modules:./r10k_modules:/etc/puppetlabs/code/environments/production/modules"
         "--hiera_config=./hiera.yaml"
         "--logdest=console"
