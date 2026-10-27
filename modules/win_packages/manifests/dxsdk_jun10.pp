@@ -36,7 +36,7 @@ class win_packages::dxsdk_jun10 {
           creates         => "${netfx3_dir}\\${netfx3_cab}",
           cleanup         => false,
           extract         => false,
-          checksum        => '53470DC8BEC1F5343109732AAEB7655DC1988F5ED6967DD129ACDF9693E293BB',
+          checksum        => '53470dc8bec1f5343109732aaeb7655dc1988f5ed6967dd129acdf9693e293bb',
           checksum_type   => 'sha256',
           checksum_verify => true,
           require         => File[$netfx3_dir],
