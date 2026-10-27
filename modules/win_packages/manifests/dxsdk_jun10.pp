@@ -19,8 +19,35 @@ class win_packages::dxsdk_jun10 {
         }
       }
       default: {
-        windowsfeature { 'NET-Framework-Core':
-          ensure => present,
+        # Install NetFx3 from the build 20348 Features on Demand cab. Windows Update
+        # cannot serve it for Catalog-only builds such as 20348.5773 (KB5134140).
+        include win_packages::staging
+        $netfx3_dir = "${win_packages::staging::path}\\netfx3"
+        $netfx3_cab = 'Microsoft-Windows-NetFx3-OnDemand-Package~31bf3856ad364e35~amd64~~.cab'
+
+        file { $netfx3_dir:
+          ensure  => directory,
+          require => Class['win_packages::staging'],
+        }
+        archive { 'netfx3_cab':
+          ensure          => present,
+          source          => "${lookup('windows.ext_pkg_src')}/${netfx3_cab}",
+          path            => "${netfx3_dir}\\${netfx3_cab}",
+          creates         => "${netfx3_dir}\\${netfx3_cab}",
+          cleanup         => false,
+          extract         => false,
+          checksum        => '53470DC8BEC1F5343109732AAEB7655DC1988F5ED6967DD129ACDF9693E293BB',
+          checksum_type   => 'sha256',
+          checksum_verify => true,
+          require         => File[$netfx3_dir],
+        }
+        exec { 'install_net_framework3.5':
+          command  => "dism.exe /online /enable-feature /featurename:NetFx3 /all /source:${netfx3_dir} /limitaccess /norestart /quiet",
+          unless   => 'if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3).State -ne "Enabled") { exit 1 }',
+          provider => powershell,
+          returns  => [0, 3010],
+          timeout  => 1200,
+          require  => Archive['netfx3_cab'],
         }
       }
     }
