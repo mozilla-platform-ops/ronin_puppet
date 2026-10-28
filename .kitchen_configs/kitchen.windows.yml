@@ -56,7 +56,7 @@ lifecycle:
         [System.Environment]::SetEnvironmentVariable('WORKER_POOL_ID', '<%= ENV['WORKER_POOL_ID'] %>', 'Machine')
 
 platforms:
-  - name: win11-64-24h2
+  - name: win11-64-25h2
     driver:
       <<: &windows_driver_defaults
         name: azurerm
@@ -79,18 +79,11 @@ platforms:
           winrm set winrm/config/service/auth '@{Negotiate="false"}'
       machine_size: 'Standard_F8alds_v7'
       spot_instance: true
-      image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-avd:latest
+      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
       # Each platform has a unique resource group name to prevent collisions when
       # CI jobs run in parallel. kitchen-azurerm appends a timestamp to this name,
       # so two jobs sharing the same base name that start within the same second
       # will land in the same resource group and conflict on the public IP resource.
-      azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-24h2
-  - name: win11-64-25h2
-    driver:
-      <<: *windows_driver_defaults
-      machine_size: 'Standard_F8alds_v7'
-      spot_instance: true
-      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2
   - name: win11-64-25h2-gpu
     driver:
@@ -197,7 +190,6 @@ platforms:
 suites:
   - name: windows
     includes:
-      - win11-64-24h2
       - win11-64-25h2
       - win11-64-25h2-gpu
       - win11-a64-25h2-builder

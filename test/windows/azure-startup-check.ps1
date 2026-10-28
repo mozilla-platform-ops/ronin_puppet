@@ -15,7 +15,7 @@ function Move-Item { param($LiteralPath, $Destination, [switch]$Force, $ErrorAct
 function shutdown.exe { $script:reboot = $true }
 function Get-CimInstance { param($ClassName, $ErrorAction) return $script:controllers }
 foreach ($code in @(0, 2, 1, 4, 6)) {
-    foreach ($pool in @('win11-64-24h2-alpha', 'win11-64-24h2-gpu-alpha')) {
+    foreach ($pool in @('win11-64-25h2-alpha', 'win11-64-25h2-gpu-alpha')) {
         $script:registry = @{}; $script:forwarded = $false; $script:reboot = $false
         $blocked = $false
         try { Complete-AzurePuppetRun $code $pool 'registry' 'log' 'fail' 'lock' } catch { $blocked = $true }
@@ -27,7 +27,7 @@ foreach ($code in @(0, 2, 1, 4, 6)) {
     }
 }
 $script:controllers = @()
-Assert-AzureGpuReady 'win11-64-24h2-alpha'
+Assert-AzureGpuReady 'win11-64-25h2-alpha'
 foreach ($case in @('missing', 'basic', 'broken', 'healthy')) {
     $script:controllers = @()
     if ($case -ne 'missing') {
@@ -38,7 +38,7 @@ foreach ($case in @('missing', 'basic', 'broken', 'healthy')) {
         })
     }
     $blocked = $false
-    try { Assert-AzureGpuReady 'win11-64-24h2-gpu-alpha' } catch { $blocked = $true }
+    try { Assert-AzureGpuReady 'win11-64-25h2-gpu-alpha' } catch { $blocked = $true }
     if ($blocked -ne ($case -ne 'healthy')) { throw "Bad GPU readiness decision: $case" }
 }
 'Azure startup checks passed'

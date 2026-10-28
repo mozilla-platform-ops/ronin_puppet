@@ -133,7 +133,7 @@ Describe 'Programs' -Tag IntegrationTests {
         }
     }
 
-    Context 'Windows SDK' -Skip:($Role -notin @('win116424h2azure', 'win116425h2azure')) {
+    Context 'Windows SDK' -Skip:($Role -ne 'win116425h2azure') {
         It 'installs <_> version 10.1.22621.5040' -ForEach @(
             'Application Verifier x64 External Package (DesktopEditions)'
             'Application Verifier x64 External Package (OnecoreUAP)'
