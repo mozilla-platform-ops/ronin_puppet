@@ -3,41 +3,15 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-RELOPS-2575 :: Keep Google Chrome current without chocolatey.
+RELOPS-2575: install/update hardware Chrome directly from Google's enterprise MSI.
+The community Chocolatey feed rate-limited the shared MDC1 IP and triggered PXE loops.
 
-Chrome used to be installed and upgraded through the PUBLIC chocolatey community
-feed, from both puppet (win_packages::chrome) and maintainsystem
-(Get-LatestGoogleChrome). A transient feed failure - a per-IP 429, which the whole
-MDC1 fleet shares one egress IP for - escalated to Set-PXE in BOTH paths, so a
-remote rate limit re-imaged healthy workers and the re-images generated more
-requests. Re-imaging cannot fix a remote rate limit: the fresh node makes the
-identical request.
+The MSI can lag Google's stable-channel API, so compare its ETag and size with the
+last installed artifact instead of treating that API as an installation target.
+Last-Modified varies between CDN edges and must not trigger a reinstall.
 
-We install the SAME artifact the chocolatey package downloaded - Google's
-enterprise MSI at a fixed, unversioned URL - so Google-side traffic is unchanged.
-
-WHAT "CURRENT" MEANS HERE, and why it is NOT the version-history API.
-  Measured on hw-alpha 2026-09-17: the enterprise MSI installed 153.0.8010.53
-  while the API's stable channel reported 154.0.8037.44 (extended reported
-  152.0.7977.134, so it is not that either). That URL is the only Chrome we can
-  install, so "current" can only mean "the build that URL is serving now".
-  Comparing against the API made every boot look stale: the node re-downloaded
-  167 MB at deploy AND again on the next boot, six minutes apart, and would have
-  done so on every boot of every node forever.
-
-  So: fingerprint the artifact with a HEAD and remember what we last installed.
-  The API result is logged for visibility only - it never gates the download.
-
-  The fingerprint is ETag + Content-Length. Last-Modified is deliberately NOT in
-  it: two HEADs minutes apart returned 18:58:43 and 19:01:43 GMT for the same
-  ETag because it varies per CDN edge, which would force the very re-downloads
-  this is here to prevent.
-
-Exit codes are the policy:
-  0  Chrome is current, or is stale but working (logged WARN - a stale browser is
-     a data-quality wrinkle, not a broken worker)
-  1  Chrome is ABSENT and could not be installed (a worker with no Chrome cannot
-     run its tasks, so letting puppet fail -> Set-PXE is correct here)
+Exit 0 when current or an existing Chrome survives an update failure. Exit 1 when
+Chrome is absent and installation fails. This script never requests PXE or reboot.
 #>
 [CmdletBinding()]
 param (
@@ -45,6 +19,7 @@ param (
     # Used as the `unless` for the puppet exec so the check lives in one place.
     [switch] $CheckOnly,
 
+    [ValidateRange(1, 3)]
     [int] $Tries = 3
 )
 
@@ -53,7 +28,6 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 $msi_url = 'https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi'
-$api_url = 'https://versionhistory.googleapis.com/v1/chrome/platforms/win64/channels/stable/versions?order_by=version%20desc&pageSize=1'
 $ronin_key = 'HKLM:\SOFTWARE\Mozilla\ronin_puppet'
 $fp_value = 'chrome_msi_fingerprint'
 
@@ -101,30 +75,21 @@ function Get-InstalledChromeVersion {
 }
 
 function Get-MsiFingerprint {
-    ## Identifies the build currently behind the unversioned MSI URL without
-    ## downloading 167 MB. ETag + length only - see the header note on Last-Modified.
-    try {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $head = Invoke-WebRequest -Uri $msi_url -Method Head -UseBasicParsing -TimeoutSec 30
-        $etag = @($head.Headers['ETag'])[0]
-        $len = @($head.Headers['Content-Length'])[0]
-        if (-not $etag -and -not $len) { return $null }
-        return ('{0}|{1}' -f $etag, $len)
-    } catch {
-        return $null
+    param ($Headers)
+    if (-not $Headers) {
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            $head = Invoke-WebRequest -Uri $msi_url -Method Head -UseBasicParsing -TimeoutSec 30
+            $Headers = $head.Headers
+        } catch {
+            return $null
+        }
     }
-}
-
-function Get-StableChannelVersion {
-    ## Informational only. Never gates the download - see the header note.
-    try {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $response = Invoke-RestMethod -Uri $api_url -UseBasicParsing -TimeoutSec 30
-        if ($response.versions) { return $response.versions[0].version }
-        return $null
-    } catch {
-        return $null
-    }
+    $etag = @($Headers['ETag'])[0]
+    $len = @($Headers['Content-Length'])[0]
+    # Length alone cannot distinguish different releases of the same size.
+    if (-not $etag -or -not $len) { return $null }
+    return ('{0}|{1}' -f $etag, $len)
 }
 
 $installed = Get-InstalledChromeVersion
@@ -141,7 +106,7 @@ if ($CheckOnly) {
     exit 1
 }
 
-Write-Log -message ('Update-GoogleChrome :: installed {0} | msi {1} | last installed msi {2} | google stable channel {3}' -f $installed, $fingerprint, $last_installed, (Get-StableChannelVersion)) -severity 'DEBUG'
+Write-Log -message ('Update-GoogleChrome :: installed {0} | msi {1} | last installed msi {2}' -f $installed, $fingerprint, $last_installed) -severity 'DEBUG'
 
 if ($is_current) {
     Write-Log -message ('Update-GoogleChrome :: Chrome {0} is the build the enterprise MSI is serving; nothing to do' -f $installed) -severity 'DEBUG'
@@ -165,7 +130,9 @@ for ($i = 1; $i -le $Tries; $i++) {
     try {
         if (Test-Path $msi) { Remove-Item $msi -Force -ErrorAction SilentlyContinue }
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri $msi_url -OutFile $msi -UseBasicParsing -TimeoutSec 600
+        $download = Invoke-WebRequest -Uri $msi_url -OutFile $msi -PassThru -UseBasicParsing -TimeoutSec 600
+        # Record the downloaded artifact, which may have changed since the HEAD request.
+        $fingerprint = Get-MsiFingerprint -Headers $download.Headers
 
         $proc = Start-Process -FilePath 'msiexec.exe' -Wait -PassThru -ArgumentList @(
             '/i', ('"{0}"' -f $msi), '/qn', '/norestart', '/l*v', ('"{0}"' -f $msi_log)
@@ -177,7 +144,7 @@ for ($i = 1; $i -le $Tries; $i++) {
     } catch {
         Write-Log -message ('Update-GoogleChrome :: attempt {0}/{1} failed: {2}' -f $i, $Tries, $_.Exception.Message) -severity 'WARN'
     }
-    ## 30s, 60s, 90s - rides out a transient CDN blip without hammering it.
+    ## Wait 30s then 60s between attempts; never sleep after the last attempt.
     if ($i -lt $Tries) { Start-Sleep -Seconds (30 * $i) }
 }
 Remove-Item $msi -Force -ErrorAction SilentlyContinue
@@ -188,15 +155,13 @@ if ($install_ok -and $after) {
     ## Record WHICH build we installed so later boots skip the download until Google
     ## actually rotates the artifact. Written only after a successful install, so a
     ## failed run retries next boot instead of marking itself done.
-    ## Only when we actually have one. A null fingerprint (HEAD failed but the GET
-    ## succeeded) writes an empty value that can never match, which would re-download
-    ## 167 MB on every boot - the bug this whole mechanism exists to prevent.
+    ## Only store a fingerprint when the downloaded response provided one.
     if ($fingerprint) {
         if (-not (Test-Path $ronin_key)) { New-Item -Path $ronin_key -Force | Out-Null }
         Set-ItemProperty -Path $ronin_key -Name $fp_value -Value $fingerprint
     }
     else {
-        Write-Log -message 'Update-GoogleChrome :: installed, but could not fingerprint the MSI (HEAD failed); re-checking next boot' -severity 'WARN'
+        Write-Log -message 'Update-GoogleChrome :: installed, but the MSI response had no fingerprint; re-checking next boot' -severity 'WARN'
     }
     if ($after -eq $installed) {
         Write-Log -message ('Update-GoogleChrome :: Chrome {0} reinstalled from the current MSI ({1} attempt(s))' -f $after, $attempts) -severity 'DEBUG'

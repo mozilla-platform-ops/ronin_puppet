@@ -1009,15 +1009,14 @@ If ($bootstrap_stage -eq 'complete') {
     # Disable restored Defender drivers before fleetbench and worker-runner.
     Invoke-DefenderRealtimeGuard
 
-    ## RELOPS-2575: make sure Chrome is the current stable build before worker-runner
-    ## claims a task. Asks versionhistory.googleapis.com what is current and installs
-    ## Google's enterprise MSI directly - no chocolatey community feed involved.
-    ## The exit code is deliberately IGNORED and there is no Set-PXE here: a failed
-    ## refresh must not re-image a healthy worker. Re-imaging cannot fix a remote
-    ## rate limit or outage, the fresh node just makes the identical request.
+    # RELOPS-2575: use Google's MSI directly; refresh failures must not trigger PXE.
     $chrome_script = Join-Path $PSScriptRoot 'Update-GoogleChrome.ps1'
     if (Test-Path $chrome_script) {
-        & $chrome_script
+        try {
+            & $chrome_script
+        } catch {
+            Write-Log -message ('Chrome refresh failed: {0}' -f $_.Exception.Message) -severity 'WARN'
+        }
     }
     else {
         Write-Log -message ('{0} :: Update-GoogleChrome.ps1 not found at {1}' -f $($MyInvocation.MyCommand.Name), $chrome_script) -severity 'WARN'

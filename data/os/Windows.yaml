@@ -123,8 +123,6 @@ windows:
       version: '101.7088'
   git:
     version: '2.49.0'
-  googlechrome:
-    version: 'latest'
   gpu:
     name: "573.96_grid_win10_win11_server2022_server2025_dch_64bit_international_azure_swl"
     display_name: "NVIDIA Graphics Driver 573.96"

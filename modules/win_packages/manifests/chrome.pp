@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::chrome {
-  ## Block googleupdate.exe to prevent installing an updating version of chrome outside of chocolatey
+  ## Keep Chrome updates under provisioning and boot-time maintenance.
   windows_firewall::exception { 'googleupdate':
     ensure       => present,
     direction    => 'out',
@@ -66,7 +66,7 @@ class win_packages::chrome {
   ## MDC1 fleet shares one egress IP, so a 429 used to fail this resource ->
   ## puppet exit 4/6 -> Set-PXE -> re-image -> same request again. maintainsystem
   ## runs this same script on every boot, before worker-runner starts, so Chrome
-  ## is verified current before the node claims a task.
+  ## is checked before the node claims a task.
   $chrome_script = "${facts['custom_win_roninprogramdata']}\\Update-GoogleChrome.ps1"
 
   file { $chrome_script:
