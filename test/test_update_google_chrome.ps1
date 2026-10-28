@@ -13,8 +13,8 @@ $scriptText = $scriptText -replace '\bexit ([01])\b', 'throw "CHROME_TEST_EXIT:$
 $updater = [scriptblock]::Create($scriptText)
 $scratch = Join-Path ([IO.Path]::GetTempPath()) ('chrome-update-' + [guid]::NewGuid())
 New-Item -ItemType Directory -Path $scratch | Out-Null
-$oldTemp = $env:TEMP; $oldDrive = $env:SystemDrive
-$env:TEMP = $scratch; $env:SystemDrive = $scratch
+$oldTemp = $env:TEMP; $oldDrive = $env:systemdrive
+$env:TEMP = $scratch; $env:systemdrive = $scratch
 
 function Reset-Case {
     $script:state = @{
@@ -178,12 +178,13 @@ try {
         if (-not ($state.messages -match 'fixture updater failure')) { throw 'Unexpected refresh exception was not logged' }
         Set-Content $chrome_script 'exit 1'
         & ([scriptblock]::Create($refresh.Extent.Text))
+        $global:LASTEXITCODE = 0 # Clear the fixture exit code before the CI wrapper checks it.
         Remove-Item $chrome_script
         & ([scriptblock]::Create($refresh.Extent.Text))
         if (-not ($state.messages -match 'not found')) { throw 'Missing updater was not logged' }
     }
     Write-Host 'Direct Chrome installation, caching, CDN changes, retries, outage behavior, exit codes, and caller checks passed.'
 } finally {
-    $env:TEMP = $oldTemp; $env:SystemDrive = $oldDrive
+    $env:TEMP = $oldTemp; $env:systemdrive = $oldDrive
     Remove-Item -LiteralPath $scratch -Recurse -Force
 }
