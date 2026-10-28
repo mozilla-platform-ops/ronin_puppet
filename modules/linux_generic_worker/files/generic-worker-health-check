@@ -17,7 +17,7 @@ import urllib.request
 # ── constants ─────────────────────────────────────────────────────────────────
 
 PUPPET_METADATA = "/etc/puppet/last_run_metadata.json"
-PUPPET_DONE_SENTINEL = "/tmp/puppet_run_done"
+PUPPET_DONE_SENTINEL = "/run/puppet/run_done"
 PUPPET_MAX_AGE_HOURS = 24
 
 TASK_DIR = "/home/cltbld/tasks"
@@ -188,11 +188,22 @@ def check_disk_free():
     return PASS, summary, data
 
 
+def puppet_done():
+    """Use the same protected, current-boot marker checks as worker startup."""
+    try:
+        result = subprocess.run(["/usr/local/bin/puppet-run-marker", "check"],
+                                timeout=5, stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
+        return result.returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
 def check_generic_worker_process():
     pids = find_procs_by_name("generic-worker")
     data = {"generic_worker_pids": pids}
     if len(pids) == 0:
-        if not os.path.exists(PUPPET_DONE_SENTINEL):
+        if not puppet_done():
             return WARN, "not running — puppet run still in progress (waiting for sentinel)", data
         return FAIL, "not running", data
     if len(pids) > 1:
@@ -424,9 +435,9 @@ def check_puppet():
     except Exception as e:
         return WARN, f"could not parse timestamp '{ts_str}': {e}", data
 
-    if not os.path.exists(PUPPET_DONE_SENTINEL):
+    if not puppet_done():
         data["done_sentinel"] = False
-        return WARN, f"success=true but {PUPPET_DONE_SENTINEL} missing", data
+        return WARN, f"success=true but {PUPPET_DONE_SENTINEL} missing or untrusted", data
 
     data["done_sentinel"] = True
     role = meta.get("role", "?")

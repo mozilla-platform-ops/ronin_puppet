@@ -173,13 +173,21 @@ def percentile_rows(samples):
     return rows
 
 
+def terminal_text(value):
+    """Keep printable text; display controls and invisible Unicode as escapes."""
+    return "".join(
+        character if character.isprintable() else character.encode("unicode_escape").decode("ascii")
+        for character in str(value)
+    )
+
+
 def terminal_report(rows, incomplete):
     lines = ["measurement                 scope       count     p50     p95     max"]
     for row in rows:
         lines.append(
             "{:<27} {:<11} {:>5} {:>7.1f} {:>7.1f} {:>7.1f}".format(
-                row["measurement"],
-                row["scope"],
+                terminal_text(row["measurement"]),
+                terminal_text(row["scope"]),
                 row["count"],
                 row["p50_seconds"],
                 row["p95_seconds"],
@@ -188,7 +196,8 @@ def terminal_report(rows, incomplete):
         )
     lines.append("incomplete observed boots: {}".format(len(incomplete)))
     for item in incomplete:
-        lines.append("  {host} {boot_id}: {final_event}".format(**item))
+        display_item = {key: terminal_text(value) for key, value in item.items()}
+        lines.append("  {host} {boot_id}: {final_event}".format(**display_item))
     return "\n".join(lines)
 
 
@@ -197,6 +206,21 @@ def parse_args(arguments):
     parser.add_argument("inputs", nargs="+", help="snapshot directories or event files")
     parser.add_argument("--format", choices=("terminal", "json", "csv"), default="terminal")
     return parser.parse_args(arguments)
+
+
+def csv_cell(value):
+    """Neutralize formula-like string cells without changing numeric values."""
+    if not isinstance(value, str):
+        return value
+    index = 0
+    while index < len(value) and (value[index].isspace() or not value[index].isprintable()):
+        index += 1
+    # Spreadsheet importers may ignore leading whitespace/control characters.
+    # Leading controls are dangerous even without an explicit formula prefix.
+    if (value[index:index + 1] in ("=", "+", "-", "@")
+            or any(not character.isprintable() for character in value[:index])):
+        return "'" + value
+    return value
 
 
 def main(arguments=None):
@@ -210,7 +234,7 @@ def main(arguments=None):
     else:
         writer = csv.DictWriter(sys.stdout, fieldnames=("measurement", "scope", "count", "p50_seconds", "p95_seconds", "max_seconds"))
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows({key: csv_cell(value) for key, value in row.items()} for row in rows)
     return 0
 
 

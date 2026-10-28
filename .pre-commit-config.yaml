@@ -72,3 +72,13 @@ repos:
       entry: .github/scripts/test_kitchen_linux_converge.sh
       pass_filenames: false
       files: '^\.github/(scripts/(test_)?kitchen_linux_converge\.sh|workflows/kitchen-linux\.yml)$'
+    # The runner role is not in the kitchen matrix, so this is the only CI check that
+    # exercises reprovision_runner's templates: the self-update skip/run/lock/watchdog
+    # paths and the LaunchDaemon plists. language: ruby provides `puppet epp render`.
+    - id: reprovision-runner-test
+      name: Test reprovision_runner templates
+      language: ruby
+      additional_dependencies: ['puppet']
+      entry: .github/scripts/test_reprovision_runner.sh
+      pass_filenames: false
+      files: '^(modules/reprovision_runner/|\.github/scripts/test_reprovision_runner\.sh$)'

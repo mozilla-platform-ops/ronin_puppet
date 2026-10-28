@@ -6,7 +6,10 @@ class roles_profiles::profiles::mozbuild_post_boostrap {
   $mozbld = "C:\\mozilla-build"
   case $facts['custom_win_location'] {
     'azure': {
-      if $facts['custom_win_d_drive'] == 'exists' {
+      $task_drive = lookup('windows_task_drive', { 'default_value' => undef })
+      if $task_drive {
+        $cache_drive = $task_drive
+      } elsif $facts['custom_win_d_drive'] == 'exists' {
         $cache_drive = 'D:'
       } else {
         $cache_drive = 'C:'

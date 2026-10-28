@@ -13,11 +13,15 @@ TimeoutSec=5min
 IgnoreSIGPIPE=no
 KillMode=process
 GuessMainPID=no
-# this file is stored in /etc, readable only by root.  When starting VNC, it gets copied into
-# the builder user's home dir, then removed immediately (via the 'rm:' prefix below)
-ExecStartPre=/bin/cp -f /etc/vnc_passwdfile /home/<%= @user %>/.vnc/passwdfile
-ExecStartPre=/bin/chown <%= @user %> /home/<%= @user %>/.vnc/passwdfile
-ExecStart=/bin/su - -c "/usr/bin/x11vnc -display WAIT:0 -passwdfile rm:/home/<%= @user %>/.vnc/passwdfile -forever -shared" <%= @user %>
+# Root prepares the password outside the task-owned home. The VNC group can
+# read it, but cannot replace it. Systemd removes the directory on stop/failure.
+User=root
+Group=<%= @group %>
+RuntimeDirectory=x11vnc
+RuntimeDirectoryMode=0710
+RuntimeDirectoryPreserve=no
+ExecStartPre=/usr/bin/install -o root -g <%= @group %> -m 0640 /etc/vnc_passwdfile /run/x11vnc/passwdfile
+ExecStart=/bin/su - -c "/usr/bin/x11vnc -display WAIT:0 -passwdfile /run/x11vnc/passwdfile -forever -shared" <%= @user %>
 
 [Install]
 WantedBy=multi-user.target

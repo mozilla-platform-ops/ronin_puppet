@@ -43,11 +43,11 @@ describe command("sudo grep -cE '^cltbld ALL=\\(root\\) NOPASSWD: /sbin/reboot$'
   its(:stdout) { should match(/^1$/) }
 end
 
-# This role runs the `simple` worker engine, so worker-runner is a cltbld
-# LaunchAgent and its `sudo run-puppet.sh` call is load-bearing. The grant must
-# stay; run-puppet.sh pins its own environment as the second layer of defence.
+# This role runs the multiuser-static worker engine, so worker-runner is a root
+# LaunchDaemon and doesn't need the grant; roles_profiles::profiles::cltbld_user
+# leaves it out so it isn't a reachable path into a root process.
 describe command("sudo grep -cE '^cltbld ALL=\\(root\\) NOPASSWD: /usr/local/bin/run-puppet[.]sh$' /etc/sudoers") do
-  its(:stdout) { should match(/^1$/) }
+  its(:stdout) { should match(/^0$/) }
 end
 
 describe file('/usr/local/bin/run-puppet.sh') do

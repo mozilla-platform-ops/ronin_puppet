@@ -62,6 +62,29 @@ class worker_runner (
     # false (the default) renders worker-runner.sh exactly as it did before this
     # landed.
     Boolean $purge_metal_shader_cache                                      = false,
+    # Remove the task user's ~/Library/Application Support/Firefox at every worker
+    # start. With a task user that persists across tasks it accumulates profiles,
+    # and background task profiles stamped by a version-bump try push make every
+    # later task on the host fail downgrade protection (bug 2046807).
+    #
+    # false (the default) renders worker-runner.sh exactly as it did before this
+    # landed.
+    Boolean $purge_firefox_app_support                                     = false,
+    # Point generic-worker's livelog at /bin/false so no live log is served.
+    # Level 3 workers shouldn't expose live logs; this matches the
+    # linux-d2g-trusted pools in fxci-config. generic-worker treats livelog as
+    # best effort, so tasks still run and upload live_backing.log as usual. Used
+    # instead of enableLiveLog because that key only exists from v77.0.0 and
+    # older generic-workers reject unknown config keys.
+    Boolean $disable_livelog                                               = false,
+    # generic-worker's requiredDiskSpaceMegabytes: free space it must see before
+    # claiming a task, evicting directory caches to get there. Builders raise it
+    # because 20 GiB is less than a large build writes: m4-122 kept ~93 GB of
+    # checkout caches, started tasks with ~36 GB free so nothing was ever
+    # evicted, and custom-car/plain builds died with "No space left on device".
+    # Every host must be able to reach the floor by evicting caches alone, or
+    # it exits 69 with "nothing left to delete".
+    Integer $required_disk_space_mb                                        = 20480,
     # TODO: implement more worker config parameters
     # WorkerConfig parameters
     # Optional[String] $availabilityZone                 = undef,
@@ -127,10 +150,12 @@ class worker_runner (
                 $owner        = 'root'
                 $group        = 'wheel'
                 $launch_plist = '/Library/LaunchDaemons/org.mozilla.worker-runner.plist'
+                $stale_launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
             } else {
                 $owner        = $task_user
                 $group        = 'staff'
                 $launch_plist = "/Users/${task_user}/Library/LaunchAgents/org.mozilla.worker-runner.plist"
+                $stale_launch_plist = '/Library/LaunchDaemons/org.mozilla.worker-runner.plist'
             }
 
             # Determine architecture
@@ -175,6 +200,9 @@ class worker_runner (
             if $purge_metal_shader_cache and $generic_worker_engine == 'multiuser' {
                 fail("[${module_name}] purge_metal_shader_cache needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Metal cache is already empty")
             }
+            if $purge_firefox_app_support and $generic_worker_engine == 'multiuser' {
+                fail("[${module_name}] purge_firefox_app_support needs a task user that persists across tasks; the multiuser engine creates a new one per task, so its Application Support is already empty")
+            }
 
             # Install binaries directly from GitHub releases, except any the role
             # has opted into Developer-ID-signed builds for.
@@ -200,16 +228,18 @@ class worker_runner (
             # binary. These workers reboot themselves between tasks, so there is
             # no reliable manual window to clear this after a bump -- it must
             # land in the same catalog that swaps the binary, before the worker
-            # next starts. Fires only when a binary actually changes
-            # (refreshonly + subscribe). rm -f is idempotent and engine-agnostic:
-            # multiuser* runs from ${gw_root_dir}, the simple engine from
-            # ${data_dir}. The files regenerate on the next clean start.
+            # next starts. Fires only when a binary actually changes, or the
+            # launchd plist does (an engine switch, which moves the cache-state
+            # files from ${data_dir} to ${gw_root_dir}). rm is idempotent and
+            # engine-agnostic. The cache dirs this orphans are removed by the
+            # unreferenced-cache sweep in worker-runner.sh on the next start.
             exec { 'purge-stale-gw-cache-state-on-version-change':
                 command     => "/bin/rm -f ${gw_root_dir}/file-caches.json ${gw_root_dir}/directory-caches.json ${data_dir}/file-caches.json ${data_dir}/directory-caches.json",
                 refreshonly => true,
                 subscribe   => [
                     File['/usr/local/bin/generic-worker-multiuser'],
                     File['/usr/local/bin/generic-worker-simple'],
+                    File[$launch_plist],
                 ],
             }
 
@@ -236,12 +266,13 @@ class worker_runner (
                 group  => $group,
             }
 
-            # Generate an ed25519 key
+            # Generate an ed25519 key. -s, not -f: some hosts have a zero-byte key
+            # that the simple engine ignored but multiuser exits 69 on.
             $gw_binary = regsubst($generic_worker_engine, '-static$', '')
             exec { 'create ed25519 signing key':
                 cwd     => $data_dir,
                 command => "/usr/local/bin/generic-worker-${gw_binary} new-ed25519-keypair --file ${ed25519_signing_key}",
-                unless  => "/bin/test -f ${ed25519_signing_key}",
+                unless  => "/bin/test -s ${ed25519_signing_key}",
             }
 
             # Set permissions on ed25519 key
@@ -271,6 +302,12 @@ class worker_runner (
                 mode    => '0644',
                 owner   => $owner,
                 group   => $group,
+            }
+
+            # Remove the plist for the other engine, so a host that switches between
+            # simple and multiuser* doesn't start a second worker-runner.
+            file { $stale_launch_plist:
+                ensure => absent,
             }
 
             # Generic Worker multiuser-static requirements

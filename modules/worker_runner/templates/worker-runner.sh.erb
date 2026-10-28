@@ -29,6 +29,24 @@ else
     rm -rf <%= @task_dir %>/task_*
 fi
 
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2079855
+# A task that dies mid-`git checkout` leaves .git/index.lock behind, and
+# generic-worker still saves the checkout cache, lock included. Every later task
+# that mounts the cache then fails in seconds with "index.lock: File exists" until
+# someone quarantines the host and removes the lock by hand. It happened on
+# macmini-m4-120 twice: a cancel on 2026-10-08 (11 failed tasks) and a
+# deadline-exceeded on 2026-10-17 (20 failed tasks). generic-worker only notices an
+# abort at its next reclaim, so it kills git whenever that comes, at any point.
+#
+# Nothing is running yet at this point, so any git lock in a cache is stale. Only
+# the lock files in each cached repo's .git dir and refs are removed; the cache is
+# kept and the next `git checkout -f` repairs the worktree.
+for gw_git_dir in <%= @data_dir %>/cache/*/*/.git; do
+    [ -d "$gw_git_dir" ] || continue
+    find "$gw_git_dir" -maxdepth 1 -type f -name '*.lock' -print -delete 2>/dev/null
+    [ -d "$gw_git_dir/refs" ] && find "$gw_git_dir/refs" -type f -name '*.lock' -print -delete 2>/dev/null
+done | sed 's/^/Removed stale git lock: /'
+
 # generic-worker's file cache (downloadsDir plus its file-caches.json index) is
 # not bounded: it gains an entry and a file per task artifact fetched, and nothing
 # prunes either. The worker revalidates the whole index on every start, between
@@ -75,6 +93,50 @@ fi
 # Sweep any leftovers from an interrupted purge on a previous boot.
 for gw_stale in "${gw_downloads}".purging.*; do
     [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+done
+
+# Directory caches that directory-caches.json no longer references are invisible
+# to the worker: it cannot evict them, reports "nothing left to delete", and
+# exits 69 below its free-space floor. r8-199/200 (gecko-3-b-osx-1015) each held
+# four ~14 GB gecko checkout caches against an empty index. Same rename-then-
+# detached-delete as the file cache above.
+if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
+    gw_dir_caches_json=<%= @gw_root_dir %>/directory-caches.json
+else
+    gw_dir_caches_json=<%= @data_dir %>/directory-caches.json
+fi
+gw_caches=<%= @data_dir %>/cache
+for gw_cache in "$gw_caches"/*; do
+    [ -d "$gw_cache" ] || continue
+    gw_cache_name=$(basename "$gw_cache")
+    grep -qF "/${gw_cache_name}\"" "$gw_dir_caches_json" 2>/dev/null && continue
+    gw_orphan="${gw_caches}.orphan.${gw_cache_name}"
+    if mv "$gw_cache" "$gw_orphan" 2>/dev/null; then
+        echo "Removing unreferenced directory cache ${gw_cache_name}"
+        ( rm -rf "$gw_orphan" >/dev/null 2>&1 & )
+    fi
+done
+for gw_stale in "${gw_caches}".orphan.*; do
+    [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+done
+
+# Builders reuse one task user for the host's life (bug 1952130), so its uv
+# cache never resets: 35-36 GB on r8-139/198/199. Sizing it takes ~2 min, so
+# gate on free space instead and drop it when the volume runs low, well before
+# generic-worker's 20 GiB floor. uv refetches on the next task.
+gw_free_gb=$(df -g <%= @data_dir %> | awk 'NR==2 {print $4}')
+if [ -n "$gw_free_gb" ] && [ "$gw_free_gb" -lt 40 ]; then
+    for uv_cache in /Users/task_*/.cache/uv; do
+        [ -d "$uv_cache" ] || continue
+        uv_purge="${uv_cache}.purging.$$"
+        if mv "$uv_cache" "$uv_purge" 2>/dev/null; then
+            echo "Low disk (${gw_free_gb} GB free), removing ${uv_cache}"
+            ( rm -rf "$uv_purge" >/dev/null 2>&1 & )
+        fi
+    done
+fi
+for uv_stale in /Users/task_*/.cache/uv.purging.*; do
+    [ -e "$uv_stale" ] && ( rm -rf "$uv_stale" >/dev/null 2>&1 & )
 done
 <% if @reclaim_free_space_gb -%>
 
@@ -158,10 +220,48 @@ else
     echo "Could not resolve DARWIN_USER_CACHE_DIR, skipping Metal shader cache purge."
 fi
 <% end -%>
+<% if @purge_firefox_app_support -%>
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=2046807
+# The task user persists across tasks here, so Firefox's per-user data directory
+# does too, and every task inherits what the previous ones left in it. Background
+# task profiles are the visible casualty: they are keyed by install path, which is
+# the same for every task on a host, and a try push that bumps the version stamps
+# them with a future major. Every later task on that host then trips downgrade
+# protection, and the background task exits 0 instead of running, until central
+# catches up. macmini-m4-100 had 68 of these back to 2025, plus 1,228 Profiles,
+# 4,544 Profile Groups and a 41 KB profiles.ini indexing all of them.
+#
+# The whole directory goes, not just Background Tasks Profiles: profiles.ini
+# indexes the background task profiles too, and leaving it would point at
+# directories that no longer exist. Nothing in it is meant to outlive a task --
+# a fresh task user, as the multiuser engine gives every task, starts without it.
+#
+# Renamed out of the way and deleted detached, like the downloads purge above, so
+# the first purge of an accumulated directory does not hold up worker start.
+ff_app_support="/Users/<%= @task_user %>/Library/Application Support/Firefox"
+if [ -d "$ff_app_support" ]; then
+    ff_purge="${ff_app_support}.purging.$$"
+    if mv "$ff_app_support" "$ff_purge" 2>/dev/null; then
+        ( rm -rf "$ff_purge" >/dev/null 2>&1 & )
+    fi
+fi
+for ff_stale in "${ff_app_support}".purging.*; do
+    [ -e "$ff_stale" ] && ( rm -rf "$ff_stale" >/dev/null 2>&1 & )
+done
+<% end -%>
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1967525
 if [ -x  /usr/local/bin/lsdb.py ]; then
+<% if @generic_worker_engine =~ /^multiuser/ -%>
+    # This script runs as root here. Clean the task user's database, not
+    # root's: root's holds tens of thousands of stale task-dir apps that
+    # lsregister -u can't remove, so scanning it stalls the worker start by
+    # over an hour on every boot.
+    launchctl asuser "$(id -u <%= @task_user %>)" sudo -u <%= @task_user %> python3 /usr/local/bin/lsdb.py --delete-stale
+<% else -%>
     python3 /usr/local/bin/lsdb.py --delete-stale
+<% end -%>
 else
     echo "lsdb.py not found, skipping launch services cleanup."
 fi
@@ -176,6 +276,65 @@ if [[ "<%= @generic_worker_engine %>" == "multiuser-static" ]]; then
     # Run worker from <%= @gw_root_dir %> when in multiuser-static mode
     cd <%= @gw_root_dir %>
 fi
+
+# Quit any Safari or Safari Technology Preview already open for the task user
+# before the worker claims a task. safaridriver launches its own instance; if a
+# normal (non-automation) one is already running it asks that one for an
+# automation session instead, which never answers, and every browsertime Safari
+# task fails after exhausting its retries with:
+#   Could not create a session: The session timed out while connecting to a
+#   Safari instance.
+# On macOS 27 this became a loop: a task ends with Safari open, the host reboots,
+# macOS Resume (loginwindow's TAL launch) reopens it at login, and the next task
+# times out and reboots with it still open. clean_appstate_13_plus's empty,
+# root-owned ByHost loginwindow plist stops the relaunch on 14/15 but not on 27,
+# and TALLogoutSavesState=false does not stop it either (both verified on
+# macmini-m4-130, 2026-09-24). Harmless where Safari is not running.
+#
+# Resume relaunches when the task user's session comes up, so wait for that
+# session (its Dock) first -- but only on hosts that autologin as the task user,
+# so headless roles sharing this script are not delayed.
+# Anchored to the start of the command line so it matches the Safari executables
+# only: raptor and browsertime pass the Safari binary path as an argument, and an
+# unanchored pgrep -f matches the test harness too.
+safari_pattern='^/[^ ]*/Safari\.app/Contents/MacOS/Safari( |$)|^/Applications/Safari Technology Preview\.app/Contents/MacOS/Safari Technology Preview( |$)'
+if [ "$(/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null)" = "<%= @task_user %>" ]; then
+    for _ in $(seq 1 60); do
+        /usr/bin/pgrep -u <%= @task_user %> -x Dock >/dev/null && break
+        sleep 2
+    done
+    sleep 5
+fi
+for _ in 1 2 3; do
+    /usr/bin/pgrep -u <%= @task_user %> -f "$safari_pattern" >/dev/null || break
+    echo "Quitting Safari left open for <%= @task_user %> before starting the worker"
+    /usr/bin/pkill -TERM -u <%= @task_user %> -f "$safari_pattern"
+    sleep 3
+    /usr/bin/pkill -KILL -u <%= @task_user %> -f "$safari_pattern"
+    sleep 2
+done
+
+# The purges above (unreferenced caches, the uv cache, downloads) delete in the
+# background. On a host short of space generic-worker's free-space check fails
+# until they finish, and it fails after claiming a task, so wait for them (up to
+# 30 min) instead of losing that task. Done once free space clears the worker's
+# floor plus 10 GB.
+gw_need_gb=$(( <%= @required_disk_space_mb %> / 1024 + 10 ))
+gw_purges="<%= @data_dir %>/cache.orphan.* <%= @data_dir %>/downloads.purging.* /Users/task_*/.cache/uv.purging.*"
+gw_purge_pending() {
+    for gw_p in $gw_purges; do [ -e "$gw_p" ] && return 0; done
+    return 1
+}
+for _ in $(seq 1 180); do
+    gw_purge_pending || break
+    [ "$(df -g <%= @data_dir %> | awk 'NR==2{print $4}')" -ge "$gw_need_gb" ] && break
+    if ! pgrep -f "rm -rf .*\.(orphan|purging)\." >/dev/null; then
+        for gw_stale in $gw_purges; do
+            [ -e "$gw_stale" ] && ( rm -rf "$gw_stale" >/dev/null 2>&1 & )
+        done
+    fi
+    sleep 10
+done
 
 # First run worker runner, passing through any arguments handed to this
 # wrapper script...

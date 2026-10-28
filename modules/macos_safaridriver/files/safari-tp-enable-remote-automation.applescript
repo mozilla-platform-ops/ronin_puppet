@@ -120,7 +120,10 @@ repeat maxAttempts times
                 delay 5
 
                 -- Enable "Allow remote automation"
-                tell checkbox "Allow remote automation" of group 1 of group 1 of window 1
+                -- Prefix match, not the exact label: Safari 27 renamed it to "Allow remote
+                -- automation and external agents" (same group 1 of group 1), so an
+                -- exact-name lookup fails with -1728 on 27. Matches both labels.
+                tell (first checkbox of group 1 of group 1 of window 1 whose name starts with "Allow remote automation")
                     if value is 0 then click it
                     delay 5
                     if value is not 1 then

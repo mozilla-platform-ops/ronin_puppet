@@ -27,6 +27,21 @@ function fail {
     exit 1
 }
 
+function install_puppet_release {
+    (
+        # Keep the apt trust-anchor package out of shared staging directories.
+        package_dir=$(mktemp -d /root/puppet-release.XXXXXX) || exit 1
+        trap 'rm -rf -- "${package_dir}"' EXIT
+        trap 'exit 1' HUP INT TERM
+        chmod 0700 "${package_dir}" || exit 1
+        release_package="${package_dir}/puppet-release.deb"
+        codename=$(lsb_release -c -s) || exit 1
+        wget --https-only -O "${release_package}" \
+            "https://apt.puppetlabs.com/puppet7-release-${codename}.deb" || exit 1
+        dpkg -i "${release_package}" || exit 1
+    )
+}
+
 function update_puppet {
     mkdir -p "$PUPPET_REPO_PATH"
     cd "$PUPPET_REPO_PATH"
@@ -133,9 +148,7 @@ else
 fi
 
 # install puppet
-rm -f /var/tmp/puppet*.deb*
-wget -P /var/tmp/ "http://apt.puppetlabs.com/puppet7-release-$(lsb_release -c -s).deb"
-dpkg -i /var/tmp/*.deb
+install_puppet_release
 apt-get update -y && apt-get install -y puppet-agent
 ln -sf /opt/puppetlabs/bin/puppet /usr/bin/puppet
 # install r10k

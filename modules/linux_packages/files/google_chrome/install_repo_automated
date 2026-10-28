@@ -301,6 +301,7 @@ jZzrnsTJpU2ctkX++wX6M0WSGfkQGJWbuf1tRHdl+IkfIu+kBE+iAhZoMQAysweF
 p6XgWgagKw==
 
 KEYDATA
+  chmod 0644 "$APT_TRUSTEDDIR/google-chrome.gpg"
 }
 uninstall_key() {
   find_apt_trusted

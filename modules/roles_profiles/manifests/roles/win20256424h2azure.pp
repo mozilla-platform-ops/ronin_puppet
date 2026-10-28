@@ -8,6 +8,7 @@ class roles_profiles::roles::win20256424h2azure {
       include roles_profiles::profiles::azure_vm_file_system
       include roles_profiles::profiles::error_reporting
       include roles_profiles::profiles::files_system_managment
+      include roles_profiles::profiles::gpu_drivers
       include roles_profiles::profiles::logging
       include roles_profiles::profiles::mozbuild_post_boostrap
       include roles_profiles::profiles::network
@@ -26,6 +27,7 @@ class roles_profiles::roles::win20256424h2azure {
       include roles_profiles::profiles::power_management
       include roles_profiles::profiles::scheduled_tasks
       include roles_profiles::profiles::azure_vm_agent
+      include roles_profiles::profiles::gpu_drivers
       include roles_profiles::profiles::logging
       include roles_profiles::profiles::mercurial
       include roles_profiles::profiles::google_auth

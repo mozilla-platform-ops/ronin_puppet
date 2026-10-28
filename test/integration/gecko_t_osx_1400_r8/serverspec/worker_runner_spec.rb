@@ -12,9 +12,9 @@ describe file(WORKER_RUNNER_SH) do
   it { should be_file }
   it { should be_mode 755 }
 
-  # This role runs the simple engine, so worker-runner.sh is already the task user
-  # and its own cache dir is the one tasks use -- no sudo indirection.
-  its(:content) { should match(%r{^metal_cache_root=\$\(/usr/bin/getconf DARWIN_USER_CACHE_DIR}) }
+  # This role runs multiuser-static, so worker-runner.sh is root and has to ask for
+  # the task user's cache dir rather than its own.
+  its(:content) { should match(%r{^metal_cache_root=\$\(/usr/bin/sudo -u cltbld /usr/bin/getconf DARWIN_USER_CACHE_DIR}) }
 
   # The glob must cover every org.mozilla.* bundle, not just org.mozilla.firefox:
   # ANGLE compiles in the GPU process, which caches under org.mozilla.*-gpu-helper.
@@ -49,4 +49,11 @@ describe "#{WORKER_RUNNER_SH} executable lines" do
   it 'does not traverse /private/var/folders to find caches' do
     expect(code).not_to match(%r{find\s+/private/var/folders})
   end
+end
+
+# Bug 2046807: the task user's Firefox Application Support is cleared before every
+# task. Opted in via the top-level `purge_firefox_app_support` key, so this also
+# catches the key being shadowed by vault's `worker:` hash.
+describe file(WORKER_RUNNER_SH) do
+  its(:content) { should match(%r{^ff_app_support="/Users/cltbld/Library/Application Support/Firefox"$}) }
 end

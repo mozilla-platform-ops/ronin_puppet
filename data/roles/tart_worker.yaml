@@ -24,6 +24,10 @@ tart:
   version: '2.30.0'
   registry_host: '10.49.56.161'
   registry_port: 5000
+  # Exempt only the registry from Local Network privacy so `tart pull` works from
+  # the daemon on SIP-enabled hosts. macOS 15.5+ only; needs a restart. See profiles::tart.
+  local_network_allow:
+    - '10.49.56.161/32'
   oci_image: 'sequoia-tester'
   oci_tag: 'prod-latest'
   vm_name_prefix: 'sequoia-tester'

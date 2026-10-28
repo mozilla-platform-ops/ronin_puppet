@@ -14,8 +14,6 @@ class roles_profiles::profiles::mac_signing {
 
       include dirs::tools
 
-      class { 'scriptworker_prereqs': }
-
       $widevine_user = lookup('widevine_config.user')
       $widevine_key = lookup('widevine_config.key')
 
@@ -33,6 +31,11 @@ class roles_profiles::profiles::mac_signing {
       $worker_common = lookup("scriptworker_config.${role}", Hash, undef, {})
       $worker_secrets = lookup("scriptworker_secrets.${role}", Hash, undef, {})
       $worker_config = deep_merge($worker_common, $worker_secrets)
+      $python_version = $worker_config['python_version']
+
+      class { 'scriptworker_prereqs':
+        python_version => $python_version,
+      }
 
       $role_common = lookup("signingworker_roles.${role}", Hash, undef, {})
       $role_secrets = lookup("signing_secrets.${role}", Hash, undef, {})
@@ -90,7 +93,12 @@ class roles_profiles::profiles::mac_signing {
           keychain_filename   => $user_data['keychain_filename'],
           worker_config       => $worker_config,
           role_config         => $role_config,
+          python_version      => $python_version,
           ed_key_filename     => $user_data['ed_key_filename'],
+          # If the uv-managed interpreter fails to install, skip the worker
+          # outright. Without this edge the worker's stop exec still runs and
+          # takes the signer down for a venv rebuild that cannot succeed.
+          require             => Class['scriptworker_prereqs'],
         }
       }
 

@@ -174,18 +174,57 @@ function Check-RoninLock {
   }
 }
 
+# Always process the result: workers must never accept tasks after a failed apply.
+function Complete-AzurePuppetRun {
+  param([int] $PuppetExit, [string] $WorkerPoolId, [string] $RoninKey,
+        [string] $LogPath, [string] $FailDir, [string] $LockPath)
+  Set-ItemProperty -Path $RoninKey -Name last_run_exit -Value $PuppetExit -ErrorAction Stop
+  Remove-Item -LiteralPath $LockPath -ErrorAction SilentlyContinue
+  if ($PuppetExit -notin @(0, 2)) {
+    Write-Log -message "Puppet apply failed (exit $PuppetExit); worker startup blocked." -severity ERROR
+    Move-Item -LiteralPath $LogPath -Destination $FailDir -Force -ErrorAction Stop
+    # Give NXLog time to forward the failure and avoid a tight reboot loop.
+    & shutdown.exe /r /t 600 /f /c 'Puppet apply failed; retrying after reboot'
+    throw "Puppet apply failed (exit $PuppetExit)."
+  }
+  Write-Log -message "Puppet apply successful (exit $PuppetExit)."
+  Set-ItemProperty -Path $RoninKey -Name inmutable -Value 'true' -ErrorAction Stop
+  if ($WorkerPoolId -like '*gpu*') {
+    # NVIDIA installs with -noreboot. Reboot once after provisioning, before tasks.
+    Write-Log -message 'GPU provisioning complete; rebooting before worker startup.'
+    & shutdown.exe /r /t 10 /f /c 'Activate NVIDIA driver before accepting tasks'
+    throw 'GPU activation reboot requested; worker startup blocked for this boot.'
+  }
+}
+
+function Assert-AzureGpuReady {
+  param([string] $WorkerPoolId)
+  if ($WorkerPoolId -notlike '*gpu*') { return }
+  $controllers = @(Get-CimInstance Win32_VideoController -ErrorAction Stop)
+  $nvidia = @($controllers | Where-Object {
+    $_.PNPDeviceID -like 'PCI\VEN_10DE*' -and
+    $_.ConfigManagerErrorCode -eq 0 -and
+    ($_.InstalledDisplayDrivers -join ',') -match 'nvgrid|nvlddmkm'
+  })
+  if (-not $nvidia) {
+    $details = ($controllers | ForEach-Object {
+      "$($_.Name): status=$($_.ConfigManagerErrorCode), driver=$($_.DriverVersion), files=$($_.InstalledDisplayDrivers)"
+    }) -join '; '
+    Write-Log -message "NVIDIA driver is not ready; worker startup blocked. $details" -severity ERROR
+    throw 'GPU worker requires an active NVIDIA display driver.'
+  }
+  Write-Log -message "NVIDIA driver ready: $(($nvidia.DriverVersion) -join ', ')."
+}
+
 function Puppet-Run {
   param (
-    [int] $exit,
     [string] $lock = "$env:programdata\PuppetLabs\ronin\semaphore\ronin_run.lock",
-    [int] $last_exit = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").last_run_exit,
     [string] $inmutable = (Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable,
     [string] $nodes_def = "$env:systemdrive\ronin\manifests\nodes\odes.pp",
     [string] $logdir = "$env:systemdrive\logs",
     [string] $fail_dir = "$env:systemdrive\fail_logs",
-    [string] $log_file = "$datetime-puppetrun.log",
+    [string] $log_file = "$(Get-Date -Format yyyyMMdd-HHmmss)-puppetrun.log",
     [string] $roninKey = "HKLM:\SOFTWARE\Mozilla\ronin_puppet",
-    [string] $datetime = (get-date -format yyyyMMdd-HHmm),
     [string] $flagfile = "$env:programdata\PuppetLabs\ronin\semaphore\task-claim-state.valid"
   )
   begin {
@@ -218,7 +257,8 @@ function Puppet-Run {
     # So Puppet can update config files as needed.
     Write-Log -message  ('{0} :: Updating worker pool ID for final Puppet run' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     $worker_pool_id = ((((Invoke-WebRequest -Headers @{'Metadata' = $true } -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version=2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | Where-Object { $_.name -eq ('worker-pool-id') })[0].value
-    Set-ItemProperty -Path "$roninKey" -Name 'worker_pool_id' -Value "$worker_pool_id" -ErrorAction SilentlyContinue
+    if ([string]::IsNullOrWhiteSpace($worker_pool_id)) { throw 'Azure worker-pool-id tag is missing.' }
+    Set-ItemProperty -Path $roninKey -Name worker_pool_id -Value $worker_pool_id -ErrorAction Stop
 
     # r10k not currently in use. leaving in place because it may change in the future
     # Write-Log -message  ('{0} :: Installing Puppetfile .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'i
@@ -230,43 +270,12 @@ function Puppet-Run {
     }
     Get-ChildItem -Path $logdir\*.log -Recurse | Move-Item -Destination $logdir\old -ErrorAction SilentlyContinue
     Write-Log -message  ('{0} :: Initiating Puppet apply .' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    puppet apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$log_file
+    & (Get-Command puppet -ErrorAction Stop) apply manifests\nodes.pp --onetime --verbose --no-daemonize --no-usecacheonfailure --detailed-exitcodes --no-splay --show_diff --modulepath=modules`;r10k_modules --hiera_config=hiera.yaml --logdest $logdir\$log_file
     [int]$puppet_exit = $LastExitCode
 
-    if ($run_to_success -eq 'true') {
-      if (($puppet_exit -ne 0) -and ($puppet_exit -ne 2)) {
-        if ($last_exit -eq 0) {
-          Write-Log -message  ('{0} :: Puppet apply failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-          Remove-Item $lock -ErrorAction SilentlyContinue
-          # If the Puppet run fails send logs to papertrail
-          # Nxlog watches $fail_dir for files names *-puppetrun.log
-          Move-Item $logdir\$log_file -Destination $fail_dir
-          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-        }
-        elseif ($last_exit -ne 0) {
-          Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-          Remove-Item $lock
-          Move-Item $logdir\$log_file -Destination $fail_dir
-          Write-Log -message  ('{0} :: Puppet apply failed. Waiting 10 minutes beofre Reboot' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-          sleep 600
-          shutdown @('-r', '-t', '0', '-c', 'Reboot; Puppet apply failed', '-f', '-d', '4:5')
-        }
-      }
-      elseif (($puppet_exit -match 0) -or ($puppet_exit -match 2)) {
-        Write-Log -message  ('{0} :: Puppet apply successful' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$puppet_exit"
-        Remove-Item -path $lock
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Mozilla\ronin_puppet -name inmutable -value true
-      }
-      else {
-        Write-Log -message  ('{0} :: Unable to detrimine state post Puppet apply' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        Set-ItemProperty -Path "$ronninKey" -name "last_exit" -value "$last_exit"
-        Move-Item $logdir\$log_file -Destination $fail_dir
-        Remove-Item -path $lock
-        shutdown @('-r', '-t', '600', '-c', 'Reboot; Unveriable state', '-f', '-d', '4:5')
-      }
-    }
+    Complete-AzurePuppetRun -PuppetExit $puppet_exit -WorkerPoolId $worker_pool_id `
+      -RoninKey $roninKey -LogPath "$logdir\$log_file" -FailDir $fail_dir -LockPath $lock
+
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -463,12 +472,13 @@ function Test-LegacyYDriveRequired {
 
   return ($WorkerPoolId -match '(^|/)win10-64-2009($|-)' -or
     $WorkerPoolId -match '(^|/)win11-64-2009($|-)' -or
-    $WorkerPoolId -match '(^|/)b-win20(22|25)($|-)')
+    $WorkerPoolId -match '(^|/)b-win2022($|-)')
 }
 
 function Set-LegacyYDriveMapping {
   param (
-    [string] $WorkerPoolId
+    [string] $WorkerPoolId,
+    [ValidateSet('C:', 'D:')][string] $TaskDrive = 'D:'
   )
 
   begin {
@@ -480,9 +490,9 @@ function Set-LegacyYDriveMapping {
       return
     }
 
-    if ((Test-VolumeExists -DriveLetter 'D') -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
-      subst Y: D:\
-      Write-Log -message ('{0} :: mapped Y: to D: for legacy worker pool: {1}' -f $($MyInvocation.MyCommand.Name), $WorkerPoolId) -severity 'INFO'
+    if ((Test-VolumeExists -DriveLetter $TaskDrive.TrimEnd(':')) -and (-not (Test-VolumeExists -DriveLetter 'Y'))) {
+      subst Y: "$TaskDrive\"
+      Write-Log -message ('{0} :: mapped Y: to {1} for legacy worker pool: {2}' -f $($MyInvocation.MyCommand.Name), $TaskDrive, $WorkerPoolId) -severity 'INFO'
     }
   }
   end {
@@ -492,8 +502,13 @@ function Set-LegacyYDriveMapping {
 
 function Test-AzureNvmeTemporaryDriveRequired {
   param (
-    [string] $vmSize
+    [string] $vmSize,
+    [string] $TaskDrive = 'D:'
   )
+
+  if ($TaskDrive -eq 'C:') {
+    return $false
+  }
 
   return @(
     'Standard_D32ads_v7'
@@ -505,6 +520,7 @@ function Test-AzureNvmeTemporaryDriveRequired {
 function Ensure-AzureNvmeTemporaryDrive {
   param (
     [string] $vmSize,
+    [string] $TaskDrive = 'D:',
     [string] $scriptPath = "$env:programdata\PuppetLabs\ronin\configure_nvme_disk.ps1"
   )
 
@@ -512,7 +528,7 @@ function Ensure-AzureNvmeTemporaryDrive {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if (-not (Test-AzureNvmeTemporaryDriveRequired -vmSize $vmSize)) {
+    if (-not (Test-AzureNvmeTemporaryDriveRequired -vmSize $vmSize -TaskDrive $TaskDrive)) {
       Write-Log -message ('{0} :: skipped for VM size {1}' -f $($MyInvocation.MyCommand.Name), $vmSize) -severity 'DEBUG'
       return
     }
@@ -568,12 +584,28 @@ If (($hand_off_ready -eq 'yes') -and ($managed_by -eq 'taskcluster')) {
   Set-AzVMName
   $vm_size = (Get-AzureInstanceMetadata -ApiVersion "2021-12-13" -Endpoint "instance" -Query "compute").vmSize
   ## NVMe v7 workers must create D: from the unused local disk before Puppet reads drive facts.
-  Ensure-AzureNvmeTemporaryDrive -vmSize $vm_size
+  $task_drive = (Get-ItemProperty -Path $ronin_key -Name task_drive -ErrorAction SilentlyContinue).task_drive
+  if ([string]::IsNullOrEmpty($task_drive)) { $task_drive = 'D:' }
+  $work_volume = (Get-ItemProperty -Path $ronin_key -Name work_volume -ErrorAction SilentlyContinue).work_volume
+  if ($work_volume -ne 1) {
+    Ensure-AzureNvmeTemporaryDrive -vmSize $vm_size -TaskDrive $task_drive
+  }
   ## Clean the D:\task_* & C:\Users\task_* directories, and any old log under C:\logs\old
   Run-MaintainSystem
-  Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id
+  Set-LegacyYDriveMapping -WorkerPoolId $worker_pool_id -TaskDrive $task_drive
   if (((Get-ItemProperty "HKLM:\SOFTWARE\Mozilla\ronin_puppet").inmutable) -eq 'false') {
     Puppet-Run
+  }
+  Assert-AzureGpuReady -WorkerPoolId $worker_pool_id
+  if ($work_volume -eq 1) {
+    # Set up task storage after Puppet and before taking tasks.
+    $ErrorActionPreference = 'Stop'
+    try {
+      & "$env:programdata\PuppetLabs\ronin\configure_work_volume.ps1"
+    } catch {
+      Write-Log -message "Task storage setup failed: $_" -severity 'ERROR'
+      throw
+    }
   }
   ## Start worker runner, which starts generic-worker
   Start-WorkerRunner

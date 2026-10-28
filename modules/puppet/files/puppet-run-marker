@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Publish/check the root-only, same-boot Puppet completion signal."""
+
+import argparse
+import os
+import secrets
+import stat
+import sys
+
+RUNTIME_ROOT = "/run"
+DIRECTORY = "puppet"
+MARKER = "run_done"
+BOOT_ID = "/proc/sys/kernel/random/boot_id"
+
+
+def trusted(info, directory=False):
+    kind = stat.S_ISDIR if directory else stat.S_ISREG
+    return (kind(info.st_mode) and info.st_uid == 0 and info.st_gid == 0
+            and not info.st_mode & 0o022
+            and (directory or info.st_nlink == 1))
+
+
+def open_directory(parent, name):
+    fd = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+    if not trusted(os.fstat(fd), directory=True):
+        os.close(fd)
+        raise OSError("unsafe Puppet marker directory")
+    return fd
+
+
+def boot_id():
+    with open(BOOT_ID, encoding="ascii") as source:
+        value = source.read(128).strip()
+    if len(value) != 36 or any(c not in "0123456789abcdef-" for c in value):
+        raise ValueError("invalid boot ID")
+    return (value + "\n").encode("ascii")
+
+
+def marker_operation(publish=False):
+    if publish and os.geteuid() != 0:
+        raise PermissionError("only root can publish Puppet completion")
+    expected = boot_id()
+    root_fd = open_directory(None, RUNTIME_ROOT)
+    try:
+        if publish:
+            try:
+                os.mkdir(DIRECTORY, 0o755, dir_fd=root_fd)
+            except FileExistsError:
+                pass
+        directory_fd = open_directory(root_fd, DIRECTORY)
+        try:
+            if not publish:
+                fd = os.open(MARKER, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                             dir_fd=directory_fd)
+                try:
+                    return trusted(os.fstat(fd)) and os.read(fd, 128) == expected
+                finally:
+                    os.close(fd)
+
+            # Ensure the worker can traverse a safely owned directory even if
+            # root's umask made the newly created directory more restrictive.
+            os.fchmod(directory_fd, 0o755)
+            # Create a new inode, then replace the name without following an
+            # existing symlink or writing through an existing hard link.
+            temporary = ".run_done-" + secrets.token_hex(16)
+            fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                         0o600, dir_fd=directory_fd)
+            try:
+                with os.fdopen(fd, "wb") as output:
+                    os.fchown(output.fileno(), 0, 0)
+                    os.fchmod(output.fileno(), 0o644)
+                    output.write(expected)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.replace(temporary, MARKER, src_dir_fd=directory_fd,
+                           dst_dir_fd=directory_fd)
+            finally:
+                try:
+                    os.unlink(temporary, dir_fd=directory_fd)
+                except FileNotFoundError:
+                    pass
+            return True
+        finally:
+            os.close(directory_fd)
+    finally:
+        os.close(root_fd)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=("check", "publish"))
+    args = parser.parse_args()
+    try:
+        return 0 if marker_operation(publish=args.action == "publish") else 1
+    except (OSError, ValueError) as error:
+        if args.action == "publish":
+            print("Cannot publish Puppet completion: {}".format(error), file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
