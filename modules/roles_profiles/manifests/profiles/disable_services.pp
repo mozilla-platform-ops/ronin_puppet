@@ -70,6 +70,7 @@ class roles_profiles::profiles::disable_services {
               apx_uninstall => $apx_uninstall,
             }
             include win_scheduled_tasks::kill_local_clipboard
+            include win_disable_services::disable_onedrive_setup
             ## Disable Unnecessary tasks
             ## Taken from https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool
             ## Bug 1913499 https://bugzilla.mozilla.org/show_bug.cgi?id=1913499

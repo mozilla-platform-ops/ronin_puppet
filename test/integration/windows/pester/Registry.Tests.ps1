@@ -111,6 +111,22 @@ Describe 'Registry' -Tag IntegrationTests {
             Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name SecurityHealth -ErrorAction SilentlyContinue |
                 Should-BeNull
         }
+        # Bug 2086189: OneDriveSetup /thfirstsetup uses a full CPU core in each task.
+        It 'does not start OneDriveSetup for new users' -Skip:(-not ($Tester -and $Role -like '*azure')) {
+            # reg.exe writes to stderr when a value is absent. Under Windows PowerShell 5.1
+            # that is a terminating error when ErrorActionPreference is Stop.
+            $ErrorActionPreference = 'Continue'
+            & reg.exe load 'HKU\PesterDefaultUser' "$env:SystemDrive\Users\Default\NTUSER.DAT" *> $null
+            $LASTEXITCODE | Should-Be 0
+            try {
+                foreach ($name in @('OneDriveSetup', 'OneDrive')) {
+                    & reg.exe query 'HKU\PesterDefaultUser\Software\Microsoft\Windows\CurrentVersion\Run' /v $name *> $null
+                    $LASTEXITCODE | Should-NotBe 0
+                }
+            } finally {
+                & reg.exe unload 'HKU\PesterDefaultUser' *> $null
+            }
+        }
     }
 
     Context 'Task storage' {
