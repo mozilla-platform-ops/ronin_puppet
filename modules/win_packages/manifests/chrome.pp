@@ -3,6 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::chrome {
+  require win_shared::win_ronin_dirs
+
   ## Keep Chrome updates under provisioning and boot-time maintenance.
   windows_firewall::exception { 'googleupdate':
     ensure       => present,
@@ -71,6 +73,7 @@ class win_packages::chrome {
 
   file { $chrome_script:
     content => file('win_packages/Update-GoogleChrome.ps1'),
+    require => Class['win_shared::win_ronin_dirs'],
   }
 
   ## -CheckOnly exits 0 when Chrome is already current, so a deploy that is up to

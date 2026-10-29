@@ -10,16 +10,17 @@ $logger = $ast.Find({ param($node) $node -is [Management.Automation.Language.Fun
 # Keep production control flow and helpers; replace Windows Event Log output and script exit.
 $scriptText = (Get-Content $source -Raw).Replace($logger.Extent.Text, 'function Write-Log { param($message, $severity) $state.messages += $message }')
 $scriptText = $scriptText -replace '\bexit ([01])\b', 'throw "CHROME_TEST_EXIT:$1"'
-$updater = [scriptblock]::Create($scriptText)
 $scratch = Join-Path ([IO.Path]::GetTempPath()) ('chrome-update-' + [guid]::NewGuid())
 New-Item -ItemType Directory -Path $scratch | Out-Null
+$updater = Join-Path $scratch 'Update-GoogleChrome.ps1'
+Set-Content -LiteralPath $updater -Value $scriptText
 $oldTemp = $env:TEMP; $oldDrive = $env:systemdrive
 $env:TEMP = $scratch; $env:systemdrive = $scratch
 
 function Reset-Case {
     $script:state = @{
         installed = '154.0.0.0'; last = '"old"|100'; head = '"new"'; downloaded = '"new"'
-        headFails = $false; failures = 0; getCount = 0; headCount = 0; installs = 0
+        headFails = $false; downloadHeadersMissing = $false; failures = 0; getCount = 0; headCount = 0; installs = 0
         installerExit = 0; afterInstall = '155.0.0.0'; sleeps = @(); messages = @()
     }
 }
@@ -59,9 +60,13 @@ function Invoke-WebRequest {
         return @{ Headers = @{ ETag = $state.head; 'Content-Length' = '100'; 'Last-Modified' = [guid]::NewGuid().ToString() } }
     }
     if (-not $PassThru) { throw 'Download response metadata was discarded' }
+    if ([IO.Path]::GetDirectoryName($OutFile) -ne $scratch -or [IO.Path]::GetFileName($OutFile) -notmatch '^googlechrome-[0-9a-f-]{36}\.msi$') {
+        throw 'MSI is not staged beside the protected updater with a unique filename'
+    }
     $state.getCount++
     [IO.File]::WriteAllText($OutFile, 'fake MSI')
     if ($state.getCount -le $state.failures) { throw 'Google download unavailable' }
+    if ($state.downloadHeadersMissing) { return @{ Headers = $null } }
     return @{ Headers = @{ ETag = $state.downloaded; 'Content-Length' = '100' } }
 }
 function Start-Process {
@@ -83,7 +88,7 @@ function Invoke-Case {
         $actual = [int]$Matches[1]
     }
     if ($actual -ne $Expected) { throw "Expected exit $Expected, got $actual" }
-    if (Microsoft.PowerShell.Management\Test-Path (Join-Path $scratch 'googlechromestandaloneenterprise64.msi')) {
+    if (@(Microsoft.PowerShell.Management\Get-ChildItem -LiteralPath $scratch -Filter 'googlechrome-*.msi').Count) {
         throw 'MSI was not cleaned up'
     }
 }
@@ -145,6 +150,13 @@ try {
     if ($state.last -ne '"old"|100') { throw 'Missing GET fingerprint was replaced with the earlier HEAD' }
 
     Reset-Case
+    $state.downloadHeadersMissing = $true
+    Invoke-Case 0
+    if ($state.headCount -ne 1 -or $state.last -ne '"old"|100') {
+        throw 'Missing download headers triggered a new HEAD and stamped unrelated metadata'
+    }
+
+    Reset-Case
     $state.downloaded = '"newer"'; $state.installerExit = 3010
     Invoke-Case 0
     if ($state.last -ne '"newer"|100') { throw 'Recorded pre-download HEAD instead of installed GET fingerprint' }
@@ -153,6 +165,15 @@ try {
     $state.head = $null; $state.last = '|100'
     Invoke-Case 0
     if ($state.getCount) { throw 'Content length alone was accepted as a release fingerprint' }
+
+    # Exercise the real logger: diagnostics must not turn an update into a Puppet failure.
+    & {
+        $WarningPreference = 'SilentlyContinue'
+        function New-EventLog { param($LogName, $Source) throw 'fixture Event Log unavailable' }
+        function Write-EventLog { param($LogName, $Source, $EntryType, $Category, $EventID, $Message) throw 'fixture Event Log full' }
+        . ([scriptblock]::Create($logger.Extent.Text))
+        Write-Log -message 'Chrome test diagnostic when Event Log is unavailable'
+    }
 
     # Both production callers must use the shared updater with no Chrome Chocolatey path.
     $manifest = Get-Content (Join-Path $repo 'modules/win_packages/manifests/chrome.pp') -Raw

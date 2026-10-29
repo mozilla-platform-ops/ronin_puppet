@@ -41,16 +41,20 @@ function Write-Log {
         [string] $source = 'MaintainSystem',
         [string] $logName = 'Application'
     )
-    if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
-        New-EventLog -LogName $logName -Source $source
+    try {
+        if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
+            New-EventLog -LogName $logName -Source $source
+        }
+        switch ($severity) {
+            'DEBUG' { $entryType = 'SuccessAudit'; $eventId = 2; break }
+            'WARN' { $entryType = 'Warning'; $eventId = 3; break }
+            'ERROR' { $entryType = 'Error'; $eventId = 4; break }
+            default { $entryType = 'Information'; $eventId = 1; break }
+        }
+        Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
+    } catch {
+        Write-Warning ('Chrome event logging failed: {0}. {1}' -f $_.Exception.Message, $message)
     }
-    switch ($severity) {
-        'DEBUG' { $entryType = 'SuccessAudit'; $eventId = 2; break }
-        'WARN' { $entryType = 'Warning'; $eventId = 3; break }
-        'ERROR' { $entryType = 'Error'; $eventId = 4; break }
-        default { $entryType = 'Information'; $eventId = 1; break }
-    }
-    Write-EventLog -LogName $logName -Source $source -EntryType $entryType -Category 0 -EventID $eventId -Message $message
     if ([Environment]::UserInteractive) {
         Write-Host -object $message
     }
@@ -76,7 +80,7 @@ function Get-InstalledChromeVersion {
 
 function Get-MsiFingerprint {
     param ($Headers)
-    if (-not $Headers) {
+    if (-not $PSBoundParameters.ContainsKey('Headers')) {
         try {
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
             $head = Invoke-WebRequest -Uri $msi_url -Method Head -UseBasicParsing -TimeoutSec 30
@@ -85,6 +89,7 @@ function Get-MsiFingerprint {
             return $null
         }
     }
+    if (-not $Headers) { return $null }
     $etag = @($Headers['ETag'])[0]
     $len = @($Headers['Content-Length'])[0]
     # Length alone cannot distinguish different releases of the same size.
@@ -117,7 +122,8 @@ if (-not $fingerprint -and $installed) {
     exit 0
 }
 
-$msi = Join-Path $env:TEMP 'googlechromestandaloneenterprise64.msi'
+# The script directory inherits Ronin's SYSTEM/Administrators write permissions.
+$msi = Join-Path $PSScriptRoot ('googlechrome-{0}.msi' -f [guid]::NewGuid())
 $log_dir = "$env:systemdrive\logs"
 ## msiexec returns 1622 if it cannot open its log file, so make sure the dir exists.
 if (-not (Test-Path $log_dir)) { New-Item -Path $log_dir -ItemType Directory -Force | Out-Null }
