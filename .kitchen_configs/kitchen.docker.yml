@@ -52,6 +52,8 @@ provisioner:
           group: cltbld
           user_homedir: '/home/cltbld'
           password: 'vnc4free'
+        linux_gui_wayland:
+          headless_connector: 'HDMI-A-1'
         cltbld_user:
           password: 'abc123'
           salt: 'h3hhahchahah'

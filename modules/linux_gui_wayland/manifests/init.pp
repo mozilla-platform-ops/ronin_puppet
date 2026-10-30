@@ -6,12 +6,27 @@ class linux_gui_wayland (
   String $builder_user,
   String $builder_group,
   String $builder_home,
+  Optional[Pattern[/\A(?:HDMI-A|DP|DVI-D)-[1-9][0-9]*\z/]] $headless_connector = undef,
 ) {
   class { 'linux_gui':
     builder_user  => $builder_user,
     builder_group => $builder_group,
     builder_home  => $builder_home,
     session_type  => 'wayland',
+  }
+
+  class { 'linux_gui_wayland::rdp':
+    builder_user  => $builder_user,
+    builder_group => $builder_group,
+    builder_home  => $builder_home,
+  }
+  Class['linux_gui_wayland::rdp'] -> Service['gdm3']
+
+  if $headless_connector {
+    class { 'linux_gui_wayland::headless':
+      connector => $headless_connector,
+    }
+    Class['linux_gui_wayland::headless'] -> Service['gdm3']
   }
 
   # Select the worker session without replacing other AccountsService settings.

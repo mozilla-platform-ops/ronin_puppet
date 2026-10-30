@@ -10,10 +10,11 @@ class roles_profiles::profiles::gui_wayland {
         class {
           'linux_gui_wayland':
             # TODO: use hiera data
-            builder_user  => 'cltbld',
-            builder_group => 'cltbld',
-            builder_home  => '/home/cltbld',
-            require       => [Class['linux_packages::ubuntu_desktop'], User['cltbld']];
+            builder_user       => 'cltbld',
+            builder_group      => 'cltbld',
+            builder_home       => '/home/cltbld',
+            headless_connector => lookup('linux_gui_wayland.headless_connector', Optional[String], 'first', undef),
+            require            => [Class['linux_packages::ubuntu_desktop'], User['cltbld']];
         }
       } else {
         fail("${$facts['os']['release']['full']} not supported")

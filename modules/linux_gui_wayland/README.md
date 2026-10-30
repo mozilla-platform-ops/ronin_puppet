@@ -11,34 +11,64 @@ at 1600x1200, approximately 60 Hz, scale 1 before starting generic-worker. Other
 outputs are disabled for this session. The selected mode must be advertised by
 the kernel's DRM connector; Xorg modelines do not configure Wayland.
 
-## Headless hardware status
+## Headless Intel display
 
-These workers have no attached monitor or EDID adapter. Headless display
-bringup is still pending validation on the physical canary; the session and
-launcher changes alone do not make this role ready for those hosts.
+These workers have no attached monitor or EDID adapter. On `ms001`, an Intel
+P580 HDMI-A-1 output successfully completed a real 1600x1200, 60 Hz modeset
+using the repository EDID through the kernel's runtime override interfaces.
+The Matrox management VGA output was left connected during that experiment.
+Native GNOME Wayland, Intel P580 OpenGL rendering, RDP authentication and screen
+sharing, and automatic desktop/RDP recovery after reboot are verified on ms001.
+Full worker-role convergence and a real Talos task remain outstanding.
 
-The repository already contains `modules/linux_gui/files/edid.bin`, a valid
-128-byte EDID with a preferred 1600x1200 mode at 60 Hz. A candidate approach is
-to install it as kernel firmware, include it in the initramfs, and configure
-`drm.edid_firmware=CONNECTOR:edid/ronin-1600x1200.bin` together with
-`video=CONNECTOR:1600x1200@60e`. Linux supports
-[EDID firmware overrides](https://docs.kernel.org/admin-guide/edid.html) and
-[forcing a DRM output on](https://docs.kernel.org/fb/modedb.html).
+The role data sets `linux_gui_wayland.headless_connector` to `HDMI-A-1`.
+`ronin-wayland-display.service` loads the EDID and forces that Intel output on
+before GDM starts. It finds the Intel PCI device rather than assuming a DRM
+card number. A GDM dependency prevents login if headless setup fails. A udev
+rule marks Intel as Mutter's preferred primary GPU. No GRUB or initramfs
+changes are required.
 
-This is a proposed hardware experiment, not configuration currently installed
-by this role. Identify an output belonging to the Intel GPU first; do not assume
-that `card0`, a BMC VGA output, or a particular connector name is correct:
+The launcher selects the configured connector explicitly and disables other
+outputs for the worker session. The management VGA output therefore may not
+show the worker desktop; use RDP to view the test session.
+
+Inspect the hardware and startup service with:
 
 ```bash
 ls -l /sys/class/drm/
 lspci -nn | grep -Ei 'VGA|Display'
+systemctl status ronin-wayland-display
+journalctl -b -u ronin-wayland-display --no-pager
 ```
 
-Confirm that the Intel driver can actually activate the selected output without
-a physical sink before automating boot parameters. Successful firmware loading
-alone does not prove the output can be used by GNOME. If the GPU exposes no
-usable physical connector, a different compositor/virtual-output approach will
-need evaluation, including its effects on Talos rendering and presentation.
+## RDP desktop sharing
+
+The Wayland role uses GNOME Remote Desktop to share the existing `cltbld`
+session. RDP is accepted for this rollout; the role no longer installs the X11
+VNC profile. The helper runs after graphical autologin, sets mirror-primary
+mode at port 3389, and starts the user desktop-sharing service. It does not
+configure GNOME's system remote-login service.
+
+Each host generates its own username/password file and self-signed TLS
+certificate in `/home/cltbld/.config/ronin-wayland-rdp/` (directory mode 0700,
+private files mode 0600). Credentials persist across logins and can be retrieved
+by an operator with sudo on the host. Passwords are never printed by setup or
+included in process arguments. Desktop sharing stores them in the user's GNOME
+keyring. A user-service drop-in initializes and unlocks the login keyring with the
+per-host password supplied through stdin. Setup preserves an existing differently
+protected keyring and reports failure if it cannot unlock it.
+
+An actual FreeRDP client authenticated and captured the GNOME desktop after
+reboot. Use an RDP client, optionally through an SSH tunnel:
+
+```bash
+ssh -L 13389:localhost:3389 -l relops t-linux64-ms-001.test.releng.mdc1.mozilla.com
+# Connect the RDP client to localhost:13389.
+```
+
+Check the generated credentials locally on the host with sudo, and verify the
+certificate fingerprint before accepting it in the client. Disconnect the RDP
+viewer before performance measurements.
 
 Display setup uses [Mutter 46's DisplayConfig interface](https://github.com/GNOME/mutter/blob/46.0/data/dbus-interfaces/org.gnome.Mutter.DisplayConfig.xml).
 Docker validates configuration and startup refusal, but cannot validate the

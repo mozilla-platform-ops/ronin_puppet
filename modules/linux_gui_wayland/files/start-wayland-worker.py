@@ -5,22 +5,28 @@
 
 """Configure the physical GNOME Wayland display before starting a Talos worker.
 
-Uses Mutter 46's org.gnome.Mutter.DisplayConfig interface. The monitor or EDID
-adapter must advertise 1600x1200 at 60 Hz; Xorg modelines do not configure KMS.
+Uses Mutter 46's org.gnome.Mutter.DisplayConfig interface. DRM must advertise
+1600x1200 at 60 Hz, from a monitor or the headless service's EDID override.
 """
 
 import os
 import sys
 import time
+from pathlib import Path
 
 
-def select_display(monitors, logical_monitors):
+def select_display(monitors, logical_monitors, requested_connector=None):
     """Prefer the primary output, requiring an unscaled, progressive 60 Hz mode."""
     primary = {
         spec[0] for logical in logical_monitors if logical[4] for spec in logical[5]
     }
     candidates = []
     for spec, modes, _properties in monitors:
+        # Mutter names a DRM HDMI-A-1 connector HDMI-1 on GNOME 46.
+        if requested_connector is not None and spec[0].replace(
+            "HDMI-A-", "HDMI-", 1
+        ) != requested_connector.replace("HDMI-A-", "HDMI-", 1):
+            continue
         for mode in modes:
             mode_id, width, height, rate, _scale, scales, properties = mode
             if (
@@ -53,7 +59,7 @@ def display_is_ready(monitors, logical_monitors, connector, mode_id):
     )
 
 
-def configure_display():
+def configure_display(requested_connector=None):
     # GI is provided by Ubuntu's python3-gi package; use the system interpreter.
     from gi.repository import Gio, GLib
 
@@ -79,7 +85,7 @@ def configure_display():
     while time.monotonic() < deadline:
         try:
             serial, monitors, logical, _properties = call("GetCurrentState")
-            connector, mode_id = select_display(monitors, logical)
+            connector, mode_id = select_display(monitors, logical, requested_connector)
             if display_is_ready(monitors, logical, connector, mode_id):
                 print(
                     f"Wayland display ready: {connector} {mode_id}, scale 1", flush=True
@@ -103,7 +109,11 @@ def main():
         "WAYLAND_DISPLAY"
     ):
         raise RuntimeError("Worker requires a Wayland session with WAYLAND_DISPLAY set")
-    configure_display()
+    config = Path("/etc/ronin-wayland-connector")
+    requested_connector = config.read_text().strip() if config.exists() else None
+    if requested_connector == "":
+        raise RuntimeError("Configured Wayland connector is empty")
+    configure_display(requested_connector)
     os.environ["MOZ_ENABLE_WAYLAND"] = "1"
     os.execv(
         "/usr/local/bin/run-start-worker-wrapper.sh", ["run-start-worker-wrapper.sh"]
