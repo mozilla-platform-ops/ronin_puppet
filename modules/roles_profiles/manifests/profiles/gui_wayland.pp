@@ -13,7 +13,7 @@ class roles_profiles::profiles::gui_wayland {
             builder_user       => 'cltbld',
             builder_group      => 'cltbld',
             builder_home       => '/home/cltbld',
-            headless_connector => lookup('linux_gui_wayland.headless_connector', Optional[String], 'first', undef),
+            headless_connector => 'HDMI-A-1',
             require            => [Class['linux_packages::ubuntu_desktop'], User['cltbld']];
         }
       } else {

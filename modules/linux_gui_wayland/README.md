@@ -24,7 +24,7 @@ Native GNOME Wayland, Intel P580 OpenGL rendering, RDP authentication and screen
 sharing, and automatic desktop/RDP recovery after reboot are verified on ms001.
 Full worker-role convergence and a real Talos task remain outstanding.
 
-The role data sets `linux_gui_wayland.headless_connector` to `HDMI-A-1`.
+The `gui_wayland` profile passes `headless_connector => 'HDMI-A-1'` directly.
 `ronin-wayland-display.service` loads the EDID and forces that Intel output on
 before GDM starts. It finds the Intel PCI device rather than assuming a DRM
 card number. A GDM dependency prevents login if headless setup fails. A udev
