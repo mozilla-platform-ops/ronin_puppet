@@ -52,6 +52,11 @@ VNC profile. The helper runs after graphical autologin, sets mirror-primary
 mode at port 3389, and starts the user desktop-sharing service. It does not
 configure GNOME's system remote-login service.
 
+**RDP is enabled by default.** It starts after `cltbld` automatically logs in on
+each boot and keeps listening on TCP port 3389 even when no client is connected.
+Disconnecting a client does not stop the daemon. Unlike the X11 VNC service,
+there is no manual start step.
+
 Setup disables session idle blanking and idle dimming. Disabling screen locking
 alone is insufficient: GNOME's idle screen shield can still reject RDP sessions
 with `Session creation inhibited` after five minutes without input.
@@ -65,17 +70,31 @@ keyring. A user-service drop-in initializes and unlocks the login keyring with t
 per-host password supplied through stdin. Setup preserves an existing differently
 protected keyring and reports failure if it cannot unlock it.
 
+**Retrieve credentials:** the RDP username is `cltbld`; its password is randomly
+generated per host and is separate from SSH, Unix login, and shared VNC
+credentials. Use your provisioned management account in place of `YOUR_USERNAME`
+(for example, `aerickson`):
+
+```bash
+ssh YOUR_USERNAME@t-linux64-ms-001.test.releng.mdc1.mozilla.com \
+  'sudo cat /home/cltbld/.config/ronin-wayland-rdp/credentials.json'
+```
+
+Use the JSON `username` and `password` fields in the RDP client. Credentials stay
+the same across reboots.
+
 An actual FreeRDP client authenticated and captured the GNOME desktop after
 reboot. Use an RDP client, optionally through an SSH tunnel:
 
 ```bash
-ssh -L 13389:localhost:3389 -l relops t-linux64-ms-001.test.releng.mdc1.mozilla.com
+ssh -L 13389:localhost:3389 YOUR_USERNAME@t-linux64-ms-001.test.releng.mdc1.mozilla.com
 # Connect the RDP client to localhost:13389.
 ```
 
-Check the generated credentials locally on the host with sudo, and verify the
-certificate fingerprint before accepting it in the client. Disconnect the RDP
-viewer before performance measurements.
+Verify the certificate fingerprint before accepting it in the client. Disconnect
+the RDP viewer before performance measurements; minimizing its window can leave
+the connection active. The performance impact of the running, disconnected
+daemon has not been benchmarked.
 
 Display setup uses [Mutter 46's DisplayConfig interface](https://github.com/GNOME/mutter/blob/46.0/data/dbus-interfaces/org.gnome.Mutter.DisplayConfig.xml).
 Docker validates configuration and startup refusal, but cannot validate the
