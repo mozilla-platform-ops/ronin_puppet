@@ -88,14 +88,6 @@ elsif os.family == 'debian' && os.release.start_with?('24.04')
   end
 
   # files
-  describe file('/etc/X11/Xwrapper.config') do
-    it { should exist }
-  end
-
-  describe file('/etc/X11/edid.bin') do
-    it { should exist }
-  end
-
   describe file('/etc/xdg/autostart/org.gnome.DejaDup.Monitor.desktop') do
     it { should exist }
   end
@@ -108,15 +100,15 @@ elsif os.family == 'debian' && os.release.start_with?('24.04')
     it { should exist }
   end
 
-  describe file('/usr/share/X11/xorg.conf.d/99-serverflags.conf') do
-    it { should exist }
-  end
+  unless input('wayland', value: false)
+    ['/etc/X11/Xwrapper.config', '/etc/X11/edid.bin',
+     '/usr/share/X11/xorg.conf.d/99-serverflags.conf',
+     '/usr/share/X11/xorg.conf.d/50-display.conf'].each do |path|
+      describe file(path) do
+        it { should exist }
+      end
+    end
 
-  describe file('/usr/share/X11/xorg.conf.d/50-display.conf') do
-    it { should exist }
-  end
-
-  if ENV['MOZILLA_WAYLAND'] != '1'
     describe file('/etc/X11/xorg.conf.d/20-intel-primary.conf') do
       it { should exist }
       its('content') { should match(/Identifier "Intel P580"/) }
