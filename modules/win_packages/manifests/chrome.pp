@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class win_packages::chrome {
-  $google_chrome_version = lookup('windows.googlechrome.version')
+  require win_shared::win_ronin_dirs
 
-  ## Block googleupdate.exe to prevent installing an updating version of chrome outside of chocolatey
+  ## Keep Chrome updates under provisioning and boot-time maintenance.
   windows_firewall::exception { 'googleupdate':
     ensure       => present,
     direction    => 'out',
@@ -63,17 +63,35 @@ class win_packages::chrome {
     data   => '0',
   }
 
-  ## Install the latest version of chrome via chocolatey
-  package { 'googlechrome':
-    ensure   => $google_chrome_version,
-    provider => 'chocolatey',
+  ## RELOPS-2575: install and update Chrome straight from Google, not through the
+  ## public chocolatey community feed. The feed rate-limits per IP and the whole
+  ## MDC1 fleet shares one egress IP, so a 429 used to fail this resource ->
+  ## puppet exit 4/6 -> Set-PXE -> re-image -> same request again. maintainsystem
+  ## runs this same script on every boot, before worker-runner starts, so Chrome
+  ## is checked before the node claims a task.
+  $chrome_script = "${facts['custom_win_roninprogramdata']}\\Update-GoogleChrome.ps1"
+
+  file { $chrome_script:
+    content => file('win_packages/Update-GoogleChrome.ps1'),
+    require => Class['win_shared::win_ronin_dirs'],
+  }
+
+  ## -CheckOnly exits 0 when Chrome is already current, so a deploy that is up to
+  ## date skips the 167 MB download. The check lives in the script, not here.
+  exec { 'google_chrome_current':
+    command   => "& '${chrome_script}'",
+    unless    => "& '${chrome_script}' -CheckOnly",
+    provider  => powershell,
+    logoutput => true,
+    timeout   => 1800,
+    require   => File[$chrome_script],
   }
 
   ## Disable the google updater service
   exec { 'disable_google_update':
     command  => file('win_packages/disable_google_updater.ps1'),
     provider => powershell,
-    require  => Package['googlechrome'],
+    require  => Exec['google_chrome_current'],
   }
 }
 # Reference https://cloud.google.com/docs/chrome-enterprise/policies for registry settings

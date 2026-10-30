@@ -20,6 +20,10 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
+    - name: Check direct hardware Chrome updates
+      shell: pwsh
+      run: ./test/test_update_google_chrome.ps1
+
     - name: Set up Python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
