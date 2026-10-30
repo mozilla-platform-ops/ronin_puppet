@@ -173,6 +173,12 @@ elsif os.family == 'debian' && os.release.start_with?('24.04')
     its(:stdout) { should eq "" }
   end
 
+  describe file('/etc/NetworkManager/conf.d/unmanaged-devices.conf') do
+    its('content') { should eq "[keyfile]\nunmanaged-devices=interface-name:eno1d1\n" }
+    it { should be_owned_by 'root' }
+    its('mode') { should cmp '0644' }
+  end
+
   # systemd-networkd should be disabled
   describe service('systemd-networkd') do
     it { should_not be_enabled }

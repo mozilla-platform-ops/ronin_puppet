@@ -388,6 +388,23 @@ class linux_gui (
             provider => 'shell',
           }
 
+          # Moonshot's second NIC port has link but no DHCP scope. Ignore it
+          # so NetworkManager does not retry DHCP or delay network-online.
+          file { '/etc/NetworkManager/conf.d/unmanaged-devices.conf':
+            ensure  => file,
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0644',
+            content => "[keyfile]\nunmanaged-devices=interface-name:eno1d1\n",
+          }
+
+          exec { 'reload NetworkManager for unmanaged-devices':
+            command     => '/usr/bin/systemctl reload NetworkManager.service',
+            onlyif      => '/usr/bin/systemctl is-active --quiet NetworkManager.service',
+            subscribe   => File['/etc/NetworkManager/conf.d/unmanaged-devices.conf'],
+            refreshonly => true,
+          }
+
           # ensure ~/.config/systemd/user/ exists
           file { [
               "${builder_home}/.config/systemd",
