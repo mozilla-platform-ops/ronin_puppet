@@ -64,7 +64,9 @@ if os.release.start_with?('24.04')
     end
 
     describe file('/home/cltbld/.config/autostart/gnome-terminal.desktop') do
-      its('content') { should include 'Exec=gnome-terminal -- /usr/local/bin/start-wayland-worker' }
+      its('content') { should match %r{^Exec=/usr/local/bin/start-wayland-worker$} }
+      its('content') { should include 'Path=/home/cltbld' }
+      its('content') { should_not include 'Exec=gnome-terminal' }
     end
 
     describe command('/usr/bin/python3 -c "from gi.repository import Gio, GLib"') do

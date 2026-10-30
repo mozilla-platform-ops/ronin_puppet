@@ -78,6 +78,14 @@ def configure(directory):
     gi.require_version("Secret", "1")
     from gi.repository import Gio, GLib, Secret
 
+    # GNOME's idle screen shield inhibits remote session creation even when
+    # lock-enabled is false. Keep the unattended worker desktop awake.
+    session_settings = Gio.Settings.new("org.gnome.desktop.session")
+    session_settings.set_uint("idle-delay", 0)
+    power_settings = Gio.Settings.new("org.gnome.settings-daemon.plugins.power")
+    power_settings.set_boolean("idle-dim", False)
+    Gio.Settings.sync()
+
     credentials = load_credentials(directory)
 
     certificate = directory / "server.crt"
