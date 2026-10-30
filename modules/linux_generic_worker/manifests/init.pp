@@ -23,6 +23,7 @@ class linux_generic_worker (
   Variant[String, Hash[String, String]] $start_worker_sha256,
   Enum['s3', 'github'] $taskcluster_binary_source = 's3',
   String $taskcluster_host = 'taskcluster',
+  String $desktop_start_command = '/usr/local/bin/run-start-worker-wrapper.sh',
 ) {
   # include httpd
   include shared

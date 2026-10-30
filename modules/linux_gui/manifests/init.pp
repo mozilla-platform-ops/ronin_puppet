@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# for x11, see linux_gui_wayland for wayland
+# Shared desktop setup; linux_gui_wayland selects the Wayland session on 24.04.
 
 # @param builder_user The username of the builder user account.
 # @param builder_group The group name of the builder user account.
@@ -10,8 +10,12 @@
 class linux_gui (
   String $builder_user,
   String $builder_group,
-  String $builder_home
+  String $builder_home,
+  Enum['x11', 'wayland'] $session_type = 'x11',
 ) {
+  if $session_type == 'wayland' and $facts['os']['release']['full'] != '24.04' {
+    fail('Wayland is only supported on Ubuntu 24.04')
+  }
   case $facts['os']['name'] {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
@@ -236,15 +240,19 @@ class linux_gui (
           # Auto-detection of X settings works fine, but it would be
           # better to have all needed settings generated from the template.
           # Special-casing NVidia GPUs for now.
+          if $session_type == 'x11' {
+            file {
+              '/etc/X11/Xwrapper.config':
+                content => template("${module_name}/Xwrapper.config.erb");
+              # notify  => Service['x11'];
+
+              # this is the EDID data from an Extron EDID adapter configured for 1200x1600
+              '/etc/X11/edid.bin':
+                source => "puppet:///modules/${module_name}/edid.bin";
+            }
+          }
+
           file {
-            '/etc/X11/Xwrapper.config':
-              content => template("${module_name}/Xwrapper.config.erb");
-            # notify  => Service['x11'];
-
-            # this is the EDID data from an Extron EDID adapter configured for 1200x1600
-            '/etc/X11/edid.bin':
-              source => "puppet:///modules/${module_name}/edid.bin";
-
             # bug 984944: jockey is gone in 18.04
             # Bug 984944: deja-dup-monitor prevents taking screenshots
             '/etc/xdg/autostart/org.gnome.DejaDup.Monitor.desktop':
@@ -259,27 +267,33 @@ class linux_gui (
             # Bug 1345105 - Do not run periodical update checks and downloads
             '/etc/xdg/autostart/gnome-software-service.desktop':
               source => "puppet:///modules/${module_name}/gnome-software-service.desktop";
+          }
 
-            # from 1804 docker image
-            # # Bug 1638183 - increase xserver maximum client count
-            '/usr/share/X11/xorg.conf.d/99-serverflags.conf':
-              source => "puppet:///modules/${module_name}/99-serverflags.conf";
+          if $session_type == 'x11' {
+            file {
+              # from 1804 docker image
+              # # Bug 1638183 - increase xserver maximum client count
+              '/usr/share/X11/xorg.conf.d/99-serverflags.conf':
+                source => "puppet:///modules/${module_name}/99-serverflags.conf";
 
-            # how resolution is set on 2404 (vs changeresolution service and script)
-            '/usr/share/X11/xorg.conf.d/50-display.conf':
-              source => "puppet:///modules/${module_name}/50-display.conf";
+              # how resolution is set on 2404 (vs changeresolution service and script)
+              '/usr/share/X11/xorg.conf.d/50-display.conf':
+                source => "puppet:///modules/${module_name}/50-display.conf";
 
-            '/etc/X11/xorg.conf.d':
-              ensure => directory,
-              owner  => 'root',
-              group  => 'root',
-              mode   => '0755';
-            '/etc/X11/xorg.conf.d/20-intel-primary.conf':
-              owner  => 'root',
-              group  => 'root',
-              mode   => '0644',
-              source => "puppet:///modules/${module_name}/20-intel-primary.conf";
+              '/etc/X11/xorg.conf.d':
+                ensure => directory,
+                owner  => 'root',
+                group  => 'root',
+                mode   => '0755';
+              '/etc/X11/xorg.conf.d/20-intel-primary.conf':
+                owner  => 'root',
+                group  => 'root',
+                mode   => '0644',
+                source => "puppet:///modules/${module_name}/20-intel-primary.conf";
+            }
+          }
 
+          file {
             # make sure the builder user doesn't have any funny business
             ["${builder_home}/.xsession",
               "${builder_home}/.xinitrc",
@@ -330,7 +344,7 @@ class linux_gui (
             enable => true,
           }
 
-          # force to x11 from wayland
+          # Select the display protocol and log in the worker automatically.
           file { '/etc/gdm3/custom.conf':
             owner   => 'root',
             group   => 'root',
@@ -367,12 +381,9 @@ class linux_gui (
           #
           # TLDR: having two subsystems managing the network is not a good idea... disable systemd-networkd
           #
-          # TODO: copy this to the wayland config (or pull out into a 2404 specific class)
-          # TODO: do this in linux_packages::ubuntu_desktop? strange to do here?
-          #
           exec { 'disable systemd-networkd':
             command  => 'systemctl disable systemd-networkd.service',
-            onlyif   => 'systemctl is-active systemd-networkd.service',
+            onlyif   => 'systemctl is-enabled systemd-networkd.service',
             path     => ['/bin'],
             provider => 'shell',
           }
@@ -410,7 +421,7 @@ class linux_gui (
               command     => 'systemctl restart apparmor.service',
               user        => 'root',
               path        => ['/bin', '/usr/bin', '/sbin', '/usr/sbin'],
-              subscribe   => File['/etc/apparmor.d/firefox-local'],
+              subscribe   => [File['/etc/apparmor.d/firefox-local'], File['/etc/apparmor.d/chrome-local']],
               refreshonly => true,
             }
           }
