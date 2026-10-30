@@ -11,6 +11,9 @@ at 1600x1200, approximately 60 Hz, scale 1 before starting generic-worker. Other
 outputs are disabled for this session. The selected mode must be advertised by
 the kernel's DRM connector; Xorg modelines do not configure Wayland.
 
+The worker launches directly from GNOME autostart without a terminal window.
+View its output with `journalctl -b -t run-start-worker -t generic-worker`.
+
 ## Headless Intel display
 
 These workers have no attached monitor or EDID adapter. On `ms001`, an Intel
@@ -48,6 +51,10 @@ session. RDP is accepted for this rollout; the role no longer installs the X11
 VNC profile. The helper runs after graphical autologin, sets mirror-primary
 mode at port 3389, and starts the user desktop-sharing service. It does not
 configure GNOME's system remote-login service.
+
+Setup disables session idle blanking and idle dimming. Disabling screen locking
+alone is insufficient: GNOME's idle screen shield can still reject RDP sessions
+with `Session creation inhibited` after five minutes without input.
 
 Each host generates its own username/password file and self-signed TLS
 certificate in `/home/cltbld/.config/ronin-wayland-rdp/` (directory mode 0700,
@@ -132,7 +139,7 @@ and a second Puppet converge to check recovery and idempotence.
 
 GDM may fall back to X11 if the hardware or driver cannot support Wayland. In
 that case, or if the required display mode is unavailable, the launcher exits
-without starting the worker. Inspect the autostart terminal and compositor state
+without starting the worker. Inspect the user-session journal and compositor state
 before changing display settings. Remote graphical access through the existing
 X11 VNC service is not a Wayland validation method; use the physical console/KVM.
 

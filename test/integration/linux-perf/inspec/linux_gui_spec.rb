@@ -101,6 +101,10 @@ elsif os.family == 'debian' && os.release.start_with?('24.04')
   end
 
   unless input('wayland', value: false)
+    describe file('/home/cltbld/.config/autostart/gnome-terminal.desktop') do
+      its('content') { should include 'Exec=gnome-terminal -- /usr/local/bin/run-start-worker-wrapper.sh' }
+    end
+
     ['/etc/X11/Xwrapper.config', '/etc/X11/edid.bin',
      '/usr/share/X11/xorg.conf.d/99-serverflags.conf',
      '/usr/share/X11/xorg.conf.d/50-display.conf'].each do |path|

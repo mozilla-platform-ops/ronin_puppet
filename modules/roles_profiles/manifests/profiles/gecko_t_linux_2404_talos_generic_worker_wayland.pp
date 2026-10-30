@@ -93,6 +93,7 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker_wayland 
         user                      => 'cltbld',
         user_homedir              => '/home/cltbld',
         desktop_start_command     => '/usr/local/bin/start-wayland-worker',
+        desktop_start_in_terminal => false,
       }
 
       require linux_generic_worker::check_gw
