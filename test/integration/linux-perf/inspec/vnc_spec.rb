@@ -1,6 +1,6 @@
 require_relative 'spec_helper'
 
-describe package('x11vnc'), :if => os[:family] == 'ubuntu' do
+describe package('x11vnc'), :if => os[:family] == 'ubuntu' && !input('wayland', value: false) do
   it { should be_installed }
 end
 

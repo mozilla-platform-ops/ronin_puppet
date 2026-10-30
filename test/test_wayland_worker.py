@@ -30,6 +30,23 @@ def logical(connector="DP-1", scale=1.0):
 
 
 class DisplaySelectionTests(unittest.TestCase):
+    def test_kernel_hdmi_name_matches_mutter_hdmi_name(self):
+        self.assertEqual(
+            worker.select_display([monitor("HDMI-1")], [], "HDMI-A-1"),
+            ("HDMI-1", "mode"),
+        )
+
+    def test_configured_intel_output_takes_precedence_over_management_vga(self):
+        displays = [monitor("VGA-1"), monitor("HDMI-A-1")]
+        self.assertEqual(
+            worker.select_display(displays, [logical("VGA-1")], "HDMI-A-1"),
+            ("HDMI-A-1", "mode"),
+        )
+
+    def test_missing_configured_output_does_not_fall_back_to_management_vga(self):
+        with self.assertRaises(RuntimeError):
+            worker.select_display([monitor("VGA-1")], [logical("VGA-1")], "HDMI-A-1")
+
     def test_selects_supported_mode_on_primary_monitor(self):
         monitors = [monitor("DP-1"), monitor("DP-2")]
         self.assertEqual(

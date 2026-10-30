@@ -1,0 +1,4 @@
+---
+# Intel P580 output verified headlessly on t-linux64-ms-001.
+linux_gui_wayland:
+  headless_connector: 'HDMI-A-1'
