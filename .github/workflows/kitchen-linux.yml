@@ -23,6 +23,7 @@ jobs:
           - linux-netperf-ubuntu-1804
           - linux-perf-ubuntu-1804
           - linux-perf-ubuntu-2404
+          - linux-perf-wayland-ubuntu-2404
           - bitbar-ubuntu-2204
     env:
       KITCHEN_YAML: .kitchen_configs/kitchen.docker.yml

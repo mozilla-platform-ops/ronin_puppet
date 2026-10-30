@@ -1,0 +1,14 @@
+[Unit]
+Description=Configure headless Intel display for Wayland workers
+Requires=sys-kernel-debug.mount
+After=sys-kernel-debug.mount systemd-udev-trigger.service
+Before=gdm3.service display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/configure-headless-wayland
+RemainAfterExit=yes
+TimeoutStartSec=45
+
+[Install]
+WantedBy=graphical.target
