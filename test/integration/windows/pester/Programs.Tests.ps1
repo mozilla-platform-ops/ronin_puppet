@@ -32,6 +32,13 @@ Describe 'Programs' -Tag IntegrationTests {
                 if ($Server25 -or $Arm) { $state | Should-MatchString '^Disabled' }
                 else { $state | Should-BeString 'Enabled' }
             }
+            if (-not ($Server25 -or $Arm)) {
+                It 'installs .NET 3.5 from the mirrored Features on Demand cab' {
+                    $cab = 'C:\RoninPackages\netfx3\Microsoft-Windows-NetFx3-OnDemand-Package~31bf3856ad364e35~amd64~~.cab'
+                    (Get-FileHash -LiteralPath $cab -Algorithm SHA256).Hash |
+                        Should-BeString '53470DC8BEC1F5343109732AAEB7655DC1988F5ED6967DD129ACDF9693E293BB'
+                }
+            }
             It 'has the expected DirectX SDK configuration' {
                 $path = [Environment]::GetEnvironmentVariable('DXSDK_DIR', 'Machine')
                 if ($Server25 -or $Arm) {

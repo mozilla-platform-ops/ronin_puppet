@@ -4,6 +4,8 @@
 
 class roles_profiles::roles::applicationservices_3_b_osx_1500 {
   include macos_utils::disable_bluetooth_setup
+  include macos_utils::fseventsd_no_log
+  include roles_profiles::profiles::duo
   include roles_profiles::profiles::gui
   include roles_profiles::profiles::hardware
   include roles_profiles::profiles::macos_disable_firewall
