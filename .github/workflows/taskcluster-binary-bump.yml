@@ -72,6 +72,13 @@ jobs:
           summary=""
           changed=0
           for file in "${!ceiling[@]}"; do
+            # Roles on Developer-ID-signed binaries need a hand-signed build per
+            # version, and the signed download path has no fallback, so bumping
+            # only taskcluster_version would wedge the pool. Leave them alone.
+            if grep -qE '^taskcluster_signed_binaries:' "$file"; then
+              echo "skip ${file}: pins signed binaries, bump by hand with new signed sha256s"
+              continue
+            fi
             cur="$(grep -E '^taskcluster_version:' "$file" | head -1 | sed -E "s/^taskcluster_version:[[:space:]]*['\"]?([^'\"]+)['\"]?.*/\1/")"
             cap="${ceiling[$file]}"
             target="$latest"
