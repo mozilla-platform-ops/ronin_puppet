@@ -23,6 +23,17 @@ class linux_talos () {
       package { 'kmod' :
         ensure => latest,
       }
+
+      if $facts['os']['release']['full'] == '24.04' {
+        # USN-8917-1: refresh stale indexes before evaluating the kernel update.
+        exec { 'apt_update_for_linux_generic':
+          command => '/usr/bin/apt-get update',
+          unless  => "/usr/bin/dpkg --compare-versions \"$(/usr/bin/dpkg-query --show --showformat='\${Version}' linux-generic)\" ge 6.8.0-147.147",
+          timeout => 600,
+          before  => Package['linux-generic'],
+        }
+      }
+
       # modprobe fails without this
       package { 'linux-generic' :
         ensure => latest,
