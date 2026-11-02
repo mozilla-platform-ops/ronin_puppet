@@ -76,7 +76,7 @@ Describe 'Registry' -Tag IntegrationTests {
             if ($Arm) {
                 $registry += @{ Path = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters'; Name = 'DisabledComponents'; Value = '255' }
             }
-            if ($Role -in @('win116424h2azure', 'win116425h2azure')) {
+            if ($Role -eq 'win116425h2azure') {
                 $registry += @{ Path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy'; Name = 'LetAppsAccessMicrophone'; Value = '1' }
                 foreach ($name in @('HideEULAPage', 'HideLocalAccountScreen', 'HideOEMRegistrationScreen', 'HideOnlineAccountScreens',
                         'HideWirelessSetupInOOBE', 'NetworkLocation', 'OEMAppId', 'ProtectYourPC', 'SkipMachineOOBE', 'SkipUserOOBE')) {

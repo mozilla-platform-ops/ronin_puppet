@@ -63,7 +63,7 @@ macOS and Windows use separate kitchen configs (`.kitchen_configs/kitchen.circle
 Role → includes Profiles → instantiates Modules → reads Hiera data
 ```
 
-- **Roles** (`modules/roles_profiles/manifests/roles/`): One class per machine type. Each role includes a set of profiles. Roles map directly to Taskcluster worker pool types (e.g., `gecko_t_linux_2404_talos`, `win116424h2azure`).
+- **Roles** (`modules/roles_profiles/manifests/roles/`): One class per machine type. Each role includes a set of profiles. Roles map directly to Taskcluster worker pool types (e.g., `gecko_t_linux_2404_talos`, `win116425h2azure`).
 - **Profiles** (`modules/roles_profiles/manifests/profiles/`): OS-independent interfaces. Profiles do OS detection via `$facts['os']['name']`, perform Hiera lookups, and pass resolved parameters to module classes.
 - **Modules** (`modules/`): Component modules implementing specific functionality, usually single-OS. Prefixed by platform: `linux_*`, `macos_*`, `win_*`.
 
