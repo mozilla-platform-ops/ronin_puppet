@@ -79,7 +79,7 @@ platforms:
           winrm set winrm/config/service/auth '@{Negotiate="false"}'
       machine_size: 'Standard_F8alds_v7'
       spot_instance: true
-      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
+      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:latest
       # Each platform has a unique resource group name to prevent collisions when
       # CI jobs run in parallel. kitchen-azurerm appends a timestamp to this name,
       # so two jobs sharing the same base name that start within the same second
@@ -91,7 +91,7 @@ platforms:
       location: 'East US'
       machine_size: 'Standard_NV12ads_A10_v5'
       spot_instance: true
-      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:26200.8655.260607
+      image_urn: MicrosoftWindowsDesktop:Windows-11:win11-25h2-avd:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-25h2-gpu
   - name: win11-a64-25h2-builder
     driver:
