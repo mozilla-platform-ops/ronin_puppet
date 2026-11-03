@@ -12,6 +12,11 @@ worker_metadata:
 # Pinned to the current effective version -- this is a no-op control move.
 taskcluster_version: '67.1.0'
 
+# Loop worker-runner.sh between tasks instead of rebooting; it still reboots
+# after a failed task or every max_tasks_between_reboots tasks.
+skip_reboot_between_tasks: true
+max_tasks_between_reboots: 10
+
 # Clear the task user's ~/Library/Application Support/Firefox before every task
 # (bug 2046807). Top-level, not under `worker:`, so vault's `worker:` hash cannot
 # shadow it.
