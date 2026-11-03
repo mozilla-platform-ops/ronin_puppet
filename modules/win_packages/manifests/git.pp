@@ -39,11 +39,13 @@ class win_packages::git (
     require                    => Archive['git_installer'],
   }
 
-  package { 'Git':
-    ensure          => installed,
-    provider        => windows,
-    source          => $path,
-    install_options => ['/VERYSILENT', '/NORESTART', '/SUPPRESSMSGBOXES', '/SP-', '/o:PathOption=Cmd'],
-    require         => Acl[$path],
+  # Recheck at apply time so a missing or stale fact cannot downgrade Git.
+  exec { 'git_minimum_version':
+    command   => "\$process = Start-Process -FilePath '${path}' -ArgumentList '/VERYSILENT /NORESTART /SUPPRESSMSGBOXES /SP- /o:PathOption=Cmd' -Wait -PassThru; if (\$process.ExitCode -notin 0, 3010) { throw \"Git installer failed rc=\$(\$process.ExitCode)\" }",
+    unless    => "\$git = Join-Path \$env:ProgramFiles 'Git\\bin\\git.exe'; if ((Test-Path \$git) -and ((Get-Command \$git).Version -ge [version]'${version}')) { exit 0 } else { exit 1 }",
+    provider  => powershell,
+    timeout   => 600,
+    logoutput => true,
+    require   => Acl[$path],
   }
 }

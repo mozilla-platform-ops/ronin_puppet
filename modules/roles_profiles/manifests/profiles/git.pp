@@ -3,16 +3,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 class roles_profiles::profiles::git {
-  if $facts['custom_win_git_version'] in [undef, '0.0.0'] {
-    case $facts['os']['name'] {
-      'Windows': {
+  case $facts['os']['name'] {
+    'Windows': {
+      $minimum_version = lookup('windows.git.version')
+      $detected_version = $facts['custom_win_git_version']
+      if $detected_version in [undef, '0.0.0'] or versioncmp($detected_version, $minimum_version) < 0 {
         class { 'win_packages::git':
-          version => lookup('windows.git.version'),
+          version => $minimum_version,
         }
       }
-      default: {
-        fail("${facts['os']['name']} not supported")
-      }
+    }
+    default: {
+      fail("${facts['os']['name']} not supported")
     }
   }
 }

@@ -46,3 +46,14 @@ try {
     }
 } finally { $env:PATH = $oldPath; $env:TEMP = $oldTemp }
 Write-Host 'Windows Kitchen Git bootstrap checks passed.'
+
+$factPath = Join-Path (Split-Path -Parent $PSScriptRoot) 'modules/win_shared/facts.d/facts_win_other_apps.ps1'
+$fact = [scriptblock]::Create((Get-Content -LiteralPath $factPath -Raw))
+function Get-Command { return [pscustomobject]@{ Version = [version]$script:gitVersion } }
+foreach ($version in @('2.49.0.0', '2.56.0.2', '0.0.0')) {
+    $script:installed = $version -ne '0.0.0'
+    $script:gitVersion = $version
+    $output = (& $fact 6>&1 | Out-String).Trim()
+    if ($output -ne "custom_win_git_version=$version") { throw "Git fact lost version detail: $output" }
+}
+Write-Host 'Windows Git version fact checks passed.'
