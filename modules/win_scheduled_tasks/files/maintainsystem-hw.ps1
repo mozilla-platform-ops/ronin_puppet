@@ -644,6 +644,12 @@ function Invoke-FleetbenchCheck {
     }
     process {
         try {
+            $pool = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -ErrorAction Stop).worker_pool_id
+            if ($pool -match '-alpha$') {
+                Write-Log -message ('{0} :: CPU benchmark disabled for alpha pool {1}.' -f $MyInvocation.MyCommand.Name, $pool) -severity 'INFO'
+                return
+            }
+
             # The pin is written by Puppet under HKLM, outside task-writable storage.
             $pin = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Mozilla\fleetbench' -ErrorAction Stop
             $version = [string]$pin.version

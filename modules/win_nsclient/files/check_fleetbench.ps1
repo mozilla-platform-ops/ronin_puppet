@@ -12,6 +12,11 @@ function Exit-With([int]$code, [string]$msg) {
     exit $code
 }
 
+$pool = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Mozilla\ronin_puppet' -ErrorAction SilentlyContinue).worker_pool_id
+if ($pool -match '-alpha$') {
+    Exit-With 0 "OK - CPU benchmark disabled for alpha pool $pool"
+}
+
 $statusFile  = 'C:\fleetbench\results\fleetbench_status.json'
 $maxAgeHours = 168   # status older than 7 days is considered stale
 

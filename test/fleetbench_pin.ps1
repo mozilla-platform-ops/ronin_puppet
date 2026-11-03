@@ -10,7 +10,14 @@ if (-not $check) { throw 'Invoke-FleetbenchCheck not found' }
 Invoke-Expression $check.Extent.Text
 
 function Write-Log { param($message, $severity) $script:messages += $message }
-function Get-ItemProperty { param($LiteralPath, $ErrorAction) [pscustomobject]@{ version = '0.4.6'; sha256 = $script:sha256 } }
+function Get-ItemProperty {
+    param($LiteralPath, $ErrorAction)
+    if ($LiteralPath -eq 'HKLM:\SOFTWARE\Mozilla\ronin_puppet') {
+        return [pscustomobject]@{ worker_pool_id = $script:pool }
+    }
+    $script:pinReads++
+    return [pscustomobject]@{ version = '0.4.6'; sha256 = $script:sha256 }
+}
 
 $dir = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString())
 try {
@@ -22,9 +29,26 @@ try {
     Set-Content -LiteralPath (Join-Path $results 'recent_cpu.json') -Value '{}'
     $script:sha256 = (Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash
 
+    $script:pool = 'win11-64-24h2-hw'
     $script:messages = @()
     Invoke-FleetbenchCheck -InstallDir $dir -ResultsDir $results
     if (-not ($script:messages -match 'last benchmark')) { throw 'Pinned collector did not reach cadence gate' }
+
+    foreach ($pool in @('win11-64-24h2-hw-alpha', 'win11-64-24h2-hw-ref-alpha', 'releng-hardware/win11-64-24h2-hw-alpha')) {
+        $script:pool = $pool
+        $script:pinReads = 0
+        $script:messages = @()
+        Invoke-FleetbenchCheck -InstallDir $dir -ResultsDir $results
+        if ($script:pinReads -ne 0 -or -not ($script:messages -match 'CPU benchmark disabled')) {
+            throw "Alpha pool reached benchmark preparation: $pool"
+        }
+    }
+    foreach ($pool in @('win11-64-24h2-hw', 'win11-64-24h2-hw-ref', 'win11-64-24h2-hw-perf-debug')) {
+        $script:pool = $pool
+        $script:messages = @()
+        Invoke-FleetbenchCheck -InstallDir $dir -ResultsDir $results
+        if (-not ($script:messages -match 'last benchmark')) { throw "Non-alpha benchmark was disabled: $pool" }
+    }
 
     Set-Content -LiteralPath $binary -Value 'tampered collector'
     $script:messages = @()
@@ -34,3 +58,23 @@ try {
 finally {
     Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue
 }
+
+# Only the CPU status checks skip alpha pools; no status files or collectors are read.
+foreach ($name in @('check_fleetbench.ps1', 'check_fleetbench_variance.ps1')) {
+    $path = Join-Path $PSScriptRoot "../modules/win_nsclient/files/$name"
+    $body = [IO.File]::ReadAllText($path)
+    $body = $body.Replace('exit $code', 'throw "CHECK_EXIT:$code"')
+    function Test-Path { return $false }
+    foreach ($pool in @('win11-64-24h2-hw-alpha', 'win11-64-24h2-hw-ref-alpha', 'win11-64-24h2-hw')) {
+        $script:pool = $pool
+        $output = ''
+        try { $output = (& ([scriptblock]::Create($body)) | Out-String) }
+        catch {
+            $expected = if ($pool -match '-alpha$') { 'CHECK_EXIT:0' } else { 'CHECK_EXIT:3' }
+            if ($_.Exception.Message -ne $expected) { throw }
+            continue
+        }
+        throw "Status check did not exit: $name / $pool / $output"
+    }
+}
+Write-Host 'Fleetbench pin and alpha policy checks passed.'
