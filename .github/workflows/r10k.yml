@@ -36,7 +36,7 @@ jobs:
           bundle install
 
       - name: r10k puppetfile install
-        run: bundle exec r10k puppetfile install --moduledir=/tmp/r10k_module_test -v --force
+        run: bundle exec r10k puppetfile install --moduledir=r10k_modules -v --force
 
       - name: Check Windows Git fallback catalogs
-        run: bundle exec ruby test/test_windows_git_fallback.rb /tmp/r10k_module_test
+        run: bundle exec ruby test/test_windows_git_fallback.rb
