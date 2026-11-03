@@ -39,6 +39,7 @@ class roles_profiles::roles::win11a64h2azure (
       include roles_profiles::profiles::scheduled_tasks
       include roles_profiles::profiles::azure_vm_agent
       include roles_profiles::profiles::mercurial
+      include roles_profiles::profiles::git
       include roles_profiles::profiles::mozilla_build
       include roles_profiles::profiles::windows_worker_runner
 

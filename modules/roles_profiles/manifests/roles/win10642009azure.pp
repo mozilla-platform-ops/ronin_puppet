@@ -52,6 +52,7 @@ class roles_profiles::roles::win10642009azure {
       include roles_profiles::profiles::mercurial
 
       # Worker
+      include roles_profiles::profiles::git
       include roles_profiles::profiles::mozilla_build
       ## Had to re-run mozilla_maintenance_service twice when mozilla_build wasn't a pre-req
       include roles_profiles::profiles::mozilla_maintenance_service

@@ -31,6 +31,7 @@ class roles_profiles::roles::win116424h2hwrefalpha {
   #include roles_profiles::profiles::vnc
 
   # Worker
+  include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
   include roles_profiles::profiles::windows_datacenter_administrator
