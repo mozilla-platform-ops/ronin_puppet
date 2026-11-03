@@ -76,7 +76,6 @@ class roles_profiles::roles::win116424h2hwbake {
   include roles_profiles::profiles::mercurial
 
   # Worker (stable toolchain only — registration is deploy-time)
-  include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
   # google_chrome excluded — deploy-time. It was the only chocolatey consumer, and a

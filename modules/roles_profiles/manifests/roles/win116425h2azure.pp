@@ -58,7 +58,6 @@ class roles_profiles::roles::win116425h2azure {
       include roles_profiles::profiles::mercurial
 
       # Worker
-      include roles_profiles::profiles::git
       include roles_profiles::profiles::mozilla_build
       include roles_profiles::profiles::mozilla_maintenance_service
       include roles_profiles::profiles::windows_worker_runner
