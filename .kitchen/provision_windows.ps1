@@ -205,6 +205,28 @@ New-ItemProperty -Path $sourceKey -Name 'Branch' -Value $sourceBranch -PropertyT
 
 Write-Host "Seeded $roninKey (worker_pool_id=$workerPoolId, role=$env:PUPPET_ROLE, bootstrap_stage=$bootstrapStage)."
 
+# Match production bootstrap: Git is installed before Puppet runs.
+function Install-KitchenGit {
+    $gitExe = "$env:ProgramFiles\Git\cmd\git.exe"
+    if (-not (Test-Path $gitExe)) {
+        $installer = Join-Path $env:TEMP ("kitchen-git-" + [guid]::NewGuid().ToString('N') + '.exe')
+        try {
+            $url = 'https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.2/Git-2.56.0.2-64-bit.exe'
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+                try { Invoke-WebRequest -Uri $url -OutFile $installer -UseBasicParsing -TimeoutSec 300; break }
+                catch { if ($attempt -eq 3) { throw }; Start-Sleep -Seconds 10 }
+            }
+            $process = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT /NORESTART /SUPPRESSMSGBOXES /SP- /o:PathOption=Cmd' -Wait -PassThru
+            if ($process.ExitCode -notin 0, 3010) { throw "Git installer failed rc=$($process.ExitCode)" }
+            if (-not (Test-Path $gitExe)) { throw 'Git installation did not produce git.exe.' }
+        } finally {
+            Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue
+        }
+    }
+    $env:PATH = "$env:ProgramFiles\Git\cmd;$env:PATH"
+}
+Install-KitchenGit
+
 # Set Facter variables
 $env:FACTER_custom_win_role = $env:PUPPET_ROLE
 $env:FACTER_running_in_test_kitchen = 'true'
