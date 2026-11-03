@@ -1,8 +1,8 @@
 # System-wide perf recording
 
 `roles_profiles::profiles::linux_perf_profiling` installs `record-system-perf`
-for the Talos roles. The existing `/usr/bin/perf` sudo grant remains temporarily
-while Firefox's Raptor caller migrates (LS-002).
+for the Talos roles. It is the only permitted sudo interface for system-wide
+perf recording.
 
 ## Interface
 
@@ -34,13 +34,12 @@ changes ownership through a task-controlled path.
 
 ## Rollout
 
-1. Deploy this Puppet change, retaining both sudo rules.
+1. Deploy this Puppet change.
 2. Deploy the Raptor caller that opens its own output file, starts the wrapper,
-   and closes stdin to stop. Keep direct perf for local developer runs.
+   and closes stdin to stop. Local developer runs may continue to use direct perf.
 3. Verify a Linux Speedometer 3 native-profiling task produces a readable profile
    and Samply import succeeds, including subprocess and kernel samples.
-4. Remove the original `/usr/bin/perf` grant and its temporary test expectation
-   after all callers have migrated. LS-002 remains open until then.
+4. The direct `/usr/bin/perf` sudo grant is deliberately absent after migration.
 
 ## Checks
 
