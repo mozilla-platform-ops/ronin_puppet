@@ -1,0 +1,2 @@
+# Prefer the Intel render GPU over the Matrox management VGA adapter.
+SUBSYSTEM=="drm", ENV{DEVTYPE}=="drm_minor", KERNEL=="card[0-9]*", ATTRS{vendor}=="0x8086", TAG+="mutter-device-preferred-primary"
