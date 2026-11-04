@@ -338,9 +338,16 @@ class linux_gui (
               ensure => absent;
           }
 
+          # Kitchen containers cannot run GDM; keep it enabled for worker boots.
+          $gdm_ensure = $facts['running_in_test_kitchen'] ? {
+            true    => undef,
+            'true'  => undef,
+            default => running,
+          }
+
           # gdm service (mostly for notifying below)
           service { 'gdm3':
-            ensure => running,
+            ensure => $gdm_ensure,
             enable => true,
           }
 
