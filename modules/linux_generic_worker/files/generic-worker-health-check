@@ -237,9 +237,11 @@ def check_generic_worker_process():
     if len(pids) > 1:
         return FAIL, f"{len(pids)} processes found (expected 1): pids {pids}", data
 
-    task_state, task_cmd = _gw_task_state()
+    task_state, task_cmd = _gw_task_state(pids[0])
     data["task_state"] = task_state
     data["check_cmds"] = [task_cmd]
+    if task_state.startswith("unknown"):
+        return WARN, f"running (pid {pids[0]}) — {task_state}", data
     if task_state == "task running":
         nchildren = _proc_descendants(pids[0])
         data["child_procs"] = nchildren
@@ -278,11 +280,25 @@ def _proc_descendants(root_pid):
     return count
 
 
-def _gw_task_state():
-    cmd = ["journalctl", "-t", "generic-worker", "-n", "50", "--no-pager"]
-    cmd_str = " ".join(cmd)
+def _gw_task_state(pid):
+    cmd = ["journalctl", "-b", "-t", "generic-worker", "-n", "50", "--no-pager", "--quiet", "-o", "cat"]
+    try:
+        # The comm field can contain spaces and parentheses. Fields after its
+        # closing ')' start at field 3; starttime is field 22, in clock ticks.
+        with open(f"{PROC_ROOT}/{pid}/stat") as f:
+            start_ticks = int(f.read().rsplit(")", 1)[1].split()[19])
+        boot = _boot_time()
+        if boot is None:
+            raise ValueError("boot time unavailable")
+        started = boot.timestamp() + start_ticks / os.sysconf("SC_CLK_TCK")
+        cmd.extend(["--since", f"@{started:.6f}"])
+    except (OSError, ValueError, IndexError) as e:
+        return f"unknown (worker start time unavailable: {e})", shlex.join(cmd)
+    cmd_str = shlex.join(cmd)
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        if r.returncode != 0:
+            return f"unknown (journalctl exit {r.returncode}: {r.stderr.strip()})", cmd_str
         lines = r.stdout.strip().splitlines()
         for line in reversed(lines):
             if "No task claimed" in line:
@@ -322,17 +338,24 @@ def check_worker_runner_process():
 
     if _use_journal:
         # fall back to journalctl when svlogd log dir is absent or empty
-        jcmd = ["journalctl", "-t", "generic-worker", "--since", f"{GW_LOG_STALE_MINUTES} minutes ago", "-n", "1", "--no-pager"]
+        jcmd = ["journalctl", "-b", "-t", "generic-worker", "--since", f"{GW_LOG_STALE_MINUTES} minutes ago", "-n", "1", "--no-pager", "--quiet", "-o", "cat"]
         data["check_cmds"] = [shlex.join(jcmd)]
         try:
             r = subprocess.run(jcmd, capture_output=True, text=True, timeout=5)
-            log_fresh = bool(r.stdout.strip())
-            data["journal_recent"] = log_fresh
+            if r.returncode != 0:
+                data["journal_error"] = f"exit {r.returncode}: {r.stderr.strip()}"
+            else:
+                log_fresh = bool(r.stdout.strip())
+                data["journal_recent"] = log_fresh
         except Exception as e:
             data["journal_error"] = str(e)
 
     if not pids:
         return FAIL, "start-worker process not found", data
+    if "journal_error" in data:
+        return WARN, f"process alive (pid {pids[0]}) but journal query failed: {data['journal_error']}", data
+    if _use_journal and not log_fresh:
+        return WARN, f"process alive (pid {pids[0]}) but no journal entries in the last {GW_LOG_STALE_MINUTES} minutes", data
     if not log_fresh:
         age_str = f"{log_age_min}min" if log_age_min is not None else "unknown"
         return WARN, f"process alive (pid {pids[0]}) but logs {age_str} old", data
@@ -383,7 +406,7 @@ def check_task_dir_size():
 def _boot_time():
     """Return system boot time as a UTC-aware datetime, or None."""
     try:
-        with open("/proc/stat") as f:
+        with open(f"{PROC_ROOT}/stat") as f:
             for line in f:
                 if line.startswith("btime "):
                     return datetime.datetime.fromtimestamp(
@@ -547,7 +570,6 @@ def _by_name(results, name):
 def summarize(results):
     puppet = _by_name(results, "puppet") or {}
     gwp    = _by_name(results, "generic_worker_process") or {}
-    wrr    = _by_name(results, "worker_runner_process") or {}
     pdata  = puppet.get("data", {})
     gdata  = gwp.get("data", {})
 
@@ -555,14 +577,16 @@ def summarize(results):
         state = "DOWN" if puppet.get("status") == FAIL else "DEGRADED"
         return state, gwp.get("detail", "zombie generic-worker")
 
+    failures = [r for r in results if r["status"] == FAIL]
+    if failures:
+        state = "DOWN" if puppet.get("status") == FAIL else "DEGRADED"
+        return state, "; ".join(f"{r['name']}: {r['detail']}" for r in failures)
+
     disk = _by_name(results, "disk_free") or {}
     if (disk.get("data") or {}).get("cleaner_running"):
         cpid = (disk.get("data") or {}).get("cleaner_pid")
         pid_str = f" (pid {cpid})" if cpid else ""
         return "RECOVERING", f"disk cleanup running{pid_str}, wait for completion"
-
-    if puppet.get("status") == FAIL:
-        return "DOWN", puppet.get("detail", "puppet check failed")
 
     puppet_in_progress = (
         pdata.get("done_sentinel") is False
@@ -574,11 +598,6 @@ def summarize(results):
         if not gdata.get("generic_worker_pids"):
             return "PROVISIONING", "puppet running, g-w waiting to start"
         return "PROVISIONING", "puppet running, g-w up"
-
-    if gwp.get("status") == FAIL:
-        return "DEGRADED", f"g-w {gwp.get('detail', 'down')}, puppet ok"
-    if wrr.get("status") == FAIL:
-        return "DEGRADED", "start-worker missing, g-w ok"
 
     if gdata.get("task_state") == "task running":
         n = gdata.get("child_procs", "?")
