@@ -189,6 +189,26 @@ class RealZombieTests(unittest.TestCase):
 
 
 class PuppetCommandTests(unittest.TestCase):
+    def test_last_run_checkout_metadata_in_verbose_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            metadata = Path(directory) / "metadata.json"
+            for success in (True, False):
+                metadata.write_text(json.dumps({
+                    "success": success, "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "git_branch": "test-branch", "git_sha": "abcdef0123456789", "role": "test-role",
+                }))
+                with mock.patch.object(health, "PUPPET_METADATA", str(metadata)), \
+                     mock.patch.object(health, "_boot_time", return_value=None), \
+                     mock.patch.object(health, "puppet_done", return_value=True), \
+                     mock.patch.object(health, "_puppet_service_state", return_value=("inactive", "dead", "systemctl")), \
+                     mock.patch.object(health, "CHECKS", [("puppet", health.check_puppet)]):
+                    results = health.run_checks()
+                self.assertEqual(results[0]["data"]["git_branch"], "test-branch")
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    health.print_human(results, [], verbose=True)
+                self.assertIn("Last run checkout: branch=test-branch, sha=abcdef0123456789", output.getvalue())
+
     def puppet_results(self):
         with mock.patch.object(health, "_puppet_service_state", return_value=("activating", "start", "systemctl")), \
              mock.patch.object(health, "CHECKS", [("puppet", health.check_puppet)]):
@@ -236,6 +256,7 @@ class PuppetCommandTests(unittest.TestCase):
             )
             self.assertIn("View logs (current boot): sudo journalctl", result.stdout)
             self.assertIn("Worker processes: ps -C generic-worker", result.stdout)
+            self.assertIn("Last run checkout: branch=unknown, sha=unknown", result.stdout)
 
 
 class JournalTests(unittest.TestCase):
@@ -343,9 +364,34 @@ class JournalTests(unittest.TestCase):
 
 
 class SummaryFailureTests(unittest.TestCase):
+    def test_unknown_activity_is_warning_with_unknown_headline(self):
+        for task_state in (None, "unknown (no journal output)", "unknown (journalctl exit 1: error)"):
+            checks = [{
+                "name": "generic_worker_process", "status": health.WARN, "detail": "task state unknown",
+                "data": {"generic_worker_pids": [1234]},
+            }]
+            if task_state is not None:
+                checks[0]["data"]["task_state"] = task_state
+            for args in (["gwhc"], ["gwhc", "--json"]):
+                with self.subTest(task_state=task_state, args=args):
+                    output = io.StringIO()
+                    with mock.patch.object(health, "run_checks", return_value=checks), \
+                         mock.patch("sys.argv", args), contextlib.redirect_stdout(output), \
+                         contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as exited:
+                        health.main()
+                    self.assertEqual(exited.exception.code, 0)
+                    if "--json" in args:
+                        report = json.loads(output.getvalue())
+                        self.assertTrue(report["ok"])
+                        self.assertEqual(report["state"], "UNKNOWN")
+                        self.assertIn("verify activity before rebooting", report["state_description"])
+                    else:
+                        self.assertTrue(output.getvalue().startswith("UNKNOWN "))
+                        self.assertIn("verify activity before rebooting", output.getvalue())
+
     def test_failures_override_idle_working_provisioning_and_cleanup(self):
         for failed_check in ("disk_free", "clock_skew", "task_dir_size"):
-            for task in ("idle", "task running"):
+            for task in ("idle", "task running", "unknown (no journal output)"):
                 for background in ({}, {"provisioning": True}, {"cleanup": True}):
                     checks = [
                         {"name": "puppet", "status": health.PASS, "detail": "passed", "data": {}},

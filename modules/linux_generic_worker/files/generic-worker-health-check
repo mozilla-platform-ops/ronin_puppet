@@ -452,7 +452,7 @@ def check_puppet():
     except Exception as e:
         return FAIL, f"could not parse metadata: {e}", data
 
-    for field in ("ts", "success", "exit_code", "duration_s", "git_sha", "role"):
+    for field in ("ts", "success", "exit_code", "duration_s", "git_branch", "git_sha", "role"):
         if field in meta:
             data[field] = meta[field]
 
@@ -548,6 +548,9 @@ TROUBLESHOOTING_COMMANDS = {
     "disk_free": [("Disk usage", "df -h / /var /home")],
     "task_dir_size": [("Task directory usage", f"sudo du -sh {TASK_DIR}")],
     "puppet": [
+        # TODO: Direct manual run-puppet invocations may not reach the service
+        # journal. Consider retaining output for each run (service or manual)
+        # and exposing the latest run's log path in metadata and this hint.
         ("View logs (current boot)", "sudo journalctl -u run-puppet -b --no-pager"),
         ("Service status", "systemctl status run-puppet --no-pager"),
     ],
@@ -626,7 +629,7 @@ def summarize(results):
     ts = gdata.get("task_state", "unknown")
     if ts == "idle":
         return "IDLE", "g-w waiting for tasks"
-    return "IDLE", f"g-w up (task state: {ts})"
+    return "UNKNOWN", f"g-w task activity unknown ({ts}); verify activity before rebooting"
 
 
 _STATE_COLOR = {
@@ -634,6 +637,7 @@ _STATE_COLOR = {
     "PROVISIONING": yellow,
     "WORKING":      green,
     "IDLE":         green,
+    "UNKNOWN":      yellow,
     "DEGRADED":     yellow,
     "DOWN":         red,
 }
@@ -708,6 +712,11 @@ def print_human(results, warnings, verbose=False, debug=False):
                 for line in hint.splitlines():
                     print(f"{indent}{yellow('→')} {line}")
         if verbose or debug:
+            if r["name"] == "puppet":
+                data = r.get("data") or {}
+                branch = data.get("git_branch") or "unknown"
+                sha = data.get("git_sha") or "unknown"
+                print(dim(f"{indent}Last run checkout: branch={branch}, sha={sha}"))
             for label, cmd in TROUBLESHOOTING_COMMANDS.get(r["name"], []):
                 print(dim(f"{indent}{label}: {cmd}"))
         if debug:
