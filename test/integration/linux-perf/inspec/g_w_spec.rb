@@ -48,8 +48,20 @@ end
 
 # config
 
+start_worker_version = command('/usr/local/bin/start-worker --short-version').stdout.strip.sub(/\Av/, '')
+
 describe file('/etc/start-worker.yml') do
   it { should exist }
+  if Gem::Version.new(start_worker_version) >= Gem::Version.new('115.0.1')
+    its('owner') { should eq 'cltbld' }
+    its('group') { should eq 'cltbld' }
+    its('mode') { should cmp '0600' }
+    it { should be_readable.by_user('cltbld') }
+  else
+    its('owner') { should eq 'root' }
+    its('group') { should eq 'root' }
+    its('mode') { should cmp '0644' }
+  end
 end
 
 # The legacy watchdog is removed even on already-provisioned hosts.
