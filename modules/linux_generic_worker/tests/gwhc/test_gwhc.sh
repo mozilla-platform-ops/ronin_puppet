@@ -29,6 +29,8 @@ expect provisioning.json PROVISIONING 0
 expect recovering.json   RECOVERING   1
 expect degraded.json     DEGRADED     1
 expect down.json         DOWN         1
+expect zombie.json       DEGRADED     1
+expect zombie-provisioning.json DEGRADED 1
 
 # round-trip: replay a fixture through --json, then replay that output
 python3 "$SCRIPT" --replay "$FIX/idle.json" --json \
