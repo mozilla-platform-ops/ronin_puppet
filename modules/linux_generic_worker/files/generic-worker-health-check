@@ -9,6 +9,7 @@ import email.utils
 import json
 import os
 import re
+import shlex
 import socket
 import subprocess
 import sys
@@ -295,7 +296,7 @@ def check_worker_runner_process():
     if _use_journal:
         # fall back to journalctl when svlogd log dir is absent or empty
         jcmd = ["journalctl", "-t", "generic-worker", "--since", f"{GW_LOG_STALE_MINUTES} minutes ago", "-n", "1", "--no-pager"]
-        data["check_cmds"] = [" ".join(jcmd)]
+        data["check_cmds"] = [shlex.join(jcmd)]
         try:
             r = subprocess.run(jcmd, capture_output=True, text=True, timeout=5)
             log_fresh = bool(r.stdout.strip())
