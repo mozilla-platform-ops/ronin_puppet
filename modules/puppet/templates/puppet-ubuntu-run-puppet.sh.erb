@@ -665,19 +665,21 @@ if [ -f "/etc/puppet/ronin_settings" ]; then
 EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
-    # show env vars of interest
-    if [ "$PUPPET_BRANCH" = "master" ]; then
-        echo "  PUPPET_BRANCH:         $PUPPET_BRANCH"
-    else
-        echo -e "  PUPPET_BRANCH:         ${_PURPLE}$PUPPET_BRANCH${_RESET}"
-    fi
-    echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
-    echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
-    if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
-        echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
-    else
-        echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}${WORKER_TYPE_OVERRIDE}${_RESET}"
-    fi
+fi
+
+# Show effective settings, including defaults when no override file exists.
+echo "Effective Puppet settings:"
+if [ "$PUPPET_BRANCH" = "master" ]; then
+    echo "  PUPPET_BRANCH:         $PUPPET_BRANCH"
+else
+    echo -e "  PUPPET_BRANCH:         ${_PURPLE}$PUPPET_BRANCH${_RESET}"
+fi
+echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
+echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
+if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
+else
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}${WORKER_TYPE_OVERRIDE}${_RESET}"
 fi
 
 ROLE_FILE='/etc/puppet_role'
