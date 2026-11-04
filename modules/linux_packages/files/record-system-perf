@@ -120,10 +120,12 @@ def open_state():
 
 
 def state_directory_path(descriptor):
+    # Use the wrapper's PID because the collector resolves this path in a
+    # different process, where /proc/self would refer to its own descriptors.
     # Linux resolves this through the open directory descriptor.  Keep the
     # pathname fallback for the unit tests and non-Linux development hosts;
     # Puppet installs this wrapper only on Linux.
-    descriptor_path = f"/proc/self/fd/{descriptor}"
+    descriptor_path = f"/proc/{os.getpid()}/fd/{descriptor}"
     return descriptor_path if os.path.isdir(descriptor_path) else STATE_DIR
 
 

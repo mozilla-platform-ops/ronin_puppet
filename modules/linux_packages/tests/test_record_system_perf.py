@@ -4,6 +4,7 @@ import io
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -18,6 +19,24 @@ loader.exec_module(recorder)
 
 
 class RecorderTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform.startswith("linux"), "requires Linux procfs")
+    def test_collector_can_write_through_verified_directory_descriptor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+            try:
+                path = recorder.state_directory_path(descriptor)
+                self.assertNotEqual(path, recorder.STATE_DIR)
+                with tempfile.TemporaryDirectory(dir=path) as recording_dir:
+                    output = os.path.join(recording_dir, "perf.data")
+                    subprocess.run(
+                        [sys.executable, "-c", "import sys; open(sys.argv[1], 'wb').write(b'profile')", output],
+                        check=True,
+                    )
+                    with recorder.open_recording(output) as recording:
+                        self.assertEqual(recording.read(), b"profile")
+            finally:
+                os.close(descriptor)
+
     def test_rejects_arguments_before_privileged_work(self):
         for arguments in (["--help"], ["record"], ["-o", "/etc/passwd"], ["/bin/sh"]):
             with (
