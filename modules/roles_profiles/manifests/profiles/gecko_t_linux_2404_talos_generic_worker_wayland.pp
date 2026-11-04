@@ -11,6 +11,8 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker_wayland 
   case $facts['os']['name'] {
     'Ubuntu': {
       require roles_profiles::profiles::cltbld_user
+      require linux_host_lifecycle
+      Class['roles_profiles::profiles::cltbld_user'] -> Class['linux_host_lifecycle']
 
       class { 'roles_profiles::profiles::logging_papertrail':
         papertrail_host    => lookup({ 'name' => 'papertrail.host', 'default_value' => '' }),
@@ -90,6 +92,8 @@ class roles_profiles::profiles::gecko_t_linux_2404_talos_generic_worker_wayland 
         },
         user                      => 'cltbld',
         user_homedir              => '/home/cltbld',
+        desktop_start_command     => '/usr/local/bin/start-wayland-worker',
+        desktop_start_in_terminal => false,
       }
 
       require linux_generic_worker::check_gw

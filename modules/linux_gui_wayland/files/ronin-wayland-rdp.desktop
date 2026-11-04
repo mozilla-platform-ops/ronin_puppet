@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Worker desktop sharing
+Exec=/usr/local/bin/configure-wayland-rdp
+OnlyShowIn=GNOME;Unity;
+X-GNOME-Autostart-enabled=true
+Terminal=false
