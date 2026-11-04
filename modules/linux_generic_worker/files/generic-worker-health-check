@@ -19,6 +19,8 @@ import urllib.request
 
 PUPPET_METADATA = "/etc/puppet/last_run_metadata.json"
 PUPPET_DONE_SENTINEL = "/run/puppet/run_done"
+PUPPET_ROLE = "/etc/puppet_role"
+WORKER_CONFIG = "/home/cltbld/generic-worker.config"
 PUPPET_MAX_AGE_HOURS = 24
 
 TASK_DIR = "/home/cltbld/tasks"
@@ -62,6 +64,10 @@ def yellow(t):
 
 def red(t):
     return _c(t, "31")
+
+
+def purple(t):
+    return _c(t, "35")
 
 
 def bold(t):
@@ -247,7 +253,7 @@ def check_generic_worker_process():
         data["child_procs"] = nchildren
         load1, load5, load15 = os.getloadavg()
         data["load_avg"] = {"1m": round(load1, 2), "5m": round(load5, 2), "15m": round(load15, 2)}
-        return WARN, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f}), do not reboot", data
+        return PASS, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f})", data
     return PASS, f"running (pid {pids[0]}) — {task_state}", data
 
 
@@ -432,6 +438,19 @@ def _puppet_service_state():
 def check_puppet():
     data = {"metadata_path": PUPPET_METADATA,
             "equiv_cmds": ["journalctl -u run-puppet -b --no-pager"]}
+    try:
+        with open(PUPPET_ROLE) as f:
+            data["configured_role"] = f.read().strip()
+    except OSError:
+        pass
+    try:
+        with open(WORKER_CONFIG) as f:
+            # Read only the worker type; the configuration also contains secrets.
+            worker_type = json.load(f).get("workerType")
+            if isinstance(worker_type, str) and worker_type:
+                data["worker_type"] = worker_type
+    except (OSError, ValueError, AttributeError):
+        pass
 
     active, sub, svc_cmd = _puppet_service_state()
     data["service_active_state"] = active
@@ -493,7 +512,7 @@ def check_puppet():
 
     data["done_sentinel"] = True
     role = meta.get("role", "?")
-    return PASS, f"passed {age_h:.1f}h ago (role={role})", data
+    return PASS, f"passed {_relative_age(age_h)} (role={role})", data
 
 
 # ── report ────────────────────────────────────────────────────────────────────
@@ -643,8 +662,38 @@ _STATE_COLOR = {
 }
 
 
-def _format_detail(detail):
-    return re.sub(r"(role=)(\S+)", lambda m: m.group(1) + bold(m.group(2)), detail)
+DISPLAY_NAMES = {
+    "clock_skew": "clock",
+    "disk_free": "disk",
+    "task_dir_size": "task directory",
+    "puppet": "puppet",
+    "worker_runner_process": "worker runner",
+    "generic_worker_process": "generic worker",
+}
+
+
+def _relative_age(hours):
+    minutes = max(0, int(hours * 60))
+    if minutes < 1:
+        return "less than a minute ago"
+    if minutes < 60:
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    if hours < 24:
+        count = int(hours)
+        return f"{count} hour{'s' if count != 1 else ''} ago"
+    count = int(hours / 24)
+    return f"{count} day{'s' if count != 1 else ''} ago"
+
+
+def _format_detail(result):
+    detail = result["detail"]
+    if result["name"] == "puppet":
+        detail = re.sub(r" \(role=[^)]*\)", "", detail)
+        # Older replay snapshots use decimal hours in their detail text.
+        detail = re.sub(r"(\d+(?:\.\d+)?)h ago", lambda m: _relative_age(float(m.group(1))), detail)
+    if result["name"] == "generic_worker_process" and result.get("data", {}).get("task_state") == "task running":
+        detail = re.sub(r", do not reboot$", "", detail)
+    return detail
 
 
 def print_json(results, warnings, verbose=False, debug=False):
@@ -683,6 +732,19 @@ def print_human(results, warnings, verbose=False, debug=False):
     color = _STATE_COLOR.get(state, lambda s: s)
     print(f"{bold(color(state))} — {qualifier}")
 
+    pdata = (_by_name(results, "puppet") or {}).get("data") or {}
+    role_label = "Role" if pdata.get("configured_role") else "Role (last run)"
+    role = pdata.get('configured_role') or pdata.get('role') or 'unknown'
+    print(f"{role_label}: {role} | Worker type (configured): {pdata.get('worker_type') or 'unknown'}")
+    branch = pdata.get("git_branch") or "unknown"
+    sha = pdata.get("git_sha") or "unknown"
+    branch_text = purple(branch) if branch not in ("master", "unknown") else branch
+    print(f"Last Puppet run: {branch_text} @ {dim(sha[:8] if sha != 'unknown' else sha)}")
+    if verbose or debug:
+        print(dim(f"Full SHA: {sha}"))
+    if state == "WORKING":
+        print("Task active — wait for completion before rebooting.")
+
     if ov == FAIL:
         if state == "RECOVERING":
             disk_r = _by_name(results, "disk_free") or {}
@@ -695,28 +757,24 @@ def print_human(results, warnings, verbose=False, debug=False):
             first_fail = next(r for r in results if r["status"] == FAIL)
             print(f"  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
 
-    w = max(len(r["name"]) for r in results)
+    w = max(len(DISPLAY_NAMES.get(r["name"], r["name"])) for r in results)
     indent = " " * (2 + 1 + 2 + w + 2)  # marker + spacing + name col + spacing
     for r in results:
         s = r["status"]
         if s == PASS:
-            marker = "·"
+            marker = green("✓")
         elif s == WARN:
             marker = yellow("⚠")
         else:
             marker = red("✗")
-        print(f"  {marker}  {r['name'].ljust(w)}  {_format_detail(r['detail'])}")
+        name = DISPLAY_NAMES.get(r["name"], r["name"])
+        print(f"  {marker}  {name.ljust(w)}  {_format_detail(r)}")
         if s == FAIL:
             hint = REMEDIATIONS.get(r["name"])
             if hint:
                 for line in hint.splitlines():
                     print(f"{indent}{yellow('→')} {line}")
         if verbose or debug:
-            if r["name"] == "puppet":
-                data = r.get("data") or {}
-                branch = data.get("git_branch") or "unknown"
-                sha = data.get("git_sha") or "unknown"
-                print(dim(f"{indent}Last run checkout: branch={branch}, sha={sha}"))
             for label, cmd in TROUBLESHOOTING_COMMANDS.get(r["name"], []):
                 print(dim(f"{indent}{label}: {cmd}"))
         if debug:

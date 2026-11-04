@@ -64,18 +64,18 @@ class WorkerProcessTests(unittest.TestCase):
 
     def test_live_idle_and_working_behavior(self):
         self.worker()
-        for task, expected in (("idle", health.PASS), ("task running", health.WARN)):
+        for task, expected in (("idle", health.PASS), ("task running", health.PASS)):
             health._gw_task_state.return_value = (task, "journalctl")
             status, detail, data = health.check_generic_worker_process()
             self.assertEqual(status, expected)
             self.assertEqual(data["generic_worker_pids"], [1234])
             self.assertEqual(data["zombie_pids"], [])
             self.assertEqual(data["task_state"], task)
-            self.assertEqual("do not reboot" in detail, task == "task running")
+            self.assertNotIn("do not reboot", detail)
 
     def test_argv_basename_matching(self):
         self.worker(comm="other", argv=b"/usr/local/bin/generic-worker\0run\0")
-        self.assertEqual(health.check_generic_worker_process()[0], health.WARN)
+        self.assertEqual(health.check_generic_worker_process()[0], health.PASS)
 
     def test_extra_processes_fail_including_live_and_zombie(self):
         self.worker()
@@ -207,7 +207,8 @@ class PuppetCommandTests(unittest.TestCase):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
                     health.print_human(results, [], verbose=True)
-                self.assertIn("Last run checkout: branch=test-branch, sha=abcdef0123456789", output.getvalue())
+                self.assertIn("Last Puppet run: test-branch @ abcdef01", output.getvalue())
+                self.assertIn("Full SHA: abcdef0123456789", output.getvalue())
 
     def puppet_results(self):
         with mock.patch.object(health, "_puppet_service_state", return_value=("activating", "start", "systemctl")), \
@@ -256,7 +257,7 @@ class PuppetCommandTests(unittest.TestCase):
             )
             self.assertIn("View logs (current boot): sudo journalctl", result.stdout)
             self.assertIn("Worker processes: ps -C generic-worker", result.stdout)
-            self.assertIn("Last run checkout: branch=unknown, sha=unknown", result.stdout)
+            self.assertIn("Last Puppet run: unknown @ unknown", result.stdout)
 
 
 class JournalTests(unittest.TestCase):
@@ -361,6 +362,74 @@ class JournalTests(unittest.TestCase):
         self.assertEqual(status, health.WARN)
         self.assertIn("unknown", detail)
         self.assertNotIn("do not reboot", detail)
+
+
+class DisplayTests(unittest.TestCase):
+    def results(self):
+        return [
+            {"name": "puppet", "status": health.PASS, "detail": "passed 0.1h ago (role=old-role)",
+             "data": {"configured_role": "current-role", "worker_type": "test-worker", "role": "old-role",
+                      "git_branch": "test-branch", "git_sha": "abcdef0123456789"}},
+            {"name": "generic_worker_process", "status": health.PASS, "detail": "running (pid 1234) — idle",
+             "data": {"generic_worker_pids": [1234], "task_state": "idle"}},
+        ]
+
+    def test_default_context_is_compact_and_colors_are_terminal_only(self):
+        for color in (True, False):
+            output = io.StringIO()
+            with mock.patch.object(health, "_use_color", color), contextlib.redirect_stdout(output):
+                health.print_human(self.results(), [])
+            text = output.getvalue()
+            self.assertIn("Role: current-role | Worker type (configured): test-worker", text)
+            self.assertIn("6 minutes ago", text)
+            self.assertNotIn("old-role", text)
+            self.assertNotIn("abcdef0123456789", text)
+            self.assertNotIn("\n\n", text)
+            self.assertEqual(len(text.splitlines()), 5)
+            if color:
+                self.assertIn("\033[35mtest-branch\033[0m", text)
+                self.assertIn("\033[32m✓", text)
+            else:
+                self.assertNotIn("\033", text)
+                self.assertIn("Last Puppet run: test-branch @ abcdef01", text)
+
+    def test_master_is_not_purple_and_working_is_healthy(self):
+        results = self.results()
+        results[0]["data"]["git_branch"] = "master"
+        results[1]["data"]["task_state"] = "task running"
+        output = io.StringIO()
+        with mock.patch.object(health, "_use_color", True), contextlib.redirect_stdout(output):
+            health.print_human(results, [])
+        self.assertNotIn("\033[35m", output.getvalue())
+        self.assertIn("Task active — wait for completion before rebooting.", output.getvalue())
+        json_output = io.StringIO()
+        with contextlib.redirect_stdout(json_output):
+            health.print_json(results, [])
+        report = json.loads(json_output.getvalue())
+        self.assertEqual(report["state"], "WORKING")
+        self.assertEqual(report["warnings"], [])
+        self.assertEqual(report["checks"][1]["name"], "generic_worker_process")
+
+    def test_context_reads_worker_type_without_reporting_secrets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "worker.json"
+            role = Path(directory) / "role"
+            role.write_text("current-role\n")
+            for contents, expected in ((json.dumps({"workerType": "test-worker", "accessToken": "secret-value"}), "test-worker"),
+                                       ("invalid JSON", None), ("[]", None)):
+                config.write_text(contents)
+                with mock.patch.object(health, "WORKER_CONFIG", str(config)), \
+                     mock.patch.object(health, "PUPPET_ROLE", str(role)), \
+                     mock.patch.object(health, "_puppet_service_state", return_value=("activating", "start", "systemctl")):
+                    _, _, data = health.check_puppet()
+                self.assertEqual(data.get("worker_type"), expected)
+                self.assertEqual(data["configured_role"], "current-role")
+                self.assertNotIn("secret-value", json.dumps(data))
+
+    def test_relative_age(self):
+        for hours, expected in ((0, "less than a minute ago"), (1 / 60, "1 minute ago"),
+                                (0.1, "6 minutes ago"), (1, "1 hour ago"), (2, "2 hours ago"), (48, "2 days ago")):
+            self.assertEqual(health._relative_age(hours), expected)
 
 
 class SummaryFailureTests(unittest.TestCase):
