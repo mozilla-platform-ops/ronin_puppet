@@ -11,6 +11,7 @@ import os
 import re
 import shlex
 import socket
+import stat
 import subprocess
 import sys
 import urllib.request
@@ -21,6 +22,7 @@ PUPPET_METADATA = "/etc/puppet/last_run_metadata.json"
 PUPPET_DONE_SENTINEL = "/run/puppet/run_done"
 PUPPET_ROLE = "/etc/puppet_role"
 WORKER_CONFIG = "/home/cltbld/generic-worker.config"
+OPERATOR_HOLD = "/home/cltbld/operator_hold"
 PUPPET_MAX_AGE_HOURS = 24
 
 TASK_DIR = "/home/cltbld/tasks"
@@ -213,6 +215,18 @@ def puppet_done():
         return result.returncode == 0
     except (OSError, subprocess.TimeoutExpired):
         return False
+
+
+def check_operator_hold():
+    """Match the startup wrapper's -f test without changing the hold file."""
+    try:
+        active = stat.S_ISREG(os.stat(OPERATOR_HOLD).st_mode)
+    except FileNotFoundError:
+        active = False
+    data = {"active": active, "path": OPERATOR_HOLD}
+    if active:
+        return WARN, "operator hold active — skip automated recovery", data
+    return PASS, "operator hold inactive", data
 
 
 def check_generic_worker_process():
@@ -553,6 +567,7 @@ REMEDIATIONS = {
 }
 
 CHECKS = [
+    ("operator_hold",           check_operator_hold),
     ("clock_skew",              check_clock_skew),
     ("disk_free",               check_disk_free),
     ("task_dir_size",           check_task_dir_size),
@@ -563,6 +578,7 @@ CHECKS = [
 
 # Read-only commands for investigating the host, shown even for passing checks.
 TROUBLESHOOTING_COMMANDS = {
+    "operator_hold": [("Hold file", f"ls -l {OPERATOR_HOLD}")],
     "clock_skew": [("Reference time", f"curl -sI {CLOCK_REFERENCE_URL} | grep -i date")],
     "disk_free": [("Disk usage", "df -h / /var /home")],
     "task_dir_size": [("Task directory usage", f"sudo du -sh {TASK_DIR}")],
@@ -609,6 +625,10 @@ def _by_name(results, name):
 
 
 def summarize(results):
+    hold = _by_name(results, "operator_hold") or {}
+    if hold.get("data", {}).get("active"):
+        return "HELD", "operator hold active — skip automated recovery"
+
     puppet = _by_name(results, "puppet") or {}
     gwp    = _by_name(results, "generic_worker_process") or {}
     pdata  = puppet.get("data", {})
@@ -652,6 +672,7 @@ def summarize(results):
 
 
 _STATE_COLOR = {
+    "HELD":         yellow,
     "RECOVERING":   yellow,
     "PROVISIONING": yellow,
     "WORKING":      green,
@@ -663,6 +684,7 @@ _STATE_COLOR = {
 
 
 DISPLAY_NAMES = {
+    "operator_hold": "operator hold",
     "clock_skew": "clock",
     "disk_free": "disk",
     "task_dir_size": "task directory",

@@ -24,6 +24,80 @@ health = importlib.util.module_from_spec(spec)
 loader.exec_module(health)
 
 
+class OperatorHoldTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.hold = Path(temporary.name) / "operator_hold"
+        patch = mock.patch.object(health, "OPERATOR_HOLD", str(self.hold))
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def test_hold_matches_startup_regular_file_test_and_is_read_only(self):
+        self.assertEqual(health.check_operator_hold(), (
+            health.PASS, "operator hold inactive", {"active": False, "path": str(self.hold)}
+        ))
+        self.assertFalse(self.hold.exists())
+        self.hold.mkdir()
+        self.assertFalse(health.check_operator_hold()[2]["active"])
+        self.hold.rmdir()
+        self.hold.write_text("investigating\n")
+        self.assertEqual(health.check_operator_hold()[0], health.WARN)
+        self.assertTrue(health.check_operator_hold()[2]["active"])
+        self.assertEqual(self.hold.read_text(), "investigating\n")
+        self.hold.unlink()
+        self.assertFalse(health.check_operator_hold()[2]["active"])
+
+    def test_held_reports_preserve_health_failures_and_exit_codes(self):
+        self.hold.touch()
+        fixtures = SCRIPT.parent.parent / "tests/gwhc/fixtures"
+        for fixture in ("idle", "working", "degraded", "down", "zombie", "provisioning", "recovering"):
+            with self.subTest(fixture=fixture):
+                results = json.loads((fixtures / f"{fixture}.json").read_text())["checks"]
+                status, detail, data = health.check_operator_hold()
+                results.insert(0, {"name": "operator_hold", "status": status, "detail": detail, "data": data})
+                expected_exit = int(any(r["status"] == health.FAIL for r in results))
+                for args in (["gwhc"], ["gwhc", "--json"]):
+                    output = io.StringIO()
+                    with mock.patch.object(health, "run_checks", return_value=results), \
+                         mock.patch("sys.argv", args), \
+                         contextlib.redirect_stdout(output), \
+                         contextlib.redirect_stderr(io.StringIO()), \
+                         self.assertRaises(SystemExit) as exited:
+                        health.main()
+                    self.assertEqual(exited.exception.code, expected_exit)
+                    if "--json" in args:
+                        report = json.loads(output.getvalue())
+                        self.assertEqual(report["state"], "HELD")
+                        self.assertEqual(report["ok"], not expected_exit)
+                        self.assertEqual(report["checks"], results)
+                        # A replay must use the recorded hold, even after clearing it locally.
+                        self.hold.unlink()
+                        self.assertEqual(health.summarize(report["checks"])[0], "HELD")
+                        self.hold.touch()
+                    else:
+                        self.assertTrue(output.getvalue().startswith("HELD — operator hold active"))
+                        for result in results:
+                            if result["status"] == health.FAIL:
+                                self.assertIn(result["detail"], output.getvalue())
+
+    def test_hold_does_not_hide_disk_failure_in_json_or_exit_status(self):
+        self.hold.touch()
+        status, detail, data = health.check_operator_hold()
+        results = [
+            {"name": "operator_hold", "status": status, "detail": detail, "data": data},
+            {"name": "disk_free", "status": health.FAIL, "detail": "disk full", "data": {}},
+        ]
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            health.print_json(results, [])
+        report = json.loads(output.getvalue())
+        self.assertEqual(report["state"], "HELD")
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["checks"][1], results[1])
+        self.assertEqual(health.overall(results), health.FAIL)
+
+
 class WorkerProcessTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
