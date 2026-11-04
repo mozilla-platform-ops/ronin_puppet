@@ -32,6 +32,9 @@ class linux_generic_worker (
   # set hostname (not sure how this was working before)
   $hostname = $facts['networking']['hostname']
 
+  $start_worker_115_or_newer = versioncmp(regsubst($start_worker_version, '^v', ''), '115.0.0') >= 0
+  $generic_worker_115_or_newer = versioncmp(regsubst($generic_worker_version, '^v', ''), '115.0.0') >= 0
+
   # v115.0.1 verifies that its credential-bearing config is private to the
   # runner UID. Keep older shared-module consumers on their existing settings.
   # https://github.com/taskcluster/taskcluster/blob/v115.0.1/tools/worker-runner/perms/perms_posix.go

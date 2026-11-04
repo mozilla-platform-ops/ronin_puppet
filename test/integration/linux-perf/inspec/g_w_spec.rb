@@ -49,6 +49,7 @@ end
 # config
 
 start_worker_version = command('/usr/local/bin/start-worker --short-version').stdout.strip.sub(/\Av/, '')
+generic_worker_version = command('/usr/local/bin/generic-worker --short-version').stdout.strip.sub(/\Av/, '')
 
 describe file('/etc/start-worker.yml') do
   it { should exist }
@@ -61,6 +62,20 @@ describe file('/etc/start-worker.yml') do
     its('owner') { should eq 'root' }
     its('group') { should eq 'root' }
     its('mode') { should cmp '0644' }
+  end
+end
+
+describe yaml('/etc/start-worker.yml') do
+  if Gem::Version.new(start_worker_version) >= Gem::Version.new('115.0.0')
+    its(['cacheOverRestarts']) { should eq '' }
+  else
+    its(['cacheOverRestarts']) { should eq true }
+  end
+
+  if Gem::Version.new(generic_worker_version) >= Gem::Version.new('115.0.0')
+    its(['workerConfig']) { should_not have_key('checkForNewDeploymentEverySecs') }
+  else
+    its(['workerConfig', 'checkForNewDeploymentEverySecs']) { should eq 0 }
   end
 end
 
