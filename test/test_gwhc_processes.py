@@ -1,7 +1,8 @@
-"""Exercise worker state detection using a temporary proc filesystem."""
+"""Exercise worker detection, journal queries, and health reports."""
 
 import contextlib
 import ctypes
+import datetime
 import importlib.machinery
 import importlib.util
 import io
@@ -9,7 +10,9 @@ import json
 import os
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -151,6 +154,18 @@ class WorkerProcessTests(unittest.TestCase):
 
 @unittest.skipUnless(sys.platform == "linux", "requires the Linux proc filesystem")
 class RealZombieTests(unittest.TestCase):
+    def test_real_process_start_time_bounds_the_journal_query(self):
+        with mock.patch.object(health.subprocess, "run", return_value=SimpleNamespace(
+            returncode=0, stdout="No task claimed", stderr=""
+        )) as run:
+            state, _ = health._gw_task_state(os.getpid())
+        self.assertEqual(state, "idle")
+        command = run.call_args.args[0]
+        started = float(command[command.index("--since") + 1][1:])
+        now = datetime.datetime.now(datetime.timezone.utc).timestamp()
+        self.assertLessEqual(started, now)
+        self.assertGreaterEqual(started, health._boot_time().timestamp())
+
     def test_real_zombie_with_empty_cmdline(self):
         pid = os.fork()
         if pid == 0:
@@ -186,6 +201,158 @@ class PuppetCommandTests(unittest.TestCase):
         with contextlib.redirect_stdout(output):
             health.print_human(results, [], verbose=False)
         self.assertNotIn("journalctl", output.getvalue())
+
+
+class JournalTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.proc = Path(temporary.name)
+        (self.proc / "stat").write_text("btime 1700000000\n")
+        worker = self.proc / "1234"
+        worker.mkdir()
+        # Include spaces and ')' inside comm to exercise stat field parsing.
+        fields = ["S"] + ["0"] * 18 + ["250"]
+        (worker / "stat").write_text("1234 (worker ) name) " + " ".join(fields))
+        for patch in (
+            mock.patch.object(health, "PROC_ROOT", str(self.proc)),
+            mock.patch.object(health.os, "sysconf", return_value=100),
+            mock.patch.object(health, "find_procs_by_name", return_value=[1234]),
+            mock.patch.object(health.os.path, "isdir", return_value=False),
+        ):
+            patch.start()
+            self.addCleanup(patch.stop)
+
+    def test_task_query_excludes_prior_boot_and_prior_worker_logs(self):
+        def journal(cmd, **kwargs):
+            self.assertIn("-b", cmd)
+            self.assertIn("--quiet", cmd)
+            self.assertEqual(cmd[cmd.index("--since") + 1], "@1700000002.500000")
+            # Simulate journalctl applying the requested boot/time bounds.
+            entries = [(False, 1700000003, "Executing command"),
+                       (True, 1700000001, "Starting task feature"),
+                       (True, 1700000003, "worker starting")]
+            since = float(cmd[cmd.index("--since") + 1][1:])
+            stdout = "\n".join(message for boot, ts, message in entries if boot and ts >= since)
+            return SimpleNamespace(returncode=0, stdout=stdout, stderr="")
+
+        with mock.patch.object(health.subprocess, "run", side_effect=journal):
+            state, command = health._gw_task_state(1234)
+        self.assertTrue(state.startswith("unknown"))
+        self.assertIn("--since @1700000002.500000", command)
+
+    def test_task_patterns_and_empty_query(self):
+        for stdout, expected in (
+            ("Starting task feature\nExecuting command", "task running"),
+            ("Executing command\nNo task claimed", "idle"),
+            ("", "unknown (no journal output)"),
+        ):
+            with self.subTest(stdout=stdout), mock.patch.object(
+                health.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=stdout, stderr="")
+            ):
+                self.assertEqual(health._gw_task_state(1234)[0], expected)
+
+    def test_failed_task_query_does_not_trust_stdout(self):
+        with mock.patch.object(health.subprocess, "run", return_value=SimpleNamespace(
+            returncode=1, stdout="Executing command", stderr="Permission denied"
+        )):
+            state, _ = health._gw_task_state(1234)
+        self.assertIn("unknown (journalctl exit 1: Permission denied)", state)
+
+    def test_missing_start_time_does_not_query_unscoped_logs(self):
+        for path in (self.proc / "1234/stat", self.proc / "stat"):
+            with self.subTest(path=path):
+                contents = path.read_text()
+                path.unlink()
+                with mock.patch.object(health.subprocess, "run") as run:
+                    self.assertTrue(health._gw_task_state(1234)[0].startswith("unknown"))
+                    run.assert_not_called()
+                path.write_text(contents)
+
+    def test_freshness_requires_success_and_an_entry(self):
+        for code, stdout, expected_status, recent in (
+            (1, "diagnostic text", health.WARN, None),
+            (0, "", health.WARN, False),
+            (0, "No task claimed", health.PASS, True),
+        ):
+            with self.subTest(code=code, stdout=stdout), mock.patch.object(
+                health.subprocess, "run", return_value=SimpleNamespace(returncode=code, stdout=stdout, stderr="error")
+            ) as run:
+                status, detail, data = health.check_worker_runner_process()
+                self.assertEqual(status, expected_status)
+                self.assertEqual(data.get("journal_recent"), recent)
+                if code:
+                    self.assertIn("journal query failed", detail)
+                    self.assertIn("exit 1", data["journal_error"])
+                command = run.call_args.args[0]
+                self.assertIn("-b", command)
+                self.assertIn("--quiet", command)
+                self.assertIn("--since '15 minutes ago'", data["check_cmds"][0])
+
+    def test_journal_exceptions_are_unknown(self):
+        for error in (FileNotFoundError("journalctl"), subprocess.TimeoutExpired("journalctl", 5)):
+            with self.subTest(error=error), mock.patch.object(health.subprocess, "run", side_effect=error):
+                self.assertTrue(health._gw_task_state(1234)[0].startswith("unknown"))
+                status, detail, data = health.check_worker_runner_process()
+                self.assertEqual(status, health.WARN)
+                self.assertIn("journal query failed", detail)
+                self.assertIn("journal_error", data)
+
+    def test_unknown_task_state_warns_without_reboot_advice(self):
+        with mock.patch.object(health, "_worker_process_info", return_value={"pid": 1234, "ppid": 999, "state": "S"}), \
+             mock.patch.object(health.subprocess, "run", return_value=SimpleNamespace(returncode=1, stdout="Executing command", stderr="error")):
+            status, detail, _ = health.check_generic_worker_process()
+        self.assertEqual(status, health.WARN)
+        self.assertIn("unknown", detail)
+        self.assertNotIn("do not reboot", detail)
+
+
+class SummaryFailureTests(unittest.TestCase):
+    def test_failures_override_idle_working_provisioning_and_cleanup(self):
+        for failed_check in ("disk_free", "clock_skew", "task_dir_size"):
+            for task in ("idle", "task running"):
+                for background in ({}, {"provisioning": True}, {"cleanup": True}):
+                    checks = [
+                        {"name": "puppet", "status": health.PASS, "detail": "passed", "data": {}},
+                        {"name": "generic_worker_process", "status": health.PASS, "detail": "running",
+                         "data": {"generic_worker_pids": [1234], "task_state": task}},
+                        {"name": failed_check, "status": health.FAIL, "detail": "test failure", "data": {}},
+                    ]
+                    if background.get("provisioning"):
+                        checks[0].update(status=health.WARN, data={"service_active_state": "activating"})
+                    if background.get("cleanup"):
+                        disk = next((r for r in checks if r["name"] == "disk_free"), None)
+                        if disk:
+                            disk["data"]["cleaner_running"] = True
+                        else:
+                            checks.append({"name": "disk_free", "status": health.WARN, "detail": "cleanup", "data": {"cleaner_running": True}})
+                    with self.subTest(check=failed_check, task=task, background=background):
+                        for args in (["gwhc"], ["gwhc", "--json"]):
+                            output = io.StringIO()
+                            with mock.patch.object(health, "run_checks", return_value=checks), \
+                                 mock.patch("sys.argv", args), \
+                                 contextlib.redirect_stdout(output), \
+                                 contextlib.redirect_stderr(io.StringIO()), \
+                                 self.assertRaises(SystemExit) as exited:
+                                health.main()
+                            self.assertEqual(exited.exception.code, 1)
+                            if "--json" in args:
+                                report = json.loads(output.getvalue())
+                                self.assertFalse(report["ok"])
+                                self.assertEqual(report["state"], "DEGRADED")
+                                self.assertIn(failed_check, report["state_description"])
+                            else:
+                                self.assertTrue(output.getvalue().startswith("DEGRADED "))
+                                self.assertIn(failed_check, output.getvalue().splitlines()[0])
+
+    def test_cleanup_does_not_hide_puppet_failure(self):
+        results = [
+            {"name": "puppet", "status": health.FAIL, "detail": "last run failed", "data": {}},
+            {"name": "disk_free", "status": health.WARN, "detail": "cleanup", "data": {"cleaner_running": True}},
+        ]
+        state, detail = health.summarize(results)
+        self.assertEqual(state, "DOWN")
+        self.assertIn("puppet: last run failed", detail)
 
 
 if __name__ == "__main__":
