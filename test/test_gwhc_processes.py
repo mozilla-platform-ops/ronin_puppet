@@ -189,18 +189,53 @@ class RealZombieTests(unittest.TestCase):
 
 
 class PuppetCommandTests(unittest.TestCase):
-    def test_verbose_output_includes_puppet_journal_command(self):
+    def puppet_results(self):
         with mock.patch.object(health, "_puppet_service_state", return_value=("activating", "start", "systemctl")), \
              mock.patch.object(health, "CHECKS", [("puppet", health.check_puppet)]):
-            results = health.run_checks()
+            return health.run_checks()
+
+    def test_verbose_output_includes_labeled_troubleshooting_commands(self):
+        results = self.puppet_results()
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
             health.print_human(results, [], verbose=True)
-        self.assertIn("~ journalctl -u run-puppet -b --no-pager", output.getvalue())
+        self.assertIn("View logs (current boot): sudo journalctl -u run-puppet -b --no-pager", output.getvalue())
+        self.assertIn("Service status: systemctl status run-puppet --no-pager", output.getvalue())
+        self.assertNotIn("Check command:", output.getvalue())
+        self.assertNotIn("Equivalent command:", output.getvalue())
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
             health.print_human(results, [], verbose=False)
         self.assertNotIn("journalctl", output.getvalue())
+
+    def test_debug_includes_verbose_and_internal_commands(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            health.print_human(self.puppet_results(), [], debug=True)
+        self.assertIn("View logs (current boot): sudo journalctl", output.getvalue())
+        self.assertIn("Check command: systemctl", output.getvalue())
+        self.assertIn("Equivalent command: journalctl", output.getvalue())
+
+    def test_json_command_visibility(self):
+        results = self.puppet_results()
+        for verbose, debug in ((False, False), (True, False), (False, True)):
+            with self.subTest(verbose=verbose, debug=debug):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    health.print_json(results, [], verbose=verbose, debug=debug)
+                check = json.loads(output.getvalue())["checks"][0]
+                self.assertEqual("troubleshooting_commands" in check, verbose or debug)
+                self.assertEqual("check_commands" in check, debug)
+                self.assertEqual("check_command_equivalents" in check, debug)
+
+    def test_replay_verbose_works_without_recorded_commands(self):
+        for flag in ("--verbose", "--debug"):
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "--replay", str(SCRIPT.parent.parent / "tests/gwhc/fixtures/idle.json"), flag],
+                capture_output=True, text=True, check=True,
+            )
+            self.assertIn("View logs (current boot): sudo journalctl", result.stdout)
+            self.assertIn("Worker processes: ps -C generic-worker", result.stdout)
 
 
 class JournalTests(unittest.TestCase):

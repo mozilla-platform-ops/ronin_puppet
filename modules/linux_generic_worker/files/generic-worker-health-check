@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Read-only health check for Linux Taskcluster generic-worker hosts.
-# Usage: gwhc [--json]
+# Usage: gwhc [--json] [--verbose] [--debug]
 # Exit 0 if all checks pass/warn, 1 if any fail.
 
 import argparse
@@ -542,6 +542,25 @@ CHECKS = [
     ("generic_worker_process",  check_generic_worker_process),
 ]
 
+# Read-only commands for investigating the host, shown even for passing checks.
+TROUBLESHOOTING_COMMANDS = {
+    "clock_skew": [("Reference time", f"curl -sI {CLOCK_REFERENCE_URL} | grep -i date")],
+    "disk_free": [("Disk usage", "df -h / /var /home")],
+    "task_dir_size": [("Task directory usage", f"sudo du -sh {TASK_DIR}")],
+    "puppet": [
+        ("View logs (current boot)", "sudo journalctl -u run-puppet -b --no-pager"),
+        ("Service status", "systemctl status run-puppet --no-pager"),
+    ],
+    "worker_runner_process": [
+        ("Runner processes", "ps -C start-worker -o pid,ppid,stat,args"),
+        ("Worker logs (current boot)", "sudo journalctl -t generic-worker -b -n 100 --no-pager"),
+    ],
+    "generic_worker_process": [
+        ("Worker processes", "ps -C generic-worker -o pid,ppid,stat,args"),
+        ("Worker logs (current boot)", "sudo journalctl -t generic-worker -b -n 100 --no-pager"),
+    ],
+}
+
 
 def run_checks():
     results = []
@@ -624,12 +643,21 @@ def _format_detail(detail):
     return re.sub(r"(role=)(\S+)", lambda m: m.group(1) + bold(m.group(2)), detail)
 
 
-def print_json(results, warnings, verbose=False):
+def print_json(results, warnings, verbose=False, debug=False):
     check_warns = [f"{r['name']}: {r['detail']}" for r in results if r["status"] == WARN]
     state, state_description = summarize(results)
-    checks = results if verbose else [
+    checks = [
         {k: v for k, v in r.items() if k not in ("check_commands", "check_command_equivalents")} for r in results
     ]
+    for check, result in zip(checks, results):
+        if verbose or debug:
+            check["troubleshooting_commands"] = [
+                {"label": label, "command": cmd}
+                for label, cmd in TROUBLESHOOTING_COMMANDS.get(result["name"], [])
+            ]
+        if debug:
+            for key in ("check_commands", "check_command_equivalents"):
+                check[key] = result.get(key, [])
     out = {
         "ok": overall(results) == PASS,
         "state": state,
@@ -642,7 +670,7 @@ def print_json(results, warnings, verbose=False):
     print(json.dumps(out, indent=2))
 
 
-def print_human(results, warnings, verbose=False):
+def print_human(results, warnings, verbose=False, debug=False):
     for w in warnings:
         print(yellow(f"WARNING: {w}"), file=sys.stderr)
 
@@ -679,11 +707,14 @@ def print_human(results, warnings, verbose=False):
             if hint:
                 for line in hint.splitlines():
                     print(f"{indent}{yellow('→')} {line}")
-        if verbose:
+        if verbose or debug:
+            for label, cmd in TROUBLESHOOTING_COMMANDS.get(r["name"], []):
+                print(dim(f"{indent}{label}: {cmd}"))
+        if debug:
             for cmd in r.get("check_commands") or []:
-                print(dim(f"{indent}$ {cmd}"))
+                print(dim(f"{indent}Check command: {cmd}"))
             for cmd in r.get("check_command_equivalents") or []:
-                print(dim(f"{indent}~ {cmd}"))
+                print(dim(f"{indent}Equivalent command: {cmd}"))
 
 
 def main():
@@ -693,7 +724,8 @@ def main():
         epilog="Exit 0 if all checks pass or warn. Exit 1 if any check fails.",
     )
     parser.add_argument("-j", "--json", action="store_true", help="emit JSON report to stdout")
-    parser.add_argument("-v", "--verbose", action="store_true", help="show commands used by each check")
+    parser.add_argument("-v", "--verbose", action="store_true", help="show labeled troubleshooting commands for each check")
+    parser.add_argument("--debug", action="store_true", help="also show commands used internally by checks (includes --verbose)")
 
     testing = parser.add_argument_group("testing arguments")
     testing.add_argument(
@@ -714,9 +746,9 @@ def main():
             warnings.append("not running as root — journalctl checks will return 'unknown' (run with sudo)")
         results = run_checks()
     if args.json:
-        print_json(results, warnings, verbose=args.verbose)
+        print_json(results, warnings, verbose=args.verbose, debug=args.debug)
     else:
-        print_human(results, warnings, verbose=args.verbose)
+        print_human(results, warnings, verbose=args.verbose, debug=args.debug)
     sys.exit(0 if overall(results) == PASS else 1)
 
 
