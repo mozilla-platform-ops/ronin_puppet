@@ -150,7 +150,7 @@ $env:USERNAME = "Administrator"
 $env:USERPROFILE = "C:\Users\Administrator"
 
 # Ensure the Administrator temp directory exists. When running as SYSTEM the
-# profile folder may not have been fully created yet, and Facter/Chocolatey
+# profile folder may not have been fully created yet, and Facter
 # will fail with "No such file or directory" when they try to stat it.
 $adminTemp = "C:\Users\Administrator\AppData\Local\Temp"
 if (-not (Test-Path $adminTemp)) {
@@ -205,38 +205,27 @@ New-ItemProperty -Path $sourceKey -Name 'Branch' -Value $sourceBranch -PropertyT
 
 Write-Host "Seeded $roninKey (worker_pool_id=$workerPoolId, role=$env:PUPPET_ROLE, bootstrap_stage=$bootstrapStage)."
 
-# Pre-install Chocolatey with retry logic so the Puppet chocolatey module's
-# exec resource (which has a creates guard on choco.exe) skips its own
-# download from the flaky community feed.
-$chocoInstallDir = "$env:ProgramData\chocolatey"
-$chocoExe = "$chocoInstallDir\bin\choco.exe"
-if (-not (Test-Path $chocoExe)) {
-    $maxAttempts = 3
-    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+# Match production bootstrap: Git is installed before Puppet runs.
+function Install-KitchenGit {
+    $gitExe = "$env:ProgramFiles\Git\cmd\git.exe"
+    if (-not (Test-Path $gitExe)) {
+        $installer = Join-Path $env:TEMP ("kitchen-git-" + [guid]::NewGuid().ToString('N') + '.exe')
         try {
-            Write-Host "Installing Chocolatey (attempt $attempt of $maxAttempts)..."
-            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-            Write-Host "Chocolatey installed."
-            break
-        } catch {
-            Write-Host "Chocolatey install attempt $attempt failed: $_"
-            if ($attempt -eq $maxAttempts) {
-                throw "Chocolatey installation failed after $maxAttempts attempts."
+            $url = 'https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.2/Git-2.56.0.2-64-bit.exe'
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+                try { Invoke-WebRequest -Uri $url -OutFile $installer -UseBasicParsing -TimeoutSec 300; break }
+                catch { if ($attempt -eq 3) { throw }; Start-Sleep -Seconds 10 }
             }
-            Start-Sleep -Seconds (10 * $attempt)
+            $process = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT /NORESTART /SUPPRESSMSGBOXES /SP- /o:PathOption=Cmd' -Wait -PassThru
+            if ($process.ExitCode -notin 0, 3010) { throw "Git installer failed rc=$($process.ExitCode)" }
+            if (-not (Test-Path $gitExe)) { throw 'Git installation did not produce git.exe.' }
+        } finally {
+            Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue
         }
     }
+    $env:PATH = "$env:ProgramFiles\Git\cmd;$env:PATH"
 }
-
-# Ensure ChocolateyInstall is set at machine level and in the current process
-# so Puppet's chocolateyversion fact can find choco.exe regardless of whether
-# we are running as SYSTEM or Administrator.
-[System.Environment]::SetEnvironmentVariable('ChocolateyInstall', $chocoInstallDir, 'Machine')
-$env:ChocolateyInstall = $chocoInstallDir
-if ($env:PATH -notlike "*$chocoInstallDir\bin*") {
-    $env:PATH = "$chocoInstallDir\bin;$env:PATH"
-}
+Install-KitchenGit
 
 # Set Facter variables
 $env:FACTER_custom_win_role = $env:PUPPET_ROLE

@@ -4,8 +4,8 @@
 
 $git = Test-Path "$ENV:ProgramFiles\Git\bin\git.exe"
 if ($git) {
-    $git_check = Get-Command "git.exe"
-	$git_ver = "{0}.{1}.{2}" -f $git_check.Version.Major,$git_check.Version.Minor,$git_check.Version.Build
+    $git_check = Get-Command "$ENV:ProgramFiles\Git\bin\git.exe"
+	$git_ver = $git_check.Version.ToString()
 }
 else {
 	$git_ver = '0.0.0'

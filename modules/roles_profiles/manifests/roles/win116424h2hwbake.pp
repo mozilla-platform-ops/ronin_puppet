@@ -32,19 +32,13 @@
 #                              Administrator account. Datacenter access/identity — set
 #                              up at deploy (and it needs the Administrator profile to
 #                              exist, which it doesn't on a generalized image).
-#   - google_chrome / chocolatey : Chrome is the only chocolatey consumer, and a baked
-#                              Chrome goes stale between bake and deploy. Installing it at
-#                              deploy keeps it current AND removes chocolatey (whose
-#                              provider is not functional in the bake's single puppet
-#                              pass). chocolatey is dropped with it.
+#   - google_chrome : installed at deployment so Chrome stays current.
 #
 # Consequence: the bake role references NO Vault secrets, so the bake needs only an
 # empty/placeholder vault.yaml (see win-hw-wim/scripts/bake-bootstrap.ps1). No
 # worker-registration secrets are baked either, because windows_worker_runner is
 # excluded above.
 class roles_profiles::roles::win116424h2hwbake {
-  # chocolatey excluded — its only consumer in this role was google_chrome (below),
-  # which is now deploy-time. See header.
   ## Install before Windows Updates is disabled.
   include roles_profiles::profiles::microsoft_tools
   # ssh excluded — OpenSSH server + the winaudit SSH key on Administrator are
@@ -79,7 +73,5 @@ class roles_profiles::roles::win116424h2hwbake {
   include roles_profiles::profiles::git
   include roles_profiles::profiles::mozilla_build
   include roles_profiles::profiles::mozilla_maintenance_service
-  # google_chrome excluded — deploy-time. It was the only chocolatey consumer, and a
-  # baked Chrome goes stale between bake and deploy; installing it at deploy keeps it
-  # current and removes the chocolatey provider dependency from the single-pass bake.
+  # google_chrome excluded — installed at deployment to keep it current.
 }
