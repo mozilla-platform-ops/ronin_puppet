@@ -1,4 +1,7 @@
 exclude: '^r10k_modules/'
+# Keep Ruby hooks aligned with .ruby-version and Puppet with Gemfile.lock.
+default_language_version:
+  ruby: '3.4.12'
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v6.0.0
@@ -13,9 +16,11 @@ repos:
   rev: v2.2.0
   hooks:
   - id: puppet-validate
+    additional_dependencies: ['puppet:8.10.0']
     exclude: '^modules/\w+/plans'
   - id: erb-validate
   - id: epp-validate
+    additional_dependencies: ['puppet:8.10.0']
   - id: puppet-lint
     args:
     - --fix
@@ -78,7 +83,7 @@ repos:
     - id: reprovision-runner-test
       name: Test reprovision_runner templates
       language: ruby
-      additional_dependencies: ['puppet']
+      additional_dependencies: ['puppet:8.10.0']
       entry: .github/scripts/test_reprovision_runner.sh
       pass_filenames: false
       files: '^(modules/reprovision_runner/|\.github/scripts/test_reprovision_runner\.sh$)'
