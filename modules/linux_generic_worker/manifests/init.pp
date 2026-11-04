@@ -32,6 +32,19 @@ class linux_generic_worker (
   # set hostname (not sure how this was working before)
   $hostname = $facts['networking']['hostname']
 
+  # v115.0.1 verifies that its credential-bearing config is private to the
+  # runner UID. Keep older shared-module consumers on their existing settings.
+  # https://github.com/taskcluster/taskcluster/blob/v115.0.1/tools/worker-runner/perms/perms_posix.go
+  if versioncmp(regsubst($start_worker_version, '^v', ''), '115.0.1') >= 0 {
+    $runner_config_owner = $user
+    $runner_config_group = $user
+    $runner_config_mode = '0600'
+  } else {
+    $runner_config_owner = 'root'
+    $runner_config_group = 'root'
+    $runner_config_mode = '0644'
+  }
+
   class { 'packages::linux_generic_worker':
     generic_worker_version    => $generic_worker_version,
     generic_worker_sha256     => $generic_worker_sha256,
@@ -128,9 +141,9 @@ class linux_generic_worker (
     '/etc/start-worker.yml':
       ensure  => file,
       content => template('linux_generic_worker/worker-runner-config.yml.erb'),
-      owner   => root,
-      group   => root,
-      mode    => '0644';
+      owner   => $runner_config_owner,
+      group   => $runner_config_group,
+      mode    => $runner_config_mode;
 
     '/var/log/genericworker':
       ensure => directory,
