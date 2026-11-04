@@ -679,7 +679,7 @@ echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
 if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
     echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
 else
-    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}${WORKER_TYPE_OVERRIDE}${_RESET}"
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}<none>${_RESET}"
 fi
 
 ROLE_FILE='/etc/puppet_role'
