@@ -27,6 +27,7 @@ TASK_DIR_FAIL_GB = 40
 
 GW_LOG_DIR = "/var/log/genericworker"
 GW_LOG_STALE_MINUTES = 15
+PROC_ROOT = "/proc"
 
 CLOCK_REFERENCE_URL = "https://taskcluster.net"
 CLOCK_WARN_SECONDS = 60
@@ -77,19 +78,19 @@ def find_procs_by_name(name):
     """Return list of pids whose comm or argv[0] basename matches name."""
     pids = []
     try:
-        for entry in os.scandir("/proc"):
+        for entry in os.scandir(PROC_ROOT):
             if not entry.name.isdigit():
                 continue
             pid = int(entry.name)
             try:
-                with open(f"/proc/{pid}/comm") as f:
+                with open(f"{PROC_ROOT}/{pid}/comm") as f:
                     if f.read().strip() == name:
                         pids.append(pid)
                         continue
             except OSError:
                 continue
             try:
-                with open(f"/proc/{pid}/cmdline", "rb") as f:
+                with open(f"{PROC_ROOT}/{pid}/cmdline", "rb") as f:
                     argv0 = f.read().split(b"\x00")[0]
                 if os.path.basename(argv0.decode("utf-8", "replace")) == name:
                     pids.append(pid)
@@ -98,6 +99,14 @@ def find_procs_by_name(name):
     except OSError:
         pass
     return pids
+
+
+def _worker_process_info(pid):
+    """Read state and parent together; reject incomplete or disappearing entries."""
+    with open(f"{PROC_ROOT}/{pid}/status") as f:
+        fields = dict(line.split(":", 1) for line in f if ":" in line)
+    return {"pid": pid, "state": fields["State"].split()[0],
+            "ppid": int(fields["PPid"].strip())}
 
 
 def _cleaner_running():
@@ -202,7 +211,25 @@ def puppet_done():
 
 def check_generic_worker_process():
     pids = find_procs_by_name("generic-worker")
-    data = {"generic_worker_pids": pids}
+    processes = []
+    unverified = []
+    for pid in pids:
+        try:
+            processes.append(_worker_process_info(pid))
+        except (OSError, KeyError, ValueError, IndexError):
+            unverified.append(pid)
+    zombies = [p for p in processes if p["state"] == "Z"]
+    live_pids = [p["pid"] for p in processes if p["state"] not in ("Z", "X", "x")]
+    data = {"generic_worker_pids": live_pids, "processes": processes,
+            "zombie_pids": [p["pid"] for p in zombies]}
+    if zombies:
+        details = ", ".join(f"pid {p['pid']}, ppid {p['ppid']}, state Z" for p in zombies)
+        return FAIL, f"zombie generic-worker ({details})", data
+    if unverified:
+        data["unverified_pids"] = unverified
+        return FAIL, f"process disappeared or state unreadable: pids {unverified}", data
+    if len(live_pids) != len(pids):
+        return FAIL, "generic-worker process has exited", data
     if len(pids) == 0:
         if not puppet_done():
             return WARN, "not running — puppet run still in progress (waiting for sentinel)", data
@@ -380,7 +407,8 @@ def _puppet_service_state():
 
 
 def check_puppet():
-    data = {"metadata_path": PUPPET_METADATA}
+    data = {"metadata_path": PUPPET_METADATA,
+            "equiv_cmds": ["journalctl -u run-puppet -b --no-pager"]}
 
     active, sub, svc_cmd = _puppet_service_state()
     data["service_active_state"] = active
@@ -522,6 +550,10 @@ def summarize(results):
     wrr    = _by_name(results, "worker_runner_process") or {}
     pdata  = puppet.get("data", {})
     gdata  = gwp.get("data", {})
+
+    if gdata.get("zombie_pids"):
+        state = "DOWN" if puppet.get("status") == FAIL else "DEGRADED"
+        return state, gwp.get("detail", "zombie generic-worker")
 
     disk = _by_name(results, "disk_free") or {}
     if (disk.get("data") or {}).get("cleaner_running"):
