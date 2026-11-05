@@ -16,6 +16,7 @@ class packages::linux_generic_worker (
 ) {
   $threshold_version = '63.0.0'
   $gw_version_without_v = regsubst($generic_worker_version, 'v', '')
+  $direct_worker = versioncmp($gw_version_without_v, '115.0.0') >= 0
   $taskcluster_arch = $facts['os']['architecture'] ? {
     'amd64'   => 'amd64',
     'x86_64'  => 'amd64',
@@ -85,10 +86,12 @@ class packages::linux_generic_worker (
       sha256           => $livelog_checksum,
     }
 
-    packages::linux_taskcluster_binary { 'start-worker':
-      version          => $start_worker_version,
-      file_destination => '/usr/local/bin/start-worker',
-      sha256           => $start_worker_checksum,
+    if !$direct_worker {
+      packages::linux_taskcluster_binary { 'start-worker':
+        version          => $start_worker_version,
+        file_destination => '/usr/local/bin/start-worker',
+        sha256           => $start_worker_checksum,
+      }
     }
   } else {
     packages::linux_package_from_s3 { "${generic_worker_asset}-linux-amd64-${generic_worker_version}":
@@ -115,13 +118,20 @@ class packages::linux_generic_worker (
       checksum            => $livelog_checksum,
     }
 
-    packages::linux_package_from_s3 { "start-worker-linux-amd64-${start_worker_version}":
-      private             => false,
-      os_version_specific => false,
-      type                => 'bin',
-      file_destination    => '/usr/local/bin/start-worker',
-      checksum            => $start_worker_checksum,
+    if !$direct_worker {
+      packages::linux_package_from_s3 { "start-worker-linux-amd64-${start_worker_version}":
+        private             => false,
+        os_version_specific => false,
+        type                => 'bin',
+        file_destination    => '/usr/local/bin/start-worker',
+        checksum            => $start_worker_checksum,
+      }
     }
   }
 
+  if $direct_worker {
+    file { '/usr/local/bin/start-worker':
+      ensure => absent,
+    }
+  }
 }
