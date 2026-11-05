@@ -86,6 +86,21 @@ class linux_generic_worker (
   $downloads_dir       = "${user_homedir}/downloads"
   $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
 
+  # Old cache indexes contain ownerUsername/mounterUID, which v115 rejects.
+  # Check the state rather than subscribing to the binary: this also repairs
+  # workers that already upgraded. Remove the indexed data with the indexes so
+  # downloads and directory caches do not become untracked disk usage. Healthy
+  # v115 state is left alone on subsequent runs.
+  if $generic_worker_115_or_newer {
+    exec { 'purge-incompatible-linux-gw-cache-state':
+      command => "/bin/rm -rf -- '${user_homedir}/file-caches.json' '${user_homedir}/directory-caches.json' '${downloads_dir}' '${caches_dir}'",
+      onlyif  => "/usr/bin/grep -Eq '\"(ownerUsername|mounterUID)\"[[:space:]]*:' '${user_homedir}/file-caches.json' '${user_homedir}/directory-caches.json'",
+      user    => $user,
+      require => Class['packages::linux_generic_worker'],
+      before  => File["${user_homedir}/downloads"],
+    }
+  }
+
   exec {
     'create ed25519 signing key':
       path    => ['/bin', '/sbin', '/usr/local/bin', '/usr/bin'],
