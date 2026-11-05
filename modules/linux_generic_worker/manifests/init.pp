@@ -112,7 +112,7 @@ class linux_generic_worker (
   if $generic_worker_115_or_newer {
     exec { 'purge-incompatible-linux-gw-cache-state':
       command => "/bin/rm -rf -- '${user_homedir}/file-caches.json' '${user_homedir}/directory-caches.json' '${downloads_dir}' '${caches_dir}'",
-      onlyif  => "/usr/bin/grep -Eq '\"(ownerUsername|mounterUID)\"[[:space:]]*:' '${user_homedir}/file-caches.json' '${user_homedir}/directory-caches.json'",
+      onlyif  => "/bin/grep -Eq '\"(ownerUsername|mounterUID)\"[[:space:]]*:' '${user_homedir}/file-caches.json' '${user_homedir}/directory-caches.json'",
       user    => $user,
       require => Class['packages::linux_generic_worker'],
       before  => File["${user_homedir}/downloads"],
