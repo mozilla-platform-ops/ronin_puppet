@@ -12,6 +12,7 @@ import re
 import socket
 import subprocess
 import sys
+import time
 import urllib.request
 
 # ── constants ─────────────────────────────────────────────────────────────────
@@ -242,7 +243,7 @@ def check_generic_worker_process():
     if len(pids) > 1:
         return FAIL, f"{len(pids)} processes found (expected 1): pids {pids}", data
 
-    task_state, task_cmd = _gw_task_state()
+    task_state, task_cmd = _gw_task_state(pids[0])
     data["task_state"] = task_state
     data["check_cmds"] = [task_cmd]
     if task_state == "task running":
@@ -251,7 +252,8 @@ def check_generic_worker_process():
         load1, load5, load15 = os.getloadavg()
         data["load_avg"] = {"1m": round(load1, 2), "5m": round(load5, 2), "15m": round(load15, 2)}
         return PASS, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f}), do not reboot", data
-    return PASS, f"running (pid {pids[0]}) — {task_state}", data
+    status = WARN if task_state.startswith("unknown") else PASS
+    return status, f"running (pid {pids[0]}) — {task_state}", data
 
 
 def _proc_descendants(root_pid):
@@ -283,8 +285,36 @@ def _proc_descendants(root_pid):
     return count
 
 
-def _gw_task_state():
-    cmd = ["journalctl", "-t", "generic-worker", "-n", "50", "--no-pager"]
+def _worker_status_context(pid):
+    # /proc stat field 22 is process start time in clock ticks since boot.
+    with open(f"/proc/{pid}/stat") as source:
+        ticks = int(source.read().rsplit(")", 1)[1].split()[19])
+    with open("/proc/uptime") as source:
+        uptime = float(source.read().split()[0])
+    started = time.time() - uptime + ticks / os.sysconf("SC_CLK_TCK")
+    with open(f"/proc/{pid}/environ", "rb") as source:
+        environment = dict(item.split(b"=", 1) for item in source.read().split(b"\0") if b"=" in item)
+    tmpdir = os.fsdecode(environment.get(b"TMPDIR", b"/tmp")) or "/tmp"
+    return started, os.path.join(tmpdir, "worker-status.json")
+
+
+def _gw_task_state(pid):
+    started = None
+    try:
+        started, status_path = _worker_status_context(pid)
+        # v115 writes this file while tasks run and removes it when idle.
+        # Ignore state left by a previous worker process.
+        with open(status_path) as source:
+            if os.fstat(source.fileno()).st_mtime >= started:
+                task_ids = json.load(source).get("currentTaskIds")
+                if isinstance(task_ids, list) and task_ids and all(isinstance(t, str) and t for t in task_ids):
+                    return "task running", f"cat {status_path}"
+    except (OSError, ValueError, AttributeError):
+        pass
+
+    cmd = ["journalctl", "-b", "-t", "generic-worker", "-n", "1000", "--no-pager"]
+    if started is not None:
+        cmd.extend(["--since", f"@{started:.6f}"])
     cmd_str = " ".join(cmd)
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
@@ -292,8 +322,14 @@ def _gw_task_state():
         for line in reversed(lines):
             if "No task claimed" in line:
                 return "idle", cmd_str
-            if "Executing command" in line or "Starting task feature" in line:
+            if "Task found:" in line or "Executing command" in line or "Starting task feature" in line:
                 return "task running", cmd_str
+            if "finished successfully!" in line or "Completed all task(s)" in line or "Exiting worker" in line:
+                return "unknown (worker finishing task or exiting)", cmd_str
+            if '"eventType":"workerReady"' in line or "All features initialised." in line:
+                return "ready", cmd_str
+            if "Initialising feature" in line or "Loading generic-worker config" in line:
+                return "starting", cmd_str
         if not lines:
             return "unknown (no journal output)", cmd_str
     except Exception as e:
@@ -592,16 +628,23 @@ def summarize(results):
         return "WORKING", f"g-w running task ({n} children, load {load1})"
 
     ts = gdata.get("task_state", "unknown")
+    if ts == "starting":
+        return "STARTING", "g-w initializing"
+    if ts == "ready":
+        return "READY", "g-w initialized, waiting for a task claim response"
     if ts == "idle":
         return "IDLE", "g-w waiting for tasks"
-    return "IDLE", f"g-w up (task state: {ts})"
+    return "UNKNOWN", f"g-w up (task state: {ts})"
 
 
 _STATE_COLOR = {
     "RECOVERING":   yellow,
     "PROVISIONING": yellow,
     "WORKING":      green,
+    "STARTING":     yellow,
+    "READY":        green,
     "IDLE":         green,
+    "UNKNOWN":      yellow,
     "DEGRADED":     yellow,
     "DOWN":         red,
 }
