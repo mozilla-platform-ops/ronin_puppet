@@ -66,6 +66,7 @@ if direct_worker
     its('group') { should eq 'cltbld' }
     its('mode') { should cmp '0600' }
     it { should be_readable.by_user('cltbld') }
+    its('content') { should_not match /"checkForNewDeploymentEverySecs"\s*:/ }
   end
 
   describe json('/home/cltbld/generic-worker.config') do
@@ -74,7 +75,6 @@ if direct_worker
     its(['shutdownMachineOnInternalError']) { should eq false }
     its(['workerGroup']) { should_not be_empty }
     its(['workerId']) { should_not be_empty }
-    it { should_not have_key('checkForNewDeploymentEverySecs') }
   end
 
   describe file('/usr/local/bin/run-start-worker.sh') do
