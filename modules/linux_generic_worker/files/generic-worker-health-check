@@ -199,6 +199,39 @@ def puppet_done():
         return False
 
 
+def check_tc_versions():
+    versions = {}
+    details = []
+    commands = []
+    status = PASS
+    for component in ("generic-worker", "taskcluster-proxy", "livelog", "start-worker"):
+        path = f"/usr/local/bin/{component}"
+        if not os.path.exists(path):
+            versions[component] = None
+            if component != "start-worker":
+                status = WARN
+                details.append(f"{component}=not installed")
+            continue
+        version = None
+        for flag in ("--short-version", "--version"):
+            cmd = [path, flag]
+            commands.append(" ".join(cmd))
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
+                if result.returncode == 0:
+                    match = re.search(r"\bv?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?", result.stdout + result.stderr)
+                    if match:
+                        version = match.group(0)
+                        break
+            except (OSError, subprocess.TimeoutExpired):
+                break
+        versions[component] = version
+        details.append(f"{component}={version or 'unknown'}")
+        if version is None:
+            status = WARN
+    return status, ", ".join(details), {"versions": versions, "check_cmds": commands}
+
+
 def check_generic_worker_process():
     pids = find_procs_by_name("generic-worker")
     data = {"generic_worker_pids": pids}
@@ -491,6 +524,7 @@ CHECKS = [
     ("disk_free",               check_disk_free),
     ("task_dir_size",           check_task_dir_size),
     ("puppet",                  check_puppet),
+    ("tc_versions",             check_tc_versions),
     ("worker_runner_process", check_worker_runner_process),
     ("generic_worker_process",  check_generic_worker_process),
 ]
