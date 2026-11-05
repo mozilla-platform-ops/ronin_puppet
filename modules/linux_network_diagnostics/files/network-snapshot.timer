@@ -1,0 +1,11 @@
+[Unit]
+Description=Capture network state every minute
+
+[Timer]
+OnBootSec=90s
+OnUnitActiveSec=60s
+AccuracySec=5s
+Unit=network-snapshot.service
+
+[Install]
+WantedBy=timers.target

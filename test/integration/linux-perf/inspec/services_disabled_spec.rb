@@ -27,7 +27,12 @@ describe service('modemmanager') do
 end
 
 describe service('network-manager') do
-  it { should_not be_enabled }
+  if os.family == 'ubuntu' && os.release == '18.04'
+    it { should be_enabled }
+    it { should be_running }
+  else
+    it { should_not be_enabled }
+  end
 end
 
 # This check is broken on Ubuntu 22.04, even when the service is disabled.

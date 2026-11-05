@@ -13,7 +13,24 @@ class disable_services () {
           #   (never worked in build-puppet/16.04)
           $install_and_disable = ['cups', 'anacron',
             'whoopsie', 'modemmanager', 'apport',
-          'avahi-daemon', 'network-manager']
+          'avahi-daemon']
+          # 18.04 Moonshots use NetworkManager for DHCP. Stopping it leaves
+          # networking without its manager after boot and across lease renewals.
+          # Explicitly enable it to repair hosts disabled by older catalogs.
+          $keep_network_manager = $facts['os']['release']['full'] == '18.04'
+          $network_manager_state = $keep_network_manager ? {
+            true    => running,
+            default => stopped,
+          }
+          package { 'network-manager':
+            ensure => latest,
+          }
+          service { 'network-manager':
+            ensure   => $network_manager_state,
+            enable   => $keep_network_manager,
+            provider => 'systemd',
+            require  => Package['network-manager'],
+          }
           package {
             $install_and_disable:
               ensure => latest;
