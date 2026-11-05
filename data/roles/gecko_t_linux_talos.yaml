@@ -1,0 +1,5 @@
+---
+# Temporary diagnostic canary. Both the switch and hostname match are required.
+linux_network_diagnostics_enabled: true
+linux_network_diagnostics_hosts:
+  - t-linux64-ms-008
