@@ -271,8 +271,12 @@ def _gw_task_state():
 def check_worker_runner_process():
     # TODO: add --check-tc-api flag to query queue.taskcluster.net for
     # lastDateActive using workerPoolId + workerId from /etc/start-worker.yml.
-    pids = find_procs_by_name("start-worker")
-    data = {"start_worker_pids": pids, "log_dir": GW_LOG_DIR}
+    pids = find_procs_by_name("generic-worker")
+    worker_name = "generic-worker"
+    if not pids:
+        pids = find_procs_by_name("start-worker")
+        worker_name = "start-worker"
+    data = {"worker_process": worker_name, "worker_pids": pids, "log_dir": GW_LOG_DIR}
 
     log_fresh = False
     log_age_min = None
@@ -304,7 +308,7 @@ def check_worker_runner_process():
             data["journal_error"] = str(e)
 
     if not pids:
-        return FAIL, "start-worker process not found", data
+        return FAIL, "worker process not found", data
     if not log_fresh:
         age_str = f"{log_age_min}min" if log_age_min is not None else "unknown"
         return WARN, f"process alive (pid {pids[0]}) but logs {age_str} old", data

@@ -1,5 +1,8 @@
 require_relative 'spec_helper'
 
+generic_worker_version = command('/usr/local/bin/generic-worker --short-version').stdout.strip.sub(/\Av/, '')
+direct_worker = Gem::Version.new(generic_worker_version) >= Gem::Version.new('115.0.0')
+
 # binaries
 
 describe command('generic-worker --version') do
@@ -24,8 +27,12 @@ describe file('/usr/local/bin/taskcluster-proxy') do
 end
 
 describe file('/usr/local/bin/start-worker') do
-  it { should exist }
-  it { should be_executable }
+  if direct_worker
+    it { should_not exist }
+  else
+    it { should exist }
+    it { should be_executable }
+  end
 end
 
 describe file('/usr/local/bin/quarantine-worker') do
@@ -48,34 +55,59 @@ end
 
 # config
 
-start_worker_version = command('/usr/local/bin/start-worker --short-version').stdout.strip.sub(/\Av/, '')
-generic_worker_version = command('/usr/local/bin/generic-worker --short-version').stdout.strip.sub(/\Av/, '')
+if direct_worker
+  describe file('/etc/start-worker.yml') do
+    it { should_not exist }
+  end
 
-describe file('/etc/start-worker.yml') do
-  it { should exist }
-  if Gem::Version.new(start_worker_version) >= Gem::Version.new('115.0.1')
+  describe file('/home/cltbld/generic-worker.config') do
+    it { should exist }
     its('owner') { should eq 'cltbld' }
     its('group') { should eq 'cltbld' }
     its('mode') { should cmp '0600' }
     it { should be_readable.by_user('cltbld') }
-  else
-    its('owner') { should eq 'root' }
-    its('group') { should eq 'root' }
-    its('mode') { should cmp '0644' }
-  end
-end
-
-describe yaml('/etc/start-worker.yml') do
-  if Gem::Version.new(start_worker_version) >= Gem::Version.new('115.0.0')
-    its(['cacheOverRestarts']) { should eq '' }
-  else
-    its(['cacheOverRestarts']) { should eq true }
   end
 
-  if Gem::Version.new(generic_worker_version) >= Gem::Version.new('115.0.0')
-    its(['workerConfig']) { should_not have_key('checkForNewDeploymentEverySecs') }
-  else
+  describe json('/home/cltbld/generic-worker.config') do
+    its(['numberOfTasksToRun']) { should eq 1 }
+    its(['disableReboots']) { should eq true }
+    its(['shutdownMachineOnInternalError']) { should eq false }
+    its(['workerGroup']) { should_not be_empty }
+    its(['workerId']) { should_not be_empty }
+    it { should_not have_key('checkForNewDeploymentEverySecs') }
+  end
+
+  describe file('/usr/local/bin/run-start-worker.sh') do
+    its('content') { should include '/usr/local/bin/generic-worker run --config' }
+    its('content') { should_not include '/usr/local/bin/start-worker' }
+  end
+else
+  start_worker_version = command('/usr/local/bin/start-worker --short-version').stdout.strip.sub(/\Av/, '')
+
+  describe file('/etc/start-worker.yml') do
+    it { should exist }
+    if Gem::Version.new(start_worker_version) >= Gem::Version.new('115.0.1')
+      its('owner') { should eq 'cltbld' }
+      its('group') { should eq 'cltbld' }
+      its('mode') { should cmp '0600' }
+    else
+      its('owner') { should eq 'root' }
+      its('group') { should eq 'root' }
+      its('mode') { should cmp '0644' }
+    end
+  end
+
+  describe yaml('/etc/start-worker.yml') do
+    if Gem::Version.new(start_worker_version) >= Gem::Version.new('115.0.0')
+      its(['cacheOverRestarts']) { should eq '' }
+    else
+      its(['cacheOverRestarts']) { should eq true }
+    end
     its(['workerConfig', 'checkForNewDeploymentEverySecs']) { should eq 0 }
+  end
+
+  describe file('/usr/local/bin/run-start-worker.sh') do
+    its('content') { should include '/usr/local/bin/start-worker' }
   end
 end
 
