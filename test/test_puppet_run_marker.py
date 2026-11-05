@@ -229,7 +229,7 @@ fail() { exit 1; }
 
     def test_rendered_worker_gate_waits_for_helper(self):
         template = (REPO / "modules/linux_generic_worker/templates/run-start-worker.sh.erb").read_text()
-        gate = template.split("# wait for puppet to finish before starting", 1)[1].split("# First run the start-worker", 1)[0]
+        gate = template.split("# wait for puppet to finish before starting", 1)[1].split("# Run from the worker home", 1)[0]
         with tempfile.TemporaryDirectory() as tmp:
             path = pathlib.Path(tmp)
             helper = path / "helper"
