@@ -19,6 +19,8 @@ import urllib.request
 # ── constants ─────────────────────────────────────────────────────────────────
 
 PUPPET_METADATA = "/etc/puppet/last_run_metadata.json"
+JSON_SCHEMA_VERSION = 1
+_UNVERSIONED = object()
 PUPPET_DONE_SENTINEL = "/run/puppet/run_done"
 PUPPET_ROLE = "/etc/puppet_role"
 WORKER_CONFIG = "/home/cltbld/generic-worker.config"
@@ -718,7 +720,7 @@ def _format_detail(result):
     return detail
 
 
-def print_json(results, warnings, verbose=False, debug=False):
+def print_json(results, warnings, verbose=False, debug=False, schema_version=JSON_SCHEMA_VERSION):
     check_warns = [f"{r['name']}: {r['detail']}" for r in results if r["status"] == WARN]
     state, state_description = summarize(results)
     checks = [
@@ -742,6 +744,8 @@ def print_json(results, warnings, verbose=False, debug=False):
         "warnings": warnings + check_warns,
         "checks": checks,
     }
+    if schema_version is not _UNVERSIONED:
+        out["schema_version"] = schema_version
     print(json.dumps(out, indent=2))
 
 
@@ -824,18 +828,20 @@ def main():
     args = parser.parse_args()
 
     warnings = []
+    schema_version = JSON_SCHEMA_VERSION
     if args.replay:
         src = sys.stdin if args.replay == "-" else open(args.replay)
         with src as f:
             snapshot = json.load(f)
         results = snapshot["checks"]
         warnings = snapshot.get("warnings", [])
+        schema_version = snapshot.get("schema_version", _UNVERSIONED)
     else:
         if os.geteuid() != 0:
             warnings.append("not running as root — journalctl checks will return 'unknown' (run with sudo)")
         results = run_checks()
     if args.json:
-        print_json(results, warnings, verbose=args.verbose, debug=args.debug)
+        print_json(results, warnings, verbose=args.verbose, debug=args.debug, schema_version=schema_version)
     else:
         print_human(results, warnings, verbose=args.verbose, debug=args.debug)
     sys.exit(0 if overall(results) == PASS else 1)
