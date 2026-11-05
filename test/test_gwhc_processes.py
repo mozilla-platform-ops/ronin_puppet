@@ -24,6 +24,41 @@ health = importlib.util.module_from_spec(spec)
 loader.exec_module(health)
 
 
+class JsonSchemaTests(unittest.TestCase):
+    def test_live_report_identifies_schema_and_zombie_evidence(self):
+        status, detail, data = health.FAIL, "zombie", {
+            "generic_worker_pids": [], "zombie_pids": [1234],
+            "processes": [{"pid": 1234, "ppid": 999, "state": "Z"}],
+        }
+        results = [{"name": "generic_worker_process", "status": status, "detail": detail, "data": data}]
+        output = io.StringIO()
+        with mock.patch.object(health, "run_checks", return_value=results), \
+             mock.patch("sys.argv", ["gwhc", "--json"]), \
+             contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as exited:
+            health.main()
+        report = json.loads(output.getvalue())
+        self.assertEqual(exited.exception.code, 1)
+        self.assertEqual(report["schema_version"], 1)
+        self.assertEqual(report["checks"][0]["data"], data)
+
+    def test_replay_preserves_version_or_absence(self):
+        fixture = SCRIPT.parent.parent / "tests/gwhc/fixtures/idle.json"
+        snapshot = json.loads(fixture.read_text())
+        for version in (None, 1, 42):
+            with self.subTest(version=version):
+                if version is not None:
+                    snapshot["schema_version"] = version
+                result = subprocess.run(
+                    [sys.executable, str(SCRIPT), "--replay", "-", "--json"],
+                    input=json.dumps(snapshot), capture_output=True, text=True, check=True,
+                )
+                report = json.loads(result.stdout)
+                if version is None:
+                    self.assertNotIn("schema_version", report)
+                else:
+                    self.assertEqual(report["schema_version"], version)
+
+
 class OperatorHoldTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
