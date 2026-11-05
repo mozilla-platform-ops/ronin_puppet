@@ -1,7 +1,7 @@
 exclude: '^r10k_modules/'
-# Keep Ruby hooks aligned with .ruby-version and Puppet with Gemfile.lock.
+# Use the Ruby installed from .ruby-version; keep Puppet aligned with Gemfile.lock.
 default_language_version:
-  ruby: '3.4.12'
+  ruby: system
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v6.0.0
