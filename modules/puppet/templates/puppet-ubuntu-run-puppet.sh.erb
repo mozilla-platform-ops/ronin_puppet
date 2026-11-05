@@ -793,10 +793,10 @@ if [ -n "$WORKER_TYPE_OVERRIDE" ]; then
     echo "  WORKER_TYPE_OVERRIDE: $WORKER_TYPE_OVERRIDE"
 
     # rewrite the config
-    /usr/local/bin/change_workertype.py -t "${WORKER_TYPE_OVERRIDE}"
+    /usr/local/bin/change_workertype.py -t "${WORKER_TYPE_OVERRIDE}" || fail "Failed to apply worker type override"
 fi
 
-# touch the semaphore to let run-start-worker know it can start start-worker
+# Publish completion only after the worker config and any override are ready.
 lifecycle_log emit puppet_run_succeeded
 if [ "$WRITE_SENTINEL" -eq 1 ]; then
     /usr/local/bin/puppet-run-marker publish || fail "Failed to publish Puppet completion marker"
