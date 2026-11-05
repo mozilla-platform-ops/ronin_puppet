@@ -1,2 +1,6 @@
---- {}
-# A hash/dictionary is expected. This prevents a puppet load failure warning.
+---
+# run-puppet hosts may lack facts.puppet_role; use the OS layer and an exact
+# hostname allowlist. The diagnostic profile is included by the Talos role.
+linux_network_diagnostics_enabled: true
+linux_network_diagnostics_hosts:
+  - t-linux64-ms-008
