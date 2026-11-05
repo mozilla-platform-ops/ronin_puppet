@@ -86,6 +86,24 @@ class linux_generic_worker (
   $downloads_dir       = "${user_homedir}/downloads"
   $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
 
+  if $generic_worker_115_or_newer {
+    # Standalone hardware workers do not use Worker Manager. Puppet supplies
+    # the complete config and the launcher invokes generic-worker directly.
+    file { "${user_homedir}/generic-worker.config":
+      ensure    => file,
+      content   => template('linux_generic_worker/generic-worker.config.erb'),
+      owner     => $user,
+      group     => $user,
+      mode      => '0600',
+      show_diff => false,
+    }
+    $runner_config_ensure = absent
+    $runner_config_content = undef
+  } else {
+    $runner_config_ensure = file
+    $runner_config_content = template('linux_generic_worker/worker-runner-config.yml.erb')
+  }
+
   # Old cache indexes contain ownerUsername/mounterUID, which v115 rejects.
   # Check the state rather than subscribing to the binary: this also repairs
   # workers that already upgraded. Remove the indexed data with the indexes so
@@ -157,8 +175,8 @@ class linux_generic_worker (
       mode   => '0755';
 
     '/etc/start-worker.yml':
-      ensure  => file,
-      content => template('linux_generic_worker/worker-runner-config.yml.erb'),
+      ensure  => $runner_config_ensure,
+      content => $runner_config_content,
       owner   => $runner_config_owner,
       group   => $runner_config_group,
       mode    => $runner_config_mode;
