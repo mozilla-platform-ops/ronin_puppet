@@ -217,7 +217,7 @@ def check_generic_worker_process():
         data["child_procs"] = nchildren
         load1, load5, load15 = os.getloadavg()
         data["load_avg"] = {"1m": round(load1, 2), "5m": round(load5, 2), "15m": round(load15, 2)}
-        return WARN, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f}), do not reboot", data
+        return PASS, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f}), do not reboot", data
     return PASS, f"running (pid {pids[0]}) — {task_state}", data
 
 
@@ -271,11 +271,11 @@ def _gw_task_state():
 def check_worker_runner_process():
     # TODO: add --check-tc-api flag to query queue.taskcluster.net for
     # lastDateActive using workerPoolId + workerId from /etc/start-worker.yml.
-    pids = find_procs_by_name("generic-worker")
-    worker_name = "generic-worker"
+    pids = find_procs_by_name("start-worker")
+    worker_name = "start-worker"
     if not pids:
-        pids = find_procs_by_name("start-worker")
-        worker_name = "start-worker"
+        pids = find_procs_by_name("generic-worker")
+        worker_name = "generic-worker"
     data = {"worker_process": worker_name, "worker_pids": pids, "log_dir": GW_LOG_DIR}
 
     log_fresh = False
@@ -309,12 +309,13 @@ def check_worker_runner_process():
 
     if not pids:
         return FAIL, "worker process not found", data
+    process_detail = "direct launch" if worker_name == "generic-worker" else f"running (pid {pids[0]})"
     if not log_fresh:
         age_str = f"{log_age_min}min" if log_age_min is not None else "unknown"
-        return WARN, f"process alive (pid {pids[0]}) but logs {age_str} old", data
+        return WARN, f"{process_detail}, logs {age_str} old", data
     if log_age_min is not None:
-        return PASS, f"running (pid {pids[0]}), logs {log_age_min}min old", data
-    return PASS, f"running (pid {pids[0]}), logs recent (journal)", data
+        return PASS, f"{process_detail}, logs {log_age_min}min old", data
+    return PASS, f"{process_detail}, logs recent (journal)", data
 
 
 def _shallow_dir_size(path):
@@ -549,7 +550,7 @@ def summarize(results):
     if gwp.get("status") == FAIL:
         return "DEGRADED", f"g-w {gwp.get('detail', 'down')}, puppet ok"
     if wrr.get("status") == FAIL:
-        return "DEGRADED", "start-worker missing, g-w ok"
+        return "DEGRADED", "worker logging/process check failed, g-w ok"
 
     if gdata.get("task_state") == "task running":
         n = gdata.get("child_procs", "?")
@@ -619,13 +620,16 @@ def print_human(results, warnings, verbose=False):
     indent = " " * (2 + 1 + 2 + w + 2)  # marker + spacing + name col + spacing
     for r in results:
         s = r["status"]
+        name = r["name"]
+        if name == "worker_runner_process" and r.get("data", {}).get("worker_process") == "generic-worker":
+            name = "worker_logging"
         if s == PASS:
             marker = "·"
         elif s == WARN:
             marker = yellow("⚠")
         else:
             marker = red("✗")
-        print(f"  {marker}  {r['name'].ljust(w)}  {_format_detail(r['detail'])}")
+        print(f"  {marker}  {name.ljust(w)}  {_format_detail(r['detail'])}")
         if s == FAIL:
             hint = REMEDIATIONS.get(r["name"])
             if hint:
