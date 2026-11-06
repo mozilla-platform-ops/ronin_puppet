@@ -45,8 +45,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Verify the Windows 11 24H2 Enterprise build on Marketplace. Its WdFilter
-          # layout differs from the NUC WIM, so Pester tests that hardware path with a fixture.
+          # Verify the Windows 11 24H2 Enterprise build on Marketplace. Marketplace
+          # and captured NUC images use the top-level path; deployed NUCs can have the
+          # nested path, so Pester fixtures cover both layouts.
           - role: win116425h2azure
             worker_pool_id: win11-64-24h2-hw-kitchen
             kitchen_instance: windows-win11-64-24h2-hw-kitchen
