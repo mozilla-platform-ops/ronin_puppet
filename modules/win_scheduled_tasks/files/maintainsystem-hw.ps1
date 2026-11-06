@@ -4,6 +4,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
+. (Join-Path $PSScriptRoot 'defender_driver.ps1')
+
 function Write-Log {
     param (
         [string] $message,
@@ -827,8 +829,16 @@ function Invoke-DefenderRealtimeGuard {
     }
     process {
         try {
-            $drvDir     = Join-Path $env:SystemRoot 'System32\drivers'
-            $drivers    = @('WdFilter', 'WdBoot', 'WdNisDrv')
+            $drvDir = Join-Path $env:SystemRoot 'System32\drivers'
+            # Windows 11 24H2 hardware images load WdFilter from drivers\wd;
+            # older layouts may use the top-level path.
+            $wdFilterPaths = @(Get-WdFilterDriverPaths -DriverDirectory $drvDir)
+            $drivers = @(
+                [pscustomobject]@{ Name = 'WdFilter'; Path = $wdFilterPaths[0] }
+                [pscustomobject]@{ Name = 'WdFilter'; Path = $wdFilterPaths[1] }
+                [pscustomobject]@{ Name = 'WdBoot'; Path = (Join-Path $drvDir 'WdBoot.sys') }
+                [pscustomobject]@{ Name = 'WdNisDrv'; Path = (Join-Path $drvDir 'WdNisDrv.sys') }
+            )
             if (-not (Test-Path $StatusDir)) { New-Item -ItemType Directory -Path $StatusDir -Force | Out-Null }
             $statusFile = Join-Path $StatusDir 'defender_status.json'
             $markerFile = Join-Path $StatusDir 'defender_guard.json'
@@ -857,21 +867,23 @@ function Invoke-DefenderRealtimeGuard {
             # boot comes up clean. No-op when already renamed (the normal steady state).
             # shortcut: platform-managed drivers can be restaged despite inbox renames; use a Tamper-off image when this occurs.
             $renamed = @()
-            foreach ($d in $drivers) {
-                $sys = Join-Path $drvDir ($d + '.sys')
+            foreach ($driver in $drivers) {
+                $d   = $driver.Name
+                $sys = $driver.Path
                 if (Test-Path -LiteralPath $sys) {
                     try {
-                        & "$env:SystemRoot\System32\takeown.exe" /f $sys /a | Out-Null
-                        & "$env:SystemRoot\System32\icacls.exe" $sys /grant 'Administrators:F' | Out-Null
-                        $bak = $sys + '.bak'
-                        if (Test-Path -LiteralPath $bak) { Remove-Item -LiteralPath $bak -Force -ErrorAction SilentlyContinue }
-                        Rename-Item -LiteralPath $sys -NewName ($d + '.sys.bak') -Force -ErrorAction Stop
-                        $renamed += $d
+                        if (Rename-DefenderDriver -Name $d -Path $sys) {
+                            $renamed += $sys.Substring($drvDir.Length + 1)
+                        }
                     }
                     catch {
-                        Write-Log -message ('{0} :: could not rename {1}.sys: {2}' -f $($MyInvocation.MyCommand.Name), $d, $_.Exception.Message) -severity 'WARN'
+                        Write-Log -message ('{0} :: could not rename {1}: {2}' -f $($MyInvocation.MyCommand.Name), $sys, $_.Exception.Message) -severity 'WARN'
                     }
                 }
+            }
+            $wdfilterSysPresent = $false
+            foreach ($path in $wdFilterPaths) {
+                if (Test-Path -LiteralPath $path) { $wdfilterSysPresent = $true; break }
             }
             if ($renamed.Count) {
                 Write-Log -message ('{0} :: renamed restored Defender driver(s): {1} (likely a Defender platform update)' -f $($MyInvocation.MyCommand.Name), ($renamed -join ',')) -severity 'WARN'
@@ -930,7 +942,7 @@ function Invoke-DefenderRealtimeGuard {
                     $action = 'renamed_reboot'
                     Write-DefenderStatus -Path $statusFile -Status ([pscustomobject]@{
                         timestamp_utc     = $now.ToString('yyyy-MM-ddTHH:mm:ssZ'); host = $env:COMPUTERNAME
-                        wdfilter_running  = $true; sys_renamed = (-not (Test-Path (Join-Path $drvDir 'WdFilter.sys')))
+                        wdfilter_running  = $true; sys_renamed = (-not $wdfilterSysPresent)
                         tamper_protection = $tamper; action = $action; reboot_count = $newCount
                     })
                     Write-Log -message ('{0} :: WdFilter active under Tamper; renamed driver(s) and rebooting (#{1}) to clear on-access scanning before worker-runner.' -f $($MyInvocation.MyCommand.Name), $newCount) -severity 'WARN'
@@ -945,7 +957,7 @@ function Invoke-DefenderRealtimeGuard {
 
             Write-DefenderStatus -Path $statusFile -Status ([pscustomobject]@{
                 timestamp_utc     = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'); host = $env:COMPUTERNAME
-                wdfilter_running  = $wdfRunning; sys_renamed = (-not (Test-Path (Join-Path $drvDir 'WdFilter.sys')))
+                wdfilter_running  = $wdfRunning; sys_renamed = (-not $wdfilterSysPresent)
                 tamper_protection = $tamper; action = $action; reboot_count = 0
             })
         }
