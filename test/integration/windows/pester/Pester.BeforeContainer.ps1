@@ -19,12 +19,6 @@ $windowsSetup = {
     $Server = $Role -like 'win202*'
     $Win10 = $Role -eq 'win10642009azure'
     $Win25 = $Role -eq 'win116425h2azure'
-    $WindowsVersion = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-    $Win11_24H2 = (
-        $WindowsVersion.ProductName -like 'Windows 11*' -and
-        $WindowsVersion.DisplayVersion -eq '24H2' -and
-        [string]$WindowsVersion.CurrentBuild -eq '26100'
-    )
     $Server25 = $Role -eq 'win20256424h2azure'
     $TaskDrive = Get-HieraValue 'windows_task_drive' -Default 'D:'
     $Ronin = 'C:\ProgramData\PuppetLabs\ronin'
