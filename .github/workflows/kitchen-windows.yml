@@ -45,6 +45,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # The hardware pool uses a Windows 11 Enterprise 24H2 NUC13 WIM.
+          # Kitchen uses the matching Marketplace OS SKU with the Azure role;
+          # the Pester assertion is gated on the actual 24H2 build and this pool ID.
+          - role: win116425h2azure
+            worker_pool_id: win11-64-24h2-hw-kitchen
+            kitchen_instance: windows-win11-64-24h2-hw-kitchen
           - role: win116425h2azure
             worker_pool_id: win11-64-25h2
             kitchen_instance: windows-win11-64-25h2

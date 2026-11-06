@@ -1,6 +1,34 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
 Describe 'Drivers' -Tag IntegrationTests {
+    Context 'Windows 11 24H2 Defender filter path' -Skip:($env:WORKER_POOL_ID -ne 'win11-64-24h2-hw-kitchen') {
+        It 'uses the Windows 11 Enterprise 24H2 image' {
+            $Win11_24H2 | Should-BeTrue
+            (Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' ProductName) |
+                Should-MatchString '^Windows 11 Enterprise'
+        }
+
+        It 'renames the WdFilter image path configured by the service' {
+            $servicePath = 'HKLM:\SYSTEM\CurrentControlSet\Services\WdFilter'
+            $imagePath = Get-ItemPropertyValue -LiteralPath $servicePath -Name ImagePath
+            if ($imagePath.StartsWith('\SystemRoot\', [System.StringComparison]::OrdinalIgnoreCase)) {
+                $driverPath = Join-Path $env:SystemRoot $imagePath.Substring('\SystemRoot\'.Length)
+            } else {
+                $driverPath = [System.Environment]::ExpandEnvironmentVariables($imagePath)
+            }
+
+            $driverPath | Should-MatchString '\\System32\\drivers\\wd\\WdFilter\.sys$'
+            Test-Path -LiteralPath $driverPath | Should-BeFalse
+            Test-Path -LiteralPath "$driverPath.bak" | Should-BeTrue
+        }
+
+        It 'reports the renamed WdFilter binary in the Defender check' {
+            $checkScript = 'C:\ronin_puppet\modules\win_nsclient\files\check_defender.ps1'
+            $output = & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $checkScript
+            ($output -join ' ') | Should-MatchString 'WdFilter.sys=renamed bak=yes'
+        }
+    }
+
     Context 'GPU and audio drivers' {
         if (($Win10 -or $Server25) -and $env:WORKER_POOL_ID -like '*gpu*') {
             It 'runs the configured NVIDIA A10-8Q driver' {
