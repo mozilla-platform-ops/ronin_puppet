@@ -82,10 +82,15 @@ try {
     Check-Run 1 # normal cadence resumes after the forced run
     $script:deployment.fleetbench_deployment = ''
     Check-Run 0 # redeploy without the override reuses persistent results
-    $script:deployment.fleetbench_deployment = 'deploy-3'
-    $script:deployment.worker_pool_id += '-alpha'
-    Check-Run 0 # existing alpha exclusion takes precedence
-    if ($script:deployment.fleetbench_deployment_complete -ne 'deploy-2') { throw 'Alpha consumed override' }
+    foreach ($pool in @('win11-64-24h2-hw-alpha', 'win11-64-24h2-hw-ref-alpha')) {
+        $script:deployment.worker_pool_id = $pool
+        $script:deployment.fleetbench_deployment = $pool
+        Check-Run 1 # alpha and reference alpha honor the deployment override
+        if ($script:deployment.fleetbench_deployment_complete -ne $pool) { throw "Override not consumed for $pool" }
+        Check-Run 0 # and honor the same cadence afterwards
+        (Get-ChildItem $results -Filter '*_cpu.json' | Select-Object -First 1).LastWriteTimeUtc = $script:now.AddHours(-73)
+        Check-Run 1 # alpha pools also run when their prior result expires
+    }
 }
 finally { Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue }
 $global:LASTEXITCODE = 0

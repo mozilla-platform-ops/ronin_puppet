@@ -147,8 +147,8 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
 The collector, baseline ranges, results, and monitoring status live under
 `D:\fleetbench`. Maintenance runs the CPU benchmark before worker-runner starts
 when no prior `results/*_cpu.json` exists or the newest result is more than
-72 hours old. Recent results survive normal OS redeployments. Alpha pools
-continue to skip CPU benchmarking.
+72 hours old. Recent results survive normal OS redeployments. Hardware alpha
+and reference alpha pools use the same benchmark rules.
 
 To request a fresh benchmark after every OS deployment, add
 `fleetbench_on_deploy: true` to that pool in worker-images'
