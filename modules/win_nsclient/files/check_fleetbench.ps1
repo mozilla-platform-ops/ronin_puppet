@@ -2,7 +2,7 @@
 # NSClient++ external check that surfaces the latest fleetbench hardware-health
 # verdict to Marlin (Icinga2). It does NOT run the benchmark — it reads the status
 # file written by the maintain-system fleetbench check (RELOPS-2402):
-#   C:\fleetbench\results\fleetbench_status.json
+#   D:\fleetbench\results\fleetbench_status.json
 # Nagios contract: print one line "STATE - text | perfdata" and exit 0/1/2/3.
 
 $ErrorActionPreference = 'Stop'
@@ -17,7 +17,7 @@ if ($pool -match '-alpha$') {
     Exit-With 0 "OK - CPU benchmark disabled for alpha pool $pool"
 }
 
-$statusFile  = 'C:\fleetbench\results\fleetbench_status.json'
+$statusFile  = 'D:\fleetbench\results\fleetbench_status.json'
 $maxAgeHours = 168   # status older than 7 days is considered stale
 
 if (-not (Test-Path -LiteralPath $statusFile)) {
