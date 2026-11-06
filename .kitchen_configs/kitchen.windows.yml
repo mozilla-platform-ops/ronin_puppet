@@ -90,8 +90,9 @@ platforms:
       <<: *windows_driver_defaults
       machine_size: 'Standard_F8alds_v7'
       spot_instance: true
-      # Verify the Windows 11 Enterprise 24H2 OS build. The Marketplace image does
-      # not share the NUC WIM's WdFilter layout; Pester tests that path with a fixture.
+      # Verify the Windows 11 Enterprise 24H2 OS build. Marketplace and captured NUC
+      # images use the top-level path; deployed NUCs can have the nested path. Pester
+      # fixtures cover both layouts.
       image_urn: MicrosoftWindowsDesktop:windows-11:win11-24h2-ent:latest
       azure_resource_group_name: ronin-puppet-test-kitchen-win11-64-24h2-hw
   - name: win11-64-25h2-gpu
