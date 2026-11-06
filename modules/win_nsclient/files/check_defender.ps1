@@ -20,16 +20,14 @@
 # Nagios contract: print one line "STATE - text | perfdata" and exit 0/1/2/3.
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'defender_driver.ps1')
 
 function Exit-With([int]$code, [string]$msg) {
     Write-Output $msg
     exit $code
 }
 
-$driverPaths = @(
-    "$env:SystemRoot\System32\drivers\wd\WdFilter.sys"
-    "$env:SystemRoot\System32\drivers\WdFilter.sys"
-)
+$driverPaths = @(Get-WdFilterDriverPaths)
 $driverBakPaths = @($driverPaths | ForEach-Object { "${_}.bak" })
 
 # 1) Is the on-access minifilter currently running?

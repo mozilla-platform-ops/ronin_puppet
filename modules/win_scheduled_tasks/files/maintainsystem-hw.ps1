@@ -4,6 +4,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
+. (Join-Path $PSScriptRoot 'defender_driver.ps1')
+
 function Write-Log {
     param (
         [string] $message,
@@ -834,12 +836,9 @@ function Invoke-DefenderRealtimeGuard {
     process {
         try {
             $drvDir = Join-Path $env:SystemRoot 'System32\drivers'
-            # Windows 11 24H2 loads WdFilter from drivers\wd; older builds may
-            # still use the top-level path. Rename both so updates cannot restore it.
-            $wdFilterPaths = @(
-                (Join-Path $drvDir 'wd\WdFilter.sys')
-                (Join-Path $drvDir 'WdFilter.sys')
-            )
+            # Windows 11 24H2 hardware images load WdFilter from drivers\wd;
+            # older layouts may use the top-level path.
+            $wdFilterPaths = @(Get-WdFilterDriverPaths -DriverDirectory $drvDir)
             $drivers = @(
                 [pscustomobject]@{ Name = 'WdFilter'; Path = $wdFilterPaths[0] }
                 [pscustomobject]@{ Name = 'WdFilter'; Path = $wdFilterPaths[1] }
@@ -879,12 +878,9 @@ function Invoke-DefenderRealtimeGuard {
                 $sys = $driver.Path
                 if (Test-Path -LiteralPath $sys) {
                     try {
-                        & "$env:SystemRoot\System32\takeown.exe" /f $sys /a | Out-Null
-                        & "$env:SystemRoot\System32\icacls.exe" $sys /grant 'Administrators:F' | Out-Null
-                        $bak = $sys + '.bak'
-                        if (Test-Path -LiteralPath $bak) { Remove-Item -LiteralPath $bak -Force -ErrorAction SilentlyContinue }
-                        Rename-Item -LiteralPath $sys -NewName ($d + '.sys.bak') -Force -ErrorAction Stop
-                        $renamed += $sys.Substring($drvDir.Length + 1)
+                        if (Rename-DefenderDriver -Name $d -Path $sys) {
+                            $renamed += $sys.Substring($drvDir.Length + 1)
+                        }
                     }
                     catch {
                         Write-Log -message ('{0} :: could not rename {1}: {2}' -f $($MyInvocation.MyCommand.Name), $sys, $_.Exception.Message) -severity 'WARN'
