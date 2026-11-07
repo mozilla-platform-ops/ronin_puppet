@@ -666,7 +666,7 @@ def summarize(results):
 
     ts = gdata.get("task_state", "unknown")
     if ts == "idle":
-        return "IDLE", "g-w waiting for tasks"
+        return "IDLE", "waiting for tasks"
     return "UNKNOWN", f"g-w task activity unknown ({ts}); verify activity before rebooting"
 
 
@@ -683,13 +683,13 @@ _STATE_COLOR = {
 
 
 DISPLAY_NAMES = {
-    "operator_hold": "operator hold",
-    "clock_skew": "clock",
-    "disk_free": "disk",
-    "task_dir_size": "task directory",
-    "puppet": "puppet",
-    "worker_runner_process": "worker runner",
-    "generic_worker_process": "generic worker",
+    "operator_hold": "Operator hold",
+    "clock_skew": "Clock",
+    "disk_free": "Disk",
+    "task_dir_size": "Task directory",
+    "puppet": "Puppet",
+    "worker_runner_process": "Worker runner",
+    "generic_worker_process": "Generic worker",
 }
 
 
@@ -708,6 +708,17 @@ def _relative_age(hours):
 
 def _format_detail(result):
     detail = result["detail"]
+    if result["name"] == "operator_hold":
+        detail = re.sub(r"^operator hold ", "", detail)
+    if result["name"] == "disk_free":
+        detail = re.sub(r"(/[^:,;]*): (\d+(?:\.\d+)?)GB", r"\2 GB free on \1", detail)
+    if result["name"] in ("disk_free", "task_dir_size", "clock_skew"):
+        detail = re.sub(r"(\d)(GB|s)\b", r"\1 \2", detail)
+    if result["name"] in ("worker_runner_process", "generic_worker_process"):
+        detail = re.sub(r"\(pid (\d+)\)", r"· PID \1", detail)
+        detail = detail.replace(", logs recent (journal)", " · recent journal logs")
+        if result["status"] == PASS and result["name"] == "generic_worker_process":
+            detail = re.sub(r"^running (· PID \d+) — idle$", r"idle \1", detail)
     if result["name"] == "puppet":
         detail = re.sub(r" \(role=[^)]*\)", "", detail)
         # Older replay snapshots use decimal hours in their detail text.
@@ -756,13 +767,18 @@ def print_human(results, warnings, verbose=False, debug=False):
     print(f"{bold(color(state))} — {qualifier}")
 
     pdata = (_by_name(results, "puppet") or {}).get("data") or {}
-    role_label = "Role" if pdata.get("configured_role") else "Role (last run)"
     role = pdata.get('configured_role') or pdata.get('role') or 'unknown'
-    print(f"{role_label}: {role} | Worker type (configured): {pdata.get('worker_type') or 'unknown'}")
+    role_suffix = "" if pdata.get("configured_role") else " (last run)"
+    print()
+    print(f"{'Role':<13}{role}{role_suffix}")
+    print(f"{'Worker type':<13}{pdata.get('worker_type') or 'unknown'} (configured)")
     branch = pdata.get("git_branch") or "unknown"
     sha = pdata.get("git_sha") or "unknown"
-    branch_text = purple(branch) if branch not in ("master", "unknown") else branch
-    print(f"Last Puppet run: {branch_text} @ {dim(sha[:8] if sha != 'unknown' else sha)}")
+    if branch == "HEAD":
+        branch_text = "branch unavailable (HEAD)"
+    else:
+        branch_text = purple(branch) if branch not in ("master", "unknown") else branch
+    print(f"{'Puppet rev':<13}{sha[:8] if sha != 'unknown' else sha} · {branch_text}")
     if verbose or debug:
         print(dim(f"Full SHA: {sha}"))
     if state == "WORKING":
@@ -780,6 +796,7 @@ def print_human(results, warnings, verbose=False, debug=False):
             first_fail = next(r for r in results if r["status"] == FAIL)
             print(f"  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
 
+    print()
     w = max(len(DISPLAY_NAMES.get(r["name"], r["name"])) for r in results)
     indent = " " * (2 + 1 + 2 + w + 2)  # marker + spacing + name col + spacing
     for r in results:
