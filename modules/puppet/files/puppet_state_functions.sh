@@ -99,10 +99,13 @@ write_puppet_state() {
                 git_repo="\"$repo_url\""
             fi
 
-            # Get branch name
+            # run-puppet checks out origin/$PUPPET_BRANCH in detached HEAD
+            # state. Record its selected branch, falling back to Git for
+            # callers that do not provide PUPPET_BRANCH.
             local branch_name
-            branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+            branch_name=${PUPPET_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}
             if [[ -n "$branch_name" ]]; then
+                branch_name=$(printf '%s' "$branch_name" | sed 's/\\/\\\\/g; s/"/\\"/g')
                 git_branch="\"$branch_name\""
             fi
 
