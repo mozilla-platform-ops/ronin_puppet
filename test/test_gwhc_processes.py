@@ -344,7 +344,7 @@ class PuppetCommandTests(unittest.TestCase):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
                     health.print_human(results, [], verbose=True)
-                self.assertIn("Last Puppet run: test-branch @ abcdef01", output.getvalue())
+                self.assertIn("Puppet rev   abcdef01 · test-branch", output.getvalue())
                 self.assertIn("Full SHA: abcdef0123456789", output.getvalue())
 
     def puppet_results(self):
@@ -394,7 +394,7 @@ class PuppetCommandTests(unittest.TestCase):
             )
             self.assertIn("View logs (current boot): sudo journalctl", result.stdout)
             self.assertIn("Worker processes: ps -C generic-worker", result.stdout)
-            self.assertIn("Last Puppet run: unknown @ unknown", result.stdout)
+            self.assertIn("Puppet rev   unknown · unknown", result.stdout)
 
 
 class JournalTests(unittest.TestCase):
@@ -502,6 +502,32 @@ class JournalTests(unittest.TestCase):
 
 
 class DisplayTests(unittest.TestCase):
+    def test_readable_details_preserve_diagnostics_and_source_data(self):
+        cases = [
+            ("operator_hold", "operator hold inactive", "inactive"),
+            ("clock_skew", "clock skew 40s (>30s)", "clock skew 40 s (>30 s)"),
+            ("disk_free", "low disk: /: 1.0GB (2% free); /home: 2.0GB (3% free)",
+             "low disk: 1.0 GB free on / (2% free); 2.0 GB free on /home (3% free)"),
+            ("task_dir_size", "41.0GB used (>40GB)", "41.0 GB used (>40 GB)"),
+        ]
+        for name, detail, expected in cases:
+            with self.subTest(name=name):
+                result = {"name": name, "detail": detail, "status": health.FAIL}
+                self.assertEqual(health._format_detail(result), expected)
+                self.assertEqual(result["detail"], detail)
+
+    def test_detached_head_is_not_highlighted_as_a_branch(self):
+        results = self.results()
+        results[0]["data"]["git_branch"] = "HEAD"
+        results[0]["data"].pop("configured_role")
+        output = io.StringIO()
+        with mock.patch.object(health, "_use_color", True), contextlib.redirect_stdout(output):
+            health.print_human(results, [])
+        text = output.getvalue()
+        self.assertIn("Role         old-role (last run)", text)
+        self.assertIn("Puppet rev   abcdef01 · branch unavailable (HEAD)", text)
+        self.assertNotIn("\033[35m", text)
+
     def results(self):
         return [
             {"name": "puppet", "status": health.PASS, "detail": "passed 0.1h ago (role=old-role)",
@@ -517,18 +543,18 @@ class DisplayTests(unittest.TestCase):
             with mock.patch.object(health, "_use_color", color), contextlib.redirect_stdout(output):
                 health.print_human(self.results(), [])
             text = output.getvalue()
-            self.assertIn("Role: current-role | Worker type (configured): test-worker", text)
+            self.assertIn("Role         current-role\nWorker type  test-worker (configured)", text)
             self.assertIn("6 minutes ago", text)
             self.assertNotIn("old-role", text)
             self.assertNotIn("abcdef0123456789", text)
-            self.assertNotIn("\n\n", text)
-            self.assertEqual(len(text.splitlines()), 5)
+            self.assertIn("\n\nRole", text)
+            self.assertEqual(len(text.splitlines()), 8)
             if color:
                 self.assertIn("\033[35mtest-branch\033[0m", text)
                 self.assertIn("\033[32m✓", text)
             else:
                 self.assertNotIn("\033", text)
-                self.assertIn("Last Puppet run: test-branch @ abcdef01", text)
+                self.assertIn("Puppet rev   abcdef01 · test-branch", text)
 
     def test_master_is_not_purple_and_working_is_healthy(self):
         results = self.results()
