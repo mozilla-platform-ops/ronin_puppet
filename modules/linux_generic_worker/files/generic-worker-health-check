@@ -791,7 +791,10 @@ def print_human(results, warnings, verbose=False, debug=False):
         else:
             marker = red("✗")
         name = DISPLAY_NAMES.get(r["name"], r["name"])
-        print(f"  {marker}  {name.ljust(w)}  {_format_detail(r)}")
+        detail = _format_detail(r)
+        if r["name"] == "operator_hold" and s == PASS and r.get("data", {}).get("active") is False:
+            detail = dim(detail)
+        print(f"  {marker}  {name.ljust(w)}  {detail}")
         if s == FAIL:
             hint = REMEDIATIONS.get(r["name"])
             if hint:
