@@ -298,6 +298,34 @@ class RealZombieTests(unittest.TestCase):
 
 
 class PuppetCommandTests(unittest.TestCase):
+    def test_old_current_boot_run_preserves_health_and_sentinel_checks(self):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        with tempfile.TemporaryDirectory() as directory:
+            metadata = Path(directory) / "metadata.json"
+            metadata.write_text(json.dumps({
+                "success": True, "ts": (now - datetime.timedelta(hours=30)).isoformat(),
+                "role": "test-role",
+            }))
+            with mock.patch.object(health, "PUPPET_METADATA", str(metadata)), \
+                 mock.patch.object(health, "_boot_time", return_value=now - datetime.timedelta(hours=31)), \
+                 mock.patch.object(health, "_puppet_service_state", return_value=("inactive", "dead", "systemctl")):
+                with mock.patch.object(health, "puppet_done", return_value=True):
+                    status, detail, data = health.check_puppet()
+                self.assertEqual(status, health.PASS)
+                self.assertIn("1 day ago", detail)
+                self.assertEqual(data["age_hours"], 30)
+                self.assertTrue(data["done_sentinel"])
+                results = [
+                    {"name": "puppet", "status": status, "detail": detail, "data": data},
+                    {"name": "generic_worker_process", "status": health.PASS,
+                     "detail": "idle", "data": {"task_state": "idle"}},
+                ]
+                self.assertEqual(health.summarize(results)[0], "IDLE")
+                with mock.patch.object(health, "puppet_done", return_value=False):
+                    status, _, data = health.check_puppet()
+                self.assertEqual(status, health.WARN)
+                self.assertFalse(data["done_sentinel"])
+
     def test_last_run_checkout_metadata_in_verbose_output(self):
         with tempfile.TemporaryDirectory() as directory:
             metadata = Path(directory) / "metadata.json"

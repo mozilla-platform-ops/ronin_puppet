@@ -25,7 +25,6 @@ PUPPET_DONE_SENTINEL = "/run/puppet/run_done"
 PUPPET_ROLE = "/etc/puppet_role"
 WORKER_CONFIG = "/home/cltbld/generic-worker.config"
 OPERATOR_HOLD = "/home/cltbld/operator_hold"
-PUPPET_MAX_AGE_HOURS = 24
 
 TASK_DIR = "/home/cltbld/tasks"
 TASK_DIR_WARN_GB = 20
@@ -517,8 +516,6 @@ def check_puppet():
         age_h = (datetime.datetime.now(datetime.timezone.utc) - meta_ts).total_seconds() / 3600
         age_h_r = round(age_h, 1)
         data["age_hours"] = int(age_h_r) if age_h_r == int(age_h_r) else age_h_r
-        if age_h > PUPPET_MAX_AGE_HOURS:
-            return FAIL, f"last run {age_h:.1f}h ago (>{PUPPET_MAX_AGE_HOURS}h)", data
     except Exception as e:
         return WARN, f"could not parse timestamp '{ts_str}': {e}", data
 
