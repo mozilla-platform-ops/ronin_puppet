@@ -42,7 +42,7 @@ Describe 'Registry' -Tag IntegrationTests {
         }
 
         It 'disables the Windows Update service startup type' {
-            (Get-Service wuauserv).StartType | Should-BeString 'Disabled'
+            [string](Get-Service wuauserv).StartType | Should-BeString 'Disabled'
         }
     }
 
