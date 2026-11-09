@@ -25,7 +25,8 @@ class roles_profiles::profiles::mac_signing {
         /^vpn-mac-v(3|4)-signing\d+/   => 'vpn-prod',
         /^adhoc-mac-v(3|4)-signing\d+/ => 'adhoc-prod',
         /^dep-mac-v(3|4)-signing\d+/   => 'dep',
-        default                        => undef,
+        /^tc-mac-v4-signing\d+/        => 'tc-prod',
+        default                       => undef,
       }
       # The hostname is the only thing that picks the signer flavor, so an
       # unexpected one must not quietly become a production Firefox signer.
