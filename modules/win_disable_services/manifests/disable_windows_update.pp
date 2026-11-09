@@ -36,6 +36,12 @@ class win_disable_services::disable_windows_update {
         type => dword,
         data => '4',
       }
+      exec { 'disable_wuauserv_startup':
+        command  => 'Set-Service wuauserv -StartupType Disabled',
+        onlyif   => 'if ((Get-Service wuauserv).StartType -ne "Disabled") { exit 0 } else { exit 1 }',
+        provider => powershell,
+        require  => Registry_value['HKLM\SYSTEM\CurrentControlSet\Services\wuauserv\Start'],
+      }
       ## Scheduled task to kill windows update/windows update-related scheduled tasks
       $disable_wu_task_ps = "${facts['custom_win_roninprogramdata']}\\disable_wu_task.ps1"
 

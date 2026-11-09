@@ -40,6 +40,10 @@ Describe 'Registry' -Tag IntegrationTests {
         It 'sets <Path>\<Name> to <Value>' -ForEach $settings {
             [string](Get-ItemPropertyValue $Path $Name) | Should-BeString $Value
         }
+
+        It 'disables the Windows Update service startup type' {
+            (Get-Service wuauserv).StartType | Should-BeString 'Disabled'
+        }
     }
 
     Context 'Windows settings' {
