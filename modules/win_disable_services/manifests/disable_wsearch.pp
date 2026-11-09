@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-## Keep Windows Search indexing off on non-builder workers.
-## Azure workers must disable startup before stopping to avoid a service restart race.
-
 class win_disable_services::disable_wsearch {
   if $facts['os']['name'] == 'Windows' {
     case $facts['custom_win_location'] {
@@ -16,7 +13,6 @@ class win_disable_services::disable_wsearch {
         }
       }
       'azure': {
-        ## Disable first so a restart cannot race the stop; retry if it does.
         exec { 'disable_wsearch':
           command   => '$ErrorActionPreference = "Stop"; Set-Service wsearch -StartupType Disabled; Stop-Service wsearch -Force',
           provider  => powershell,
