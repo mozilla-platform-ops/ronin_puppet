@@ -2,9 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-## If we are on azure, we may need to disable wsearch
-## Disable for now but leave the code in the bottom of this configuration
-## This may be causing bc1 for win/debug-msix to fail
+## Keep Windows Search indexing off on non-builder workers.
+## Azure workers must disable startup before stopping to avoid a service restart race.
 
 class win_disable_services::disable_wsearch {
   if $facts['os']['name'] == 'Windows' {
@@ -16,8 +15,15 @@ class win_disable_services::disable_wsearch {
           timeout  => 300,
         }
       }
-      'azure':{ ## Let's use this method of disabling service on cloud workers
-        win_disable_services::disable_service { 'wsearch':
+      'azure': {
+        ## Disable first so a restart cannot race the stop; retry if it does.
+        exec { 'disable_wsearch':
+          command   => '$ErrorActionPreference = "Stop"; Set-Service wsearch -StartupType Disabled; Stop-Service wsearch -Force',
+          provider  => powershell,
+          timeout   => 300,
+          tries     => 5,
+          try_sleep => 5,
+          unless    => '$s = Get-Service wsearch -ErrorAction SilentlyContinue; if (-not $s) { exit 0 }; if ($s.Status -ne "Stopped" -or $s.StartType -ne "Disabled") { exit 1 }',
         }
       }
       default: {
