@@ -10,7 +10,6 @@ Describe 'Services' -Tag IntegrationTests {
     Context 'Windows services and NXLog' {
         BeforeDiscovery {
             $disabled = @('puppet', 'DiagTrack')
-            if ($Tester) { $disabled += 'WSearch' }
         }
 
         It 'stops and disables <_>' -ForEach $disabled {
@@ -19,6 +18,14 @@ Describe 'Services' -Tag IntegrationTests {
             $service.StartMode | Should-BeString 'Disabled'
         }
         It 'runs NXLog' { (Get-CimInstance Win32_Service -Filter "Name='nxlog'").State | Should-BeString 'Running' }
+    }
+
+    Context 'Windows Search' -Skip:(-not $Tester) {
+        It 'is stopped and disabled after Puppet convergence' {
+            $service = Get-CimInstance Win32_Service -Filter "Name='WSearch'"
+            $service.State | Should-BeString 'Stopped'
+            $service.StartMode | Should-BeString 'Disabled'
+        }
     }
 
     Context 'Taskcluster' {
