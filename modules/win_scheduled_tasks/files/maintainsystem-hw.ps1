@@ -1030,8 +1030,8 @@ If ($bootstrap_stage -eq 'complete') {
     ## Let's make sure the machine is online before checking the internet
     Test-ConnectionUntilOnline
 
-    # Disable restored Defender drivers before fleetbench and worker-runner.
-    Invoke-DefenderRealtimeGuard
+    # Disabled: driver renames do not reliably stop Defender and cause unnecessary reboots.
+    # Invoke-DefenderRealtimeGuard
 
     # RELOPS-2575: use Google's MSI directly; refresh failures must not trigger PXE.
     $chrome_script = Join-Path $PSScriptRoot 'Update-GoogleChrome.ps1'
