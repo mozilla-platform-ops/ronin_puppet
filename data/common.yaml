@@ -191,6 +191,16 @@ scriptworker_users:
       widevine_filename: "widevine_prod.crt"
       keychain_filename: "mozilla.20240328.keychain"
       ed_key_filename: "ed25519_privkey"
+  # Taskcluster worker binaries (start-worker, generic-worker-multiuser) only
+  tc-prod:
+    cltbld:
+      home: /builds/scriptworker
+      supported_behaviors:
+        - mac_single_file
+      dmg_prefix: "prod"
+      cot_product: "adhoc"
+      keychain_filename: "mozilla.20240328.keychain"
+      ed_key_filename: "ed25519_privkey"
 
 scriptworker_config:
     _: &defaults
@@ -223,6 +233,10 @@ scriptworker_config:
         <<: *defaults
         enterprise_taskcluster_scope_prefix: 'project:enterprise:releng:signing:'
         worker_type: 'enterprise-signing-mac14m2'
+    tc-prod:
+        <<: *defaults
+        adhoc_taskcluster_scope_prefix: 'project:adhoc:releng:signing:'
+        worker_type: 'tc-signing-mac15m4'
     dep:
         <<: *defaults
         ff_taskcluster_scope_prefix: 'project:releng:signing:'
@@ -309,6 +323,21 @@ signingworker_roles:
             gcp_prod_omnija_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
             gcp_prod_langpack_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
     adhoc-prod:
+        release:
+            apple_asc_provider: 'MozillaCorporation'
+            sign_with_entitlements: true
+            verify_mac_signature: true
+            adhoc_base_bundle_id: ''
+            widevine_url: 'n/a'
+            omnija_url: 'n/a'
+            langpack_url: 'n/a'
+            stage_widevine_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_omnija_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            stage_langpack_url: 'https://stage.autograph.nonprod.webservices.mozgcp.net'
+            gcp_prod_widevine_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_omnija_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+            gcp_prod_langpack_url: 'https://prod.autograph.prod.webservices.mozgcp.net'
+    tc-prod:
         release:
             apple_asc_provider: 'MozillaCorporation'
             sign_with_entitlements: true
