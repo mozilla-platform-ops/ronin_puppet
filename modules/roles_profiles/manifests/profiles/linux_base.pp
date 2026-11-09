@@ -20,6 +20,11 @@ class roles_profiles::profiles::linux_base {
       # this removes the bootstrap accounts, so run later
       require roles_profiles::profiles::securitize
 
+      # Exact hostnames allow a monitored control without changing its branch.
+      $network_manager_control_hosts = lookup('linux_network_manager_control_hosts', Array[String], 'first', [])
+      class { 'disable_services':
+        network_manager_enabled_1804 => !($facts['networking']['hostname'] in $network_manager_control_hosts),
+      }
       require disable_services
       require grub
       # fix for ubuntu packaging bug

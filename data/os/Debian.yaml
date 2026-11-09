@@ -4,3 +4,8 @@
 linux_network_diagnostics_enabled: true
 linux_network_diagnostics_hosts:
   - t-linux64-ms-008
+
+# Restore the old stopped/disabled NetworkManager state on one monitored control.
+# Remove this hostname and converge to re-enable the 18.04 fix.
+linux_network_manager_control_hosts:
+  - t-linux64-ms-008

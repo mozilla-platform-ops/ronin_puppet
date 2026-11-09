@@ -27,11 +27,12 @@ describe service('modemmanager') do
 end
 
 describe service('network-manager') do
-  if os.family == 'ubuntu' && os.release == '18.04'
+  if os.family == 'ubuntu' && os.release == '18.04' && input('network_manager_enabled_1804', value: true)
     it { should be_enabled }
     it { should be_running }
   else
     it { should_not be_enabled }
+    it { should_not be_running }
   end
 end
 
