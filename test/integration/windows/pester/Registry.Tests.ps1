@@ -66,6 +66,10 @@ Describe 'Registry' -Tag IntegrationTests {
             if ($Tester -or $Server -or $Arm) {
                 $registry += @{ Path = $fs; Name = 'LongPathsEnabled'; Value = '1' }
             }
+            if ($Role -eq 'win116425h2azure') {
+                # Bug 2092632: temporary NTLM client signing compatibility.
+                $registry += @{ Path = 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0'; Name = 'ClientAllowUnsignedNtlm'; Value = '1' }
+            }
             if (-not $Server) {
                 foreach ($entry in @{
                         ConsentPromptBehaviorAdmin = '0'; ConsentPromptBehaviorUser = '3'; EnableInstallerDetection = '1'

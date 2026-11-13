@@ -49,6 +49,7 @@ class roles_profiles::roles::win116425h2azure {
       include roles_profiles::profiles::azure_vm_agent
       include roles_profiles::profiles::virtual_drivers
       include roles_profiles::profiles::gpu_drivers
+      include roles_profiles::profiles::ntlm_client_signing
 
       # Skip OOBE
       include roles_profiles::profiles::oobe
