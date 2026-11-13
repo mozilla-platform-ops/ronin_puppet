@@ -438,13 +438,27 @@ class JournalTests(unittest.TestCase):
     def test_task_patterns_and_empty_query(self):
         for stdout, expected in (
             ("Starting task feature\nExecuting command", "task running"),
-            ("Executing command\nNo task claimed", "idle"),
+            ("No task claimed\nExecuting command", "idle"),
+            ("Executing command\nNo task claimed", "task running"),
             ("", "unknown (no journal output)"),
         ):
             with self.subTest(stdout=stdout), mock.patch.object(
                 health.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=stdout, stderr="")
             ):
                 self.assertEqual(health._gw_task_state(1234)[0], expected)
+
+    def test_old_journalctl_limit_keeps_recent_activity_after_startup(self):
+        entries = ["worker starting"] * 60 + ["Executing command", "No task claimed"]
+
+        def journal(cmd, **kwargs):
+            # Ubuntu 18.04 takes the first -n matches after --since, in the
+            # requested order. Startup output exceeds the query's line limit.
+            ordered = list(reversed(entries)) if "--reverse" in cmd else entries
+            limit = int(cmd[cmd.index("-n") + 1])
+            return SimpleNamespace(returncode=0, stdout="\n".join(ordered[:limit]), stderr="")
+
+        with mock.patch.object(health.subprocess, "run", side_effect=journal):
+            self.assertEqual(health._gw_task_state(1234)[0], "idle")
 
     def test_failed_task_query_does_not_trust_stdout(self):
         with mock.patch.object(health.subprocess, "run", return_value=SimpleNamespace(

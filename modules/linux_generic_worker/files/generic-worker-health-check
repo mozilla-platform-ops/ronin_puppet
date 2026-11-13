@@ -302,7 +302,9 @@ def _proc_descendants(root_pid):
 
 
 def _gw_task_state(pid):
-    cmd = ["journalctl", "-b", "-t", "generic-worker", "-n", "50", "--no-pager", "--quiet", "-o", "cat"]
+    # Older journalctl versions combine --since and -n by taking the first
+    # matching entries. Read newest-first so startup logs cannot hide activity.
+    cmd = ["journalctl", "-b", "-t", "generic-worker", "--reverse", "-n", "50", "--no-pager", "--quiet", "-o", "cat"]
     try:
         # The comm field can contain spaces and parentheses. Fields after its
         # closing ')' start at field 3; starttime is field 22, in clock ticks.
@@ -321,7 +323,7 @@ def _gw_task_state(pid):
         if r.returncode != 0:
             return f"unknown (journalctl exit {r.returncode}: {r.stderr.strip()})", cmd_str
         lines = r.stdout.strip().splitlines()
-        for line in reversed(lines):
+        for line in lines:
             if "No task claimed" in line:
                 return "idle", cmd_str
             if "Executing command" in line or "Starting task feature" in line:
