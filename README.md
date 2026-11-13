@@ -141,3 +141,27 @@ sudo /vagrant/provisioners/linux/bootstrap_bitbar_devicepool.sh
   - https://www.puppet.com/docs/puppet/7/style_guide.html#style_guide_modules-documenting-code
 - generate docs
   - https://www.puppet.com/docs/puppet/7/puppet_strings.html
+
+## Windows hardware Fleetbench
+
+The collector, baseline ranges, results, and monitoring status live under
+`D:\fleetbench`. Maintenance runs the CPU benchmark before worker-runner starts
+when no prior `results/*_cpu.json` exists or the newest result is more than
+72 hours old. Recent results survive normal OS redeployments. Hardware alpha
+and reference alpha pools use the same benchmark rules.
+
+To request a fresh benchmark after every OS deployment, add
+`fleetbench_on_deploy: true` to that pool in worker-images'
+`provisioners/windows/MDC1Windows/pools.yml`. Presence of the key enables the
+override; remove it to reuse recent results. Deployment creates a fresh token
+in `HKLM:\SOFTWARE\Mozilla\ronin_puppet\fleetbench_deployment`. After saving a
+successful result, maintenance records it as `fleetbench_deployment_complete`
+in the same key. Subsequent boots use the normal 72-hour check; failed runs
+leave the override pending for retry.
+
+Existing C: results are not migrated. The first run creates a new D: history.
+Repartitioning, explicit D: wipes, and the deployer's security reset of an
+unprotected D: volume clear that history and require a new benchmark.
+
+Focused checks: run `test/fleetbench_cadence.ps1` and `test/fleetbench_pin.ps1`
+with PowerShell. They use temporary files and mock the collector and registry.

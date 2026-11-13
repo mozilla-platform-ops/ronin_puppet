@@ -34,20 +34,11 @@ try {
     Invoke-FleetbenchCheck -InstallDir $dir -ResultsDir $results
     if (-not ($script:messages -match 'last benchmark')) { throw 'Pinned collector did not reach cadence gate' }
 
-    foreach ($pool in @('win11-64-24h2-hw-alpha', 'win11-64-24h2-hw-ref-alpha', 'releng-hardware/win11-64-24h2-hw-alpha')) {
-        $script:pool = $pool
-        $script:pinReads = 0
-        $script:messages = @()
-        Invoke-FleetbenchCheck -InstallDir $dir -ResultsDir $results
-        if ($script:pinReads -ne 0 -or -not ($script:messages -match 'CPU benchmark disabled')) {
-            throw "Alpha pool reached benchmark preparation: $pool"
-        }
-    }
-    foreach ($pool in @('win11-64-24h2-hw', 'win11-64-24h2-hw-ref', 'win11-64-24h2-hw-perf-debug')) {
+    foreach ($pool in @('win11-64-24h2-hw-alpha', 'win11-64-24h2-hw-ref-alpha', 'releng-hardware/win11-64-24h2-hw-alpha', 'win11-64-24h2-hw', 'win11-64-24h2-hw-ref', 'win11-64-24h2-hw-perf-debug')) {
         $script:pool = $pool
         $script:messages = @()
         Invoke-FleetbenchCheck -InstallDir $dir -ResultsDir $results
-        if (-not ($script:messages -match 'last benchmark')) { throw "Non-alpha benchmark was disabled: $pool" }
+        if (-not ($script:messages -match 'last benchmark')) { throw "Benchmark was disabled: $pool" }
     }
 
     Set-Content -LiteralPath $binary -Value 'tampered collector'
@@ -59,7 +50,7 @@ finally {
     Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-# Only the CPU status checks skip alpha pools; no status files or collectors are read.
+# All pools report UNKNOWN when no benchmark status exists.
 foreach ($name in @('check_fleetbench.ps1', 'check_fleetbench_variance.ps1')) {
     $path = Join-Path $PSScriptRoot "../modules/win_nsclient/files/$name"
     $body = [IO.File]::ReadAllText($path)
@@ -70,11 +61,11 @@ foreach ($name in @('check_fleetbench.ps1', 'check_fleetbench_variance.ps1')) {
         $output = ''
         try { $output = (& ([scriptblock]::Create($body)) | Out-String) }
         catch {
-            $expected = if ($pool -match '-alpha$') { 'CHECK_EXIT:0' } else { 'CHECK_EXIT:3' }
+            $expected = 'CHECK_EXIT:3'
             if ($_.Exception.Message -ne $expected) { throw }
             continue
         }
         throw "Status check did not exit: $name / $pool / $output"
     }
 }
-Write-Host 'Fleetbench pin and alpha policy checks passed.'
+Write-Host 'Fleetbench pin and pool policy checks passed.'
