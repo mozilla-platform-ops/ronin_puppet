@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-class disable_services () {
+class disable_services (
+  Boolean $network_manager_enabled_1804 = true,
+) {
   case $facts['os']['name'] {
     'Ubuntu': {
       # These packages are required by ubuntu-desktop, so we can't uninstall them.
@@ -13,7 +15,23 @@ class disable_services () {
           #   (never worked in build-puppet/16.04)
           $install_and_disable = ['cups', 'anacron',
             'whoopsie', 'modemmanager', 'apport',
-          'avahi-daemon', 'network-manager']
+          'avahi-daemon']
+          # Keep DHCP managed on 18.04, except explicitly selected controls.
+          # Explicitly enable it to repair hosts disabled by older catalogs.
+          $keep_network_manager = $facts['os']['release']['full'] == '18.04' and $network_manager_enabled_1804
+          $network_manager_state = $keep_network_manager ? {
+            true    => running,
+            default => stopped,
+          }
+          package { 'network-manager':
+            ensure => latest,
+          }
+          service { 'network-manager':
+            ensure   => $network_manager_state,
+            enable   => $keep_network_manager,
+            provider => 'systemd',
+            require  => Package['network-manager'],
+          }
           package {
             $install_and_disable:
               ensure => latest;
