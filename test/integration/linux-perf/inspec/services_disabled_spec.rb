@@ -27,7 +27,7 @@ describe service('modemmanager') do
 end
 
 describe service('network-manager') do
-  if os.family == 'ubuntu' && os.release == '18.04' && input('network_manager_enabled_1804', value: true)
+  if os.family == 'debian' && os.release == '18.04' && input('network_manager_enabled_1804', value: true)
     it { should be_enabled }
     it { should be_running }
   else
