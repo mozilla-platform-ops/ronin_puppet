@@ -8,9 +8,13 @@ on:
     branches: [master]
     types: [opened, synchronize, reopened, ready_for_review]
 
-# Kitchen uses fixed Azure resource groups; runs must not overlap.
+# One run per commit. kitchen-azurerm puts a create timestamp in every resource
+# group name, so concurrent runs only collide when two creates of the same
+# platform start in the same second. cancel-in-progress stays false: a run
+# killed mid-create never writes its kitchen state file, so the resource group
+# it just made would be orphaned. kitchen-cleanup.yml removes those.
 concurrency:
-  group: kitchen-windows
+  group: kitchen-windows-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: false
 
 jobs:
