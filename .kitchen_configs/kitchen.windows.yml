@@ -134,6 +134,12 @@ platforms:
     transport: &win2025_transport
       operation_timeout: 3600
       receive_timeout: 3610
+  - name: win2025-64-24h2-core
+    driver:
+      <<: *win2025_driver
+      image_urn: MicrosoftWindowsServer:WindowsServer:2025-datacenter-azure-edition-core:latest
+      azure_resource_group_name: ronin-puppet-test-kitchen-win2025-64-24h2-core
+    transport: *win2025_transport
   - name: win10-64-2009
     driver:
       <<: *windows_driver_defaults
@@ -196,6 +202,7 @@ suites:
       - win11-a64-25h2-tester
       - win2022-64-2009
       - win2025-64-24h2
+      - win2025-64-24h2-core
       - win2025-64-24h2-gpu
       - win10-64-2009
       - win10-64-2009-gpu
