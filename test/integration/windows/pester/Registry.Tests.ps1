@@ -98,7 +98,8 @@ Describe 'Registry' -Tag IntegrationTests {
             if ($Server25) {
                 foreach ($entry in @{
                         ProductName = 'Windows Server 2025 Datacenter Azure Edition'; DisplayVersion = '24H2'
-                        ReleaseId = '2009'; CurrentBuild = '26100'; InstallationType = 'Server'
+                        ReleaseId = '2009'; CurrentBuild = '26100'
+                        InstallationType = $(if ($env:WORKER_POOL_ID -like '*-core*') { 'Server Core' } else { 'Server' })
                     }.GetEnumerator()) {
                     $registry += @{ Path = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'; Name = $entry.Key; Value = $entry.Value }
                 }
