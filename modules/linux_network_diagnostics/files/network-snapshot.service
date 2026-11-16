@@ -1,0 +1,11 @@
+[Unit]
+Description=Capture passive network state for Moonshot diagnostics
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/network-snapshot
+TimeoutStartSec=30
+UMask=0077
+Nice=19
+IOSchedulingClass=idle
+NoNewPrivileges=true

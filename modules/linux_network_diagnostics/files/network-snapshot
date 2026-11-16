@@ -1,0 +1,39 @@
+#!/bin/bash
+# Passive only: no DNS requests or connectivity probes. Root-owned directory.
+# 2880 minute slots, each at most 16 KiB (45 MiB total); retain across reboot.
+set -u
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 077
+snapshot_dir=/var/log/network-snapshots
+exec 9>/run/network-snapshot.lock
+flock -n 9 || exit 0
+snapshot_tmp="${snapshot_dir}/.pending"
+trap 'rm -f "$snapshot_tmp"' EXIT
+trap 'exit 1' TERM INT
+snapshot_slot=$(( $(date +%s) / 60 % 2880 ))
+{
+    date -u '+UTC %Y-%m-%dT%H:%M:%SZ'
+    printf 'boot_id '
+    cat /proc/sys/kernel/random/boot_id
+    printf '\n--- addresses ---\n'
+    timeout 3 ip -brief address
+    printf '\n--- routes ---\n'
+    timeout 3 ip route show table all
+    printf '\n--- network services ---\n'
+    timeout 3 systemctl show NetworkManager systemd-networkd systemd-resolved \
+        -p Id -p ActiveState -p SubState -p UnitFileState
+    printf '\n--- DHCP client processes (no arguments) ---\n'
+    ps -C dhclient -o pid=,ppid=,stat=,etime=,comm=
+    printf '\n--- resolver configuration ---\n'
+    cat /etc/resolv.conf
+    timeout 3 systemd-resolve --status
+    printf '\n--- DHCP lease tail ---\n'
+    # NetworkManager and standalone dhclient use these directories on 18.04.
+    # Limit file count, output, and time; do not dump connection profiles.
+    find /var/lib/NetworkManager /var/lib/dhcp -maxdepth 1 -type f \
+        -name '*lease*' -print 2>/dev/null | head -3 | while IFS= read -r lease; do
+        printf '\n%s\n' "$lease"
+        timeout 2 tail -60 "$lease"
+    done
+} 2>&1 | head -c 16384 > "$snapshot_tmp"
+mv -f "$snapshot_tmp" "${snapshot_dir}/slot-${snapshot_slot}.log"

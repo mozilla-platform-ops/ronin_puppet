@@ -22,4 +22,5 @@ class roles_profiles::roles::gecko_t_linux_talos {
 
     # perf profiling support (bug 2031822)
     include ::roles_profiles::profiles::linux_perf_profiling
+    include ::roles_profiles::profiles::linux_network_diagnostics
 }
