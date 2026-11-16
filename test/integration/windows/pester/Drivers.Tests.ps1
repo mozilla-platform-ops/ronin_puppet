@@ -2,7 +2,7 @@
 
 Describe 'Drivers' -Tag IntegrationTests {
     Context 'GPU and audio drivers' {
-        if (($Win10 -or $Server25) -and $env:WORKER_POOL_ID -like '*gpu*') {
+        if ($env:WORKER_POOL_ID -like '*gpu*') {
             It 'runs the configured NVIDIA A10-8Q driver' {
                 $version = (Get-HieraValue 'windows.gpu.name').Split('_')[0]
                 $output = nvidia-smi.exe '--query-gpu=name,driver_version' '--format=csv,noheader'
