@@ -601,9 +601,9 @@ function run_puppet {
 
 # Color helpers — only when stdout is a TTY (suppresses codes in journal/pipes)
 if [ -t 1 ]; then
-    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _YELLOW="\033[33m"; _CYAN="\033[36m"; _RESET="\033[0m"
+    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _YELLOW="\033[33m"; _PURPLE="\033[35m"; _CYAN="\033[36m"; _RESET="\033[0m"
 else
-    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _YELLOW=""; _CYAN=""; _RESET=""
+    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _YELLOW=""; _PURPLE=""; _CYAN=""; _RESET=""
 fi
 
 WRITE_SENTINEL=1
@@ -665,15 +665,21 @@ if [ -f "/etc/puppet/ronin_settings" ]; then
 EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
-    # show env vars of interest
-    echo -e "  PUPPET_BRANCH:         ${_DIM}$PUPPET_BRANCH${_RESET}"
-    echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
-    echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
-    if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
-        echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
-    else
-        echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}${WORKER_TYPE_OVERRIDE}${_RESET}"
-    fi
+fi
+
+# Show effective settings, including defaults when no override file exists.
+echo "Effective Puppet settings:"
+if [ "$PUPPET_BRANCH" = "master" ]; then
+    echo "  PUPPET_BRANCH:         $PUPPET_BRANCH"
+else
+    echo -e "  PUPPET_BRANCH:         ${_PURPLE}$PUPPET_BRANCH${_RESET}"
+fi
+echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
+echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
+if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
+else
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}<none>${_RESET}"
 fi
 
 ROLE_FILE='/etc/puppet_role'
