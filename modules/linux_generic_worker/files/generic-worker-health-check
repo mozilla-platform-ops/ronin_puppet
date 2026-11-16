@@ -302,7 +302,7 @@ def check_generic_worker_process():
         data["child_procs"] = nchildren
         load1, load5, load15 = os.getloadavg()
         data["load_avg"] = {"1m": round(load1, 2), "5m": round(load5, 2), "15m": round(load15, 2)}
-        return PASS, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f}), do not reboot", data
+        return PASS, f"running (pid {pids[0]}) — task in progress ({nchildren} child procs, load {load1:.2f})", data
     status = WARN if task_state.startswith("unknown") else PASS
     return status, f"running (pid {pids[0]}) — {task_state}", data
 
@@ -891,7 +891,7 @@ def print_human(results, warnings, verbose=False, debug=False):
             marker = yellow("⚠")
         else:
             marker = red("✗")
-        name = DISPLAY_NAMES.get(r["name"], r["name"])
+        name = "Worker logging" if name == "worker_logging" else DISPLAY_NAMES.get(r["name"], r["name"])
         detail = _format_detail(r)
         if r["name"] == "operator_hold" and s == PASS and r.get("data", {}).get("active") is False:
             detail = dim(detail)

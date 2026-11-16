@@ -1,6 +1,7 @@
 """Worker task state from current-process status and journal evidence."""
 
 import json
+import datetime
 import os
 from pathlib import Path
 import runpy
@@ -14,6 +15,19 @@ check = health['_gw_task_state']
 
 
 class TaskStateTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        proc = Path(temporary.name) / '123'
+        proc.mkdir()
+        (proc / 'stat').write_text('123 (generic-worker) ' + ' '.join(['0'] * 20))
+        patch = mock.patch.dict(check.__globals__, {
+            'PROC_ROOT': temporary.name,
+            '_boot_time': lambda: datetime.datetime.fromtimestamp(1, datetime.timezone.utc),
+        })
+        patch.start()
+        self.addCleanup(patch.stop)
+
     def test_startup_ready_idle_and_running_log_patterns(self):
         for log, expected in [
             ('Initialising feature Mounts/Caches...', 'starting'),
@@ -26,7 +40,7 @@ class TaskStateTests(unittest.TestCase):
             ('unrelated log line', 'unknown (no matching log pattern)'),
         ]:
             with self.subTest(log=log), mock.patch.dict(check.__globals__, {'_worker_status_context': mock.Mock(side_effect=OSError())}), \
-                 mock.patch('subprocess.run', return_value=types.SimpleNamespace(stdout=log)):
+                 mock.patch('subprocess.run', return_value=types.SimpleNamespace(stdout='\n'.join(reversed(log.splitlines())), returncode=0)):
                 self.assertEqual(check(123)[0], expected)
 
     def test_current_status_overrides_missing_log_patterns_and_stale_status_is_ignored(self):
@@ -36,7 +50,7 @@ class TaskStateTests(unittest.TestCase):
             for started, expected in [(path.stat().st_mtime - 10, 'task running'),
                                       (path.stat().st_mtime + 10, 'idle')]:
                 with self.subTest(started=started), mock.patch.dict(check.__globals__, {'_worker_status_context': lambda pid: (started, str(path))}), \
-                     mock.patch('subprocess.run', return_value=types.SimpleNamespace(stdout='No task claimed.')) as journal:
+                     mock.patch('subprocess.run', return_value=types.SimpleNamespace(stdout='No task claimed.', returncode=0)) as journal:
                     self.assertEqual(check(123)[0], expected)
                     if expected == 'idle':
                         self.assertIn('--since', journal.call_args.args[0])
@@ -45,7 +59,7 @@ class TaskStateTests(unittest.TestCase):
 
     def test_missing_status_does_not_mean_idle(self):
         with mock.patch.dict(check.__globals__, {'_worker_status_context': lambda pid: (1, '/missing/status')}), \
-             mock.patch('subprocess.run', return_value=types.SimpleNamespace(stdout='')):
+             mock.patch('subprocess.run', return_value=types.SimpleNamespace(stdout='', returncode=0)):
             self.assertEqual(check(123)[0], 'unknown (no journal output)')
 
     def test_unknown_is_not_summarized_as_idle(self):
