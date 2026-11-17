@@ -21,6 +21,26 @@ class linux_papertrail (
               include linux_packages::ncat
             }
 
+            $ncat_package = $facts['os']['release']['full'] ? {
+              '18.04' => 'nmap',
+              default => 'ncat',
+            }
+
+            $papertrail_services = $syslog_identifiers.empty ? {
+              true    => [Service['papertrail']],
+              default => [Service['papertrail'], Service['papertrail-syslog']],
+            }
+
+            # Share the existing Papertrail trust bundle with the Windows module.
+            file { '/etc/papertrail-bundle.pem':
+              ensure => file,
+              owner  => 'root',
+              group  => 'root',
+              mode   => '0644',
+              source => 'puppet:///modules/win_nxlog/papertrail-bundle.pem',
+              notify => $papertrail_services,
+            }
+
             # NOTE: puppet 6.1+ will reload systemd automatically
 
             # two papertrail systemd units:
@@ -41,7 +61,7 @@ class linux_papertrail (
                 ensure   => running,
                 provider => 'systemd',
                 enable   => true,
-                require  => Package['nmap'];
+                require  => [Package[$ncat_package], File['/etc/papertrail-bundle.pem']];
             }
 
             # if syslog_identifiers are empty, we don't need a second instance
@@ -59,7 +79,7 @@ class linux_papertrail (
                   ensure   => running,
                   provider => 'systemd',
                   enable   => true,
-                  require  => Package['nmap'];
+                  require  => [Package[$ncat_package], File['/etc/papertrail-bundle.pem']];
               }
             }
             # TODO: handle else (remove unit file and stop service)
