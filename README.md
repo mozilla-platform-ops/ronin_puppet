@@ -52,7 +52,12 @@ test-kitchen in called via `./bin/kitchen_docker` (the binary tells test-kitchen
 
 In the past we used `./bin/kitchen` (which used Vagrant and VirtualBox, and was configured in .kitchen_configs/kitchen.yml). `.kitchen_configs/kitchen.circleci.yml` was used for CircleCI (but it now uses the Docker config).
 
-We used Vagrant/VirutalBox because some things don't work with Docker (kernel module installation and testing).
+We used Vagrant/VirtualBox because some things don't work with Docker (kernel module installation and testing).
+
+The legacy Vagrant configuration targets x86 Ubuntu boxes and has not been
+validated on Apple Silicon. Restoring local VM testing on ARM Macs could use
+Kitchen/Vagrant with [VMware Fusion](https://developer.hashicorp.com/vagrant/docs/providers/vmware)
+and an ARM64 Ubuntu box, or [Lima](https://lima-vm.io/) with additional integration.
 
 #### converging and running tests
 
