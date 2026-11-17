@@ -9,8 +9,6 @@ driver:
   name: vagrant
   provider: virtualbox
   provision: true
-  public_key: test/id_ed25519.pub
-  private_key: test/id_ed25519
 
 provisioner:
   name: puppet_apply
@@ -50,6 +48,7 @@ provisioner:
   require_puppet_omnibus: false
   require_puppet_repo: false
   custom_options: '--show_diff'
+  custom_facts: {'running_in_test_kitchen': true}
   verify_host_key: false
   resolve_with_librarian_puppet: false
   resolve_with_r10k: false
