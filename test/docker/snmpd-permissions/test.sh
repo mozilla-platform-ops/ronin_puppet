@@ -2,7 +2,7 @@
 # Run as root in a disposable Ubuntu container with snmpd and snmp installed.
 # Uses fixture communities only; no production service or secrets.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../../.."
 useradd -m cltbld
 config=/etc/snmp/snmpd.conf
 sed 's/<%= @snmpd_ro_secret %>/fixture-before/' modules/linux_snmpd/templates/snmpd.conf.erb > "$config"
