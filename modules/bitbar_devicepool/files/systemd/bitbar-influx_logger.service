@@ -1,0 +1,14 @@
+[Unit]
+Description=influx logger service
+Documentation=https://github.com/mozilla-platform-ops/android-tools/tree/master/worker_health
+
+[Service]
+# secrets are stored in ~/.bitbar...
+Type=simple
+ExecStart=/home/bitbar/.local/bin/pipenv run ./influx_logger.py
+Restart=always
+WorkingDirectory=/home/bitbar/android-tools/worker_health
+User=bitbar
+
+[Install]
+WantedBy=multi-user.target

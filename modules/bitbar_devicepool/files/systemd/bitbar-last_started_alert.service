@@ -1,0 +1,14 @@
+[Unit]
+Description=devicepool monitoring service
+Documentation=https://github.com/mozilla-platform-ops/android-tools/tree/master/devicepool_last_started_alert
+
+[Service]
+Environment=PAGERDUTY_TOKEN=replace-this-invalid-token
+Type=simple
+ExecStart=/home/bitbar/android-tools/devicepool_last_started_alert/venv/bin/python -u /home/bitbar/android-tools/devicepool_last_started_alert/last_started_alert.py -d -vv
+Restart=always
+WorkingDirectory=/home/bitbar/android-tools/devicepool_last_started_alert
+User=bitbar
+
+[Install]
+WantedBy=multi-user.target

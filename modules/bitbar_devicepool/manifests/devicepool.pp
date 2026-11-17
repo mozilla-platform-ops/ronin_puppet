@@ -49,7 +49,10 @@ class bitbar_devicepool::devicepool {
   # place systemd unit file for devicepool
   file { '/etc/systemd/system/bitbar.service':
     ensure => file,
-    source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar.service',
+    group  => 'root',
+    mode   => '0644',
+    owner  => 'root',
+    source => 'puppet:///modules/bitbar_devicepool/systemd/bitbar.service',
     notify => [
       Class['bitbar_devicepool::systemd_reload'],
     ],
@@ -58,7 +61,10 @@ class bitbar_devicepool::devicepool {
   # place systemd unit file for devicepool (v3 server)
   file { '/etc/systemd/system/bitbar-v3.service':
     ensure => file,
-    source => '/home/bitbar/mozilla-bitbar-devicepool/service/bitbar-v3.service',
+    group  => 'root',
+    mode   => '0644',
+    owner  => 'root',
+    source => 'puppet:///modules/bitbar_devicepool/systemd/bitbar-v3.service',
     notify => [
       Class['bitbar_devicepool::systemd_reload'],
     ],

@@ -7,7 +7,7 @@ class linux_packages::git {
     'Ubuntu': {
       case $facts['os']['release']['full'] {
         '18.04': {
-          $temp_dir = '/tmp/git_242'
+          $temp_dir = '/var/cache/ronin-package-staging/git_242'
 
           $pkgs_and_chksums_hash = {
             'git_2.42.0-0ppa1~ubuntu18.04.1_amd64.deb' => '40e17918bff5544c252005433a565eecfe653228048108d7ff79de0548b9d552',
@@ -20,7 +20,7 @@ class linux_packages::git {
           }
         }
         '22.04': {
-          $temp_dir = '/tmp/git_242'
+          $temp_dir = '/var/cache/ronin-package-staging/git_242'
 
           $pkgs_and_chksums_hash = {
             'git_2.42.0-0ppa1~ubuntu18.04.1_amd64.deb' => '40e17918bff5544c252005433a565eecfe653228048108d7ff79de0548b9d552',

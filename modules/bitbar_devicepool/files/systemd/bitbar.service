@@ -1,0 +1,23 @@
+[Unit]
+Description=Bitbar Testrun manager service
+# retry forever, no rate limiting
+StartLimitBurst=0
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/bitbar/mozilla-bitbar-devicepool/bin/start_android_hardware_testing.sh
+# disable execstop, let systemd track the pid and manage shutdown
+#ExecStop=/bin/bash /home/bitbar/mozilla-bitbar-devicepool/bin/stop_android_hardware_testing.sh
+Restart=always
+RestartSec=30s
+# address intermittent hangs by restarting hourly (mega-punt), haven't been able to find deadlocks/source.
+RuntimeMaxSec=1h
+WorkingDirectory=/home/bitbar/mozilla-bitbar-devicepool
+User=bitbar
+# send USR2 to politely exit
+KillSignal=SIGUSR2
+# send SIGKILL after 60s
+TimeoutStopSec=60s
+
+[Install]
+WantedBy=multi-user.target
