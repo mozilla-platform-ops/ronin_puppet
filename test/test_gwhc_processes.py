@@ -516,6 +516,50 @@ class JournalTests(unittest.TestCase):
 
 
 class DisplayTests(unittest.TestCase):
+    def test_launch_mode_comes_from_configured_wrapper(self):
+        for command, expected in (("/usr/local/bin/start-worker \"$@\"", "runner"),
+                                  ("/usr/local/bin/generic-worker run --config x", "direct"),
+                                  ("# start-worker is not invoked", "unknown")):
+            with self.subTest(command=command), mock.patch("builtins.open", mock.mock_open(read_data=command)):
+                self.assertEqual(health._worker_launch_mode(), expected)
+        with mock.patch("builtins.open", side_effect=OSError):
+            self.assertEqual(health._worker_launch_mode(), "unknown")
+
+    def test_runner_and_logs_are_distinct_and_ordered(self):
+        for mode, pids, expected in (("direct", [4505], "·  Worker runner   not used"),
+                                     ("runner", [4413], "✓  Worker runner   start-worker · PID 4413"),
+                                     ("runner", [], "✗  Worker runner   start-worker not running")):
+            row = {"name": "worker_runner_process", "status": health.PASS if pids else health.FAIL,
+                   "detail": "logs recent", "data": {"launch_mode": mode, "worker_pids": pids, "journal_recent": True}}
+            worker = {"name": "generic_worker_process", "status": health.PASS, "detail": "idle",
+                      "data": {"generic_worker_pids": [4505], "task_state": "idle"}}
+            output = io.StringIO()
+            with mock.patch.object(health, "_use_color", False), contextlib.redirect_stdout(output):
+                health.print_human([row, worker], [])
+            text = output.getvalue()
+            self.assertIn(expected, text)
+            self.assertLess(text.index("Worker runner"), text.index("Generic worker"))
+            self.assertLess(text.index("Generic worker"), text.index("Worker logs"))
+            self.assertIn("Worker logs     recent journal entries", text)
+            json_output = io.StringIO()
+            with contextlib.redirect_stdout(json_output):
+                health.print_json([row, worker], [])
+            self.assertEqual(json.loads(json_output.getvalue())["checks"], [row, worker])
+
+    def test_inactive_hold_uses_neutral_marker_and_active_hold_warns(self):
+        for active, status, marker in ((False, health.PASS, "·"), (True, health.WARN, "⚠")):
+            row = {"name": "operator_hold", "status": status,
+                   "detail": f"operator hold {'active' if active else 'inactive'}",
+                   "data": {"active": active}}
+            output = io.StringIO()
+            with mock.patch.object(health, "_use_color", False), contextlib.redirect_stdout(output):
+                health.print_human([row], [])
+            self.assertIn(f"  {marker}  Operator hold", output.getvalue())
+            json_output = io.StringIO()
+            with contextlib.redirect_stdout(json_output):
+                health.print_json([row], [])
+            self.assertEqual(json.loads(json_output.getvalue())["checks"][0], row)
+
     def test_readable_details_preserve_diagnostics_and_source_data(self):
         cases = [
             ("operator_hold", "operator hold inactive", "inactive"),
@@ -557,12 +601,12 @@ class DisplayTests(unittest.TestCase):
             with mock.patch.object(health, "_use_color", color), contextlib.redirect_stdout(output):
                 health.print_human(self.results(), [])
             text = output.getvalue()
-            self.assertIn("Role         current-role\nWorker type  test-worker (configured)", text)
+            self.assertIn("  Role         current-role\n  Worker type  test-worker (configured)", text)
             self.assertIn("6 minutes ago", text)
             self.assertNotIn("old-role", text)
             self.assertNotIn("abcdef0123456789", text)
-            self.assertIn("\n\nRole", text)
-            self.assertEqual(len(text.splitlines()), 8)
+            self.assertNotIn("\n\n", text)
+            self.assertEqual(len(text.splitlines()), 6)
             if color:
                 self.assertIn("\033[35mtest-branch\033[0m", text)
                 self.assertIn("\033[32m✓", text)

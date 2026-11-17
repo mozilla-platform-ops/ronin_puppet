@@ -402,15 +402,31 @@ def _gw_task_state(pid):
     return "unknown (no matching log pattern)", cmd_str
 
 
+def _worker_launch_mode():
+    try:
+        with open('/usr/local/bin/run-start-worker.sh') as source:
+            lines = source.read().splitlines()
+    except OSError:
+        return 'unknown'
+    for line in lines:
+        if re.match(r'^\s*/usr/local/bin/generic-worker\s+run\b', line):
+            return 'direct'
+        if re.match(r'^\s*/usr/local/bin/start-worker(?:\s|$)', line):
+            return 'runner'
+    return 'unknown'
+
+
 def check_worker_runner_process():
     # TODO: add --check-tc-api flag to query queue.taskcluster.net for
     # lastDateActive using workerPoolId + workerId from /etc/start-worker.yml.
+    mode = _worker_launch_mode()
     pids = find_procs_by_name("start-worker")
     worker_name = "start-worker"
-    if not pids:
+    if not pids and mode != 'runner':
         pids = find_procs_by_name("generic-worker")
         worker_name = "generic-worker"
-    data = {"worker_process": worker_name, "worker_pids": pids, "log_dir": GW_LOG_DIR}
+    data = {"worker_process": worker_name, "worker_pids": pids, "log_dir": GW_LOG_DIR,
+            "launch_mode": mode}
 
     log_fresh = False
     log_age_min = None
@@ -769,6 +785,7 @@ DISPLAY_NAMES = {
     "disk_free": "Disk",
     "task_dir_size": "Task directory",
     "puppet": "Puppet",
+    "tc_versions": "Taskcluster",
     "worker_runner_process": "Worker runner",
     "generic_worker_process": "Generic worker",
 }
@@ -787,8 +804,17 @@ def _relative_age(hours):
     return f"{count} day{'s' if count != 1 else ''} ago"
 
 
-def _format_detail(result):
+def _format_detail(result, verbose=False):
     detail = result["detail"]
+    if result["name"] == "tc_versions" and result["status"] == PASS:
+        versions = result.get("data", {}).get("versions", {})
+        required = ("generic-worker", "taskcluster-proxy", "livelog")
+        if all(versions.get(component) for component in required):
+            present = [(name, version) for name, version in versions.items() if version]
+            if len({version for _, version in present}) == 1:
+                if verbose:
+                    return f"{present[0][1]} · {', '.join(name for name, _ in present)}"
+                return present[0][1]
     if result["name"] == "operator_hold":
         detail = re.sub(r"^operator hold ", "", detail)
     if result["name"] == "disk_free":
@@ -850,16 +876,15 @@ def print_human(results, warnings, verbose=False, debug=False):
     pdata = (_by_name(results, "puppet") or {}).get("data") or {}
     role = pdata.get('configured_role') or pdata.get('role') or 'unknown'
     role_suffix = "" if pdata.get("configured_role") else " (last run)"
-    print()
-    print(f"{'Role':<13}{role}{role_suffix}")
-    print(f"{'Worker type':<13}{pdata.get('worker_type') or 'unknown'} (configured)")
+    print(f"  {'Role':<13}{role}{role_suffix}")
+    print(f"  {'Worker type':<13}{pdata.get('worker_type') or 'unknown'} (configured)")
     branch = pdata.get("git_branch") or "unknown"
     sha = pdata.get("git_sha") or "unknown"
     if branch == "HEAD":
         branch_text = "branch unavailable (HEAD)"
     else:
         branch_text = purple(branch) if branch not in ("master", "unknown") else branch
-    print(f"{'Puppet rev':<13}{sha[:8] if sha != 'unknown' else sha} · {branch_text}")
+    print(f"  {'Puppet rev':<13}{sha[:8] if sha != 'unknown' else sha} · {branch_text}")
     if verbose or debug:
         print(dim(f"Full SHA: {sha}"))
     if state == "WORKING":
@@ -877,23 +902,51 @@ def print_human(results, warnings, verbose=False, debug=False):
             first_fail = next(r for r in results if r["status"] == FAIL)
             print(f"  → most likely cause: {red(first_fail['name'])} — {first_fail['detail']}")
 
-    print()
     w = max(len(DISPLAY_NAMES.get(r["name"], r["name"])) for r in results)
     indent = " " * (2 + 1 + 2 + w + 2)  # marker + spacing + name col + spacing
-    for r in results:
+    runner = _by_name(results, "worker_runner_process")
+    ordered = [r for r in results if r["name"] != "worker_runner_process"]
+    if runner:
+        # Preserve the existing JSON check and show its process and log evidence
+        # separately in the human report. Unknown old snapshots stay unchanged.
+        data = runner.get("data") or {}
+        mode = data.get("launch_mode")
+        if mode in ("direct", "runner"):
+            if mode == "direct":
+                runner_row = {"name": "worker_runner_display", "status": PASS, "detail": "not used", "data": {"unused": True}}
+            else:
+                pids = data.get("worker_pids") or []
+                runner_row = {"name": "worker_runner_display", "status": PASS if pids else FAIL,
+                              "detail": f"start-worker · PID {pids[0]}" if pids else "start-worker not running"}
+            pos = next((i for i, row in enumerate(ordered) if row["name"] == "generic_worker_process"), len(ordered))
+            ordered.insert(pos, runner_row)
+            if data.get("journal_error"):
+                log_status, log_detail = WARN, f"journal query failed: {data['journal_error']}"
+            elif "journal_recent" in data:
+                log_status = PASS if data["journal_recent"] else WARN
+                log_detail = "recent journal entries" if data["journal_recent"] else f"no journal entries in the last {GW_LOG_STALE_MINUTES} minutes"
+            elif "log_age_minutes" in data:
+                age = data["log_age_minutes"]
+                log_status = PASS if age <= GW_LOG_STALE_MINUTES else WARN
+                log_detail = f"logs {age} min old"
+            else:
+                log_status, log_detail = WARN, "log freshness unknown"
+            ordered.append({"name": "worker_logs_display", "status": log_status, "detail": log_detail})
+        else:
+            ordered.insert(next((i for i, row in enumerate(ordered) if row["name"] == "generic_worker_process"), len(ordered)), runner)
+    for r in ordered:
         s = r["status"]
-        name = r["name"]
-        if name == "worker_runner_process" and r.get("data", {}).get("worker_process") == "generic-worker":
-            name = "worker_logging"
-        if s == PASS:
+        if (r["name"] == "operator_hold" and s == PASS and r.get("data", {}).get("active") is False) or r.get("data", {}).get("unused") is True:
+            marker = dim("·")
+        elif s == PASS:
             marker = green("✓")
         elif s == WARN:
             marker = yellow("⚠")
         else:
             marker = red("✗")
-        name = "Worker logging" if name == "worker_logging" else DISPLAY_NAMES.get(r["name"], r["name"])
-        detail = _format_detail(r)
-        if r["name"] == "operator_hold" and s == PASS and r.get("data", {}).get("active") is False:
+        name = {"worker_runner_display": "Worker runner", "worker_logs_display": "Worker logs"}.get(r["name"], DISPLAY_NAMES.get(r["name"], r["name"]))
+        detail = _format_detail(r, verbose=verbose or debug)
+        if (r["name"] == "operator_hold" and s == PASS and r.get("data", {}).get("active") is False) or r.get("data", {}).get("unused") is True:
             detail = dim(detail)
         print(f"  {marker}  {name.ljust(w)}  {detail}")
         if s == FAIL:

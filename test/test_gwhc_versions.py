@@ -5,6 +5,9 @@ import runpy
 import subprocess
 import types
 import unittest
+import io
+import json
+from contextlib import redirect_stdout
 from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'modules/linux_generic_worker/files/generic-worker-health-check'
@@ -13,6 +16,26 @@ check = health['check_tc_versions']
 
 
 class VersionsTests(unittest.TestCase):
+    def test_human_compacts_matching_versions_but_json_keeps_details(self):
+        versions = {'generic-worker': '115.0.1', 'taskcluster-proxy': '115.0.1',
+                    'livelog': '115.0.1', 'start-worker': None}
+        result = {'name': 'tc_versions', 'status': health['PASS'],
+                  'detail': 'generic-worker=115.0.1, taskcluster-proxy=115.0.1, livelog=115.0.1',
+                  'data': {'versions': versions}}
+        self.assertEqual(health['_format_detail'](result), '115.0.1')
+        self.assertEqual(health['_format_detail'](result, verbose=True),
+                         '115.0.1 · generic-worker, taskcluster-proxy, livelog')
+        output = io.StringIO()
+        with redirect_stdout(output):
+            health['print_json']([result], [])
+        self.assertEqual(json.loads(output.getvalue())['checks'][0]['data']['versions'], versions)
+        self.assertEqual(result['detail'], 'generic-worker=115.0.1, taskcluster-proxy=115.0.1, livelog=115.0.1')
+        versions['livelog'] = '114.0.0'
+        self.assertEqual(health['_format_detail'](result), result['detail'])
+        versions['livelog'] = None
+        result['status'] = health['WARN']
+        self.assertEqual(health['_format_detail'](result), result['detail'])
+
     def test_direct_worker_versions_and_optional_runner(self):
         with mock.patch('os.path.exists', side_effect=lambda p: not p.endswith('/start-worker')), \
              mock.patch('subprocess.run', return_value=types.SimpleNamespace(returncode=0, stdout='115.0.1\n', stderr='')) as run:
