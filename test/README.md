@@ -41,7 +41,8 @@ community configuration, verifies daemon access and privilege dropping, and
 checks real queries after configuration reload and restart. It runs as root
 inside the container and modifies its users and `/etc`; do not run `test.sh`
 directly on your workstation or a fleet host. Only fixture communities are used.
-The Pre-commit workflow runs this in a separate **SNMP daemon permissions** job.
+The Pre-commit workflow runs this in a separate **Container service integration
+tests** job, with a named SNMP permissions step.
 
 ## Kitchen integration tests
 

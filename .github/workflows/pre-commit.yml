@@ -88,7 +88,7 @@ jobs:
         echo "No relevant files changed (excluding r10k_modules/), skipping pre-commit"
 
   snmpd-permissions:
-    name: SNMP daemon permissions
+    name: Container service integration tests
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
