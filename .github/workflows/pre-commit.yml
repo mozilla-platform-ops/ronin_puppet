@@ -43,6 +43,18 @@ jobs:
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
 
+    - name: Test Linux Puppet Git recovery and auth fallback
+      shell: bash
+      run: bash test/test_run_puppet_git_recovery.sh
+
+    - name: Test Linux bootstrap
+      shell: bash
+      run: bash test/test_bootstrap_linux.sh
+
+    - name: Test Bitbar release package bootstrap
+      shell: bash
+      run: bash test/test_bootstrap_bitbar_release.sh
+
     - name: Install pre-commit
       run: pip install pre-commit
 
@@ -74,3 +86,14 @@ jobs:
       if: steps.changed-files.outputs.any_changed == 'false'
       run: |
         echo "No relevant files changed (excluding r10k_modules/), skipping pre-commit"
+
+  snmpd-permissions:
+    name: SNMP daemon permissions
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Test SNMP permissions in disposable Ubuntu container
+      run: bash test/docker/snmpd-permissions/run.sh
