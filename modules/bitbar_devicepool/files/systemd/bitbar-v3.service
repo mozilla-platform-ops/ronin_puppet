@@ -1,0 +1,23 @@
+[Unit]
+Description=Bitbar Testrun manager service (v3 server)
+# retry forever, no rate limiting
+StartLimitBurst=0
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/bitbar/mozilla-bitbar-devicepool/bin/start_mbd_new_server.sh
+# systemd tracks the pid and manages shutdown
+Restart=always
+RestartSec=30s
+# address intermittent hangs by restarting hourly (mega-punt), haven't been able to find deadlocks/source.
+RuntimeMaxSec=1h
+WorkingDirectory=/home/bitbar/mozilla-bitbar-devicepool
+User=bitbar
+# send USR2 to politely exit
+KillSignal=SIGUSR2
+# send SIGKILL after 60s
+TimeoutStopSec=60s
+SyslogIdentifier=bitbar-v3
+
+[Install]
+WantedBy=multi-user.target
