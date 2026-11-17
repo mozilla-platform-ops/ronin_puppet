@@ -24,7 +24,8 @@ class sudo {
       }
     }
     'Ubuntu': {
-      if $facts['running_in_test_kitchen'] == true {
+      # kitchen-puppet serializes scalar custom facts as strings.
+      if $facts['running_in_test_kitchen'] == true or $facts['running_in_test_kitchen'] =~ Pattern[/\Atrue\z/] {
         concat::fragment { '01-kitchen-only':
           target  => '/etc/sudoers',
           content => "# Test Kitchen only\n%vagrant ALL=(ALL) NOPASSWD: ALL\nkitchen ALL=(ALL) NOPASSWD: ALL\n",
