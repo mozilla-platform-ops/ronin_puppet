@@ -9,7 +9,7 @@ template="${repo_root}/modules/puppet/templates/puppet-ubuntu-run-puppet.sh.erb"
 test_dir=$(mktemp -d "${TMPDIR:-/tmp}/run-puppet-auth-test.XXXXXX")
 trap 'rm -rf -- "$test_dir"' EXIT
 
-for function_name in configure_git_remote configure_public_anonymous_auth fetch_puppet_remote; do
+for function_name in configure_git_remote configure_public_anonymous_auth fetch_puppet_remote recover_empty_remote_refs archive_git_gc_log; do
     source <(sed -n "/^function ${function_name} {/,/^}/p" "$template")
 done
 # update_puppet contains a heredoc whose node-closing brace is at column zero.
