@@ -1,0 +1,3 @@
+# Kitchen reads the public key locally and embeds it in its generated Dockerfile.
+# Keep the matching private key local to the Kitchen client.
+.kitchen/ssh/

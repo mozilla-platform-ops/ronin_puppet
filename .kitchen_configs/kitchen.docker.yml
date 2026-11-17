@@ -1,8 +1,8 @@
 ---
 driver:
   name: docker
-  public_key: test/id_ed25519.pub
-  private_key: test/id_ed25519
+  public_key: <%= require File.expand_path(".kitchen_configs/kitchen_ssh", Dir.pwd); (RoninKitchenSSH.private_key + ".pub").inspect %>
+  private_key: <%= require File.expand_path(".kitchen_configs/kitchen_ssh", Dir.pwd); RoninKitchenSSH.private_key.inspect %>
   use_sudo: false
   privileged: true
   run_options: --add-host=host.docker.internal:host-gateway
