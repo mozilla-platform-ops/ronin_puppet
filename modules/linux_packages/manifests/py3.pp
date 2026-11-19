@@ -67,7 +67,7 @@ class linux_packages::py3 {
           # py 3.11, from https://github.com/rstudio/python-builds
           #   - pysnakes ppa: no longer publishing bionic debs
 
-          $temp_dir = '/tmp/py3118'
+          $temp_dir = '/var/cache/ronin-package-staging/py3118'
           $pkgs_and_chksums_hash = {
           'python-3.11.8_1_amd64.deb' => 'f83e52a7e57ba7c7d3f783c9168b125e04e510c9c43212baa98eaa614470d611' }
           packages::linux_package_from_s3_multi { 'install py_3118' :

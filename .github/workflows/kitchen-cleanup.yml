@@ -1,0 +1,54 @@
+name: Kitchen cleanup
+
+# Kitchen leaks a resource group when a run dies before it can destroy its VM.
+# Once a day, delete the ones left behind. The create time is part of the group
+# name, so no resource listing is needed to judge its age.
+
+on:
+  schedule:
+    - cron: "30 6 * * *" # 06:30 UTC
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+
+concurrency:
+  group: kitchen-cleanup
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    env:
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      - name: Azure login
+        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Delete stale kitchen resource groups
+        run: |
+          set -euo pipefail
+          # Older than this can never be a run in flight: a kitchen step is
+          # capped at 120 minutes.
+          cutoff="$(date -u -d '12 hours ago' +%Y%m%dT%H%M%S)"
+          az group list \
+            --subscription "$AZURE_SUBSCRIPTION_ID" \
+            --query "[?starts_with(name,'kitchen-ronin-puppet-test-kitchen-')].name" \
+            -o tsv |
+            while read -r group; do
+              # Names end in the UTC create time. It is fixed width, so a
+              # string compare orders it correctly. A name without one is not
+              # ours, so leave it alone.
+              stamp="${group##*-}"
+              if [[ "$stamp" =~ ^[0-9]{8}T[0-9]{6}$ ]] && [[ "$stamp" < "$cutoff" ]]; then
+                echo "Deleting $group"
+                az group delete --subscription "$AZURE_SUBSCRIPTION_ID" \
+                  --name "$group" --yes --no-wait
+              else
+                echo "Keeping $group"
+              fi
+            done

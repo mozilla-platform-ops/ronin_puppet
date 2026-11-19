@@ -384,6 +384,86 @@ function reinit_working_dir {
     init_git_working_dir
 }
 
+function recover_empty_remote_refs {
+    # A reset can leave zero-byte loose refs which prevent every later fetch.
+    # Remote-tracking refs are a cache; preserve the damaged files outside the
+    # refs namespace, then let fetch restore live refs or prune deleted ones.
+    # update_puppet has already validated the root-owned checkout at this point.
+    local ref relative_ref backup_dir=''
+
+    [ -d .git/refs/remotes ] || return 0
+    while IFS= read -r -d '' ref; do
+        # Never treat Git's temporary lock files as damaged refs, or move a ref
+        # while another Git process has its lock. Recheck after enumeration.
+        [[ -f "$ref" && ! -L "$ref" && ! -s "$ref" ]] || continue
+        if [[ -e "${ref}.lock" || -L "${ref}.lock" ]]; then
+            echo "Refusing to recover locked Git ref: ${ref}" >&2
+            return 1
+        fi
+        if [ -z "$backup_dir" ]; then
+            backup_dir=$(mktemp -d .git/ronin-empty-refs.XXXXXX) || return 1
+        fi
+        relative_ref="${ref#.git/}"
+        (
+            # Acquire Git's per-ref lock atomically, then check again so a
+            # concurrent fetch cannot replace the empty ref before we move it.
+            (set -o noclobber; : > "${ref}.lock") 2>/dev/null || {
+                echo "Unable to lock empty Git ref: ${ref}" >&2
+                exit 1
+            }
+            trap 'rm -f -- "${ref}.lock"' EXIT
+            [[ -f "$ref" && ! -L "$ref" && ! -s "$ref" ]] || exit 0
+            mkdir -p -- "${backup_dir}/${relative_ref%/*}" || exit 1
+            echo "Quarantining empty Git ref: ${ref} -> ${backup_dir}/${relative_ref}"
+            mv -- "$ref" "${backup_dir}/${relative_ref}"
+        ) || return 1
+    done < <(find .git/refs/remotes -type f -empty ! -name '*.lock' -print0)
+}
+
+function archive_git_gc_log {
+    # Git replays a previous gc failure and suppresses automatic housekeeping
+    # while gc.log remains. Run only after a successful fetch and checkout;
+    # preserve the log if connectivity is still broken or maintenance is active.
+    (
+        local fsck_output backup_dir
+        [[ -e .git/gc.log || -L .git/gc.log ]] || exit 0
+        if [[ ! -f .git/gc.log || -L .git/gc.log ]]; then
+            echo "[WARN] Leaving unsafe Git gc.log in place" >&2
+            exit 0
+        fi
+        if [[ -e .git/gc.pid || -L .git/gc.pid ]]; then
+            echo "[WARN] Leaving Git gc.log in place while gc.pid exists" >&2
+            exit 0
+        fi
+        # Git also uses gc.log.lock when writing the maintenance log.
+        (set -o noclobber; : > .git/gc.log.lock) 2>/dev/null || {
+            echo "[WARN] Leaving locked Git gc.log in place" >&2
+            exit 0
+        }
+        trap 'rm -f -- .git/gc.log.lock' EXIT
+        [[ -f .git/gc.log && ! -L .git/gc.log ]] || exit 0
+        if [[ -e .git/gc.pid || -L .git/gc.pid ]]; then
+            echo "[WARN] Leaving Git gc.log in place while gc.pid exists" >&2
+            exit 0
+        fi
+        if ! fsck_output=$(git fsck --connectivity-only --no-dangling 2>&1); then
+            echo "[WARN] Leaving Git gc.log in place: connectivity check failed" >&2
+            printf '%s\n' "$fsck_output" >&2
+            exit 0
+        fi
+        backup_dir=$(mktemp -d .git/ronin-gc-log.XXXXXX) || {
+            echo "[WARN] Unable to create Git gc.log archive; leaving log in place" >&2
+            exit 0
+        }
+        if mv -- .git/gc.log "${backup_dir}/gc.log"; then
+            echo "Archived previous Git gc.log: ${backup_dir}/gc.log"
+        else
+            echo "[WARN] Unable to archive Git gc.log; leaving log in place" >&2
+        fi
+        exit 0
+    )
+}
+
 function update_puppet {
     require_secure_working_dir
     echo -e "${_GREEN}Checkout security: root-owned and validated${_RESET}"
@@ -403,6 +483,8 @@ function update_puppet {
         echo "Found $empty_count empty object file(s) before fetch; removing..."
         find .git/objects -type f -empty -delete
     fi
+
+    recover_empty_remote_refs || return 1
 
     # Fetch and checkout production branch
     echo -e "Syncing ronin-puppet client (repository: ${PUPPET_REPOSITORY_SLUG})..."
@@ -460,6 +542,7 @@ function update_puppet {
     fi
 
     require_secure_working_dir
+    archive_git_gc_log
     remove_staged_vault_secrets || return 1
 
     cat <<EOF > "${WORKING_DIR}/manifests/nodes/nodes.pp"
@@ -601,9 +684,9 @@ function run_puppet {
 
 # Color helpers — only when stdout is a TTY (suppresses codes in journal/pipes)
 if [ -t 1 ]; then
-    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _YELLOW="\033[33m"; _CYAN="\033[36m"; _RESET="\033[0m"
+    _BOLD="\033[1m"; _DIM="\033[2m"; _GREEN="\033[32m"; _RED="\033[31m"; _YELLOW="\033[33m"; _PURPLE="\033[35m"; _CYAN="\033[36m"; _RESET="\033[0m"
 else
-    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _YELLOW=""; _CYAN=""; _RESET=""
+    _BOLD=""; _DIM=""; _GREEN=""; _RED=""; _YELLOW=""; _PURPLE=""; _CYAN=""; _RESET=""
 fi
 
 WRITE_SENTINEL=1
@@ -665,15 +748,21 @@ if [ -f "/etc/puppet/ronin_settings" ]; then
 EOF
     echo "Loading settings from /etc/puppet/ronin_settings..."
     source /etc/puppet/ronin_settings
-    # show env vars of interest
-    echo -e "  PUPPET_BRANCH:         ${_DIM}$PUPPET_BRANCH${_RESET}"
-    echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
-    echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
-    if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
-        echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
-    else
-        echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}${WORKER_TYPE_OVERRIDE}${_RESET}"
-    fi
+fi
+
+# Show effective settings, including defaults when no override file exists.
+echo "Effective Puppet settings:"
+if [ "$PUPPET_BRANCH" = "master" ]; then
+    echo "  PUPPET_BRANCH:         $PUPPET_BRANCH"
+else
+    echo -e "  PUPPET_BRANCH:         ${_PURPLE}$PUPPET_BRANCH${_RESET}"
+fi
+echo -e "  PUPPET_REPO:           ${_DIM}$PUPPET_REPO${_RESET}"
+echo -e "  PUPPET_MAIL:           ${_DIM}$PUPPET_MAIL${_RESET}"
+if [ -n "${WORKER_TYPE_OVERRIDE}" ]; then
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_YELLOW}${WORKER_TYPE_OVERRIDE}${_RESET}"
+else
+    echo -e "  WORKER_TYPE_OVERRIDE:  ${_DIM}<none>${_RESET}"
 fi
 
 ROLE_FILE='/etc/puppet_role'

@@ -15,7 +15,7 @@
 #
 #   packages::linux_package_from_s3_multi { 'install git_242' :
 #     packages_and_checksums => $pkgs_and_chksums_hash,
-#     temp_dir               => /tmp/git_242,
+#     temp_dir               => '/var/cache/ronin-package-staging/git_242',
 #     os_version_specific    => false,
 #   }
 #
@@ -34,13 +34,14 @@
 #
 define packages::linux_package_from_s3_multi (
   # { 'file' => 'checksum', 'file2' => 'checksum2' }
-  Hash $packages_and_checksums,
-  String $temp_dir,  # this should NOT be /tmp, should be unique per usage of this class
+  Hash[Pattern[/\A[A-Za-z0-9][A-Za-z0-9.+_~%-]*\.deb\z/], Pattern[/\A[0-9a-f]{64}\z/], 1] $packages_and_checksums,
+  Pattern[/\A\/var\/cache\/ronin-package-staging\/[A-Za-z0-9_-]+\z/] $temp_dir,
   Optional[String] $bucket                     = undef,
   Optional[String] $s3_domain                  = undef,
   Boolean $private                             = false,
   Boolean $os_version_specific                 = true,
 ) {
+  include packages::deb_staging
   include shared
   require packages::setup
 
@@ -64,7 +65,11 @@ define packages::linux_package_from_s3_multi (
 
   # ensure temp dir exists
   file { $temp_dir:
-    ensure => directory,
+    ensure  => directory,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0700',
+    require => Class['packages::deb_staging'],
   }
 
   # define out here so we can require on resource later
@@ -81,13 +86,16 @@ define packages::linux_package_from_s3_multi (
         source         => $source,
         checksum       => 'sha256',
         checksum_value => $checksum,
-        mode           => '0644',
+        mode           => '0600',
+        require        => File[$temp_dir],
     }
   }
 
-  exec { "install package at ${temp_dir}" :
-    command => "/usr/bin/apt install -f ${temp_dir}/*.deb -y",
-    # require the first file to ensure each block files are present
-    require => File[$packages_and_checksums.keys()[0]],
+  $destinations = $packages_and_checksums.keys.map |$file| { "${temp_dir}/${file}" }
+
+  exec { "install package at ${temp_dir}":
+    command => ['/usr/bin/apt', 'install', '-f', '-y'] + $destinations,
+    unless  => [['/var/cache/ronin-package-staging/debs-installed'] + $destinations],
+    require => $packages_and_checksums.keys.map |$file| { File[$file] },
   }
 }

@@ -48,7 +48,10 @@ define packages::linux_package_from_s3 (
       # package with provider apt won't install from an url or a local file.
       # we're forced to fetch file, install with dpkg, then fix deps with apt.
 
-      $destination = "/tmp/${title}"
+      assert_type(Pattern[/\A[A-Za-z0-9][A-Za-z0-9.+_~%-]*\.deb\z/], $title)
+      assert_type(Pattern[/\A[0-9a-f]{64}\z/], $checksum)
+      include packages::deb_staging
+      $destination = "/var/cache/ronin-package-staging/${title}"
 
       file {
         default: * => $shared::file_defaults;
@@ -58,12 +61,14 @@ define packages::linux_package_from_s3 (
           source         => $source,
           checksum       => 'sha256',
           checksum_value => $checksum,
-          mode           => '0644';
+          mode           => '0600',
+          require        => Class['packages::deb_staging'];
       }
 
-      exec { 'install package':
-        command => "/usr/bin/apt install -f ${destination} -y",
-        # TODO: figure out an unless condition
+      exec { "install package ${title}":
+        command => ['/usr/bin/apt', 'install', '-f', '-y', $destination],
+        unless  => [['/var/cache/ronin-package-staging/debs-installed', $destination]],
+        require => File[$destination],
       }
     }
     default: {

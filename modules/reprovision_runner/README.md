@@ -67,8 +67,7 @@ reprovision_runner:
   simplemdm_api_key:  "..."   # op://RelOps/SimpleMDM API admin/password
   ssh_admin_password: "..."   # op://RelOps/DEP Provisioned Mac Admin Account SimpleMDM SSH/password
   ssh_admin_key: |            # op://RelOps/RelOps Worker Admin Key/notesPlain
-    -----BEGIN OPENSSH PRIVATE KEY-----
-    ...
+    <complete OpenSSH private key from the secret store>
 ```
 
 ## One-time step-ca bootstrap (`cert_mode: step_renew`)

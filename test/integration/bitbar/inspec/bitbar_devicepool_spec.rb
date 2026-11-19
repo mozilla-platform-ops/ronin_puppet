@@ -1,5 +1,15 @@
 require_relative 'spec_helper'
 
+%w[bitbar bitbar-v3 bitbar-slack_alert bitbar-influx_logger bitbar-last_started_alert].each do |unit|
+  describe file("/etc/systemd/system/#{unit}.service") do
+    it { should be_file }
+    its('owner') { should eq 'root' }
+    its('group') { should eq 'root' }
+    its('mode') { should cmp '0644' }
+    its('content') { should match /^User=bitbar$/ }
+  end
+end
+
 describe 'users' do
   describe user('aerickson') do
     it { should exist }

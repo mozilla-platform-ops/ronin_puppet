@@ -55,6 +55,9 @@ crash.log
 doc/
 .yardoc/
 
+# Local BR status notes and archives
+/BR_STATUS*
+
 # node stuff
 node_modules
 /test-results/

@@ -197,7 +197,7 @@ scriptworker_config:
         sign_chain_of_trust: true
         verify_chain_of_trust: true
         verify_cot_signature: true
-        scriptworker_scripts_revision: "32976055079fd9da032e9c75663ebfed63c444f5"
+        scriptworker_scripts_revision: "ce93a3738523e29f01baeef9d6ded446d7fc6bec"
         # Pins both the uv-managed interpreter and the venvs built from it. A bump
         # here rebuilds every scriptworker venv on the next puppet run.
         python_version: "3.14.6"

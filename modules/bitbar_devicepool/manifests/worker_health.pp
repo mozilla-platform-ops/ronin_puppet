@@ -46,8 +46,11 @@ class bitbar_devicepool::worker_health {
   # place systemd unit files
   file { '/etc/systemd/system/bitbar-slack_alert.service':
     ensure  => file,
+    group   => 'root',
+    mode    => '0644',
+    owner   => 'root',
     replace => 'no',
-    source  => '/home/bitbar/android-tools/worker_health/service/slack_alert.service',
+    source  => 'puppet:///modules/bitbar_devicepool/systemd/bitbar-slack_alert.service',
     notify  => [
       Class['bitbar_devicepool::systemd_reload'],
     ],
@@ -55,8 +58,11 @@ class bitbar_devicepool::worker_health {
 
   file { '/etc/systemd/system/bitbar-influx_logger.service':
     ensure  => file,
+    group   => 'root',
+    mode    => '0644',
+    owner   => 'root',
     replace => 'no',
-    source  => '/home/bitbar/android-tools/worker_health/service/influx_logger.service',
+    source  => 'puppet:///modules/bitbar_devicepool/systemd/bitbar-influx_logger.service',
     notify  => [
       Class['bitbar_devicepool::systemd_reload'],
     ],

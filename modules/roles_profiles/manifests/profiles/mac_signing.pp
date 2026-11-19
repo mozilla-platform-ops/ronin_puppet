@@ -25,7 +25,12 @@ class roles_profiles::profiles::mac_signing {
         /^vpn-mac-v(3|4)-signing\d+/   => 'vpn-prod',
         /^adhoc-mac-v(3|4)-signing\d+/ => 'adhoc-prod',
         /^dep-mac-v(3|4)-signing\d+/   => 'dep',
-        default                        => 'ff-prod',  # Not optimal, but used in unit tests and for local debugging
+        default                        => undef,
+      }
+      # The hostname is the only thing that picks the signer flavor, so an
+      # unexpected one must not quietly become a production Firefox signer.
+      if $role == undef {
+        fail("mac_signing: hostname '${facts['networking']['hostname']}' does not match a signer flavor")
       }
 
       $worker_common = lookup("scriptworker_config.${role}", Hash, undef, {})
