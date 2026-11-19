@@ -19,6 +19,6 @@ class macos_gw_checker (
     ensure  => present,
     command => '/usr/local/bin/gw_checker.sh',
     user    => 'root',
-    minute  => '*/30',
+    minute  => '*/10',
   }
 }
