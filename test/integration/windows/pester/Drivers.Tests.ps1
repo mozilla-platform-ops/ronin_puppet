@@ -1,6 +1,43 @@
 #Requires -Module @{ ModuleName = "Pester"; ModuleVersion = "6.2.0" }
 
 Describe 'Drivers' -Tag IntegrationTests {
+    Context 'Defender driver path handling' {
+        BeforeAll {
+            . 'C:\ronin_puppet\modules\win_shared\files\defender_driver.ps1'
+        }
+
+        It 'renames the nested 24H2 hardware path drivers\wd\WdFilter.sys to WdFilter.sys.bak' {
+            $driverDirectory = Join-Path $TestDrive 'System32\drivers'
+            $driverPath = (Get-WdFilterDriverPaths -DriverDirectory $driverDirectory)[0]
+            $driverPath | Should-MatchString '\\System32\\drivers\\wd\\WdFilter\.sys$'
+            New-Item -ItemType Directory -Path (Split-Path $driverPath) -Force | Out-Null
+            Set-Content -LiteralPath $driverPath -Value 'fixture'
+            Rename-DefenderDriver -Name 'WdFilter' -Path $driverPath | Should-BeTrue
+            Test-Path -LiteralPath $driverPath | Should-BeFalse
+            Test-Path -LiteralPath "$driverPath.bak" | Should-BeTrue
+        }
+
+        It 'keeps the legacy top-level WdFilter path supported' {
+            $driverDirectory = Join-Path $TestDrive 'System32\drivers'
+            $driverPath = (Get-WdFilterDriverPaths -DriverDirectory $driverDirectory)[1]
+            $driverPath | Should-MatchString '\\System32\\drivers\\WdFilter\.sys$'
+            New-Item -ItemType Directory -Path (Split-Path $driverPath) -Force | Out-Null
+            Set-Content -LiteralPath $driverPath -Value 'fixture'
+
+            Rename-DefenderDriver -Name 'WdFilter' -Path $driverPath | Should-BeTrue
+            Test-Path -LiteralPath $driverPath | Should-BeFalse
+            Test-Path -LiteralPath "$driverPath.bak" | Should-BeTrue
+        }
+    }
+
+    Context 'Windows 11 24H2 Kitchen image' -Skip:($env:WORKER_POOL_ID -ne 'win11-64-24h2-hw-kitchen') {
+        It 'uses Windows 11 Enterprise build 26100' {
+            $os = Get-CimInstance Win32_OperatingSystem
+            $os.Caption | Should-MatchString '^Microsoft Windows 11 Enterprise'
+            $os.Version | Should-MatchString '^10\.0\.26100(?:\.|$)'
+        }
+    }
+
     Context 'GPU and audio drivers' {
         if (($Win10 -or $Server25) -and $env:WORKER_POOL_ID -like '*gpu*') {
             It 'runs the configured NVIDIA A10-8Q driver' {

@@ -15,7 +15,7 @@ goto :eof
         rem Performable operations while Windows Defender is running.
         rem Disable Windows Defender drivers.
         echo Disabling Windows Defender drivers...
-        set "drivers="%SystemRoot%\System32\drivers\WdBoot.sys";"%SystemRoot%\System32\drivers\WdFilter.sys";"%SystemRoot%\System32\drivers\WdNisDrv.sys""
+        set "drivers="%SystemRoot%\System32\drivers\WdBoot.sys";"%SystemRoot%\System32\drivers\wd\WdFilter.sys";"%SystemRoot%\System32\drivers\WdFilter.sys";"%SystemRoot%\System32\drivers\WdNisDrv.sys""
         set "drivers=!drivers:""="!"
 
         set "wasDriverDisabled=false"

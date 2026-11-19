@@ -7,10 +7,15 @@ class win_scheduled_tasks::maintain_system (
 ) {
 
     $maintainsystem_ps1 = "${facts['custom_win_roninprogramdata']}\\maintainsystem.ps1"
+    $defender_driver_ps1 = "${facts['custom_win_roninprogramdata']}\\defender_driver.ps1"
 
     if $facts['os']['name'] == 'Windows' {
+        file { $defender_driver_ps1:
+            content => file('win_shared/defender_driver.ps1'),
+        }
         file { $maintainsystem_ps1:
             content => file("win_scheduled_tasks/${startup_script}"),
+            require => File[$defender_driver_ps1],
         }
         # Resource from puppetlabs-scheduled_task
         scheduled_task { 'maintain_system':

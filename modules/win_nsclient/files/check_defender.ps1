@@ -7,7 +7,8 @@
 # the Defender driver binaries (see win_disable_services::disable_windows_defender_schtask).
 # So we assert the ground-truth signals instead:
 #   - WdFilter (the file-system minifilter that performs on-access scanning) is
-#     NOT running, AND its driver binary is renamed to WdFilter.sys.bak.
+#     NOT running, AND its driver binary is renamed to WdFilter.sys.bak. Windows 11
+#     24H2 stores it under drivers\wd; older layouts use the drivers root.
 # Real-time scanning cannot occur without WdFilter loaded, regardless of whether
 # the WinDefend service or MsMpEng process happen to be alive.
 #
@@ -19,14 +20,15 @@
 # Nagios contract: print one line "STATE - text | perfdata" and exit 0/1/2/3.
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'defender_driver.ps1')
 
 function Exit-With([int]$code, [string]$msg) {
     Write-Output $msg
     exit $code
 }
 
-$driver    = "$env:SystemRoot\System32\drivers\WdFilter.sys"
-$driverBak = "$env:SystemRoot\System32\drivers\WdFilter.sys.bak"
+$driverPaths = @(Get-WdFilterDriverPaths)
+$driverBakPaths = @($driverPaths | ForEach-Object { "${_}.bak" })
 
 # 1) Is the on-access minifilter currently running?
 $wdfState = 'unknown'
@@ -39,8 +41,14 @@ try {
 catch { $wdfState = 'unknown' }
 
 # 2) Is the driver binary renamed (disabled) or restored (re-armed)?
-$sysPresent = Test-Path -LiteralPath $driver
-$bakPresent = Test-Path -LiteralPath $driverBak
+$sysPresent = $false
+foreach ($path in $driverPaths) {
+    if (Test-Path -LiteralPath $path) { $sysPresent = $true; break }
+}
+$bakPresent = $false
+foreach ($path in $driverBakPaths) {
+    if (Test-Path -LiteralPath $path) { $bakPresent = $true; break }
+}
 
 # 3) WinDefend service state (informational only — not the deciding factor)
 $winDefend = 'unknown'

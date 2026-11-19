@@ -14,7 +14,7 @@ win-worker:
   # Logging
   # Logging level options debug, verbose, or restricted.
   log:
-    level: "verbose"
+    level: "restricted"
 
   ## Use to overwrite values in the Windows yaml file.
   ## Replace windows. with win-worker.variant.
