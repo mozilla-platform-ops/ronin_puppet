@@ -27,6 +27,7 @@ generic_worker:
   bugzilla_api_key: "%{lookup('vault_secrets::generic_worker.data.bugzilla_api_key')}"
 
 packages_classes:
+  - git
   - mercurial
   - nodejs
   - python3
@@ -39,6 +40,7 @@ packages_classes:
   - zstandard
 
 # Package class parameters
+packages::git::version: 2.47.1
 packages::mercurial::version: 6.4.5
 packages::nodejs::version: 12.11.1
 packages::python3::version: 3.11.0
