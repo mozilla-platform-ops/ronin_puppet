@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/mozilla-platform-ops/kitchen-azurerm.git
-  revision: e8df241efe34a606871e15f03d1185e50c029959
-  branch: fix/arm-throttle-backoff
+  revision: 717e615bed74421e90cb69e9aa63155517a31043
+  branch: main
   specs:
     kitchen-azurerm (2.4.0)
       inifile (~> 3.0, >= 3.0.0)
