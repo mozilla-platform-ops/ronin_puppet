@@ -25,7 +25,7 @@ gem 'kitchen-docker', git: 'https://github.com/test-kitchen/kitchen-docker.git',
 gem 'kitchen-puppet'
 gem 'kitchen-sync'
 gem 'kitchen-vagrant'
-gem 'kitchen-azurerm', git: 'https://github.com/mozilla-platform-ops/kitchen-azurerm.git', branch: 'main'
+gem 'kitchen-azurerm', git: 'https://github.com/mozilla-platform-ops/kitchen-azurerm.git', branch: 'fix/arm-throttle-backoff'
 gem 'librarian-puppet'
 gem 'puppetlabs_spec_helper'
 gem 'rake'

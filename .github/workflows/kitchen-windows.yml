@@ -131,10 +131,15 @@ jobs:
             # Retry only failures that indicate the Azure VM was evicted or
             # became unreachable. Puppet convergence failures need a code or
             # dependency fix; a new VM will reproduce them. kitchen-pester's
-            # PowerShell Gallery bootstrap download is also retried.
+            # PowerShell Gallery bootstrap download is also retried. The
+            # driver retries ARM throttling itself; a 429 here means it ran
+            # out of retries.
             grep -Eqi \
-              'execution expired|WinRM::WinRMHTTPTransportError|Errno::(ECONNREFUSED|ECONNRESET|ETIMEDOUT)|OperationPreempted|\bevicted\b|AllocationFailed|OverconstrainedAllocationRequest|SkuNotAvailable|InternalServerError|Error trying to download nupkg' \
+              'execution expired|WinRM::WinRMHTTPTransportError|Errno::(ECONNREFUSED|ECONNRESET|ETIMEDOUT)|OperationPreempted|\bevicted\b|AllocationFailed|OverconstrainedAllocationRequest|SkuNotAvailable|InternalServerError|Error trying to download nupkg|Azure returned HTTP 429|TooManyRequests' \
               "$log_file"
+          }
+          is_azure_throttled() {
+            grep -Eqi 'Azure returned HTTP 429|TooManyRequests' "$1"
           }
 
           for attempt in $(seq 1 $max_attempts); do
@@ -157,6 +162,12 @@ jobs:
             if [ "$attempt" -lt "$max_attempts" ]; then
               echo "Destroying failed instance before retry..."
               "${kitchen[@]}" destroy ${{ matrix.kitchen_instance }} -l debug || true
+              if is_azure_throttled "$attempt_log"; then
+                # Give the subscription's ARM request budget time to refill.
+                delay=$(( 60 * attempt + RANDOM % 30 ))
+                echo "Azure throttled the attempt; waiting ${delay}s before retry..."
+                sleep "$delay"
+              fi
             fi
           done
           echo "::error::All $max_attempts attempts failed"
