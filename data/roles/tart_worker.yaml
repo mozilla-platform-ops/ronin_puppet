@@ -29,7 +29,7 @@ tart:
   local_network_allow:
     - '10.49.56.161/32'
   oci_image: 'sequoia-tester'
-  oci_tag: 'prod-latest'
+  oci_tag: 'pr-vault-inject-self-heal-latest'  # CANARY ONLY (m4-117), macos-vms #53 - never merge
   vm_name_prefix: 'sequoia-tester'
   worker_count: 2
   insecure: true
