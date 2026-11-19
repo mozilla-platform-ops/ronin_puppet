@@ -11,8 +11,9 @@ class vault_agent (
 
     # These gems are install in puppet's Ruby lib
     # and are required by hiera-vault
+    # vault 0.19+ needs Ruby >= 3.1; puppet-agent 7 bundles Ruby 2.7.
     package { 'vault-puppetpath-gem':
-        ensure   => 'present',
+        ensure   => '0.18.2',
         name     => 'vault',
         provider => 'puppet_gem',
     }
