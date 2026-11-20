@@ -26,8 +26,10 @@ class packages::git (
     require => Exec['download_git_src'],
   }
 
+  # NO_GETTEXT: otherwise configure links Homebrew's gettext (/usr/local/opt/gettext/lib/libintl.8.dylib)
+  # when it happens to be there, and git dies in dyld on any host without it (macmini-r8-180).
   exec { 'build_and_install_git':
-    command => "/bin/sh -c 'cd ${src_dir} && ${src_dir}/configure --prefix=/usr/local --without-tcltk && make -j4 all && make install'",
+    command => "/bin/sh -c 'cd ${src_dir} && ${src_dir}/configure --prefix=/usr/local --without-tcltk && make -j4 NO_GETTEXT=YesPlease all && make NO_GETTEXT=YesPlease install'",
     path    => ['/usr/bin', '/usr/local/bin', '/bin', '/usr/sbin', '/sbin'],
     unless  => $git_version_check,
     require => Exec['extract_git_src'],
