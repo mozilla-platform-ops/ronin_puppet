@@ -19,9 +19,11 @@ worker:
   idle_timeout_secs: 21600 # 6 hours
 
 packages_classes:
+  - git
   - mercurial
   - python3
 
+packages::git::version: 2.47.1
 packages::mercurial::version: 6.4.5
 packages::python3::version: 3.11.0
 
