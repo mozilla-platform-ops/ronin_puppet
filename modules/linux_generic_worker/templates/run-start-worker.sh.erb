@@ -3,15 +3,8 @@
 set -e
 set -x
 
-# This is a wrapper script for calling worker manager, such that when the g-w
-# exits, this script will reboot the machine. Note, in the worker manager config
-# (/etc/start-worker.yml) we set numberOfTasksToRun to 1 so that the worker
-# will exit after running a single task. This script is then responsible for
-# rebooting the machine.
-
-# If this file exists when the worker starts up, and its content is equal
-# to numberOfTasksToRun, the worker won't exit and machine won't reboot.
-rm -f tasks-resolved-count.txt
+# Run one task per boot. v115+ runs generic-worker directly; older versions use
+# start-worker. This wrapper handles holds, lifecycle logging and reboots.
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 
@@ -55,10 +48,16 @@ if ! /usr/local/bin/puppet-run-marker check; then
     echo " done."
 fi
 
-# First run the start-worker, passing through any arguments handed to this
-# wrapper script...
+# Run from the worker home: cache indexes and task counters are relative to it.
+cd '<%= @user_homedir %>'
+rm -f tasks-resolved-count.txt
+
 lifecycle_log emit worker_started
+<% if @generic_worker_115_or_newer -%>
+/usr/local/bin/generic-worker run --config '<%= @user_homedir %>/generic-worker.config' 2>&1 | logger -t generic-worker
+<% else -%>
 /usr/local/bin/start-worker "$@" 2>&1 | logger -t generic-worker
+<% end -%>
 
 exitstatus="${PIPESTATUS[0]}"
 
@@ -74,7 +73,7 @@ fi
 if [ $exitstatus -eq 69 ]; then
     # Exit without rebooting or starting another task. This needs operator
     # investigation; the retired check_gw timer must not restart the host.
-    echo 'start-worker exited 69; worker stopped for investigation' >&2
+    echo 'worker exited 69; worker stopped for investigation' >&2
     exit 69
 else
     # Now reboot the machine immediately (time costs money)

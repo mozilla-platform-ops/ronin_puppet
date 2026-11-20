@@ -655,8 +655,16 @@ function run_puppet {
     # This provides ground truth for monitoring and tracking applied configuration.
     # The function is designed to never fail the puppet run.
     if type write_puppet_state >/dev/null 2>&1; then
-        _state_out=$(write_puppet_state "$WORKING_DIR" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
-            "/etc/puppet/ronin_settings" "/root/vault.yaml" 2>&1)
+        # Puppet may have updated the writer during this run. Load that version
+        # in the subshell so metadata describes the selected branch immediately.
+        _state_out=$(
+            if [ -f "/etc/puppet/lib/puppet_state_functions.sh" ]; then
+                # shellcheck disable=SC1091
+                source "/etc/puppet/lib/puppet_state_functions.sh"
+            fi
+            write_puppet_state "$WORKING_DIR" "$ROLE" "$retval" "$PUPPET_RUN_DURATION" \
+                "/etc/puppet/ronin_settings" "/root/vault.yaml" 2>&1
+        )
         _state_file=$(echo "$_state_out" | sed -n 's/^Puppet state written to //p')
         if [[ -n "$_state_file" ]]; then
             echo "  state: ${_state_file}"
@@ -882,10 +890,10 @@ if [ -n "$WORKER_TYPE_OVERRIDE" ]; then
     echo "  WORKER_TYPE_OVERRIDE: $WORKER_TYPE_OVERRIDE"
 
     # rewrite the config
-    /usr/local/bin/change_workertype.py -t "${WORKER_TYPE_OVERRIDE}"
+    /usr/local/bin/change_workertype.py -t "${WORKER_TYPE_OVERRIDE}" || fail "Failed to apply worker type override"
 fi
 
-# touch the semaphore to let run-start-worker know it can start start-worker
+# Publish completion only after the worker config and any override are ready.
 lifecycle_log emit puppet_run_succeeded
 if [ "$WRITE_SENTINEL" -eq 1 ]; then
     /usr/local/bin/puppet-run-marker publish || fail "Failed to publish Puppet completion marker"

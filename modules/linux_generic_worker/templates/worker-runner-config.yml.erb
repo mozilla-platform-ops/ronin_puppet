@@ -1,4 +1,5 @@
-cacheOverRestarts: true
+# Standalone v115+ runners use the current config rather than cached identity.
+cacheOverRestarts: <%= @start_worker_115_or_newer ? '""' : 'true' %>
 getSecrets: false
 provider:
     providerType: standalone
@@ -15,7 +16,9 @@ worker:
 workerConfig:
     cachesDir:                        "<%= @caches_dir %>"
     certificate:                      ""
+<% unless @generic_worker_115_or_newer -%>
     checkForNewDeploymentEverySecs:   0
+<% end -%>
     cleanUpTaskDirs:                  true
     ed25519SigningKeyLocation:        "<%= @ed25519_signing_key %>"
     idleTimeoutSecs:                  345600
