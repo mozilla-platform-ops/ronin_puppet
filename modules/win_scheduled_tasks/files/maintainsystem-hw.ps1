@@ -52,6 +52,8 @@ function Run-MaintainSystem {
     process {
         #Remove-OldTaskDirectories
         Get-ChildItem "$env:systemdrive\logs\old" -Recurse -File | Where-Object CreationTime -lt  (Get-Date).AddDays(-7)  | Remove-Item -Force
+        # Bug 2096461: mozcrash reports every dump here as a crash of the current task.
+        Get-ChildItem "$env:systemdrive\error-dumps" -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
     }
     end {
         Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

@@ -52,6 +52,16 @@ Describe 'Files' -Tag IntegrationTests {
             $folder | Should-MatchString '^[A-Z]:\\error-dumps$'
             Test-Path $folder | Should-BeTrue
         }
+        It 'writes a dump when a process crashes' {
+            $folder = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps' DumpFolder
+            $p = Start-Process powershell.exe -ArgumentList '-NoProfile', '-Command', '[Environment]::FailFast("wer-test")' -NoNewWindow -PassThru
+            $p.WaitForExit()
+            $dump = Join-Path $folder "powershell.exe.$($p.Id).dmp"
+            $deadline = (Get-Date).AddSeconds(60)
+            while (-not (Test-Path $dump) -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
+            Test-Path $dump | Should-BeTrue
+            Remove-Item $dump -Force -ErrorAction SilentlyContinue
+        }
         if ($Server25) {
             It 'has the task user init script' { Test-Path 'C:\generic-worker\task-user-init.cmd' -PathType Leaf | Should-BeTrue }
         }
