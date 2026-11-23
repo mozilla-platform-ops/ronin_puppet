@@ -54,7 +54,7 @@ Describe 'Files' -Tag IntegrationTests {
         }
         It 'writes a dump when a process crashes' {
             $folder = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps' DumpFolder
-            $p = Start-Process powershell.exe -ArgumentList '-NoProfile', '-Command', '[Environment]::FailFast("wer-test")' -NoNewWindow -PassThru
+            $p = Start-Process powershell.exe -ArgumentList '-NoProfile', '-Command', "[Environment]::FailFast('wer-test')" -NoNewWindow -PassThru
             $p.WaitForExit()
             $dump = Join-Path $folder "powershell.exe.$($p.Id).dmp"
             $deadline = (Get-Date).AddSeconds(60)
