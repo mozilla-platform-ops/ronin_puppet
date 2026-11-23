@@ -48,7 +48,7 @@ Describe 'Files' -Tag IntegrationTests {
 
     Context 'Windows settings' {
         It 'creates the error dump directory' {
-            $folder = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting' DumpFolder
+            $folder = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps' DumpFolder
             $folder | Should-MatchString '^[A-Z]:\\error-dumps$'
             Test-Path $folder | Should-BeTrue
         }

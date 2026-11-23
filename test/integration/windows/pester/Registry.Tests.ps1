@@ -53,7 +53,7 @@ Describe 'Registry' -Tag IntegrationTests {
             $uac = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
             $explorer = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer'
             $registry = @(
-                @{ Path = $wer; Name = 'LocalDumps'; Value = '1' }
+                @{ Path = "$wer\LocalDumps"; Name = 'DumpType'; Value = '1' }
                 @{ Path = $wer; Name = 'DontShowUI'; Value = '1' }
                 @{ Path = $fs; Name = 'NtfsDisable8dot3NameCreation'; Value = '1' }
                 @{ Path = $fs; Name = 'NtfsDisableLastAccessUpdate'; Value = '2147483649' }
