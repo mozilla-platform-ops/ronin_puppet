@@ -15,16 +15,37 @@ class win_os_settings::error_reporting {
     ensure => directory,
   }
 
+  # WER only reads the local dump settings from the LocalDumps subkey:
+  # https://learn.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps
+  # DumpCount 0 turns off dumps for all processes; the firefox.exe key turns
+  # them back on for Firefox only.
+  $local_dumps_key = "${error_report_key}\\LocalDumps"
+  $firefox_dumps_key = "${local_dumps_key}\\firefox.exe"
+
   # Using puppetlabs-registry
-  registry::value { 'DumpFolder' :
-    key  => $error_report_key,
-    type => string,
-    data => $dump_dir,
+  registry::value { 'LocalDumps DumpCount' :
+    key   => $local_dumps_key,
+    value => 'DumpCount',
+    type  => dword,
+    data  => '0',
   }
-  registry::value { 'LocalDumps' :
-    key  => $error_report_key,
-    type => dword,
-    data => '1',
+  registry::value { 'firefox.exe DumpFolder' :
+    key   => $firefox_dumps_key,
+    value => 'DumpFolder',
+    type  => expand,
+    data  => $dump_dir,
+  }
+  registry::value { 'firefox.exe DumpCount' :
+    key   => $firefox_dumps_key,
+    value => 'DumpCount',
+    type  => dword,
+    data  => '10',
+  }
+  registry::value { 'firefox.exe DumpType' :
+    key   => $firefox_dumps_key,
+    value => 'DumpType',
+    type  => dword,
+    data  => '1',
   }
   registry::value { 'DontShowUI' :
     key  => $error_report_key,

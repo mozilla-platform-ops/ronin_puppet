@@ -48,9 +48,30 @@ Describe 'Files' -Tag IntegrationTests {
 
     Context 'Windows settings' {
         It 'creates the error dump directory' {
-            $folder = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting' DumpFolder
+            $folder = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\firefox.exe' DumpFolder
             $folder | Should-MatchString '^[A-Z]:\\error-dumps$'
             Test-Path $folder | Should-BeTrue
+        }
+        It 'writes a dump only when firefox.exe crashes' {
+            $folder = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\firefox.exe' DumpFolder
+            $bin = Join-Path $env:TEMP 'wer-test'
+            New-Item $bin -ItemType Directory -Force | Out-Null
+            Copy-Item "$PSHOME\powershell.exe" "$bin\firefox.exe" -Force
+            $crash = '-NoProfile', '-Command', "[Environment]::FailFast('wer-test')"
+            $firefox = Start-Process "$bin\firefox.exe" -ArgumentList $crash -NoNewWindow -PassThru
+            $other = Start-Process powershell.exe -ArgumentList $crash -NoNewWindow -PassThru
+            $firefox.WaitForExit()
+            $other.WaitForExit()
+            $dump = Join-Path $folder "firefox.exe.$($firefox.Id).dmp"
+            $deadline = (Get-Date).AddSeconds(60)
+            while (-not (Test-Path $dump) -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
+            Test-Path $dump | Should-BeTrue
+            $otherDumps = @(
+                Join-Path $folder "powershell.exe.$($other.Id).dmp"
+                Join-Path $env:LOCALAPPDATA "CrashDumps\powershell.exe.$($other.Id).dmp"
+            )
+            $otherDumps | Where-Object { Test-Path $_ } | Should-BeCollection @()
+            Remove-Item $dump, $bin -Recurse -Force -ErrorAction SilentlyContinue
         }
         if ($Server25) {
             It 'has the task user init script' { Test-Path 'C:\generic-worker\task-user-init.cmd' -PathType Leaf | Should-BeTrue }
