@@ -15,14 +15,18 @@ class win_os_settings::error_reporting {
     ensure => directory,
   }
 
+  # WER only reads the local dump settings from the LocalDumps subkey:
+  # https://learn.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps
+  $local_dumps_key = "${error_report_key}\\LocalDumps"
+
   # Using puppetlabs-registry
   registry::value { 'DumpFolder' :
-    key  => $error_report_key,
-    type => string,
+    key  => $local_dumps_key,
+    type => expand,
     data => $dump_dir,
   }
-  registry::value { 'LocalDumps' :
-    key  => $error_report_key,
+  registry::value { 'DumpType' :
+    key  => $local_dumps_key,
     type => dword,
     data => '1',
   }
