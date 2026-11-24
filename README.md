@@ -36,6 +36,25 @@ Many profiles run puppet at boot, but some only do on demand.
 bolt plan run deploy::apply -t macmini-r8-140.test.releng.mdc1.mozilla.com noop=false -v
 ```
 
+## GitHub Actions dependency lockfile
+
+[`.github/workflows/actions.lock`](.github/workflows/actions.lock) records the
+commit SHA for each locked action dependency. Install the extension once with
+an authenticated GitHub CLI:
+
+```bash
+gh extension install github/gh-actions-lock
+```
+
+From the repository root, run `gh actions-lock` after adding or removing a
+workflow or changing a `uses:` reference. Review the generated lockfile and any
+workflow changes, then include both in the same pull request. Treat the lockfile
+as generated.
+
+Run `gh actions-lock --verify-local` for an offline coverage check or
+`gh actions-lock --verify` to also check the pinned commits against GitHub.
+See the [extension documentation](https://github.com/github/gh-actions-lock).
+
 ## testing
 
 ### test-kitchen
