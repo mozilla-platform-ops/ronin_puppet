@@ -120,7 +120,9 @@ Note: Windows hierarchy differs — worker-type data takes priority over secrets
 | `kitchen-macos.yml` | Push/PR to master | Kitchen tests for macOS roles on native runners |
 | `kitchen-windows.yml` | Push/PR to master | Azure-based Kitchen tests for Windows roles |
 
-All workflows skip draft PRs and use SHA-pinned actions.
+Action commit pins live in `.github/workflows/actions.lock`. See the
+[lockfile maintenance instructions](README.md#github-actions-dependency-lockfile)
+when adding or removing workflows or changing `uses:` references.
 
 ### Provisioners
 
