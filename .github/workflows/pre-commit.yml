@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
         persist-credentials: false
@@ -33,15 +33,15 @@ jobs:
       run: ./test/fleetbench_pin.ps1
 
     - name: Set up Ruby
-      uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+      uses: ruby/setup-ruby@v1.336.0
 
     - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@v7.0.0
       with:
         python-version: '3.11'
 
     - name: Set up Terraform
-      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+      uses: hashicorp/setup-terraform@v4.0.1
 
     - name: Test Linux Puppet Git recovery and auth fallback
       shell: bash
@@ -59,14 +59,14 @@ jobs:
       run: pip install pre-commit
 
     - name: Cache pre-commit environments
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6.1.0
       with:
         path: ~/.cache/pre-commit
         key: pre-commit-${{ hashFiles('.pre-commit-config.yaml', '.ruby-version') }}
 
     - name: Get changed files
       id: changed-files
-      uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+      uses: tj-actions/changed-files@v47.0.6
       with:
         files_ignore: |
           r10k_modules/**
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: Test SNMP permissions in disposable Ubuntu container

@@ -19,7 +19,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@v7.0.1
       - name: Check PowerShell tests
         shell: pwsh
         run: |
@@ -85,22 +85,22 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        uses: actions/checkout@v7.0.1
 
       - name: Azure login
-        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca
+        uses: azure/login@v3.0.1
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        uses: ruby/setup-ruby@v1.336.0
         with:
           bundler-cache: false
 
       - name: Cache gems
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.gem
           key: v1-gems-${{ runner.os }}-${{ hashFiles('.ruby-version', 'Gemfile.lock') }}
@@ -178,7 +178,7 @@ jobs:
 
       - name: Upload Pester results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: pester-${{ matrix.kitchen_instance }}
           path: test-results/
@@ -186,7 +186,7 @@ jobs:
 
       - name: Refresh Azure login
         if: always()
-        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43
+        uses: azure/login@v3.0.0
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
