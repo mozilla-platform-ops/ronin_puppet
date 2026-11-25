@@ -32,6 +32,22 @@ class linux_generic_worker (
   # set hostname (not sure how this was working before)
   $hostname = $facts['networking']['hostname']
 
+  $start_worker_115_or_newer = versioncmp(regsubst($start_worker_version, '^v', ''), '115.0.0') >= 0
+  $generic_worker_115_or_newer = versioncmp(regsubst($generic_worker_version, '^v', ''), '115.0.0') >= 0
+
+  # v115.0.1 verifies that its credential-bearing config is private to the
+  # runner UID. Keep older shared-module consumers on their existing settings.
+  # https://github.com/taskcluster/taskcluster/blob/v115.0.1/tools/worker-runner/perms/perms_posix.go
+  if versioncmp(regsubst($start_worker_version, '^v', ''), '115.0.1') >= 0 {
+    $runner_config_owner = $user
+    $runner_config_group = $user
+    $runner_config_mode = '0600'
+  } else {
+    $runner_config_owner = 'root'
+    $runner_config_group = 'root'
+    $runner_config_mode = '0644'
+  }
+
   class { 'packages::linux_generic_worker':
     generic_worker_version    => $generic_worker_version,
     generic_worker_sha256     => $generic_worker_sha256,
@@ -69,6 +85,39 @@ class linux_generic_worker (
   $caches_dir          = "${user_homedir}/caches"
   $downloads_dir       = "${user_homedir}/downloads"
   $ed25519_signing_key = "${user_homedir}/generic-worker.ed25519.signing.key"
+
+  if $generic_worker_115_or_newer {
+    # Standalone hardware workers do not use Worker Manager. Puppet supplies
+    # the complete config and the launcher invokes generic-worker directly.
+    file { "${user_homedir}/generic-worker.config":
+      ensure    => file,
+      content   => template('linux_generic_worker/generic-worker.config.erb'),
+      owner     => $user,
+      group     => $user,
+      mode      => '0600',
+      show_diff => false,
+    }
+    $runner_config_ensure = absent
+    $runner_config_content = undef
+  } else {
+    $runner_config_ensure = file
+    $runner_config_content = template('linux_generic_worker/worker-runner-config.yml.erb')
+  }
+
+  # Old cache indexes contain ownerUsername/mounterUID, which v115 rejects.
+  # Check the state rather than subscribing to the binary: this also repairs
+  # workers that already upgraded. Remove the indexed data with the indexes so
+  # downloads and directory caches do not become untracked disk usage. Healthy
+  # v115 state is left alone on subsequent runs.
+  if $generic_worker_115_or_newer {
+    exec { 'purge-incompatible-linux-gw-cache-state':
+      command => "/bin/rm -rf -- '${user_homedir}/file-caches.json' '${user_homedir}/directory-caches.json' '${downloads_dir}' '${caches_dir}'",
+      onlyif  => "/bin/grep -Eq '\"(ownerUsername|mounterUID)\"[[:space:]]*:' '${user_homedir}/file-caches.json' '${user_homedir}/directory-caches.json'",
+      user    => $user,
+      require => Class['packages::linux_generic_worker'],
+      before  => File["${user_homedir}/downloads"],
+    }
+  }
 
   exec {
     'create ed25519 signing key':
@@ -126,11 +175,11 @@ class linux_generic_worker (
       mode   => '0755';
 
     '/etc/start-worker.yml':
-      ensure  => file,
-      content => template('linux_generic_worker/worker-runner-config.yml.erb'),
-      owner   => root,
-      group   => root,
-      mode    => '0644';
+      ensure  => $runner_config_ensure,
+      content => $runner_config_content,
+      owner   => $runner_config_owner,
+      group   => $runner_config_group,
+      mode    => $runner_config_mode;
 
     '/var/log/genericworker':
       ensure => directory,
